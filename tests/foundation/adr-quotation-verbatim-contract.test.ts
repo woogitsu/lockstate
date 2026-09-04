@@ -159,6 +159,55 @@ import { describe, expect, it } from 'vitest';
  *   vacuity case: **2 failed** -- floor and coverage -- rather than 13 passing
  *   on an empty corpus.
  * - `docs/` dropped from the file walk: **2 failed**, the same pair.
+ *
+ * ## The wrapped attribution: this gate did not guard, and none of the eight
+ * mutations above could see it
+ *
+ * **Found by mutation on 2026-09-04, and the eight above are left exactly as
+ * they stand** -- they were all run and all real, and what the episode records
+ * is that a set of mutations can be thorough about the thing it tests and blind
+ * to the shape of the input. Every one of them mutated a quotation, a count
+ * word or the extractor. None re-wrapped a line.
+ *
+ * The attribution is prose, and markdown re-wraps prose. `ATTRIBUTION` spelled
+ * each gap between its tokens as a **literal space**, so an attribution that
+ * wrapped -- most naturally between `verbatim in` and the backticked path,
+ * which is where the line gets long -- matched nothing. Two consequences, and
+ * the second is the one that makes this the worst failure this file could have:
+ *
+ * 1. The quotation in front of it was no longer compared to anything.
+ * 2. It was **not reported as an orphan either**, because an orphan is an
+ *    attribution that *matched* and bound nothing. So the assertion above
+ *    whose message is *"an attribution with no quotation in front of it claims
+ *    a check that is not being made"* -- this file's own guard against exactly
+ *    that -- could not see it.
+ *
+ * Measured, both directions, on `194f31f5` (v0.0.468). A real quotation in
+ * ADR 0023 was falsified (`instance.residentCapacity` ->
+ * `instance.THIS_IS_A_LIE`) *and* its attribution wrapped after `verbatim in`:
+ * **13 passed, 0 failed**. With the two fixes below, the same mutation is
+ * **1 failed**, naming the document, the file and the false quotation.
+ *
+ * Two defects, two fixes, because either one alone leaves the gate switchable
+ * off:
+ *
+ * - Every gap in `ATTRIBUTION` is `\s` now, in all four places a wrap can land.
+ *   Four written-out fixtures cover the four, because the corpus contains no
+ *   wrapped attribution today and so cannot notice the pattern going literal
+ *   again.
+ * - `ATTRIBUTION_SHAPED` reports what `ATTRIBUTION` cannot match. A pattern
+ *   cannot report its own misses, so the *only* way an unmatched attribution
+ *   becomes visible is a second, looser reading of the same words. Its own
+ *   mutation: an attribution given a shape the strict pattern refuses
+ *   (`` (verbatim in `…` above) ``) is **1 failed** on *"reads as an
+ *   attribution and the pattern cannot match it, so nothing was compared"*,
+ *   where before the same edit was **13 passed**.
+ *
+ * The general lesson, which is `docs/AGENT_WORKFLOW.md` §4's about sentences
+ * that rot, applied to a regular expression: **a pattern that matches prose
+ * must treat every gap as whitespace, and any pattern that gates something
+ * needs a second pattern watching for what it fails to see.** Silence is not
+ * evidence.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -201,8 +250,40 @@ const ROOTED_PATH = /^(?:docs|src|tests|scripts|supabase|public|\.github)\/[^\s`
  * Anchored on the parentheses at both ends so that prose *about* the convention
  * -- this file's own header, or a sentence explaining the form -- cannot be
  * mistaken for a citation using it.
+ *
+ * **Every gap between the tokens is `\s`, not a literal space, and that is the
+ * whole point of this comment.** Markdown re-wraps prose, and this attribution
+ * is prose: a wrap can land in any of the four gaps -- after the parenthesis,
+ * after the count word, between `verbatim` and `in`, and between `in` and the
+ * path. The pattern this replaced spelled all four as one literal space, so a
+ * wrapped attribution matched nothing, and an attribution that matches nothing
+ * is not checked and was not reported either. See "The wrapped attribution"
+ * below for the measurement.
  */
-const ATTRIBUTION = /\((both |all )?verbatim in `([^`\n]+)`\)/g;
+const ATTRIBUTION = /\(\s*(?:(both|all)\s+)?verbatim\s+in\s+`([^`\n]+)`\s*\)/g;
+
+/**
+ * Anything that reads as an attribution, whatever shape it is written in: the
+ * words `verbatim in` and a backticked path immediately behind them, with no
+ * requirement about parentheses, count word or what follows the path.
+ *
+ * This exists because `ATTRIBUTION` cannot report its own misses. An
+ * attribution it does not match produces no citation *and no orphan*, so a
+ * quotation in front of it stops being compared and nothing says so -- the
+ * silent failure mode this file's own guard against *"a claim of a check that
+ * is not made"* is supposed to cover. Anything matched here and not claimed by
+ * `ATTRIBUTION` is that miss.
+ *
+ * Deliberately narrower than "a parenthesis containing a path": that shape
+ * matches 427 spans in this corpus of which 399 are ordinary prose citations
+ * (`(\`src/ui/save-panel.ts\`)`), so it would report hundreds of things that are
+ * not attributions at all. The two words are what make a span a claim of
+ * verbatimness, and requiring a rooted path keeps a sentence that uses the
+ * words about something other than a file (*"quoted verbatim in the pull
+ * request body"*) out of it. Measured on the corpus at v0.0.468: 28 matches
+ * here, 28 claimed by `ATTRIBUTION`, none left over.
+ */
+const ATTRIBUTION_SHAPED = /verbatim\s+in\s+`([^`\n]+)`/g;
 
 /** A backtick span with the whitespace that may separate it from the next one, read right to left. */
 const TRAILING_QUOTE = /`([^`\n]+)`\s*$/;
@@ -211,6 +292,14 @@ interface Binding {
   readonly path: string;
   readonly countWord: string | undefined;
   readonly quotations: readonly string[];
+}
+
+interface Scan {
+  readonly bindings: readonly Binding[];
+  /** An attribution that matched, with no quotation in front of it to bind. */
+  readonly orphans: readonly string[];
+  /** An attribution `ATTRIBUTION` could not match, which is therefore checking nothing. */
+  readonly unreadable: readonly string[];
 }
 
 interface Citation extends Binding {
@@ -228,11 +317,13 @@ interface Citation extends Binding {
  * fixtures below. A second copy of a scanner is issue #188 and this repository
  * has paid for it.
  */
-function bindCitations(text: string): { readonly bindings: readonly Binding[]; readonly orphans: readonly string[] } {
+function bindCitations(text: string): Scan {
   const bindings: Binding[] = [];
   const orphans: string[] = [];
+  const claimed: [number, number][] = [];
 
   for (const match of text.matchAll(ATTRIBUTION)) {
+    claimed.push([match.index, match.index + match[0].length]);
     const quotations: string[] = [];
     let head = text.slice(0, match.index);
     for (;;) {
@@ -248,15 +339,29 @@ function bindCitations(text: string): { readonly bindings: readonly Binding[]; r
     bindings.push({ path: match[2]!, countWord: match[1]?.trim(), quotations });
   }
 
-  return { bindings, orphans };
+  const unreadable: string[] = [];
+  for (const shaped of text.matchAll(ATTRIBUTION_SHAPED)) {
+    if (!ROOTED_PATH.test(shaped[1]!)) continue;
+    if (claimed.some(([from, to]) => shaped.index >= from && shaped.index < to)) continue;
+    unreadable.push(normalizeQuotation(shaped[0]));
+  }
+
+  return { bindings, orphans, unreadable };
 }
 
-function citationsIn(file: string): { readonly citations: readonly Citation[]; readonly orphans: readonly string[] } {
+function citationsIn(file: string): {
+  readonly citations: readonly Citation[];
+  readonly orphans: readonly string[];
+  readonly unreadable: readonly string[];
+} {
   const source = relative(ROOT, file);
-  const { bindings, orphans } = bindCitations(readFileSync(file, 'utf8'));
+  const { bindings, orphans, unreadable } = bindCitations(readFileSync(file, 'utf8'));
   return {
     citations: bindings.map((binding) => ({ ...binding, source })),
     orphans: orphans.map((orphan) => `${source} -> ${orphan}: no quotation immediately before it`),
+    unreadable: unreadable.map(
+      (miss) => `${source} -> ${miss}: reads as an attribution and the pattern cannot match it, so nothing was compared`,
+    ),
   };
 }
 
@@ -340,6 +445,7 @@ const markdownFiles = [
 const scanned = markdownFiles.map(citationsIn);
 const citations = scanned.flatMap((result) => result.citations);
 const orphans = scanned.flatMap((result) => result.orphans);
+const unreadable = scanned.flatMap((result) => result.unreadable);
 const quotationCount = citations.reduce((total, citation) => total + citation.quotations.length, 0);
 
 describe('the extractor and the comparison, against written-out inputs', () => {
@@ -379,6 +485,55 @@ describe('the extractor and the comparison, against written-out inputs', () => {
     expect(bindings).toEqual([
       { path: 'src/a.ts', countWord: undefined, quotations: ['readonly free: number;'] },
     ]);
+  });
+
+  it('binds across a line wrap in every gap the attribution has', () => {
+    // The four gaps a markdown re-wrap can land in. Written out because the
+    // corpus has no wrapped attribution today, so nothing in the `toEqual([])`
+    // assertions below would notice the pattern going literal-space again.
+    const wraps = [
+      'lines:\n`first line;`\n`second line;`\n(\nboth verbatim in `src/a.ts`)',
+      'lines:\n`first line;`\n`second line;`\n(both\nverbatim in `src/a.ts`)',
+      'lines:\n`first line;`\n`second line;`\n(both verbatim\nin `src/a.ts`)',
+      'lines:\n`first line;`\n`second line;`\n(both verbatim in\n`src/a.ts`)',
+    ];
+
+    expect(wraps.map((text) => bindCitations(text))).toEqual(
+      wraps.map(() => ({
+        bindings: [{ path: 'src/a.ts', countWord: 'both', quotations: ['first line;', 'second line;'] }],
+        orphans: [],
+        unreadable: [],
+      })),
+    );
+  });
+
+  it('reports an attribution whose shape the pattern cannot match, rather than ignoring it', () => {
+    // The defect this pair of assertions exists for: an unmatched attribution
+    // produced no citation *and* no orphan, so the quotation in front of it
+    // stopped being compared and the suite stayed green. Each of these is a
+    // shape `ATTRIBUTION` refuses; none may be silent.
+    const shapes = [
+      'the strip sums it:\n`roomCapacity += x;`\n(three verbatim in `src/a.ts`)',
+      'the strip sums it:\n`roomCapacity += x;`\nverbatim in `src/a.ts`',
+      'the strip sums it:\n`roomCapacity += x;`\n(verbatim in `src/a.ts`.)',
+    ];
+
+    expect(shapes.map((text) => bindCitations(text).unreadable)).toEqual([
+      ['verbatim in `src/a.ts`'],
+      ['verbatim in `src/a.ts`'],
+      ['verbatim in `src/a.ts`'],
+    ]);
+    expect(shapes.flatMap((text) => [...bindCitations(text).bindings, ...bindCitations(text).orphans])).toEqual([]);
+  });
+
+  it('does not read a sentence that uses the words about something other than a file as an attribution', () => {
+    // `ATTRIBUTION_SHAPED` drops the parentheses that keep prose out, so the
+    // rooted-path requirement is the only thing left doing that job.
+    const { bindings, orphans: orphansFound, unreadable: unreadableFound } = bindCitations(
+      'the entry is quoted verbatim in `the pull request body` instead',
+    );
+
+    expect([...bindings, ...orphansFound, ...unreadableFound]).toEqual([]);
   });
 
   it('reports an attribution with nothing quotable in front of it', () => {
@@ -449,6 +604,13 @@ describe('every documented quotation of source code is still in the file it name
     expect(
       orphans,
       'an attribution with no quotation in front of it claims a check that is not being made',
+    ).toEqual([]);
+  });
+
+  it('leaves no attribution the pattern cannot read', () => {
+    expect(
+      unreadable,
+      'an attribution the pattern cannot match is checking nothing, and produces no orphan to say so -- the quotation in front of it is being taken on trust',
     ).toEqual([]);
   });
 
