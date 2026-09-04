@@ -1513,6 +1513,22 @@
  * widest state of this row is the arrival one -- arm plus remove plus buy.
  * Measured on the assembled page at all five viewports the browser suite
  * visits; `tests/browser/app-shell.spec.ts` holds the assertions.
+ *
+ * **AMENDED 2026-09-04 (issue #926), and the paragraph above is left as it
+ * stands because it is the claim that was wrong.** Every measurement in it is
+ * real and the declarations below are still the right ones -- but "the label
+ * that shortens under pressure" is an intent this file never implemented.
+ * `min-width: 0` shortens the *box*; nothing shortened the *label*, which is
+ * `white-space: nowrap` in `primitives.css` with no `overflow` above it. So
+ * the third button did fit, and the arm label paid for it by painting 17.8px
+ * outside its own button and 9.8px over `Remove` at every viewport 900px wide
+ * or wider. **The row's overflow was not removed by these two declarations, it
+ * was moved into the label** -- where `BuildProbe.actionsOverflowPx`, which
+ * reads the button's own box, reported -12px throughout.
+ *
+ * What implements the intent is `.ui-action__label`'s wrap in
+ * `primitives.css` (which carries the full measurement) plus the padding rule
+ * below, which is what keeps the wrap free. Nothing here changed.
  */
 .hud-build__actions > .hud-build__arm {
   flex: 1 1 auto;
@@ -1522,6 +1538,45 @@
 .hud-build__actions > .hud-build__remove,
 .hud-build__actions > .hud-build__buy-toggle {
   flex: 0 0 auto;
+}
+
+/*
+ * THE HORIZONTAL ROOM THE WRAPPED ARM LABEL LANDS IN, FOR BOTH ROWS THAT HAVE
+ * ONE (issue #926).
+ *
+ * `.ui-action`'s own padding is `0 var(--space-4)`. In a row that is already
+ * over-subscribed that padding buys nothing: measured on the assembled page
+ * at the rail's 238px of block width, the three controls want
+ * 145.9 + 86.8 + 58.9 plus two 8px gaps -- **307.6px of a 238px row**, a
+ * deficit of 69.6px -- and the arm button, as the only member allowed to
+ * shrink, absorbed all of it and came out 76.4px wide with an 87.9px label.
+ * Halving the padding on the row's members returns 48px of that: the arm
+ * button becomes 108.4px, its label gets 66.4px, and "Place on map" lands on
+ * two 15px lines inside the 44px tap target instead of three.
+ *
+ * **The height is the point.** `.hud-build__actions` is `align-items:
+ * stretch`, so the row is as tall as its tallest member and everything below
+ * it moves when that grows. Measured at all five viewports, in the arrival,
+ * armed and removing states: this row and `.hud-rooms__actions` are **44px
+ * with this rule and 47px without it**, while the label stops painting
+ * outside its button either way. So this rule is not what fixes #926 --
+ * `primitives.css`'s `.ui-action__label` is -- it is what makes that fix cost
+ * the panel's height budget nothing, which for the most height-constrained
+ * surface in the game (#174, #143, ADR 0022, ADR 0028) is the difference
+ * between a fix and a trade.
+ *
+ * Both rows, in one rule, because they are one pattern: `.hud-rooms__actions`
+ * is where `min-width: 0` above was copied from, and the sweep that found the
+ * Build panel's 17.8px overrun found 6.3px on `.hud-rooms__arm` in the same
+ * pass. A rule that fixed only the row the issue was filed about would leave
+ * the other to be found again.
+ *
+ * The tap target is untouched: `min-height: var(--tap-target)` is vertical,
+ * and every button in both rows still measures 44px tall at every viewport.
+ */
+.hud-build__actions > .ui-action,
+.hud-rooms__actions > .ui-action {
+  padding: 0 var(--space-2);
 }
 
 /*
@@ -3258,6 +3313,14 @@
 .hud-rooms__actions > .hud-rooms__cancel {
   flex: 0 0 auto;
 }
+
+/* The members of this row carry `padding: 0 var(--space-2)` rather than
+   `.ui-action`'s own `var(--space-4)`, and the rule is up beside
+   `.hud-build__actions`'s with the measurement that chose it (issue #926):
+   `.hud-rooms__arm`'s label painted 6.3px outside its own button at every
+   viewport 900px wide or wider, for the same three reasons the Build panel's
+   did, and the reclaimed padding is what lets the wrapped label land on two
+   lines inside the 44px tap target instead of growing this row to 47px. */
 
 /* Pinned, exactly as `.hud-build__target` is, so a longer readout cannot move
    the controls under it: the area line goes from "Nothing selected" to
