@@ -726,8 +726,35 @@ it here is a re-anchor dispatched between two merges of the drain**, and that is
 the one move a single sitting does not offer. Nothing here raises the budget;
 the wish to raise it remains the signal that a pass is due.
 
-**THE WIDEST WINDOW SINCE `1e9b0a6a`, THE FIRST SINCE `14f37a60` TO CONTAIN ANY
-`src/` FILE AT ALL, AND EXACTLY ONE CITED SPAN MOVED IN IT.**
+**The window, and the member set.** `2732e81e..0e614c71`, **40 files**, 39 of
+them besides this one, across **seven** implementing merges — `37132058`/#917
+(eight false funds sentences replaced, and the browser assertion that required
+the false words re-pinned; 26 files, the largest single change in this window),
+`3e40bdcf`/#923 (the payroll block reveals the control that stops it),
+`19279e5e`/#918 (a census of read models the game shows nobody),
+`d6c9e3ce`/#919 (a roster row's two graded scales separated), `0263d239`/#921
+(the first ten minutes, played), `73d3f0bf`/#924 (#902 played, and the fix
+written for it withdrawn on its own branch) and `db277901`/#925 (save and
+reload, played) — plus `a258a3a8`/#922, the previous anchor's own pass, which
+edited only this file and so contributes nothing to the intersection either way.
+Release bumps v0.0.444 through v0.0.451 at `0e614c71`. **This is the widest
+window this file has measured since `a0348955`'s 51, five anchors back** — the
+run between them is 9, 39, 28 and 10, measured rather than recalled — **and the
+first since `14f37a60` to contain any file under `src/` at all.**
+
+The intersection over §§3-6 — lines **7029-12962 on this tree**, re-derived with
+`grep -n '^## '` on the tree the scan ran against, per the trap this header
+records — is **eleven members besides this file**, the widest since
+`a0348955`'s twelve: `docs/HUD_PROJECTIONS.md`, `docs/research/README.md`,
+`src/content/default-locale-en.ts`, `src/simulation/protocol/types.ts`,
+`src/ui/hud/build-panel.ts`, `src/ui/hud/hud.css`, `src/ui/hud/messages.ts`,
+`src/ui/hud/projection.ts`, `src/ui/hud/regime-panel.ts`,
+`src/ui/hud/staff-panel.ts` and `tests/unit/ui-hud-build-panel.test.ts`.
+`package.json` is read for its version rather than diffed, as every anchor's
+convention states. Every one was opened, and the dated §3 section below sets out
+what each is cited by and what came back.
+
+**EXACTLY ONE CITED SPAN MOVED IN IT.**
 `src/ui/hud/build-panel.ts` moved the *"7.8px is the entire budget"* comment
 `:1307` → **`:1353`**, +46, which is precisely #917's two hunks above it (+31 at
 `:323`, +15 at `:1302`). **And the live claim that rests on it needed nothing,
@@ -962,10 +989,11 @@ wrong and one is a framing that would mislead:
 outside the window except the previous anchor's seven `src/main.ts` corrections
 and the root `README.md`, so every other `src/` citation stays unread — the
 standing blind spot and the reason a `:3136` can survive three anchors. It did
-not re-read §§1-2 and did not re-measure any behavioural claim in §5, including
-the `HudIntent` member count, which the previous anchor established is twenty-one
-against §6's dated nineteen and which nothing here re-opened (`src/ui/hud/hud.ts`
-is in no merge of this window). It did not audit
+not re-read §§1-2 and did not re-measure any *behavioural* claim in §5. **Every
+count in §§3-6 was re-derived, six hold and one has drifted** — the
+`Amendment`/`Addendum` heading count, now 44 sections across 27 documents
+against §6's dated 32 across 18, moved by commits outside this window and named
+in the §3 section below rather than corrected in place. It did not audit
 `src/ui/hud/regime-panel.ts`, still owed from the v0.0.427 anchor and now ten
 anchors old. It did not verify that the 0095 branch has no pull request, for want
 of any GitHub access in this container. And it did not look inside #929, which
@@ -8700,7 +8728,7 @@ have missed — as they were at `3f8c00b0`, at `402453a9`, at `f36148d7`, at `98
 `0e2eb7fb`, at `33a4a22e` and at
 `26434e8e` before it —
 `supabase/migrations/` is not among this window's **40** files — the widest
-window this chain has recorded since `1e9b0a6a`'s 51, and the directory holds
+window this chain has recorded since `a0348955`'s 51, and the directory holds
 **23** files still, re-counted rather than carried, all six of its cited SQL
 anchors opened again — nor among the **10** of the window before it, which tied
 the narrowest this chain has recorded, nor among the **28** of the window before
@@ -9393,8 +9421,9 @@ scales separated), #921 (the first ten minutes, played), #924 (#902 played, and
 the fix written for it withdrawn on its own branch) and #925 (save and reload,
 played) — plus #922, the previous anchor's own pass, which edited only this file.
 Release bumps v0.0.444 through v0.0.451 at `0e614c71`. **The widest window this
-file has measured since `1e9b0a6a` and the first since `14f37a60` with any file
-under `src/` in it at all.**
+file has measured since `a0348955`'s 51, five anchors back — the run between
+them is 9, 39, 28 and 10 — and the first since `14f37a60` to contain any file
+under `src/` at all.**
 
 **Eleven members besides this file**, §§3-6 cut at **7029-12962** where
 `grep -n '^## '` puts them on this tree, all eleven opened:
@@ -9509,13 +9538,45 @@ above rather than asserted: `max + 1` off disk is 0097 because 0096 is the
 highest number **on disk**, and 0095, held on an unmerged branch, has no row.
 The jump of two is a hold rather than a gap, unchanged since the previous anchor.
 
+**EVERY COUNT IN §§3-6 WAS RE-DERIVED, because a count is cheap to re-take and
+most of them sit in files no recent window has named.** Six hold and one has
+drifted outside this window:
+
+- **`HudIntent` declares TWENTY-ONE members**, counted by the stated method
+  (`readonly kind: '` between `export type HudIntent =` and the union's close),
+  with the declaration still at `src/ui/hud/hud.ts:321`. That **confirms the
+  `14f37a60` pass's figure one window later**: it found twenty-one where §6's
+  dated entry says nineteen and added the current figure beside the dated one
+  rather than replacing it. `src/ui/hud/hud.ts` is in no merge of this window,
+  so this checks that pass's count rather than this window's restraint.
+- **`simulationCommandSchema` still discriminates FIFTEEN**, declared at
+  `src/simulation/protocol/commands.ts:597` — both unmoved from `5144eb9e`,
+  `grep -c "type: z.literal"` returning 15 on a file outside this window.
+- **`AWAITING_PRODUCER` is still empty**, its declaration still at
+  `tests/foundation/unconsumed-command-contract.test.ts:224` and its gate
+  comment still at `:250` — *"not a state to defend … the state this gate exists
+  to bring about"*.
+- **`src/services/telemetry/` still holds FIFTEEN modules**, and the object ids
+  outside `src/content/` are still **39** in **two** files — **19** in
+  `src/simulation/construction/definition.ts` and **20** in
+  `src/rendering/world/environment-art.ts`.
+- **`supabase/migrations/` still holds TWENTY-THREE files.**
+- **The `Amendment`/`Addendum` heading count has DRIFTED, and it drifted outside
+  this window.** Run as this file states it, excluding this file and the index,
+  it is **44 headed sections across 27 documents**, against the **40 across 24**
+  the header records at `402453a9` and `3f8c00b0` and the **32 across 18** §6
+  last states at `082959e7`. `docs/adr/` has no changed file in this window but
+  this one, so nothing here moved it. **Named rather than corrected in place**,
+  for the reason §6's own item gives: a hand count and a derivable count have
+  never been two readings of the same set, and §6's figure is the hand count's.
+
 **What this pass did not do.** It re-derived no citation into a file outside the
 window except the previous anchor's seven `src/main.ts` corrections and the root
 `README.md`, so every other `src/` citation stays unread. It did not re-read
-§§1-2, and did not re-measure any behavioural claim in §5 — including
-`HudIntent`, which the `14f37a60` pass established is twenty-one against §6's
-dated nineteen and which nothing here re-opened, `src/ui/hud/hud.ts` being in no
-merge of this window. It did not audit `src/ui/hud/regime-panel.ts`, owed since
+§§1-2, and did not re-measure any *behavioural* claim in §5 — every measurement
+there is still carried on the strength of its inputs existing, which is what
+§5's ADR 0027 entry says about itself in terms. It did not audit
+`src/ui/hud/regime-panel.ts`, owed since
 the v0.0.427 anchor and now ten anchors old, and now owed about a file that is a
 member. It did not confirm the 0095 branch's pull-request state. It did not look
 inside #929, open at this window's close.
@@ -12999,7 +13060,7 @@ never recorded before this round:
   the subtraction still cannot use. **`income.ts` did not change in this
   window**: it is not among the **40** files
   `git diff --name-only 2732e81e..0e614c71` reports outside this one — the widest
-  window this bullet has recorded since the 51 at `1e9b0a6a`, against the 101
+  window this bullet has recorded since the 51 at `a0348955`, against the 101
   that is still the widest — and `grep -c "Proposed"
   src/simulation/economy/income.ts` returns **0** at `0e614c71`, re-grepped
   rather than assumed but against a file nothing touched, which is the weaker of
