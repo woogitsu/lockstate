@@ -456,7 +456,7 @@ async function hire(page: Page, label: string, wanted: number): Promise<void> {
 }
 
 /** The shared body of acts B, P and Y: build, populate, staff, run, and read the curve. */
-async function playTheReasonablePrison(page: Page, label: string, days: number, withYard: boolean): Promise<void> {
+async function playTheReasonablePrison(page: Page, label: string, days: number, withYard: boolean, guards = GUARDS): Promise<void> {
   const startedAt = Date.now();
   await installTee(page);
   await openApp(page);
@@ -472,7 +472,7 @@ async function playTheReasonablePrison(page: Page, label: string, days: number, 
   const admitted = await admit(page, label, PRISONERS);
   note(`[${label}] admitted ${admitted}`);
   await page.waitForTimeout(3000);
-  await hire(page, label, GUARDS);
+  await hire(page, label, guards);
   await fastForwardToMax(page);
   logScreen(label, 'READY', await readScreen(page, startedAt));
   await readNeeds(page, label, 'READY');
@@ -521,6 +521,27 @@ test.describe('What pressure there is', () => {
    */
   test('Y the yard with the penalty restored', async ({ page }) => {
     await playTheReasonablePrison(page, 'Y', 7, true);
+  });
+
+  /**
+   * **D -- the same prison, the penalty restored, and six guards instead of
+   * one.** Requires the same source mutation as P and Y.
+   *
+   * Why six. At the settled composition acts P and Y both reached -- four
+   * housed prisoners, five of six needs unmet, `safety` held served by the one
+   * guard's coverage -- the restored schedule pays `100` a place, so the prison
+   * takes `400` a day and break-even is `400 / 80 = 5` guards. Six is one past
+   * it, which is the cheapest overhire that makes a **fully housed, fully
+   * earning** prison go backwards. On the shipped tree the same prison takes
+   * `1,200` a day and the same threshold is **fifteen** guards.
+   *
+   * Six is also inside what a player can afford without trying: `6 x 80 = 480`
+   * against an opening grant of 25,000. This is not the 60-guard deliberate
+   * bankruptcy `docs/research/2026-09-04-can-this-prison-fail.md` measured; it
+   * is a prison that would look well staffed.
+   */
+  test('D the penalty restored and one guard too many', async ({ page }) => {
+    await playTheReasonablePrison(page, 'D', 7, false, 6);
   });
 
   /**
