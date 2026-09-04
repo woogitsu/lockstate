@@ -1,6 +1,11 @@
--- pgTAP tests for the telemetry ingest destination
--- (20260904090000_create_telemetry_events.sql, ADR 0046): the table, the
--- SECURITY DEFINER insert function, and the dedicated least-privilege role.
+-- pgTAP tests for the telemetry ingest destination and its retention rule
+-- (20260904090000_create_telemetry_events.sql, ADR 0046): two tables, two
+-- SECURITY DEFINER functions, and the dedicated least-privilege role.
+--
+-- **The retention half was added on 2026-09-04**, when the owner ruled for a
+-- fourth object; the sentence above named three objects until then. Section D
+-- is that half, and section A gained the six refusals that keep the ingest
+-- role out of it.
 --
 -- WHY THIS SUITE EXISTS, AND WHAT IT REFUSES TO DO. Every claim the migration
 -- makes about a privilege is driven **by trying to violate it as the role it is
@@ -37,6 +42,12 @@
 --   * **C -- as `telemetry_ingest`.** One accepted batch, end to end through
 --     the grant, so that section A's wall of refusals cannot be passing
 --     because the role can do nothing at all.
+--   * **D -- as the table owner.** The retention job: which rows a window
+--     reaches, and what the audit row says about it. As the owner for the same
+--     reason section B is, and additionally because ageing a row is something
+--     only the owner can do -- `received_at` is `default now()` on a table with
+--     no INSERT grant, so a genuinely old row has to be planted by the
+--     strongest writer there is, standing in for the passage of time.
 --
 -- `set local role` INSIDE this file's explicit transaction block, with
 -- `current_user` read back as an assertion every time, for the reason
@@ -50,7 +61,7 @@
 -- has and has not been executed".
 
 begin;
-select plan(62);
+select plan(89);
 
 -- pgTAP lives in the `extensions` schema (scripts/sql/supabase-compat-harness.sql
 -- puts it there so that suite 003's "the Data API surface of `public` is
@@ -194,6 +205,63 @@ select throws_ok(
   'the ingest role cannot call record_entitlement_event: the paid-entitlement write path is not behind the public endpoint'
 );
 
+-- --- The retention job, and its audit trail ----------------------------
+--
+-- The second half of "this role may do exactly one thing", and the reason it
+-- is driven here rather than read off a grant: the retention function
+-- (20260904090000 section 6) is the only other entry point in this schema that
+-- touches `telemetry_events`, and it DELETES from it. EXECUTE on it, held by
+-- the credential behind an unauthenticated public endpoint, would let anything
+-- that can reach that endpoint erase up to ninety days of diagnostics with one
+-- statement -- and, worse, write audit rows saying the erasure was routine.
+--
+-- The audit table gets the same four verbs plus TRUNCATE, because reading it is
+-- a capability of its own: it says when telemetry was deleted and how much,
+-- which is a second thing a one-thing credential does not get.
+select throws_ok(
+  $$ select public.enforce_telemetry_retention() $$,
+  '42501',
+  null,
+  'the ingest role cannot run the retention job: the credential behind the public endpoint cannot erase what it wrote'
+);
+
+select throws_ok(
+  $$ select 1 from public.telemetry_retention_runs $$,
+  '42501',
+  null,
+  'the ingest role cannot read the retention audit: when telemetry was deleted and how much is not the ingest''s to know'
+);
+
+select throws_ok(
+  $$ insert into public.telemetry_retention_runs
+       (category, keyed_on, retention_days, cutoff, deleted_count)
+     values ('diagnostics', 'received_at', 90, now() - interval '90 days', 0) $$,
+  '42501',
+  null,
+  'the ingest role cannot write an audit row: a forged run record is how a deletion that never happened looks compliant'
+);
+
+select throws_ok(
+  $$ update public.telemetry_retention_runs set deleted_count = 0 $$,
+  '42501',
+  null,
+  'the ingest role cannot edit an audit row: an audit trail the audited party can rewrite is not one'
+);
+
+select throws_ok(
+  $$ delete from public.telemetry_retention_runs $$,
+  '42501',
+  null,
+  'the ingest role cannot delete an audit row either'
+);
+
+select throws_ok(
+  $$ truncate table public.telemetry_retention_runs $$,
+  '42501',
+  null,
+  'and it cannot TRUNCATE the audit table: that would ignore RLS and fire no row trigger, which is why it gets its own assertion'
+);
+
 reset role;
 
 -- The substitution the whole design exists to refuse.
@@ -212,6 +280,13 @@ select throws_ok(
   'service_role cannot call record_telemetry_events at all: a Worker wired with a service-role key stores nothing rather than storing too much'
 );
 
+select throws_ok(
+  $$ select public.enforce_telemetry_retention() $$,
+  '42501',
+  null,
+  'and service_role cannot run the retention job: the trusted tier holds no erase path here, the way ADR 0008 gives it no TRUNCATE anywhere'
+);
+
 reset role;
 
 set local role authenticated;
@@ -222,6 +297,12 @@ select throws_ok(
   null,
   'a signed-in browser identity cannot call the ingest function: the browser posts to the endpoint, never to the database'
 );
+select throws_ok(
+  $$ select public.enforce_telemetry_retention() $$,
+  '42501',
+  null,
+  'nor the retention job: a signed-in visitor -- which with anonymous sign-in is any visitor -- cannot delete other players'' diagnostics'
+);
 reset role;
 
 set local role anon;
@@ -231,6 +312,12 @@ select throws_ok(
   '42501',
   null,
   'anon cannot call the ingest function either, so a published anon key is not a telemetry write path'
+);
+select throws_ok(
+  $$ select public.enforce_telemetry_retention() $$,
+  '42501',
+  null,
+  'and anon cannot run the retention job, so the published anon key is not a delete path either'
 );
 reset role;
 
@@ -742,6 +829,259 @@ select is(
      from public.telemetry_events where event_id = 'sess-live-1'),
   'performance.tick-budget performance production 0.1',
   'the row the ingest role wrote is present and correct, read back by the owner rather than by the writer'
+);
+
+-- ============================================================================
+-- Section D: the retention job deletes what the promise says, and records it
+-- ============================================================================
+--
+-- 20260904090000 sections 5-7, ADR 0046 section 7 item 1, and ADR 0008 section
+-- 3 step 6. Probed as the table owner, for suite 010's reason: section A has
+-- already established that no other role can reach any of this.
+--
+-- HOW A ROW IS AGED, AND WHY IT TAKES THE OWNER. `received_at` is
+-- `default now()` on a table with no INSERT grant for any role, and the insert
+-- function never names the column -- which is the property the stamp
+-- assertions above are about. So the only way to produce a row that is
+-- genuinely old is to insert one directly as the owner with an explicit
+-- `received_at`, which is what the plant below does. That is not a hole in the
+-- design being exploited; it is the strongest writer there is, standing in for
+-- the passage of time, and it is the only writer that could.
+--
+-- `now()` is the transaction's start time, so every interval below is measured
+-- against one fixed instant and the boundaries do not drift while the suite
+-- runs.
+--
+-- WHAT IS PLANTED, and every row exists to make one assertion fail if a window
+-- moves:
+--
+--   diagnostics (90 days)   -89d  survives   -91d  deleted   -45d  survives
+--   performance (90 days)   -89d  survives   -91d  deleted   -45d  survives
+--   gameplay    (30 days)   -29d  survives   -31d  deleted   -45d  DELETED
+--
+-- The three rows at -45d are the ones that separate the windows behaviourally:
+-- one instant, three categories, two survivals and one deletion. **Two of the
+-- three windows are identical -- 90 and 90 -- so "the three windows differ" is
+-- not a property this schema has and no assertion below claims it.** What is
+-- asserted instead is the pair of facts that are true: `gameplay` differs from
+-- the other two behaviourally at -45d, and the audit rows read exactly
+-- 90/30/90 by category, which is what fails if any one of the three numbers is
+-- edited.
+--
+-- Plus the two rows ADR 0046 section 7 item 1 is entirely about, one in each
+-- direction:
+--
+--   * `ret-diag-future-claim` -- `received_at` 200 days ago, and a
+--     `claimed_occurred_at` of the year 4000. **It must be deleted.** A window
+--     keyed on the client's claim would keep it for ever, which is the defeat
+--     that item corrects.
+--   * `ret-diag-1970-claim` -- `received_at` now, `claimed_occurred_at` of 0.
+--     **It must survive.** A window keyed on the client's claim would delete a
+--     row that arrived seconds ago. This is the mirror of the assertion above
+--     and it is here because the two together pin the KEY: one of them fails
+--     whichever way round a mis-keyed window is written.
+
+select is(
+  (select count(*)::int from pg_roles where rolname = current_user and rolsuper),
+  1,
+  'section D runs as a privileged session, so the deletions below are the owner''s and not a role escalation'
+);
+
+insert into public.telemetry_events
+  (event_id, name, category, session_id, environment, release_build_version,
+   consent_version, registry_sample_rate, claimed_sample_rate,
+   claimed_occurred_at, attributes, received_at)
+values
+  ('ret-diag-inside',  'diagnostic.unhandled-error', 'diagnostics', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '89 days'),
+  ('ret-diag-outside', 'diagnostic.unhandled-error', 'diagnostics', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '91 days'),
+  ('ret-diag-mid',     'diagnostic.unhandled-error', 'diagnostics', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '45 days'),
+  ('ret-perf-inside',  'performance.tick-budget', 'performance', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '89 days'),
+  ('ret-perf-outside', 'performance.tick-budget', 'performance', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '91 days'),
+  ('ret-perf-mid',     'performance.tick-budget', 'performance', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '45 days'),
+  ('ret-game-inside',  'gameplay.scenario-completed', 'gameplay', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '29 days'),
+  ('ret-game-outside', 'gameplay.scenario-completed', 'gameplay', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '31 days'),
+  ('ret-game-mid',     'gameplay.scenario-completed', 'gameplay', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 1756900000000, '{}'::jsonb, now() - interval '45 days'),
+  -- Old arrival, absurd claim: the row a window keyed on the claim never reaches.
+  ('ret-diag-future-claim', 'diagnostic.unhandled-error', 'diagnostics', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 64060588800000, '{}'::jsonb, now() - interval '200 days'),
+  -- Fresh arrival, 1970 claim: the row a window keyed on the claim deletes at once.
+  ('ret-diag-1970-claim', 'diagnostic.unhandled-error', 'diagnostics', 'ret', 'staging',
+   'lockstate-0.0.0', 1, 1, 1, 0, '{}'::jsonb, now());
+
+-- The rows already in the table from sections B and C all carry
+-- `received_at = now()`, so nothing below can be satisfied by them: they are
+-- inside every window by construction. Asserted rather than assumed, because
+-- the deleted counts further down are exact.
+select is(
+  (select count(*)::int from public.telemetry_events
+    where event_id not like 'ret-%' and received_at < now() - interval '1 second'),
+  0,
+  'every row this suite stored earlier arrived at now(), so the exact counts below are about the planted rows alone'
+);
+
+-- One run. The returned rows are the audit rows -- the function's `returning *`
+-- is where they come from -- so this table holds both halves of the contract.
+create temporary table retention_run_1 as
+  select * from public.enforce_telemetry_retention();
+
+select is(
+  (select count(*)::int from retention_run_1),
+  3,
+  'one run produced one row per category: a single row saying "retention ran" would not say which of three windows was applied to what'
+);
+
+-- The rule, as the audit records it. This is the assertion that fails when a
+-- window is edited -- change 30 to 90 and it names the category that moved.
+select is(
+  (select string_agg(category || ':' || retention_days::text, ' ' order by category)
+     from retention_run_1),
+  'diagnostics:90 gameplay:30 performance:90',
+  'the audit rows carry docs/TELEMETRY.md''s three windows exactly: 90 days for diagnostics, 90 for performance, 30 for gameplay'
+);
+
+-- The key, as the audit records it. The CHECK on the column refuses any other
+-- literal, so this asserts the function wrote the pinned one rather than
+-- omitting it.
+select is(
+  (select string_agg(distinct keyed_on, ' ') from retention_run_1),
+  'received_at',
+  'every audit row names received_at as the column the window ran over, which is ADR 0046 section 7 item 1''s whole correction'
+);
+
+-- The boundary, recomputed against the rule it claims. A `cutoff` that does not
+-- equal `ran_at - retention_days` is an audit row describing a run that did
+-- something else.
+select is(
+  (select count(*)::int from retention_run_1
+    where cutoff <> ran_at - make_interval(days => retention_days)),
+  0,
+  'every audit row''s cutoff is exactly its own ran_at minus its own retention_days, so the boundary is not a separate claim'
+);
+
+select is(
+  (select string_agg(distinct run_by, ' ') from retention_run_1),
+  current_user::text,
+  'the audit row names the role the deletion actually ran as, from the column default rather than from an argument'
+);
+
+-- The count, which is the part of the audit that can be wrong without anything
+-- else being wrong. Planted deletions: diagnostics loses -91d and the
+-- future-claim row, performance loses -91d, gameplay loses -31d and -45d.
+select is(
+  (select string_agg(category || ':' || deleted_count::text, ' ' order by category)
+     from retention_run_1),
+  'diagnostics:2 gameplay:2 performance:1',
+  'the audit row says the truth about how many rows stopped existing, per category, counted by the DELETE itself'
+);
+
+-- ...and the audit table holds those same rows, not a second rendering of them.
+--
+-- **Counted as three MATCHES rather than as zero mismatches, and the first
+-- draft of this assertion was the second shape.** Measured: a mutation that
+-- returned the counts to the caller and never wrote the audit row -- which is
+-- precisely the defect ADR 0008 section 3 step 6 is about -- left the
+-- zero-mismatch version green, because an empty join has no mismatching rows.
+-- That is `docs/TESTING.md`'s vacuity trap and suites 003, 007, 008, 009 and
+-- 010 all carry a guard against it; this is the same guard inside one
+-- assertion. Re-measured after the change: the same mutation now fails here as
+-- well as at the run count below.
+select is(
+  (select count(*)::int from public.telemetry_retention_runs t
+     join retention_run_1 r on r.run_id = t.run_id
+    where (t.category, t.keyed_on, t.retention_days, t.cutoff, t.deleted_count)
+       is not distinct from (r.category, r.keyed_on, r.retention_days, r.cutoff, r.deleted_count)),
+  3,
+  'all three rows the function returned are in the audit table with the same values: the rows come from the INSERT''s own RETURNING, so a return with no write fails here'
+);
+
+-- --- What survived and what did not ------------------------------------
+
+select is(
+  (select string_agg(event_id, ' ' order by event_id) from public.telemetry_events
+    where event_id in ('ret-diag-inside', 'ret-perf-inside', 'ret-game-inside')),
+  'ret-diag-inside ret-game-inside ret-perf-inside',
+  'a row one day inside its category''s window survives, in all three categories'
+);
+
+select is(
+  (select count(*)::int from public.telemetry_events
+    where event_id in ('ret-diag-outside', 'ret-perf-outside', 'ret-game-outside')),
+  0,
+  'a row one day outside its category''s window is gone, in all three categories'
+);
+
+-- The window separation, at one instant. -45d is inside 90 and outside 30, so
+-- this one line of expectation is the behavioural difference between the
+-- gameplay window and the other two.
+select is(
+  (select string_agg(event_id, ' ' order by event_id) from public.telemetry_events
+    where event_id in ('ret-diag-mid', 'ret-perf-mid', 'ret-game-mid')),
+  'ret-diag-mid ret-perf-mid',
+  'at 45 days the gameplay row is gone and the diagnostics and performance rows are not: the 30-day window is a different window'
+);
+
+-- The property ADR 0046 section 7 item 1 exists for, in both directions.
+select is(
+  (select count(*)::int from public.telemetry_events where event_id = 'ret-diag-future-claim'),
+  0,
+  'a row claiming to have occurred in the year 4000 is deleted anyway, because the window keys on received_at and not on the claim'
+);
+
+select is(
+  (select count(*)::int from public.telemetry_events where event_id = 'ret-diag-1970-claim'),
+  1,
+  'and a row that arrived now while claiming 1970 survives: a window keyed on the claim would have deleted it, which is the mirror of the assertion above'
+);
+
+-- --- A second run, immediately ------------------------------------------
+--
+-- Retention is not idempotent in the sense a replay is -- it deletes whatever
+-- has aged out since -- but a run over an already-clean window must delete
+-- nothing and must still say so. A job that only records the runs that found
+-- something is a job whose silence is ambiguous.
+create temporary table retention_run_2 as
+  select * from public.enforce_telemetry_retention();
+
+select is(
+  (select sum(deleted_count)::bigint from retention_run_2),
+  0::bigint,
+  'a second run over the same window deletes nothing: the first run took everything that had aged out'
+);
+
+select is(
+  (select count(*)::int from retention_run_2),
+  3,
+  'and it still writes one audit row per category, so "nothing was deleted" is recorded rather than inferred from an absent row'
+);
+
+select is(
+  (select count(*)::int from public.telemetry_retention_runs),
+  6,
+  'the audit table holds both runs: it is append-only in practice because nothing in this schema updates or deletes from it'
+);
+
+-- --- What the audit table deliberately cannot hold ----------------------
+--
+-- An audit of a privacy deletion that copies the deleted rows into a second
+-- table has deleted nothing. The column set is pinned here, not only in the
+-- migration's comment, so that adding a `payload`, an `attributes` or an
+-- `event_id` column to "make the audit useful" fails a test.
+select is(
+  (select string_agg(a.attname, ' ' order by a.attname)
+     from pg_attribute a
+    where a.attrelid = 'public.telemetry_retention_runs'::regclass
+      and a.attnum > 0 and not a.attisdropped),
+  'category cutoff deleted_count keyed_on ran_at retention_days run_by run_id',
+  'the audit table holds counts, boundaries and the rule -- and no part of any row it deleted'
 );
 
 select * from finish();

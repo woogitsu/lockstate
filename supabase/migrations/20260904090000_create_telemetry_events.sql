@@ -853,6 +853,20 @@ alter table public.telemetry_retention_runs enable row level security;
 -- necessity. The ingest role's whole point is that it can do exactly one
 -- thing; being able to read *when telemetry was deleted and how much of it*
 -- from behind an unauthenticated endpoint is a second thing.
+--
+-- **MEASURED, AND THE RESULT IS A SURVIVING MUTATION WORTH STATING: deleting
+-- this whole statement leaves every suite green -- 412 of 412 assertions.**
+-- That is not a gap in suite 012; it is the property section 3 already claims
+-- for the same revoke on `telemetry_events`, confirmed by execution.
+-- 20260826120000 revoked the ambient default privileges, so a new relation in
+-- `public` arrives with a null ACL and this revoke is a no-op wherever that
+-- migration has run -- which is every database `pnpm verify:sql` builds, since
+-- it applies the whole directory in order. The statement is kept for the case
+-- the harness cannot reach: the hosted project has applied nothing after
+-- `20260823100000` (`docs/DEPLOYMENT.md`, "Database migrations"), so the closed
+-- state is a property of a migration that has not run there yet. No assertion
+-- can distinguish those two worlds from inside this one, which is why the
+-- residual is recorded here rather than closed.
 revoke all on table public.telemetry_retention_runs
   from public, anon, authenticated, service_role, telemetry_ingest;
 
