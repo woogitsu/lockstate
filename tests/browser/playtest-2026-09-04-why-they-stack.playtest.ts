@@ -102,7 +102,6 @@ import {
   tab,
   waitForQueueEmpty,
   TILE,
-  type TeeWindow,
 } from './playtest-harness';
 
 /* ------------------------------------------------------------------ */
@@ -152,8 +151,21 @@ async function installActorTee(page: Page): Promise<void> {
     const CONTENT_TYPE = 'application/x-lockstate-render-actors';
     const samples: ActorSample[] = [];
     const rejected = { wrongContentType: 0, undecodable: 0 };
+    /*
+     * **The projection replies have to be collected here, and that is a
+     * measured instrument failure rather than a design choice.** The first run
+     * of this file read them out of `installTee`'s `lockstateFromWorker` and
+     * timed out after 20 s on a page that had answered immediately: that tee
+     * drops `simulation/projection` along with `simulation/delta` and
+     * `simulation/snapshot`, to keep its array bounded
+     * (`playtest-harness.ts`'s `installTee`). So the reply genuinely never
+     * reached the array being polled, and "the worker did not answer" was a
+     * statement about the tee.
+     */
+    const projections: unknown[] = [];
     (window as unknown as { lockstateActorSamples: ActorSample[] }).lockstateActorSamples = samples;
     (window as unknown as { lockstateActorRejects: typeof rejected }).lockstateActorRejects = rejected;
+    (window as unknown as { lockstateProjectionReplies: unknown[] }).lockstateProjectionReplies = projections;
 
     const RealWorker = Worker;
     class ActorTeeWorker extends RealWorker {
@@ -165,6 +177,11 @@ async function installActorTee(page: Page): Promise<void> {
             kind?: string;
             payload?: { tick?: number; delta?: { contentType?: string; data?: ArrayBuffer } };
           };
+          if (message.kind === 'simulation/projection') {
+            projections.push(event.data);
+            if (projections.length > 32) projections.splice(0, projections.length - 32);
+            return;
+          }
           if (message.kind !== 'simulation/delta') return;
           const delta = message.payload?.delta;
           if (delta?.contentType !== CONTENT_TYPE) {
@@ -272,7 +289,7 @@ async function rosterRows(page: Page, label: string): Promise<readonly RosterRow
   return page.evaluate(async (probeLabel: string) => {
     const worker = (window as unknown as { lockstateWorker?: Worker }).lockstateWorker;
     if (worker === undefined) throw new Error('the actor tee never saw a Worker constructed');
-    const received = (window as unknown as TeeWindow).lockstateFromWorker ?? [];
+    const received = (window as unknown as { lockstateProjectionReplies?: unknown[] }).lockstateProjectionReplies ?? [];
     const messageId = `whytheystack.${probeLabel}.${String(Date.now())}`;
     worker.postMessage({
       protocolVersion: 1,
@@ -325,6 +342,46 @@ async function readBothChannels(page: Page, label: string): Promise<{ actors: Ac
 }
 
 /* ------------------------------------------------------------------ */
+/* admitting the number of prisoners this act needs                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Presses Admit until the worker's own count reaches `target`, and says how
+ * many presses that took.
+ *
+ * **Not tidiness: `buildAndPopulate`'s straight run of `admits` presses does
+ * not produce `admits` prisoners, measured on this instrument's first run.**
+ * Six presses produced three prisoners, and the page said why in its own
+ * console -- two of them threw
+ * `"The simulation has not reported its command sequence yet; try again in a
+ * moment."` out of `SimulationCommandSender.submit`
+ * (`src/ui/simulation-commands.ts`), which is the sequence echo the sender
+ * needs before it will submit. A press inside that window submits nothing at
+ * all. That is a finding about the Admit control rather than about this
+ * question, and it is recorded rather than worked around silently: the retry
+ * loop below exists so that an act's population is the number it says.
+ */
+async function admitUntil(page: Page, target: number, label: string): Promise<void> {
+  await tab(page, 'overview').click({ timeout: 15_000 });
+  let presses = 0;
+  for (;;) {
+    const counts = await latestCounts(page);
+    const alive = counts?.prisoners ?? 0;
+    if (alive >= target) {
+      console.log(`[${label}] ${alive} prisoner(s) alive after ${presses} extra Admit press(es)`);
+      return;
+    }
+    if (presses >= 3 * target) {
+      console.log(`[${label}] gave up at ${alive} prisoner(s) after ${presses} extra Admit press(es)`);
+      return;
+    }
+    presses += 1;
+    await page.locator('.hud-intake__admit').click({ timeout: 20_000 });
+    await page.waitForTimeout(400);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* the acts                                                           */
 /* ------------------------------------------------------------------ */
 
@@ -344,6 +401,7 @@ async function arrive(page: Page): Promise<void> {
 test('act 1: fewer beds than prisoners -- where does each half stand', async ({ page }) => {
   await arrive(page);
   await buildAndPopulate(page, { beds: 2, admits: 6, guards: 0, label: 'act1' });
+  await admitUntil(page, 6, 'act1');
 
   // Long enough for intake to run its scheduled stages and for whoever can
   // take an action to have taken one. The clock is already at x4 from
@@ -368,6 +426,7 @@ test('act 1: fewer beds than prisoners -- where does each half stand', async ({ 
 test('act 2: a bed for everybody -- the discriminating comparison', async ({ page }) => {
   await arrive(page);
   await buildAndPopulate(page, { beds: 6, admits: 6, guards: 0, label: 'act2' });
+  await admitUntil(page, 6, 'act2');
 
   const from = await currentTick(page);
   await runUntilTick(page, from + 4000);
@@ -390,6 +449,7 @@ test('act 3: the same six prisoners, before and after beds that are not on the a
   // bed later makes the find succeed on the next scheduled intake tick -- so
   // this is the same six prisoners in both halves of the comparison.
   const origin = await buildAndPopulate(page, { beds: 0, admits: 6, guards: 0, label: 'act3' });
+  await admitUntil(page, 6, 'act3');
 
   await runUntilTick(page, (await currentTick(page)) + 3000);
   console.log('[act3] --- BEFORE: six prisoners, one zoned cell, no bed in it ---');
