@@ -460,3 +460,171 @@ a room is being used is the verb on a Regime roster row** — `Showering`,
 `Eating`, `Yard Time`, `Heading to …`, from
 `src/content/simulation-message-keys.ts:164-176`. One tab, one column, four
 words.
+
+---
+
+# Improvement proposals
+
+Each is grounded in a measurement above, sketched concretely, and — where it
+proposes a string — comes with the code that would make the string true, per
+`AGENTS.md` reservation 4's release ("verify, then write"). **None of them is
+landed: this branch is read-only on `src/`.**
+
+## P1. A room type's row should say what the room is *for*, and the seven dead ones should say they are not for anything yet
+
+**What a player sees today** (MEASURED, §1): selecting `Canteen` repaints
+`NEEDS AT LEAST 6 × 6 TILES · MUST BE ENCLOSED · NEEDS 2 × DINING TABLE ·
+NEEDS 4 × BENCH`. Selecting `Reception` repaints `NEEDS AT LEAST 4 × 4 TILES ·
+MUST BE ENCLOSED · NEEDS 1 × DESK · NEEDS 2 × CHAIR`. **The two rows are the
+same shape and one of them is a purchase of nothing** (§3).
+
+**What they would see instead:** one more eyebrow line in
+`.hud-rooms__rule-block`, below the object lines, in the same series:
+
+- Canteen → `SERVES HUNGER`
+- Shower Room → `SERVES HYGIENE`
+- Yard, Common Room → `SERVES RECREATION`
+- Classroom → `SERVES RECREATION` (its action's only effect is
+  `recreation: 1`)
+- Kitchen → `SERVES HUNGER`; Laundry → `SERVES HYGIENE`
+- Cell, Solitary Cell → `HOUSES PRISONERS`
+- Delivery Bay, Storage Room → `HANDLES DELIVERIES`
+- Holding Cell, Reception, Infirmary, Security Office, Staff Room, Garbage
+  Room, Utility Room → **`NOTHING USES THIS ROOM YET`**
+
+**Why each of those is true, with the code that would render it.** The verb
+and the need are not invented: `DEFAULT_ACTIONS`
+(`src/simulation/prisoners/actions.ts`) authors, per action, a
+`target: { kind: 'room-catalog-id', roomCatalogId }` and a
+`needEffectsPerTick`, so `room.canteen → hunger` is
+`action.eat-meal`'s own two fields at `:120-122`, `room.shower-room → hygiene`
+is `action.shower`'s at `:132-134`, and `room.yard → recreation` is
+`action.yard-recreation`'s at `:165-167`. The housing pair is
+`IntakeSystem`'s two `AccommodationTarget` constants
+(`src/simulation/prisoners/intake-system.ts:70-71`); the delivery pair is
+`DELIVERY_BAY_ROOM_CATALOG_ID` / `STORAGE_ROOM_ROOM_CATALOG_ID`
+(`src/simulation/operations/delivery-route.ts:21-22`).
+
+**Where it would be computed.** `roomCatalogue()` in `src/main.ts:963` — the
+composition root that already builds `HudRoomViewModel` and already carries
+exactly this kind of type-level fact. Its own docblock for the requirement
+list says the reason: *"so the cost of a canteen is readable **before** the
+drag rather than only after it (#529)"*. What a room is *for* is the other
+half of the same sentence.
+
+**The wording follows the panel's existing conventions**, which is the point
+of proposing strings at all here: `'hud.rooms.requires-object': 'Needs {count}
+× {object}'` and `'hud.rooms.requires-none': 'No objects needed'`
+(`src/content/default-locale-en.ts`), whose comment says the absence is
+*"said out loud … once every other room type lists its objects, silence reads
+as a panel that failed rather than as a room that needs nothing."* **The same
+argument, one line down, is the whole of this proposal.** So:
+`'hud.rooms.serves': 'Serves {need}'`, `'hud.rooms.houses': 'Houses
+prisoners'`, `'hud.rooms.serves-none': 'Nothing uses this room yet'`.
+
+**The one thing that must not be hand-maintained.** `NOTHING USES THIS ROOM
+YET` is a sentence asserting an absence, which `docs/AGENT_WORKFLOW.md` §4
+names as the kind that rots first — the day somebody gives the infirmary a
+reader, a hand-written list still says it is dead. So the list is **derived**
+(from `DEFAULT_ACTIONS` and the two constant pairs above) and pinned by a
+foundation test in the shape of
+`tests/foundation/content-vocabulary-contract.test.ts`, which already
+enumerates capabilities-with-no-consumer and would fail on a new reader.
+
+**What it costs a player if it is wrong:** nothing — it is a label. **What it
+costs today:** up to 1,540 and a wall run, for a Reception that does nothing,
+with no way at all to find that out short of reading `src/`.
+
+## P2. The Rooms tab should list the rooms the prison has
+
+**What a player sees today** (MEASURED, §7): a prison with a working cell and
+a working canteen shows the eighteen-row *type* catalogue and nothing else.
+The only figure anywhere about the rooms that exist is the strip's `2 ROOMS`.
+
+**What they would see instead:** a `YOUR ROOMS` block above the catalogue, one
+row per instance: the type's name, the coordinate the not-ready block already
+uses (`Shower Room at 18, 18`), and a status word. Rows sorted the way
+`projectRoomList` already sorts them.
+
+**Why it is nearly free.** `RoomListViewModel` already carries, per instance,
+`roomCatalogId`, `roomNameKey`, `category`, the anchor, `occupancy`
+(`current` / `capacity` / `free` / `utilization`) and
+`requirementSummary` — `src/simulation/presentation/room-projection.ts:236-258`,
+opened — and `src/ui/simulation-room-needs.ts` is already a subscriber on that
+channel. **This is the defect class the brief calls the one this repository
+keeps paying for: shipped, keyed, tested and rendered by nothing.**
+
+**What it must not do:** raise `ROOM_NEEDS_ROOMS_LIMIT`.
+`src/ui/hud/rooms-panel.ts:406`'s docblock argues, correctly, that naming
+*one* room completely beats one line each from several, and that the constant
+is also a per-tick request budget. A list of rooms is a different block with a
+different job and its own request; the not-ready block should stay exactly as
+it is.
+
+## P3. Say what a room costs before the drag, since the game already knows
+
+**What a player sees today** (MEASURED, §1.1): twenty-one Build rows that are
+each a bare name, and one price — `Buy 120 × Brick · 4,800` — behind a fold,
+quoted per unit of raw material. Nothing says a wall segment is two bricks or
+a dining table three planks. **DERIVED §2:** a canteen is 2,830 and a yard is
+0, and a player cannot know either without arithmetic over source.
+
+**Two concrete places, in increasing cost:**
+
+1. **A Build row gains its bill:** `Dining Table · 3 × Wood Plank`. Everything
+   needed is in `BUILDABLE_REGISTRY`'s `materialsRequired`
+   (`src/simulation/construction/definition.ts`) and the row is built at
+   `src/ui/hud/build-panel.ts:985-987`, which today passes only `labelKey`.
+2. **The Rooms panel's area line gains an estimate** once a rectangle is
+   drawn: beside `hud.rooms.area-value` (`'{width} × {height} tiles at {x},
+   {y}'`), a second line — `About 2,830 to build: 24 wall segments, 2 ×
+   Dining Table, 4 × Bench`. Every term is available where the panel already
+   stands: the perimeter is arithmetic on the drag, the objects are the
+   `requirements` the same block already renders, and the prices are
+   `DEFAULT_PROCUREMENT_CATALOG` (`src/content/procurement-catalog.ts:100-101`).
+   **"About" is load-bearing and honest**: a player may draw a bigger
+   rectangle, reuse a shared wall, or place more objects than the minimum, so
+   an exact figure would be a promise the code cannot keep.
+
+## P4. The one number that would answer "did building it work"
+
+**What a player sees today** (MEASURED, §7 and §6): building a room moves
+exactly one published count, `rooms`, by one. Everything else about whether the
+room is doing anything lives in a verb on one column of one tab.
+
+**What they would see instead:** on the strip, beside `ROOMS`, a badge naming
+the **worst need across the population** — `HYGIENE 29%` — falling and rising
+as rooms come and go. It is the same reading the Regime roster already makes
+per prisoner: `PrisonerRosterRowViewModel.lowestNeed`, rendered at
+`src/ui/hud/regime-panel.ts:1360-1362`. Taken over the population it is the
+single number that moves when a room starts working and does not move when it
+does not — which is exactly the question this record was commissioned to ask.
+
+**Why this rather than a use counter.** A use counter (`IN USE 2 OF 2` on a
+room row) is the more informative readout and it is the one
+`room-projection.ts:214` names as an owed gap — but it needs the
+concurrent-use figure projected, which is new projection surface. The
+worst-need badge needs no new simulation state at all.
+
+**Where the threshold problem sits, and it is not ours.** ADR 0054 decision 1,
+as amended 2026-08-29, says the player-facing "what is bad" threshold is
+*"still unmade and still the owner's"*. So this badge should show the level
+and the need's name and **must not** colour it as good or bad until that
+ruling exists; the existing bar's toning off `STATE_INCOME_UNMET_NEED_LEVEL`
+is the precedent to follow, not to extend.
+
+## P5. A question for the owner, not a proposal: the yard does not fit
+
+**MEASURED, §2 and §5.** `room.yard` needs 64 contiguous tiles; the clear
+canvas at 1440 × 900 is 144; a starter cell, a canteen and a shower room leave
+no 8 × 8 inside it, so **every yard in this repository's history has needed the
+camera moved first**, and the three that were never built failed on exactly
+that. The yard is simultaneously the cheapest room in the game (0) and the
+hardest to place.
+
+Three ways out, each with a real cost, none of them this branch's to take:
+lower the minimum to 6 × 6 (a content/balance change, `room.yard`'s
+`minimum-size` requirement); start the camera further out or centred on more
+ground (a rendering default); or leave it and treat "you will have to move the
+camera" as the intended first lesson about space. **The measurement is the
+contribution; the choice is a balance decision.**
