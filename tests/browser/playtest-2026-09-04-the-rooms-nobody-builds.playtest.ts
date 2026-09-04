@@ -321,6 +321,52 @@ async function runToTick(page: Page, label: string, target: number, sampleEveryM
   }
 }
 
+/**
+ * The first 8x8 world rectangle that both **misses every walled room** and is
+ * **all clear canvas** at the current camera.
+ *
+ * Two filters rather than one, and the second alone is what act 5 of
+ * `2026-09-04-is-there-anything-to-do.md` used: a room's tiles are painted on
+ * the canvas, so `document.elementFromPoint` calls them clear, and that run's
+ * yard was refused *"it overlaps a room that is already there."* The overlap
+ * test is arithmetic over rectangles this file already knows; the clear test
+ * is the DOM.
+ */
+async function firstClearYard(page: Page, origin: Origin, rooms: readonly Rect[] = [CANTEEN, CELL, SHOWER]): Promise<Rect | undefined> {
+  const overlaps = (a: Rect, b: Rect): boolean => a.x0 <= b.x1 && b.x0 <= a.x1 && a.y0 <= b.y1 && b.y0 <= a.y1;
+  const candidates: Rect[] = [];
+  for (let y0 = 8; y0 <= 18; y0 += 1) {
+    for (let x0 = 17; x0 <= 24; x0 += 1) {
+      const rect: Rect = { x0, y0, x1: x0 + 7, y1: y0 + 7 };
+      if (rect.x1 > WORLD_LAST_TILE || rect.y1 > WORLD_LAST_TILE) continue;
+      if (rooms.some((room) => overlaps(rect, room))) continue;
+      candidates.push(rect);
+    }
+  }
+  console.log(`[yard] ${candidates.length} candidate rectangle(s) miss every room and fit the map`);
+  const cache = new Map<string, boolean>();
+  const tileClear = async (x: number, y: number): Promise<boolean> => {
+    const key = `${x},${y}`;
+    const known = cache.get(key);
+    if (known !== undefined) return known;
+    const point = centreOf(origin, x, y);
+    const answer = (await topmostAt(page, point.x, point.y)).includes('canvas');
+    cache.set(key, answer);
+    return answer;
+  };
+  for (const rect of candidates) {
+    let ok = true;
+    for (let y = rect.y0; y <= rect.y1 && ok; y += 1) {
+      for (let x = rect.x0; x <= rect.x1 && ok; x += 1) {
+        // eslint-disable-next-line no-await-in-loop -- one real DOM, memoised.
+        ok = await tileClear(x, y);
+      }
+    }
+    if (ok) return rect;
+  }
+  return undefined;
+}
+
 test.describe('the rooms nobody builds', () => {
   test.beforeEach(async ({ page }) => {
     page.setDefaultTimeout(60_000);
@@ -392,7 +438,7 @@ test.describe('the rooms nobody builds', () => {
    * Build everything, then open the rooms one at a time. See the file header
    * for the phase table and the geometry.
    */
-  test('act 2 - four rooms, opened one at a time', async ({ page }) => {
+  test('act 2 - four rooms zoned before anything is furnished', async ({ page }) => {
     test.setTimeout(2_400_000);
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click({ timeout: 30_000 });
@@ -593,41 +639,7 @@ test.describe('the rooms nobody builds', () => {
     console.log(`[act2] after 6 ArrowRight the origin is (${panned.originX}, ${panned.originY}); it was (${origin.originX}, ${origin.originY})`);
     console.log(`[act2] ${await clearanceMap(page, panned)}`);
 
-    const overlaps = (a: Rect, b: Rect): boolean => a.x0 <= b.x1 && b.x0 <= a.x1 && a.y0 <= b.y1 && b.y0 <= a.y1;
-    const candidates: Rect[] = [];
-    for (let y0 = 8; y0 <= 18; y0 += 1) {
-      for (let x0 = 17; x0 <= 24; x0 += 1) {
-        const rect: Rect = { x0, y0, x1: x0 + 7, y1: y0 + 7 };
-        if (rect.x1 > WORLD_LAST_TILE || rect.y1 > WORLD_LAST_TILE) continue;
-        if (overlaps(rect, CANTEEN) || overlaps(rect, CELL) || overlaps(rect, SHOWER)) continue;
-        candidates.push(rect);
-      }
-    }
-    console.log(`[act2] ${candidates.length} candidate yard rectangle(s) miss all three rooms and fit the map`);
-    const clearCache = new Map<string, boolean>();
-    const tileClear = async (x: number, y: number): Promise<boolean> => {
-      const key = `${x},${y}`;
-      const known = clearCache.get(key);
-      if (known !== undefined) return known;
-      const point = centreOf(panned, x, y);
-      const answer = (await topmostAt(page, point.x, point.y)).includes('canvas');
-      clearCache.set(key, answer);
-      return answer;
-    };
-    let yard: Rect | undefined;
-    for (const rect of candidates) {
-      let ok = true;
-      for (let y = rect.y0; y <= rect.y1 && ok; y += 1) {
-        for (let x = rect.x0; x <= rect.x1 && ok; x += 1) {
-          // eslint-disable-next-line no-await-in-loop -- one real DOM, memoised.
-          ok = await tileClear(x, y);
-        }
-      }
-      if (ok) {
-        yard = rect;
-        break;
-      }
-    }
+    const yard = await firstClearYard(page, panned);
     console.log(`[act2] the yard rectangle chosen: ${JSON.stringify(yard)}`);
     expect(yard, 'no 8x8 rectangle both misses the three rooms and is clear canvas after panning').toBeDefined();
     if (yard === undefined) return;
