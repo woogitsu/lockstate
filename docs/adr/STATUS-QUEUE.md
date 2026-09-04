@@ -8487,11 +8487,29 @@ replacing it. **That distinction is the whole discipline: a stale citation is
 repaired, an extended one is appended to, and conflating them destroys a dated
 record in the name of fixing it.**
 
-**Next free number: 0095.** `docs/adr/README.md` states it and this file agrees,
-checked against the index rather than against memory. ADR 0095 is still
-`Proposed` on an unmerged branch with no pull request opened for it, so `main`
-still reads 0095 and this restatement is not warranted by a remote sweep, which
-was not re-run here.
+**Next free number: 0097.** `docs/adr/README.md` states it and this file agrees,
+checked against the index rather than against memory.
+
+> **This restatement stated **0095** in the same sentence shape until
+> 2026-09-04 and is
+> corrected rather than overwritten, because the sentence it carried is the one
+> that named exactly what was missing** (`docs/AGENT_WORKFLOW.md` §4: mark both
+> directions). It read: *"ADR 0095 is still `Proposed` on an unmerged branch
+> with no pull request opened for it, so `main` still reads 0095 and this
+> restatement is not warranted by a remote sweep, which was not re-run
+> here."* **The sweep was then run, on 2026-09-04 from
+> `docs/adr-always-a-way-back` at `7def42f0` (v0.0.441), and it confirmed the
+> suspicion this paragraph had recorded and could not act on**: 140 remote
+> heads, `git ls-tree` read out of every one, the highest prefix anywhere
+> **0095** on `origin/measure/893-coverage-and-response-draw-from-one-pool`
+> (`0095-what-the-guard-requirement-is-a-requirement-for.md`, still no pull
+> request), and nothing at 0096 or above. So **0095 is held**, ADR 0096 took
+> 0096, and the index's line moved 0095 → **0097** — one past the highest
+> number *on disk*, which is how
+> `tests/foundation/adr-numbering-contract.test.ts` defines it, with 0095's row
+> deliberately absent until its branch lands. **The jump of two is a hold and
+> not a gap**, and the reason is the one this file has recorded repeatedly and
+> deliberately does not tally here: disk sees only what has merged.
 
 **The basename scan produced a false *citation* this time, not just a false
 member.** Matching citations by basename rather than by path returned
