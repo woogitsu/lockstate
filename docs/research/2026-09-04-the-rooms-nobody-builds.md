@@ -8,6 +8,12 @@ the inside — every screen dump below carries `v0.0.471` beside the short sha
 of one of this branch's instrument-only commits (`eaaafae`, `b400341`,
 `3cb3145`), each of which touches only `tests/` and `docs/`.
 
+**`main` had moved to v0.0.473 (`70599d54`) by the time this record was
+written**, two releases past the tree played, and one of the merges in between
+is #981 *"fix/the-guards-that-do-not-guard"* (`83f347a9`). Nothing here was
+re-measured against it. Every `Safety 100%` reading below is v0.0.471's
+behaviour and could have moved.
+
 **Question, as commissioned:**
 
 > Every play session in this repository so far has built one cell and stopped.
@@ -97,10 +103,11 @@ is on top. `calibrate` measured the world origin at **(−304, −574)** at
 
 ## Two corrections to the brief, before anything else
 
-**1. The two records the brief calls "just landed" are not on `main` at
-v0.0.471.** `git ls-tree -r origin/main --name-only docs/research/` at
-`9429ba64` returns neither `2026-09-04-the-standing-crowd.md` nor
-`2026-09-04-the-hud-a-player-reads.md` (MEASURED). Their claims are therefore
+**1. The two records the brief calls "just landed" are not on `main`.**
+`git ls-tree -r origin/main --name-only docs/research/` returns neither
+`2026-09-04-the-standing-crowd.md` nor `2026-09-04-the-hud-a-player-reads.md`
+— checked twice, at `9429ba64` when this pass started and again at
+`70599d54` (v0.0.473) when it finished (MEASURED, both). Their claims are therefore
 treated here as unverified hypotheses, and §6 tests one of them from the other
 side rather than inheriting it.
 
