@@ -53,6 +53,16 @@ import {
  *    reflects layout, so a sentence inside a shut fold is correctly *absent*
  *    from the dump -- which makes "was this reachable without unfolding
  *    anything?" a substring test rather than an argument.
+ *
+ *    **With one limit this pass measured and the inherited rule does not
+ *    state: `innerText` does NOT respect a scroll container's clipping.** The
+ *    Build catalogue's own numbers, from act 1 -- `{"rows":21,
+ *    "fullyVisible":5,"scrollHeight":924,"clientHeight":223}` -- sit beside an
+ *    `innerText` dump that lists all twenty-one row labels. A fold is
+ *    `display:none` and vanishes from `innerText`; an overflowing list is not,
+ *    and does not. So every `guidance()` reading below is an **upper bound** on
+ *    what a player can read without scrolling, and any claim that a word is
+ *    *reachable* is checked against the measured fold instead.
  * 2. **A press on a HUD-covered point submits nothing at all** -- no command,
  *    no refusal, no band -- and reads exactly like the game ignoring you.
  *    Three findings have been withdrawn to it. So `assertCanvasAt` runs
@@ -132,6 +142,26 @@ async function assertCanvasAt(page: import('@playwright/test').Page, x: number, 
     [x, y],
   );
   expect(top, `${label}: the point (${x},${y}) is not clear canvas, so a press there proves nothing`).toContain('canvas');
+}
+
+/**
+ * True when the Build panel is no longer reporting anything left to build.
+ *
+ * **The second clause is load-bearing and this file paid for it.** An empty
+ * queue is not `0 waiting · 0 being built` -- the whole `QUEUED` block is
+ * *removed* when nothing is left (recorded in
+ * `docs/research/2026-08-30-a-wall-that-buys-itself.md` §2c, "the empty build
+ * queue is an *absent* block"), so a poll that only matches the zero readout
+ * never terminates. Act 2's first run and act 3's first run both sat out their
+ * poll budgets against a queue that had been empty for minutes, and act 3's
+ * first run then printed *"the queue emptied 23417 ticks after the wall runs"*,
+ * which was this poll giving up rather than anything the game did.
+ * `waitForQueueEmpty` in `playtest-harness.ts` has always carried the clause;
+ * this file did not, which is exactly the shape of re-deriving a shared
+ * harness badly.
+ */
+function queueIsEmpty(text: string): boolean {
+  return /(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT');
 }
 
 /** Counts every interaction a player would have to perform. */
@@ -483,7 +513,7 @@ test.describe('the first ten minutes', () => {
     let drained = false;
     for (let poll = 0; poll < 90; poll += 1) {
       const queue = await panelText(page, '.hud-build__queue');
-      if (/(?<![0-9])0 waiting . 0 being built/.test(queue)) {
+      if (queueIsEmpty(queue)) {
         drained = true;
         console.log(`[act2] N9 the queue emptied ${(await currentTick(page)) - drainFrom} ticks after the purchase`);
         break;
@@ -534,6 +564,71 @@ test.describe('the first ten minutes', () => {
 
     tally.dump();
     console.log(`[act2] NAIVE RUN: ${tally.count} interactions, final tick ${await currentTick(page)}, counts ${JSON.stringify(await latestCounts(page))}`);
+  });
+
+  test('act 4 - the newcomer who never presses Play', async ({ page }) => {
+    /*
+     * A new session's clock is constructed paused, and the strip says so --
+     * `PAUSED`, measured in act 1. But *nothing ties that word to the twenty-four
+     * orders standing still*, and a player who has just drawn a prison has no
+     * reason to connect the two. This act plays that person: it never touches
+     * the transport until the very end, and the last press is there only to
+     * prove that the clock was the whole difference.
+     */
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    await tab(page, 'build').click();
+    const origin = await calibrate(page);
+    console.log(`[act4] calibration: (${origin.originX}, ${origin.originY})`);
+    console.log(`[act4] clock before anything: ${JSON.stringify(await currentClock(page))} tick=${await currentTick(page)}`);
+
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    const label = (await page.locator('.hud-build__arm').innerText()).trim().toLowerCase();
+    if (label.startsWith('place') || label.startsWith('draw')) await page.locator('.hud-build__arm').click();
+
+    const westX = origin.originX + 12 * TILE;
+    const eastX = origin.originX + 18 * TILE;
+    const northY = origin.originY + 12 * TILE;
+    const southY = origin.originY + 18 * TILE;
+    let orders = 0;
+    for (const run of [
+      { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+      { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+      { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+      { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+    ]) {
+      await assertCanvasAt(page, run.a.x, run.a.y, `act4 ${run.name} start`);
+      const before = (await sentCommands(page)).length;
+      await drag(page, run.a, run.b);
+      orders += (await sentCommands(page)).slice(before).length;
+    }
+    console.log(`[act4] ${orders} orders placed, clock still ${JSON.stringify(await currentClock(page))}`);
+    console.log(`[act4] funds: ${(await latestCounts(page))?.treasuryMinorUnits}`);
+
+    for (let observation = 1; observation <= 3; observation += 1) {
+      await page.waitForTimeout(7000);
+      console.log(
+        `[act4] observation ${observation}: tick=${await currentTick(page)} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))} clock=${JSON.stringify(await currentClock(page))} speed=${JSON.stringify(await panelText(page, '.hud-clock__speed'))} refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))} alerts=${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`,
+      );
+    }
+    const stalled = await screen(page);
+    console.log(`[act4] the whole HUD with 24 orders and a stopped clock:\n${stalled}`);
+    console.log(`[act4] guidance vocabulary: ${guidance(stalled)}`);
+    // Does any sentence on screen connect a queued order to the clock? The
+    // locale has one -- `hud.build.note`, "An order is queued now and built
+    // while the clock runs." -- and this is the measurement of whether it is
+    // on screen at the moment it is needed.
+    console.log(`[act4] is the sentence "built while the clock runs" on screen? ${/built while the clock runs/i.test(stalled) ? 'YES' : 'no'}`);
+    console.log(`[act4] does any visible sentence contain the word "clock"? ${/clock/i.test(stalled) ? 'YES' : 'no'}`);
+
+    // And now the one press that was missing.
+    await page.locator('.hud-strip__transport button').nth(1).click();
+    await page.waitForTimeout(8000);
+    console.log(
+      `[act4] after one press of Play: tick=${await currentTick(page)} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))} clock=${JSON.stringify(await currentClock(page))}`,
+    );
   });
 
   test('act 3 - the informed run, the same goal with the order already known', async ({ page }) => {
@@ -607,7 +702,7 @@ test.describe('the first ten minutes', () => {
     const from = await currentTick(page);
     for (let poll = 0; poll < 120; poll += 1) {
       const queue = await panelText(page, '.hud-build__queue');
-      if (/(?<![0-9])0 waiting . 0 being built/.test(queue)) break;
+      if (queueIsEmpty(queue)) break;
       await page.waitForTimeout(1500);
     }
     console.log(`[act3] the queue emptied ${(await currentTick(page)) - from} ticks after the wall runs`);
@@ -662,7 +757,7 @@ test.describe('the first ten minutes', () => {
     const fromFurniture = await currentTick(page);
     for (let poll = 0; poll < 120; poll += 1) {
       const queue = await panelText(page, '.hud-build__queue');
-      if (/(?<![0-9])0 waiting . 0 being built/.test(queue)) break;
+      if (queueIsEmpty(queue)) break;
       await page.waitForTimeout(1500);
     }
     console.log(`[act3] furniture built ${(await currentTick(page)) - fromFurniture} ticks later; counts ${JSON.stringify(await latestCounts(page))}`);
