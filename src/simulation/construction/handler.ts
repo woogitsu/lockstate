@@ -161,7 +161,7 @@ export function createConstructionCommandHandler(
        * Undo and Redo say so when they worked, and say nothing when they did
        * not (#749).
        *
-       * The `boolean` is the whole reason those methods now answer one: a press
+       * The return value is the whole reason those methods answer one: a press
        * against an empty history reverses nothing, and confirming a reversal
        * that did not happen is the promise the code does not keep that
        * `AGENTS.md`'s fourth exclusion reserves. Neither sentence names a count
@@ -169,10 +169,29 @@ export function createConstructionCommandHandler(
        * naming one order would be a small lie whenever a run of several was
        * taken back. The transaction size is known inside `ConstructionSystem`
        * and is deliberately left there.
+       *
+       * **Undo now says *which* of two things it did, which is
+       * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+       * reason it needed fixing is visible right here in the table of two
+       * branches**: `CancelBuildOrder` above reads the state and picks its
+       * sentence from it, and this branch recorded one sentence for a press that
+       * can destroy strictly more. A `Z` on a finished wall took the wall down,
+       * refunded nothing, destroyed the materials, and said *"the last change to
+       * the build queue was undone."*
+       *
+       * `spendDestroyed` is read off the outcome rather than recomputed here,
+       * for the reason `stateAtCancellation` above is read *before* the call:
+       * every order is `'cancelled'` by the time this line runs and the
+       * distinction is gone. It is one bit and not the transaction size the
+       * ruling declined -- see `ConstructionUndoOutcome`.
        */
-      case 'Undo':
-        if (constructionSystem.undo()) events.recordConstructionUndone(context.tick);
+      case 'Undo': {
+        const undone = constructionSystem.undo();
+        if (undone.reversed) {
+          events.recordConstructionUndone(undone.spendDestroyed ? 'spend-destroyed' : 'nothing-destroyed', context.tick);
+        }
         break;
+      }
 
       case 'Redo':
         if (constructionSystem.redo()) events.recordConstructionRedone(context.tick);
