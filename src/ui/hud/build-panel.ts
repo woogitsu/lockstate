@@ -1183,6 +1183,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * Measured on the assembled page at all five viewports the browser suite
    * visits -- see `tests/browser/app-shell.spec.ts`.
    *
+   * **AMENDED 2026-09-04 (issue #926): that pair fitted the third BUTTON and
+   * not the third LABEL, and the paragraph above is left as it stands because
+   * it is the claim that was incomplete.** Letting the arm button shrink put
+   * it at 76.4px with an 87.9px label, and `primitives.css` had
+   * `.ui-action__label { white-space: nowrap }` with no `overflow` above it --
+   * so the arm label painted 17.8px outside its own button and 9.8px over
+   * *this* control at every viewport 900px wide or wider. Shortening this
+   * label further would not have helped: with the icon and `.ui-action`'s
+   * padding, the arm label had 18.4px of box to fit in. `hud.css` and
+   * `primitives.css` carry the fix and the whole measurement;
+   * `tests/browser/ui-build-arm-label-fit.spec.ts` is the gate, because the
+   * one this row already had reads the button's own box.
+   *
    * ### It is not the queue block, and the two do different work
    *
    * The panel has a per-order control now -- one per row of `.hud-build__queue`,
