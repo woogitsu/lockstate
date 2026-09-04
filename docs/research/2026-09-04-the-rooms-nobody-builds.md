@@ -888,3 +888,60 @@ lower the minimum to 6 × 6 (a content/balance change, `room.yard`'s
 ground (a rendering default); or leave it and treat "you will have to move the
 camera" as the intended first lesson about space. **The measurement is the
 contribution; the choice is a balance decision.**
+
+---
+
+# What this pass did not reach
+
+- **Scale.** Every measurement here is four prisoners and one guard. Contention
+  for a room — ADR 0062's whole subject — never bit: two shower heads for four
+  prisoners, six dining places for four, an 8 × 8 yard whose open-area capacity
+  is `floor(64 / 16) = 4`. **Nothing in this record tests what happens when
+  more prisoners want a room than it seats**, and §6.2's "the canteen is a
+  no-op" is a claim about four prisoners and may be false at twelve.
+- **Eleven of the eighteen room types were never built.** The kitchen, laundry,
+  common room and classroom all have live readers (§3) and none of them was
+  played; nor was any of the seven dead ones, so this record's statement that
+  they do nothing is VERIFIED-from-code and not MEASURED-from-play.
+- **The `work` block.** `action.kitchen-work` and `action.laundry-work` are the
+  two rooms that turn prison labour into a need, and #592 is the open design
+  for them. Untouched here.
+- **`room.solitary-cell` and the sanction path.** Alive, unplayed.
+- **The camera.** Every act ran at 1440 × 900 at zoom 1. The yard's fit problem
+  (§P5) may be entirely dissolved by `camera.zoom.out`; measuring that needs a
+  calibration this harness does not have, because `calibrate` bisects on a
+  64-pixel tile.
+- **Save and reload.** Nothing here checks that a four-room prison comes back.
+  `docs/research/2026-09-04-does-a-prison-come-back.md` covers a one-room one.
+- **The other tester's surface** — replaying the fixes since v0.0.451 — was not
+  entered. One thing was tripped over and is left as a line: in act 3 the
+  refusal band still carried `Nothing was removed — there is no object on that
+  tile, and none being built there.` from `calibrate`'s probe, minutes and
+  several successful commands later, so a stale band outlives the action that
+  produced it.
+
+# The weakest claim in this record, and what would change my mind
+
+**"The canteen is a no-op."** (§6.2.) It is the strongest-sounding sentence
+here and it rests on the narrowest evidence: one prison, four prisoners, three
+in-game days after the canteen opened, with hunger measured at day boundaries.
+Three things could refute it and none was tested:
+
+1. **Population.** Hunger decays 0.05 a tick per prisoner and the three meal
+   blocks are 300 ticks a day. With twelve prisoners contending for six dining
+   places — or for one cell's worth of `eat-in-cell` time inside the same
+   blocks — the cell route may stop covering everybody, and then the canteen's
+   4-a-tick against 3 would matter. **A twelve-prisoner run with and without a
+   canteen, hunger sampled inside the meal blocks, would settle it.**
+2. **Sampling.** Acts 2 and 3 read the roster at day boundaries, which fall in
+   the `[0, 400)` sleep block, so what those acts saw of the canteen is two
+   incidental samples. Act 4 exists precisely because that is not good enough.
+3. **#592.** If kitchen labour ever makes a meal consume a portion, a canteen
+   with no portions becomes a way to *fail* hunger and the whole reading
+   changes.
+
+**The second-weakest is the cost table in §2.** Every figure is DERIVED from
+two catalogues and one rule I read rather than from a purchase I made: I bought
+raw material by the unit and never watched a room's total leave the treasury.
+A run that buys nothing up front and reads `FUNDS` before and after one
+complete room would confirm or refute it in one act, and I did not do it.
