@@ -111,15 +111,35 @@ async function openQueue(page: Page): Promise<{ wasCollapsed: boolean }> {
   return { wasCollapsed: collapsed };
 }
 
-/** Every queue row a player can see, with its text and its order id. */
-async function queueRows(page: Page): Promise<readonly { text: string; order: string }[]> {
+/**
+ * Every queue row a player can see, with its text, its order id and whether
+ * its Cancel is actually pressable.
+ *
+ * **`aria-disabled` is the read that matters and it cost this file a run.** A
+ * row whose order has gone is emptied but *keeps its box* and keeps a button
+ * still reading `Cancel` (`build-panel.ts:2270-2290`, the `holds-open` arm);
+ * only `setUnavailable` marks it, and Playwright's actionability treats
+ * `aria-disabled="true"` as not enabled. A `hasText: 'Cancel'` locator
+ * therefore resolves to a dead control and waits out its whole timeout, which
+ * reads exactly like a broken button.
+ */
+async function queueRows(
+  page: Page,
+): Promise<readonly { text: string; order: string; pressable: boolean }[]> {
   return page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')]
       .filter((node) => node.getClientRects().length > 0)
-      .map((node) => ({
-        text: (node.innerText ?? '').replace(/\s+/g, ' ').trim(),
-        order: node.dataset['order'] ?? '(no data-order)',
-      })),
+      .map((node) => {
+        const button = node.querySelector<HTMLElement>('button');
+        return {
+          text: (node.innerText ?? '').replace(/\s+/g, ' ').trim(),
+          order: node.dataset['order'] ?? '(no data-order)',
+          pressable:
+            button !== null &&
+            button.getAttribute('aria-disabled') !== 'true' &&
+            !button.hasAttribute('disabled'),
+        };
+      }),
   );
 }
 
@@ -147,6 +167,24 @@ async function newPrison(page: Page, label: string): Promise<{ originX: number; 
   console.log(`[${label}] tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
   console.log(`[${label}] clock on arrival: ${JSON.stringify(await currentClock(page))} tick=${await currentTick(page)}`);
   return origin;
+}
+
+/**
+ * Arms the Rooms tool, reading the label first.
+ *
+ * **`.hud-rooms__arm` is a toggle and clicking it blind disarms an already
+ * armed tool.** That cost this file act 3's 3b reading: `Discard` leaves the
+ * tool armed, the control then reads "Stop drawing", and the click that was
+ * meant to arm it put it down instead — after which the drag produced nothing
+ * and the confirm read `Designate 0 × 0`, which looks exactly like a drag the
+ * world refused. `armBuildable` in the shared harness reads the label for the
+ * same reason; this is that rule one panel over.
+ */
+async function armRooms(page: Page): Promise<void> {
+  const arm = page.locator('.hud-rooms__arm');
+  if (!(await arm.isVisible())) return;
+  const label = (await arm.innerText()).trim().toLowerCase();
+  if (label.startsWith('draw') || label.startsWith('place')) await arm.click();
 }
 
 async function armBuild(page: Page, id: string): Promise<void> {
@@ -210,26 +248,42 @@ test.describe('the misplay', () => {
 
     // Route 1: press every Cancel the panel offers, one at a time.
     let paid = 0;
-    for (let index = 0; index < 6; index += 1) {
+    for (let index = 0; index < 8; index += 1) {
       const live = await queueRows(page);
-      if (live.length === 0) break;
-      const row = live[0];
-      if (row === undefined) break;
+      const row = live.find((candidate) => candidate.pressable && candidate.order !== '(no data-order)');
+      if (row === undefined) {
+        console.log(`[${L}] no pressable Cancel left after ${index} press(es). Rows: ${JSON.stringify(live)}`);
+        break;
+      }
       const fundsBefore = await funds(page);
-      await page.locator('.hud-build__queue-row').filter({ hasText: 'Cancel' }).first().locator('button').last().click();
-      await page.waitForTimeout(400);
+      await page.locator(`.hud-build__queue-row[data-order="${row.order}"] button`).last().click();
+      await page.waitForTimeout(600);
       const fundsAfter = await funds(page);
       const delta = fundsAfter.worker - fundsBefore.worker;
       paid += delta;
       console.log(
         `[${L}] Cancel #${index + 1}: row said ${JSON.stringify(row.text)} | worker ${fundsBefore.worker} -> ${fundsAfter.worker} (${delta >= 0 ? '+' : ''}${delta})` +
-          ` | chip ${JSON.stringify(fundsAfter.chip)} | ${JSON.stringify(await say(page))}`,
+          ` | ${JSON.stringify(await say(page))}`,
       );
+      console.log(`[${L}]   rows after that press: ${JSON.stringify(await queueRows(page))}`);
+      console.log(`[${L}]   header now: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
     }
     const afterCancels = await funds(page);
     console.log(`[${L}] after pressing every Cancel on offer: worker=${afterCancels.worker}, ${paid} back of ${before.worker - afterDraw.worker} spent`);
-    console.log(`[${L}] queue block now: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-    console.log(`[${L}] rows now: ${JSON.stringify(await queueRows(page))}`);
+
+    // Does the pool refill once the clock runs? If it only refills on a
+    // publication, a paused player has one press and then a dead block.
+    console.log(`[${L}] --- pressing Play ---`);
+    await page.locator('.hud-strip__transport button').nth(1).click();
+    await page.waitForTimeout(2500);
+    console.log(`[${L}] rows after the clock ran: ${JSON.stringify(await queueRows(page))}`);
+    console.log(`[${L}] header after the clock ran: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    console.log(`[${L}] clock: ${JSON.stringify(await currentClock(page))} tick=${await currentTick(page)}`);
+    // And pause again, so the undo presses below are not lead artefacts.
+    await page.locator('.hud-strip__transport button').nth(0).click();
+    await page.waitForTimeout(500);
+    console.log(`[${L}] paused again: ${JSON.stringify(await currentClock(page))}`);
+    console.log(`[${L}] funds after that: ${(await funds(page)).worker}`);
 
     // Route 2: the key nobody told them about.
     for (let index = 0; index < 3; index += 1) {
@@ -297,7 +351,7 @@ test.describe('the misplay', () => {
     // First a room to stand it in: objects are refused outside one.
     console.log(`[${L}] 2c is measured in act 3, where a zoned room exists; here the refusal itself is the point.`);
     await armBuild(page, 'bed-wooden');
-    const bed = centreOf(origin, 30, 30);
+    const bed = centreOf(origin, 8, 13);
     await assertCanvasAt(page, bed.x, bed.y, `${L} bed tile`);
     const before2c = await funds(page);
     const bedFirst = await press(page, bed.x, bed.y);
@@ -346,10 +400,10 @@ test.describe('the misplay', () => {
     if ((await roomsPanel.getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
-    await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
-    await page.locator('.hud-rooms__arm').click();
-    const yardA = centreOf(origin, 34, 34);
-    const yardB = centreOf(origin, 41, 41);
+    await page.locator('.hud-rooms__list [data-room="room.holding-cell"]').click();
+    await armRooms(page);
+    const yardA = centreOf(origin, 12, 13);
+    const yardB = centreOf(origin, 15, 16);
     await assertCanvasAt(page, yardA.x, yardA.y, `${L} yard a`);
     await drag(page, yardA, yardB);
     const before2f = await latestCounts(page);
@@ -367,8 +421,8 @@ test.describe('the misplay', () => {
       console.log(`[${L}] 2f second Designate press: rooms ${mid2f?.rooms} -> ${after2f?.rooms} | ${JSON.stringify(await say(page))}`);
     }
     // And the whole gesture repeated: arm, drag the same rectangle, confirm.
-    await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
-    await page.locator('.hud-rooms__arm').click();
+    await page.locator('.hud-rooms__list [data-room="room.holding-cell"]').click();
+    await armRooms(page);
     await drag(page, yardA, yardB);
     await page.locator('.hud-rooms__confirm').click();
     await page.waitForTimeout(600);
@@ -396,46 +450,109 @@ test.describe('the misplay', () => {
 
     const designate = async (roomId: string, ax: number, ay: number, bx: number, by: number, what: string) => {
       await tab(page, 'rooms').click();
+      /*
+       * A rectangle left pending swaps the action row over to
+       * `Designate`/`Discard` and *hides* the arm control
+       * (`rooms-panel.ts:1179-1191`, "four controls sharing one 44px box"), so
+       * a run that walked straight to `.hud-rooms__arm` waits out its whole
+       * timeout on a hidden button. Discarding first is what a player does
+       * too: it is the only way out of a rectangle the panel will not accept.
+       */
+      const cancel = page.locator('.hud-rooms__cancel');
+      if (await cancel.isVisible()) {
+        console.log(`[${L}] a rectangle was still pending; pressing ${JSON.stringify((await cancel.innerText()).trim())} to get out of it`);
+        await cancel.click();
+        await page.waitForTimeout(300);
+      }
+      /*
+       * **Discarding a rectangle folds the whole Rooms panel away.** The panel
+       * is collapsed for the length of a *drawing pass* — armed with nothing
+       * pending — by `folded()` (`rooms-panel.ts:522`, `panel.setCollapsed`
+       * at `:1771`), and Discard puts the panel back into exactly that state
+       * with the tool still armed. So the room-type list and the requirement
+       * text a player needs in order to correct their mistake go off the
+       * screen at the moment they said "no, not that". Counted here rather
+       * than worked around silently.
+       */
+      const shut = (await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true';
+      if (shut) {
+        console.log(`[${L}] the whole Rooms panel was folded shut and had to be re-opened before anything could be chosen`);
+        await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+        await page.waitForTimeout(200);
+      }
+      /*
+       * **Arming folds the room-type list** (`rooms-panel.ts`, `drawingFolded
+       * = true` on the arm transition), so choosing a *different* room type
+       * after one arm means opening the catalogue again. Reported rather than
+       * silently worked around: it is a step in every do-over.
+       */
+      const catalogue = page.locator('.hud-rooms__catalogue');
+      const catalogueShut = (await catalogue.getAttribute('data-collapsed')) === 'true';
+      if (catalogueShut) {
+        console.log(`[${L}] the room-type list was folded shut and had to be opened again`);
+        await catalogue.locator('.ui-section__header').first().click();
+        await page.waitForTimeout(150);
+      }
       await page.locator(`.hud-rooms__list [data-room="${roomId}"]`).click();
-      await page.locator('.hud-rooms__arm').click();
+      await armRooms(page);
       const p1 = centreOf(origin, ax, ay);
       const p2 = centreOf(origin, bx, by);
       await assertCanvasAt(page, p1.x, p1.y, `${L} ${what} start`);
       await assertCanvasAt(page, p2.x, p2.y, `${L} ${what} end`);
       await drag(page, p1, p2);
       const armHint = await panelText(page, '.hud-rooms');
-      const confirmLabel = (await page.locator('.hud-rooms__confirm').innerText().catch(() => '(absent)')).trim();
+      const confirm = page.locator('.hud-rooms__confirm');
+      const confirmLabel = (await confirm.innerText().catch(() => '(absent)')).trim();
+      /*
+       * **Whether the control is pressable at all is the measurement**, not a
+       * precondition of it. The Rooms panel disables `Designate` for a
+       * rectangle it can already tell will be refused, which is the opposite
+       * of the Buy control's shape in #772 — so a run that only clicked would
+       * report a timeout where the finding is that the game stopped the player
+       * before the press.
+       */
+      const disabled = (await confirm.getAttribute('disabled')) !== null;
+      const describedBy = await confirm.getAttribute('aria-describedby');
+      const note = await page.evaluate((id: string | null) => {
+        if (id === null) return '(no aria-describedby)';
+        const node = document.getElementById(id);
+        if (node === null) return '(described by an element that is not there)';
+        return (node.innerText ?? '').replace(/\s+/g, ' ').trim();
+      }, describedBy);
       const before = await latestCounts(page);
-      await page.locator('.hud-rooms__confirm').click();
-      await page.waitForTimeout(700);
+      if (!disabled) {
+        await confirm.click();
+        await page.waitForTimeout(700);
+      }
       const after = await latestCounts(page);
       console.log(
         `[${L}] ${what}: ${roomId} ${ax},${ay}..${bx},${by} | confirm read ${JSON.stringify(confirmLabel)}` +
+          ` disabled=${disabled} | its own note: ${JSON.stringify(note)}` +
           ` | rooms ${before?.rooms} -> ${after?.rooms} | ${JSON.stringify(await say(page))}`,
       );
-      console.log(`[${L}] ${what}: panel before the press said ${JSON.stringify(armHint.split('\n').filter((l) => /OPEN|ENCLOS|AREA|×/i.test(l)))}`);
+      console.log(`[${L}] ${what}: panel before the press said ${JSON.stringify(armHint.split('\n').filter((l) => /OPEN|ENCLOS|AREA|×|NEEDS|TILES/i.test(l)))}`);
       return after?.rooms ?? -1;
     };
 
     // 3a. A cell a tile short. `room.cell` is min 2×3 / 6 tiles
     // (`src/content/room-catalog.ts:94`), so 2×2 is below it.
-    await designate('room.cell', 12, 12, 13, 13, '3a cell 2x2 (below minimum)');
+    await designate('room.cell', 7, 12, 8, 13, '3a cell 2x2 (below minimum, needs 2x3)');
 
     // 3b. A cell of legal size but with no wall around it.
-    await designate('room.cell', 12, 12, 13, 14, '3b cell 2x3, no wall built');
+    await designate('room.cell', 7, 12, 8, 14, '3b cell 2x3, no wall built');
 
-    // 3c. A yard, which is `openArea` and needs no enclosure — this one lands.
-    const zoned = await designate('room.yard', 20, 20, 27, 27, '3c yard 8x8 in the wrong place');
+    /*
+     * 3c. The one room type that lands with no wall built: `room.yard` is the
+     * only entry in `src/content/room-catalog.ts` whose requirements are
+     * `outdoors` rather than `enclosed` (every other one of the eighteen
+     * carries `{ type: 'enclosed' }`), so it is the cheapest way to get a
+     * *standing* room to take back. 8x8 is its minimum.
+     */
+    const zoned = await designate('room.yard', 7, 12, 14, 19, '3c yard 8x8 in the wrong place');
 
     // 3d. Overlapping the yard that is now there.
-    await designate('room.yard', 24, 24, 31, 31, '3d yard overlapping the first');
-
-    // #780 — does the refusal from 3d survive a success somewhere else?
+    await designate('room.yard', 12, 12, 19, 19, '3d yard overlapping the first');
     const beforeSuccess = await say(page);
-    await designate('room.yard', 40, 40, 47, 47, '3e a different yard, far away, which succeeds');
-    const afterSuccess = await say(page);
-    console.log(`[${L}] #780 check — band before the unrelated success: ${JSON.stringify(beforeSuccess)}`);
-    console.log(`[${L}] #780 check — band after the unrelated success:  ${JSON.stringify(afterSuccess)}`);
 
     // 3f. The route back: is a Remove control on the panel without hunting?
     await tab(page, 'rooms').click();
@@ -444,18 +561,41 @@ test.describe('the misplay', () => {
     // Furniture first, so the removal has something to strand.
     if (zoned > 0) {
       await armBuild(page, 'bed-wooden');
-      const bed1 = centreOf(origin, 21, 21);
+      const bed1 = centreOf(origin, 8, 13);
       await assertCanvasAt(page, bed1.x, bed1.y, `${L} bed in yard`);
+      const fundsBeforeBed = await funds(page);
       const bedCommands = await press(page, bed1.x, bed1.y);
-      console.log(`[${L}] 3f a bed inside the mis-placed yard: ${bedCommands.length} command(s) | ${JSON.stringify(await say(page))}`);
+      await page.waitForTimeout(500);
+      const fundsAfterBed = await funds(page);
+      console.log(
+        `[${L}] 3e a bed inside the mis-placed yard: ${bedCommands.length} command(s) -> ${JSON.stringify(bedCommands)}` +
+          ` | worker ${fundsBeforeBed.worker} -> ${fundsAfterBed.worker} (${fundsAfterBed.worker - fundsBeforeBed.worker})` +
+          ` | ${JSON.stringify(await say(page))}`,
+      );
+      await openQueue(page);
+      console.log(`[${L}] 3e queue after the bed: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+      // Let the crew stand it up, so the removal below has a standing object
+      // rather than a pending order to take away.
+      await page.locator('.hud-strip__transport button').nth(2).click();
+      await page.waitForTimeout(200);
+      await page.locator('.hud-strip__transport button').nth(2).click();
+      for (let index = 0; index < 40; index += 1) {
+        const text = await panelText(page, '.hud-build__queue');
+        if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) break;
+        await page.waitForTimeout(1000);
+      }
+      await page.locator('.hud-strip__transport button').nth(0).click();
+      await page.waitForTimeout(400);
+      console.log(`[${L}] 3e the bed is standing at tick ${await currentTick(page)}; clock ${JSON.stringify(await currentClock(page))}`);
     }
 
     const beforeRemove = await latestCounts(page);
     await tab(page, 'rooms').click();
     await page.locator('.hud-rooms__remove').click();
+    console.log(`[${L}] 3f band immediately before the removal: ${JSON.stringify(beforeSuccess)}`);
     const removeArmed = await page.locator('.hud-rooms__remove').innerText();
     console.log(`[${L}] 3f Remove armed, control now reads ${JSON.stringify(removeArmed.trim())}`);
-    await drag(page, centreOf(origin, 20, 20), centreOf(origin, 27, 27));
+    await drag(page, centreOf(origin, 7, 12), centreOf(origin, 14, 19));
     const removeConfirm = (await page.locator('.hud-rooms__confirm').innerText().catch(() => '(absent)')).trim();
     console.log(`[${L}] 3f the confirm control for a removal reads ${JSON.stringify(removeConfirm)}`);
     await page.locator('.hud-rooms__confirm').click();
@@ -466,19 +606,44 @@ test.describe('the misplay', () => {
         ` | worker ${beforeRemove?.treasuryMinorUnits} -> ${afterRemove?.treasuryMinorUnits}` +
         ` | accommodationCapacity ${beforeRemove?.accommodationCapacity} -> ${afterRemove?.accommodationCapacity}`,
     );
-    console.log(`[${L}] 3f what the game said about the removal: ${JSON.stringify(await say(page))}`);
+    const afterSuccess = await say(page);
+    console.log(`[${L}] 3f what the game said about the removal: ${JSON.stringify(afterSuccess)}`);
+    console.log(`[${L}] #780 check — the 3d refusal was ${JSON.stringify(beforeSuccess.refusal)}; after a successful removal the band reads ${JSON.stringify(afterSuccess.refusal)}`);
     console.log(`[${L}] 3f rooms panel after: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
-    // 3g. What became of the bed standing on the un-zoned tile?
+    /*
+     * 3g. What became of the bed standing on the un-zoned tile?
+     *
+     * `RoomZoningService.unzone` (`src/simulation/rooms/zoning.ts:755`) writes
+     * `world.setZoning(tile, 0)` and unregisters the instance and touches no
+     * object, so the question is what the player can see and do about a bed
+     * that is now standing on bare ground. Three probes, in order: a placement
+     * (refused if something is there), a removal, and a placement again
+     * (accepted if the tile is now free).
+     */
     await armBuild(page, 'bed-wooden');
-    const orphan = centreOf(origin, 21, 21);
+    const orphan = centreOf(origin, 8, 13);
     const rePlace = await press(page, orphan.x, orphan.y);
-    console.log(`[${L}] 3g re-placing a bed on the un-zoned tile: ${rePlace.length} command(s) | ${JSON.stringify(await say(page))}`);
+    await page.waitForTimeout(400);
+    console.log(`[${L}] 3g placing a bed on the un-zoned tile: ${rePlace.length} command(s) | ${JSON.stringify(await say(page))}`);
+
     await tab(page, 'build').click();
     await page.locator('.hud-build__remove').click();
+    const fundsBeforeRemove = await funds(page);
     const removed = await press(page, orphan.x, orphan.y);
-    console.log(`[${L}] 3g armed Remove on that tile: ${removed.length} command(s) -> ${JSON.stringify(removed)} | ${JSON.stringify(await say(page))}`);
+    await page.waitForTimeout(600);
+    const fundsAfterRemove = await funds(page);
+    console.log(
+      `[${L}] 3g armed Remove on that tile: ${removed.length} command(s) -> ${JSON.stringify(removed)}` +
+        ` | worker ${fundsBeforeRemove.worker} -> ${fundsAfterRemove.worker} (${fundsAfterRemove.worker - fundsBeforeRemove.worker})` +
+        ` | ${JSON.stringify(await say(page))}`,
+    );
     await page.locator('.hud-build__remove').click();
+
+    await armBuild(page, 'bed-wooden');
+    const after = await press(page, orphan.x, orphan.y);
+    await page.waitForTimeout(400);
+    console.log(`[${L}] 3g placing a bed there again, after the removal: ${after.length} command(s) | ${JSON.stringify(await say(page))}`);
   });
 
   /**
@@ -642,7 +807,7 @@ test.describe('the misplay', () => {
         await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       }
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-      await page.locator('.hud-rooms__arm').click();
+      await armRooms(page);
       await drag(page, centreOf(origin, 12, 12), centreOf(origin, 13, 14));
       await page.locator('.hud-rooms__confirm').click();
       await page.waitForTimeout(1200);
