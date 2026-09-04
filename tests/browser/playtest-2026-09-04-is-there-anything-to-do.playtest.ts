@@ -189,6 +189,52 @@ function deltaVector(
   );
 }
 
+/**
+ * The first `size`x`size` tile square in the visible grid where every tile
+ * centre is clear canvas, scanned in row-major order.
+ *
+ * Written because act 3's first two runs both picked an 8x8 for `room.yard` by
+ * hand off a printed map and both picked one that overlapped the HUD -- once
+ * the save panel's actions, once the minimap's surface. The yard is the only
+ * room in the game that needs no walls and no objects, so where it fits is a
+ * measurement about the *viewport*, and a measurement should not be typed in
+ * by hand twice.
+ */
+async function firstClearSquare(
+  page: Page,
+  origin: { originX: number; originY: number },
+  size: number,
+): Promise<{ x0: number; y0: number; x1: number; y1: number } | undefined> {
+  const viewport = page.viewportSize() ?? { width: 1440, height: 900 };
+  const firstX = Math.ceil(-origin.originX / TILE);
+  const lastX = Math.floor((viewport.width - origin.originX) / TILE) - 1;
+  const firstY = Math.ceil(-origin.originY / TILE);
+  const lastY = Math.floor((viewport.height - origin.originY) / TILE) - 1;
+  const clear = new Map<string, boolean>();
+  const isClear = async (x: number, y: number): Promise<boolean> => {
+    const key = `${x},${y}`;
+    const known = clear.get(key);
+    if (known !== undefined) return known;
+    const point = centreOf(origin, x, y);
+    const answer = (await topmostAt(page, point.x, point.y)).includes('canvas');
+    clear.set(key, answer);
+    return answer;
+  };
+  for (let y = firstY; y + size - 1 <= lastY; y += 1) {
+    for (let x = firstX; x + size - 1 <= lastX; x += 1) {
+      let ok = true;
+      for (let dy = 0; dy < size && ok; dy += 1) {
+        for (let dx = 0; dx < size && ok; dx += 1) {
+          // eslint-disable-next-line no-await-in-loop -- a sequential probe of one real DOM; memoised.
+          ok = await isClear(x + dx, y + dy);
+        }
+      }
+      if (ok) return { x0: x, y0: y, x1: x + size - 1, y1: y + size - 1 };
+    }
+  }
+  return undefined;
+}
+
 /** Fails unless the canvas is the topmost element at that point. */
 async function assertCanvasAt(page: Page, x: number, y: number, label: string): Promise<void> {
   const top = await topmostAt(page, x, y);
@@ -730,19 +776,9 @@ test.describe('is there anything to do', () => {
 
     // Where an 8x8 lands now is a function of the panned origin, so it is
     // chosen from the panned map's clear core rather than named up front.
-    const yard = { x0: 21, y0: 11, x1: 28, y1: 18 };
-    const cornersAfter: string[] = [];
-    for (const [x, y] of [
-      [yard.x0, yard.y0],
-      [yard.x1, yard.y0],
-      [yard.x0, yard.y1],
-      [yard.x1, yard.y1],
-    ] as const) {
-      const point = centreOf(panned, x, y);
-      cornersAfter.push(`(${x},${y}) at screen (${Math.round(point.x)},${Math.round(point.y)}) -> ${await topmostAt(page, point.x, point.y)}`);
-    }
-    console.log(`[act3] the 8x8 yard's corners after panning: ${JSON.stringify(cornersAfter)}`);
-    if (cornersAfter.every((line) => line.includes('canvas'))) {
+    const yard = await firstClearSquare(page, panned, 8);
+    console.log(`[act3] the first fully-clear 8x8 square after panning: ${JSON.stringify(yard)}`);
+    if (yard !== undefined) {
       const yardAttempts = await designate(page, 'act3', 'room.yard', panned, yard);
       console.log(`[act3] the yard was accepted on attempt ${yardAttempts}`);
       const withYard = await latestRawCounts(page);
@@ -756,7 +792,7 @@ test.describe('is there anything to do', () => {
       await tab(page, 'overview').click({ timeout: 15_000 });
       console.log(`[act3] the screen with a cell, a shower room and a yard (UPPER BOUND):\n${await screen(page)}`);
     } else {
-      console.log(`[act3] the yard could not be placed even after panning; the designation was not attempted`);
+      console.log(`[act3] no fully-clear 8x8 square exists in the viewport even after panning; the designation was not attempted`);
     }
     console.log(`[act3] events at the end: ${JSON.stringify(await eventTypes(page))}`);
     console.log(`[act3] worker message kinds at the end: ${JSON.stringify(await messageKinds(page))}`);
@@ -804,5 +840,181 @@ test.describe('is there anything to do', () => {
     console.log(`[act4] the final screen (UPPER BOUND):\n${await screen(page)}`);
     console.log(`[act4] ${(await controlCensus(page)).length} control(s) at the end`);
     console.log(`[act4] ${await needsReadout(page, 'needs at the end of the long run')}`);
+  });
+
+  /**
+   * **Act 5 exists to refute act 3, and that is its whole job.**
+   *
+   * Act 3 measured a correctly-furnished `room.shower-room` -- 3x3, sealed, two
+   * shower heads, designated and accepted -- next to a cell of four prisoners
+   * whose `Hygiene` then went from 9% to **0%** over two in-game days while no
+   * published count moved but `rooms`. The obvious causal claim is that nobody
+   * could reach it, because neither the cell nor the shower room had a door and
+   * `buildNavigationGraph` reads `DoorRegistry` before it reads the edge value
+   * (`src/simulation/rooms/enclosure.ts:70-78`: *"a `'sealed'` answer no longer
+   * implies 'no way in'"*).
+   *
+   * A claim like that is worth nothing without the sample that could have
+   * refuted it. This act builds the same prison **with a door in each room**,
+   * by hand rather than through `buildAndPopulate`, and reads the same numbers.
+   * If `Hygiene` recovers, the finding is *"a door is required and nothing on
+   * screen says so"*. If it does not, the causal claim in the note is wrong and
+   * the note says so instead.
+   *
+   * The layout, all inside the clear rectangle act 1 measured (x=11..22,
+   * y=11..21):
+   *
+   * - the cell at (12,12)-(17,17), its perimeter walled except the east edge
+   *   `18,14 west`, which gets a wooden door;
+   * - the shower room at (19,15)-(21,17), walled except the west edge
+   *   `19,16 west`, which gets the other door;
+   * - so column 18 is the corridor between them, and both doors open onto it.
+   *
+   * The order is the game's: walls and doors, *then* zone, *then* objects.
+   */
+  test('act 5 - the same prison with a door in each room', async ({ page }) => {
+    test.setTimeout(1_500_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click({ timeout: 30_000 });
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'build').click({ timeout: 15_000 });
+    const origin = await calibrate(page);
+    console.log(`[act5] calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+
+    const cell = { x0: 12, y0: 12, x1: 17, y1: 17 };
+    const shower = { x0: 19, y0: 15, x1: 21, y1: 17 };
+    // 24 + 12 wall edges, minus the two the doors take, plus slack.
+    await buy(page, 'wall-brick', 80);
+    await buy(page, 'door-wooden', 4);
+    await buy(page, 'bed-wooden', 6);
+    await buy(page, 'shower-head-brick', 4);
+    console.log(`[act5] strip after buying: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+    await fastForwardToMax(page);
+    await page.waitForTimeout(4000);
+
+    // The cell's perimeter, east side split around the door edge at y=14.
+    await armBuildable(page, 'wall-brick');
+    const cellWest = origin.originX + cell.x0 * TILE;
+    const cellEast = origin.originX + (cell.x1 + 1) * TILE;
+    const cellNorth = origin.originY + cell.y0 * TILE;
+    const cellSouth = origin.originY + (cell.y1 + 1) * TILE;
+    for (const run of [
+      { name: 'cell north', a: { x: cellWest + TILE / 2, y: cellNorth }, b: { x: cellEast - TILE / 2, y: cellNorth } },
+      { name: 'cell south', a: { x: cellWest + TILE / 2, y: cellSouth }, b: { x: cellEast - TILE / 2, y: cellSouth } },
+      { name: 'cell west', a: { x: cellWest, y: cellNorth + TILE / 2 }, b: { x: cellWest, y: cellSouth - TILE / 2 } },
+      { name: 'cell east above the door', a: { x: cellEast, y: centreOf(origin, 18, 12).y }, b: { x: cellEast, y: centreOf(origin, 18, 13).y } },
+      { name: 'cell east below the door', a: { x: cellEast, y: centreOf(origin, 18, 15).y }, b: { x: cellEast, y: centreOf(origin, 18, 17).y } },
+    ]) {
+      const before = (await sentCommands(page)).length;
+      await drag(page, run.a, run.b);
+      const produced = (await sentCommands(page)).slice(before);
+      console.log(
+        `[act5] ${run.name}: ${produced.length} command(s) -> ` +
+          JSON.stringify(produced.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`)),
+      );
+    }
+
+    // The shower room's perimeter, west side split around the door edge at y=16.
+    const showerWest = origin.originX + shower.x0 * TILE;
+    const showerEast = origin.originX + (shower.x1 + 1) * TILE;
+    const showerNorth = origin.originY + shower.y0 * TILE;
+    const showerSouth = origin.originY + (shower.y1 + 1) * TILE;
+    for (const run of [
+      { name: 'shower north', a: { x: showerWest + TILE / 2, y: showerNorth }, b: { x: showerEast - TILE / 2, y: showerNorth } },
+      { name: 'shower south', a: { x: showerWest + TILE / 2, y: showerSouth }, b: { x: showerEast - TILE / 2, y: showerSouth } },
+      { name: 'shower east', a: { x: showerEast, y: showerNorth + TILE / 2 }, b: { x: showerEast, y: showerSouth - TILE / 2 } },
+      { name: 'shower west above the door', a: { x: showerWest, y: centreOf(origin, 19, 15).y }, b: { x: showerWest, y: centreOf(origin, 19, 15).y } },
+      { name: 'shower west below the door', a: { x: showerWest, y: centreOf(origin, 19, 17).y }, b: { x: showerWest, y: centreOf(origin, 19, 17).y } },
+    ]) {
+      const before = (await sentCommands(page)).length;
+      await drag(page, run.a, run.b);
+      const produced = (await sentCommands(page)).slice(before);
+      console.log(
+        `[act5] ${run.name}: ${produced.length} command(s) -> ` +
+          JSON.stringify(produced.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`)),
+      );
+    }
+
+    // The two doors, on the two edges left open.
+    await armBuildable(page, 'door-wooden');
+    for (const door of [
+      { name: 'cell door', x: cellEast, y: centreOf(origin, 18, 14).y, expect: '18,14 west' },
+      { name: 'shower door', x: showerWest, y: centreOf(origin, 19, 16).y, expect: '19,16 west' },
+    ]) {
+      await assertCanvasAt(page, door.x, door.y, `act5 ${door.name}`);
+      const produced = await press(page, door.x, door.y);
+      console.log(
+        `[act5] ${door.name} at (${Math.round(door.x)},${Math.round(door.y)}), wanted ${door.expect}: ` +
+          `${produced.length} command(s) -> ${JSON.stringify(produced)}` +
+          ` | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+      );
+    }
+    await waitForQueueEmpty(page);
+    await page.waitForTimeout(2000);
+
+    // Zone both, then furnish both.
+    const cellAttempts = await designate(page, 'act5', 'room.cell', origin, cell);
+    console.log(`[act5] the cell with a door was accepted on attempt ${cellAttempts}`);
+    const showerAttempts = await designate(page, 'act5', 'room.shower-room', origin, shower);
+    console.log(`[act5] the shower room with a door was accepted on attempt ${showerAttempts}`);
+    const zoned = await latestRawCounts(page);
+    console.log(`[act5] both rooms zoned: ${JSON.stringify(zoned)}`);
+
+    await tab(page, 'build').click({ timeout: 15_000 });
+    await armBuildable(page, 'bed-wooden');
+    for (const [x, y] of [
+      [12, 12],
+      [13, 12],
+      [14, 12],
+      [15, 12],
+    ] as const) {
+      const point = centreOf(origin, x, y);
+      const produced = await press(page, point.x, point.y);
+      console.log(`[act5] bed at (${x},${y}): ${produced.length} command(s) | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    }
+    await armBuildable(page, 'toilet-brick');
+    const toilet = centreOf(origin, 12, 16);
+    console.log(`[act5] toilet at (12,16): ${(await press(page, toilet.x, toilet.y)).length} command(s)`);
+    await armBuildable(page, 'shower-head-brick');
+    for (const [x, y] of [
+      [19, 15],
+      [21, 17],
+    ] as const) {
+      const point = centreOf(origin, x, y);
+      const produced = await press(page, point.x, point.y);
+      console.log(`[act5] shower head at (${x},${y}): ${produced.length} command(s) | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    }
+    await waitForQueueEmpty(page);
+    await page.waitForTimeout(3000);
+    const furnished = await latestRawCounts(page);
+    console.log(`[act5] both rooms furnished: ${JSON.stringify(furnished)}`);
+    await tab(page, 'rooms').click({ timeout: 15_000 });
+    console.log(`[act5] the Rooms tab with a doored cell and a doored shower room (UPPER BOUND):\n${await screen(page)}`);
+
+    // Four prisoners and a guard, then let it run.
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    for (let index = 0; index < 4; index += 1) {
+      await page.locator('.hud-intake__admit').click({ timeout: 20_000 });
+      await page.waitForTimeout(250);
+    }
+    await tab(page, 'security').click({ timeout: 15_000 });
+    await page.locator('.hud-staff__hire').click({ timeout: 20_000 });
+    await page.waitForTimeout(2000);
+    const populated = await latestRawCounts(page);
+    console.log(`[act5] four prisoners, one guard: ${JSON.stringify(populated)}`);
+    console.log(`[act5] ${await needsReadout(page, 'needs right after admission')}`);
+
+    // Four in-game days -- the same budget act 3 gave the doorless prison.
+    const startTick = await currentTick(page);
+    for (let day = 1; day <= 4; day += 1) {
+      await runToTick(page, 'act5', startTick + day * 2400, 3000, 300_000);
+      console.log(`[act5] ${await needsReadout(page, `needs at day +${day}`)}`);
+    }
+    const ran = await latestRawCounts(page);
+    console.log(`[act5] after four days with doors: ${JSON.stringify(ran)}`);
+    if (populated !== undefined && ran !== undefined) console.log(`[act5] DELTA over four days with doors\n${deltaVector(populated, ran)}`);
+    console.log(`[act5] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    console.log(`[act5] the final screen (UPPER BOUND):\n${await screen(page)}`);
   });
 });
