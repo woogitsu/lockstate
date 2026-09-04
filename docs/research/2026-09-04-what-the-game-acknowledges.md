@@ -116,6 +116,23 @@ The figure was not invented. Counting the registry at every commit that touched
 | 19 | `889ff5f9`, 2026-09-04 11:16 | *fix(construction): an undo says what it destroyed (#927)* |
 | 20 | `d9770e61`, 2026-09-04 16:08 | *fix(objects): removing a standing object says the money is gone (#945)* |
 
+**And it can be settled rather than inferred, because the pass named its own
+commit.** `docs/research/2026-09-04-is-there-anything-to-do.md:4` reads *"Tree
+played: `origin/main` at **v0.0.451** (`0e614c71`)"* — 2026-09-04 10:50 UTC,
+between the 18-member commit and the 19-member one. Counting the registry at
+that revision:
+
+```
+$ git show 0e614c71:src/simulation/protocol/types.ts | node -e "…"
+members at 0e614c71: 18
+```
+
+**Eighteen, exactly, at the commit that note names.** This is
+`documentation-version-claim-contract.test.ts`'s rule earning its keep on the
+first occasion anybody needed it: *"a version beside a sha identifies a tree
+and cannot rot"*, so an audit a day later can confirm a stale figure was true
+rather than argue about it.
+
 **Eighteen was the true count for five hours on the morning of the day the
 brief was written, and both commits that falsified it added a member this
 census classifies as an undo or bad news.** That is the more interesting half:
@@ -575,10 +592,6 @@ being an acknowledgement candidate.**
   fires for a prison that did nothing; it does not show that a well-run prison's
   discharges are uninformative. The claim is about the *gate*, which is a clock,
   not about the population that reaches it.
-- **That the eighteen-member registry the direction pass counted was the one it
-  read.** The commit table in §1 shows eighteen was true that morning, which is
-  the most likely explanation and is not proof. Nothing in the brief named a
-  commit.
 - **Anything about how any of this feels.** Nothing was played. Every §5 site
   is a source reading.
 
