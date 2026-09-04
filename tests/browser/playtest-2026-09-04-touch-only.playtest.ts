@@ -140,25 +140,109 @@ async function assertCanvasAt(page: Page, x: number, y: number, why: string): Pr
  * finger performs for free: if something else is on top at the point, the tap
  * lands on that instead and the control never hears about it.
  */
-async function tapControl(page: Page, selector: string, options: { readonly nth?: number } = {}): Promise<void> {
-  const locator = options.nth === undefined ? page.locator(selector) : page.locator(selector).nth(options.nth);
+async function whatIsOnTopOf(page: Page, selector: string, nth: number): Promise<{ verdict: string; centre: Point }> {
+  const locator = page.locator(selector).nth(nth);
   const box = await locator.boundingBox();
   expect(box, `no box for ${selector}`).not.toBeNull();
   const centre = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
-  const reached = await page.evaluate(
+  const verdict = await page.evaluate(
     ([sel, index, px, py]: readonly [string, number, number, number]) => {
-      const nodes = document.querySelectorAll(sel);
-      const target = nodes[index];
+      const target = document.querySelectorAll(sel)[index];
       if (target === undefined) return 'MISSING';
       const top = document.elementFromPoint(px, py);
       if (top === null) return 'NOTHING';
       return target.contains(top) || top === target ? 'OK' : `${top.tagName.toLowerCase()}.${String((top as HTMLElement).className)}`;
     },
-    [selector, options.nth ?? 0, centre.x, centre.y] as const,
+    [selector, nth, centre.x, centre.y] as const,
   );
-  expect(reached, `tapping ${selector} at (${centre.x},${centre.y})`).toBe('OK');
+  return { verdict, centre };
+}
+
+async function tapControl(page: Page, selector: string, options: { readonly nth?: number } = {}): Promise<void> {
+  const { verdict, centre } = await whatIsOnTopOf(page, selector, options.nth ?? 0);
+  expect(verdict, `tapping ${selector} at (${centre.x},${centre.y})`).toBe('OK');
   await page.touchscreen.tap(centre.x, centre.y);
   await page.waitForTimeout(120);
+}
+
+/**
+ * A tap on a list row, scrolling the list with a finger first if the row is
+ * not where a tap would reach it.
+ *
+ * This exists because act 4's first landscape run died on it, and the death was
+ * the game rather than the instrument: with the Buy disclosure open at
+ * 1024x768, `[data-buildable="bed-wooden"]`'s own box is at (880, 400.6) and
+ * `document.elementFromPoint` there returns
+ * **`button.ui-action hud-build__remove`** -- the catalogue's rows run on past
+ * the bottom of the box that clips them, and the Build panel's own action row
+ * is painted where the Bed row's coordinates say it is. A player has to scroll
+ * the catalogue. **How many flicks that costs is the measurement**, and it is
+ * logged every time this is called.
+ */
+async function tapRowScrollingIfNeeded(page: Page, selector: string, label: string): Promise<void> {
+  const client = await page.context().newCDPSession(page);
+  for (let flicks = 0; flicks <= 8; flicks += 1) {
+    const { verdict, centre } = await whatIsOnTopOf(page, selector, 0);
+    if (verdict === 'OK') {
+      if (flicks > 0) console.log(`[${label}] ${selector} needed ${flicks} finger flick(s) before a tap could reach it`);
+      await page.touchscreen.tap(centre.x, centre.y);
+      await page.waitForTimeout(120);
+      return;
+    }
+    if (flicks === 0) console.log(`[${label}] a tap where ${selector} says it is lands on ${verdict} instead; scrolling the list by finger`);
+    const scroller = await page.evaluate((sel: string) => {
+      const node = document.querySelector<HTMLElement>(sel);
+      if (node === null) return null;
+      let parent = node.parentElement;
+      while (parent !== null) {
+        if (/auto|scroll/.test(getComputedStyle(parent).overflowY) && parent.scrollHeight > parent.clientHeight + 1) {
+          const rect = parent.getBoundingClientRect();
+          return {
+            selector: `${parent.tagName.toLowerCase()}.${String(parent.className).split(/\s+/)[0] ?? ''}`,
+            x: Math.round(rect.x + rect.width / 2),
+            y: Math.round(rect.y + rect.height / 2),
+            scrollTop: parent.scrollTop,
+            scrollHeight: parent.scrollHeight,
+            clientHeight: parent.clientHeight,
+          };
+        }
+        parent = parent.parentElement;
+      }
+      return null;
+    }, selector);
+    if (scroller === null) throw new Error(`${selector} is unreachable (${verdict}) and nothing above it scrolls`);
+    await client.send('Input.synthesizeScrollGesture', {
+      x: scroller.x,
+      y: scroller.y,
+      yDistance: -120,
+      gestureSourceType: 'touch',
+      speed: 1200,
+    });
+    await page.waitForTimeout(300);
+    const moved = await page.evaluate((sel: string) => document.querySelector<HTMLElement>(sel)?.scrollTop ?? -1, scroller.selector);
+    if (moved === scroller.scrollTop) {
+      /*
+       * The finger could not scroll the list. That is the finding, and act 8
+       * measures it properly. Here the act keeps playing, with the row brought
+       * into view by `scrollIntoView` -- which is **not a touch route** and is
+       * labelled as such in the log, so no reading after this point can be
+       * mistaken for one a player could reproduce with a finger.
+       */
+      console.log(
+        `[${label}] A ONE-FINGER FLICK DID NOT SCROLL ${scroller.selector}` +
+          ` (scrollTop stayed ${moved}; scrollHeight ${scroller.scrollHeight} vs clientHeight ${scroller.clientHeight}).` +
+          ` Falling back to scrollIntoView, WHICH IS NOT A TOUCH ROUTE, so the rest of this act can run.`,
+      );
+      await page.evaluate((sel: string) => document.querySelector(sel)?.scrollIntoView({ block: 'center' }), selector);
+      await page.waitForTimeout(250);
+      const after = await whatIsOnTopOf(page, selector, 0);
+      if (after.verdict !== 'OK') throw new Error(`${selector} is unreachable even after scrollIntoView: ${after.verdict}`);
+      await page.touchscreen.tap(after.centre.x, after.centre.y);
+      await page.waitForTimeout(120);
+      return;
+    }
+  }
+  throw new Error(`${selector} was still unreachable after eight finger flicks`);
 }
 
 /* ------------------------------------------------------------------ */
@@ -219,7 +303,7 @@ const centreOf = (o: { originX: number; originY: number }, tx: number, ty: numbe
 
 /** `armBuildable`, tapped. */
 async function touchArm(page: Page, id: string): Promise<void> {
-  await tapControl(page, `.hud-build__list [data-buildable="${id}"]`);
+  await tapRowScrollingIfNeeded(page, `.hud-build__list [data-buildable="${id}"]`, `arm ${id}`);
   const label = (await page.locator('.hud-build__arm').innerText()).trim().toLowerCase();
   if (label.startsWith('place') || label.startsWith('draw')) await tapControl(page, '.hud-build__arm');
 }
@@ -233,7 +317,7 @@ async function touchArm(page: Page, id: string): Promise<void> {
  * is one tap per unit, and act 5 counts what that costs.
  */
 async function touchBuy(page: Page, buildableId: string, quantity: number): Promise<void> {
-  await tapControl(page, `.hud-build__list [data-buildable="${buildableId}"]`);
+  await tapRowScrollingIfNeeded(page, `.hud-build__list [data-buildable="${buildableId}"]`, `buy ${buildableId}`);
   if (await page.locator('.hud-build__buy').isHidden()) await tapControl(page, '.hud-build__buy-toggle');
   await page.locator('.hud-build__buy .ui-number__input').fill(String(quantity));
   await tapControl(page, '.hud-build__buy-submit');
@@ -859,7 +943,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await tapControl(page, '.hud-rooms > .ui-panel__header > .ui-panel__toggle');
     }
-    await tapControl(page, '.hud-rooms__list [data-room="room.cell"]');
+    await tapRowScrollingIfNeeded(page, '.hud-rooms__list [data-room="room.cell"]', label);
     await tapControl(page, '.hud-rooms__arm');
     const a = centreOf(origin, x0, y0);
     const b = centreOf(origin, x0 + 5, y0 + 5);
@@ -895,7 +979,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   // Hire, by finger.
   await tapControl(page, '.hud__tabs [data-tab="security"]');
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
-  if ((await guardRow.count()) > 0) await tapControl(page, '.hud-staff__list [data-staff-role="staff-role.guard"]');
+  if ((await guardRow.count()) > 0) await tapRowScrollingIfNeeded(page, '.hud-staff__list [data-staff-role="staff-role.guard"]', label);
   await tapControl(page, '.hud-staff__hire');
   await page.waitForTimeout(1200);
   log(`after one Hire tap: staff=${String((await latestCounts(page))?.staff)}`);
@@ -946,7 +1030,7 @@ test('act 6: what a finger can undo', async ({ page }) => {
 
   // The tap-count cost of the stepper, which is the touch route that needs no
   // soft keyboard.
-  await tapControl(page, '.hud-build__list [data-buildable="wall-brick"]');
+  await tapRowScrollingIfNeeded(page, '.hud-build__list [data-buildable="wall-brick"]', 'mistake');
   if (await page.locator('.hud-build__buy').isHidden()) await tapControl(page, '.hud-build__buy-toggle');
   const startValue = await page.locator('.hud-build__buy .ui-number__input').inputValue();
   await tapControl(page, '.hud-build__buy .ui-number__step', { nth: 1 });
@@ -1072,4 +1156,344 @@ test('act 6: what a finger can undo', async ({ page }) => {
       })),
   );
   log(`every control on screen whose words suggest undoing something: ${JSON.stringify(undoControls)}`);
+});
+
+/* ================================================================== */
+/* act 7 — what the panel tells a finger while it is aiming            */
+/* ================================================================== */
+
+/**
+ * The Build panel's **WHERE** readout, on a device with no hover.
+ *
+ * `world-scene.ts:585-588` says of the mouse path that keeps that readout fed:
+ * *"Nothing is being built and no button is down: keep the ghost under the
+ * cursor so the edge rule is legible before the first click. **Touch never
+ * reaches here**, which is why the drag preview exists as well."* So the
+ * question a player asks -- *which tile am I about to build on* -- is answered
+ * before the press on a mouse and, on a finger, only during one. This act
+ * reads the readout at four moments and prints all four.
+ */
+test('act 7: the WHERE readout, with no hover', async ({ page }) => {
+  await installTee(page);
+  const client = await page.context().newCDPSession(page);
+  for (const [label, viewport] of [
+    ['landscape 1024x768', LANDSCAPE],
+    ['portrait 768x1024', PORTRAIT],
+  ] as const) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await openApp(page);
+    await tapControl(page, '.save-panel__button', { nth: 0 });
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tapControl(page, '.hud__tabs [data-tab="build"]');
+    await page.waitForTimeout(400);
+    const reach = await measureReach(page);
+    const side = reach.largestFreeSquarePx;
+    const mid = { x: Math.round(reach.freeSquareAt!.x + side / 2), y: Math.round(reach.freeSquareAt!.y + side / 2) };
+
+    const where = async (): Promise<string> => panelText(page, '.hud-build__target');
+    console.log(`\n[${label}] ===== WHERE =====`);
+    console.log(`[${label}] before anything is armed: ${JSON.stringify(await where())}`);
+    await touchArm(page, 'wall-brick');
+    console.log(`[${label}] armed, finger not yet down: ${JSON.stringify(await where())}`);
+
+    // A finger placed on the world and held still: the moment a mouse would
+    // already have been showing a ghost for as long as the pointer was there.
+    await assertCanvasAt(page, mid.x, mid.y, `${label} where probe`);
+    await dispatch(client, 'touchStart', [{ id: 0, ...mid }]);
+    await page.waitForTimeout(300);
+    console.log(`[${label}] one finger down and still, no movement yet: ${JSON.stringify(await where())}`);
+    for (let step = 1; step <= 4; step += 1) await dispatch(client, 'touchMove', [{ id: 0, x: mid.x + step * 32, y: mid.y }]);
+    await page.waitForTimeout(200);
+    console.log(`[${label}] mid-drag, 128px along: ${JSON.stringify(await where())}`);
+    await dispatch(client, 'touchEnd', []);
+    await page.waitForTimeout(400);
+    console.log(`[${label}] after the finger lifts: ${JSON.stringify(await where())}`);
+    console.log(`[${label}] the refusal band now: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  }
+});
+
+/* ================================================================== */
+/* act 8 — can a finger scroll the Build catalogue?                    */
+/* ================================================================== */
+
+/**
+ * **The catalogue is a window a few rows tall onto a list many times taller,
+ * and act 4 could not move it with a finger.** This act settles what is true.
+ *
+ * Four things are separated on purpose, because act 4's one failed flick could
+ * be any of them:
+ *
+ * 1. **Geometry** -- how tall the box is and how tall its content is, folded
+ *    and with the Buy disclosure open, at both viewports.
+ * 2. **`touch-action`** -- the whole chain from a row up to `<html>`, read
+ *    computed. `src/styles.css:22` puts `touch-action: none` on `html, body`
+ *    and `src/ui/hud/hud.css:60-69` opts five HUD islands back in with
+ *    `touch-action: auto`, saying *"HUD surfaces need normal touch behaviour
+ *    so a control can be tapped and a list scrolled"*. Whether that reaches
+ *    the list is the question.
+ * 3. **Three different one-finger gestures** -- Chromium's own synthesised
+ *    touch scroll, a raw `Input.dispatchTouchEvent` drag, and a slow raw drag
+ *    with a pause after the first move (a real thumb is not instantaneous).
+ * 4. **A programmatic `scrollBy`**, as the control: if that moves it, the box
+ *    can scroll and only the *finger* cannot.
+ */
+test('act 8: can a finger scroll the Build catalogue', async ({ page }) => {
+  const client = await page.context().newCDPSession(page);
+  for (const [label, viewport] of [
+    ['landscape 1024x768', LANDSCAPE],
+    ['portrait 768x1024', PORTRAIT],
+  ] as const) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await openApp(page);
+    await tapControl(page, '.save-panel__button', { nth: 0 });
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tapControl(page, '.hud__tabs [data-tab="build"]');
+    await page.waitForTimeout(400);
+    console.log(`\n[${label}] ===== THE CATALOGUE =====`);
+
+    const geometry = async (): Promise<string> =>
+      page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.hud-build__list');
+        if (list === null) return 'ABSENT';
+        const rect = list.getBoundingClientRect();
+        const rows = list.querySelectorAll('[data-buildable]').length;
+        const visibleRows = [...list.querySelectorAll<HTMLElement>('[data-buildable]')].filter((row) => {
+          const r = row.getBoundingClientRect();
+          return r.top >= rect.top - 1 && r.bottom <= rect.bottom + 1;
+        }).length;
+        return JSON.stringify({
+          box: `${Math.round(rect.width)}x${Math.round(rect.height)} at ${Math.round(rect.x)},${Math.round(rect.y)}`,
+          clientHeight: list.clientHeight,
+          scrollHeight: list.scrollHeight,
+          rowsInList: rows,
+          rowsWhollyInsideTheBox: visibleRows,
+          overflowY: getComputedStyle(list).overflowY,
+        });
+      });
+
+    console.log(`[${label}] catalogue with the Buy disclosure folded: ${await geometry()}`);
+    await tapRowScrollingIfNeeded(page, '.hud-build__list [data-buildable="wall-brick"]', label);
+    if (await page.locator('.hud-build__buy').isHidden()) await tapControl(page, '.hud-build__buy-toggle');
+    await page.waitForTimeout(300);
+    console.log(`[${label}] catalogue with the Buy disclosure OPEN: ${await geometry()}`);
+
+    const chain = await page.evaluate(() => {
+      const row = document.querySelector<HTMLElement>('.hud-build__list [data-buildable]');
+      const out: { node: string; touchAction: string; overflowY: string }[] = [];
+      let node: HTMLElement | null = row;
+      while (node !== null) {
+        const style = getComputedStyle(node);
+        out.push({
+          node: `${node.tagName.toLowerCase()}.${String(node.className).split(/\s+/)[0] ?? ''}`,
+          touchAction: style.touchAction,
+          overflowY: style.overflowY,
+        });
+        node = node.parentElement;
+      }
+      return out;
+    });
+    console.log(`[${label}] computed touch-action from a catalogue row up to <html>: ${JSON.stringify(chain, null, 1)}`);
+
+    const listCentre = await page.evaluate(() => {
+      const rect = document.querySelector<HTMLElement>('.hud-build__list')?.getBoundingClientRect();
+      return rect === undefined ? null : { x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) };
+    });
+    expect(listCentre).not.toBeNull();
+    const readTop = async (): Promise<number> => page.evaluate(() => document.querySelector<HTMLElement>('.hud-build__list')?.scrollTop ?? -1);
+    const reset = async (): Promise<void> => {
+      await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.hud-build__list');
+        if (list !== null) list.scrollTop = 0;
+      });
+      await page.waitForTimeout(150);
+    };
+    console.log(`[${label}] the point every gesture below is aimed at is ${JSON.stringify(listCentre)}, on top of which sits ${await topAt(page, listCentre!.x, listCentre!.y)}`);
+
+    // 1. Chromium's own synthesised touch scroll.
+    await reset();
+    await client.send('Input.synthesizeScrollGesture', { x: listCentre!.x, y: listCentre!.y, yDistance: -200, gestureSourceType: 'touch', speed: 800 });
+    await page.waitForTimeout(500);
+    console.log(`[${label}] synthesizeScrollGesture(touch, -200): scrollTop 0 -> ${await readTop()}`);
+
+    // 2. A raw one-finger drag upward, ten steps, no pauses.
+    await reset();
+    await touchDrag(client, page, { x: listCentre!.x, y: listCentre!.y + 20 }, { x: listCentre!.x, y: listCentre!.y - 180 });
+    console.log(`[${label}] a raw one-finger drag of 200px upward: scrollTop 0 -> ${await readTop()}`);
+
+    // 3. The same, slowly, the way a thumb actually moves.
+    await reset();
+    await dispatch(client, 'touchStart', [{ id: 0, x: listCentre!.x, y: listCentre!.y + 20 }]);
+    await page.waitForTimeout(80);
+    for (let step = 1; step <= 10; step += 1) {
+      await dispatch(client, 'touchMove', [{ id: 0, x: listCentre!.x, y: listCentre!.y + 20 - step * 20 }]);
+      await page.waitForTimeout(30);
+    }
+    await dispatch(client, 'touchEnd', []);
+    await page.waitForTimeout(400);
+    console.log(`[${label}] a slow one-finger drag of 200px upward: scrollTop 0 -> ${await readTop()}`);
+
+    // 4. The control: can the box scroll at all?
+    await reset();
+    await page.evaluate(() => document.querySelector<HTMLElement>('.hud-build__list')?.scrollBy({ top: 200 }));
+    await page.waitForTimeout(250);
+    console.log(`[${label}] scrollBy({top:200}) from script: scrollTop 0 -> ${await readTop()}`);
+
+    // 5. And whether the two rows that ARE in the box are enough to play with:
+    //    which buildables a finger can reach with no scrolling at all.
+    await reset();
+    const reachableRows = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')]
+        .map((row) => {
+          const rect = row.getBoundingClientRect();
+          const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+          return {
+            id: row.dataset['buildable'] ?? '?',
+            reachable: top !== null && (top === row || row.contains(top)),
+          };
+        })
+        .filter((entry) => entry.reachable)
+        .map((entry) => entry.id),
+    );
+    const allRows = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')].map((row) => row.dataset['buildable'] ?? '?'),
+    );
+    console.log(`[${label}] of ${allRows.length} catalogue rows a finger can tap ${reachableRows.length}: ${JSON.stringify(reachableRows)}`);
+
+    // 6. The same question for the Rooms catalogue, which is the other list a
+    //    player has to get a specific row out of.
+    await tapControl(page, '.hud__tabs [data-tab="rooms"]');
+    await page.waitForTimeout(400);
+    const roomsGeometry = await page.evaluate(() => {
+      const list = document.querySelector<HTMLElement>('.hud-rooms__list');
+      if (list === null) return 'ABSENT';
+      const rows = [...list.querySelectorAll<HTMLElement>('[data-room]')];
+      const reachable = rows.filter((row) => {
+        const rect = row.getBoundingClientRect();
+        const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        return top !== null && (top === row || row.contains(top));
+      });
+      return JSON.stringify({
+        clientHeight: list.clientHeight,
+        scrollHeight: list.scrollHeight,
+        rows: rows.length,
+        tappable: reachable.length,
+        tappableIds: reachable.map((row) => row.dataset['room']),
+      });
+    });
+    console.log(`[${label}] the Rooms catalogue: ${roomsGeometry}`);
+    const roomsCentre = await page.evaluate(() => {
+      const rect = document.querySelector<HTMLElement>('.hud-rooms__list')?.getBoundingClientRect();
+      return rect === undefined ? null : { x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) };
+    });
+    if (roomsCentre !== null) {
+      await client.send('Input.synthesizeScrollGesture', { x: roomsCentre.x, y: roomsCentre.y, yDistance: -200, gestureSourceType: 'touch', speed: 800 });
+      await page.waitForTimeout(500);
+      console.log(
+        `[${label}] a finger flick on the Rooms catalogue: scrollTop -> ` +
+          `${await page.evaluate(() => document.querySelector<HTMLElement>('.hud-rooms__list')?.scrollTop ?? -1)}`,
+      );
+    }
+  }
+});
+
+/* ================================================================== */
+/* act 9 — why the flick does not take                                 */
+/* ================================================================== */
+
+/**
+ * **The discriminating experiment for act 8's split result.**
+ *
+ * Act 8 measured two one-finger scrolls of the same list disagreeing:
+ * Chromium's own `Input.synthesizeScrollGesture` with `gestureSourceType:
+ * 'touch'` moved `.hud-build__list` by 0, and a raw
+ * `Input.dispatchTouchEvent` drag moved it by 185. One of those two matches a
+ * thumb and the other does not, and the difference decides whether a tablet
+ * player can reach 19 of the catalogue's 21 rows.
+ *
+ * The hypothesis is `touch-action`, and it is a claim about *the spec's
+ * intersection rule* rather than about any one browser: an element's effective
+ * touch-action is the intersection of its own value with every ancestor's, so
+ * a descendant `auto` **cannot** re-permit what an ancestor `none` forbade.
+ * `src/styles.css:22` sets `touch-action: none` on `html, body`, and
+ * `src/ui/hud/hud.css:60-69` sets `touch-action: auto` on five HUD islands
+ * under the comment *"The page sets `touch-action: none` for the world; HUD
+ * surfaces need normal touch behaviour so a control can be tapped and **a list
+ * scrolled**"*. If the rule is what it is, that opt-in does nothing.
+ *
+ * The experiment: run the identical synthesised flick twice, once as shipped
+ * and once with `html`/`body` relaxed to `touch-action: auto` from the test.
+ * Nothing else changes. If the second scrolls and the first does not, the
+ * cause is established and the raw-dispatch reading is the instrument
+ * artifact.
+ */
+test('act 9: is it touch-action that stops the flick', async ({ page }) => {
+  const client = await page.context().newCDPSession(page);
+  await page.setViewportSize(LANDSCAPE);
+  await openApp(page);
+  await tapControl(page, '.save-panel__button', { nth: 0 });
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await tapControl(page, '.hud__tabs [data-tab="build"]');
+  await page.waitForTimeout(400);
+
+  const centre = await page.evaluate(() => {
+    const rect = document.querySelector<HTMLElement>('.hud-build__list')?.getBoundingClientRect();
+    return rect === undefined ? null : { x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) };
+  });
+  expect(centre).not.toBeNull();
+  const readTop = async (): Promise<number> => page.evaluate(() => document.querySelector<HTMLElement>('.hud-build__list')?.scrollTop ?? -1);
+  const reset = async (): Promise<void> => {
+    await page.evaluate(() => {
+      const list = document.querySelector<HTMLElement>('.hud-build__list');
+      if (list !== null) list.scrollTop = 0;
+    });
+    await page.waitForTimeout(150);
+  };
+  const flick = async (): Promise<number> => {
+    await reset();
+    await client.send('Input.synthesizeScrollGesture', { x: centre!.x, y: centre!.y, yDistance: -200, gestureSourceType: 'touch', speed: 800 });
+    await page.waitForTimeout(600);
+    return readTop();
+  };
+
+  console.log('\n[touch-action] ===== THE DISCRIMINATOR =====');
+  console.log(`[touch-action] as shipped, html/body touch-action = ${await page.evaluate(() => `${getComputedStyle(document.documentElement).touchAction}/${getComputedStyle(document.body).touchAction}`)}`);
+  console.log(`[touch-action] synthesised finger flick as shipped: scrollTop 0 -> ${await flick()}`);
+
+  await page.evaluate(() => {
+    document.documentElement.style.touchAction = 'auto';
+    document.body.style.touchAction = 'auto';
+  });
+  await page.waitForTimeout(200);
+  console.log(`[touch-action] with html/body relaxed to auto (TEST-ONLY, nothing under src/ changed): scrollTop 0 -> ${await flick()}`);
+
+  await page.evaluate(() => {
+    document.documentElement.style.touchAction = '';
+    document.body.style.touchAction = 'none';
+  });
+  await page.waitForTimeout(200);
+  console.log(`[touch-action] put back to none: scrollTop 0 -> ${await flick()}`);
+
+  // And the same three readings for the page's other two scroll containers,
+  // because whatever is true of the catalogue is true of them.
+  for (const selector of ['.save-panel', '.ui-panel.hud-build']) {
+    const box = await page.evaluate((sel: string) => {
+      const node = document.querySelector<HTMLElement>(sel);
+      if (node === null) return null;
+      const rect = node.getBoundingClientRect();
+      return {
+        x: Math.round(rect.x + rect.width / 2),
+        y: Math.round(rect.y + rect.height / 2),
+        scrollHeight: node.scrollHeight,
+        clientHeight: node.clientHeight,
+      };
+    }, selector);
+    if (box === null || box.scrollHeight <= box.clientHeight + 1) {
+      console.log(`[touch-action] ${selector}: nothing to scroll (${JSON.stringify(box)})`);
+      continue;
+    }
+    await client.send('Input.synthesizeScrollGesture', { x: box.x, y: box.y, yDistance: -150, gestureSourceType: 'touch', speed: 800 });
+    await page.waitForTimeout(500);
+    const after = await page.evaluate((sel: string) => document.querySelector<HTMLElement>(sel)?.scrollTop ?? -1, selector);
+    console.log(`[touch-action] a finger flick on ${selector} (${box.scrollHeight} of content in ${box.clientHeight}): scrollTop -> ${after}`);
+  }
 });
