@@ -559,9 +559,18 @@ a prison of eight is half of them and for a prison of thirty is an eighth.
 **What the player sees:** pressing a prisoner in the world selects them, the
 Regime tab opens with the inspector already filled, and the roster row for that
 prisoner is the selected one. `selection.primary` gets its consumer; the
-inspector gets its second door. For a room, the same press routes to the Rooms
-panel's existing room detail (`hud/room-detail` is read at
-`src/ui/simulation-room-needs.ts:344`).
+inspector gets its second door.
+
+**The room half is NOT the same proposal, and saying so is the point.**
+`hud/room-detail` has a reader — `src/ui/simulation-room-needs.ts:344` — but
+**VERIFIED, read**: `src/ui/simulation-room-needs.ts:101-111`,
+`unfinishedRoomIds` filters to `row.requirementSummary.missingCapability > 0`,
+so the only rooms ever asked about are the ones **missing something**. A
+finished, working cell is never the subject of a `hud/room-detail` request in
+`src/` at all. So *"why is nobody in that cell?"* — asked about a cell that is
+complete — has no panel behind it today, and a room inspector is a new surface
+rather than a new door onto an old one. That is the honest split: **the
+prisoner half of P1 is a route; the room half is a build.**
 
 **What such an inspector can honestly say, and what it cannot.**
 **VERIFIED, read**: `src/ui/simulation-prisoner-detail.ts:47-82` records a
