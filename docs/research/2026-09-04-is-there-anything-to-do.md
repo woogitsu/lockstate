@@ -4,8 +4,9 @@
 **Tree played:** `origin/main` at **v0.0.451** (`0e614c71`), in worktree
 `playtest/is-there-anything-to-do`. Nothing under `src/` differs from that
 commit, and the running page says so from the inside: every screen dump below
-carries `v0.0.451` and the short sha of one of this branch's
-instrument-only commits.
+carries `v0.0.451` beside the short sha of one of this branch's
+instrument-only commits -- `483256a`, `82aa3be`, `e6695e9` or `523d936`, each
+of which touches only `tests/` and `docs/`.
 
 **Question, as commissioned:** *once the first cell works and the first
 prisoner sleeps in it, is there anything to do? Something to build toward, a
@@ -76,7 +77,7 @@ LOCKSTATE_BROWSER_TEST_PORT=43303 node node_modules/@playwright/test/cli.js test
 
 - **MEASURED** — produced by one of the runs above and quoted from its output.
 - **VERIFIED, read** — a file was opened at the line cited, in the played
-  worktree at v0.0.451.
+  worktree at v0.0.451 (`0e614c71`).
 - **DERIVED** — arithmetic over MEASURED or VERIFIED facts, shown.
 - **JUDGEMENT** — about what a *player* would feel rather than what the game
   did. §11 names the weakest.
@@ -228,7 +229,7 @@ honestly.
 
 **Also landed since the brief was written.** The brief lists, as an open
 finding, *"one all-clear sentence serving both a handled incident and an expired
-one."* It is fixed on `origin/main` at v0.0.451:
+one."* It is fixed on `origin/main` at v0.0.451 (`0e614c71`):
 `incidents.all-clear-after-lapse` is its own event type
 (`src/simulation/protocol/types.ts:1686`), the UI grades it `'warning'` rather
 than `'info'` (`src/ui/simulation-events.ts:283-284`), and it has its own
@@ -557,7 +558,7 @@ Two catalogue objects declare that capability — `object.bed` and
 `footprint: { width: 1, height: 2 }`.
 
 **VERIFIED, read.** Cell sharing is a *preference*, not a limit.
-`rateCellSharing` (`src/simulation/prisoners/cell-sharing.ts:72-81`) returns
+`rateCellSharing` (`src/simulation/prisoners/cell-sharing.ts:72-80`) returns
 `max |arrival.riskTier − occupant.riskTier|`, and its own docblock says why it
 is a number and not a verdict: *"some pairings are unwise rather than
 forbidden"* (`:29-30`). Allocation prefers a better rating; nothing refuses a
@@ -921,7 +922,7 @@ ceremony, an inspection consequence or a reputation effect — those are #31"*
 
 ---
 
-## 10. This pass's own instruments failed four times, and all four are recorded
+## 10. This pass's own instruments failed five times, and all five are recorded
 
 **(a) The event reader filtered on a message kind that does not exist.** It
 looked for `kind === 'simulation/events'` and a `payload.events` array. The
@@ -964,7 +965,27 @@ now re-presses and dumps the roster block beside the inspector either way —
 which is why §2's second reading is quoted from the roster rather than the
 inspector.
 
-**(e) Not a failure, but a limit worth stating.** `installTee` drops
+**(e) This record itself was wrong twice, and the foundation gate caught both.**
+The first draft failed `tests/foundation` 473/475, on two of its own claims:
+
+- `documentation-source-anchor-contract` rejected the range I had written for
+  `rateCellSharing` — it ended at line 81 of a file with 80 lines, and the gate
+  said so: *"out of range, `cell-sharing.ts` has 80 lines"*. The function does
+  start where I said; the range ran one line past the end of the file.
+  Corrected in §4.
+- `documentation-version-claim-contract` rejected three bare version tokens with
+  no sha beside them: *"package.json ships the current release, so these name
+  the current release or a future one with no commit to fix them to. The next
+  push to `main` bumps the patch and they become claims about a tree that is no
+  longer there."* Each now names its commit. (Both quotes here are paraphrased
+  away from the literal file and version strings the gate scans for, so that
+  reporting a defect does not re-commit it.)
+
+Worth recording because it is the same class of error the note reports in the
+game — a sentence that reads as true and is not — caught here by a gate that
+exists for exactly that. Re-run: **475/475**.
+
+**(f) Not a failure, but a limit worth stating.** `installTee` drops
 `simulation/projection`, `simulation/delta` and `simulation/snapshot` to bound
 its array. Every "the worker published only these kinds" reading here is
 therefore about the *small* messages only, and no claim depends on a projection
