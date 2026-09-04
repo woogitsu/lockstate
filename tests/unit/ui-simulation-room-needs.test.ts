@@ -127,12 +127,14 @@ describe('what the interface is told a zoned room is missing', () => {
      */
     expect(needs.needs).toEqual([
       {
+        kind: 'object',
         instanceId: 'room.cell:4:4',
         roomLabelKey: 'room.cell.name',
         tile: { x: 4, y: 4 },
         objectLabelKey: 'object.bed.name',
       },
       {
+        kind: 'object',
         instanceId: 'room.cell:4:4',
         roomLabelKey: 'room.cell.name',
         tile: { x: 4, y: 4 },
@@ -360,7 +362,7 @@ describe('what the interface is told a zoned room is missing', () => {
 
     const needs = roomNeedsFromProjections(list, detail === undefined ? [] : [detail]);
     expect(needs.needs).toEqual([
-      { instanceId: 'room.ghost:0:0', roomLabelKey: 'room.ghost.name', tile: { x: 0, y: 0 } },
+      { kind: 'object', instanceId: 'room.ghost:0:0', roomLabelKey: 'room.ghost.name', tile: { x: 0, y: 0 } },
     ]);
     // Absent, not present-and-`undefined`: `exactOptionalPropertyTypes` is on,
     // and the panel branches on the key being there at all.
@@ -460,12 +462,14 @@ describe('the reader that asks the worker what the rooms are missing', () => {
       // and "lines to draw": one message, the room's whole shopping list.
       needs: [
         {
+          kind: 'object',
           instanceId: 'room.cell:4:4',
           roomLabelKey: 'room.cell.name',
           tile: { x: 4, y: 4 },
           objectLabelKey: 'object.bed.name',
         },
         {
+          kind: 'object',
           instanceId: 'room.cell:4:4',
           roomLabelKey: 'room.cell.name',
           tile: { x: 4, y: 4 },

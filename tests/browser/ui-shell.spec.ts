@@ -4318,6 +4318,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 1,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:12:4',
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
@@ -4360,6 +4361,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 5,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4367,6 +4369,7 @@ test.describe('the Rooms panel', () => {
             missingQuantity: 1,
           },
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4374,6 +4377,7 @@ test.describe('the Rooms panel', () => {
             missingQuantity: 2,
           },
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4417,6 +4421,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 1,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:0:0',
             roomLabelKey: 'room.cell.name',
             tile: { x: 0, y: 0 },
@@ -4438,7 +4443,7 @@ test.describe('the Rooms panel', () => {
         totalRooms: 1,
         totalNeeds: 1,
         needs: [
-          { instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
+          { kind: 'object', instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
         ],
       }),
     );
@@ -4559,6 +4564,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 4,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:12:4',
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
