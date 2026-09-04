@@ -4406,6 +4406,14 @@ test.describe('the Rooms panel', () => {
      * `app-shell.spec.ts` answers that one, on the real page.
      */
     expect(many.needsHeight, 'the readout is too short to hold its four lines').toBeGreaterThan(60);
+    /*
+     * And the three chips are **one row**, which is the compression
+     * `.hud-rooms__needs-items` exists for and is 13px of what pays for this
+     * block. Asserted beside the height because the height alone cannot tell a
+     * compressed row from a restyled one, and because the doorway case below
+     * asserts the opposite of it (#938).
+     */
+    expect(many.needsItemRows, 'the object chips no longer share a row').toBe(1);
 
     /*
      * 5. **A shortfall the simulation could not count.** `missingQuantity` is
@@ -4520,6 +4528,24 @@ test.describe('the Rooms panel', () => {
     expect(both.needsItemText).toEqual(['a door — nobody can get in', '1 × Bed']);
     expect(both.needsItemKinds).toEqual(['doorway', 'object']);
     expect(both.needsTotal).toBe('2');
+    /*
+     * **Two rows, and the sentence has the first to itself.** Both of these
+     * lines fit one row at this panel's width -- 152.5px and 44.5px in a 238px
+     * box -- so nothing about the text forces the break;
+     * `.hud-rooms__needs-item[data-kind='doorway']`'s `flex-basis: 100%` does,
+     * and that is the point. Without it the readout drew
+     * "a door — nobody can get in   1 × Bed" as one line and pushed the *last*
+     * chip onto a row of its own, which is a list broken in the middle rather
+     * than a sentence over a list. Measured on the assembled page in the #331
+     * fixture: both items reported the same top of 413.4 and `1 × Toilet` sat
+     * alone at 426.6.
+     *
+     * It is also what bounds the block: with the sentence on its own row the
+     * chips compress under it, so every shape the shipped catalogue can
+     * produce is exactly two rows -- which is the figure `hud.css`'s catalogue
+     * donation is sized against.
+     */
+    expect(both.needsItemRows, 'the doorway sentence shares a row with an object chip').toBe(2);
 
     // 9. And it goes away again when the answer changes back, rather than
     // leaving the last sentence standing over a prison it no longer describes.

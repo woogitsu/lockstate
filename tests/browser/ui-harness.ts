@@ -2025,6 +2025,12 @@ window.lockstateUiHarness = {
       needsItemKinds: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
         (item) => item.dataset['kind'] ?? '',
       ),
+      /** Distinct top edges among those lines, so a wrapping row can be measured as rows (#938). */
+      needsItemRows: new Set(
+        [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map((item) =>
+          Math.round(item.getBoundingClientRect().top),
+        ),
+      ).size,
       /**
        * The readout's own height, so a spec can measure what the block costs the
        * panel rather than asserting a line count and hoping.

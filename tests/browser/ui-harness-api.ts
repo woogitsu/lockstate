@@ -1074,6 +1074,22 @@ export interface RoomsProbe {
    */
   readonly needsItemKinds: readonly string[];
   /**
+   * How many *rows* those lines occupy, counted by distinct top edges (#938).
+   *
+   * `.hud-rooms__needs-items` is a wrapping row, so a line count is not a
+   * height: `1 x Bed` and `1 x Toilet` share one row and that compression is
+   * part of what pays for the block existing at all. What this reports is the
+   * claim `.hud-rooms__needs-item[data-kind='doorway']` makes -- the doorway
+   * sentence takes a row to itself and the object chips compress under it --
+   * which is a property of the *kind* of line rather than of how wide this
+   * locale's words happen to be, and is what bounds the block at two rows for
+   * every shape the shipped catalogue can produce.
+   *
+   * Rounded to whole pixels before they are compared, because a wrapped row's
+   * top is a subpixel figure and two chips on one row must count as one row.
+   */
+  readonly needsItemRows: number;
+  /**
    * The whole block's laid-out height, in CSS pixels.
    *
    * What `ROOM_NEEDS_NAMED_LIMIT` is a budget *for*: that constant is a claim
