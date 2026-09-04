@@ -186,30 +186,33 @@ describe('a build order that is cancelled says so, and says which of two things 
     expect(session.types()).toEqual(['construction.order-cancelled-underway']);
   });
 
-  it('says nothing at all about a finished order, because neither sentence is true of one', () => {
+  it('says the spend is gone for a finished order too, which is the same sentence (#927)', () => {
     /*
-     * The gap this change ships knowingly, pinned so it cannot close by
-     * accident. A completed order is cancellable and `cancelOrder` reverses the
-     * geometry, but the money did not come back (`refundSurplusOf` runs for
-     * `'approved'` and `'materials-pending'` only) and the materials are not
-     * gone either -- ADR 0076 decision B puts them in the container. No control
-     * can reach the press: `PENDING_BUILD_ORDER_STATES` excludes `'completed'`,
-     * so no Build-panel row names one, and only an order finishing between a
-     * projection and the press that answers it gets here.
+     * **This case asserted `[]` for two rulings, and the reason it did was
+     * false by the time it was read.** It was written as a knowingly-shipped
+     * gap, pinned so it could not close by accident, on two premises:
      *
-     * **The clause about the materials became false on 2026-09-01 and is kept
-     * rather than overwritten, because it is why this case says nothing.** The
-     * owner's ruling of that date -- *"Taking a finished object away returns
-     * nothing. Not its materials, not its money."*, ADR 0076's amendment of
-     * that date -- reverses decision B: `cancelOrder`'s `hadGeometry` arm now
-     * drops the allocation unreleased, so a completed order's materials **are**
-     * gone. What is unchanged is the conclusion and the reason for it: neither
-     * of the two sentences this file has is true of a completed order -- the
-     * money still does not come back -- so it still says nothing, and the
-     * sentence it deserves is still the owner's. Found while measuring #717.
+     * > the money did not come back (`refundSurplusOf` runs for `'approved'`
+     * > and `'materials-pending'` only) and the materials are not gone either
+     * > -- ADR 0076 decision B puts them in the container. No control can reach
+     * > the press: `PENDING_BUILD_ORDER_STATES` excludes `'completed'`, so no
+     * > Build-panel row names one
      *
-     * The sentence it deserves is the owner's to write. A change that adds one
-     * fails here, which is the point.
+     * The first premise died on 2026-09-01 -- the owner's *"Taking a finished
+     * object away returns nothing. Not its materials, not its money."*, ADR
+     * 0076's amendment of that date -- and this comment already recorded that
+     * and kept the `[]` anyway, on the remaining argument that neither *shipped
+     * sentence* was true of a completed order. That is the half
+     * [#927](https://github.com/matmaxalez/lockstate/issues/927) refuted: with
+     * the materials destroyed and the money not refunded, *"anything already
+     * spent past the point of no return stays spent"* is true of a finished
+     * order and is the closest thing to a *tautology* on this channel. The
+     * second premise is false of `Z` (`ConstructionSystem.undo` cancels
+     * `'completed'` orders by design) and true only of the Build-panel row.
+     *
+     * The old expectation is quoted rather than deleted because it is the
+     * shape of the mistake: a tripwire whose comment recorded its own premise
+     * dying and stayed green regardless.
      */
     const session = createSession();
     placeWall(session, 'order-e', 8);
@@ -217,7 +220,9 @@ describe('a build order that is cancelled says so, and says which of two things 
 
     session.send({ type: 'CancelBuildOrder', orderId: 'order-e' });
     expect(session.stateOf('order-e')).toBe('cancelled');
-    expect(session.types(), 'a finished order has no approved sentence yet').toEqual([]);
+    expect(session.types(), 'the larger loss gets the loss sentence').toEqual([
+      'construction.order-cancelled-underway',
+    ]);
   });
 
   it('says nothing when the cancellation named an order that does not exist', () => {
@@ -357,6 +362,139 @@ describe('undo and redo say so, once, and say nothing when there was nothing to 
       ['order-t1', 'order-t2', 'order-t3'].map((id) => session.stateOf(id)),
       'and all three really were reversed by the one press',
     ).toEqual(['cancelled', 'cancelled', 'cancelled']);
+  });
+
+  it('says what a Z on a finished wall destroyed, and does not say only that it was undone (#927)', () => {
+    /*
+     * **The reproduction of [#927](https://github.com/matmaxalez/lockstate/issues/927),
+     * as a test.** Build a wall, let the crew finish it, press `Z`: the wall
+     * comes down, the money does not come back, the materials are destroyed --
+     * and the only thing the game said was *"The last change to the build queue
+     * was undone."*
+     *
+     * Each half is asserted against the state rather than against the event
+     * alone, because the event is only worth having if the loss is real:
+     * `'completed'` is what puts the order past the point of no return, and
+     * `cancelOrder` neither releases the allocation nor calls `refundSurplusOf`
+     * for it (`ConstructionSystem.destroysSpendOnCancel`).
+     *
+     * The negative assertion is the one that fails against the old code:
+     * `construction.undone` on its own is what shipped, and it is *not wrong*
+     * -- which is why a test asserting only "some event was recorded" would have
+     * passed throughout the defect.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z1', 23, 'tx-z');
+    session.runUntilState('order-z1', 'completed');
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+
+    expect(session.stateOf('order-z1'), 'the finished order really was reversed').toBe('cancelled');
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['construction.undone-spend-destroyed']);
+    expect(said.map((event) => event.type), 'the silent sentence is not what a destructive undo says').not.toContain(
+      'construction.undone',
+    );
+    expect(Object.keys(said[0]!).sort(), 'no count and no figure, which is both rulings').toEqual([
+      'sequence',
+      'tick',
+      'type',
+    ]);
+  });
+
+  it('says the same thing for a run that mixes finished orders with queued ones (#927)', () => {
+    /*
+     * The transaction is the unit, so the answer is an **or** across it: a drag
+     * that mixes a finished wall with queued ones destroys what the finished one
+     * cost and refunds what the others did, and *"anything already spent past
+     * the point of no return stays spent"* is true of exactly that mixture --
+     * the hedge is what makes it true rather than a lie in either direction.
+     *
+     * **One event, not one per order**, which is ruling 4 read through this
+     * case: a per-order answer would be the count the ruling declined, arrived
+     * at from the other side.
+     *
+     * The two later walls are placed after the first has finished, in the same
+     * transaction id, so `registerTransactionOrder` groups all three and the
+     * states genuinely differ at the press.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z2', 24, 'tx-mix');
+    session.runUntilState('order-z2', 'completed');
+    placeWall(session, 'order-z3', 26, 'tx-mix');
+    placeWall(session, 'order-z4', 27, 'tx-mix');
+
+    expect(
+      ['order-z2', 'order-z3', 'order-z4'].map((id) => session.stateOf(id)),
+      'the run really is mixed at the press',
+      // The two later walls sit at `'approved'` rather than
+      // `'materials-pending'` because `placeWall` steps the kernel once and
+      // promotion happens on a construction tick (`schedule.intervalTicks: 10`).
+      // Either way they are short of the point of no return, which is the only
+      // property this case needs of them -- and the literals are pinned rather
+      // than a set membership asserted, so a change that let a placement reach
+      // the crew in one step fails here instead of quietly making the mixture
+      // uniform.
+    ).toEqual(['completed', 'approved', 'approved']);
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+
+    expect(session.types().slice(before), 'one press, one sentence, and it names the loss').toEqual([
+      'construction.undone-spend-destroyed',
+    ]);
+    expect(
+      ['order-z2', 'order-z3', 'order-z4'].map((id) => session.stateOf(id)),
+      'and all three were reversed by the one press',
+    ).toEqual(['cancelled', 'cancelled', 'cancelled']);
+  });
+
+  it('still says only that the change was undone when nothing was past the point of no return (#927)', () => {
+    /*
+     * The other half of the split, and the assertion that stops the fix being
+     * "say the loud sentence always". An undo of orders that are still awaiting
+     * their materials refunds the money -- `refundSurplusOf` runs for
+     * `'materials-pending'` -- so a sentence about spend that stays spent would
+     * be false of it, and false in the direction that scares a player off a
+     * control that costs them nothing.
+     *
+     * The same three-order transaction the ruling-4 case above uses, so the
+     * only difference between the two answers is the state.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z5', 28, 'tx-safe');
+    placeWall(session, 'order-z6', 29, 'tx-safe');
+
+    expect(
+      ['order-z5', 'order-z6'].map((id) => session.stateOf(id)),
+      'nothing has reached the crew',
+      // Both are refundable states -- `refundSurplusOf` runs for exactly these
+      // two -- and they differ only because the first has had one more
+      // construction tick to be promoted in.
+    ).toEqual(['materials-pending', 'approved']);
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+    expect(session.types().slice(before)).toEqual(['construction.undone']);
+  });
+
+  it('says the loss for an undo of an order the crew had started but not finished (#927)', () => {
+    /*
+     * `'in-progress'` has been a loss since ruling 20 of 2026-08-31 and the
+     * Cancel channel has said so since #749; the Undo channel said nothing
+     * about it either, and this is the case that shows #927 was never only
+     * about finished orders. `destroysSpendOnCancel` holds both states, which
+     * is why one predicate answers both.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z7', 31, 'tx-wip');
+    session.runUntilState('order-z7', 'in-progress');
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+    expect(session.stateOf('order-z7')).toBe('cancelled');
+    expect(session.types().slice(before)).toEqual(['construction.undone-spend-destroyed']);
   });
 
   it('says nothing when Undo is pressed against no history at all', () => {
