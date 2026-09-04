@@ -129,16 +129,22 @@ const GUARDS = 7;
  * The two guard counts acts F and G hire, in two stages, to find the sign flip
  * by measurement rather than by division.
  *
- * Defaults are the arithmetic prediction at the composition the four-prisoner
- * acts settled at -- five of six needs unmet, `safety` held served -- which
- * prices a place at 100 with the penalty restored and at 300 without:
- * `50 x 100 / 80 = 62.5` and `50 x 300 / 80 = 187.5`. Each act hires the lower
- * number, watches boundaries at it, hires **one** more and watches again, so
- * the flip is two measured signs either side of one hire rather than a
- * quotient. Overridable, because the composition at fifty is the thing being
- * measured and the prediction may be wrong.
+ * Each act hires the lower number, watches boundaries at it, hires **one** more
+ * and watches again, so the flip is two measured signs either side of one hire
+ * rather than a quotient.
+ *
+ * **These defaults were 62 and 187, and the first was wrong by a factor of
+ * two.** They were the prediction at the composition the four-prisoner acts
+ * settled at -- five of six needs unmet -- which prices a place at 100 with the
+ * penalty restored. Acts B and P then measured the composition at fifty and it
+ * is **two** of six, not five (`hygiene` and `recreation`; `hunger`, `sleep`
+ * and `bladder` are all served, and `safety` saturates), which prices a place
+ * at 220 and puts break-even at `50 x 220 / 80 = 137.5`. The shipped figure is
+ * untouched, because withholding nothing makes the composition irrelevant:
+ * `50 x 300 / 80 = 187.5`. Both are still only the *prediction* the act tests;
+ * what the act reports is the two signs.
  */
-const BREAK_EVEN_WITH_PENALTY = Number(process.env['LOCKSTATE_PT_GUARDS_PENALTY'] ?? 62);
+const BREAK_EVEN_WITH_PENALTY = Number(process.env['LOCKSTATE_PT_GUARDS_PENALTY'] ?? 137);
 const BREAK_EVEN_SHIPPED = Number(process.env['LOCKSTATE_PT_GUARDS_SHIPPED'] ?? 187);
 
 const note = (line: string): void => {
@@ -344,10 +350,23 @@ async function readAllNeeds(page: Page): Promise<readonly PrisonerNeeds[]> {
       lockstateProjection: (id: string, query: Record<string, unknown>) => Promise<unknown>;
     }).lockstateProjection;
     const roster = (await request('hud/prisoner-roster', { limit: 500 })) as {
-      view?: { data?: { prisoners?: { entityId: number }[] } };
+      view?: { data?: { total?: number; rows?: { entityId: number }[] } };
     };
-    const rows = roster.view?.data?.prisoners ?? [];
+    const rows = roster.view?.data?.rows ?? [];
     const out: unknown[] = [];
+    /*
+     * `rows`, and the field name is a correction this run paid for: act B's
+     * first pass asked for `prisoners` -- the name `projectPrisonerPopulationCounts`
+     * uses -- got `undefined`, and reported `NEEDS over 0 prisoner(s)` for a
+     * prison of fifty without failing. `PrisonerRosterPage extends
+     * ViewModelPage<PrisonerRosterRowViewModel>`, whose rows live in `rows`
+     * (`src/simulation/presentation/view-model.ts`). The diagnostic below is
+     * the other half of that fix: an empty read now says what the reply
+     * actually held instead of reading as an empty prison.
+     */
+    if (rows.length === 0) {
+      out.push({ entityId: -1, stage: `EMPTY ROSTER READ: ${JSON.stringify(roster).slice(0, 400)}`, needs: [] });
+    }
     for (const row of rows) {
       const reply = (await request('hud/prisoner-detail', {
         target: { kind: 'entity', entityId: row.entityId },
@@ -360,6 +379,9 @@ async function readAllNeeds(page: Page): Promise<readonly PrisonerNeeds[]> {
         };
       };
       const detail = reply.view?.data;
+      // The first reply, verbatim and once: a field name this probe guessed
+      // wrong is otherwise indistinguishable from a prison in that state.
+      if (out.length === 0) out.push({ entityId: -2, stage: `FIRST DETAIL REPLY: ${JSON.stringify(reply).slice(0, 700)}`, needs: [] });
       out.push({
         entityId: row.entityId,
         stage: detail?.intakeStage ?? '?',
@@ -384,7 +406,12 @@ async function readAllNeeds(page: Page): Promise<readonly PrisonerNeeds[]> {
  * what says which need moved, which is the whole of act Y's measurement.
  */
 async function reportNeeds(page: Page, label: string, tag: string): Promise<void> {
-  const all = await readAllNeeds(page);
+  const read = await readAllNeeds(page);
+  // Negative ids are the probe's own diagnostics, never prisoners.
+  for (const diagnostic of read.filter((prisoner) => prisoner.entityId < 0)) {
+    note(`[${label}] ${tag} PROBE ${diagnostic.stage}`);
+  }
+  const all = read.filter((prisoner) => prisoner.entityId >= 0);
   const histogram = new Map<number, number>();
   const perNeedUnmet = new Map<string, number>();
   const perNeedPermille = new Map<string, number[]>();
@@ -788,24 +815,41 @@ async function playTheFiftyBedPrison(page: Page, label: string, days: number, wi
  * script (the four-prisoner note's own weakest claim was exactly that its two
  * curves were two worlds).
  */
-async function playToTheBreakEven(page: Page, label: string, firstStage: number, daysPerStage: number): Promise<void> {
+async function playToTheBreakEven(page: Page, label: string, firstStage: number, settleDays: number, daysPerStage: number): Promise<void> {
   const startedAt = Date.now();
   await openTheFiftyBedPrison(page, label, startedAt, false);
-  await hire(page, label, firstStage);
+  await hire(page, label, GUARDS);
   await fastForwardToMax(page);
-  logScreen(label, 'STAGE-1 READY', await readScreen(page, startedAt));
-  await reportNeeds(page, label, 'STAGE-1');
+  logScreen(label, 'SETTLING', await readScreen(page, startedAt));
+  /*
+   * The composition has to settle **before** the overhire, and that ordering
+   * is a correction acts B and P paid for. Both took five in-game days after
+   * admission to walk from a mixed composition down to two-of-six on every
+   * prisoner, and the day-boundary delta fell all the way down with it -- act
+   * P's went 12,480, 13,040, 12,240, 11,440, 10,800, 10,440. A sign measured
+   * inside that walk is a statement about a moving income line, not about the
+   * wage bill, so this act runs at the requirement until the delta repeats
+   * itself and only then hires.
+   */
   let from = await currentTick(page);
-  note(`[${label}] STAGE 1 (${firstStage} guards asked for): watching from tick ${from} for ${daysPerStage} day(s)`);
-  await runAndWatch(page, label, from + TICKS_PER_DAY * daysPerStage, startedAt, 300_000);
+  note(`[${label}] SETTLING at ${GUARDS} guards from tick ${from} for ${settleDays} day(s)`);
+  await runAndWatch(page, label, from + TICKS_PER_DAY * settleDays, startedAt, 320_000);
+  logScreen(label, 'SETTLED', await readScreen(page, startedAt));
+  await reportNeeds(page, label, 'SETTLED');
+  printCurve(`${label} settling`, await countsSeries(page));
+
+  await hire(page, label, firstStage - GUARDS);
+  logScreen(label, 'STAGE-1 READY', await readScreen(page, startedAt));
+  from = await currentTick(page);
+  note(`[${label}] STAGE 1 (${firstStage} guards in total): watching from tick ${from} for ${daysPerStage} day(s)`);
+  await runAndWatch(page, label, from + TICKS_PER_DAY * daysPerStage, startedAt, 220_000);
   logScreen(label, 'STAGE-1 END', await readScreen(page, startedAt));
-  printCurve(`${label} stage 1`, await countsSeries(page));
 
   await hire(page, label, 1);
   logScreen(label, 'STAGE-2 READY', await readScreen(page, startedAt));
   from = await currentTick(page);
-  note(`[${label}] STAGE 2 (one more guard): watching from tick ${from} for ${daysPerStage} day(s)`);
-  await runAndWatch(page, label, from + TICKS_PER_DAY * daysPerStage, startedAt, 300_000);
+  note(`[${label}] STAGE 2 (one more guard, ${firstStage + 1} in total): watching from tick ${from} for ${daysPerStage} day(s)`);
+  await runAndWatch(page, label, from + TICKS_PER_DAY * daysPerStage, startedAt, 220_000);
   logScreen(label, 'STAGE-2 END', await readScreen(page, startedAt));
   await reportNeeds(page, label, 'STAGE-2');
   await tab(page, 'security').click();
@@ -843,13 +887,13 @@ test.describe('What pressure there is at fifty', () => {
   /** **F -- where the treasury turns over with the penalty restored.** Requires the mutation. */
   test('F the break-even guard count with the penalty restored', async ({ page }) => {
     test.setTimeout(ACT_TIMEOUT_MS);
-    await playToTheBreakEven(page, 'F50', BREAK_EVEN_WITH_PENALTY, 3);
+    await playToTheBreakEven(page, 'F50', BREAK_EVEN_WITH_PENALTY, 5, 2);
   });
 
   /** **G -- where the treasury turns over on the shipped tree.** Unmodified tree. */
   test('G the break-even guard count on the shipped tree', async ({ page }) => {
     test.setTimeout(ACT_TIMEOUT_MS);
-    await playToTheBreakEven(page, 'G50', BREAK_EVEN_SHIPPED, 3);
+    await playToTheBreakEven(page, 'G50', BREAK_EVEN_SHIPPED, 5, 2);
   });
 
   /**
