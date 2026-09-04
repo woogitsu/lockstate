@@ -1690,6 +1690,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.escape-succeeded',
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
+  'objects.removed-spend-destroyed',
   'prisoners.discharged',
   'prisoners.relocated',
 ] as const;
@@ -2340,6 +2341,55 @@ const constructionUndoneSpendDestroyedEventSchema = z
   .strict();
 
 /**
+ * An object that was standing in the prison was taken away, and what it cost
+ * is gone with it
+ * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * **The first member on this channel that is not a construction *order*'s
+ * event, and that is the whole reason it exists rather than reusing one.**
+ * `RemoveObject` has two success outcomes and they are different facts:
+ * `ObjectPlacementService.remove` reaches `ConstructionSystem.cancelOrder` for
+ * a placement still in flight -- an *order*, which the two
+ * `construction.order-cancelled*` members above already describe -- and reaches
+ * `PlacedObjectRegistry.remove` for an object that is finished and standing,
+ * which is not an order any more. Nothing on the order channel is true of the
+ * second: no order changed state, and *"the order was cancelled"* names a thing
+ * the player did not do.
+ *
+ * **What makes the sentence true is that this route gives nothing back.**
+ * `ObjectPlacementService.remove`'s standing-object arm drops the registry row,
+ * re-derives the room's capacity and relocates whoever lost a place; it holds no
+ * treasury and no container reference and writes to neither, which is the owner's
+ * ruling of 2026-09-01 -- *"Taking a finished object away returns nothing. Not
+ * its materials, not its money."*, ADR 0076's amendment of that date.
+ * `tests/integration/economy-bed-recycling.test.ts` is the measurement: the
+ * next bed is bought at 65 like anybody else's.
+ *
+ * **`-spend-destroyed` is in the name even though it is the only removal member
+ * today**, for the reason `construction.order-cancelled-underway` is a warning
+ * about names: that member's own docblock records that it had to keep a name
+ * describing one state after it grew to cover two, because a persisted
+ * discriminant cannot be renamed. So this one names the *fact its sentence
+ * asserts* rather than the gesture. A removal that one day gave something back
+ * takes a member of its own instead of quietly making this one's sentence false.
+ *
+ * **Carries no count and no figure.** No count because a removal is one press on
+ * one tile taking one object -- there is nothing to count -- and no figure for
+ * the reason the order members carry none: `PlacedObjectRegistry.remove` answers
+ * `boolean`, `PlacedObject` holds `placedObjectId`, `objectId`, `anchorTile` and
+ * `orientation` and no price, and the money the object cost was spent on
+ * materials some deliveries ago. Nothing at the call site knows the amount, so
+ * the sentence says *that* the money is gone and not how much -- the shape the
+ * owner's ruling of 2026-09-01 chose for `ConstructionSystem.cancelOrder`.
+ */
+const objectRemovedSpendDestroyedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('objects.removed-spend-destroyed'),
+  })
+  .strict();
+
+/**
  * A delivery that had not landed was cancelled, and this is what came back
  * (#749).
  *
@@ -2386,6 +2436,7 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   constructionUndoneEventSchema,
   constructionUndoneSpendDestroyedEventSchema,
   constructionRedoneEventSchema,
+  objectRemovedSpendDestroyedEventSchema,
   deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
