@@ -723,6 +723,42 @@ export class SimulationEventLog {
     }
   }
 
+  /**
+   * Records that an object standing in the prison was taken away, and that what
+   * it cost is gone with it
+   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   *
+   * **The silence this closes destroyed money and put nothing on screen.** #945
+   * measured it at v0.0.451: a standing bed cost 65 on placement
+   * (`25,000 -> 24,935`) and removing it moved the treasury not at all
+   * (`24,935 -> 24,935`) with the sentence band `hidden` -- so nothing
+   * distinguished it from a removal that had refunded. It survived #932, which
+   * made `Undo` and `CancelBuildOrder` state-aware, because a standing object
+   * reaches neither: `ObjectPlacementService.remove`'s first arm goes to
+   * `PlacedObjectRegistry.remove` and never to `ConstructionSystem.cancelOrder`.
+   *
+   * **No discriminator, unlike `recordConstructionUndone` above, and that is a
+   * fact about the route rather than a simplification.** That method splits two
+   * sentences because an undo reverses orders in states that differ in whether
+   * money comes back. This one has nothing to split: every buildable with a
+   * `placesObjectId` in `BUILDABLE_REGISTRY` requires at least one material, so
+   * a standing object always cost something, and the removal returns nothing
+   * whatever it was -- the owner's ruling of 2026-09-01, *"Taking a finished
+   * object away returns nothing. Not its materials, not its money."* A future
+   * removal that gave something back would be a second event type, argued at
+   * `objects.removed-spend-destroyed`'s schema, and not a second arm here.
+   *
+   * **Unguarded, because there is no figure to guard**, exactly as
+   * `recordConstructionUndone` is. The caller records only on
+   * `RemoveObjectOutcome.kind === 'removed'`, which is the arm that has already
+   * dropped the registry row -- so this cannot report a removal that did not
+   * happen, which is the promise-the-code-does-not-keep `AGENTS.md`'s fourth
+   * exclusion reserves.
+   */
+  public recordObjectRemoved(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'objects.removed-spend-destroyed' });
+  }
+
   /** Records that the build history was walked forward one transaction (#749). The mirror of `recordConstructionUndone` above, on every point. */
   public recordConstructionRedone(tick: number): void {
     this.append({ sequence: this._sequence + 1, tick, type: 'construction.redone' });
