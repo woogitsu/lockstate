@@ -18,11 +18,21 @@ earns +1,120 a day for ever, said:
 This is a **reading pass**. Nothing here was played and nothing was run except
 the two gates at the end. Every claim is **VERIFIED, read** — a file was opened
 at the coordinate given — or **ARITHMETIC** over values so read, and neither
-tier is promoted to **MEASURED**. The measurements this record leans on are
-somebody else's: `docs/research/2026-09-04-what-pressure-there-is.md` (branch
-`measure/what-pressure-there-is`) and
-`docs/research/2026-09-04-can-this-prison-fail.md`. Where this record repeats
-one of their figures it says so and does not restate it as its own.
+tier is promoted to **MEASURED**.
+
+**The measurements this record leans on are somebody else's**, and it repeats
+none of their figures as its own:
+
+- **What pressure there is — 2026-09-04.** The evidence base for everything
+  below about what the numbers currently produce. **It is not on `main`**: it
+  is a research note on the unmerged branch `measure/what-pressure-there-is`,
+  so it is cited here **by title** and never by path.
+  `tests/foundation/documentation-links-contract.test.ts` checks that every
+  rooted path a document cites exists on disk — correctly — and a path to an
+  unlanded file dangles, which is how this paragraph came to be written this
+  way rather than the obvious way.
+- `docs/research/2026-09-04-can-this-prison-fail.md`, which is on `main`, and
+  which measured that three of four prisons cannot fail at all.
 
 Read on `origin/main` at v0.0.467 (`36a5644c`). Every `file:line` below was
 opened at that commit. **Nothing in `src/` is changed on this branch** and no
@@ -56,9 +66,10 @@ anywhere in them.** `grep -c rng src/simulation/incidents/*.ts` returns **0**
 for all ten files in that tree. An incident opens when a weighted sum of state
 crosses a threshold on twelve consecutive samples and the sector's quiet window
 has expired — a pure function of the prison. So *"add random incidents"* is not
-a tuning change; it is a **sixth thing that draws**, and the whole cost of it is
-one named RNG stream (a seventh, not a sixth — see §2.1) plus whatever selects
-from it.
+a tuning change; it is **the first thing in the incident system that draws at
+all**, and the whole cost of that is one named RNG stream — a **seventh**, not a
+sixth, because six are registered and `docs/DETERMINISM.md` says five (§2.1) —
+plus whatever selects from it.
 
 **3. A preset cannot reach the kernel today, and this is the load-bearing
 finding.** `newSimulationSourceSchema` is `z.object({ kind, masterSeed
@@ -177,7 +188,7 @@ with an empty-sector exemption in front of it (`sector-staffing.ts:161-191`),
 exactly as the brief said, and 12 test files name the constant.
 
 **The staffing group is where the difficulty actually lives, and it is not this
-constant.** `docs/research/2026-09-04-what-pressure-there-is.md` §5.1 measured
+constant.** *What pressure there is* §5.1 measured
 that the three prisons staffed to `ceil(n/8)` closed **every** incident by
 lapse and the one with five idle guards closed **every** one by containment.
 The mechanism is read, not measured, and it is one line: `claimableResponders`
@@ -602,7 +613,7 @@ Separated as `AGENTS.md`'s standing mandate requires.
 **Ours to decide after research, and what the ADR would record:**
 
 - Where a preset lives (a content module beside `staff-role-catalog.ts`, or a
-  new `src/content/difficulty-catalog.ts`), and whether it is a `ContentRegistry`
+  a new difficulty-catalogue module under `src/content/`), and whether it is a `ContentRegistry`
   entry like every other catalogue.
 - How a save carries it (§3.2 recommends an optional payload section with a
   derived metadata label).
@@ -645,7 +656,7 @@ second balance surface.
   measurement, so medium is not a new balance — it is the balance already
   decided. Every other column is a departure from it.
 - **`withheldPerUnmetNeed` at 40 is measured, once.** `40` is the value ADR 0064
-  shipped and `docs/research/2026-09-04-what-pressure-there-is.md` §2 measured
+  shipped and *What pressure there is* §2 measured
   the whole schedule of: `[300, 260, 220, 180, 140, 100, 60]`. `80` is the
   largest value at which the `Math.max(0, …)` clamp still never binds for a
   prison with a guard, because the staffed floor is five unmet needs and
@@ -738,7 +749,7 @@ another name — read at `trigger-system.ts:238-278` and it does not, but the
 grep alone would not have told me.
 
 **And a claim this record deliberately does not make:** that any preset would
-make the game better. `docs/research/2026-09-04-what-pressure-there-is.md`'s §8
+make the game better. *What pressure there is*'s §8
 raises the possibility that the settled five-of-six-unmet composition every act
 reached is produced by the **incident system** rather than by the player's
 neglect — a riot forbids every need-serving action but recreation — and if that
@@ -746,3 +757,44 @@ is right, a difficulty preset that varies incident frequency is varying the
 needs group too, through a path nobody has measured. **That inference is theirs,
 it is untested, and it is the single thing most likely to make this whole
 inventory the wrong shape.**
+
+---
+
+## 9. The gates this branch was held to
+
+Run in this worktree, on this branch, with nothing else running:
+
+```
+$ node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false
+$ echo $?
+0
+
+$ node /workspace/lockstate/node_modules/vitest/vitest.mjs run tests/foundation
+ Test Files  52 passed (52)
+      Tests  475 passed (475)
+   Duration  17.61s
+```
+
+**One of them caught a real defect in this document and it is worth recording,
+because it is the mechanism `docs/AGENT_WORKFLOW.md` §4 exists for.** The first
+run of `tests/foundation` was **1 failed | 474 passed**:
+`documentation-links-contract.test.ts` reported five dangling rooted paths, all
+from this file — four citations of the measurement note this record leans on,
+which lives on an **unmerged** branch and therefore is not on disk, and one
+citation of a module that does not exist yet — a `difficulty-catalog.ts` under
+`src/content/`, named as a *possible* home for a preset catalogue rather than
+as a file anybody has written. Both classes are exactly what that contract is for: a research note
+citing a file nobody can open. Fixed by citing the unmerged note **by title**
+and by naming the directory rather than a file that has not been written.
+
+**And Git LFS content is present in this worktree**, so the caution some briefs
+carry about `verify:assets` in a worktree does not apply here:
+
+```
+$ file public/assets/actors/actor.guard.base.idle.png
+public/assets/actors/actor.guard.base.idle.png: PNG image data, 260 x 3104, 8-bit/color RGBA, non-interlaced
+```
+
+Nothing in this record depends on that — no pixel was read and no browser was
+run — and it is recorded only so the next agent in this worktree does not
+re-derive it.
