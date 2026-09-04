@@ -88,9 +88,15 @@ const TICKS_PER_DAY = 2400;
  * `room.cell`'s authored minimum is `2x3` (`minTiles: 6`), so 3x4 is legal
  * with a tile to spare.
  */
-const CELL = { x0: 12, y0: 12, x1: 14, y1: 15 } as const;
+interface Rect {
+  readonly x0: number;
+  readonly y0: number;
+  readonly x1: number;
+  readonly y1: number;
+}
+const CELL: Rect = { x0: 12, y0: 12, x1: 14, y1: 15 };
 /** cols 15..22, rows 12..19. Exactly 64 tiles, which is `TILES_PER_OPEN_GROUND_PLACE` x 4 places. */
-const YARD = { x0: 15, y0: 12, x1: 22, y1: 19 } as const;
+const YARD: Rect = { x0: 15, y0: 12, x1: 22, y1: 19 };
 /** Four, because an 8x8 yard admits exactly four at once (64 tiles / `TILES_PER_OPEN_GROUND_PLACE`). */
 const PRISONERS = 4;
 /** `ceil(4 / DEFAULT_SECTOR_PRISONERS_PER_GUARD)` -- exactly what the game asks for and not one more. */
@@ -199,9 +205,10 @@ async function runAndWatch(
   label: string,
   targetTick: number,
   startedAt: number,
-  budgetMs = 520_000,
+  budgetMs = 250_000,
 ): Promise<readonly Screen[]> {
   const taken: Screen[] = [];
+  const watchStartedAt = Date.now();
   let lastDay = '';
   for (;;) {
     const screen = await readScreen(page, startedAt);
@@ -211,7 +218,16 @@ async function runAndWatch(
       lastDay = screen.day;
     }
     if (screen.tick >= targetTick) return taken;
-    if (Date.now() - startedAt > budgetMs) {
+    /*
+     * Budgeted from this loop's own start rather than from the act's, and that
+     * is a correction the first act B run paid for. `buildTheReasonablePrison`
+     * runs the clock at 4x for the whole of its two hundred seconds, so the
+     * prison is already at in-game day 7 by the time anybody is admitted -- and
+     * a watch that targeted an absolute tick therefore watched three day
+     * boundaries instead of the eight the act asked for. The target is now
+     * relative to admission, and the budget has to be too.
+     */
+    if (Date.now() - watchStartedAt > budgetMs) {
       note(`[${label}] WALL-CLOCK BUDGET SPENT at tick ${screen.tick} of ${targetTick}`);
       return taken;
     }
@@ -222,8 +238,10 @@ async function runAndWatch(
 /** Prints the treasury at every day boundary the counts series crossed, as a curve. */
 function printCurve(label: string, series: readonly CountsSample[]): void {
   note(`[${label}] ===== the treasury curve, read at every in-game day boundary =====`);
+  const last = series[series.length - 1];
+  const lastDay = last === undefined ? 0 : Math.floor(last.tick / TICKS_PER_DAY) + 1;
   let previous: number | undefined;
-  for (let day = 1; day <= 14; day += 1) {
+  for (let day = 1; day <= lastDay; day += 1) {
     const boundary = day * TICKS_PER_DAY;
     const before = [...series].filter((sample) => sample.tick < boundary).pop();
     const after = series.find((sample) => sample.tick >= boundary);
@@ -261,7 +279,7 @@ async function buildTheReasonablePrison(page: Page, label: string): Promise<{ or
 
   // 2 bricks a wall segment; the 3x4 perimeter is 14 segments.
   await buy(page, 'wall-brick', 40);
-  await buy(page, 'bed-wooden', PRISONERS + 1);
+  await buy(page, 'bed-wooden', PRISONERS + 8);
   await buy(page, 'toilet-brick', 1);
   await fastForwardToMax(page);
   await page.waitForTimeout(3000);
@@ -303,23 +321,54 @@ async function buildTheReasonablePrison(page: Page, label: string): Promise<{ or
     await page.waitForTimeout(4000);
   }
 
+  /*
+   * The toilet first, then beds until the prison says it can accommodate
+   * `PRISONERS`.
+   *
+   * **Adaptive rather than a fixed list of tiles, and that is the first act B
+   * run's correction.** Four bed presses at (12,12),(13,12),(14,12),(12,13)
+   * produced `roomCapacity: 3` and left one of four prisoners in intake for the
+   * whole run, so the act measured three occupied places while claiming four.
+   * A press that produces no command is a reading and is logged; what matters
+   * to the measurement is the count the *prison* reports, which is why the loop
+   * stops on `accommodationCapacity` and not on presses made.
+   */
   await tab(page, 'build').click();
-  await armBuildable(page, 'bed-wooden');
-  let beds = 0;
-  for (let column = CELL.x0; column <= CELL.x1; column += 1) {
-    const point = centreOf(origin, column, CELL.y0);
-    if ((await press(page, point.x, point.y)).length > 0) beds += 1;
-    else note(`[${label}] bed at (${column},${CELL.y0}) produced NO command`);
-  }
-  const extra = centreOf(origin, CELL.x0, CELL.y0 + 1);
-  if ((await press(page, extra.x, extra.y)).length > 0) beds += 1;
   await armBuildable(page, 'toilet-brick');
   const toilet = centreOf(origin, CELL.x1, CELL.y1);
-  const toiletCommands = await press(page, toilet.x, toilet.y);
-  note(`[${label}] ${beds} bed order(s), ${toiletCommands.length} toilet order(s)`);
+  note(`[${label}] toilet at (${CELL.x1},${CELL.y1}): ${(await press(page, toilet.x, toilet.y)).length} command(s)`);
+
+  await armBuildable(page, 'bed-wooden');
+  let beds = 0;
+  for (let row = CELL.y0; row <= CELL.y1; row += 1) {
+    for (let column = CELL.x0; column <= CELL.x1; column += 1) {
+      if (row === CELL.y1 && column === CELL.x1) continue; // the toilet's tile
+      const point = centreOf(origin, column, row);
+      const commands = await press(page, point.x, point.y);
+      if (commands.length > 0) beds += 1;
+      else note(`[${label}] bed at (${column},${row}) produced NO command`);
+      if (beds >= PRISONERS) break;
+    }
+    if (beds >= PRISONERS) break;
+  }
+  note(`[${label}] ${beds} bed order(s) placed`);
   await waitForQueueEmpty(page);
   await page.waitForTimeout(2000);
-  const furnished = await latestCounts(page);
+  let furnished = await latestCounts(page);
+  for (let round = 1; round <= 3 && (furnished?.accommodationCapacity ?? 0) < PRISONERS; round += 1) {
+    note(`[${label}] accommodation is ${String(furnished?.accommodationCapacity)} of ${PRISONERS} after round ${round - 1}; placing more`);
+    await armBuildable(page, 'bed-wooden');
+    for (let row = CELL.y0; row <= CELL.y1; row += 1) {
+      for (let column = CELL.x0; column <= CELL.x1; column += 1) {
+        if (row === CELL.y1 && column === CELL.x1) continue;
+        const point = centreOf(origin, column, row);
+        await press(page, point.x, point.y);
+      }
+    }
+    await waitForQueueEmpty(page);
+    await page.waitForTimeout(2000);
+    furnished = await latestCounts(page);
+  }
   note(
     `[${label}] furnished: rooms=${String(furnished?.rooms)} roomCapacity=${String(furnished?.roomCapacity)}` +
       ` accommodationCapacity=${String(furnished?.accommodationCapacity)}`,
@@ -428,7 +477,16 @@ async function playTheReasonablePrison(page: Page, label: string, days: number, 
   logScreen(label, 'READY', await readScreen(page, startedAt));
   await readNeeds(page, label, 'READY');
 
-  const samples = await runAndWatch(page, label, TICKS_PER_DAY * days, startedAt);
+  /*
+   * `days` in-game days measured from **here**, not from tick 0. The build
+   * phase runs the clock at 4x throughout -- deliveries and construction need
+   * ticks -- so a fresh prison is already several in-game days old before
+   * anybody lives in it, and an absolute target spends the act's whole
+   * wall-clock budget on days that had no prisoners in them.
+   */
+  const admittedAt = await currentTick(page);
+  note(`[${label}] the watch starts at tick ${admittedAt} and runs ${days} in-game day(s) to ${admittedAt + TICKS_PER_DAY * days}`);
+  const samples = await runAndWatch(page, label, admittedAt + TICKS_PER_DAY * days, startedAt);
   logScreen(label, 'FINAL', await readScreen(page, startedAt));
   await readNeeds(page, label, 'FINAL');
   await tab(page, 'security').click();
@@ -443,7 +501,7 @@ test.describe('What pressure there is', () => {
    * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is `0`.
    */
   test('B the shipped curve', async ({ page }) => {
-    await playTheReasonablePrison(page, 'B', 8, false);
+    await playTheReasonablePrison(page, 'B', 7, false);
   });
 
   /**
@@ -452,7 +510,7 @@ test.describe('What pressure there is', () => {
    * build, same admissions, same hire, same number of days.
    */
   test('P the curve with the penalty restored', async ({ page }) => {
-    await playTheReasonablePrison(page, 'P', 8, false);
+    await playTheReasonablePrison(page, 'P', 7, false);
   });
 
   /**
@@ -462,7 +520,7 @@ test.describe('What pressure there is', () => {
    * measure anything.
    */
   test('Y the yard with the penalty restored', async ({ page }) => {
-    await playTheReasonablePrison(page, 'Y', 8, true);
+    await playTheReasonablePrison(page, 'Y', 7, true);
   });
 
   /**
@@ -486,7 +544,8 @@ test.describe('What pressure there is', () => {
     await fastForwardToMax(page);
     logScreen(label, 'READY', await readScreen(page, startedAt));
 
-    const samples = await runAndWatch(page, label, TICKS_PER_DAY * 8, startedAt);
+    const from = await currentTick(page);
+    const samples = await runAndWatch(page, label, from + TICKS_PER_DAY * 8, startedAt);
     logScreen(label, 'FINAL', await readScreen(page, startedAt));
     await readNeeds(page, label, 'FINAL');
     printCurve(label, await countsSeries(page));
