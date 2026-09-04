@@ -30,9 +30,10 @@ breakpoint** and gets the full desktop rail.
 
 ## The verdict, in one paragraph
 
-**A touch-only player gets all the way through — arrival, panning, zooming,
-walls, a zoned room, objects, the clock, a guard and a prisoner — and every
-single thing they cannot do is a thing they cannot *undo*.** The gesture layer
+**A touch-only player gets all the way through — at BOTH orientations, measured
+end to end: arrival, panning, zooming, walls, a zoned room, beds, the clock, a
+guard, and a prisoner housed in a bed — and every single thing they cannot do
+is a thing they cannot *undo*.** The gesture layer
 is the strongest part of this game: measured with real touch events, a
 one-finger pan delivers exactly what it is asked for (+4 tiles for 256px) even
 when the finger ends **on** the HUD rail (−5 of −6 at landscape, −9 of −8.4 at
@@ -69,17 +70,17 @@ LOCKSTATE_BROWSER_TEST_PORT=5311 node node_modules/@playwright/test/cli.js test 
   tests/browser/playtest-2026-09-04-touch-only.playtest.ts -g "act 4"
 ```
 
-| act | what it plays |
-| --- | --- |
-| 1 | the arrival screen, all five tabs, every control's box, and every hover tooltip |
-| 2 | the camera: one-finger pan, pans that cross the HUD, two fingers while armed, pinch, the clamps |
-| 3 | every tab's scroll containers and every control a tap at its own centre does not reach |
-| 4 | the whole game with fingers, tablet **landscape** |
-| 5 | the whole game with fingers, tablet **portrait** |
-| 6 | getting out of a mistake with no keyboard |
-| 7 | the **WHERE** readout on a device with no hover |
-| 8 | the Build and Rooms catalogues: geometry, `touch-action`, three gestures |
-| 9 | the discriminator for act 8's split result |
+| act | what it plays | result |
+| --- | --- | --- |
+| 1 | the arrival screen, all five tabs, every control's box, and every hover tooltip | `1 passed` |
+| 2 | the camera: one-finger pan, pans that cross the HUD, two fingers while armed, pinch, the clamps | `1 passed (6.6m)` |
+| 3 | every tab's scroll containers and every control a tap at its own centre does not reach | `1 passed` |
+| 4 | the whole game with fingers, tablet **landscape** | `1 passed (2.5m)` |
+| 5 | the whole game with fingers, tablet **portrait** | `1 passed` |
+| 6 | getting out of a mistake with no keyboard | `1 passed (2.1m)` |
+| 7 | the **WHERE** readout on a device with no hover | `1 passed (53.4s)` |
+| 8 | the Build and Rooms catalogues: geometry, `touch-action`, three gestures | `1 passed (1.8m)` |
+| 9 | the discriminator for act 8's split result | `1 passed (43.6s)` |
 
 **The instrument never calls `page.mouse` or `page.keyboard`.** That is not a
 flourish. `playtest-harness.ts`'s `press`, `drag`, `calibrate`, `armBuildable`,
@@ -98,7 +99,7 @@ unchanged.
 but the canvas is on top; every HUD tap is preceded by the same check against
 the control itself. **Two of this round's findings are that check failing**
 (§2, §3), and three of this round's *instrument faults* are it failing on me
-(§11).
+(see "Instrument faults" below).
 
 **LFS.** `git lfs checkout` was run in the worktree first;
 `file public/assets/actors/actor.guard.base.idle.png` → `PNG image data, 260 x
@@ -233,7 +234,7 @@ The same four on the Rooms tab and on the Security tab; **none** on Overview or
 Regime, where the rail gives the panel its full 320px. At portrait it is `Load`
 and `Delete` on the Build and Rooms tabs.
 
-**VERIFIED, read.** `src/styles.css:56-73` — `.save-panel` is
+**VERIFIED, read.** `src/styles.css:56,70` — `.save-panel` is
 `width: var(--hud-rail-panel-width); overflow-y: auto` with *"no `max-height`
 of its own on purpose"*, taking its height from the rail. So the panel shrinks
 to 87px when a tab panel wants the rail, and its buttons keep their layout
@@ -266,7 +267,7 @@ removed, because `src/ui/primitives/primitives.css:73-83` clips those to
 `inset(50%)` — present to `innerText`, invisible on the glass.
 
 **VERIFIED, read, and the two primitives contradict each other.**
-`src/ui/primitives/icon-button.ts:33` puts the label in
+`src/ui/primitives/icon-button.ts:34` puts the label in
 `attributes: { type: 'button', title: options.label }` and in a
 `screenReaderText` span, and nowhere else.
 `src/ui/primitives/action-button.ts:8-10`, one file over, states the rule:
@@ -362,7 +363,7 @@ the Rooms hint, which is the panel where a canteen is drawn (§5).
 player; they simply cannot complete one gesture, and the failure mode of trying
 is a rectangle that ends where the HUD begins.
 
-### 0. The whole game does come out, at portrait, with nothing but fingers
+### 0. The whole game does come out, at both orientations, with nothing but fingers
 
 Recorded first among the numbers because it is the answer to the question as
 asked. **MEASURED**, act 5, one uninterrupted touch run at 768×1024:
@@ -387,8 +388,26 @@ three beds placed, a guard hired and a prisoner admitted **into a bed**
 `page.touchscreen` and `Input.dispatchTouchEvent` and nothing else. Two finger
 drags on a catalogue were needed along the way (§1); nothing was blocked.
 
-That is boundary 10 kept, at one of the two orientations, and it is the
-strongest single result of this round.
+**And the same at landscape**, act 4, with the smaller cell §6 measures:
+
+```
+[landscape 1024x768] the largest square cell a finger can draw in one camera position … 4x4 at {"x0":15,"y0":12}
+[landscape 1024x768] wall run north: 4 command(s)   south: 4   west: 4   east: 4
+[landscape 1024x768] the Build panel says the queue is empty after 4237ms, tick 3207
+[landscape 1024x768] designate attempt 1: rooms=1
+[landscape 1024x768] bed at (16,13): 1 command(s)   (17,13): 1 command(s)
+[landscape 1024x768] after building: rooms=1 accommodationCapacity=2
+[landscape 1024x768] after one Hire tap: staff=1
+[landscape 1024x768] after one Admit tap: prisoners=1 roomOccupants=1
+[landscape 1024x768] status strip: … 1 PRISONERS … 1 STAFF … 1 COVERAGE Covered … 1 ROOMS … 22,180 FUNDS | 66 EARNED TODAY | DAY 4 …
+```
+
+**So boundary 10 is kept, at both orientations, and this is the strongest single
+result of this round.** The price is in the drags: landscape needed **four**
+finger drags on lists to reach rows that were not where a tap could land them
+(`bed-wooden` to buy, `wall-brick` to arm, `room.cell` to select, `bed-wooden`
+to arm), portrait **two**. Neither run was blocked, and neither run had to
+touch a keyboard, a mouse, or a scroll wheel.
 
 ### 7. Getting out of a mistake: #928 reproduced with a finger, and the only visible way-back control on the Build tab is one that cannot do it
 
@@ -449,7 +468,7 @@ cancel of a **finished** one that does not exist, which is #928.
 **The one thing that does work, and nothing says it does.** A second finger
 arriving mid-run abandons the run: `[mistake] a second finger mid-run produced:
 []` — zero commands from a six-step wall drag that was interrupted. That is
-`src/rendering/scene/world-scene.ts:558-563`'s claim, executed with fingers at
+`src/rendering/scene/world-scene.ts:561-570`'s claim, executed with fingers at
 a tablet viewport (#517 measured it at 375×812). It is the touch analogue of
 `Escape`, which `src/input/bindings.ts:36` binds to the keyboard and nothing
 else — and **the on-screen sentence describes two fingers as the way to move
@@ -485,7 +504,7 @@ that ends on the HUD rail is not stolen** (−5 of −6 and −9 of −8.4, both
 ±1); a one-finger drag while armed builds instead of panning, exactly as the
 modal arbitration promises; two fingers pan the camera *while a tool is armed*
 and submit **nothing**, which is the property `docs/INPUT.md`'s gesture bullet
-asserts and `src/rendering/scene/world-scene.ts:558-563` implements; and
+asserts and `src/rendering/scene/world-scene.ts:561-570` implements; and
 **both ends of `ZOOM_BOUNDS` are reachable by finger** — the clamped-out
 reading of ~196px per tile at portrait against the 192px that `max: 3` predicts
 for a 64px tile, and ~13px against the 12.8px `min: 0.2` predicts, at both
@@ -538,7 +557,7 @@ screen), which is a separate matter for the world-view surface.
 [landscape 1024x768] after the finger lifts:                   "WHERE\nPoint at the world"
 ```
 
-**VERIFIED, read.** `src/rendering/scene/world-scene.ts:583-588`, on the branch
+**VERIFIED, read.** `src/rendering/scene/world-scene.ts:589-592`, on the branch
 that feeds this readout before a press: *"Nothing is being built and no button
 is down: keep the ghost under the cursor so the edge rule is legible before the
 first click. **Touch never reaches here**, which is why the drag preview exists
@@ -659,7 +678,14 @@ and to no surface a player can see. Measured once, by act 2 failing without a
   is at 100%. Scaling **up** on a tablet would take more of the screen from the
   canvas, which is the direction §1 and §6 already hurt in, and nothing here
   measures it.
-- **Portrait's second half.** *(see the numbers section)*
+- **Removing a misplaced *object* with a finger.** Act 6 tried it and the probe
+  is void: the bed was placed on a tile that is in no designated room, so the
+  placement itself was refused and `Remove` correctly answered *"Nothing was
+  removed — there is no object on that tile, and none being built there."* The
+  object-removal route ADR 0028 phase 3 added — the one #928 says was added
+  precisely so *"a misplaced bed"* would not be *"permanent for the session"* —
+  is therefore **not exercised** by this round in either direction. It is a
+  short act to write and it should be written.
 - **Long-press, double-tap, three fingers.** `TouchGestureTracker` pairs the
   moved finger with exactly one peer and `docs/INPUT.md` says the third pointer
   is a spare, so a three-finger gesture has no meaning to find; a long-press
