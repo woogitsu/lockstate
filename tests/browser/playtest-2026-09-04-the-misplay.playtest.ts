@@ -26,9 +26,11 @@ import {
  *
  * ## What this instrument deliberately does NOT re-measure
  *
- * `docs/research/2026-09-04-is-there-a-way-back.md` (branch
- * `playtest/is-there-a-way-back`) already played the *finished wall* case end
- * to end and produced issues #927 and #928, and
+ * The `is-there-a-way-back` record on branch `playtest/is-there-a-way-back`
+ * already played the *finished wall* case end to end and produced issues #927
+ * and #928 -- it is named rather than cited as a path because that branch is
+ * unmerged, and `tests/foundation/documentation-links-contract.test.ts`
+ * rightly fails a rooted path that is not on disk. And
  * `docs/research/2026-09-03-what-cancel-actually-gives-back.md` already priced
  * every cancellable build-order state against the tick the command executes
  * at. Repeating either would be a second copy of a settled measurement. This
@@ -921,5 +923,165 @@ test.describe('the misplay', () => {
       console.log(`[${L}] tab ${id}: ${all.length} controls, ${matching.length} naming a route back ${JSON.stringify(matching)}, ${textNodes.length} matching line(s) ${JSON.stringify(textNodes)}`);
     }
     console.log(`[${L}] prisoners still ${(await latestCounts(page))?.prisoners} at tick ${await currentTick(page)}`);
+  });
+});
+
+/**
+ * ACT 6 — the two mistakes the first five acts did not make.
+ *
+ * The brief asked for a wall drawn **through** something and a wall drawn
+ * while the **clock runs**; acts 1 to 5 made neither. This act makes both, in
+ * one prison:
+ *
+ * - a wall on the tile edge of a tile a **standing bed** occupies, and a wall
+ *   drawn **across a zoned room**, so the question is whether the world lets a
+ *   player cut their own prison in half and what it says about it;
+ * - the same six-segment run as act 1, but at 4x, cancelled from the queue row
+ *   — which is the state `docs/research/2026-09-03-what-cancel-actually-gives-back.md`
+ *   priced, re-read here in the player's terms: **did the row pay what it
+ *   said?**
+ */
+test.describe('the misplay, part two', () => {
+  test.beforeEach(async ({ page }) => {
+    page.setDefaultTimeout(60_000);
+    await installTee(page);
+  });
+
+  test('act 6 - a wall through something, and a wall drawn while the clock runs', async ({ page }) => {
+    const L = 'act6';
+    const origin = await newPrison(page, L);
+
+    // A yard, because it is the only room type that needs no wall built first
+    // (`src/content/room-catalog.ts`: `{ type: 'outdoors' }` rather than
+    // `{ type: 'enclosed' }`), and a bed inside it.
+    await tab(page, 'rooms').click();
+    if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    }
+    await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
+    await armRooms(page);
+    await drag(page, centreOf(origin, 7, 12), centreOf(origin, 14, 19));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(700);
+    console.log(`[${L}] yard zoned: rooms=${(await latestCounts(page))?.rooms}`);
+
+    await armBuild(page, 'bed-wooden');
+    const bed = centreOf(origin, 9, 14);
+    await assertCanvasAt(page, bed.x, bed.y, `${L} bed tile`);
+    await press(page, bed.x, bed.y);
+    await page.locator('.hud-strip__transport button').nth(2).click();
+    await page.waitForTimeout(200);
+    await page.locator('.hud-strip__transport button').nth(2).click();
+    for (let index = 0; index < 40; index += 1) {
+      const text = await panelText(page, '.hud-build__queue');
+      if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) break;
+      await page.waitForTimeout(1000);
+    }
+    await page.locator('.hud-strip__transport button').nth(0).click();
+    await page.waitForTimeout(400);
+    console.log(`[${L}] the bed is standing at tick ${await currentTick(page)}`);
+
+    // --- 6a. a wall on the edge of the tile the bed stands on ---
+    await armBuild(page, 'wall-brick');
+    const throughBed = { x: origin.originX + 9 * TILE + TILE / 2, y: origin.originY + 14 * TILE };
+    await assertCanvasAt(page, throughBed.x, throughBed.y, `${L} wall through the bed`);
+    const beforeThrough = await funds(page);
+    const throughCommands = await press(page, throughBed.x, throughBed.y);
+    await page.waitForTimeout(500);
+    const afterThrough = await funds(page);
+    console.log(
+      `[${L}] 6a a wall on the north edge of the bed's own tile: ${throughCommands.length} command(s)` +
+        ` -> ${JSON.stringify(throughCommands)} | worker ${beforeThrough.worker} -> ${afterThrough.worker}` +
+        ` | ${JSON.stringify(await say(page))}`,
+    );
+
+    // --- 6b. a wall drawn straight across the zoned yard ---
+    const acrossA = { x: origin.originX + 8 * TILE + TILE / 2, y: origin.originY + 16 * TILE };
+    const acrossB = { x: origin.originX + 13 * TILE + TILE / 2, y: origin.originY + 16 * TILE };
+    await assertCanvasAt(page, acrossA.x, acrossA.y, `${L} across a`);
+    await assertCanvasAt(page, acrossB.x, acrossB.y, `${L} across b`);
+    const beforeAcross = await funds(page);
+    let mark = (await sentCommands(page)).length;
+    await drag(page, acrossA, acrossB);
+    const across = (await sentCommands(page)).slice(mark);
+    await page.waitForTimeout(500);
+    const afterAcross = await funds(page);
+    console.log(
+      `[${L}] 6b a wall run straight across the zoned yard: ${across.length} command(s)` +
+        ` | worker ${beforeAcross.worker} -> ${afterAcross.worker} (${afterAcross.worker - beforeAcross.worker})` +
+        ` | rooms=${(await latestCounts(page))?.rooms} | ${JSON.stringify(await say(page))}`,
+    );
+    await openQueue(page);
+    console.log(`[${L}] 6b queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    await tab(page, 'rooms').click();
+    console.log(`[${L}] 6b rooms panel now: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
+
+    // Take those back, so 6c starts from a clean queue.
+    await openQueue(page);
+    for (let index = 0; index < 8; index += 1) {
+      const live = await queueRows(page);
+      const row = live.find((candidate) => candidate.pressable && candidate.order !== '(no data-order)');
+      if (row === undefined) break;
+      await page.locator(`.hud-build__queue-row[data-order="${row.order}"] button`).last().click();
+      await page.waitForTimeout(400);
+    }
+    console.log(`[${L}] 6b after cancelling those back: worker=${(await funds(page)).worker}`);
+
+    /*
+     * --- 6c. the same six-segment mistake, with the clock at 4x ---
+     *
+     * The row is read, then pressed, with nothing in between, and the two are
+     * compared. `2026-09-03-what-cancel-actually-gives-back.md` established
+     * that a running clock puts 36-55 ticks of lead between the two; this is
+     * the same thing asked as "did the button pay what it promised".
+     */
+    await page.locator('.hud-strip__transport button').nth(2).click();
+    await page.waitForTimeout(200);
+    await page.locator('.hud-strip__transport button').nth(2).click();
+    await page.waitForTimeout(300);
+    console.log(`[${L}] 6c clock: ${JSON.stringify(await currentClock(page))}`);
+
+    await armBuild(page, 'wall-brick');
+    const runA = { x: origin.originX + 20 * TILE + TILE / 2, y: origin.originY + 20 * TILE };
+    const runB = { x: origin.originX + 25 * TILE + TILE / 2, y: origin.originY + 20 * TILE };
+    await assertCanvasAt(page, runA.x, runA.y, `${L} running run a`);
+    await assertCanvasAt(page, runB.x, runB.y, `${L} running run b`);
+    const beforeRun = await funds(page);
+    mark = (await sentCommands(page)).length;
+    await drag(page, runA, runB);
+    const run = (await sentCommands(page)).slice(mark);
+    const afterRun = await funds(page);
+    console.log(`[${L}] 6c the wrong run at 4x: ${run.length} order(s), worker ${beforeRun.worker} -> ${afterRun.worker}`);
+
+    await openQueue(page);
+    let honoured = 0;
+    let presses = 0;
+    for (let index = 0; index < 6; index += 1) {
+      const live = await queueRows(page);
+      const row = live.find((candidate) => candidate.pressable && candidate.order !== '(no data-order)');
+      if (row === undefined) break;
+      const promised = /·\s*([\d,]+)\s*back/.exec(row.text);
+      const promisedMinorUnits = promised === null ? -1 : Number(promised[1]?.replace(/,/g, '') ?? '-1');
+      const fundsBefore = await funds(page);
+      await page.locator(`.hud-build__queue-row[data-order="${row.order}"] button`).last().click();
+      await page.waitForTimeout(700);
+      const fundsAfter = await funds(page);
+      const paid = fundsAfter.worker - fundsBefore.worker;
+      presses += 1;
+      if (paid === promisedMinorUnits) honoured += 1;
+      console.log(
+        `[${L}] 6c press ${presses}: row promised ${promisedMinorUnits}, paid ${paid}` +
+          ` — ${paid === promisedMinorUnits ? 'HONOURED' : 'DID NOT MATCH'}` +
+          ` | tick ${await currentTick(page)} | row was ${JSON.stringify(row.text)}` +
+          ` | ${JSON.stringify((await say(page)).event)}`,
+      );
+    }
+    const end = await funds(page);
+    console.log(
+      `[${L}] 6c ${honoured} of ${presses} press(es) paid what their row said` +
+        ` | spent ${beforeRun.worker - afterRun.worker}, recovered ${end.worker - afterRun.worker}` +
+        ` | net loss ${beforeRun.worker - end.worker}`,
+    );
+    console.log(`[${L}] 6c queue at the end: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
   });
 });

@@ -15,8 +15,10 @@ clean throughout.
 
 **What this record deliberately does not re-measure**, because two dated
 records already settle it:
-`docs/research/2026-09-04-is-there-a-way-back.md` played the *finished* wall
-case end to end (issues [#927](https://github.com/matmaxalez/lockstate/issues/927),
+the `is-there-a-way-back` record on branch
+`playtest/is-there-a-way-back` (unmerged at the time of writing, which is why
+it is named rather than cited as a path) played the *finished* wall case end to
+end (issues [#927](https://github.com/matmaxalez/lockstate/issues/927),
 [#928](https://github.com/matmaxalez/lockstate/issues/928)), and
 `docs/research/2026-09-03-what-cancel-actually-gives-back.md` priced every
 cancellable build-order state against the tick the command executes at
@@ -181,7 +183,7 @@ Removing a standing bed destroys 65 and removing a room destroys nothing but
 also confirms nothing; both are measured. Whether a player *notices* is a
 judgement, and the previous record already established the condition that makes
 it invisible: there is no stock readout anywhere in the interface
-(`2026-09-04-is-there-a-way-back.md` §4, a five-tab sweep at 109 controls each).
+(the `is-there-a-way-back` record §4, a five-tab sweep at 109 controls each).
 
 ### What could have refuted this and did not
 
@@ -561,7 +563,7 @@ The gap that remains is the one #928 names: the sentence says "undo" and undo is
 The control states the total before the press, the row states the refund before
 the second press, and the band states the amount after it. That is the model the
 three silent ways back in §1 fail to meet — and it is the same conclusion
-`2026-09-04-is-there-a-way-back.md` §4 reached, reproduced here at a different
+the `is-there-a-way-back` record §4 reached, reproduced here at a different
 quantity on a later tree.
 
 ### 9c. #772 is closed in behaviour, and the number it prints is right
