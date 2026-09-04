@@ -44,10 +44,10 @@ player wants to take back the thing they just did, can they?**
 
 **Yes, there is a way back — and it is priced, silent, and reaches further
 than the player asked.** `KeyZ` really does reverse a finished wall run: the
-geometry comes down, and the Rooms panel's own verdict for the same rectangle
-flips from `Walled in on every side` to `Open on at least one side`. But the
-materials the run consumed are destroyed rather than returned — **the funds
-chip does not move by one minor unit** — and the way back from *that* is a
+edges it wrote come free, proved by re-dragging them and having the orders
+**accepted** (§2, §6). But the materials the run consumed are destroyed
+rather than returned — **the funds chip does not move by one minor unit** —
+and the way back from *that* is a
 second purchase: `KeyY` rebuilt the same three edges and cost **240**, the
 full catalogue price of the six bricks already paid for. The only two
 sentences the game says across the whole round trip are *"The last change to
@@ -110,15 +110,46 @@ that agrees with it: ten tile edges, `wall-brick` requires 2 × `item.brick`
 (`src/content/procurement-catalog.ts:100`) — 20 bricks, 800, and
 25,000 − 24,200 = 800 exactly.
 
-**The geometry did come down, and the panel says so itself.** Before the
-press the Rooms panel read `ENCLOSURE · Walled in on every side`. After the
-press, the same 2×3 rectangle re-drawn reads:
-
-> `AREA · 2 × 3 tiles at 12, 12` · **`OPEN ON AT LEAST ONE SIDE`**
+**The geometry did come down** — and the evidence for that is **not** the
+Rooms panel's enclosure line, which I first took and then withdrew. See
+"The reading I withdrew" below. The proof is §2's and §6's **accepted
+re-drags**: after a `KeyZ`, re-dragging the same edges is accepted and the
+orders build, which a standing wall's `duplicateClaim` would have refused.
 
 So this is not a claim that undo does nothing. **It is a claim about what it
 gives back: nothing.** 24,200 before the press, 24,200 after it, and the six
 bricks the east run consumed are gone in both currencies.
+
+### The reading I withdrew, and why
+
+Act 1 re-draws the same 2×3 rectangle after each press and logs the Rooms
+panel's own enclosure line. After one `Z` it read
+`AREA · 2 × 3 tiles at 12, 12` · **`OPEN ON AT LEAST ONE SIDE`**, and I
+reported that as the geometry proof. **It is not one, and the same run's own
+output is what shows it:** the *first* call — taken while the ring was
+complete, seconds before a designation the simulation accepted on the first
+attempt (`rooms=1`) — read `OPEN ON AT LEAST ONE SIDE` **too**.
+
+**VERIFIED, read**, and the panel says so about itself:
+
+> *"`pendingEnclosure` can be a **false negative** — `classifyArea`'s answer
+> is only as fresh as the render snapshot feed's own cadence, which can go
+> stale for as long as the session stays paused — and disabling on a
+> possibly-stale `'open'` blocked a designation the simulation would have
+> accepted"*
+> — `src/ui/hud/rooms-panel.ts:1265-1272`
+
+and this repository's own harness carries the same finding for the same
+reason: `buildAndPopulate` retries the designation up to twelve times because
+*"the Rooms panel's enclosure verdict is read off a world view a snapshot
+replaces and a completed wall does not mark dirty"*
+(`tests/browser/playtest-harness.ts`, quoting
+`docs/research/2026-08-31-playing-the-nine-changes.md:657`).
+
+So the line is kept in the instrument as a corroborating read and is **not**
+load-bearing anywhere in this record. Nothing else in §1 moves: the treasury
+figures are read off two independent sources, and the geometry is established
+by presses that were accepted.
 
 ### And the way back from the way back costs the trip twice
 
@@ -209,8 +240,9 @@ None of them is *"the key you press to change your mind spends money"*.
   once the run has finished, and the screen does not distinguish the two
   cases" — the band is the same eleven words either way.
 - **The wall could have stayed up**, which would have made this a geometry
-  bug rather than a pricing one. It did not: `OPEN ON AT LEAST ONE SIDE`,
-  quoted above, off the panel.
+  bug rather than a pricing one. It did not — but the sample that establishes
+  that is §2's and §6's accepted re-drag, not the panel's enclosure line,
+  which I withdrew above after the run's own first reading contradicted it.
 - **The money could have come back late** — on the next construction tick, or
   at the day boundary. It did not: 24,200 was still the reading four in-game
   days and 3,600 ticks later, at the end of the act.
@@ -816,6 +848,12 @@ calling it a gap assumes a player expects `Escape` to disarm. Nothing in the
 tree promises that, the arm control's label says `"Stop placing"` while armed,
 and a player who has read it once knows where the off switch is.
 
+**One reading in this record was reported and then withdrawn**, and it is
+recorded rather than deleted: §1's *"the Rooms panel says the wall came
+down"*. The panel's enclosure line is a documented false negative and the same
+run's first call proves it — see §1's "The reading I withdrew". §1's finding
+does not depend on it, but a reader should see which claim moved.
+
 **§1, §2, §6 and §7 are the ones I would defend hardest**, and each has a
 one-command falsifier: re-run act 1 and watch the treasury after `Z`; re-run
 act 2 and watch `staff` and the re-drag; re-run act 6 and watch the six
@@ -832,7 +870,7 @@ refusals; and for §7, open the two docblocks quoted and compare them with
 | `tsc -b tsconfig.tools.json --pretty false` | **exit 0** |
 | `tsc -p tsconfig.json --noEmit --listFiles` | the new `.playtest.ts` **is** in the program |
 | `vitest run tests/foundation` | **52 files, 475 tests, all pass** |
-| act 1 · act 2 · act 3 · act 4 · act 5 · act 6 | each **1 passed**, 0.9–2.0 min |
+| act 1 · act 2 · act 3 · act 4 · act 5 · act 6 | each **1 passed** — 2.7, 1.2, 0.9, 1.3, 1.2 and 1.5 min |
 
 `vitest run tests/foundation` **failed first**, 2 of 475, and it was the
 container rather than this branch: `documentation-commit-citation-contract`
