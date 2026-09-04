@@ -1164,7 +1164,37 @@ export interface HudRoomsViewModel {
  * Unreachable with the shipped catalogues -- all 18 room definitions name
  * catalogued objects -- and reachable the moment one does not.
  */
+/**
+ * Which kind of thing a room is missing (#938).
+ *
+ * - `'object'` -- an unmet `object` requirement, which is every entry this
+ *   readout could carry before #938: a cell short of a bed, a canteen short
+ *   of three benches.
+ * - `'doorway'` -- the room's perimeter is closed and holds no door at all,
+ *   so no prisoner can ever get into it. `RoomPerimeterAccess`' `'no-way-in'`
+ *   carried across the boundary, and it is a fact about the *walls* rather
+ *   than about anything standing inside them.
+ *
+ * A discriminator rather than two separate lists, because the two are the
+ * same kind of sentence in the same block -- "this room is not ready, and
+ * here is what it is short" -- and every rule the block already has applies
+ * unchanged to both: how many rooms are unfinished, how many things they are
+ * short between them, which room gets named when only one fits, and the
+ * remainder line when a room is short more than the panel may draw. A second
+ * list beside `needs` would need its own copy of all four.
+ *
+ * **Required, not optional, and for `HudRoomViewModel.objectRequirements`'
+ * recorded reason**: an optional discriminator would let a producer stay
+ * silent, the panel fall back to the object sentence, and a green assertion
+ * mean only that the fixture agreed with it. That is the exact shape of
+ * defect #938 is -- a readout that renders the same for two different states
+ * -- so this field may not be able to default.
+ */
+export type HudRoomNeedKind = 'object' | 'doorway';
+
 export interface HudRoomNeedViewModel {
+  /** Which kind of shortfall this entry is. See `HudRoomNeedKind`. */
+  readonly kind: HudRoomNeedKind;
   /**
    * The room instance this is about (`room.cell:12:4`).
    *
@@ -1177,7 +1207,11 @@ export interface HudRoomNeedViewModel {
   readonly roomLabelKey: LocalizationKey;
   /** Where the room is, so a player with four cells knows which one this is. */
   readonly tile: { readonly x: number; readonly y: number };
-  /** The missing object's `nameKey`, absent when the object catalogue names none. */
+  /**
+   * The missing object's `nameKey`, absent when the object catalogue names
+   * none -- and always absent on a `kind: 'doorway'` entry, which is about
+   * the room's walls and names no object at all.
+   */
   readonly objectLabelKey?: LocalizationKey;
   /**
    * How many **more** of that object the room needs (#529).

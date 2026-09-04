@@ -1119,6 +1119,22 @@ export const HUD_MESSAGE_KEY = {
    * the placed objects -- and it is a real key rather than a blank because
    * "unreachable" and "handled" are different claims.
    *
+   * **`roomsNeedsDoorway` is the one entry in this block that is not about an
+   * object** (#938), and it is here rather than in the enclosure readout
+   * above because of *when* each of those two is true. The enclosure notice
+   * is a statement about the moment a room was designated -- the worker
+   * freezes it with the tick it was zoned on (`zoningNoticeSchema`) and
+   * republishes it unchanged -- so a third state there would keep saying
+   * "no way in" after the player built the door, which is the promise
+   * `AGENTS.md` reservation 4 is actually about. This block is pulled fresh
+   * off the projection while the Rooms tab is showing, so it corrects itself
+   * the moment the door order completes.
+   *
+   * It takes no placeholder: there is one door to be short of and no count
+   * that would make the sentence more actionable. It sits under the same
+   * `roomsNeedsRoom` header as the object lines, which reads
+   * "{room} at {x}, {y} is missing", so the line completes that sentence.
+   *
    * `roomsNeedsObjectUnknown` stands in for the object's name when the object
    * catalogue defines nothing under the id the requirement names -- which is
    * the *reason* the projection calls that requirement unmet. Substituted as
@@ -1138,6 +1154,7 @@ export const HUD_MESSAGE_KEY = {
   roomsNeedsObjectUncounted: 'hud.rooms.needs-object-uncounted',
   roomsNeedsItemMore: 'hud.rooms.needs-item-more',
   roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
+  roomsNeedsDoorway: 'hud.rooms.needs-doorway',
 
   /*
    * The Regime panel, on the fifth tab (issue #451).
