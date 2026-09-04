@@ -104,7 +104,7 @@ async function runToTickOrBudget(page: Page, target: number, budgetMs: number, o
     const tick = await currentTick(page);
     if (tick >= target) return tick;
     if (Date.now() - started > budgetMs) return tick;
-    if (onSample !== undefined && Date.now() - lastSampleAt > 20_000) {
+    if (onSample !== undefined && Date.now() - lastSampleAt > 25_000) {
       lastSampleAt = Date.now();
       await onSample(tick);
     }
@@ -174,20 +174,70 @@ interface GrownPrison {
 }
 
 /**
- * Builds a prison **bigger than the tutorial one**: the same enclosed 6×6 cell
- * at (12,12)-(17,17) `buildAndPopulate` builds, but filled with up to 24 beds
- * rather than the harness's twelve, then populated and staffed.
+ * Polls the Build panel's queue readout exactly as `waitForQueueEmpty` does —
+ * the `(?<![0-9])` anchor and the `not laid out` clause are that function's and
+ * are load-bearing — but **logs the tick beside every reading**, so the drain
+ * itself is a measurement rather than a wait.
  *
- * A local builder rather than `buildAndPopulate`, and the reason is one line
- * of it: its bed loop walks `for (const row of [12, 14]) for (column = 12..17)`
- * and so places **at most twelve** beds however many are asked for — which
- * caps `roomCapacity` at twelve and makes a 20-30 resident prison unreachable
+ * This is why act 4 needs no separate throughput act: the number a player feels
+ * ("how long does one more room take?") falls out of a poll the build was going
+ * to do anyway.
+ */
+async function drainQueueLogging(page: Page, label: string, what: string, timeoutMs = 240_000): Promise<void> {
+  const started = Date.now();
+  await tab(page, 'build').click();
+  const firstTick = await currentTick(page);
+  let lastText = '';
+  for (;;) {
+    const text = (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
+    const tick = await currentTick(page);
+    if (text !== lastText) {
+      console.log(`[${label}] queue(${what}) tick ${tick} (+${tick - firstTick}): ${JSON.stringify(text)}`);
+      lastText = text;
+    }
+    if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
+      console.log(`[${label}] queue(${what}) EMPTY at tick ${tick}, ${tick - firstTick} ticks after the first poll`);
+      return;
+    }
+    if (Date.now() - started > timeoutMs) throw new Error(`the build queue never emptied: ${text}`);
+    await page.waitForTimeout(1_000);
+  }
+}
+
+/**
+ * Builds a prison **bigger than the tutorial one**: the same enclosed 6×6 cell
+ * at (12,12)-(17,17) `buildAndPopulate` builds, but filled with beds on the
+ * rows the caller names rather than the harness's fixed two, then populated and
+ * staffed.
+ *
+ * A local builder rather than `buildAndPopulate`, and the reason is one line of
+ * it: its bed loop walks `for (const row of [12, 14]) for (column = 12..17)`
+ * and so places **at most twelve** beds however many are asked for — which caps
+ * `roomCapacity` at twelve and makes a 20-30 resident prison unreachable
  * through the shared helper. Everything else here is that function's shape,
  * kept deliberately close so the two can be compared.
+ *
+ * **`bedRows` exists because act 1 measured what happens without it.** Asked
+ * for beds on rows 12, 13, 15 and 16 it placed 24 orders, every one of which
+ * produced a command, and `roomCapacity` came out **12**: `object.bed`'s
+ * footprint is `{ width: 1, height: 2 }` (`src/content/object-catalog.ts:97`),
+ * so a bed on row 12 owns row 13 as well and the row-13 order finishes onto an
+ * occupied tile. Rows two apart are therefore the only rows that all land.
  */
 async function buildGrownPrison(
   page: Page,
-  options: { readonly label: string; readonly beds: number; readonly admits: number; readonly guards: number },
+  options: {
+    readonly label: string;
+    readonly beds: number;
+    readonly admits: number;
+    readonly guards: number;
+    readonly bedRows?: readonly number[];
+    readonly toiletTile?: { readonly x: number; readonly y: number };
+    readonly logQueue?: boolean;
+    /** The zoned rectangle, inclusive. Defaults to the harness's 6x6 at (12,12)-(17,17). */
+    readonly cell?: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+    readonly bricks?: number;
+  },
 ): Promise<GrownPrison> {
   const log = (line: string): void => console.log(`[${options.label}] ${line}`);
 
@@ -198,7 +248,8 @@ async function buildGrownPrison(
   const origin = await calibrate(page);
   log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
-  await buy(page, 'wall-brick', 60);
+  const cell = options.cell ?? { x0: 12, y0: 12, x1: 17, y1: 17 };
+  await buy(page, 'wall-brick', options.bricks ?? 60);
   await buy(page, 'bed-wooden', options.beds + 2);
   log(`after buying: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
@@ -207,10 +258,10 @@ async function buildGrownPrison(
   log(`clock: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
 
   await armBuildable(page, 'wall-brick');
-  const westX = origin.originX + 12 * TILE;
-  const eastX = origin.originX + 18 * TILE;
-  const northY = origin.originY + 12 * TILE;
-  const southY = origin.originY + 18 * TILE;
+  const westX = origin.originX + cell.x0 * TILE;
+  const eastX = origin.originX + (cell.x1 + 1) * TILE;
+  const northY = origin.originY + cell.y0 * TILE;
+  const southY = origin.originY + (cell.y1 + 1) * TILE;
   for (const run of [
     { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
     { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
@@ -224,7 +275,9 @@ async function buildGrownPrison(
     log(`wall run ${run.name}: ${produced.length} command(s)`);
   }
 
-  await waitForQueueEmpty(page);
+  const wallSegments = 2 * (cell.x1 - cell.x0 + 1) + 2 * (cell.y1 - cell.y0 + 1);
+  if (options.logQueue === true) await drainQueueLogging(page, options.label, `the ${wallSegments} wall segments`);
+  else await waitForQueueEmpty(page);
   log(`walls up at tick ${await currentTick(page)}`);
 
   const zoneStarted = Date.now();
@@ -236,7 +289,7 @@ async function buildGrownPrison(
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await drag(page, centreOf(origin, cell.x0, cell.y0), centreOf(origin, cell.x1, cell.y1));
     await page.locator('.hud-rooms__confirm').click();
     await page.waitForTimeout(800);
     const counts = await latestCounts(page);
@@ -254,8 +307,8 @@ async function buildGrownPrison(
   await armBuildable(page, 'bed-wooden');
   let placed = 0;
   const skipped: string[] = [];
-  for (const row of [12, 13, 15, 16]) {
-    for (let column = 12; column <= 17 && placed < options.beds; column += 1) {
+  for (const row of options.bedRows ?? [12, 13, 15, 16]) {
+    for (let column = cell.x0; column <= cell.x1 && placed < options.beds; column += 1) {
       const point = centreOf(origin, column, row);
       const top = await topAt(page, point.x, point.y);
       if (!top.includes('canvas')) {
@@ -268,12 +321,14 @@ async function buildGrownPrison(
     }
   }
   await armBuildable(page, 'toilet-brick');
-  const toiletPoint = centreOf(origin, 12, 14);
+  const toilet = options.toiletTile ?? { x: 12, y: 14 };
+  const toiletPoint = centreOf(origin, toilet.x, toilet.y);
   await assertCanvasAt(page, toiletPoint.x, toiletPoint.y, `${options.label} toilet tile`);
   await press(page, toiletPoint.x, toiletPoint.y);
   log(`${placed} bed order(s) placed, ${skipped.length} tile(s) skipped: ${JSON.stringify(skipped)}`);
 
-  await waitForQueueEmpty(page);
+  if (options.logQueue === true) await drainQueueLogging(page, options.label, `${placed} beds and a toilet`);
+  else await waitForQueueEmpty(page);
   await page.waitForTimeout(1_500);
   const built = await latestCounts(page);
   log(`furnished at tick ${built?.tick}: rooms=${built?.rooms} roomCapacity=${built?.roomCapacity} accommodationCapacity=${built?.accommodationCapacity}`);
@@ -390,7 +445,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act1] lists: ${JSON.stringify(await listSizes(page))}`);
     console.log(`[act1] beds placed ${built.bedsPlaced}, skipped ${built.bedsSkipped.length}`);
 
-    const reached = await runToTickOrBudget(page, 26_400, 400_000, async () => {
+    const reached = await runToTickOrBudget(page, 26_400, 300_000, async () => {
       const sample = await probe(page);
       console.log(
         `[act1] t=${sample.tick} day=${sample.day} | ${sample.strip}` +
@@ -439,7 +494,14 @@ test.describe('Hour two — the prison after the first prisoner', () => {
         return JSON.stringify(controls);
       });
 
-    const built = await buildGrownPrison(page, { label: 'act2', beds: 24, admits: 1, guards: 2 });
+    const built = await buildGrownPrison(page, {
+      label: 'act2',
+      beds: 17,
+      bedRows: [12, 14, 16],
+      toiletTile: { x: 17, y: 16 },
+      admits: 1,
+      guards: 2,
+    });
     console.log(`[act2] beds placed ${built.bedsPlaced}`);
     await runToTickOrBudget(page, (await currentTick(page)) + DAY_LENGTH_TICKS, 90_000);
     const smallTick = await currentTick(page);
@@ -477,24 +539,33 @@ test.describe('Hour two — the prison after the first prisoner', () => {
   });
 
   /**
-   * **act 3 — past the beds.** Thirty admissions into twenty-four beds, run
-   * several days. Where act 1 asks whether a *correct* grown prison holds,
-   * this asks what the panels do when the prison is over its own capacity —
-   * which is the state the intake control makes it trivially easy to reach,
-   * because it never refuses for want of a bed.
+   * **act 3 — a prison at the top of the brief's range.** A 10x6 cell, 29 beds
+   * that all actually land, 29 admissions and five guards, with the build queue
+   * logged tick by tick so that "how long does one more room take?" is a
+   * number rather than an impression.
    */
-  test('act 3 — thirty admitted into twenty-four beds', async ({ page }) => {
-    const built = await buildGrownPrison(page, { label: 'act3', beds: 24, admits: 30, guards: 4 });
-    console.log(`[act3] beds placed ${built.bedsPlaced}`);
-    console.log(`[act3] admit control disabled attribute: ${await page.locator('.hud-intake__admit').getAttribute('aria-disabled')}`);
-    console.log(`[act3] lists right after admitting: ${JSON.stringify(await listSizes(page))}`);
+  test('act 3 — twenty-nine residents in a ten-by-six cell', async ({ page }) => {
+    const built = await buildGrownPrison(page, {
+      label: 'act3',
+      cell: { x0: 8, y0: 12, x1: 17, y1: 17 },
+      bricks: 70,
+      beds: 29,
+      bedRows: [12, 14, 16],
+      toiletTile: { x: 17, y: 16 },
+      admits: 29,
+      guards: 5,
+      logQueue: true,
+    });
+    console.log(`[act3] beds placed ${built.bedsPlaced}, skipped ${JSON.stringify(built.bedsSkipped)}`);
+    const start = await probe(page);
+    console.log(`[act3] AT THE START OF THE RUN tick=${start.tick} day=${start.day} | ${start.strip}`);
+    console.log(`[act3] counts: ${JSON.stringify(start.counts)}`);
 
-    const reached = await runToTickOrBudget(page, 16_800, 260_000, async () => {
+    const reached = await runToTickOrBudget(page, 60_000, 110_000, async () => {
       const sample = await probe(page);
       console.log(`[act3] t=${sample.tick} day=${sample.day} | ${sample.strip} | event="${sample.event}"`);
     });
     console.log(`[act3] the run stopped at tick ${reached} (${(reached / DAY_LENGTH_TICKS).toFixed(2)} in-game days)`);
-
     reportEveryBoundary('act3', await countsSeries(page));
     const end = await probe(page);
     console.log(`[act3] FINAL strip: ${end.strip}`);
@@ -502,11 +573,67 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act3] FINAL alerts: ${end.alerts}`);
     console.log(`[act3] FINAL lists: ${JSON.stringify(await listSizes(page))}`);
     console.log(`[act3] FINAL folds: ${JSON.stringify(await hiddenByFolds(page))}`);
+    for (const id of ['overview', 'regime', 'security', 'rooms'] as const) {
+      await tab(page, id).click();
+      await page.waitForTimeout(350);
+      console.log(`[act3] FINAL ${id} tab:\n${await screen(page)}`);
+    }
+  });
+
+  /**
+   * **act 4 — the long hands-off run.** The cheapest build that houses
+   * everybody it admits (17 beds on rows two apart, so none collides), then
+   * eight more admissions than there are beds, four guards, and then **nothing
+   * pressed at all** for as many in-game days as the budget buys.
+   *
+   * This is the act that answers "does it get better or worse": the per-day
+   * ledger and the sampled screen run side by side across the whole window, so
+   * the last populated day can be set against the first on money, incidents,
+   * needs and how much of the screen is readable.
+   */
+  test('act 4 — twenty-five on the roster, hands off, day after day', async ({ page }) => {
+    const built = await buildGrownPrison(page, {
+      label: 'act4',
+      beds: 17,
+      bedRows: [12, 14, 16],
+      toiletTile: { x: 17, y: 16 },
+      admits: 25,
+      guards: 4,
+      logQueue: true,
+    });
+    const start = await probe(page);
+    console.log(`[act4] beds placed ${built.bedsPlaced}, skipped ${JSON.stringify(built.bedsSkipped)}`);
+    console.log(`[act4] AT THE START OF THE RUN tick=${start.tick} day=${start.day} | ${start.strip}`);
+    console.log(`[act4] counts: ${JSON.stringify(start.counts)}`);
+    console.log(`[act4] lists: ${JSON.stringify(await listSizes(page))}`);
     await tab(page, 'regime').click();
-    await page.waitForTimeout(400);
-    console.log(`[act3] FINAL regime tab:\n${await screen(page)}`);
+    await page.waitForTimeout(300);
+    console.log(`[act4] regime tab at the start of the run:\n${await screen(page)}`);
     await tab(page, 'overview').click();
-    await page.waitForTimeout(400);
-    console.log(`[act3] FINAL overview tab:\n${await screen(page)}`);
+
+    const reached = await runToTickOrBudget(page, 90_000, 195_000, async () => {
+      const sample = await probe(page);
+      console.log(
+        `[act4] t=${sample.tick} day=${sample.day} | ${sample.strip}` +
+          ` | event="${sample.event}" | lists=${JSON.stringify(await listSizes(page))}`,
+      );
+      console.log(`[act4] t=${sample.tick} alerts: ${sample.alerts}`);
+    });
+    console.log(`[act4] the run stopped at tick ${reached} (${(reached / DAY_LENGTH_TICKS).toFixed(2)} in-game days)`);
+    reportEveryBoundary('act4', await countsSeries(page));
+
+    const end = await probe(page);
+    console.log(`[act4] FINAL strip: ${end.strip}`);
+    console.log(`[act4] FINAL counts: ${JSON.stringify(end.counts)}`);
+    console.log(`[act4] FINAL event band: "${end.event}"`);
+    console.log(`[act4] FINAL alerts: ${end.alerts}`);
+    console.log(`[act4] FINAL lists: ${JSON.stringify(await listSizes(page))}`);
+    console.log(`[act4] FINAL folds: ${JSON.stringify(await hiddenByFolds(page))}`);
+    console.log(`[act4] FINAL refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    for (const id of ['overview', 'regime', 'security'] as const) {
+      await tab(page, id).click();
+      await page.waitForTimeout(350);
+      console.log(`[act4] FINAL ${id} tab:\n${await screen(page)}`);
+    }
   });
 });
