@@ -12,7 +12,7 @@ of one of this branch's instrument-only commits (`eaaafae`, `b400341`,
 written**, two releases past the tree played, and one of the merges in between
 is #981 *"fix/the-guards-that-do-not-guard"* (`83f347a9`). Nothing here was
 re-measured against it. Every `Safety 100%` reading below is v0.0.471's
-behaviour and could have moved.
+behaviour, at `9429ba64`, and could have moved since.
 
 **Question, as commissioned:**
 
