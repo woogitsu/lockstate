@@ -116,6 +116,46 @@ outward-facing or unrevertable, which is the whole reason:
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
 
+   **Partly released by the owner on 2026-09-04: the CHOICE OF WORDS is ours
+   now; the requirement that a sentence be TRUE is not.** Until that date this
+   reservation was read strictly, and the reading was wider than the words
+   above: agents and the integrator reported *what a sentence must convey* and
+   authored none, so every player-visible string waited on the owner. Four such
+   sentences were waiting when the release came (#901, #903, #904, #893), and
+   two more had just been found by playing — a FUNDS badge asserting the state
+   owed a prison money it did not owe (#913), and one all-clear sentence
+   serving both a handled incident and an expired one.
+
+   Asked which words each should carry, the owner answered twice, to two
+   different questions, in the same direction:
+
+   > Sam decyduj zawsze, jak zacznę grać to ujednolicimy
+
+   ("Decide yourself, always; when I start playing we will unify them.")
+
+   > Wybierz sam a potem się ujednolici sposób pisania
+
+   ("Choose yourself, and afterwards the way it is written will be unified.")
+
+   **What the release covers, exactly: choosing the wording.** It does not
+   touch the reservation's actual subject, which is the *promise*. A sentence
+   we now write ourselves must still be true of the code that renders it, and
+   the way to establish that is to open that code — the two findings that
+   prompted the release were both false sentences, not badly worded ones. So
+   the rule that replaces "ask the owner" is **verify, then write**, and a
+   string whose truth cannot be established still does not ship.
+
+   **What we owe the owner in exchange.** They said the wording will be
+   *unified* once they play, which is only possible if they can find what we
+   wrote. Every string authored under this release is therefore recorded — in
+   the commit that lands it and in the pull request body, quoted verbatim
+   alongside the code opened to prove it true — so the harmonising pass is one
+   reading rather than an excavation.
+
+   The paragraph above this release is left exactly as it stood, for the same
+   reason reservation 1's is: it is the rule that was relaxed, and a reader
+   needs to see what was given up.
+
 **Merging publishes.** `deploy.yml` fires on CI completion and its `staging` job
 publishes on every merge to `main`, and `lockstate.io` is attached by hand to
 that Worker — so a merge updates the public site with no further approval gate
