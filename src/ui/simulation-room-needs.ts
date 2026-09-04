@@ -96,18 +96,49 @@ import {
  * wrong is worth a great deal less than that, and it is written down rather
  * than left for a reader to discover.
  *
+ * **A room with no way into it is unfinished too, and that is #938.** The
+ * predicate above was `missingCapability > 0` and nothing else, so a shower
+ * room with both its heads placed and no door in its wall line was reported
+ * complete by every readout a player has -- the measurement is in
+ * `tests/integration/dead-room-no-doorway.test.ts`: hygiene 254.8 of 255 with
+ * a door, **0** without, on the same seed and the same geometry with one edge
+ * different, and `missingCapability` **0 in both**. `shortfallOf` below is now
+ * the predicate, and it counts the missing doorway as one more thing the room
+ * is short.
+ *
+ * The verdict is still read and not recomputed: `access` is
+ * `roomPerimeterAccess`' own answer, decided in the simulation beside the
+ * navigation rule that makes it true, exactly as `missingCapability` is
+ * decided beside the requirement rule. Nothing here re-derives either.
+ *
  * The array is a copy: `rows` is `readonly` and belongs to the reply.
  */
 export function unfinishedRoomIds(list: RoomListViewModel): readonly string[] {
   return list.rooms.rows
-    .filter((row) => row.requirementSummary.missingCapability > 0)
+    .filter((row) => shortfallOf(row) > 0)
     .slice()
-    .sort(
-      (left, right) =>
-        left.requirementSummary.missingCapability - right.requirementSummary.missingCapability ||
-        compareInstanceIds(left.instanceId, right.instanceId),
-    )
+    .sort((left, right) => shortfallOf(left) - shortfallOf(right) || compareInstanceIds(left.instanceId, right.instanceId))
     .map((row) => row.instanceId);
+}
+
+/**
+ * How many things this room is short: its unmet object requirements, plus one
+ * for a missing doorway (#938).
+ *
+ * One function rather than the same sum in three places -- the sort key, the
+ * unfinished predicate and the header's `totalNeeds` all have to agree, and
+ * two of them disagreeing is a header that counts a room the list does not
+ * name.
+ *
+ * `access` is absent in exactly the states `RoomListRowViewModel.access`
+ * records -- a caller that supplied the projection no perimeter, or an
+ * instance with no rectangle -- and absent adds nothing here rather than
+ * counting as a doorway or as a missing one. That keeps "nobody asked" out of
+ * a figure a player reads, which is the same rule `missingQuantityOf` follows
+ * for an uncounted object.
+ */
+function shortfallOf(row: RoomListViewModel['rooms']['rows'][number]): number {
+  return row.requirementSummary.missingCapability + (row.access === 'no-way-in' ? 1 : 0);
 }
 
 /**
@@ -202,7 +233,10 @@ export function roomNeedsFromProjections(
   let unfinishedRooms = 0;
   let totalNeeds = 0;
   for (const row of rows) {
-    const missing = row.requirementSummary.missingCapability;
+    // `shortfallOf`, so the header's two figures count the same thing
+    // `unfinishedRoomIds` selects and sorts on -- a missing doorway included
+    // (#938).
+    const missing = shortfallOf(row);
     if (missing <= 0) continue;
     unfinishedRooms += 1;
     totalNeeds += missing;
@@ -234,9 +268,29 @@ export function roomNeedsFromProjections(
   const needs: HudRoomNeedViewModel[] = [];
   for (const detail of details) {
     if (detail.roomNameKey === undefined) continue;
+    /*
+     * **The doorway goes first, before this room's object lines** (#938).
+     *
+     * Not a tie-break and not taste: `ROOM_NEEDS_NAMED_LIMIT` is 4, so a room
+     * short of four objects would push the doorway line off the panel
+     * entirely and into the "and 1 more" remainder -- and it is the one line
+     * that makes the other four pointless, because nothing can be carried
+     * into a room nobody can enter. The order within a room is this layer's
+     * to choose; which rooms are named is the projection's, and that is
+     * untouched.
+     */
+    if (detail.access === 'no-way-in') {
+      needs.push({
+        kind: 'doorway',
+        instanceId: detail.instanceId,
+        roomLabelKey: detail.roomNameKey,
+        tile: { x: detail.anchorTile.x, y: detail.anchorTile.y },
+      });
+    }
     for (const requirement of detail.requirements) {
       if (requirement.status !== 'missing-capability') continue;
       needs.push({
+        kind: 'object',
         instanceId: detail.instanceId,
         roomLabelKey: detail.roomNameKey,
         tile: { x: detail.anchorTile.x, y: detail.anchorTile.y },

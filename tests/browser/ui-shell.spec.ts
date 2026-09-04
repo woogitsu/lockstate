@@ -4318,6 +4318,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 1,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:12:4',
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
@@ -4360,6 +4361,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 5,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4367,6 +4369,7 @@ test.describe('the Rooms panel', () => {
             missingQuantity: 1,
           },
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4374,6 +4377,7 @@ test.describe('the Rooms panel', () => {
             missingQuantity: 2,
           },
           {
+            kind: 'object',
             instanceId: 'room.kitchen:11:10',
             roomLabelKey: 'room.kitchen.name',
             tile: { x: 11, y: 10 },
@@ -4402,6 +4406,14 @@ test.describe('the Rooms panel', () => {
      * `app-shell.spec.ts` answers that one, on the real page.
      */
     expect(many.needsHeight, 'the readout is too short to hold its four lines').toBeGreaterThan(60);
+    /*
+     * And the three chips are **one row**, which is the compression
+     * `.hud-rooms__needs-items` exists for and is 13px of what pays for this
+     * block. Asserted beside the height because the height alone cannot tell a
+     * compressed row from a restyled one, and because the doorway case below
+     * asserts the opposite of it (#938).
+     */
+    expect(many.needsItemRows, 'the object chips no longer share a row').toBe(1);
 
     /*
      * 5. **A shortfall the simulation could not count.** `missingQuantity` is
@@ -4417,6 +4429,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 1,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:0:0',
             roomLabelKey: 'room.cell.name',
             tile: { x: 0, y: 0 },
@@ -4438,13 +4451,103 @@ test.describe('the Rooms panel', () => {
         totalRooms: 1,
         totalNeeds: 1,
         needs: [
-          { instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
+          { kind: 'object', instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
         ],
       }),
     );
     expect((await probe()).needsItemText).toEqual(['1 × something this build cannot name']);
 
-    // 7. And it goes away again when the answer changes back, rather than
+    /*
+     * 7. **A room nobody can get into** -- issue #938, and the one line in this
+     *    block that is not about an object.
+     *
+     *    The state it renders was invisible to every readout a player had: the
+     *    room's object requirements were satisfied, so this block drew nothing,
+     *    and the enclosure readout above said "Walled in on every side" for a
+     *    working room and a dead one alike. The integration measurement is
+     *    `tests/integration/dead-room-no-doorway.test.ts` -- hygiene 0 against
+     *    the ceiling, on the same seed with one edge different.
+     *
+     *    Asserted three ways because each could be wrong on its own: the
+     *    sentence, so the wording is pinned where the harmonising pass can find
+     *    it; `data-kind`, so the branch is proven rather than the text; and the
+     *    header's own figures, so a doorway counts as one thing the room is
+     *    short exactly as an object does.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 3,
+        totalNeeds: 1,
+        needs: [
+          {
+            kind: 'doorway',
+            instanceId: 'room.shower-room:26:1',
+            roomLabelKey: 'room.shower-room.name',
+            tile: { x: 26, y: 1 },
+          },
+        ],
+      }),
+    );
+    const doorway = await probe();
+    expect(doorway.needsLaidOut, 'a room nobody can enter must earn the block').toBe(true);
+    expect(doorway.needsLineText).toBe('Shower Room at 26, 1 is missing');
+    expect(doorway.needsItemText).toEqual(['a door — nobody can get in']);
+    expect(doorway.needsItemKinds).toEqual(['doorway']);
+    expect(doorway.needsUnfinished).toBe('1');
+    expect(doorway.needsTotal).toBe('1');
+    expect(doorway.needsCountText).toBe('1 of 3');
+    await expectLaidOut(page, '.hud-rooms__needs', 'the readout for a room with no way in');
+
+    /*
+     * 8. **The doorway line and the object lines in one room**, which is the
+     *    ordering `roomNeedsFromProjections` chooses and the reason it does:
+     *    `ROOM_NEEDS_NAMED_LIMIT` is 4, and the door is the line that makes the
+     *    others pointless, because nothing can be carried into a room nobody
+     *    can enter.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 3,
+        totalNeeds: 2,
+        needs: [
+          { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
+          {
+            kind: 'object',
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.bed.name',
+            missingQuantity: 1,
+          },
+        ],
+      }),
+    );
+    const both = await probe();
+    expect(both.needsItemText).toEqual(['a door — nobody can get in', '1 × Bed']);
+    expect(both.needsItemKinds).toEqual(['doorway', 'object']);
+    expect(both.needsTotal).toBe('2');
+    /*
+     * **Two rows, and the sentence has the first to itself.** Both of these
+     * lines fit one row at this panel's width -- 152.5px and 44.5px in a 238px
+     * box -- so nothing about the text forces the break;
+     * `.hud-rooms__needs-item[data-kind='doorway']`'s `flex-basis: 100%` does,
+     * and that is the point. Without it the readout drew
+     * "a door — nobody can get in   1 × Bed" as one line and pushed the *last*
+     * chip onto a row of its own, which is a list broken in the middle rather
+     * than a sentence over a list. Measured on the assembled page in the #331
+     * fixture: both items reported the same top of 413.4 and `1 × Toilet` sat
+     * alone at 426.6.
+     *
+     * It is also what bounds the block: with the sentence on its own row the
+     * chips compress under it, so every shape the shipped catalogue can
+     * produce is exactly two rows -- which is the figure `hud.css`'s catalogue
+     * donation is sized against.
+     */
+    expect(both.needsItemRows, 'the doorway sentence shares a row with an object chip').toBe(2);
+
+    // 9. And it goes away again when the answer changes back, rather than
     // leaving the last sentence standing over a prison it no longer describes.
     // The item lines go with it: they are rebuilt from the model on every paint,
     // so a stale one left behind would be a readout describing a finished room.
@@ -4559,6 +4662,7 @@ test.describe('the Rooms panel', () => {
         totalNeeds: 4,
         needs: [
           {
+            kind: 'object',
             instanceId: 'room.cell:12:4',
             roomLabelKey: 'room.cell.name',
             tile: { x: 12, y: 4 },
