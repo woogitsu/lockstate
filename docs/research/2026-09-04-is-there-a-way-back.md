@@ -5,8 +5,9 @@
 `tests/browser/playtest-2026-09-04-is-there-a-way-back.playtest.ts`. **Nothing
 under `src/` was changed by this record** — verified with
 `sha256sum -c` and `git status --short src/`, both clean. §5 explains why the
-causal claim in §1 needed no mutation, and §6 reports the instrument failures,
-including the one mutation this session could not take.
+causal claim in §1 needed no mutation, and the closing "Instrument failures"
+section reports every failure of this run, including the one mutation this
+session could not take.
 
 The owner ruled on 2026-09-04, in their own words:
 

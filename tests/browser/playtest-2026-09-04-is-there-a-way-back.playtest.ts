@@ -203,22 +203,37 @@ function ringRuns(origin: { originX: number; originY: number }): readonly {
  */
 async function enclosureVerdict(page: Page, origin: { originX: number; originY: number }): Promise<string> {
   const CLICK = { timeout: 15_000 } as const;
-  await tab(page, 'rooms').click(CLICK);
-  const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
-  if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click(CLICK);
-  const discard = page.locator('.hud-rooms__cancel');
-  if (await discard.isVisible()) await discard.click(CLICK);
-  await page.locator('.hud-rooms__list [data-room="room.cell"]').click(CLICK);
-  await page.locator('.hud-rooms__arm').click(CLICK);
-  const a = centreOf(origin, CELL.west, CELL.north);
-  const b = centreOf(origin, CELL.east, CELL.south);
-  await drag(page, a, b);
-  await drag(page, a, b);
-  const text = await panelText(page, '.hud-rooms');
-  return text
-    .split('\n')
-    .filter((line) => /OPEN|ENCLOS|not enclosed|room/i.test(line))
-    .join(' · ');
+  try {
+    await tab(page, 'rooms').click(CLICK);
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click(CLICK);
+    const discard = page.locator('.hud-rooms__cancel');
+    if (await discard.isVisible()) await discard.click(CLICK);
+    // `.hud-rooms` is a scroll container and the Discard above can leave the
+    // room list scrolled out of it, at which point the row is in the DOM,
+    // `aria-checked="true"` and not visible — measured, and it killed a run of
+    // act 1 after every reading it was there to take had already been logged.
+    // The row is already selected in that state, so the click is skipped
+    // rather than forced.
+    const roomRow = page.locator('.hud-rooms__list [data-room="room.cell"]');
+    await roomRow.scrollIntoViewIfNeeded({ timeout: 5_000 }).catch(() => undefined);
+    if (await roomRow.isVisible()) await roomRow.click(CLICK);
+    const arm = page.locator('.hud-rooms__arm');
+    if (await arm.isVisible()) await arm.click(CLICK);
+    const a = centreOf(origin, CELL.west, CELL.north);
+    const b = centreOf(origin, CELL.east, CELL.south);
+    await drag(page, a, b);
+    await drag(page, a, b);
+    const text = await panelText(page, '.hud-rooms');
+    return text
+      .split('\n')
+      .filter((line) => /OPEN|ENCLOS|not enclosed|room/i.test(line))
+      .join(' · ');
+  } catch (error) {
+    // A diagnostic read must never end an act that has already produced its
+    // readings: the verdict is one line of evidence, not the measurement.
+    return `VERDICT UNREADABLE: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`;
+  }
 }
 
 /**
