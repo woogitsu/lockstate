@@ -679,6 +679,50 @@ a room is being used is the verb on a Regime roster row** — `Showering`,
 `src/content/simulation-message-keys.ts:164-176`. One tab, one column, four
 words.
 
+## 8b. A four-room prison's Overview screen is 83% word-for-word identical to a one-cell prison's
+
+The brief asks this record to test, from the other side, the claim that a
+prison with everything going wrong is *"62% word-for-word identical to an empty
+one"*. That record is not on `main` at v0.0.471 (see the corrections above), so
+its figure is not verified here — but the same measurement runs in this
+direction and this is it.
+
+**MEASURED, act 3.** The Overview tab of the one-cell prison at the end of
+phase 0, and the Overview tab of the four-room prison at the end of phase 3,
+both dumped from `.hud` `innerText` (UPPER BOUND), diffed as a longest common
+subsequence:
+
+```
+one-cell lines: 60   four-room lines: 64
+identical lines in the LCS: 52 of 64 = 81.2 %
+identical WORDS in the LCS: 139 of 167 = 83.2 %
+```
+
+Every difference, in full:
+
+| line | one cell | four rooms | is it about the rooms? |
+| --- | --- | --- | --- |
+| `PRISONERS` | `4` | `3` | no — a sentence ended |
+| `COVERAGE` | `4` | `3` | no — the same discharge |
+| **`ROOMS`** | **`1`** | **`4`** | **yes** |
+| `FUNDS` | `21,535` | `39,895` | no — 18 in-game days of grant |
+| `EARNED TODAY` | `952` | `463` | no — a different point in the day |
+| `DAY` / progress | `7` / `79%` | `25` / `51%` | no — the clock |
+| alerts | — | `1 released — their sentences are served. Day 19` | no — the discharge |
+| save generation | `gen-mtnkfy5v-6` | `gen-mtnkrgtl-d` | no |
+
+**One badge, of eight, differs because of the rooms, and it differs by
+counting them.** The prison whose prisoners are all showered, fed, exercised
+and at `Minimal` risk shows the player a screen 83% identical to the one where
+hygiene was at 29% and falling — and the 17% that differs is the calendar, the
+bank and a discharge.
+
+**JUDGEMENT.** This is what makes §7's missing readouts matter rather than
+being a wish-list. A player who spends 3,870 on a canteen and a shower room
+gets, for their money, the digit `1` changing to `3` on a badge labelled
+`ROOMS`. Everything that actually changed — and a great deal did change — is
+on the Regime tab, one column wide, and has to be looked for.
+
 ## 9. The enclosure verdict said `Open on at least one side` at three designations out of three, and every one of them was sealed
 
 **MEASURED, act 3.** `designate` reads `.hud-rooms` **after** the drag and
@@ -896,7 +940,9 @@ contribution; the choice is a balance decision.**
 - **Scale.** Every measurement here is four prisoners and one guard. Contention
   for a room — ADR 0062's whole subject — never bit: two shower heads for four
   prisoners, six dining places for four, an 8 × 8 yard whose open-area capacity
-  is `floor(64 / 16) = 4`. **Nothing in this record tests what happens when
+  is `floor(64 / 16) = 4` (`TILES_PER_OPEN_GROUND_PLACE = 16`,
+  `src/simulation/prisoners/room-instance-registry.ts:222`, and the open-area
+  gate at `:337`, both opened). **Nothing in this record tests what happens when
   more prisoners want a room than it seats**, and §6.2's "the canteen is a
   no-op" is a claim about four prisoners and may be false at twelve.
 - **Eleven of the eighteen room types were never built.** The kitchen, laundry,
