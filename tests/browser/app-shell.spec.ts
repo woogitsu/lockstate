@@ -5216,6 +5216,34 @@ test.describe('the assembled application', () => {
    * quantity, because both sides of that comparison are hand-written.
    */
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
+    /*
+     * `test.slow()` triples the 60 s budget, and unlike its three siblings this
+     * sweep was left without it -- which made it a test that could not pass
+     * rather than a test that sometimes did not.
+     *
+     * Measured 2026-09-04 on an idle machine (no `playwright` or `vitest`
+     * process running, load average **1.55**): at the bare 60 s it failed
+     * `Test timeout of 60000ms exceeded` on the `locator.click` below, and the
+     * call log had already reported the row *resolved*, *"visible, enabled and
+     * stable"* and *"done scrolling"* -- so nothing was being waited on, the
+     * budget had simply run out mid-sweep. The same commit, the same idle
+     * machine, run with `--timeout 180000`: **`1 passed (1.9m)`**, the test
+     * itself 1.8 m. It needs about 108 s and was being given 60.
+     *
+     * The budget is arithmetic here and not a race, which is why raising it
+     * hides nothing: the sweep is 18 rooms x 5 viewports, every step is
+     * awaited, and the work does not vary with timing. Nothing about the
+     * assertions changes -- a mutation of the production code this measures
+     * (`ROOM_NEEDS_NAMED_LIMIT` 4 -> 8) is still red inside the raised budget,
+     * on the fold assertion rather than on the clock.
+     *
+     * `main`'s CI runner does the whole browser suite in about 14 minutes and
+     * has never been red on this test, so the 60 s fitted there and only there.
+     * A canary entry in `docs/AGENT_WORKFLOW.md` recorded that asymmetry for
+     * one afternoon; the budget is the fix and the entry was the workaround.
+     */
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
