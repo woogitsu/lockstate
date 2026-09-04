@@ -300,10 +300,18 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     they are recorded here as failing under load and the precondition in the
     paragraph above still applies to them.
   - **`app-shell.spec.ts` *"no room type in the catalogue pushes the Rooms panel
-    past its fold (#529)"* is NOT contention, and putting it on this list
-    unqualified would be wrong.** It carries no `test.slow()`, so it gets
-    `playwright.config.ts`'s bare `timeout: 60_000`, and it does not fit inside
-    it on this box at any load. Measured on a genuinely idle machine — `ps`
+    past its fold (#529)"* was NOT contention, and it is no longer on this list
+    as a canary at all — the measurement below is kept because it is what
+    justifies the budget it now has.** It carried no `test.slow()`, so it got
+    `playwright.config.ts`'s bare `timeout: 60_000`, and it did not fit inside
+    it on this box at any load. **The same commit that measured that gave it
+    `test.slow()`**, which is where the entry stops being a canary and becomes
+    a budget: a test given 60 s that needs 108 s is a test that *cannot* pass,
+    and writing it down here instead of raising the budget would have been
+    documenting a defect rather than fixing one. `test.slow()` skips, disables
+    and quarantines nothing — the test still runs, still sweeps 18 rooms across
+    5 viewports, and a failure is still a failure; three of its siblings in this
+    same file already carry it and this was the odd one out. Measured on a genuinely idle machine — `ps`
     clear of `[p]laywright/test/cli` and `[v]itest`, load average **1.55**:
     `Test timeout of 60000ms exceeded` on `locator.click` at
     `tests/browser/app-shell.spec.ts:5247`, the call log showing the row
