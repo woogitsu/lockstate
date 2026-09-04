@@ -158,6 +158,85 @@ export interface BuildEdgeLabelProbe {
   readonly heightPx: number;
 }
 
+/**
+ * One control in `.hud-build__actions`, measured **label against button**
+ * rather than button against panel (issue #926).
+ *
+ * ## Why this exists beside `BuildProbe.actionsOverflowPx`
+ *
+ * That field reads `button.getBoundingClientRect()`, and its own comment says
+ * why it refuses the row's `scrollWidth`. It is right about the row, and it
+ * cannot see this: `hud.css` gives the arm button `min-width: 0` on purpose --
+ * ADR 0022 measured a third button overflowing this row by 37.9px, and a flex
+ * item's default `min-width: auto` is why -- so the *button box* is guaranteed
+ * to fit by construction. What `min-width: 0` does not do is let the label
+ * reflow into the smaller box: `.ui-action__label` is `white-space: nowrap`
+ * and `.ui-action` declared no `overflow`, so the text rendered at its full
+ * intrinsic width starting from a narrower box and the remainder painted onto
+ * the next button in the row.
+ *
+ * **A gate whose unit is a box cannot see an overflow that paints outside that
+ * box.** Every field here is measured on the label, or on the label against a
+ * sibling, for that reason.
+ */
+export interface ActionLabelFitProbe {
+  /**
+   * The `hud-build__*` class that says *which* control this is, so a failure
+   * names it. Every button in this row carries exactly one such class
+   * (`build-panel.ts` adds them); the bare `.ui-action` is reported as `''`
+   * rather than guessed at.
+   */
+  readonly control: string;
+  /** The label's rendered text -- the thing whose width is under test. */
+  readonly label: string;
+  /** The button's own border box. `min-width: 0` is what keeps this inside the row. */
+  readonly buttonWidthPx: number;
+  readonly buttonHeightPx: number;
+  readonly buttonRightPx: number;
+  /**
+   * The label span's border box. While `white-space: nowrap` holds and the
+   * span is a flex item (default `min-width: auto`, so it cannot shrink below
+   * its min-content width), this is the text's full intrinsic width whatever
+   * the button's is.
+   */
+  readonly labelWidthPx: number;
+  readonly labelHeightPx: number;
+  readonly labelRightPx: number;
+  /**
+   * `labelRight - buttonRight`: **positive means the label paints outside its
+   * own button.** This is the number issue #926 is about, and the one no
+   * existing assertion in this repository reads.
+   */
+  readonly labelOverflowPx: number;
+  /**
+   * The left edge of the next laid-out button in the row, or `null` when this
+   * control is the last one -- which is a real state here, because the buy
+   * disclosure is `hidden` while the removal mode is on.
+   */
+  readonly neighbourLeftPx: number | null;
+  /** Which control that neighbour is, on `control`'s terms. */
+  readonly neighbour: string | null;
+  /**
+   * `labelRight - neighbourLeft`: positive means the label's text is painting
+   * over the neighbouring control. `0` when there is no neighbour to reach.
+   *
+   * Kept separate from `labelOverflowPx` because the two answer different
+   * questions and #926's own weakest claim was about exactly this gap: the
+   * first says the label left its box, the second says what it landed on.
+   */
+  readonly neighbourOverlapPx: number;
+  /**
+   * `scrollWidth > clientWidth` on the label -- the text is wider than the box
+   * it is being laid out in, so something has to give.
+   *
+   * This is `true` both for a label that overflows visibly and for one clipped
+   * by `overflow: hidden`, which is deliberate: those are the same fact about
+   * the *text* and differ only in what paints. `labelOverflowPx` separates
+   * them, and a fix that merely hid the symptom would leave this `true`.
+   */
+  readonly labelWiderThanBox: boolean;
+}
+
 export interface BuildProbe {
   /** False while the Build tab is not the active one. */
   readonly visible: boolean;
@@ -204,6 +283,21 @@ export interface BuildProbe {
    * again on the row that now has one.
    */
   readonly actionsOverflowPx: number;
+  /**
+   * Every laid-out control in `.hud-build__actions`, in DOM order, measured
+   * label-against-button (issue #926). See `ActionLabelFitProbe` for why this
+   * cannot be read off `actionsOverflowPx`.
+   */
+  readonly actionLabelFits: readonly ActionLabelFitProbe[];
+  /**
+   * The actions row's own height in CSS pixels.
+   *
+   * Here because it is the cost of the fix that was *not* chosen: the row is
+   * `align-items: stretch`, so a label allowed to wrap makes the whole row two
+   * lines tall and every control below it moves. A wrap that solved #926 by
+   * growing the panel would be visible here and nowhere else in this probe.
+   */
+  readonly actionsHeightPx: number;
   /** The note line under the controls, which says what the armed gesture does. */
   readonly hint: string;
   /** True while the numeric fallback section is folded away. */

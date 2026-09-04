@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { projectStaff } from '../../src/simulation/presentation/staff-projection';
+import { claimableGuardIds } from '../../src/simulation/security/post-eligibility';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { HUD_MESSAGE_KEY, describeStaffCoverage } from '../../src/ui/hud';
@@ -207,6 +208,97 @@ describe('the requirement a player has to act on moves, and the panel is told', 
       tone: 'danger',
       hireCount: 2,
     });
+  });
+});
+
+/**
+ * **Why the sentence on the top rung states a rule and not a state**
+ * (issue [#941](https://github.com/matmaxalez/lockstate/issues/941)).
+ *
+ * `hud.security.coverage-met-hint` used to read *"This prison has the guards it
+ * asks for."* -- true, and measured in the five-tester round of 2026-09-04 on
+ * the Security tab of a prison that lapsed **7 of 7** fights over in-game days
+ * 10-15: `3 of 3 / Covered` beside `3 held * 1 free`.
+ *
+ * The two cases below are what that sentence could not tell apart, driven
+ * through the production command path rather than argued: a prison at exactly
+ * the requirement, whose responder pool is **empty**, and the same prison one
+ * hire later, whose pool holds one. `describeStaffCoverage` answers identically
+ * for both -- same badge, same figures, same shortage -- because the coverage
+ * view model carries `required`/`assigned`/`shortage` and nothing about the
+ * pool. So no wording on this rung may assert a state of the reserve; the only
+ * honest thing it can say is where a responder comes from, which is what
+ * *"Only free guards answer incidents."* says.
+ *
+ * **This asserts nothing about balance and must not.** How large the reserve
+ * should be is issue #941 option 1 and `AGENTS.md` reserves it to the owner;
+ * `src/simulation/staff/dismissal.ts` is the precedent. What is asserted here
+ * is only that the panel's figures do not distinguish the two prisons.
+ */
+describe('the rung the panel calls covered does not say whether anyone can answer (#941)', () => {
+  it('has an empty responder pool at exactly the requirement, and reads the same one hire later', () => {
+    const runtime = twelveCellPrison();
+    for (let ordinal = 1; ordinal <= NINTH; ordinal += 1) admit(runtime, ordinal);
+    stepTo(runtime, runtime.kernel.tick + 60);
+    // Nine prisoners is two guards' worth, which the block above establishes.
+    expect(readout(runtime).required).toBe(2);
+
+    hire(runtime, 1);
+    hire(runtime, 2);
+    // 20 ticks: `DeploymentSystem` runs every 10 and posts a hire on its next
+    // update, which is the same window the walk below this block uses.
+    stepTo(runtime, runtime.kernel.tick + 20);
+
+    const atRequirement = readout(runtime);
+    expect(atRequirement).toMatchObject({
+      required: 2,
+      assigned: 2,
+      shortage: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
+      tone: 'success',
+      hireCount: 0,
+    });
+    /*
+     * **The whole defect, in one figure.** `claimableGuardIds` is the function
+     * `IncidentResponseSystem.claimableResponders` calls -- not a re-derivation
+     * of it -- and it answers `0` in a prison the panel has just called
+     * `Covered`. `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` predicts
+     * exactly this in words: a player who hires exactly the requirement "will
+     * watch every incident lapse."
+     */
+    expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(0);
+
+    hire(runtime, 3);
+    stepTo(runtime, runtime.kernel.tick + 20);
+
+    // One guard free -- and the coverage readout is byte-identical to the
+    // prison above it, which is why the sentence cannot be about the reserve.
+    expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(1);
+    expect(readout(runtime)).toEqual(atRequirement);
+  });
+
+  it('needs two of that pool for the mildest incident the simulation can open', () => {
+    /*
+     * The real method and the real policy: `requiredResponderCount` is
+     * `max(1, ceil(severity * respondersPerSeverityPoint))`, and `3` is the
+     * floor severity of an assault -- `ASSAULT_SEVERITY_CEILING`'s own docblock
+     * says *"A threshold-grazing assault is severity 3 and asks for two
+     * guards; the worst possible one is severity 5 and asks for three."*
+     * Written out as `3` rather than recomputed from
+     * `DEFAULT_ASSAULT_POLICY.threshold`, for `NINTH`'s reason: a test that
+     * derived it would hold for any threshold, and a reviewer has to see this
+     * number move if the policy does.
+     *
+     * It is here rather than in the wording test because it is the measurement
+     * that stops the sentence naming a figure: the honest reserve runs from two
+     * (a grazing assault) to five (a severity-10 riot), so a sentence promising
+     * one number would be false for some prisons. Sizing it is the owner's.
+     */
+    const runtime = twelveCellPrison();
+    expect(runtime.incidentResponseSystem.requiredResponderCount(3)).toBe(2);
+    // The top of the scale, so the range the sentence declines to quote is the
+    // one this build actually has rather than an assumed one.
+    expect(runtime.incidentResponseSystem.requiredResponderCount(10)).toBe(5);
   });
 });
 

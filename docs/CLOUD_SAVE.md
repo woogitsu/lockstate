@@ -38,10 +38,22 @@ design. That gap is now closed except where noted:
   it has been executed only against plain PostgreSQL. The date is what
   defines the set here, not this list: the list stood at eleven while twelve
   postdated the run. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 321 assertions
-  (54/54, 104/104, 35/35, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6), measured on the run that
+  `pnpm verify:sql` is at 412 assertions
+  (54/54, 104/104, 37/37, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6, 89/89), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
+
+  **That line read "321 assertions (54/54, 104/104, 35/35, 33/33, 8/8, 23/23,
+  11/11, 12/12, 25/25, 10/10, 6/6)" until 2026-09-04**, and the sentence above
+  it still reads **"suites 005 to 011 in their entirety"**, which is left as it
+  stands because it is what was measured then. Both are dated by one change:
+  `20260904090000_create_telemetry_events.sql` added the telemetry ingest
+  destination and, on the owner's ruling of that date, its retention job, which
+  brought **suite 012** (89 assertions), took suite 003 from 35 to 37 with the
+  fourth database role, and extended suites 005, 007, 008, 009 and 010 with the
+  new objects' declarations. So the unexecuted-against-the-stack set is now
+  **suites 005 to 012**, and the twelfth has never run anywhere but on plain
+  PostgreSQL.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -56,7 +68,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 321 assertions — which
+  migration and every suite via `pnpm verify:sql` — 412 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness

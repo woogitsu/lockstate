@@ -279,6 +279,14 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * it**, one commit apart, which no delta pass across branches could have
    * caught. Five re-pins in one day, all of them a comment growing.
    *
+   * **An eleventh and twelfth, on 2026-09-04, and again neither site
+   * changed.** Issue #926 added thirteen lines of correction to the removal
+   * control's docblock -- the amendment recording that `min-width: 0` fitted
+   * the third *button* and not the third *label* -- so `:2075`/`:2469` became
+   * `:2088`/`:2482`. Read off the tree by grepping for the expressions
+   * themselves, exactly as the paragraph above says to, and the count is
+   * carried forward rather than restarted because the count is the argument.
+   *
    * **Eight re-pins for two unchanged expressions**, and the count is now the
    * argument rather than an anecdote: every one of them was a line above the
    * site moving, none was a change to what the site does, and each cost a red
@@ -289,9 +297,9 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * a reader at, and doing it as a side effect of an unrelated diff is how a
    * gate loses the property it exists for. Recorded as owed.
    */
-  'ui/hud/build-panel.ts:2075':
+  'ui/hud/build-panel.ts:2088':
     'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2469':
+  'ui/hud/build-panel.ts:2482':
     'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
 };
 

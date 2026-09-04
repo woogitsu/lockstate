@@ -185,6 +185,54 @@ describe('every sentence the block can render is real text with its placeholders
     expect(met.trim().length).toBeGreaterThan(0);
   });
 
+  /**
+   * **The sentence the top rung says, verbatim, and the assertion it is no
+   * longer allowed to make** (issue
+   * [#941](https://github.com/matmaxalez/lockstate/issues/941)).
+   *
+   * **The expectation this replaces, quoted rather than deleted**
+   * (`docs/AGENT_WORKFLOW.md` §4): nothing in this repository pinned the
+   * covered rung's *content* at all -- the test directly above asserts only
+   * that it has no placeholder and is not a raw key, and it passed unchanged
+   * across this fix. The sentence it passed against was *"This prison has the
+   * guards it asks for."*, and that absence of any content assertion is what
+   * #941 §4 means by nothing having caught it.
+   *
+   * Pinned verbatim, because the owner's release of `AGENTS.md` reservation 4
+   * on 2026-09-04 buys the harmonising pass in exchange for every authored
+   * string being findable: a test that matched loosely would let the words
+   * drift out from under that promise.
+   *
+   * `not.toContain('asks for')` is the half that would go red on a
+   * *restoration* rather than on a typo -- the old sentence's own phrase, which
+   * is what made the requirement read as the whole bill. See
+   * `tests/integration/staff-coverage-readout.test.ts` for the measurement: at
+   * exactly the requirement the responder pool is empty, and the panel's
+   * figures are identical to a prison one hire past it.
+   */
+  it('says where a responder comes from, and no longer that the prison is finished hiring', () => {
+    const met = render({ required: 3, assigned: 3, shortage: 0 });
+
+    expect(met).toBe('Only free guards answer incidents.');
+    // The phrase the replaced sentence turned on. A regression to it fails
+    // here even if the assertion above were relaxed one day.
+    expect(met).not.toContain('asks for');
+    // It promises no outcome: `describeStaffCoverage`'s docblock refuses "a
+    // riot is coming" on measured grounds, and PR #854 refused an owner's
+    // wording that said guards stop incidents.
+    expect(met.toLowerCase()).not.toContain('riot');
+    expect(met.toLowerCase()).not.toContain('safe');
+
+    // Three sentences for three prisons, not one sentence with three badges --
+    // and this is what fails if the branch is repointed at another rung's hint.
+    const sentences = [
+      met,
+      render({ required: 3, assigned: 2, shortage: 1 }),
+      render({ required: 3, assigned: 0, shortage: 3 }),
+    ];
+    expect(new Set(sentences).size).toBe(3);
+  });
+
   it('renders the header pair the way the panel renders it', () => {
     // `{assigned} of {required}` -- the shape `hud.status.occupancy-value`
     // already set for a figure against its ceiling.
