@@ -167,6 +167,20 @@ import type {
  * authored here (`AGENTS.md`'s fourth exclusion). The correction is to this
  * comment, which is where the false claim actually was.
  *
+ * ### Which scale each of a row's two graded values is on (issue #909)
+ *
+ * A row carries two graded values, and they were on one line: a need's level as
+ * a word plus a meter, and the prisoner's standing as a pill. Their vocabularies
+ * overlap -- `Low` is a risk tier in the pill and, read as the meter's grade,
+ * the opposite instruction -- and the playtest that found it misread its own
+ * sample twice (`docs/research/2026-09-03-can-a-player-read-this.md` §4). The
+ * fix is composition rather than copy: the pill is on the **name's** line, where
+ * the inspector below the roster has always drawn it, and the meter prints its
+ * own percentage so the two scales differ in kind as well as in position.
+ * `paintRoster`'s row builder carries the reasoning, the rejected alternatives
+ * and the before-and-after geometry;
+ * `tests/browser/ui-roster-row-scales.spec.ts` is the gate.
+ *
  * ### What it still deliberately does not show
  *
  * **No tile, and no cell.** The two spatial fields on the row are a tile and an
@@ -215,7 +229,34 @@ import type {
  * | 375x812 | 27.5, 27.5, 27.5, 27.5 | none |
  *
  * **44.7px against the 54.75px the arithmetic allows**, so the inherited bound
- * holds rather than merely being assumed to. The two tall rows are the ones
+ * holds rather than merely being assumed to.
+ *
+ * **Retaken on 2026-09-04 for issue #909**, which is the next change that spent
+ * some of that headroom: the standing pill moved out of the row's own flex line
+ * and onto the name's, so the pill's 20px box now contributes to the row's
+ * height instead of being centred inside it, and the need's figure is printed
+ * rather than `.ui-sr-only`. Same fixture, same five viewports:
+ *
+ * | viewport | row heights | the activity line wrapped |
+ * | --- | --- | --- |
+ * | 1280x720 | 50.4, 33.2, 33.2, 33.2 | row 1 |
+ * | 1440x900 | 50.4, 33.2, 33.2, 33.2 | row 1 |
+ * | 1024x768 | 50.4, 33.2, 33.2, 33.2 | row 1 |
+ * | 900x600 | 50.4, 33.2, 33.2, 33.2 | row 1 |
+ * | 375x812 | 33.2, 33.2, 33.2, 33.2 | none |
+ *
+ * **50.4px against the same 54.75px**, so the bound still holds, with 4.35px of
+ * it left. Two things paid for the 5.7px each row grew, and both are worth
+ * knowing before the next change here:
+ *
+ * - **The tallest row got taller by 5.7px and the fourth row got *shorter* by
+ *   11.5px**, because the pill leaving the activity line gave "Free
+ *   Association" and its need pair room to fit on one line again. The block as
+ *   a whole grew 5.6px, from 144.4px of rows to 150.0px.
+ * - **The remaining 4.35px is the whole of what is left.** A third line on any
+ *   row, or a taller badge, crosses the ceiling. `revealDetail` is not the
+ *   escape for this block -- it is the inspector's -- so what would have to give
+ *   is `PRISONER_ROSTER_ROW_LIMIT` itself. The two tall rows are the ones
  * carrying the longest activity words -- "Heading to Showering" and "Free
  * Association" -- whose line wraps to put the need pair underneath; they wrap
  * on the *desktop* viewports and not at 375x812 because the side rail is
@@ -390,12 +431,43 @@ type Translate = (key: LocalizationKey, parameters?: MessageParameters) => strin
  * stronger statement of the two and a disagreement should not be able to
  * *demote* a restricted prisoner's badge.
  *
- * **What this does not do, and it is still owed.** The badge carries no `title`
- * and no screen-reader text (ADR 0090 names the same gap under "What this does
- * not decide"), so `Medium` now has a colour and still has no explanation. A
- * colour with no name is not reachable by a screen reader at all, and the
- * sentence that would name it is player-facing copy -- `AGENTS.md`'s fourth
- * exclusion, the owner's.
+ * **What this does not do, and it is still owed. Corrected 2026-09-04 at issue
+ * #909, and the paragraph is kept because half of it was answered and the other
+ * half changed hands.** It read:
+ *
+ * > The badge carries no `title` and no screen-reader text (ADR 0090 names the
+ * > same gap under "What this does not decide"), so `Medium` now has a colour
+ * > and still has no explanation. A colour with no name is not reachable by a
+ * > screen reader at all, and the sentence that would name it is player-facing
+ * > copy -- `AGENTS.md`'s fourth exclusion, the owner's.
+ *
+ * The badge still carries no `title` and no screen-reader text, and the tone is
+ * still unexplained. What #909 fixed is a different and worse gap that this
+ * paragraph did not name: the badge's *word* had nothing saying which **scale**
+ * it was on, while sitting on one line with a second graded value whose scale
+ * shares its vocabulary. `Low` is a risk tier here and a need level one cell to
+ * the left. That is fixed by composition -- the pill is on the name's line, not
+ * the need's -- and `paintRoster`'s row builder carries the whole reasoning.
+ *
+ * **What is left is a word, and it is nobody's permission that is missing.**
+ * `AGENTS.md`'s fourth reservation was partly released by the owner on
+ * 2026-09-04 -- *"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*, decide
+ * yourself, always -- and what that released is the **choice of words**, not
+ * the requirement that a sentence be true of the code. So a scale word (`Risk`
+ * beside the pill, or a screen-reader prefix inside it) is an ordinary change
+ * now. It is not made here for one reason: the string lives in
+ * `src/content/default-locale-en.ts`, and this change touches no file it does
+ * not have to.
+ *
+ * Two things any such word has to survive are facts about *this function*, and
+ * they are recorded here because "verify, then write" is what the release
+ * asks of whoever writes it:
+ *
+ * - The pill carries an **intake stage** and not a tier whenever
+ *   `classificationGroupId` is absent, so one fixed word reading `Risk` would
+ *   be false of `Queued`, `Reception` and `Cell Assignment`.
+ * - The **tone** is the classification group everywhere except tier 2, so a
+ *   word naming what the colour means would be false on three rows in four.
  */
 export interface PrisonerRowReadout {
   readonly tone: BadgeTone;
@@ -780,10 +852,31 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
      * announced once, whether or not a given browser implements the
      * presentational rule.
      *
-     * `.ui-sr-only` is `position: absolute` at 1px, so the row is exactly as
-     * wide with this as without it -- the property `createStatChip` relies on
-     * for the same trick and `tests/browser/ui-overdraft-badge.spec.ts`
-     * measures.
+     * **It is on screen as of issue #909, and the paragraph that made it
+     * invisible is kept below because its reasoning is what changed rather than
+     * its facts.** It read:
+     *
+     * > `.ui-sr-only` is `position: absolute` at 1px, so the row is exactly as
+     * > wide with this as without it -- the property `createStatChip` relies on
+     * > for the same trick and `tests/browser/ui-overdraft-badge.spec.ts`
+     * > measures.
+     *
+     * Every clause of that is still true of `.ui-sr-only`. What was wrong was
+     * spending it here: it bought a screen reader the need's figure and left a
+     * sighted player an unlabelled ten-segment bar, on the one row that also
+     * carries a *second* graded value. `docs/research/2026-09-03-can-a-player-read-this.md`
+     * §4 measured what that costs -- three rows drew `▮▮▮▮▮▯▯▯` beside `Low`
+     * and a fourth drew `▮▮▮▮▮▮▯▯`, *more* filled, beside `Minimal`, so a
+     * player reading the pill as the bar's grade got a consistent-looking
+     * answer whichever direction they thought the bar ran, and the misreading
+     * could not correct itself by observation.
+     *
+     * Printed, it does correct itself: the need reads as a **percentage** and
+     * the standing reads as a **word**, so the two scales differ in kind and
+     * not only in position. The width it now costs is paid for by the same
+     * change -- the badge left this line for the name's, which is wider than
+     * this figure -- and `tests/browser/ui-roster-row-scales.spec.ts` asserts
+     * both halves at all five viewports.
      */
     readonly needValue: HTMLSpanElement;
     readonly badge: StatusBadge;
@@ -854,24 +947,136 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     // browser suite visits -- a third line spends headroom that arithmetic
     // does not have to give. Beside it the pair wraps only when the row is
     // genuinely too narrow, which `hud.css` lets it do.
-    // The figure the bar draws, in the row's text, and the bar hidden from the
-    // name computation that would otherwise say it twice -- see
-    // `RosterRow.needValue`.
-    const needValue = screenReaderText('');
+    // The figure the bar draws, printed in the row's text as of issue #909, and
+    // the bar itself hidden from the name computation that would otherwise say
+    // it twice -- see `RosterRow.needValue` for what it was and why it changed.
+    const needValue = eyebrowText('', 'hud-regime__roster-need-value');
     needBar.element.setAttribute('aria-hidden', 'true');
     const need = element('div', {
       className: 'hud-regime__roster-need',
       children: [needName, needBar.element, needValue],
     });
     const badge = createStatusBadge({ tone: 'neutral', text: '' });
+    /*
+     * The pill's own class, and it is the smaller half of issue #909.
+     *
+     * Added *here* rather than in `createStatusBadge`, which is the whole
+     * point: that primitive is shared with `status-strip.ts` and
+     * `staff-panel.ts`, so a class minted inside it would be a class on
+     * `Warning`, `Info` and `Covered` too. The playtest's probe walked the row
+     * cell by cell, and the only class it could report for this one was
+     * `ui-badge__text` -- the primitive's inner text cell, with `ui-badge` on
+     * the root outside it. Those are the same two classes those three badges
+     * carry on the same screen, so neither the stylesheet nor a measurement
+     * could name *this* pill without naming them. `classList.add` on the root
+     * the primitive returns is the same reach `hud.css` already had through
+     * `.hud-regime__roster-row > .ui-badge`, one step further in and without a
+     * descendant selector.
+     */
+    badge.element.classList.add('hud-regime__roster-standing');
+    /*
+     * Two lines, and **which value is on which line is the fix for issue
+     * #909**.
+     *
+     * The row used to be the text column with the pill beside it, vertically
+     * centred, which put the pill hard against the need's meter at the end of
+     * the second line:
+     *
+     * ```
+     * Hana Zielen
+     * Association    Bladder ▮▮▮▮▮▯▯▯                    [ Low ]
+     * ```
+     *
+     * Two scales, one line, sharing a vocabulary. `Minimal / Low / Medium /
+     * High` is the prisoner's risk tier (or, before classification, their
+     * intake stage); `Bladder ▮▮▮▮▮▯▯▯` is how full their worst need is. So
+     * `Bladder ▮▮▮▮▮▯▯▯ [Low]` read as one statement -- *bladder need, low* --
+     * and `Low` means *act now* on the need scale and *ignore this one* on the
+     * risk scale.
+     *
+     * **The evidence is a reader, not a hypothesis.**
+     * `docs/research/2026-09-03-can-a-player-read-this.md` §4 misread this row
+     * twice in its own record and left both misreadings in place: its first
+     * draft read the pair as "minimal hygiene". Its probe recorded why nothing
+     * on screen stopped it -- no column heading, no `aria-label` and no `title`
+     * on the row or on any cell -- and the same section records that a *gap* is
+     * not the cure, because the two were already separated by most of the row's
+     * width and it still read as one statement. Measured before this change, at
+     * 375x812 the pill's box (y=562.4..582.4) overlapped the need pair's
+     * (y=573.0..586.2) by 9.4px: it sat on neither line.
+     *
+     * §4 named three remedies -- a heading, a word inside the pill, or **moving
+     * it off that line**. This is the third, and it is the one that ships whole:
+     * the first two are new player-facing strings and this authors none.
+     *
+     * The pill therefore joins the **name**, and the composition is not
+     * invented here -- it is `.hud-regime__detail-header` one block down, which
+     * has always drawn this same badge beside the same prisoner's name. So the
+     * panel now says it one way instead of two:
+     *
+     * ```
+     * Hana Zielen                                        [ Low ]
+     * Association    Bladder ▮▮▮▮▮▯▯▯ 63%
+     * ```
+     *
+     * **Document order carries the same grouping for a screen reader**, which
+     * is why the pill is the name's next sibling rather than merely painted
+     * near it. A row is `role="radio"` and is announced as its flattened
+     * contents in order, so the shipped row said "Mara Ostrowska, Heading to
+     * Showering, Hunger, 20%, Low" -- the tier last, immediately after the
+     * need's figure, which is the aural form of the same misreading. A line
+     * break is invisible there; the order is not.
+     *
+     * **Issue #909 put three other shapes on the table, and each is answered
+     * here rather than passed over.**
+     *
+     * 1. **"Label the columns."** These are not columns.
+     *    `.hud-regime__roster-line` is `flex-wrap: wrap` and the activity line
+     *    *does* wrap at the four desktop viewports and not at 375x812
+     *    (`PRISONER_ROSTER_ROW_LIMIT`'s table above), so a heading would sit
+     *    over the need pair on some rows and over nothing on others. It would
+     *    also be false on one row in four: the pill carries an **intake stage**
+     *    for a prisoner classification has not reached, so a column headed with
+     *    a risk word would misname `Queued`. And it is new copy.
+     * 2. **"Give the risk tier its own vocabulary."** Four shipped words. The
+     *    issue reckons the blast radius as this roster *and the status strip*,
+     *    on the grounds that #703's ruling put the tiers on the strip; that was
+     *    checked and it is not so -- the strip's `high-risk` chip is a **count**
+     *    labelled from `classification-group.high-risk.name`
+     *    (`projection.ts`), and `risk-tier.N.name` has exactly one reader,
+     *    `prisonerStandingLabelKey`, serving this row and the inspector. So the
+     *    rename is *cheaper* than the issue thought. It is still not the fix:
+     *    renaming the words leaves two graded values on one line with nothing
+     *    saying which is which, so it spends four player-visible strings to
+     *    make the collision quieter rather than to remove it.
+     * 3. **"Take the need meter off the row and let the inspector own it."** The
+     *    inspector shows **one** prisoner and only after a press. The roster is
+     *    the window on the population, and it is ordered by risk tier rather
+     *    than by need (#703's fourth ruling of 2026-08-31), so with the meters
+     *    gone a player could not see who is suffering without pressing four
+     *    rows in turn. That is the owner's standing design directive read
+     *    backwards -- *"gra ma być łatwa przyjazna do grania, a nie jakieś
+     *    ukryte funkcje"* -- and it would re-refuse the bar whose own condition
+     *    #535 decision 6 had established was met.
+     *
+     * What all three change is *what the row says*. This changes *where it says
+     * it*, which is where the defect was.
+     *
+     * `.hud-regime__roster-text` survives as the wrapper even though the row
+     * now has one child. It carries `min-width: 0`, which `hud.css` records as
+     * defensive rather than load-bearing after measuring it, and it is the box
+     * the two lines are a column of.
+     */
     const row = element('div', {
       className: 'hud-regime__roster-row',
       children: [
         element('div', {
           className: 'hud-regime__roster-text',
-          children: [name, element('div', { className: 'hud-regime__roster-line', children: [activity, need] })],
+          children: [
+            element('div', { className: 'hud-regime__roster-head', children: [name, badge.element] }),
+            element('div', { className: 'hud-regime__roster-line', children: [activity, need] }),
+          ],
         }),
-        badge.element,
       ],
     });
     row.hidden = true;
