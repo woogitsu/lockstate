@@ -3638,6 +3638,161 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* A box that hides its own content says so (#902)                     */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Eight scroll regions in this file, one rule, and it is the *sign* rather
+ * than the scrolling.
+ *
+ * ## What was wrong
+ *
+ * Nothing above this line is being reversed. The scrolling is deliberate and
+ * derived: `.hud-build__list` and `.hud-rooms__list` are the donors the height
+ * budgets above are written around, `app-shell.spec.ts` calls the rooms list
+ * *"the one box here that is meant to hold more than it shows"*, and
+ * `.hud-build`'s own `overflow-y: auto` is what makes a queue and an expanded
+ * coordinate form reachable instead of clipped. All of that stands.
+ *
+ * What none of it did was tell the player. Measured on the application page at
+ * 1440x900 on a fresh prison, before this rule existed:
+ *
+ *   .hud-build__list   hid 701px of 924px (76%) -- roughly 5 of 19 buildables
+ *                      on screen, 36 elements laid out entirely outside the
+ *                      viewport, `button "Utility Panel"` among them at y=913
+ *   .hud-rooms__list   hid 585px of 837px (70%) -- roughly 4 of 18 room types,
+ *                      29 elements outside the viewport, `button "Reception"`
+ *                      at y=913, and `Cell` below the fold on the tab whose
+ *                      whole purpose is designating one
+ *   .hud-build         hid 46px of 576px with one wall run queued, and 271px
+ *                      of 801px with the coordinate form open as well -- the
+ *                      QUEUED section's own header laid out at y=1042 in a
+ *                      900px viewport
+ *
+ * and nothing on screen was a chevron, a fade or a count. The owner's standing
+ * design directive is the one this fails by name -- *"gra ma być łatwa
+ * przyjazna do grania, a nie jakieś ukryte funkcje"*, easy and friendly to
+ * play and not full of hidden features -- and a catalogue that hides three
+ * quarters of itself behind an affordance the player has to guess at is a
+ * hidden feature however completely it works.
+ *
+ * ## Why the platform scrollbar is not the answer on its own
+ *
+ * Two playtests measured those boxes at a **0.0px scrollbar gutter** and read
+ * it as the game suppressing the scrollbar. It is not: only
+ * `.hud-strip__metrics` does that, by name, and #634 is the record of that
+ * being the owner's call. The 0.0px is **Playwright's own browser** --
+ * `chromium.js` appends `--hide-scrollbars` to every headless launch -- and
+ * the same page in the same Chromium at the same viewport with that one flag
+ * removed answers `offsetWidth - clientWidth = 15px` on all three boxes
+ * above. So a desktop Chrome player does get a scrollbar, and the harness can
+ * never see it.
+ *
+ * That does not make the defect an artefact, it makes the scrollbar an
+ * unreliable sign:
+ *
+ *   - on macOS, iOS, Android and ChromeOS the scrollbar is an *overlay* -- no
+ *     layout width, and painted only during a scroll the player has no reason
+ *     to start;
+ *   - 15px of grey at the right edge of a 264px rail is a weak sign for a
+ *     catalogue that is hiding three quarters of itself even where it is
+ *     drawn;
+ *   - and nothing in this repository can assert it, because the suite's
+ *     browser hides it.
+ *
+ * Hence a sign painted by this stylesheet, which behaves the same on every
+ * platform and which a browser test can read off the pixels.
+ *
+ * ## What this paints, and why it is honest
+ *
+ * Four background layers per box: two **shadows** at the top and bottom edges,
+ * pinned to the box (`background-attachment: scroll`), and two **covers** in
+ * the surface colour that scroll with the content (`local`). At the top of the
+ * scroll the top cover sits over the top shadow and hides it; scroll down and
+ * the cover travels up out of the way, uncovering it. The bottom pair works
+ * the other way round. So each edge carries a shadow exactly while there is
+ * content past that edge, and the box that has reached its end says so by
+ * having none.
+ *
+ * A static fade would be the same defect with a different sign: a list that
+ * claims more below when the player is already at the bottom.
+ *
+ * The shadow colour is `--surface-sunken` rather than an authored black,
+ * because the step from `--surface-raised` to `--surface-sunken` is the one
+ * this design already separates regions with -- `primitives.css` states it,
+ * *"Separation comes from a 1px hairline and a background step"*. It also
+ * cannot cost text contrast: every layer here is a **background**, the rows
+ * are `background: transparent` (`primitives.css`, `.ui-row--interactive`), and
+ * `--surface-sunken` is darker than the surface it replaces, so a label that
+ * crosses the band gains contrast rather than losing it.
+ *
+ * The cover has to be much taller than the shadow, and 64 against 24 is that
+ * arithmetic rather than a pair of round numbers: a cover is opaque for its
+ * first 30% and fades over the rest, so at the shadow's own 24px extent the
+ * cover's alpha is still 0.89 and the residue is a tenth of one background
+ * step. A cover the same height as the shadow leaves a visible band at the end
+ * of the scroll, which is the false claim above.
+ *
+ * 24px and not the 18px this first shipped at, for one reason and it is a
+ * reading rather than a measurement: at 18px the band reads as a section
+ * divider -- this UI separates its regions with exactly this step -- and at
+ * 24px it reads as a gradient, which is what it is. The gate's own numbers are
+ * unchanged in direction and larger in size, and both are far above its
+ * margin.
+ *
+ * ## Why this block sits here rather than beside each panel
+ *
+ * Source order, and it is load-bearing. `.ui-panel.hud-build`,
+ * `.ui-panel.hud-staff`, `.ui-panel.hud-regime` and `.ui-panel.hud-rooms` each
+ * set `background: var(--surface-raised)` -- the **shorthand**, which resets
+ * `background-image` to `none`. Written beside those rules this would be
+ * overwritten by them at equal specificity, silently and only for the panels.
+ * The last of those declarations is `.ui-panel.hud-rooms`; this is after it,
+ * and no rule below it sets a background on any selector named here.
+ *
+ * `.hud-strip__metrics` is deliberately absent. It is the one box in this file
+ * whose scrollbar *is* suppressed on purpose (#634), it scrolls sideways
+ * rather than down, and the owner's ruling on that strip is a separate
+ * subject.
+ *
+ * `aside.save-panel` is the same defect in the same rail -- measured hiding
+ * 105px of 225px at 1440x900 -- and is deliberately absent too: it is styled
+ * in `src/styles.css`, so it is a separate file, a separate change and a
+ * separate claim.
+ *
+ * `tests/browser/ui-catalogue-scroll-sign.spec.ts` is the gate. It reads the
+ * painted pixels at both edges of both catalogues at two scroll positions,
+ * rather than reading these declarations back, because a computed
+ * `background-image` proves only that something was authored.
+ */
+.hud-alerts__list,
+.ui-panel.hud-build,
+.hud-build__list,
+.ui-panel.hud-staff,
+.hud-staff__list,
+.ui-panel.hud-regime,
+.ui-panel.hud-rooms,
+.hud-rooms__list {
+  --hud-scroll-shadow: calc(24px * var(--ui-scale));
+  --hud-scroll-cover: calc(64px * var(--ui-scale));
+  background-image:
+    linear-gradient(to bottom, var(--surface-raised) 30%, transparent),
+    linear-gradient(to top, var(--surface-raised) 30%, transparent),
+    linear-gradient(to bottom, var(--surface-sunken) 25%, transparent),
+    linear-gradient(to top, var(--surface-sunken) 25%, transparent);
+  background-repeat: no-repeat;
+  background-position: top, bottom, top, bottom;
+  background-size:
+    100% var(--hud-scroll-cover),
+    100% var(--hud-scroll-cover),
+    100% var(--hud-scroll-shadow),
+    100% var(--hud-scroll-shadow);
+  /* The whole mechanism. The covers travel with the rows; the shadows stay
+     with the box. */
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* ------------------------------------------------------------------ */
 /* Narrow viewports                                                    */
 /* ------------------------------------------------------------------ */
 
