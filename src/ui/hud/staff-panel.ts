@@ -322,6 +322,32 @@ export function formatHeldGuardText(
  * staffing; it is not a prediction, and a sentence promising one would be false
  * in the first of those prisons.
  *
+ * ### And what the top rung says instead of asserting it is finished (#941)
+ *
+ * **`Covered` is not "you have enough guards", and until issue #941 the
+ * sentence under it read as though it were.** `required` is
+ * `DeploymentSystem.requiredGuardCountFor` -- the *posts* a sector asks to have
+ * filled -- and `IncidentResponseSystem.claimableResponders` draws responders
+ * from `claimableGuardIds`, which is `unassignedGuardIds()` filtered by role:
+ * a guard on a post is `'travelling'` or `'on-post'` and is therefore never
+ * claimable. So the requirement and the responder pool come out of one finite
+ * roster and satisfying the first empties nothing into the second.
+ * `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` states the consequence in the
+ * simulation's own words -- a player who hires exactly the requirement *"will
+ * watch every incident lapse"* -- and a prison measured at 17 residents and 4
+ * guards read `3 of 3 / Covered` while 7 of 7 fights lapsed.
+ *
+ * `hintKey` on this rung is therefore the exclusion rather than the
+ * reassurance: the badge and the pair of figures already say the requirement is
+ * met, and the sentence says the one thing the figures cannot. The wording, the
+ * code opened to establish it, and why it names no number are all in
+ * `hud.security.coverage-met-hint`'s own entry in
+ * `src/content/default-locale-en.ts`.
+ *
+ * **It is still not a prediction**, which is what keeps it inside the paragraph
+ * above: it says who is claimed when an incident opens, not that one is coming
+ * and not that a claim contains it.
+ *
  * ### What it now does say, on the bottom rung only
  *
  * `consequenceKey` is the owner's chosen sentence of 2026-09-03 --
@@ -394,8 +420,19 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
     };
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
-  // *exemption* a save can carry (ADR 0048 decision 3), and "this prison has the
-  // guards it asks for" is true of a prison that asks for none.
+  // *exemption* a save can carry (ADR 0048 decision 3), and a prison that asks
+  // for none has what it asks for.
+  //
+  // **The sentence that clause used to quote is gone, and the reason is issue
+  // #941.** It read *"this prison has the guards it asks for"* -- which is what
+  // `hud.security.coverage-met-hint` said, and it was true. What made it a
+  // defect is that the requirement is not the whole bill:
+  // `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` predicts in its own words
+  // that a player who hires exactly it *"will watch every incident lapse"*,
+  // because `IncidentResponseSystem` claims responders only from guards
+  // `DeploymentSystem` has **not** posted. The hint on this rung now states
+  // that exclusion instead; the locale entry carries the whole argument and the
+  // code opened to prove it.
   //
   // **This comment used to end "It is not reachable from
   // `applyDefaultSecuritySector`, which authors a floor of one", and that is no
@@ -403,9 +440,11 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
   // `resolveOccupancyScaledGuardCount` now answers `0` for a sector holding
   // nobody, so this branch is what an *empty* prison reads -- the ordinary
   // state of a session a player has just started, rather than a case only a
-  // hand-edited save reaches. Nothing here changes: the branch was already
-  // correct for `required: 0`, and that it needed no new sentence is the check
-  // that #533 changed a demand rather than a promise.
+  // hand-edited save reaches. **That paragraph's own closing clause is the one
+  // #941 overturned**: it said "it needed no new sentence is the check that
+  // #533 changed a demand rather than a promise", and #533 really did change
+  // only a demand. The promise was already wrong when it was written, which is
+  // why a delta pass over #533 could not have found it.
   return {
     tone: 'success',
     badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,

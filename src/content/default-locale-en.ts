@@ -1751,7 +1751,96 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage': 'Guard coverage',
   'hud.security.coverage-summary': '{assigned} of {required}',
   'hud.security.coverage-met': 'Covered',
-  'hud.security.coverage-met-hint': 'This prison has the guards it asks for.',
+  /*
+   * **The sentence the block says once its figures are level, and it no longer
+   * says the prison is finished hiring** (issue #941, authored here under the
+   * owner's partial release of `AGENTS.md` reservation 4 on 2026-09-04 -- the
+   * choice of words is ours, the requirement that it be true is not).
+   *
+   * **What it said until now, quoted rather than overwritten**
+   * (`docs/AGENT_WORKFLOW.md` §4): *"This prison has the guards it asks for."*
+   * That sentence was **true** and is the whole of why it had to go. The
+   * figures beside it are `assigned` against `required`, and `required` is
+   * `DeploymentSystem.requiredGuardCountFor` -- the posts a sector asks a
+   * player to fill. `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT`'s own
+   * docblock (`src/simulation/security/default-sector.ts`) says in words what
+   * that number leaves out: *"a prison of `n` prisoners needs `ceil(n / 8)`
+   * guards posted **plus** a reserve for `IncidentResponseSystem` to claim,
+   * and a player who hires exactly the requirement will watch every incident
+   * lapse."* So the badge, the pair of figures and that sentence all reported
+   * a met requirement, and nothing on the tab said the requirement is not the
+   * whole bill. Measured in the five-tester round of 2026-09-04: 17 residents,
+   * 4 guards, `3 of 3 / Covered / This prison has the guards it asks for.`
+   * beside `3 held · 1 free`, and 7 fights over in-game days 10-15 of which
+   * **7 lapsed and 0 were contained**.
+   *
+   * ## What makes the replacement true, opened rather than assumed
+   *
+   * `IncidentResponseSystem.claimableResponders`
+   * (`src/simulation/incidents/response-system.ts:499`) is the only path that
+   * puts a guard on an incident, and it draws from
+   * `claimableGuardIds(this.guards)` --
+   * `src/simulation/security/post-eligibility.ts:103`, which is
+   * `GuardRoster.unassignedGuardIds()` filtered to post-eligible roles. A
+   * guard `DeploymentSystem` has posted is `'travelling'` or `'on-post'`
+   * rather than `'unassigned'` (`src/simulation/security/guard-roster.ts:236`),
+   * so it is **never** in that pool. Hence *only* -- the exclusion is the half
+   * of this sentence that corrects the reading, and it holds in both
+   * directions: a held guard is never claimed, and the pool is exactly the
+   * free post-eligible ones.
+   *
+   * *"guards"* rather than *"staff"*, and that is a truth constraint rather
+   * than a register choice. The `{unassigned}` figure in
+   * `hud.security.held-summary` below is `hired - held` over the whole roster
+   * (`projectHeldGuards`, `src/simulation/presentation/guard-release-projection.ts:213`),
+   * so it counts a free nurse -- and `post-eligibility.ts` says so itself:
+   * *"A prison whose roster holds a nurse and no guard should read three
+   * staff, one of them unassigned, and nobody available to guard."* A sentence
+   * about *free staff* answering an incident would therefore be false; one
+   * about free **guards** is not.
+   *
+   * ## Why it quotes no number, which is the part a balance pass may want to change
+   *
+   * Because the number is not one number, and because choosing what to
+   * recommend is balance and `AGENTS.md` reserves that to the owner.
+   * `requiredResponderCount` is `max(1, ceil(severity * 0.5))`
+   * (`response-system.ts:345`), and every incident a session can currently
+   * open is severity 3 or worse: an assault is scaled into `1..5` and fires
+   * only at or above `DEFAULT_ASSAULT_POLICY.threshold` 0.65, so its floor is
+   * `round(0.65 * 5) = 3` and it asks for **two** -- which
+   * `ASSAULT_SEVERITY_CEILING`'s docblock states outright, *"A
+   * threshold-grazing assault is severity 3 and asks for two guards; the worst
+   * possible one is severity 5 and asks for three."* A riot or a gang
+   * retaliation fires at the same 0.65 on the full 0-10 scale, so severity 7
+   * and four responders, and an escape attempt at 0.6 wants three. So the
+   * honest reserve is between two and five and depends on what happens; a
+   * sentence naming one figure would be a promise for some prisons and a lie
+   * for others. This one states the **rule** the player cannot otherwise see,
+   * and leaves the size of the reserve to the requirement itself, which is
+   * issue #941's option 1 and the owner's to take.
+   *
+   * ## What it deliberately does not say
+   *
+   * Nothing about an outcome. `describeStaffCoverage`'s docblock refuses "a
+   * riot is coming" on measured grounds and PR #854 refused an owner's earlier
+   * wording for asserting that guards stop incidents -- guard presence is an
+   * amplifier and not a gate. This says who is *claimed* when an incident
+   * opens, which is a fact about the dispatch path, and it promises no
+   * containment: `claimableResponders` returning a set is not
+   * `advanceResponse` reaching `'resolved'`.
+   *
+   * Rendered with no parameter, exactly as its predecessor was: the covered
+   * rung's `hireCount` is `0`, so `paintCoverage` formats this key with no
+   * arguments and it must declare no placeholder.
+   *
+   * It is 34 characters against the 39 the sentence it replaces occupied, and
+   * that matters at one viewport: `.hud-staff__note` is clamped to a single
+   * line below `max-height: 700px`, where the box is 238px wide. Measured at
+   * 900x600, the old sentence was one 13px line in a 13px box and this one is
+   * shorter, so the clamp cuts neither -- `tests/browser/ui-staff-coverage-reserve.spec.ts`
+   * is where that is held at all five shipped viewports rather than argued.
+   */
+  'hud.security.coverage-met-hint': 'Only free guards answer incidents.',
   'hud.security.coverage-short': 'Understaffed',
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',
