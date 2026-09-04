@@ -1013,6 +1013,72 @@ test.describe('is there anything to do', () => {
     const ran = await latestRawCounts(page);
     console.log(`[act5] after four days with doors: ${JSON.stringify(ran)}`);
     if (populated !== undefined && ran !== undefined) console.log(`[act5] DELTA over four days with doors\n${deltaVector(populated, ran)}`);
+    console.log(`[act5] events after four days: ${JSON.stringify(await eventTypes(page))}`);
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    console.log(`[act5] the screen after four days with doors (UPPER BOUND):\n${await screen(page)}`);
+
+    /*
+     * **The second step of the sequence, because the first one worked.**
+     *
+     * With the shower room reachable, `Hygiene` holds near full and the
+     * lowest-need column on every roster row re-points itself onto
+     * `Recreation`, which falls unopposed: nothing in a cell serves it. The
+     * only unblocked provider is `room.yard` -- `outdoors`, 8x8 tiles, no
+     * walls, no objects, no money (`src/content/room-catalog.ts:138-141`) and
+     * no `requiredObjectCapability` on the action
+     * (`src/simulation/prisoners/actions.ts:165-167`).
+     *
+     * So the question this phase answers is whether the *sequence* works, not
+     * just its first step: does the thing the roster is now pointing at fix
+     * what the roster says is wrong? And it needs the camera moved, because
+     * §0's clear rectangle is twelve by eleven and the cell is in the middle
+     * of it.
+     */
+    const beforePan = { x0: 19, y0: 13, x1: 26, y1: 20 };
+    const cornerReport: string[] = [];
+    for (const [x, y] of [
+      [beforePan.x0, beforePan.y0],
+      [beforePan.x1, beforePan.y0],
+      [beforePan.x0, beforePan.y1],
+      [beforePan.x1, beforePan.y1],
+    ] as const) {
+      const point = centreOf(origin, x, y);
+      cornerReport.push(`(${x},${y}) at screen (${Math.round(point.x)},${Math.round(point.y)}) -> ${await topmostAt(page, point.x, point.y)}`);
+    }
+    console.log(`[act5] an 8x8 yard east of the cell, BEFORE panning: ${JSON.stringify(cornerReport)}`);
+
+    const focusPoint = centreOf(origin, 20, 19);
+    await assertCanvasAt(page, focusPoint.x, focusPoint.y, 'act5 camera-focus point');
+    await page.mouse.click(focusPoint.x, focusPoint.y);
+    for (let index = 0; index < 12; index += 1) {
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(1500);
+    await tab(page, 'build').click({ timeout: 15_000 });
+    const panned = await calibrate(page);
+    console.log(
+      `[act5] after 12 ArrowRight press(es) the world origin is (${panned.originX}, ${panned.originY});` +
+        ` it was (${origin.originX}, ${origin.originY})`,
+    );
+    const yard = await firstClearSquare(page, panned, 8);
+    console.log(`[act5] the first fully-clear 8x8 square after panning: ${JSON.stringify(yard)}`);
+    if (yard === undefined) {
+      console.log(`[act5] no fully-clear 8x8 square exists even after panning; the yard was not attempted`);
+    } else {
+      const yardAttempts = await designate(page, 'act5', 'room.yard', panned, yard);
+      console.log(`[act5] the yard was accepted on attempt ${yardAttempts}`);
+      const withYard = await latestRawCounts(page);
+      if (ran !== undefined && withYard !== undefined) console.log(`[act5] DELTA before the yard -> yard designated\n${deltaVector(ran, withYard)}`);
+      const yardStart = await currentTick(page);
+      for (let day = 1; day <= 3; day += 1) {
+        await runToTick(page, 'act5', yardStart + day * 2400, 3000, 300_000);
+        console.log(`[act5] ${await needsReadout(page, `needs at yard day +${day}`)}`);
+      }
+      const afterYard = await latestRawCounts(page);
+      console.log(`[act5] three days after the yard opened: ${JSON.stringify(afterYard)}`);
+      if (withYard !== undefined && afterYard !== undefined) console.log(`[act5] DELTA over three days with a yard\n${deltaVector(withYard, afterYard)}`);
+    }
     console.log(`[act5] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
     await tab(page, 'overview').click({ timeout: 15_000 });
     console.log(`[act5] the final screen (UPPER BOUND):\n${await screen(page)}`);
