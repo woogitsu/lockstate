@@ -679,6 +679,48 @@ a room is being used is the verb on a Regime roster row** — `Showering`,
 `src/content/simulation-message-keys.ts:164-176`. One tab, one column, four
 words.
 
+## 9. The enclosure verdict said `Open on at least one side` at three designations out of three, and every one of them was sealed
+
+**MEASURED, act 3.** `designate` reads `.hud-rooms` **after** the drag and
+**before** pressing Confirm — the exact instant a player decides whether to
+commit. For all three enclosed rooms, the panel said the rectangle was open,
+and all three were then accepted on the first press:
+
+```
+designate room.cell attempt 1: rooms=1 (was 0) | panel said ["OPEN ON AT LEAST ONE SIDE","NEEDS AT LEAST 2 × 3 TILES","MUST BE ENCLOSED", …]
+designate room.canteen attempt 1: rooms=2 (was 1) | panel said ["OPEN ON AT LEAST ONE SIDE", …]
+designate room.shower-room attempt 1: rooms=3 (was 2) | panel said ["OPEN ON AT LEAST ONE SIDE", …]
+```
+
+**This is a known, documented and deliberately accepted false negative, and
+the finding here is its frequency rather than its existence.**
+`src/ui/hud/rooms-panel.ts` says so at length beside `confirmButton.setDisabled`
+(VERIFIED, read): `pendingEnclosure` is `classifyArea`'s answer against
+`WorldRenderView`, refreshed on the render-snapshot feed's own cadence — *"up
+to a 30-second poll interval while the clock runs, and **not refreshed at all
+while it is paused**"* — so a prison that *"built its walls, ran the clock long
+enough for `data-queued` to empty, and paused again before the next periodic
+poll happened to land"* reports `'open'` for a rectangle the simulation has
+already sealed. The panel therefore refuses to *disable* Confirm on it, and
+warns only, on the reasoning that *"a warning that turns out to be stale costs
+nothing but confusion"*.
+
+**What this run adds is the rate.** The sequence the comment calls *"an
+ordinary sequence, not a contrived one"* is the sequence the game forces on a
+player: §4 established that objects cannot be placed until the room is zoned,
+so wall → wait for the queue → designate is the only order there is. Played
+that way three times in one session, the warning was wrong **three times out of
+three**. So the accepted cost is not "occasional confusion for one press": in
+the normal build loop, **the enclosure readout is a false alarm by default**,
+and a player who believes it goes looking for a hole in a wall that has none.
+
+**No fix is proposed here** — the asymmetry the comment describes is real and
+the choice not to disable Confirm is right. What is worth reconsidering, with
+this number, is whether the *note* should say `Not checked since the walls
+finished` rather than `Open on at least one side` when the client's world view
+is older than the last completed build order. That is a decision, not a
+wording tweak, and it belongs in the ADR the comment already points at.
+
 ---
 
 # Improvement proposals
