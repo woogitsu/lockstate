@@ -206,7 +206,26 @@ test.describe('the FUNDS chip says how much of the overdraft is left (ruling 18)
     expect(stuck.badgeTone).toBe('critical');
     expect(stuck.chipTone).toBe('critical');
     expect(stuck.chipTitle, 'critical no longer reads the danger sentence').not.toBe(pastTheRung.chipTitle);
-    expect(stuck.chipTitle, 'and says the overdraft itself is exhausted').toMatch(/exhaust/i);
+    /*
+     * **Pinned on the property, not on the vocabulary.** This assertion read
+     * `toMatch(/exhaust/i)` until the copy pass this commit belongs to, and
+     * that is the same defect the pass was written to remove: the sentence it
+     * matched said the state owed money it did not owe, and a gate that
+     * requires a word fails whoever fixes the sentence carrying it. The word
+     * moved -- `The treasury is exhausted` became `The treasury is at its
+     * floor` -- and the *property* the comment above argues for did not.
+     *
+     * So the floor sentence must name the floor as its own state, must say
+     * that spending has stopped altogether rather than only deliveries, and
+     * must not promise a payment: under `AGENTS.md` reservation 4 as the owner
+     * released it on 2026-09-04 the choice of words is ours and the
+     * requirement that the sentence be true is not.
+     */
+    expect(stuck.chipTitle, 'names the floor as its own state').toMatch(/floor/i);
+    expect(stuck.chipTitle, 'and says spending has stopped altogether, not just deliveries').toMatch(
+      /nothing can be spent/i,
+    );
+    expect(stuck.chipTitle, 'and promises no payment the state does not owe').not.toMatch(/owes|owed/i);
     // Off the edge for the same reason as the shallow case above, and for a
     // reason that has nothing to do with the tone: at 900x600 the FUNDS chip
     // is the eighth of nine on a row that shows one. See #719.

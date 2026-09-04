@@ -449,7 +449,7 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const stallSentence = localizer.format(alerts![0]!.labelKey);
     expect(stallSentence, 'the key resolved to real text and not to its own dotted self').toBe(
-      'The build queue is stalled — no more materials until the state pays what it owes.',
+      'The build queue is stalled — no more materials until the prison earns the money.',
     );
 
     /*
@@ -470,7 +470,7 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
     expect(pressBuy(runtime, 'buy-at-minus-1300'), 'the press is refused too, at the same balance').toBe(false);
     const pressAlerts = hudAlertsFromWorkerMessage(publication(runtime));
     expect(localizer.format(pressAlerts![0]!.labelKey)).toBe(
-      'Nothing was bought — deliveries are refused until the state pays what it owes.',
+      'Nothing was bought — deliveries are refused until the prison earns the money.',
     );
   });
 

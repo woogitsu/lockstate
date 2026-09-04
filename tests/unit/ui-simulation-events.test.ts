@@ -72,6 +72,7 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   }),
   'incidents.gang-retaliation-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.gang-retaliation-opened' }),
   'incidents.all-clear': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear' }),
+  'incidents.all-clear-after-lapse': (sequence) => ({ sequence, tick: 100, type: 'incidents.all-clear-after-lapse' }),
   'prisoners.relocated': (sequence) => ({
     sequence,
     tick: 100,
@@ -291,6 +292,17 @@ describe('what the prison says when nothing went wrong', () => {
     // so without an `'info'` counterpart the three rows above would leave the
     // band red over a prison that is calm again.
     expect(severityOf('incidents.all-clear')).toBe('info');
+    /*
+     * **And the lapse's closing row is a step louder** (issue #914's finding
+     * 4). The two rows say the same thing about `openIncidentCount` and
+     * different things about the prison: a containment injures nobody
+     * (`IncidentResponseSystem`'s `'resolved'` branch writes
+     * `injuredEntityIds: []`) and a lapse injures every participant, so
+     * grading them the same is what let a prison with 114 prisoner-injuries
+     * read like one with none. `'warning'` and not `'danger'`: nothing is
+     * still running.
+     */
+    expect(severityOf('incidents.all-clear-after-lapse')).toBe('warning');
 
     /*
      * The one member about an outcome rather than an opening (#683), and the

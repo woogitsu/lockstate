@@ -2147,13 +2147,29 @@
   gap: var(--space-2);
 }
 
-/* One row: who, what they are doing, and how they stand. `align-items: center`
-   so a wrapped name keeps the badge beside its middle rather than pushing it to
-   the top -- the same choice `.hud-staff__held-row` makes. */
+/* One row: who, what they are doing, and how they stand.
+
+   **`align-items: center` is gone, and the comment it carried is kept rather
+   than deleted because what it describes is the defect issue #909 fixed.** It
+   read: *"`align-items: center` so a wrapped name keeps the badge beside its
+   middle rather than pushing it to the top -- the same choice
+   `.hud-staff__held-row` makes."* That is exactly what it did, and beside the
+   *middle* of a two-line row is between the two lines: measured at 375x812
+   before the fix, the pill's box spanned y=562.4..582.4 while the need pair
+   spanned y=573.0..586.2, so the pill overlapped the need's meter by 9.4px and
+   belonged to neither line. The two values it sat between are two different
+   scales -- a prisoner's risk tier and a need's level -- and `Low` means
+   opposite things on them, which is what
+   `docs/research/2026-09-03-can-a-player-read-this.md` §4 misread twice.
+
+   The badge now sits inside `.hud-regime__roster-head` beside the name it
+   grades, so this row has a single child, and both `align-items: center` and
+   the `gap` between siblings are gone with the sibling they were for. What is
+   left is `display: flex` alone, and it is not ceremony: it is what makes
+   `.hud-regime__roster-text`'s `flex: 1 1 auto` and `min-width: 0` below mean
+   anything, and those are the pair that keeps a long name inside the panel. */
 .hud-regime__roster-row:not([hidden]) {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 /* `min-width: 0` so a long name-plus-activity pair shrinks rather than pushing
@@ -2176,10 +2192,35 @@
   flex: 1 1 auto;
 }
 
+/* Who the row is about, and how they stand, on one line (issue #909). The pill
+   is pushed to the far edge by `space-between` rather than by a margin, so a
+   name long enough to fill the row simply meets it; `align-items: center`
+   because the pill is a 20px box and the name is a 13px line, and centring the
+   shorter of the two on the taller is what keeps this line the pill's own
+   height rather than the pill's height plus a baseline offset.
+
+   `min-width: 0` is **defensive here rather than load-bearing**, and it is
+   stated that way for the reason `.hud-regime__roster-text`'s own comment above
+   states it: `overflow-wrap: anywhere` on `.hud-regime__roster-name` leaves the
+   name no min-content width to break, so nothing measured needs this to keep
+   the pill inside the panel. It stays because a locale whose name vocabulary
+   cannot break that way would reach it and nothing here would notice. */
+.hud-regime__roster-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .hud-regime__roster-name {
   color: var(--text-heading);
   white-space: normal;
   overflow-wrap: anywhere;
+  /* Defensive, for `.hud-regime__roster-head`'s stated reason: the name is now a
+     flex item beside the pill, and this is what would let it shrink first in a
+     locale whose names `overflow-wrap: anywhere` cannot break. */
+  min-width: 0;
 }
 
 /* A sentence rather than a label, and it wraps: an action's word plus the
@@ -2196,7 +2237,19 @@
    the escape: at the narrowest viewport the suite visits, a long action word
    plus a ten-segment bar does not fit, and wrapping is the only alternative to
    the bar being squeezed to nothing. `align-items: baseline` so the need's word
-   sits on the activity's baseline rather than floating against the bar. */
+   sits on the activity's baseline rather than floating against the bar.
+
+   **`justify-content: space-between` was reconsidered at issue #909 and kept,
+   and it is kept for a second reason the first version of this comment did not
+   have.** The pill moved to the line above, which freed the right-hand end of
+   this line -- so grouping the pair leftward beside the activity was on the
+   table, and was tried and screenshotted at 375x812 and 1440x900. It is worse
+   twice over: the ten-segment bars stop forming a right-aligned column the eye
+   can compare four rows down, and the activity's word ends up one `--space-2`
+   from the need's word, so `Yard Time Hygiene` and `Idle Bladder` read as
+   single phrases. That is issue #909's own defect -- two facts abutting on one
+   line with nothing saying which is which -- reintroduced one column to the
+   left. The spread is what keeps the activity and the need apart. */
 .hud-regime__roster-line {
   display: flex;
   flex-wrap: wrap;
@@ -2226,8 +2279,27 @@
   letter-spacing: 0;
 }
 
-/* Never shrinks. The pair beside it wraps instead. */
-.hud-regime__roster-row > .ui-badge { flex: 0 0 auto; }
+/* The meter's own figure, on screen as of issue #909 -- it was `.ui-sr-only`,
+   which told a screen reader the need was at 20% and left a sighted player an
+   unlabelled bar beside a second graded value. `regime-panel.ts`'s
+   `RosterRow.needValue` records what that cost. `tabular-nums` so four rows of
+   percentages line up in a column the eye can compare, the same treatment
+   `.hud-regime__roster-count` gets, and `nowrap` for
+   `.hud-regime__roster-need-name`'s reason: this is the pair that must not grow
+   the row a line taller by breaking inside itself. */
+.hud-regime__roster-need-value {
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Never shrinks. The name beside it wraps instead -- `overflow-wrap: anywhere`
+   on `.hud-regime__roster-name` is what lets it. Re-aimed from
+   `.hud-regime__roster-row > .ui-badge` at issue #909, because the pill moved
+   one box in: it is now the name's sibling on this row's first line rather than
+   the row's own second child beside the need's meter. */
+.hud-regime__roster-head > .ui-badge { flex: 0 0 auto; }
 
 .hud-regime__roster-more[hidden] { display: none; }
 

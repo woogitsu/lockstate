@@ -307,7 +307,7 @@ export function createConstructionCommandHandler(
  *
  * **The 2026-09-01 ruling did not close it either, and it is worth being
  * precise about which half moved.** This route's sentence is now *"The build
- * queue is stalled — no more materials until the state pays what it owes."*
+ * queue is stalled — no more materials until the prison earns the money."*
  * The subject changed from a purchase to the queue, which removes the "nothing
  * was bought" denial the paragraphs above are about -- a stalled queue is a
  * true description of a pass that funded four orders and not the fifth. What

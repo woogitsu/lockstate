@@ -551,11 +551,17 @@ test('act 3: how much wall 25,000 buys, and what the game says when it runs out'
    * **A third alternative since the owner's ruling of 2026-09-01**, which
    * replaced ruling 23's words on all four keys with a sentence that names
    * what stops instead of the threshold: *"Nothing was bought — deliveries
-   * are refused until the state pays what it owes."* Every alternative is
-   * kept, so this instrument still reads a branch or a log from before either
-   * ruling instead of reporting that the band never named money.
+   * are refused until the state pays what it owes."*
+   *
+   * **A fourth since 2026-09-04**, which kept that shape and dropped its
+   * claim about who owes whom: *"Nothing was bought — deliveries are refused
+   * until the prison earns the money."* (issue #913 -- the state accrues
+   * nothing for a prison holding nobody, so the old tail described a wait
+   * that could not end). Every alternative is kept, so this instrument still
+   * reads a branch or a log from before any of the three rulings instead of
+   * reporting that the band never named money.
    */
-  const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes/i;
+  const FUNDS_SENTENCE = /not enough funds|past what the state will carry|until the state pays what it owes|until the prison earns the money/i;
   let ordered = 0;
   let fundsRefusalAtSegment = -1;
   let fundsRefusalText = '';

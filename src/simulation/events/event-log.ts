@@ -671,6 +671,24 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that the prison has nothing open any more **and that the last
+   * thing to close was not contained** (issue #914's finding 4).
+   *
+   * The lapse half of `recordIncidentsAllClear` above, split off it for the
+   * reason the schema in `src/simulation/protocol/types.ts` sets out: the two
+   * endings cost a prison entirely different amounts and read as one row.
+   * Unguarded and figure-free for exactly the sibling's reasons -- the caller
+   * is what bounds it to at most one per return to calm, and this class knows
+   * nothing about incidents.
+   *
+   * `IncidentResponseSystem.reportAllClearIfCalm` calls **one** of the two,
+   * never both, so a return to calm is still one row on the alerts list.
+   */
+  public recordIncidentsAllClearAfterLapse(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'incidents.all-clear-after-lapse' });
+  }
+
+  /**
    * Every buffered event whose `sequence` is greater than `after`, oldest
    * first.
    *
