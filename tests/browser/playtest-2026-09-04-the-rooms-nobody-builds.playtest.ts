@@ -321,6 +321,52 @@ async function runToTick(page: Page, label: string, target: number, sampleEveryM
   }
 }
 
+/**
+ * The first 8x8 world rectangle that both **misses every walled room** and is
+ * **all clear canvas** at the current camera.
+ *
+ * Two filters rather than one, and the second alone is what act 5 of
+ * `2026-09-04-is-there-anything-to-do.md` used: a room's tiles are painted on
+ * the canvas, so `document.elementFromPoint` calls them clear, and that run's
+ * yard was refused *"it overlaps a room that is already there."* The overlap
+ * test is arithmetic over rectangles this file already knows; the clear test
+ * is the DOM.
+ */
+async function firstClearYard(page: Page, origin: Origin, rooms: readonly Rect[] = [CANTEEN, CELL, SHOWER]): Promise<Rect | undefined> {
+  const overlaps = (a: Rect, b: Rect): boolean => a.x0 <= b.x1 && b.x0 <= a.x1 && a.y0 <= b.y1 && b.y0 <= a.y1;
+  const candidates: Rect[] = [];
+  for (let y0 = 8; y0 <= 18; y0 += 1) {
+    for (let x0 = 17; x0 <= 24; x0 += 1) {
+      const rect: Rect = { x0, y0, x1: x0 + 7, y1: y0 + 7 };
+      if (rect.x1 > WORLD_LAST_TILE || rect.y1 > WORLD_LAST_TILE) continue;
+      if (rooms.some((room) => overlaps(rect, room))) continue;
+      candidates.push(rect);
+    }
+  }
+  console.log(`[yard] ${candidates.length} candidate rectangle(s) miss every room and fit the map`);
+  const cache = new Map<string, boolean>();
+  const tileClear = async (x: number, y: number): Promise<boolean> => {
+    const key = `${x},${y}`;
+    const known = cache.get(key);
+    if (known !== undefined) return known;
+    const point = centreOf(origin, x, y);
+    const answer = (await topmostAt(page, point.x, point.y)).includes('canvas');
+    cache.set(key, answer);
+    return answer;
+  };
+  for (const rect of candidates) {
+    let ok = true;
+    for (let y = rect.y0; y <= rect.y1 && ok; y += 1) {
+      for (let x = rect.x0; x <= rect.x1 && ok; x += 1) {
+        // eslint-disable-next-line no-await-in-loop -- one real DOM, memoised.
+        ok = await tileClear(x, y);
+      }
+    }
+    if (ok) return rect;
+  }
+  return undefined;
+}
+
 test.describe('the rooms nobody builds', () => {
   test.beforeEach(async ({ page }) => {
     page.setDefaultTimeout(60_000);
@@ -387,12 +433,25 @@ test.describe('the rooms nobody builds', () => {
   });
 
   /**
-   * **Act 2 — the four-room prison.**
+   * **Act 2 — four rooms zoned before anything is furnished, and the rule that
+   * makes that impossible.**
    *
-   * Build everything, then open the rooms one at a time. See the file header
-   * for the phase table and the geometry.
+   * This act was written to build everything physically first and then
+   * designate the rooms one at a time, so each room's arrival would be a step
+   * change. **It cannot be played that way, and the run is kept because
+   * finding that out is the measurement.** Every one of the eleven object
+   * placements was refused with *"The object was not placed — it has to stand
+   * in a room you have zoned."*, so the prison it produced is four zoned rooms
+   * with **no bed, no toilet, no table, no shower head** — and a population of
+   * four admitted prisoners who never leave intake.
+   *
+   * What it is therefore evidence for, and act 3 is the corrected build:
+   * - the object-before-zone refusal, quoted from a real press;
+   * - **`room.yard` designated and accepted, on the first attempt** — the
+   *   first time in this repository a playtest has placed one;
+   * - what a four-room prison looks like when nobody can be housed in it.
    */
-  test('act 2 - four rooms, opened one at a time', async ({ page }) => {
+  test('act 2 - four rooms zoned before anything is furnished', async ({ page }) => {
     test.setTimeout(2_400_000);
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click({ timeout: 30_000 });
@@ -593,41 +652,7 @@ test.describe('the rooms nobody builds', () => {
     console.log(`[act2] after 6 ArrowRight the origin is (${panned.originX}, ${panned.originY}); it was (${origin.originX}, ${origin.originY})`);
     console.log(`[act2] ${await clearanceMap(page, panned)}`);
 
-    const overlaps = (a: Rect, b: Rect): boolean => a.x0 <= b.x1 && b.x0 <= a.x1 && a.y0 <= b.y1 && b.y0 <= a.y1;
-    const candidates: Rect[] = [];
-    for (let y0 = 8; y0 <= 18; y0 += 1) {
-      for (let x0 = 17; x0 <= 24; x0 += 1) {
-        const rect: Rect = { x0, y0, x1: x0 + 7, y1: y0 + 7 };
-        if (rect.x1 > WORLD_LAST_TILE || rect.y1 > WORLD_LAST_TILE) continue;
-        if (overlaps(rect, CANTEEN) || overlaps(rect, CELL) || overlaps(rect, SHOWER)) continue;
-        candidates.push(rect);
-      }
-    }
-    console.log(`[act2] ${candidates.length} candidate yard rectangle(s) miss all three rooms and fit the map`);
-    const clearCache = new Map<string, boolean>();
-    const tileClear = async (x: number, y: number): Promise<boolean> => {
-      const key = `${x},${y}`;
-      const known = clearCache.get(key);
-      if (known !== undefined) return known;
-      const point = centreOf(panned, x, y);
-      const answer = (await topmostAt(page, point.x, point.y)).includes('canvas');
-      clearCache.set(key, answer);
-      return answer;
-    };
-    let yard: Rect | undefined;
-    for (const rect of candidates) {
-      let ok = true;
-      for (let y = rect.y0; y <= rect.y1 && ok; y += 1) {
-        for (let x = rect.x0; x <= rect.x1 && ok; x += 1) {
-          // eslint-disable-next-line no-await-in-loop -- one real DOM, memoised.
-          ok = await tileClear(x, y);
-        }
-      }
-      if (ok) {
-        yard = rect;
-        break;
-      }
-    }
+    const yard = await firstClearYard(page, panned);
     console.log(`[act2] the yard rectangle chosen: ${JSON.stringify(yard)}`);
     expect(yard, 'no 8x8 rectangle both misses the three rooms and is clear canvas after panning').toBeDefined();
     if (yard === undefined) return;
@@ -657,4 +682,212 @@ test.describe('the rooms nobody builds', () => {
     await tab(page, 'build').click({ timeout: 15_000 });
     console.log(`[act2] the four-room prison, Build (UPPER BOUND):\n${await screen(page)}`);
   });
+
+  /**
+   * **Act 3 — the same four rooms, in the order the game actually allows.**
+   *
+   * Act 2 built every object before any room was zoned and the worker refused
+   * every one of them: *"The object was not placed — it has to stand in a room
+   * you have zoned."* So the order is fixed here, per room, and it is the
+   * order a player is forced into: **wall, door, designate, furnish** — and
+   * only then does the room do anything.
+   *
+   * | phase | what is added | days after |
+   * | --- | --- | --- |
+   * | 0 | the cell, furnished, four prisoners, one guard | 3 |
+   * | 1 | + `room.canteen`, two dining tables and four benches | 3 |
+   * | 2 | + `room.shower-room`, two shower heads | 3 |
+   * | 3 | + `room.yard`, no walls, no objects, no money | 3 |
+   */
+  test('act 3 - four rooms, built in the order the game allows', async ({ page }) => {
+    test.setTimeout(2_400_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click({ timeout: 30_000 });
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await tab(page, 'build').click({ timeout: 15_000 });
+    const origin = await calibrate(page);
+    console.log(`[act3] calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
+
+    for (const order of [
+      { id: 'wall-brick', quantity: 120 },
+      { id: 'door-wooden', quantity: 5 },
+      { id: 'bed-wooden', quantity: 6 },
+      { id: 'toilet-brick', quantity: 3 },
+      { id: 'shower-head-brick', quantity: 6 },
+      { id: 'dining-table-wooden', quantity: 8 },
+      { id: 'bench-wooden', quantity: 10 },
+    ]) {
+      await buy(page, order.id, order.quantity);
+    }
+    console.log(`[act3] strip after buying: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+    await fastForwardToMax(page);
+    await page.waitForTimeout(6000);
+
+    const edgeX = (tx: number) => origin.originX + tx * TILE;
+    const edgeY = (ty: number) => origin.originY + ty * TILE;
+    const midX = (tx: number) => centreOf(origin, tx, 0).x;
+    const midY = (ty: number) => centreOf(origin, 0, ty).y;
+
+    const place = async (label: string, buildableId: string, tiles: readonly (readonly [number, number])[]): Promise<void> => {
+      await tab(page, 'build').click({ timeout: 15_000 });
+      await armBuildable(page, buildableId);
+      for (const [x, y] of tiles) {
+        const point = centreOf(origin, x, y);
+        // eslint-disable-next-line no-await-in-loop -- one real pointer.
+        await assertCanvasAt(page, point.x, point.y, `${label} ${buildableId} at (${x},${y})`);
+        // eslint-disable-next-line no-await-in-loop -- one real pointer.
+        const produced = await press(page, point.x, point.y);
+        console.log(
+          // eslint-disable-next-line no-await-in-loop -- one real pointer.
+          `[${label}] ${buildableId} at (${x},${y}): ${produced.length} command(s) | band ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
+        );
+      }
+    };
+
+    // ---------- phase 0: the cell ----------
+    await tab(page, 'build').click({ timeout: 15_000 });
+    await armBuildable(page, 'wall-brick');
+    await wallSide(page, 'act3 cell north', origin, { x: midX(CELL.x0), y: edgeY(CELL.y0) }, { x: midX(CELL.x1), y: edgeY(CELL.y0) });
+    await wallSide(page, 'act3 cell south', origin, { x: midX(CELL.x0), y: edgeY(CELL.y1 + 1) }, { x: midX(CELL.x1), y: edgeY(CELL.y1 + 1) });
+    await wallSide(page, 'act3 cell west', origin, { x: edgeX(CELL.x0), y: midY(CELL.y0) }, { x: edgeX(CELL.x0), y: midY(CELL.y1) });
+    await wallSide(page, 'act3 cell east above door', origin, { x: edgeX(CELL.x1 + 1), y: midY(18) }, { x: edgeX(CELL.x1 + 1), y: midY(18) });
+    await wallSide(page, 'act3 cell east below door', origin, { x: edgeX(CELL.x1 + 1), y: midY(20) }, { x: edgeX(CELL.x1 + 1), y: midY(20) });
+    await armBuildable(page, 'door-wooden');
+    await assertCanvasAt(page, edgeX(CELL.x1 + 1), midY(19), 'act3 cell door');
+    console.log(`[act3] cell door: ${JSON.stringify(await press(page, edgeX(CELL.x1 + 1), midY(19)))}`);
+    await waitForQueueEmpty(page, 400_000);
+    await page.waitForTimeout(2000);
+    const cellAttempts = await designate(page, 'act3', 'room.cell', origin, CELL);
+    console.log(`[act3] the cell was accepted on attempt ${cellAttempts}`);
+    expect(cellAttempts, 'the cell was never accepted, so nothing below measures anything').toBeGreaterThan(0);
+    await place('act3', 'bed-wooden', [[12, 18], [13, 18], [14, 18], [15, 18]]);
+    await place('act3', 'toilet-brick', [[12, 20]]);
+    await waitForQueueEmpty(page, 400_000);
+    await page.waitForTimeout(3000);
+    console.log(`[act3] the furnished cell: ${JSON.stringify(await latestRawCounts(page))}`);
+
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    for (let index = 0; index < 4; index += 1) {
+      await page.locator('.hud-intake__admit').click({ timeout: 30_000 });
+      await page.waitForTimeout(250);
+    }
+    await tab(page, 'security').click({ timeout: 15_000 });
+    await page.locator('.hud-staff__hire').click({ timeout: 30_000 });
+    await page.waitForTimeout(2500);
+    const admitted = await latestRawCounts(page);
+    console.log(`[act3] four prisoners, one guard, one furnished cell: ${JSON.stringify(admitted)}`);
+    console.log(`[act3] ${await needsReadout(page, 'phase 0 day 0 (cell only)')}`);
+    let cursor = await currentTick(page);
+    for (let day = 1; day <= 3; day += 1) {
+      await runToTick(page, 'act3', cursor + day * 2400, 3000, 400_000);
+      console.log(`[act3] ${await needsReadout(page, `phase 0 day +${day} (cell only)`)}`);
+    }
+    const phase0 = await latestRawCounts(page);
+    if (admitted !== undefined && phase0 !== undefined) console.log(`[act3] DELTA phase 0, cell only\n${deltaVector(admitted, phase0)}`);
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    console.log(`[act3] the one-cell prison, Overview (UPPER BOUND):\n${await screen(page)}`);
+
+    // ---------- phase 1: the canteen ----------
+    await tab(page, 'build').click({ timeout: 15_000 });
+    await armBuildable(page, 'wall-brick');
+    await wallSide(page, 'act3 canteen north', origin, { x: midX(CANTEEN.x0), y: edgeY(CANTEEN.y0) }, { x: midX(CANTEEN.x1), y: edgeY(CANTEEN.y0) });
+    await wallSide(page, 'act3 canteen south', origin, { x: midX(CANTEEN.x0), y: edgeY(CANTEEN.y1 + 1) }, { x: midX(CANTEEN.x1), y: edgeY(CANTEEN.y1 + 1) });
+    await wallSide(page, 'act3 canteen west', origin, { x: edgeX(CANTEEN.x0), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x0), y: midY(CANTEEN.y1) });
+    await wallSide(page, 'act3 canteen east above door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(12) });
+    await wallSide(page, 'act3 canteen east below door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(14) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y1) });
+    await armBuildable(page, 'door-wooden');
+    await assertCanvasAt(page, edgeX(CANTEEN.x1 + 1), midY(13), 'act3 canteen door');
+    console.log(`[act3] canteen door: ${JSON.stringify(await press(page, edgeX(CANTEEN.x1 + 1), midY(13)))}`);
+    await waitForQueueEmpty(page, 400_000);
+    await page.waitForTimeout(2000);
+    const canteenAttempts = await designate(page, 'act3', 'room.canteen', origin, CANTEEN);
+    console.log(`[act3] the canteen was accepted on attempt ${canteenAttempts}`);
+    await place('act3', 'dining-table-wooden', [[12, 11], [15, 11]]);
+    await place('act3', 'bench-wooden', [[12, 14], [14, 14], [16, 14], [12, 16]]);
+    await waitForQueueEmpty(page, 400_000);
+    await page.waitForTimeout(3000);
+    const withCanteen = await latestRawCounts(page);
+    console.log(`[act3] the canteen, walled, zoned and furnished: ${JSON.stringify(withCanteen)}`);
+    if (phase0 !== undefined && withCanteen !== undefined) console.log(`[act3] DELTA the canteen arriving\n${deltaVector(phase0, withCanteen)}`);
+    await tab(page, 'rooms').click({ timeout: 15_000 });
+    console.log(`[act3] the Rooms tab with a working cell and a working canteen (UPPER BOUND):\n${await screen(page)}`);
+    console.log(`[act3] ${await needsReadout(page, 'phase 1 day 0 (canteen open)')}`);
+    cursor = await currentTick(page);
+    for (let day = 1; day <= 3; day += 1) {
+      await runToTick(page, 'act3', cursor + day * 2400, 3000, 400_000);
+      console.log(`[act3] ${await needsReadout(page, `phase 1 day +${day} (cell + canteen)`)}`);
+    }
+    const phase1 = await latestRawCounts(page);
+    if (withCanteen !== undefined && phase1 !== undefined) console.log(`[act3] DELTA phase 1, three days with a canteen\n${deltaVector(withCanteen, phase1)}`);
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    console.log(`[act3] the two-room prison, Overview (UPPER BOUND):\n${await screen(page)}`);
+
+    // ---------- phase 2: the shower room ----------
+    await tab(page, 'build').click({ timeout: 15_000 });
+    await armBuildable(page, 'wall-brick');
+    await wallSide(page, 'act3 shower north', origin, { x: midX(SHOWER.x0), y: edgeY(SHOWER.y0) }, { x: midX(SHOWER.x1), y: edgeY(SHOWER.y0) });
+    await wallSide(page, 'act3 shower south', origin, { x: midX(SHOWER.x0), y: edgeY(SHOWER.y1 + 1) }, { x: midX(SHOWER.x1), y: edgeY(SHOWER.y1 + 1) });
+    await wallSide(page, 'act3 shower east', origin, { x: edgeX(SHOWER.x1 + 1), y: midY(SHOWER.y0) }, { x: edgeX(SHOWER.x1 + 1), y: midY(SHOWER.y1) });
+    await wallSide(page, 'act3 shower west above door', origin, { x: edgeX(SHOWER.x0), y: midY(18) }, { x: edgeX(SHOWER.x0), y: midY(18) });
+    await wallSide(page, 'act3 shower west below door', origin, { x: edgeX(SHOWER.x0), y: midY(20) }, { x: edgeX(SHOWER.x0), y: midY(20) });
+    await armBuildable(page, 'door-wooden');
+    await assertCanvasAt(page, edgeX(SHOWER.x0), midY(19), 'act3 shower door');
+    console.log(`[act3] shower door: ${JSON.stringify(await press(page, edgeX(SHOWER.x0), midY(19)))}`);
+    await waitForQueueEmpty(page, 400_000);
+    await page.waitForTimeout(2000);
+    const showerAttempts = await designate(page, 'act3', 'room.shower-room', origin, SHOWER);
+    console.log(`[act3] the shower room was accepted on attempt ${showerAttempts}`);
+    await place('act3', 'shower-head-brick', [[20, 18], [20, 20]]);
+    await waitForQueueEmpty(page, 400_000);
+    await page.waitForTimeout(3000);
+    const withShower = await latestRawCounts(page);
+    console.log(`[act3] the shower room, walled, zoned and furnished: ${JSON.stringify(withShower)}`);
+    if (phase1 !== undefined && withShower !== undefined) console.log(`[act3] DELTA the shower room arriving\n${deltaVector(phase1, withShower)}`);
+    console.log(`[act3] ${await needsReadout(page, 'phase 2 day 0 (shower open)')}`);
+    cursor = await currentTick(page);
+    for (let day = 1; day <= 3; day += 1) {
+      await runToTick(page, 'act3', cursor + day * 2400, 3000, 400_000);
+      console.log(`[act3] ${await needsReadout(page, `phase 2 day +${day} (cell + canteen + shower)`)}`);
+    }
+    const phase2 = await latestRawCounts(page);
+    if (withShower !== undefined && phase2 !== undefined) console.log(`[act3] DELTA phase 2, three days with a shower room\n${deltaVector(withShower, phase2)}`);
+    await tab(page, 'overview').click({ timeout: 15_000 });
+    console.log(`[act3] the three-room prison, Overview (UPPER BOUND):\n${await screen(page)}`);
+
+    // ---------- phase 3: the yard ----------
+    const focus = centreOf(origin, 21, 12);
+    await assertCanvasAt(page, focus.x, focus.y, 'act3 camera-focus point');
+    await page.mouse.click(focus.x, focus.y);
+    for (let index = 0; index < 6; index += 1) {
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(1500);
+    await tab(page, 'build').click({ timeout: 15_000 });
+    const panned = await calibrate(page);
+    console.log(`[act3] after 6 ArrowRight the origin is (${panned.originX}, ${panned.originY}); it was (${origin.originX}, ${origin.originY})`);
+    const yard = await firstClearYard(page, panned);
+    console.log(`[act3] the yard rectangle chosen: ${JSON.stringify(yard)}`);
+    expect(yard, 'no 8x8 rectangle both misses the three rooms and is clear canvas after panning').toBeDefined();
+    if (yard === undefined) return;
+    const yardAttempts = await designate(page, 'act3', 'room.yard', panned, yard);
+    console.log(`[act3] the yard was accepted on attempt ${yardAttempts}`);
+    const withYard = await latestRawCounts(page);
+    if (phase2 !== undefined && withYard !== undefined) console.log(`[act3] DELTA the yard arriving\n${deltaVector(phase2, withYard)}`);
+    console.log(`[act3] ${await needsReadout(page, 'phase 3 day 0 (yard open)')}`);
+    cursor = await currentTick(page);
+    for (let day = 1; day <= 3; day += 1) {
+      await runToTick(page, 'act3', cursor + day * 2400, 3000, 400_000);
+      console.log(`[act3] ${await needsReadout(page, `phase 3 day +${day} (four rooms)`)}`);
+    }
+    const phase3 = await latestRawCounts(page);
+    if (withYard !== undefined && phase3 !== undefined) console.log(`[act3] DELTA phase 3, three days with four rooms\n${deltaVector(withYard, phase3)}`);
+    if (admitted !== undefined && phase3 !== undefined) console.log(`[act3] DELTA the whole act: one cell -> four rooms\n${deltaVector(admitted, phase3)}`);
+    console.log(`[act3] events over the whole act: ${JSON.stringify(await eventTypes(page))}`);
+    for (const which of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+      await tab(page, which).click({ timeout: 15_000 });
+      console.log(`[act3] the four-room prison, ${which} (UPPER BOUND):\n${await screen(page)}`);
+    }
+  });
+
 });
