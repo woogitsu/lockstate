@@ -10,8 +10,12 @@ was opened. **Nothing was played for this record**, so the strongest tier
 anything here carries is **VERIFIED, read** — the one claim that would need a
 run is named in §6 and is not made.
 
-Two claims were put to this pass and both were falsifiable, which is why they
-were worth auditing rather than agreeing with:
+Two claims were put to this pass as coming from two different passes. **They
+are two sections of one landed note** — `docs/research/2026-09-04-is-there-anything-to-do.md`,
+§7 for the event census and §13 for the greps — which matters only because it
+means one document, not two, is the thing being audited, and its own corrections
+apply to both halves. Both claims were falsifiable, which is why they were
+worth auditing rather than agreeing with:
 
 - A direction pass: *every one of the game's event types is bad news, an undo,
   or a recovery — so nothing a player does right is ever acknowledged*, at
@@ -20,10 +24,21 @@ were worth auditing rather than agreeing with:
   to achieve*, evidenced by **0** matches for `goal|objective|milestone|unlock`
   in the locale file and **62** hits for
   `milestone|objective|progression|reputation` in `src/simulation/`, six of them
-  the word *reputation*.
+  the word *reputation* on a gang model nothing ever registers a gang into.
 
-Three of those five figures are wrong. The substantive halves of both claims
-are right.
+**Two of those four figures are wrong, and only one of the two is the fault of
+a pass.** *Eighteen* is genuinely stale — it was true for five hours on the
+morning of the day it was written (§1). *62* was never anybody's measurement:
+the note it is attributed to reports **seven**, with a `-w`, and its seven
+reproduce exactly (§4), so the figure was mangled between that note and the
+brief this pass was given. The other two — **0** in the locale file and **six**
+of the hits being *reputation* — are both exactly right.
+
+**The substantive halves of both claims survive.** Nothing a player does right
+is acknowledged, and nothing in the game states what they are trying to
+achieve. The taxonomy offered for the first is refuted by exactly one member,
+and that refutation makes the claim underneath it sharper rather than weaker
+(§2).
 
 ---
 
@@ -107,6 +122,28 @@ census classifies as an undo or bad news.** That is the more interesting half:
 the count moved twice in one day and the *shape* did not move at all. This is
 `docs/AGENT_WORKFLOW.md` §4's rule about tallies rotting first, observed inside
 a single day.
+
+### The pass that counted eighteen, and why this is a new record rather than a correction
+
+The direction pass is `docs/research/2026-09-04-is-there-anything-to-do.md` §7,
+*"The one positive-feedback channel the game has is empty by construction"*,
+which landed on `main` earlier the same day — and §13 of the same note is the
+"playtest pass" the brief names separately. It reports **eighteen** members at
+`src/simulation/protocol/types.ts:1675-1694` and grades
+`prisoners.discharged` at `src/ui/simulation-events.ts:286`. Both were true
+when it was written and both have moved: the array now ends at `:1696`, and the
+discharge row is at `:342` (`:286` is now a sentence inside a docblock about
+ADR 0084 decision 4 — the "drifts onto plausible-looking code" case
+`documentation-source-anchor-contract.test.ts` says nothing mechanical can
+catch).
+
+**Neither is edited.** `docs/research/README.md` is explicit that these records
+are read-only dated history — *"when the code moves on, a record here does not
+become wrong, it becomes older"* — so the correction is this file, and that
+pass's §7 stands as what was true at v0.0.451. Its measured half is untouched
+by any of this: it pushed **zero** `simulation/event` messages across 27,658
+ticks of a prison being built and run correctly, which is the evidence for the
+claim this census can only support by reading.
 
 ---
 
@@ -224,10 +261,45 @@ $ grep -Eic 'goal|objective|milestone|unlock' src/content/simulation-message-key
 0
 ```
 
-### Grep 2 — `src/simulation/`: the brief's figure is not reproducible
+### Grep 2 — `src/simulation/`: the brief's figure is not reproducible, and the pass it came from was right
+
+**The figure put to this pass was 62 hits, six of them the word *reputation*.
+It is neither reproducible nor the pass's own figure — and correcting it
+vindicates the pass rather than the brief.** What
+`docs/research/2026-09-04-is-there-anything-to-do.md` §13 actually reports is
+**seven**, with a `-w`:
+
+> `grep -rn -iwE 'milestone|objective|progression|reputation' src/simulation/`
+> returns **seven** hits in the whole simulation. Six are the word *reputation*
+> on the gang model … The seventh is a comment in
+> `src/simulation/prisoners/discharge-system.ts:81` naming a reputation effect a
+> discharge does **not** have.
+
+Re-run verbatim at `4c00eaba`:
 
 ```
-$ grep -rEi 'milestone|objective|progression|reputation' src/simulation/ | wc -l
+$ grep -rn -iwE 'milestone|objective|progression|reputation' src/simulation/
+src/simulation/presentation/prisoner-projection.ts:223:  readonly gang?: { readonly gangId: string; readonly reputation: number };
+src/simulation/presentation/prisoner-projection.ts:746:      ? { gang: { gangId, reputation: options.gangs.getReputation(gangId) } }
+src/simulation/incidents/gangs.ts:10: * Lightweight membership/territory/reputation model -- issue #28's
+src/simulation/incidents/gangs.ts:11: * "lightweight gang membership/territory/reputation/retaliation model,"
+src/simulation/incidents/gangs.ts:112:      reputation: [...this.reputationByGang.keys()].sort().map((gangId) => [gangId, this.reputationByGang.get(gangId)!] as const),
+src/simulation/incidents/gangs.ts:125:    for (const [gangId, reputation] of snapshot.reputation) this.reputationByGang.set(gangId, reputation);
+src/simulation/prisoners/discharge-system.ts:81: * ceremony, an inspection consequence or a reputation effect -- those are #31
+```
+
+**Seven, six of them `reputation`, the seventh the discharge comment — the
+pass's figures reproduce exactly, a day later, on a tree three releases
+newer.** The `62` was introduced somewhere between that note and the brief
+this pass was given, and the standing instruction was *"if the numbers differ
+from mine, mine are wrong"*: they were.
+
+Dropping the `-w` — which is the form the brief's alternation implies, since a
+substring search is what most readers would write — gives a different and also
+correct number:
+
+```
+$ grep -rEi  'milestone|objective|progression|reputation' src/simulation/ | wc -l
 15
 $ grep -rEio 'milestone|objective|progression|reputation' src/simulation/ | wc -l
 22
@@ -235,35 +307,49 @@ $ grep -rEioh 'milestone|objective|progression|reputation' src/simulation/ | tr 
      22 reputation
 ```
 
-**Fifteen matching lines, twenty-two occurrences, and every single one is the
-word `reputation`.** `milestone`, `objective` and `progression` do not appear in
-`src/simulation/` at all — which makes the absence *stronger* than the brief
-claimed, not weaker.
+Fifteen lines, twenty-two occurrences, **all of them `reputation`** — the extra
+eight over the `-w` run are `reputationByGang`, `getReputation` and
+`adjustReputation`. Either way, **`milestone`, `objective` and `progression` do
+not appear in `src/simulation/` at all**, which makes the absence *stronger*
+than either figure suggests.
 
-**62 is not reproducible under any scope tried.** For the record, so the figure
-can be traced rather than merely rejected:
+**62 is not reproducible under any scope tried.** Recorded so it can be traced
+rather than merely rejected:
 
-| scope | lines | occurrences |
-| --- | --- | --- |
-| `src/simulation/` | 15 | 22 |
-| `src/` | 28 | 38 |
-| whole worktree | 73 | 84 |
+Scopes measured with `--include=*.ts` and `node_modules` excluded, so the
+figures are about source rather than about this record:
 
-Adding `goal` to the alternation changes `src/simulation/` not at all (15). The
-nearest figure to 62 is 73 for the whole tree, which is a different question.
+| scope | `-iwE` lines | `-Ei` lines | `-Eio` occurrences |
+| --- | --- | --- | --- |
+| `src/simulation/` | 7 | 15 | 22 |
+| `src/` | 18 | 28 | 38 |
+| whole worktree | 53 | 73 | 84 |
 
-**"Six of them are reputation" is wrong in the direction that helps the
-argument: all twenty-two are.** And the substantive half — *a gang model
-nothing ever registers a gang into* — is **exactly right**, and §3 above is the
-proof, including the consequence the playtest pass did not reach: it costs the
-game one of its twenty event types.
+Adding `goal` to the alternation changes `src/simulation/` not at all. The
+nearest figure to 62 is 53 for the whole tree under the word form, or 73 under
+the substring form — and the whole tree is a different question from
+`src/simulation/`, which is the scope the claim was made about.
 
-Where the fifteen lines sit: `src/simulation/incidents/gangs.ts` (11),
-`src/simulation/presentation/prisoner-projection.ts` (3, all the projection
-carrying a gang's reputation to the HUD), and
-`src/simulation/prisoners/discharge-system.ts:81` — a comment, and a fitting
-one, noting that a discharge has no *"ceremony, an inspection consequence or a
-reputation effect — those are #31"*.
+### And the substantive half is right, with one clause of it overreaching
+
+*A gang model nothing ever registers a gang into* is **exactly right**, and §3
+above is the proof — including the consequence the pass did not reach: **it
+costs the game one of its twenty event types.**
+
+One clause of that sentence is worth marking, in the spirit of the same note's
+own corrections. It cites
+`src/simulation/presentation/prisoner-projection.ts:93` as stating *"in those
+words"* that nothing in `src/` ever registers a gang. The line reads:
+
+> it is optional because a session may run without any gangs registered at all
+
+That is a statement that a session **may** run without gangs — a permission the
+projection grants — not that no session ever has one. The stronger claim is
+true, and §3 establishes it from the callers and from
+`trigger-system.ts:225-226` rather than from this line. **A correct conclusion
+resting on a citation one notch weaker than it needs** is the cheapest kind of
+error to fix and the easiest to inherit, which is why it is marked rather than
+passed on.
 
 ---
 
@@ -503,10 +589,14 @@ being an acknowledgement candidate.**
 Every command in this record runs read-only from a checkout of `4c00eaba`:
 
 ```
-grep -Eic 'goal|objective|milestone|unlock' src/content/default-locale-en.ts
+grep -Eic  'goal|objective|milestone|unlock' src/content/default-locale-en.ts
+grep -Eic  'goal|objective|milestone|unlock' src/content/simulation-message-keys.ts
+grep -rn -iwE 'milestone|objective|progression|reputation' src/simulation/
 grep -rEi  'milestone|objective|progression|reputation' src/simulation/ | wc -l
 grep -rEio 'milestone|objective|progression|reputation' src/simulation/ | wc -l
 grep -rn   'staffUnassigned' src/ui/
+grep -rn   '\.conditions\b' src/ui/ src/main.ts
+grep -rn   'addMember(' --include=*.ts src/
 node -e "const s=require('fs').readFileSync('src/simulation/protocol/types.ts','utf8');
   const m=s.match(/SIMULATION_EVENT_TYPES = \[([\s\S]*?)\] as const;/);
   console.log([...m[1].matchAll(/'([^']+)'/g)].length);"
