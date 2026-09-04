@@ -31,7 +31,40 @@ LOCKSTATE_BROWSER_TEST_PORT=5324 node node_modules/@playwright/test/cli.js test 
 | --- | --- | --- |
 | 1 | the eighteen-row Rooms catalogue and the twenty-one-row Build catalogue, before anything is built | `1 passed (1.1m)` |
 | 2 | four rooms zoned **before** anything is furnished — the run that measured the ordering rule, and the repository's first `room.yard` | `1 passed (13.2m)` |
-| 3 | the same four rooms in the order the game allows: wall, door, designate, furnish, one room per phase with three in-game days after each | *(see §)* |
+| 3 | the same four rooms in the order the game allows: wall, door, designate, furnish, one room per phase with three in-game days after each | `1 passed (13.3m)` |
+| 4 | one whole in-game day in the finished four-room prison, sampled across it — the repair for acts 2 and 3 both reading the roster inside the sleep block | *(see §8)* |
+
+## The answer, in one paragraph
+
+**Yes — serving a need does something a player can see, and it is dramatic;
+but the *only* place it can be seen is one column of one tab, and the moment
+of purchase says nothing at all.** Four rooms were built in one prison for the
+first time in this repository: a 5 × 3 cell (905 of materials), a 6 × 6
+canteen (2,830), a 3 × 3 shower room (1,040), and an 8 × 8 yard (**0** — and
+the first and second `room.yard` ever placed in a Lockstate playtest, both
+accepted on the first attempt). All four are genuinely used: the roster shows
+`Eating`, `Showering`, `Yard Time` and `Heading to …` for each. `hygiene` went
+**0% → 90%** two in-game days after the shower room opened and `recreation`
+went **0% → 93%** two days after the yard did, and the four-room prison ends
+with every one of the six needs above 60% and every prisoner at `Minimal`
+risk, against a one-cell prison whose worst need was `Hygiene 29%` and
+falling. **So more rooms unambiguously makes the prison better.** What the
+player is told about it is: the `ROOMS` badge going up by one at designation,
+and after that, nothing — over 50,642 ticks and three rooms, exactly one of
+the twenty-one published counts moved because of a room, and the only
+simulation event the worker pushed in the whole run was `prisoners.discharged`.
+The Rooms tab of a prison with four working rooms is the eighteen-row *type*
+catalogue and nothing else; **there is no list of the rooms you have, no
+readout of whether anybody is in one, and no sentence in the game that names a
+room and a need in the same breath.** Two rooms are worth calling out
+individually: **the canteen is the most expensive room in the game and, at
+this scale, a no-op** — `action.eat-in-cell` already holds hunger at 97% in a
+prison with no canteen, so the canteen buys a 33% faster route to the one need
+that is not scarce; and **seven of the eighteen room types are still bought
+and sold while doing nothing at all** (issue #595 says nine — at v0.0.471 it
+is seven, and §3 is the census).
+
+---
 
 ## Claim tiers
 
