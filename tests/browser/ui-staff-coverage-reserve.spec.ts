@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { expectNotClipped } from './clipping';
+import type { HudViewModel } from '../../src/ui/hud';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
 /**
@@ -83,33 +84,67 @@ const HINT = '.hud-staff__coverage > .hud-staff__note:not(.hud-staff__coverage-c
 const COVERED = { required: 3, assigned: 3, shortage: 0 } as const;
 
 /**
- * `held` and `unassigned` are the figures the same tab printed -- `3 held * 1
- * free` -- so the sentence is asserted beside the readout a player reads it
- * with, rather than in a panel with no roster at all.
+ * Both readouts on one view model, because the harness cannot publish them one
+ * after the other.
  *
- * **Published before the coverage figures, and the order is load-bearing.**
- * Every pulled readout is applied onto one view model, so a later
- * `reportHeldGuards` withdraws a `staffCoverage` the earlier call put there:
- * the block goes `hidden`, the text nodes stay behind, and `textContent` still
- * reads the sentence while `getBoundingClientRect()` is 0x0. That is a green
- * geometry assertion measuring a block the browser never drew, and it cost this
- * file its first two runs.
+ * **This is the trap that cost this file its first three runs, and it is worth
+ * stating rather than working around silently.** `reportStaffCoverage` and
+ * `reportHeldGuards` each call `hud.update({ ...BASE_VIEW_MODEL, <their own
+ * field> })` (`tests/browser/ui-harness.ts`), so the second call **withdraws**
+ * whatever the first published: the block goes `hidden`, its text nodes stay
+ * behind, and `textContent` keeps reading the old sentence while
+ * `getBoundingClientRect()` is 0x0 and `innerText` is `''`. A spec that read
+ * `textContent` would report the figures it expected from a block the browser
+ * never drew -- which is what the first version of the `On duty` assertion
+ * below did, and why every reading here is paired with a `drawn` check taken
+ * from `getClientRects()`.
+ *
+ * `setHudViewModel` is the harness method that takes a whole `HudViewModel`, so
+ * one `update` paints both blocks. The counts and the clock are furniture: this
+ * file asserts nothing about them, and they are here because `HudViewModel`
+ * requires them.
  */
-async function paintCoveredPrison(page: Page): Promise<void> {
-  await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
-  await page.evaluate(() =>
-    window.lockstateUiHarness.reportHeldGuards({
+function coveredPrison(coverage: HudViewModel['staffCoverage']): HudViewModel {
+  return {
+    counts: {
+      prisoners: 17,
+      prisonerCapacity: 24,
+      occupiedPlaces: 17,
+      staff: 4,
+      rooms: 12,
+      prisonersCovered: 17,
+      prisonersUnderstaffed: 0,
+      prisonersUnguarded: 0,
+      prisonersHighRisk: 0,
+      activeIncidents: 0,
+      contrabandFound: 0,
+      treasuryMinorUnits: 24_000,
+      stateIncomeAccruedTodayMinorUnits: 1_200,
+    },
+    clock: { day: 13, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
+    alerts: [],
+    heldGuards: {
       held: 3,
       unassigned: 1,
       guards: [1, 2, 3].map((entityId) => ({
         entityId,
-        claimLabelKey: 'guard-claim.deployment.name',
-        roleLabelKey: 'staff-role.guard.name',
+        claimLabelKey: 'guard-claim.deployment.name' as const,
+        roleLabelKey: 'staff-role.guard.name' as const,
       })),
-    }),
-  );
-  await page.evaluate((coverage) => window.lockstateUiHarness.reportStaffCoverage(coverage), COVERED);
+    },
+    ...(coverage === undefined ? {} : { staffCoverage: coverage }),
+  };
+}
+
+/**
+ * `held` and `unassigned` are the figures the same tab printed -- `3 held * 1
+ * free` -- so the sentence is asserted beside the readout a player reads it
+ * with, rather than in a panel with no roster at all.
+ */
+async function paintCoveredPrison(page: Page): Promise<void> {
+  await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+  await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), coveredPrison(COVERED));
 }
 
 interface HintReading {
@@ -129,6 +164,8 @@ interface HintReading {
   readonly badge: string | null;
   /** The `On duty` header's own figures, which is where "free" points. */
   readonly heldSummary: string | null;
+  /** Whether the browser gave the `On duty` block a box -- 0x0 with text in it is a withdrawn readout, not a rendered one. */
+  readonly heldDrawn: boolean;
 }
 
 async function readHint(page: Page): Promise<HintReading> {
@@ -150,6 +187,7 @@ async function readHint(page: Page): Promise<HintReading> {
       summary: text(panel.querySelector('.hud-staff__coverage-summary')),
       badge: text(block?.querySelector('.ui-badge')),
       heldSummary: text(panel.querySelector('.hud-staff__held-summary')),
+      heldDrawn: (panel.querySelector('.hud-staff__held')?.getClientRects().length ?? 0) > 0,
     };
   }, HINT);
 }
@@ -213,7 +251,10 @@ test.describe('the covered rung says where a responder comes from (#941)', () =>
      * `required - assigned` at this call site, which is what
      * `HudStaffCoverageViewModel` says in its own docblock.
      */
-    await page.evaluate(() => window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 3, shortage: 0 }));
+    await page.evaluate(
+      (model) => window.lockstateUiHarness.setHudViewModel(model),
+      coveredPrison({ required: 2, assigned: 3, shortage: 0 }),
+    );
     const surplus = await readHint(page);
     expect(surplus.tone, 'a prison past its requirement is not on the covered rung').toBe('success');
     expect(surplus.summary, 'the header pair is not reading its two fields separately').toBe('3 of 2');
@@ -221,6 +262,7 @@ test.describe('the covered rung says where a responder comes from (#941)', () =>
     expect(reading.badge, 'the badge word moved').toBe('Covered');
     // Where "free" points: the block below, printing the reserve the sentence
     // is about. `1 free` is the prison #941 measured, and it lapsed 7 of 7.
+    expect(reading.heldDrawn, 'the On duty block has no box, so its text proves nothing').toBe(true);
     expect(reading.heldSummary, 'the On duty figures are not beside the sentence').toBe('3 held · 1 free');
   });
 
