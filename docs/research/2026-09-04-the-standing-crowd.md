@@ -45,12 +45,15 @@ returns without requesting a route
 (`src/simulation/security/deployment-system.ts:206-208`), and the derived sector
 has no patrol route to leave on. **Neither half needs overcrowding and neither
 half needs a riot** — the crowd was complete at tick 10,111, eight thousand
-ticks before the riot opened at 18,050, and the riot's cause is the same
-sixteen. What it costs a player is not the picture: it is that sixteen of
-twenty-two prisoners are permanently inert, drag `needsPressure` over
-`hotThreshold` on their own, and are named on screen only as *"16 waiting with
-no bed to sleep in"* — a sentence that is true and that does not say they have
-stopped doing anything at all.
+ticks before the riot opened at 18,050, and the tally did not move when it did.
+What it costs a player is that sixteen of twenty-two prisoners are permanently
+inert and are named on screen only as *"16 waiting with no bed to sleep in"* —
+a sentence that is true and that does not say they have stopped doing anything
+at all. **That those same sixteen are also what makes the prison riot is
+reasoned, not measured, and it is this record's weakest claim** (§4, §14): the
+score is the mean need deficit over every prisoner on owned land and sixteen of
+twenty-two are serving no need at all, but `needsPressure` crosses no boundary
+this instrument can ask for, so I did not read it.
 
 **And one thing the brief told me to check is measured false at v0.0.470.**
 `2026-09-04-can-i-see-my-prison.md` §6b's *"nothing walks"* and #944 §5 are
@@ -196,7 +199,7 @@ they should be, and wrote it down twice before anybody measured it.**
 
 ---
 
-## 3. Why the six guards never move — a second, independent rule
+## 3. Why the six guards stand on the arrival tile — a second, independent rule (and the one that leaves it, teleports)
 
 **VERIFIED, read, and this half is nobody's finding yet: the earlier record
 (`2026-09-04-why-they-stack.md` §8) names *"a guard's stacking rule"* as what it
@@ -355,9 +358,10 @@ window and its inference did not survive a longer one.
 
 **What that means for this question is the important half: locomotion works,
 and the crowd is still there.** After tick 5,133, in a prison of twenty-two
-prisoners and six guards, **not one actor moved for seventeen thousand ticks**,
-because a housed prisoner's every action resolves to the tile they are on and an
-unhoused one has no action to be sent anywhere by.
+prisoners and six guards, **not one actor walked again for seventeen thousand
+ticks**, because a housed prisoner's every action resolves to the tile they are
+on and an unhoused one has no action to be sent anywhere by. (A guard *changed
+tile* four times in run 2 and never walked to do it — §3.)
 
 ---
 
@@ -374,8 +378,13 @@ them.
    anywhere, because all four cell-side actions resolve through the
    accommodation they do not have (§2). A player who reads "no bed" as "they
    sleep on the floor" has read the sentence correctly and the game wrongly.
-2. **That population is the riot.** §4: the same sixteen carry `needsPressure`
-   over the line, and six guards on full coverage do not stop it.
+2. **The prison riots around them, twice over two runs, and full coverage does
+   not stop it.** MEASURED: `incidents.riot-opened … participantCount=22` at
+   tick 18,050 in run 1 and 20,150 in run 2, both with `COVERAGE 22 · Covered`
+   and six guards hired. **Whether the sixteen are the *cause* of it is §4's
+   reasoning and this record's weakest claim, not a reading** — what is
+   measured is that a fully staffed prison riots and that the crowd is there
+   before and after.
 3. **The crowd is the game's clearest picture of its own state and it is drawn
    as one tile.** #944's depth fix landed at `44852b2b` (*"fix(render): a shared
    tile draws every actor standing on it"*) and it makes a shared tile draw
