@@ -780,11 +780,19 @@ describe('a run of presses is a run of commands (#942)', () => {
    * arriving late is the ordinary case in the running app, because the reply
    * carries the whole session bundle and this thread has to deserialise it.
    *
-   * 600 ms at ×4 is 48 ticks of skew: outside the 20-tick margin this issue
-   * found by 28 ticks, and inside the scaled 80-tick margin by 32. Neither
-   * bound is close enough for a loaded machine to decide the outcome.
+   * **Why the sleep is 500 ms, and why the green direction cannot go flaky.**
+   * A clock can never run *faster* than real time times its speed, so the skew
+   * this produces is bounded above by `500 * 4 / 50 = 40` ticks -- half the
+   * scaled margin, on any machine, however idle. It is bounded *below* by
+   * nothing, because a loaded box lets the worker's 15 ms timer slip and the
+   * kernel then falls behind real time; so the skew is measured rather than
+   * assumed, and asserted only to be real. Measured on this container it sits
+   * at the nominal 40 (40, 41, 41 ticks across three runs), which is twice
+   * the 20-tick margin this issue found: with that margin restored this press
+   * is refused, *"Cannot schedule command in the past"*, in the kernel's own
+   * words.
    */
-  it('a press at x4 clears a snapshot that took a real 600ms to reach this thread', async () => {
+  it('a press at x4 clears a snapshot that took a real 500ms to reach this thread', async () => {
     vi.useRealTimers();
     const sleep = (ms: number): Promise<void> => new Promise((resolve) => { setTimeout(resolve, ms); });
 
@@ -828,7 +836,7 @@ describe('a run of presses is a run of commands (#942)', () => {
       kind: 'simulation/request-snapshot',
       payload: { reason: 'consistency-check' },
     });
-    await sleep(600);
+    await sleep(500);
     port.releaseOne('simulation/snapshot');
     expect(sender.canSend).toBe(true);
 
@@ -836,5 +844,23 @@ describe('a run of presses is a run of commands (#942)', () => {
 
     expect(refusals(port)).toEqual([]);
     expect(accepted(port)).toEqual([0]);
+
+    // The instrument's own control: a second snapshot says where the kernel
+    // had actually got to while the first one was in flight, and the
+    // difference is the skew the press had to clear. Asserted only to exist,
+    // for the reason the docblock gives -- its size is the machine's to
+    // decide, and a run that produced none would have proven nothing while
+    // passing.
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'snapshot-2',
+      kind: 'simulation/request-snapshot',
+      payload: { reason: 'consistency-check' },
+    });
+    const snapshotTicks = port.outbound.flatMap((message) =>
+      message.kind === 'simulation/snapshot' ? [message.payload.tick] : [],
+    );
+    expect(snapshotTicks).toHaveLength(2);
+    expect(snapshotTicks[1]! - snapshotTicks[0]!).toBeGreaterThan(0);
   });
 });
