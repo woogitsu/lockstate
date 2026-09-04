@@ -231,7 +231,7 @@ function spritesWithAsset(assetId: string): readonly SpritePosition[] {
     const image = child as Phaser.GameObjects.Image;
     if (typeof image.texture?.key !== 'string' || !image.texture.key.includes(assetId)) continue;
     if (image.visible !== true) continue;
-    found.push({ x: image.x, y: image.y });
+    found.push({ x: image.x, y: image.y, depth: image.depth });
   }
   return found;
 }
@@ -284,6 +284,27 @@ const harness: LockstateActorMotionHarness = {
       0,
       0,
     );
+    emitKeyframe(tick, writer.finish());
+  },
+  publishCrowd: (tick, records) => {
+    const writer = new RenderActorsKeyframeWriter(records.length);
+    for (const record of records) {
+      // Motionless, both populations: zero heading and zero velocity is what
+      // the worker writes for a guard whose tile updates only on arrival and
+      // for a prisoner holding no walk (`LocomotionStore.read`).
+      writer.writeRecord(
+        record.entityId,
+        packRenderActorFields(
+          record.population === 'guard' ? RENDER_ACTOR_POPULATION_GUARD : RENDER_ACTOR_POPULATION_PRISONER,
+          0,
+          0,
+        ),
+        Math.round(record.tile.x * LOCOMOTION_SUBTILE_UNITS),
+        Math.round(record.tile.y * LOCOMOTION_SUBTILE_UNITS),
+        0,
+        0,
+      );
+    }
     emitKeyframe(tick, writer.finish());
   },
   publishClock: (tick, mode) => {
