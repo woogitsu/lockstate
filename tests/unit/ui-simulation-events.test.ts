@@ -60,6 +60,11 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
     type: 'construction.undone-spend-destroyed',
   }),
   'construction.redone': (sequence) => ({ sequence, tick: 100, type: 'construction.redone' }),
+  'objects.removed-spend-destroyed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'objects.removed-spend-destroyed',
+  }),
   'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
@@ -484,6 +489,40 @@ describe('what a control says when it works (#749)', () => {
     expect(destroyed, 'no count, which is ruling 4').not.toMatch(/\d/);
   });
 
+  it('says a removed object took its cost with it, and does not call it an order (#945)', () => {
+    /*
+     * Issue [#945](https://github.com/matmaxalez/lockstate/issues/945): removing
+     * a standing bed destroyed the 65 it cost -- `25,000 -> 24,935` on placement,
+     * `24,935 -> 24,935` on removal -- and put **nothing** on screen. The band
+     * was `hidden`, so it was an absence and not a collision, and it survived
+     * #932 because a standing object reaches neither channel #932 fixed.
+     *
+     * **The two `not` assertions are the ones that fail against the near-miss
+     * this fix was nearly built as.** The obvious cheap fix is to raise
+     * `construction.order-cancelled-underway` from the removal branch, which
+     * needs no new key at all -- and it would say *"The order was cancelled"*
+     * over a press that cancelled no order: the order that built the bed is
+     * still `'completed'` afterwards, which
+     * `tests/integration/object-removal-loop.test.ts` asserts. The other
+     * direction is just as wrong: it must not read as a refund, because the
+     * whole finding is that a player cannot tell this press from one.
+     *
+     * **Asserted as a whole sentence, and as its difference from the refund
+     * sentence it is deliberately shaped to mirror.** A presentation table
+     * mapping two types onto one key satisfies any assertion made about either
+     * alone, which is the reason #927's case above asserts the same way.
+     */
+    const removed = sentenceOf(SAMPLE['objects.removed-spend-destroyed'](1));
+
+    expect(removed).toBe('The object was removed — the money it cost does not come back.');
+    expect(removed, 'a standing object is not an order any more').not.toContain('The order was cancelled');
+    expect(removed, 'and it must not read as a refund').not.toContain('refunded');
+    expect(removed, 'the pair must not read the same').not.toBe(
+      sentenceOf(SAMPLE['construction.order-cancelled'](1)),
+    );
+    expect(removed, 'no figure -- `PlacedObjectRegistry.remove` answers `boolean`').not.toMatch(/\d/);
+  });
+
   it('paints the one that reports a loss differently from the three that do not', () => {
     /*
      * The band's severity is the only thing separating "you got your money
@@ -507,6 +546,11 @@ describe('what a control says when it works (#749)', () => {
     // working quietly, and `'info'` beside the plain undo would take back in
     // the tone what the second sentence exists to distinguish.
     expect(severityOf(SAMPLE['construction.undone-spend-destroyed'](1))).toBe('warning');
+    // #945's row, graded by that same rule on a third route. Taking a standing
+    // object away credits no treasury and fills no container, so it reports
+    // value destroyed -- and `'info'` here would put the one press that
+    // *destroys* money in the same colour as the two that give it back.
+    expect(severityOf(SAMPLE['objects.removed-spend-destroyed'](1))).toBe('warning');
   });
 
   it('refuses a refund that is not a whole non-negative number of minor units', () => {

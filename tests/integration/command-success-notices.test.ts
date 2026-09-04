@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import type { SimulationEvent } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **What a control says when it works** (issue
@@ -43,6 +44,23 @@ const WALL = 'wall-brick';
 const BRICK = 'item.brick';
 /** Three bricks at 40. */
 const THREE_BRICKS = 120;
+
+/**
+ * `room.cell`'s authored minimum, clear of every `placeWall` tile above (all of
+ * which sit on `y: 6` at `x >= 8`).
+ */
+const CELL_RECT = { x: 2, y: 12, width: 2, height: 3 } as const;
+/** Inside `CELL_RECT`, so a bed's `1x2` footprint lies wholly in the cell. */
+const BED_TILE = { x: 2, y: 12 } as const;
+/** Inside `CELL_RECT`, on neither of the bed's two tiles. */
+const EMPTY_TILE = { x: 3, y: 14 } as const;
+/**
+ * What one bed costs, and it is the figure #945 measured: one `item.wood-plank`
+ * at 65. A literal for the reason the brick figures above are literals -- a
+ * value read back off the catalogue holds for an implementation that charges
+ * the wrong price consistently.
+ */
+const ONE_PLANK = 65;
 
 function createSession(seed = 0x749) {
   const runtime = createNewSimulationRuntime(seed);
@@ -536,17 +554,158 @@ describe('undo and redo say so, once, and say nothing when there was nothing to 
   });
 });
 
+/**
+ * **A removal that destroys a purchase says so, and the two that do not stay
+ * quiet** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * `RemoveObject` was one of the six routes #749's ruling did not reach, and it
+ * is the one where money is *destroyed*: #945 measured a standing bed costing
+ * 65 to place (`25,000 -> 24,935`) and the removal moving the treasury not at
+ * all (`24,935 -> 24,935`), with the sentence band `hidden`. It survived #932 --
+ * which made `Undo` and `CancelBuildOrder` state-aware about exactly this loss
+ * -- because `ObjectPlacementService.remove`'s standing-object arm reaches
+ * `PlacedObjectRegistry.remove` and never `ConstructionSystem.cancelOrder`, so
+ * there is no order state for either of those channels to switch on.
+ *
+ * **The three cases below are separated so that no single mutation can pass all
+ * three**, which is what #932's pair was separated for. Deleting the recording
+ * fails the first only; moving it out of the `kind === 'removed'` guard fails
+ * the third only; wiring it to the branch rather than to the success fails the
+ * second only.
+ */
+describe('a removal that destroys what an object cost says so (#945)', () => {
+  /** A zoned cell with one bed standing in it, built and paid for by the press that placed it. */
+  function prisonWithStandingBed(session: ReturnType<typeof createSession>): void {
+    // Walled and zoned first, because `PlaceObject` refuses `outside-room`.
+    // Written on the world directly, exactly as `object-removal-loop.test.ts`
+    // does it: what is under test is the removal, not the wall crew.
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-945', definitionId: 'bed-wooden', ...BED_TILE });
+  }
+
+  it('says the money is gone when a standing object is taken away, and the money really is gone', () => {
+    /*
+     * **The reproduction of #945 as a test.** The treasury is asserted on both
+     * sides of the press rather than only the event, because the event is worth
+     * having only if the loss is real -- and the issue's own note is that the
+     * *placement* assertion keeps passing throughout the defect, so a test that
+     * only checked "the money moved" would have been green all along.
+     */
+    const session = createSession();
+    const openingBalance = session.runtime.treasury.balanceMinorUnits;
+    prisonWithStandingBed(session);
+
+    // The plank is bought by the placement itself (ADR 0017 decision 7, #627),
+    // so this is the 65 the issue measured leaving the treasury.
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'the placement really did cost the player money',
+    ).toBe(openingBalance - ONE_PLANK);
+
+    session.runUntilState('bed-945', 'completed');
+    expect(session.runtime.placedObjects.size, 'the bed is standing, not in flight').toBe(1);
+
+    const treasuryBefore = session.runtime.treasury.balanceMinorUnits;
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...BED_TILE });
+
+    expect(session.runtime.placedObjects.size, 'the bed really came out of the world').toBe(0);
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'and nothing came back, which is what the sentence claims',
+    ).toBe(treasuryBefore);
+    expect(session.stateOf('bed-945'), 'no order changed state, so no order sentence is true here').toBe('completed');
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['objects.removed-spend-destroyed']);
+    expect(Object.keys(said[0]!).sort(), 'no figure and no count').toEqual(['sequence', 'tick', 'type']);
+  });
+
+  it('says nothing when the press found no object and nothing being built there', () => {
+    /*
+     * The absence half. A refused removal is `nothing-to-remove` on the
+     * `RefusalLog`, and it must not also produce a success sentence -- a
+     * producer wired to the branch rather than to the outcome would say the
+     * player's money was destroyed by a press that removed nothing.
+     */
+    const session = createSession();
+    prisonWithStandingBed(session);
+    session.runUntilState('bed-945', 'completed');
+
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...EMPTY_TILE });
+
+    expect(session.runtime.refusals.last?.reason, 'the press really was refused').toBe(
+      'remove-object.nothing-to-remove',
+    );
+    expect(session.runtime.placedObjects.size, 'and the standing bed was left alone').toBe(1);
+    expect(session.types().slice(before), 'a removal that removed nothing destroyed nothing').toEqual([]);
+  });
+
+  it('says nothing about destroyed money when the press cancelled a placement still in flight', () => {
+    /*
+     * **The other success `remove` answers, and the assertion that stops the
+     * fix being "say the loud sentence always".** A press on a tile whose object
+     * is still being built reaches `ConstructionSystem.cancelOrder`, which
+     * *refunds* for every state before the crew starts -- so a sentence about
+     * money that does not come back would be false of it, and false in the
+     * direction that scares a player off a control that costs them nothing.
+     *
+     * **This case also pins a silence, and the reason is recorded so it cannot
+     * close by accident and cannot be mistaken for a considered answer.** The
+     * refund here says nothing either, and #945's brief and its §1 both describe
+     * this path as *"the channel #932 fixed"*. **It is not.** `remove` calls
+     * `ObjectOrderSink.cancelOrder` -- `ConstructionSystem.cancelOrder` --
+     * directly, and no event is recorded anywhere in `ConstructionSystem`: the
+     * state-aware `events.recordBuildOrderCancelled` #932 made state-aware sits
+     * in `createConstructionCommandHandler`'s `CancelBuildOrder` branch, which
+     * this route does not go through. So a `RemoveObject` on a bed the crew has
+     * *started* destroys its spend and is still silent, exactly as a standing
+     * one was.
+     *
+     * That is a second finding rather than this issue, which is scoped to the
+     * standing object, and #945 §4 leaves *"whether the other silent commands
+     * should speak"* to an ADR. A change that gives this path a sentence comes
+     * here and says which one and why.
+     */
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-flight', definitionId: 'bed-wooden', ...BED_TILE });
+
+    // Inside the window between the press and the object existing: the order is
+    // waiting on its own delivery and nothing stands on the tile.
+    session.run(20);
+    expect(session.stateOf('bed-flight')).toBe('materials-pending');
+    expect(session.runtime.placedObjects.size).toBe(0);
+
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...BED_TILE });
+
+    expect(session.stateOf('bed-flight'), 'the press really did cancel the order').toBe('cancelled');
+    expect(session.types().slice(before), 'a refund is not the loss sentence').toEqual([]);
+  });
+});
+
 describe('nothing else on the channel changed', () => {
   it('leaves a session that pressed nothing with nothing to say', () => {
     /*
      * The absence that makes every case above mean something. A new prison run
-     * for four hundred ticks with no press records no event of these five kinds
+     * for four hundred ticks with no press records no event of these kinds
      * -- so a producer wired to a tick rather than to a command would fail here
      * rather than pass every case above by accident.
+     *
+     * `objects.` joined the filter with #945, whose event is on the same
+     * footing: it is a statement about a press and nothing else can produce it.
      */
     const session = createSession();
     session.run(400);
-    const said = session.types().filter((type) => type.startsWith('construction.') || type === 'economy.delivery-cancelled');
+    const said = session
+      .types()
+      .filter(
+        (type) => type.startsWith('construction.') || type.startsWith('objects.') || type === 'economy.delivery-cancelled',
+      );
     expect(said).toEqual([]);
   });
 });
