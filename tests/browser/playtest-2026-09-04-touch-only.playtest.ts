@@ -1132,6 +1132,28 @@ test('act 6: what a finger can undo', async ({ page }) => {
     })),
   );
   log(`controls inside the build queue while the wall is pending: ${JSON.stringify(queueRows)}`);
+  /*
+   * And what a queue costs the catalogue. `hud.css:1740` is
+   * `.hud-build[data-queued] { --hud-build-catalogue-floor: var(--tap-target); }`
+   * -- two rows down to one while a queue exists, to pay for the queue block's
+   * 45px header. Act 8 could not reach this state, because *buying materials*
+   * is a purchase and sets no `data-queued`; a build order does.
+   */
+  log(
+    `data-queued = ${JSON.stringify(await page.locator('.hud-build').getAttribute('data-queued'))}; ` +
+      (await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.hud-build__list');
+        if (list === null) return 'catalogue ABSENT';
+        const rect = list.getBoundingClientRect();
+        const rows = [...list.querySelectorAll<HTMLElement>('[data-buildable]')];
+        const tappable = rows.filter((row) => {
+          const r = row.getBoundingClientRect();
+          const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return top !== null && (top === row || row.contains(top));
+        });
+        return `catalogue ${Math.round(rect.width)}x${Math.round(rect.height)}, ${list.scrollHeight} of content, ${rows.length} rows, ${tappable.length} tappable: ${JSON.stringify(tappable.map((r) => r.dataset['buildable']))}`;
+      })),
+  );
   log(`queue text: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
   // Let it finish.
