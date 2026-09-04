@@ -330,15 +330,28 @@ shapes, because two of them are invisible to the obvious grep: a full path
 continuation that inherits the file named before it (`` `:1898` ``). The third
 shape alone accounts for **47** of the 176.
 
+**One trap in the extraction itself, disclosed because it produced a false
+pass.** A bare `` `:NNNN` `` inherits the file named before it, and *before it*
+is not always on the same line. Two of the 47 inherited the wrong file — and
+where the borrowed file is shorter than the line number, an unguarded
+comparison reads empty against empty and reports a match. Both were caught by
+asserting the coordinate is in range at both revisions, and both were then
+resolved by hand from the record's own sentence: touch-only's `` `:1933` ``
+belongs to `default-locale-en.ts` (`'hud.rooms.arm-hint'`, now `:2071`) and not
+to `bindings.ts`, and many prisons' `` `:133` `` belongs to
+`src/services/entitlements/projection.ts`, where it and `:129` are both still
+exact. The first of those is counted below as stale; it would otherwise have
+been counted as exact.
+
 ### The result in one table
 
 | | touch-only | see my prison | hour two | the misplay | many prisons | **all** |
 | --- | --- | --- | --- | --- | --- | --- |
-| coordinate still exact on `main` | 29 | 22 | 35 | 25 | 22 | **133** |
-| coordinate stale (drifted or dead) | 5 | 3 | 16 | 14 | 5 | **43** |
+| coordinate still exact on `main` | 28 | 22 | 35 | 25 | 22 | **132** |
+| coordinate stale (drifted or dead) | 6 | 3 | 16 | 14 | 5 | **44** |
 
-Of the 43 stale coordinates, **28** were correct at `0e614c7` and moved
-afterwards, and **15 were already stale on the very commit that carried their
+Of the 44 stale coordinates, **28** were correct at `0e614c7` and moved
+afterwards, and **16 were already stale on the very commit that carried their
 own record onto `main`** — falsified by #932, #940 and #950, each of which
 merged *before* the record did. Nobody re-pinned them, and nothing gated it:
 `tests/foundation/documentation-commit-citation-contract.test.ts` checks cited
@@ -407,7 +420,7 @@ pass is not the same as a diff.
   `:3171-3173`, and `terminate()` appears nowhere in `main.ts`. Imprecise
   rather than false.
 
-### 3. Thirty-three coordinates drifted and stayed true
+### 3. Thirty-seven coordinates drifted and stayed true
 
 Recorded so nobody re-derives them. Every one was located by its own text, not
 by a guess at the offset.
@@ -482,7 +495,7 @@ Of §4's seven ranked rows above, **four are done and one is not**:
 **Both, in different directions, and the second is the finding.**
 
 **Too harsh about the testers.** §7 worried that thirty verified citations might
-not generalise. They do: 133 of 176 coordinates are byte-identical at the number
+not generalise. They do: 132 of 176 coordinates are byte-identical at the number
 cited, and every claim this pass read beside its code was supported by it. Three
 errors in 176 — one wrong range, one off-by-one, one imprecise — is a better
 record than §7's caution implied, and two of the three are in one paragraph of
@@ -490,7 +503,7 @@ one record.
 
 **Not harsh enough about the audit.** §7 framed the risk as *were these
 citations right?* The risk it missed is that **a citation can be right and dead
-at the same time**, and 43 of 176 are — including **15 that were already stale
+at the same time**, and 44 of 176 are — including **16 that were already stale
 on the commit that carried their own record onto `main`**. That is not a
 tester's error. It is the merge sequence: #932, #940 and #950 landed between the
 round's play session and the round's merges, and neither the testers (finished)
