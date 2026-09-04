@@ -130,6 +130,17 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   also what stops a `'danger'` band standing over a calm prison for the rest
  *   of a session; see the schema's own comment in
  *   `src/simulation/protocol/types.ts`.
+ * - **`incidents.all-clear-after-lapse` is `'warning'`, and the step is the
+ *   whole reason it is a separate member** (issue #914's finding 4). The row
+ *   above is graded on *nothing is wrong any more*, which is true of a
+ *   containment and false of a lapse: every participant of a lapsed incident
+ *   is injured by `IncidentResponseSystem.lapse`, so something did go wrong
+ *   and the prison is only calm because the incident expired. `'warning'`
+ *   rather than `'danger'`: nothing is *ongoing* -- the band's `'danger'`
+ *   grades incidents that are still running, and a closing row that outranked
+ *   an open riot would be the eviction order the wrong way round
+ *   (`SEVERITY_EVICTION_ORDER` drops `'info'` first, so this row also
+ *   survives a run of confirmations that the plain all-clear would not).
  *
  * ## `contraband.discovered` is `'warning'`, and a weapon is not louder (#703 ruling 13)
  *
@@ -269,6 +280,10 @@ const EVENT_PRESENTATION: Readonly<
   'economy.delivery-cancelled': { labelKey: 'hud.alert.event.economy.delivery-cancelled', severity: 'info' },
   'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning' },
   'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info' },
+  'incidents.all-clear-after-lapse': {
+    labelKey: 'hud.alert.event.incidents.all-clear-after-lapse',
+    severity: 'warning',
+  },
   'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
   'incidents.escape-attempt-opened': {
     labelKey: 'hud.alert.event.incidents.escape-attempt-opened',
@@ -898,6 +913,13 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
+    // And the lapse's closing row carries none either, though a count of
+    // injured does exist at its producer: `HudLocalizer` exposes `format` and
+    // not `formatPlural`, and a lapsed escape attempt injures exactly one
+    // while a riot injures its whole roll, so the sentence is quantified over
+    // the participants instead of counting them. Argued in full at the schema
+    // in `src/simulation/protocol/types.ts`.
+    case 'incidents.all-clear-after-lapse':
       return {};
     // #749's four amount-free successes. Each is a whole sentence with no
     // placeholder in it, and that is the owner's ruling rather than a gap:
@@ -1002,6 +1024,7 @@ function eventParameterMessages(
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
+    case 'incidents.all-clear-after-lapse':
     // #749's five. Four carry nothing at all; the delivery's `{total}` is a
     // figure and is supplied by `eventParameters` above, which is where a
     // sum of minor units belongs -- nothing here needs a localizer to produce

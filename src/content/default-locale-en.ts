@@ -1010,6 +1010,58 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.incidents.escape-attempt-opened': 'A prisoner is trying to break out.',
   'hud.alert.event.incidents.gang-retaliation-opened': 'Two gangs are settling a score.',
   'hud.alert.event.incidents.all-clear': 'The prison is under control again — no incident is still open.',
+  /*
+   * The same return to calm when the last thing to close **expired** rather
+   * than being handled -- issue #914's finding 4, and the row the sentence
+   * above was saying for both endings.
+   *
+   * **Measured, and it is why this key exists.**
+   * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` played one
+   * prison shape twice. With six guards, **15 incidents out of 15** ended
+   * `'resolved'` with **zero injuries**. With none, **19 out of 19** ended
+   * `'lapsed'` with **114 prisoner-injuries and three escapes**. Both alert
+   * columns held the same rows, in the same order, saying *"The prison is
+   * under control again -- no incident is still open."* -- byte for byte,
+   * with the same `0 INCIDENTS Clear` chip beside them. The sentence is true
+   * about the incident *list* and it told the second prison it was fine.
+   *
+   * **Every clause is a property of the transition rather than a judgement.**
+   *  - *"No incident is still open"*: `reportAllClearIfCalm` emits only when
+   *    `IncidentLog.openIncidentCount` is zero, which is the same guard the
+   *    sentence above rides (`src/simulation/incidents/response-system.ts`).
+   *  - *"the last one"*: at most one row is emitted per return to calm, and it
+   *    is the terminal transition that emptied the log -- so two incidents
+   *    closing together produce one sentence, about that one.
+   *  - *"ran out of time instead of being contained"*: `lapse` is reached from
+   *    `tryDispatch` and from `advanceResponse` only through
+   *    `isPastDeadline`, i.e. `tick - startedAtTick > responseDeadlineTicks`.
+   *    It deliberately does **not** say nobody was sent: a `'notified'`
+   *    incident whose responders were still walking lapses too, which the
+   *    research reached in one press of Release, so *"no guard answered"*
+   *    would be false in a state a player can cause.
+   *  - *"everyone caught in it was hurt"*: `lapse` writes
+   *    `injuredEntityIds: [...incident.participantIds]` with no condition and
+   *    no roll, while the containment branch writes `[]`. Quantified over the
+   *    participants rather than counted because this localizer has no plural
+   *    rules -- the note at `hud.alert.event.incidents.riot-opened` above
+   *    states the rule -- and a lapsed escape attempt injures exactly one.
+   *
+   * **What it still does not say, and why that is not this key's to fix.** How
+   * many were hurt, who, and what was damaged: `IncidentOutcome` carries all
+   * three and the `hud/incidents` projection already renders them, but nothing
+   * under `src/ui/` requests that projection
+   * (`tests/foundation/projection-reachability-contract.test.ts` names it in
+   * `UNPAINTED_PROJECTION_IDS`), so there is no surface for a per-incident
+   * accounting to appear on. That is finding 2 of the same record and it is a
+   * panel rather than a sentence.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04
+   * (*"Wybierz sam a potem się ujednolici sposób pisania"*): the voice is open
+   * to their unifying pass, and each clause above is pinned to the code that
+   * makes it true.
+   */
+  'hud.alert.event.incidents.all-clear-after-lapse':
+    'No incident is still open — but the last one ran out of time instead of being contained, and everyone caught in it was hurt.',
 
   // The one sentence in this family about an incident *ending*, and the one
   // the five above made necessary: a successful escape and a contained attempt

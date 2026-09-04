@@ -1683,6 +1683,7 @@ export const SIMULATION_EVENT_TYPES = [
   'economy.delivery-cancelled',
   'economy.wages-unpaid',
   'incidents.all-clear',
+  'incidents.all-clear-after-lapse',
   'incidents.assault-opened',
   'incidents.escape-attempt-opened',
   'incidents.escape-succeeded',
@@ -2036,19 +2037,87 @@ const escapeSucceededEventSchema = z
  * producer emits only when the terminal transition leaves *no* incident open
  * anywhere (`IncidentLog.openIncidentCount`), so two overlapping incidents
  * closing produce one line rather than two, and the count of these events is
- * bounded above by the count of openings for any session at all. It is also
- * the only true thing to say after a *lapse*: an incident that ran its course
- * was not "resolved", but the prison does have nothing open.
+ * bounded above by the count of openings for any session at all.
+ *
+ * **It used to be said after a *lapse* as well, and that half is now
+ * `incidents.all-clear-after-lapse` below.** The paragraph here read: *"It is
+ * also the only true thing to say after a lapse: an incident that ran its
+ * course was not 'resolved', but the prison does have nothing open."* Every
+ * clause of that is true about `openIncidentCount` and the conclusion does not
+ * follow, which is what
+ * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` finding 4
+ * measured: a prison that had taken 114 prisoner-injuries and lost three
+ * prisoners read the same row as one that resolved fifteen incidents with
+ * nobody hurt. So this member is now the *containment* half only, and the
+ * producer chooses between the two on which terminal transition emptied the
+ * log.
  *
  * Carries no figure. What it costs -- who was injured, what was damaged,
  * whether anybody got out -- is `IncidentOutcome`, which the `hud/incidents`
- * projection already renders per incident; summing it into one number here
- * would be a second, coarser answer to a question that already has one.
+ * projection renders per incident. **That deferral is to a surface no player
+ * can reach**: nothing under `src/ui/` requests `hud/incidents`, and
+ * `tests/foundation/projection-reachability-contract.test.ts` names it in
+ * `UNPAINTED_PROJECTION_IDS` for exactly that reason. It is left standing
+ * because a per-incident accounting still belongs in that panel rather than
+ * summed onto this channel; what the sibling below adds is the one fact that
+ * cannot wait for it, which is that the ending was not a containment.
  */
 const incidentsAllClearEventSchema = z
   .object({
     ...simulationEventEnvelopeFields,
     type: z.literal('incidents.all-clear'),
+  })
+  .strict();
+
+/**
+ * The same return to calm, when the transition that produced it was a **lapse**
+ * rather than a containment (issue #914's finding 4;
+ * `docs/research/2026-09-04-does-anyone-answer-an-incident.md`).
+ *
+ * **Why the sibling above could not carry it, measured.** With six guards, 15
+ * incidents out of 15 ended `'resolved'` with zero injuries; with none, 19 out
+ * of 19 ended `'lapsed'` with 114 prisoner-injuries and three escapes -- and
+ * both prisons' alert columns held the same rows saying the same sentence,
+ * *"The prison is under control again -- no incident is still open."* That
+ * sentence is true about `IncidentLog.openIncidentCount` and misleading about
+ * the prison, and the record above says as much in its own words: *"it is also
+ * the only true thing to say after a lapse"* -- true only while the two
+ * endings shared one event, which is the premise this member removes.
+ *
+ * **A lapse is materially different and the difference is in
+ * `IncidentOutcome`, not in the opinion of whoever writes the sentence.**
+ * `IncidentResponseSystem.lapse` writes
+ * `injuredEntityIds: [...incident.participantIds]` -- every participant, with
+ * no exception and no roll -- while the `'resolved'` branch writes `[]`. It is
+ * also the only route to `escaped: true`. So "everyone caught in it was hurt"
+ * is a property of the transition rather than a flourish, which is what lets
+ * this sentence assert a cost at all.
+ *
+ * **Carries no figure, and this is a decision rather than an omission.** The
+ * count of injured is available at the producer -- `outcome.injuredEntityIds`
+ * is built one line above the call -- and is deliberately not put on the wire:
+ * `HudLocalizer` exposes `format` and not `formatPlural`
+ * (`src/ui/hud/messages.ts` states the rule at
+ * `securityCoverageUnguardedHint`), so a `{count}` here would have to read
+ * correctly at 1 as well as at 8, and a lapsed escape attempt injures exactly
+ * one (`tryOpenEscapeAttempt` names a single participant) while a riot injures
+ * its whole roll. A sentence quantified over the participants needs no plural
+ * rule and is true at every size. What a *per-incident* accounting is owed --
+ * who was hurt, what was damaged -- is finding 2 of that record and is a
+ * panel, not a row on this channel: `hud/incidents` already projects
+ * `injuredCount` and **nothing under `src/ui/` requests it**, which is the gap
+ * this member narrows rather than closes.
+ *
+ * **Bounded exactly as the sibling is**, by the same `openIncidentCount` guard
+ * in `reportAllClearIfCalm`: at most one of the two is emitted per return to
+ * calm, chosen by which terminal transition emptied the log, so this cannot
+ * outpace the openings it closes off. And suppressed by the same
+ * `escapeAnnounced` gate, so an announced escape still owns its tick (#683).
+ */
+const incidentsAllClearAfterLapseEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.all-clear-after-lapse'),
   })
   .strict();
 
@@ -2281,6 +2350,7 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   escapeAttemptOpenedEventSchema,
   escapeSucceededEventSchema,
   incidentsAllClearEventSchema,
+  incidentsAllClearAfterLapseEventSchema,
 ]);
 
 export type SimulationEvent = DeepReadonly<z.infer<typeof simulationEventSchema>>;

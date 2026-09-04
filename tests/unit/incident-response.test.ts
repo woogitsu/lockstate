@@ -218,10 +218,22 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
 
     for (let tick = 0; tick < 200; tick += 1) kernel.step();
     expect(response.getMetrics().incidentsLapsed, 'the first must have ended before the second opens').toBe(1);
+    /*
+     * `-after-lapse` because nobody was hired in this harness, which is issue
+     * #914's finding 4: the two endings are two rows now, chosen by which
+     * terminal transition emptied the log. What this case is about --
+     * *one* row per return to calm, not one per incident -- is unchanged, and
+     * counting only the lapse row is stricter here than counting both would
+     * be, because every ending in this run is a lapse.
+     */
     expect(
-      events.since(0).filter((event) => event.type === 'incidents.all-clear'),
+      events.since(0).filter((event) => event.type === 'incidents.all-clear-after-lapse'),
       'one incident ending is a return to calm, and the prison may say so',
     ).toHaveLength(1);
+    expect(
+      events.since(0).filter((event) => event.type === 'incidents.all-clear'),
+      'and nothing here was contained, so the containment row must not be written',
+    ).toHaveLength(0);
 
     incidents.open({ id: 'incident-second', type: 'riot', sectorId: 'block-a', participantIds: [3, 4], severity: 4, causeFactors: [] }, kernel.tick);
     // A third, opened on the same tick, so that when the two of them end the
@@ -233,7 +245,7 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     expect(response.getMetrics().incidentsLapsed, 'all three must have ended for this to be measuring anything').toBe(3);
 
     expect(
-      events.since(0).filter((event) => event.type === 'incidents.all-clear'),
+      events.since(0).filter((event) => event.type === 'incidents.all-clear-after-lapse'),
       'three incidents ended and the prison became calm twice, so it says so twice -- not three times',
     ).toHaveLength(2);
   });
@@ -299,10 +311,15 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     // No departure port, so nobody left and nothing was announced...
     expect(escapeTypes, 'no port means no escape sentence').not.toContain('incidents.escape-succeeded');
     // ...and therefore the all-clear stands. A guard keyed on `outcome.escaped`
-    // rather than on the announcement fails exactly here.
+    // rather than on the announcement fails exactly here. It is the
+    // `-after-lapse` row since #914's finding 4, because this attempt lapsed:
+    // `escapeAnnounced` gates *whether* a row is written and `endedByLapse`
+    // chooses *which*, and the two are independent -- which is exactly what
+    // this case would stop being able to see if it accepted either row.
     expect(escapeTypes, 'with no sentence written there is nothing to overwrite, so the return to calm is reported').toContain(
-      'incidents.all-clear',
+      'incidents.all-clear-after-lapse',
     );
+    expect(escapeTypes, 'and it is not the containment row: nothing contained this').not.toContain('incidents.all-clear');
 
     // And the ordinary lapse, so the guard is visibly not "suppress every
     // lapse": same method, same terminal transition, same empty prison.
@@ -316,7 +333,9 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     expect(assault.response.getMetrics().incidentsLapsed).toBe(1);
     expect(assault.incidents.get('incident-assault')!.outcome!.escaped, 'an assault is the arm that cannot set this').toBe(false);
     const assaultTypes = assault.events.since(0).map((event) => event.type);
-    expect(assaultTypes, 'a lapse that lost nobody still reports the return to calm').toContain('incidents.all-clear');
+    expect(assaultTypes, 'a lapse that lost nobody still reports the return to calm').toContain(
+      'incidents.all-clear-after-lapse',
+    );
     expect(assaultTypes).not.toContain('incidents.escape-succeeded');
   });
 
@@ -340,6 +359,37 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     expect(containedOutcome.injuredEntityIds).toHaveLength(0);
     expect(lapsedOutcome.injuredEntityIds).toHaveLength(2);
     expect(containedOutcome.propertyDamage).toBeLessThan(lapsedOutcome.propertyDamage);
+
+    /*
+     * **And the player is told which of the two they got** (issue #914's
+     * finding 4). This is the case that already holds both prisons at once, so
+     * it is where the split belongs: same incident type, same severity, same
+     * participants, two endings that cost entirely different amounts.
+     *
+     * Until this change both prisons published `incidents.all-clear` and the
+     * three assertions above were the *only* difference between them --
+     * `IncidentOutcome`, which the `hud/incidents` projection renders and
+     * nothing under `src/ui/` requests. So the whole of what a player could
+     * see was identical, which is what
+     * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` measured
+     * across 15 resolutions and 19 lapses.
+     *
+     * Asserted as a pair rather than as two independent memberships: what must
+     * hold is that the rows *differ*, and a future pass that renames either
+     * one fails here rather than half-passing.
+     */
+    const closingRowOf = (harness: { readonly events: { since: (after: number) => readonly { readonly type: string }[] } }): string[] =>
+      harness.events
+        .since(0)
+        .map((event) => event.type)
+        .filter((type) => type.startsWith('incidents.all-clear'));
+
+    expect(closingRowOf(contained), 'a contained incident says the prison is under control').toEqual([
+      'incidents.all-clear',
+    ]);
+    expect(closingRowOf(lapsed), 'a lapsed one says it ran out of time instead').toEqual([
+      'incidents.all-clear-after-lapse',
+    ]);
   });
 
   it('is deterministic: an identical scenario replays to an identical incident record', () => {
