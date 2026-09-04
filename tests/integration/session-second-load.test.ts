@@ -176,9 +176,18 @@ describe('a second session in the same tab (#149)', () => {
 
     // And the save the second load restored is intact: no generation was
     // demoted on the way, so the prison is no worse off for having been
-    // loaded.
+    // loaded. `gen-1` being first is that claim, and it is the one this case
+    // has always made.
+    //
+    // The two behind it are #943's, and this assertion read `['gen-1']` until
+    // it landed: prison A is *saved on its way out* now, once by the
+    // `createPrison(PRISON_B)` above and once by the `loadPrison(PRISON_B)`,
+    // because until that change asking for a second prison threw the first
+    // one's unsaved play away silently (measured: kernel tick 211 back as 0,
+    // zero dialogs). Written out rather than loosened to a length or a
+    // `toContain`, so a capture that stopped happening still fails here.
     const [a] = (await repository.list()).filter((slot) => slot.prisonId === PRISON_A);
-    expect(a?.generationIds).toEqual(['gen-1']);
+    expect(a?.generationIds).toEqual(['gen-1', 'gen-2', 'gen-5']);
 
     // Four sessions, four workers, and every one of them was sent exactly one
     // `simulation/initialize`: that is the rule that makes the defect
