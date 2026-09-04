@@ -1,7 +1,7 @@
 # What pressure there is at fifty — 2026-09-04
 
-**IN PROGRESS.** Act B is measured and written up below. Acts P, F, G and Y are
-not yet run; every section that names them is a placeholder. This file is
+**IN PROGRESS.** Acts B and P are measured and written up below. Acts F, G and
+Y are not yet run; every section that names them is a placeholder. This file is
 committed in this state deliberately: a container restart already destroyed one
 set of readings for this task that lived only in a transcript.
 
@@ -26,7 +26,7 @@ see [§0](#0-the-mutation-and-its-restore).
 | act | tree | what was played | wall clock | end tick |
 | --- | --- | --- | --- | --- |
 | **B** the shipped curve | `withheld = 0` | 10×10 cell, **50 beds, no toilet**, 50 prisoners, **7 guards** — `ceil(50/8)`, exactly what the game asks | 758 s | 54,756 |
-| **P** the penalty restored | `withheld = 40` | identical script | *pending* | |
+| **P** the penalty restored | `withheld = 40` | identical script | 728 s | 53,225 |
 | **F** the break-even, penalty restored | `withheld = 40` | settle at 7, then overhire in two stages | *pending* | |
 | **G** the break-even, shipped | `withheld = 0` | the same | *pending* | |
 | **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard` east of the cell | *pending* | |
@@ -44,7 +44,11 @@ the tree as shipped that prison's day-boundary treasury delta is **+14,440 at
 eight consecutive boundaries**, which is `50 × 300 − 560` to the unit, and
 wages are **3.7%** of income rather than the four-prisoner prison's 6.7%. The
 break-even on the shipped tree is therefore **187.5 guards**, or **26.8× what
-the game asks for**.
+the game asks for**. **Restoring the constant the owner suspended takes that
+prison from +14,440 a day to +10,440** — a **27.7% cut, not the 71% the same
+change cost a four-prisoner prison**, because the composition it prices at fifty
+is two unmet needs and not five. Break-even falls from 187.5 guards to 137.5,
+which is still **19.6× what the game asks for**.
 
 ---
 
@@ -92,11 +96,19 @@ The map arithmetic, measured rather than assumed:
 
 Forty wall segments, ten per run, **no drag refused** — and the calibration is
 the same `(−304, −574)` the four-prisoner file and issue #957 both measured, so
-the reachable window is unchanged. **The brief's figure of "12×11 tiles" from
-issue #957 is one row too generous**, and the row it is wrong about is the row
-that decides the count: walls are drawn on tile *edges*, so the south edge of
-row 21 sits at `−574 + 64×22 = 834`, and `.hud__tabs` covers `y > 831`. Rows
-11–20 are what can be walled, which is ten and not eleven — and 10×10 is
+the reachable window is unchanged. **The brief carried issue #957's "the reachable clear
+area is 12×11" as though it bounded this build, and it does not — it is a
+different quantity, and the difference is exactly what decides whether fifty
+fit.** #957 measured, with `document.elementFromPoint`, which tile *centres* are
+clear of the HUD: `x = 11..22, y = 11..21`, twelve by eleven, which is the
+rectangle an *object* can be placed in. A wall is drawn on a tile *edge*, so
+walling a rectangle needs its **outer** edges reachable too — and column 11's
+west edge is at `−304 + 64×11 = 400`, under `.hud__corner` (`x < 422`), while
+row 21's south edge is at `−574 + 64×22 = 834`, under `.hud__tabs` (`y > 831`).
+The enclosable rectangle is therefore strictly inside the clear one: **cols
+12–21, rows 11–20, ten by ten.** Both figures are right about their own
+question, and #957 is not corrected by this — the *enclosable* area is simply a
+thing it did not measure. Ten by ten is
 exactly a hundred tiles, which is exactly fifty beds, because `object.bed` is
 `{ width: 1, height: 2 }` (`src/content/object-catalog.ts:97`) and
 `residentCapacity` is the summed footprint *width* of the sleep surfaces in the
@@ -269,8 +281,100 @@ settled-state samples, and every settled claim in this file is from a `FINAL` or
 
 ---
 
-## 4. Pending
+## 4. MEASURED — restoring the constant costs this prison 27.7% of its daily gain
 
-Acts P, F, G and Y. Their sections, the break-even measurements, the yard
-question, the mutation restore verification, the weakest claim and the
-instrument failures are written when they have run.
+**Reproduction** (act P). Act B's script exactly, on the mutated tree.
+
+| boundary | tick | treasury | delta | places | staff | implied grant | implied price per place |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| day 13 | 31,200 | 54,870 → 67,290 | +12,420 | 49 | 0 | 12,420 | 253 (mixed) |
+| day 14 | 33,600 | 66,970 → 78,490 | +11,520 | **50** | 4 | 11,840 | 237 (mixed) |
+| day 15 | 36,000 | 78,250 → 89,010 | +10,760 | 50 | **7** | 11,319 | 226 (mixed) |
+| day 16 | 38,400 | 89,010 → 100,690 | +11,680 | 50 | 7 | 12,240 | 245 (mixed) |
+| day 17 | 40,800 | 100,690 → 111,770 | +11,080 | 50 | 7 | 11,679 | 234 (mixed) |
+| day 18 | 43,200 | 111,770 → 122,450 | +10,680 | 50 | 7 | 11,239 | 225 (mixed) |
+| day 19 | 45,600 | 122,450 → 132,890 | **+10,440** | 50 | 7 | **10,999** | **220** |
+| day 20 | 48,000 | 132,890 → 143,330 | **+10,440** | 50 | 7 | 10,999 | 220 |
+| day 21 | 50,400 | 143,330 → 153,770 | **+10,440** | 50 | 7 | 11,000 | 220 |
+| day 22 | 52,800 | 153,770 → 164,210 | **+10,440** | 50 | 7 | 11,000 | 220 |
+
+`50 × 220 − 560 = 10,440`, exactly, at **four** consecutive boundaries, and
+**220 is the third row of the schedule** `300, 260, 220, 180, 140, 100, 60` —
+the row for **two** unmet needs. The need inspector at tick 53,225 reads the
+same composition act B's did, to the flag:
+
+```
+[P50] FINAL   unmetNeedCount histogram: ["50 prisoner(s) at 2 unmet"]
+[P50] FINAL   hygiene:    unmet for 50 of 50  permille min=0    median=0   max=0
+[P50] FINAL   recreation: unmet for 50 of 50  permille min=0    median=0   max=0
+[P50] FINAL   bladder:    unmet for  0 of 50  permille min=522  median=929 max=1000
+[P50] FINAL   hunger:     unmet for  0 of 50  permille min=702  median=965 max=1000
+[P50] FINAL   safety:     unmet for  0 of 50  permille min=1000 median=1000 max=1000
+[P50] FINAL   sleep:      unmet for  0 of 50  permille min=898  median=984 max=1000
+```
+
+**So the direct comparison, at a need composition both trees were measured
+showing** — which is what the four-prisoner note had to fall back on, and here
+it is available at the settled state of both acts rather than as a rescue:
+
+| | shipped (`withheld = 0`) | restored (`withheld = 40`) | at four prisoners, restored |
+| --- | --- | --- | --- |
+| unmet needs, every prisoner | **2 of 6** | **2 of 6** | 5 of 6 |
+| state income per place | 300 | **220** | 100 |
+| state income, 50 places | 15,000 | **11,000** | *(1,200 → 400 at 4)* |
+| wages, 7 guards | 560 | 560 | *(80 at 1)* |
+| **daily delta** | **+14,440** | **+10,440** | *(+1,120 → +320 at 4)* |
+| **the cut the penalty makes** | — | **27.7%** | **71%** |
+| wages as a share of income | 3.7% | **5.1%** | 20% |
+| break-even guard count | 187.5 | **137.5** | 1.25 per prisoner |
+| **headroom over what the game asks** | **26.8×** | **19.6×** | 5× |
+
+**This is the answer the ruling needs and it is not the four-prisoner answer.**
+At four prisoners the restored penalty was a 71% cut and took the headroom from
+15× to 5×. At fifty it is a **27.7%** cut and takes the headroom from 26.8× to
+**19.6×** — so the constant the owner is restoring bites *less* at the
+population balance actually cares about, not more, and it does so for a
+measured reason: a fifty-prisoner prison built to the limit of the map serves
+three of the six needs by accident.
+
+**Refuting sample.** *Is +10,440 a slow stretch rather than a floor?* Four
+consecutive boundaries at exactly +10,440 with the histogram unchanged at
+`50 prisoner(s) at 2 unmet`, and the next row of the schedule down (180, three
+unmet) needs a need to fail that nothing in this prison is threatening —
+`bladder`'s worst reading is 522 permille against a 200-permille line. The four
+non-repeating deltas before it (11,520, 10,760, 11,680, 11,080, 10,680) are the
+composition still walking down, and each one's `impliedDailyGrant` divides to a
+price between two schedule rows, which is what a mixed population looks like.
+**A sign or a ratio measured inside that walk is a statement about a moving
+income line and not about the wage bill** — which is why acts F and G settle
+first and only then overhire.
+
+### 4.1 The one incident difference between the two trees is not the trees
+
+Act P's event channel: 32 events, `all-clear-after-lapse` ×16,
+`assault-opened` ×15, `riot-opened` ×1 (tick 30,001, `participantCount` 45).
+Act B's: 30 events, ×15, ×13, ×2 (ticks 30,202 and 35,002, participants 40 and
+50). **Both trees: every incident closed by lapse, not one by containment, at
+the seven guards the game asks for** — which is the four-prisoner note's §5.1
+reproduced at fifty, and the mechanism it read is unchanged
+(`GUARD_ROSTER`'s unassigned pool is empty at `0 free`). The riot counts differ
+by one and both acts' riots opened *before* the guards were hired; that is not
+a difference between the trees, it is where in the build the RNG put a riot.
+
+**The instrument predicted no riots at all here** — its `printEvents` docblock
+carries `DEFAULT_SECTOR_RISK_POLICY`'s derivation, *"two of six at zero is a
+ceiling of about 0.48 on `needsPressure`, under the 0.65 line"* — and **three
+riots opened across the two acts. The prediction is refuted, and its own terms
+say why:** every riot opened while the prison was still filling and
+`prisonersUnguarded` was 34–50, when the composition was not yet two of six and
+`safety` was decaying at 0.05 a tick toward zero. The ceiling is a statement
+about the *settled* prison, and it holds there: no riot opened in either act
+after the seventh guard was hired.
+
+---
+
+## 5. Pending
+
+Acts F, G and Y. The break-even measurements, the yard question, the mutation
+restore verification, the weakest claim and the instrument failures are written
+when they have run.
