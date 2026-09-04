@@ -905,7 +905,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * What a control says when it *works* (issue #749, the owner's ruling of
    * 2026-09-01).
    *
-   * These five are the first sentences on this channel about something the
+   * These are the first sentences on this channel about something the
    * *player* did, and they exist because four controls said nothing at all when
    * they succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
    * measured Cancel on a queued build order, Cancel on a delivery, Undo and
@@ -932,34 +932,172 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * the worst option"*, and it is why the second sentence exists at all rather
    * than the first being stretched to cover both.
    *
-   * **Only one of the four names a figure, and that is deliberate.**
+   * **Only the delivery names a figure, and that is deliberate.**
    * `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
    * `{total}` is nearly free; `ConstructionSystem.cancelOrder` answers `void`,
    * so the two order sentences cannot name an amount without plumbing the
-   * ruling declines. `{total}` is minor units, unconverted, exactly as the
+   * ruling declines -- and `PlacedObjectRegistry.remove` answers `boolean`, so
+   * #945's removal sentence at the end of this family cannot either.
+   * `{total}` is minor units, unconverted, exactly as the
    * unpaid-payday sentence above -- and it is the same word the Build panel's
    * own delivery row already uses for the same money (`hud.build.delivery`,
    * "{total} back").
    *
-   * **Neither history sentence names a count**, which is ruling 4: Undo and
+   * **No history sentence names a count**, which is ruling 4: Undo and
    * Redo each reverse a whole transaction, so a sentence naming one order would
    * be a small lie whenever a run of several moved. "The last change" is what
-   * UR3 says instead, and it is true of a run of one and of twelve.
+   * UR3 says instead, and it is true of a run of one and of twelve. That
+   * applies to #927's third history sentence below as well as to the two UR3
+   * gave.
    *
-   * A cancelled order that had already **finished** gets no sentence here.
-   * Neither of the two below is true of it -- the money did not come back and
-   * the materials are not gone, they went into the container (ADR 0076
-   * decision B) -- no control can reach that press, and inventing a third
-   * sentence for it would be exactly the promise-the-code-does-not-keep that
-   * `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
-   * `SimulationEventLog.recordBuildOrderCancelled`.
+   * **A cancelled order that had already finished got no sentence here until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * paragraph that withheld it is kept below rather than deleted -- it is why
+   * the defect survived.** It read:
+   *
+   * > A cancelled order that had already **finished** gets no sentence here.
+   * > Neither of the two below is true of it -- the money did not come back and
+   * > the materials are not gone, they went into the container (ADR 0076
+   * > decision B) -- no control can reach that press, and inventing a third
+   * > sentence for it would be exactly the promise-the-code-does-not-keep that
+   * > `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
+   * > `SimulationEventLog.recordBuildOrderCancelled`.
+   *
+   * Both of its premises were dead when it was found:
+   *
+   * - **The materials are gone.** The owner's ruling of 2026-09-01 -- *"Taking
+   *   a finished object away returns nothing. Not its materials, not its
+   *   money."*, ADR 0076's amendment of that date -- withdrew decision B, and
+   *   `ConstructionSystem.cancelOrder` has followed it since: its
+   *   `destroysSpendOnCancel` arm drops a `'completed'` order's allocation
+   *   unreleased and unpaid.
+   * - **A control reaches that press.** It is `Z`.
+   *   `ConstructionSystem.undo()` cancels every order in the transaction
+   *   *"including a `completed` one"*, in its own comment. What is true is the
+   *   narrower claim about the queue *list*: `PENDING_BUILD_ORDER_STATES`
+   *   excludes `'completed'`, so no Build-panel row names a finished order.
+   *
+   * So the second sentence below **is** true of a finished order -- the money
+   * did not come back and the materials were destroyed, which is what *"anything
+   * already spent past the point of no return stays spent"* says -- and
+   * `recordBuildOrderCancelled` now records it for `'completed'` as well as for
+   * `'in-progress'`. Under the owner's own reasoning, *"silence about a loss is
+   * the worst option"*, the larger loss was the one getting no mention.
+   *
+   * **`undone-spend-destroyed` is the third sentence, and it is authored here
+   * rather than reused, under the 2026-09-04 release of `AGENTS.md`'s
+   * reservation 4** (*"the choice of words is ours; the requirement that a
+   * sentence be TRUE is not"*). Two things make it a new string rather than the
+   * one above raised on the Undo channel:
+   *
+   * - **The band shows one sentence.** `admitToEventBand`
+   *   (`src/ui/hud/event-band-dwell.ts`) gives an arriving `'warning'` the line
+   *   at once and *discards* the `'info'` it displaces, so raising both
+   *   `construction.undone` and `order-cancelled-underway` on one tick would
+   *   have painted only *"The order was cancelled…"*.
+   * - **"The order" is the singular the no-count ruling warns about.** An undo
+   *   reverses a whole transaction, so a drag of twelve walls is not *"the
+   *   order"*. *"The last change to the build queue"* is the phrase ruling 4
+   *   chose for exactly that reason, and this sentence keeps it.
+   *
+   * It is assembled from two clauses already approved rather than newly
+   * written, the way the pair above was assembled from the candidates in
+   * `docs/research/2026-09-01-copy-variants-for-the-owner.md` §5c: UR3's *"The
+   * last change to the build queue was undone"* joined by this family's em dash
+   * to CO3's *"anything already spent past the point of no return stays
+   * spent"*. **Verified true, not merely plausible**: the first clause is
+   * recorded only when `ConstructionSystem.undo()` answers `reversed: true`
+   * (`createConstructionCommandHandler`, the `Undo` branch), and the second only
+   * when that same answer carries `spendDestroyed`, which `undo()` sets from
+   * `destroysSpendOnCancel` over each order's state *before* `cancelOrder` runs
+   * -- the two states for which `cancelOrder` neither releases the allocation
+   * nor calls `refundSurplusOf`. The clause's hedge is what makes it true of a
+   * mixed transaction: what was *not* past that point still comes back.
+   *
+   * **It names no count and no figure**, which is both rulings kept:
+   * `ConstructionUndoSpendOutcome` is one bit, and `cancelOrder` still answers
+   * `void` so no amount is reachable here either.
    */
   'hud.alert.event.construction.order-cancelled': 'The order was cancelled — the money it cost is refunded.',
   'hud.alert.event.construction.order-cancelled-underway':
     'The order was cancelled. Anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.undone': 'The last change to the build queue was undone.',
+  'hud.alert.event.construction.undone-spend-destroyed':
+    'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.redone': 'The last change to the build queue was redone.',
   'hud.alert.event.economy.delivery-cancelled': 'The delivery was cancelled — {total} back.',
+
+  /*
+   * **A standing object taken away, and the money it cost gone with it**
+   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   *
+   * The seventh sentence in this family and the first that is not about a build
+   * *order*. It exists because #945 measured `RemoveObject` on a finished bed
+   * destroying its 65 (`25,000 -> 24,935` on placement, `24,935 -> 24,935` on
+   * removal) with the sentence band **`hidden`** -- an absence rather than a
+   * collision -- and because #932, which made `Undo` and `CancelBuildOrder`
+   * state-aware about exactly this loss, does not reach this press:
+   * `ObjectPlacementService.remove`'s standing-object arm goes to
+   * `PlacedObjectRegistry.remove` and never to `ConstructionSystem.cancelOrder`.
+   *
+   * **Authored here rather than reused, under the owner's release of
+   * `AGENTS.md` reservation 4 on 2026-09-04** (*"the choice of words is ours;
+   * the requirement that a sentence be TRUE is not"*). The near-miss it was
+   * nearly built as is `hud.alert.event.construction.order-cancelled-underway`
+   * above -- *"The order was cancelled. Anything already spent past the point of
+   * no return stays spent."* -- and the reason it is a near-miss is the first
+   * clause and not the second: **a standing bed is not an order any more.** No
+   * order changed state at this press, `cancelOrder` was not called, and the
+   * order that built the bed stays `'completed'` (asserted in
+   * `tests/integration/object-removal-loop.test.ts`, *"refuses a second press on
+   * a tile whose object has already gone"*). Saying *"the order was cancelled"*
+   * would name a thing the player did not do -- the same singular-subject
+   * objection #927's weakest claim raised against reuse on the Undo channel.
+   *
+   * **Verified true, not merely plausible.** Both halves were opened:
+   *
+   * - *"The object was removed"* -- `createSessionCommandHandler`'s
+   *   `RemoveObject` branch records this only for
+   *   `RemoveObjectOutcome.kind === 'removed'`, the arm that has already dropped
+   *   the row from `PlacedObjectRegistry`. The `'order-cancelled'` arm, which
+   *   refunds, records nothing here.
+   * - *"the money it cost does not come back"* -- that arm removes the registry
+   *   row, re-derives the room's capacity and relocates whoever lost a place. It
+   *   holds no treasury and no container reference and writes to neither, which
+   *   is the owner's ruling of 2026-09-01: *"Taking a finished object away
+   *   returns nothing. Not its materials, not its money."* (ADR 0076's amendment
+   *   of that date). `tests/integration/economy-bed-recycling.test.ts` measures
+   *   it from the other side -- the next bed is bought at 65 like anybody
+   *   else's, and recycling is now strictly worse than playing it straight.
+   *
+   *   It is *"the money"* and not *"the materials"* because money is what the
+   *   player watches move: the object was built out of materials some deliveries
+   *   ago, and what the FUNDS badge showed leaving was 65. Neither comes back,
+   *   so the sentence is true of both readings and legible in only one.
+   *
+   * **It names no figure**, which is the ruling of 2026-09-01 kept on a third
+   * route. `PlacedObjectRegistry.remove` answers `boolean` and `PlacedObject`
+   * carries no price, so the amount is not reachable at the call site any more
+   * than it is through `cancelOrder`; a sentence saying *that* the money is gone
+   * without saying how much is within what exists. **And no count**, vacuously
+   * rather than by suppression: a removal is one press on one tile taking one
+   * object, so unlike Undo there is no transaction size to leak.
+   *
+   * **Why not the em dash plus *"stays spent"* the two loss sentences above
+   * use.** Those two are about a *cancellation*, where the hedge -- *"anything
+   * already spent past the point of no return"* -- is load-bearing, because some
+   * of what a mixed transaction spent does come back. Nothing about a standing
+   * object is hedged: all of it is past that point and none of it returns, so
+   * the plain inverse of `order-cancelled`'s *"the money it cost is refunded"*
+   * says more with less. The two read as a pair on purpose.
+   *
+   * It also matches the vocabulary the Build panel already uses for this exact
+   * press: `hud.build.remove-hint` says *"nothing comes back once the crew has
+   * started it. A finished one is not refunded."*, and *"the object"* is what
+   * every `hud.alert.refusal.place-object.*` and
+   * `hud.alert.refusal.remove-object.*` sentence calls the thing.
+   */
+  'hud.alert.event.objects.removed-spend-destroyed': 'The object was removed — the money it cost does not come back.',
 
   // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
   // been moved to one that exists.
@@ -1687,7 +1825,96 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage': 'Guard coverage',
   'hud.security.coverage-summary': '{assigned} of {required}',
   'hud.security.coverage-met': 'Covered',
-  'hud.security.coverage-met-hint': 'This prison has the guards it asks for.',
+  /*
+   * **The sentence the block says once its figures are level, and it no longer
+   * says the prison is finished hiring** (issue #941, authored here under the
+   * owner's partial release of `AGENTS.md` reservation 4 on 2026-09-04 -- the
+   * choice of words is ours, the requirement that it be true is not).
+   *
+   * **What it said until now, quoted rather than overwritten**
+   * (`docs/AGENT_WORKFLOW.md` §4): *"This prison has the guards it asks for."*
+   * That sentence was **true** and is the whole of why it had to go. The
+   * figures beside it are `assigned` against `required`, and `required` is
+   * `DeploymentSystem.requiredGuardCountFor` -- the posts a sector asks a
+   * player to fill. `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT`'s own
+   * docblock (`src/simulation/security/default-sector.ts`) says in words what
+   * that number leaves out: *"a prison of `n` prisoners needs `ceil(n / 8)`
+   * guards posted **plus** a reserve for `IncidentResponseSystem` to claim,
+   * and a player who hires exactly the requirement will watch every incident
+   * lapse."* So the badge, the pair of figures and that sentence all reported
+   * a met requirement, and nothing on the tab said the requirement is not the
+   * whole bill. Measured in the five-tester round of 2026-09-04: 17 residents,
+   * 4 guards, `3 of 3 / Covered / This prison has the guards it asks for.`
+   * beside `3 held · 1 free`, and 7 fights over in-game days 10-15 of which
+   * **7 lapsed and 0 were contained**.
+   *
+   * ## What makes the replacement true, opened rather than assumed
+   *
+   * `IncidentResponseSystem.claimableResponders`
+   * (`src/simulation/incidents/response-system.ts:499`) is the only path that
+   * puts a guard on an incident, and it draws from
+   * `claimableGuardIds(this.guards)` --
+   * `src/simulation/security/post-eligibility.ts:103`, which is
+   * `GuardRoster.unassignedGuardIds()` filtered to post-eligible roles. A
+   * guard `DeploymentSystem` has posted is `'travelling'` or `'on-post'`
+   * rather than `'unassigned'` (`src/simulation/security/guard-roster.ts:236`),
+   * so it is **never** in that pool. Hence *only* -- the exclusion is the half
+   * of this sentence that corrects the reading, and it holds in both
+   * directions: a held guard is never claimed, and the pool is exactly the
+   * free post-eligible ones.
+   *
+   * *"guards"* rather than *"staff"*, and that is a truth constraint rather
+   * than a register choice. The `{unassigned}` figure in
+   * `hud.security.held-summary` below is `hired - held` over the whole roster
+   * (`projectHeldGuards`, `src/simulation/presentation/guard-release-projection.ts:213`),
+   * so it counts a free nurse -- and `post-eligibility.ts` says so itself:
+   * *"A prison whose roster holds a nurse and no guard should read three
+   * staff, one of them unassigned, and nobody available to guard."* A sentence
+   * about *free staff* answering an incident would therefore be false; one
+   * about free **guards** is not.
+   *
+   * ## Why it quotes no number, which is the part a balance pass may want to change
+   *
+   * Because the number is not one number, and because choosing what to
+   * recommend is balance and `AGENTS.md` reserves that to the owner.
+   * `requiredResponderCount` is `max(1, ceil(severity * 0.5))`
+   * (`response-system.ts:345`), and every incident a session can currently
+   * open is severity 3 or worse: an assault is scaled into `1..5` and fires
+   * only at or above `DEFAULT_ASSAULT_POLICY.threshold` 0.65, so its floor is
+   * `round(0.65 * 5) = 3` and it asks for **two** -- which
+   * `ASSAULT_SEVERITY_CEILING`'s docblock states outright, *"A
+   * threshold-grazing assault is severity 3 and asks for two guards; the worst
+   * possible one is severity 5 and asks for three."* A riot or a gang
+   * retaliation fires at the same 0.65 on the full 0-10 scale, so severity 7
+   * and four responders, and an escape attempt at 0.6 wants three. So the
+   * honest reserve is between two and five and depends on what happens; a
+   * sentence naming one figure would be a promise for some prisons and a lie
+   * for others. This one states the **rule** the player cannot otherwise see,
+   * and leaves the size of the reserve to the requirement itself, which is
+   * issue #941's option 1 and the owner's to take.
+   *
+   * ## What it deliberately does not say
+   *
+   * Nothing about an outcome. `describeStaffCoverage`'s docblock refuses "a
+   * riot is coming" on measured grounds and PR #854 refused an owner's earlier
+   * wording for asserting that guards stop incidents -- guard presence is an
+   * amplifier and not a gate. This says who is *claimed* when an incident
+   * opens, which is a fact about the dispatch path, and it promises no
+   * containment: `claimableResponders` returning a set is not
+   * `advanceResponse` reaching `'resolved'`.
+   *
+   * Rendered with no parameter, exactly as its predecessor was: the covered
+   * rung's `hireCount` is `0`, so `paintCoverage` formats this key with no
+   * arguments and it must declare no placeholder.
+   *
+   * It is 34 characters against the 39 the sentence it replaces occupied, and
+   * that matters at one viewport: `.hud-staff__note` is clamped to a single
+   * line below `max-height: 700px`, where the box is 238px wide. Measured at
+   * 900x600, the old sentence was one 13px line in a 13px box and this one is
+   * shorter, so the clamp cuts neither -- `tests/browser/ui-staff-coverage-reserve.spec.ts`
+   * is where that is held at all five shipped viewports rather than argued.
+   */
+  'hud.security.coverage-met-hint': 'Only free guards answer incidents.',
   'hud.security.coverage-short': 'Understaffed',
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',

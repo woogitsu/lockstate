@@ -54,7 +54,17 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'construction.order-cancelled': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled' }),
   'construction.order-cancelled-underway': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled-underway' }),
   'construction.undone': (sequence) => ({ sequence, tick: 100, type: 'construction.undone' }),
+  'construction.undone-spend-destroyed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'construction.undone-spend-destroyed',
+  }),
   'construction.redone': (sequence) => ({ sequence, tick: 100, type: 'construction.redone' }),
+  'objects.removed-spend-destroyed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'objects.removed-spend-destroyed',
+  }),
   'economy.delivery-cancelled': (sequence) => ({ sequence, tick: 100, type: 'economy.delivery-cancelled', refundedMinorUnits: 1250 }),
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
@@ -447,6 +457,72 @@ describe('what a control says when it works (#749)', () => {
     expect(sentenceOf(SAMPLE['construction.redone'](1)), 'no count').not.toMatch(/\d/);
   });
 
+  it('says what an undo destroyed, in the sentence that says the undo happened (#927)', () => {
+    /*
+     * Issue [#927](https://github.com/matmaxalez/lockstate/issues/927): `Z` on a
+     * finished wall takes the wall down, refunds nothing and destroys the
+     * materials, and the only thing the game said was *"The last change to the
+     * build queue was undone."* -- true, and not the part that mattered.
+     *
+     * **Asserted as a whole sentence and as its difference from the plain
+     * undo**, the shape ruling 2's pair is asserted in above and for the same
+     * reason: a presentation table mapping both types onto one key satisfies any
+     * assertion made about either alone.
+     *
+     * **And asserted as containing the plain undo's own clause**, which is the
+     * assertion that would catch the near-miss this fix was nearly built as:
+     * reusing `order-cancelled-underway` on this channel would have said *"The
+     * order was cancelled"* over a press that cancelled no single order and was
+     * not the Cancel control. The player has to be told the change was undone
+     * *and* what it cost, in one sentence, because the band shows one.
+     */
+    const destroyed = sentenceOf(SAMPLE['construction.undone-spend-destroyed'](1));
+
+    expect(destroyed).toBe(
+      'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
+    );
+    expect(destroyed, 'the two outcomes must not read the same').not.toBe(
+      sentenceOf(SAMPLE['construction.undone'](1)),
+    );
+    expect(destroyed, 'it still says the undo happened').toContain('The last change to the build queue was undone');
+    expect(destroyed, 'and it does not claim a control the player did not press').not.toContain('The order was cancelled');
+    expect(destroyed, 'no count, which is ruling 4').not.toMatch(/\d/);
+  });
+
+  it('says a removed object took its cost with it, and does not call it an order (#945)', () => {
+    /*
+     * Issue [#945](https://github.com/matmaxalez/lockstate/issues/945): removing
+     * a standing bed destroyed the 65 it cost -- `25,000 -> 24,935` on placement,
+     * `24,935 -> 24,935` on removal -- and put **nothing** on screen. The band
+     * was `hidden`, so it was an absence and not a collision, and it survived
+     * #932 because a standing object reaches neither channel #932 fixed.
+     *
+     * **The two `not` assertions are the ones that fail against the near-miss
+     * this fix was nearly built as.** The obvious cheap fix is to raise
+     * `construction.order-cancelled-underway` from the removal branch, which
+     * needs no new key at all -- and it would say *"The order was cancelled"*
+     * over a press that cancelled no order: the order that built the bed is
+     * still `'completed'` afterwards, which
+     * `tests/integration/object-removal-loop.test.ts` asserts. The other
+     * direction is just as wrong: it must not read as a refund, because the
+     * whole finding is that a player cannot tell this press from one.
+     *
+     * **Asserted as a whole sentence, and as its difference from the refund
+     * sentence it is deliberately shaped to mirror.** A presentation table
+     * mapping two types onto one key satisfies any assertion made about either
+     * alone, which is the reason #927's case above asserts the same way.
+     */
+    const removed = sentenceOf(SAMPLE['objects.removed-spend-destroyed'](1));
+
+    expect(removed).toBe('The object was removed — the money it cost does not come back.');
+    expect(removed, 'a standing object is not an order any more').not.toContain('The order was cancelled');
+    expect(removed, 'and it must not read as a refund').not.toContain('refunded');
+    expect(removed, 'the pair must not read the same').not.toBe(
+      sentenceOf(SAMPLE['construction.order-cancelled'](1)),
+    );
+    expect(removed, 'no figure -- `PlacedObjectRegistry.remove` answers `boolean`').not.toMatch(/\d/);
+  });
+
   it('paints the one that reports a loss differently from the three that do not', () => {
     /*
      * The band's severity is the only thing separating "you got your money
@@ -465,6 +541,16 @@ describe('what a control says when it works (#749)', () => {
     expect(severityOf(SAMPLE['construction.undone'](1))).toBe('info');
     expect(severityOf(SAMPLE['construction.redone'](1))).toBe('info');
     expect(severityOf(SAMPLE['economy.delivery-cancelled'](1))).toBe('info');
+    // #927's row, graded by the same rule as the cancellation that reports a
+    // loss: an undo that destroyed a finished order's materials is not the loop
+    // working quietly, and `'info'` beside the plain undo would take back in
+    // the tone what the second sentence exists to distinguish.
+    expect(severityOf(SAMPLE['construction.undone-spend-destroyed'](1))).toBe('warning');
+    // #945's row, graded by that same rule on a third route. Taking a standing
+    // object away credits no treasury and fills no container, so it reports
+    // value destroyed -- and `'info'` here would put the one press that
+    // *destroys* money in the same colour as the two that give it back.
+    expect(severityOf(SAMPLE['objects.removed-spend-destroyed'](1))).toBe('warning');
   });
 
   it('refuses a refund that is not a whole non-negative number of minor units', () => {

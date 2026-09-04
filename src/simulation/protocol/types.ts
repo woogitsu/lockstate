@@ -1677,6 +1677,7 @@ export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled-underway',
   'construction.redone',
   'construction.undone',
+  'construction.undone-spend-destroyed',
   'contraband.discovered',
   'economy.construction-refused',
   'economy.deliveries-refused',
@@ -1689,6 +1690,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.escape-succeeded',
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
+  'objects.removed-spend-destroyed',
   'prisoners.discharged',
   'prisoners.relocated',
 ] as const;
@@ -2235,9 +2237,20 @@ const buildOrderCancelledEventSchema = z
   .strict();
 
 /**
- * A build order was cancelled after the crew had started it, and what it had
- * already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes it
- * true).
+ * A build order was cancelled at or past the point of no return, and what it
+ * had already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes
+ * it true).
+ *
+ * **The name says `-underway` and the member covers `'completed'` too since
+ * [#927](https://github.com/matmaxalez/lockstate/issues/927); the name is kept
+ * because it is a persisted discriminant.** `save-schema.ts` validates a save's
+ * alerts section against `simulationEventSchema` below, so renaming a type
+ * breaks every save that carries one -- and `docs/PERSISTENCE.md` prices what
+ * an existing field changing meaning costs. What a player reads is the
+ * sentence, which is quantified over *"anything already spent past the point of
+ * no return"* and is therefore true of a finished order as well as a started
+ * one. `SimulationEventLog.recordBuildOrderCancelled` carries the argument, and
+ * the two dead premises the `'completed'` silence had rested on.
  *
  * The counterpart of the member above, and the one the owner's *"silence about
  * a loss is the worst option"* is actually about. `ConstructionSystem.cancelOrder`
@@ -2292,6 +2305,91 @@ const constructionRedoneEventSchema = z
   .strict();
 
 /**
+ * The build history was walked back one transaction, and some of what it
+ * reversed was past the point of no return
+ * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ *
+ * The member above's counterpart, and the same relationship
+ * `construction.order-cancelled-underway` has to `construction.order-cancelled`
+ * on the other channel: one press, two outcomes, two sentences, split on
+ * whether anything was destroyed. `ConstructionSystem.undo` cancels every order
+ * in the transaction *including a `'completed'` one*, and `cancelOrder`
+ * destroys what an `'in-progress'` or `'completed'` order was holding -- so a
+ * `Z` on a finished wall takes the wall down and refunds nothing.
+ *
+ * **Why it took a new member rather than raising the existing
+ * `construction.order-cancelled-underway` beside `construction.undone`.** The
+ * band shows one sentence: `admitToEventBand` gives an arriving `'warning'` the
+ * line immediately over an `'info'` incumbent and **discards the incumbent
+ * rather than queueing it** (`src/ui/hud/event-band-dwell.ts`), so two events
+ * raised on one tick would have painted *"The order was cancelled…"* alone --
+ * naming a control the player did not press, in the singular, over a drag of
+ * twelve. Its own issue calls that the weakest claim in the diagnosis and it
+ * does not survive the band's arbitration.
+ *
+ * **Carries no count and no figure**, exactly as the member above does, for the
+ * same two rulings: the owner's ruling of 2026-09-01 on #749 declines the
+ * transaction-size plumbing, and `cancelOrder` answers `void` so the value
+ * destroyed is not reachable from any call site on this channel. What crosses
+ * the boundary is one bit -- see `ConstructionUndoSpendOutcome`.
+ */
+const constructionUndoneSpendDestroyedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.undone-spend-destroyed'),
+  })
+  .strict();
+
+/**
+ * An object that was standing in the prison was taken away, and what it cost
+ * is gone with it
+ * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * **The first member on this channel that is not a construction *order*'s
+ * event, and that is the whole reason it exists rather than reusing one.**
+ * `RemoveObject` has two success outcomes and they are different facts:
+ * `ObjectPlacementService.remove` reaches `ConstructionSystem.cancelOrder` for
+ * a placement still in flight -- an *order*, which the two
+ * `construction.order-cancelled*` members above already describe -- and reaches
+ * `PlacedObjectRegistry.remove` for an object that is finished and standing,
+ * which is not an order any more. Nothing on the order channel is true of the
+ * second: no order changed state, and *"the order was cancelled"* names a thing
+ * the player did not do.
+ *
+ * **What makes the sentence true is that this route gives nothing back.**
+ * `ObjectPlacementService.remove`'s standing-object arm drops the registry row,
+ * re-derives the room's capacity and relocates whoever lost a place; it holds no
+ * treasury and no container reference and writes to neither, which is the owner's
+ * ruling of 2026-09-01 -- *"Taking a finished object away returns nothing. Not
+ * its materials, not its money."*, ADR 0076's amendment of that date.
+ * `tests/integration/economy-bed-recycling.test.ts` is the measurement: the
+ * next bed is bought at 65 like anybody else's.
+ *
+ * **`-spend-destroyed` is in the name even though it is the only removal member
+ * today**, for the reason `construction.order-cancelled-underway` is a warning
+ * about names: that member's own docblock records that it had to keep a name
+ * describing one state after it grew to cover two, because a persisted
+ * discriminant cannot be renamed. So this one names the *fact its sentence
+ * asserts* rather than the gesture. A removal that one day gave something back
+ * takes a member of its own instead of quietly making this one's sentence false.
+ *
+ * **Carries no count and no figure.** No count because a removal is one press on
+ * one tile taking one object -- there is nothing to count -- and no figure for
+ * the reason the order members carry none: `PlacedObjectRegistry.remove` answers
+ * `boolean`, `PlacedObject` holds `placedObjectId`, `objectId`, `anchorTile` and
+ * `orientation` and no price, and the money the object cost was spent on
+ * materials some deliveries ago. Nothing at the call site knows the amount, so
+ * the sentence says *that* the money is gone and not how much -- the shape the
+ * owner's ruling of 2026-09-01 chose for `ConstructionSystem.cancelOrder`.
+ */
+const objectRemovedSpendDestroyedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('objects.removed-spend-destroyed'),
+  })
+  .strict();
+
+/**
  * A delivery that had not landed was cancelled, and this is what came back
  * (#749).
  *
@@ -2336,7 +2434,9 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   buildOrderCancelledEventSchema,
   buildOrderCancelledUnderwayEventSchema,
   constructionUndoneEventSchema,
+  constructionUndoneSpendDestroyedEventSchema,
   constructionRedoneEventSchema,
+  objectRemovedSpendDestroyedEventSchema,
   deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,

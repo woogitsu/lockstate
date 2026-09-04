@@ -234,6 +234,39 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   sentence names how many orders moved, which is the owner's ruling: an undo
  *   reverses a whole transaction and a sentence naming one would be a small lie
  *   whenever a run of several was taken back.
+ * - **`construction.undone-spend-destroyed` is `'warning'`, and it is the row
+ *   above graded by the same rule `construction.order-cancelled-underway` is**
+ *   ([#927](https://github.com/matmaxalez/lockstate/issues/927)). An undo that
+ *   reversed a finished or started order destroyed what it had consumed --
+ *   `ConstructionSystem.cancelOrder` releases nothing and refunds nothing for
+ *   either state -- so what this reports is value destroyed, and grading it
+ *   `'info'` beside the plain undo would take back in the tone exactly what the
+ *   second sentence exists to distinguish. Not `'danger'`, for the reason the
+ *   cancellation row is not: a deliberate press is not "stop trusting what you
+ *   are looking at".
+ *
+ *   **The severity is also what settled the shape of the fix.** Raising
+ *   `construction.order-cancelled-underway` alongside `construction.undone`
+ *   would have needed no new key at all -- and `admitToEventBand` would have
+ *   discarded the `'info'` incumbent the moment the `'warning'` arrived, so the
+ *   band would have said *"The order was cancelled…"* and never that anything
+ *   was undone. One press, one sentence, and the sentence says both halves.
+ * - **`objects.removed-spend-destroyed` is `'warning'`, graded by the same rule
+ *   as the two rows above it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *   Taking a standing object away destroys what it cost --
+ *   `ObjectPlacementService.remove`'s standing-object arm credits no treasury
+ *   and fills no container, which is the owner's ruling of 2026-09-01 -- so
+ *   what this reports is value destroyed, and `'info'` would take back in the
+ *   tone exactly what the sentence exists to say. Not `'danger'`, for the reason
+ *   neither loss row above is: a deliberate press is not "stop trusting what you
+ *   are looking at".
+ *
+ *   **The severity is also why the removal's *other* success stays off this
+ *   table.** `remove` answers `'order-cancelled'` for a placement still in
+ *   flight, and that one refunds -- an `'info'` fact wearing a `'warning'`
+ *   sentence would be worse than the silence #945 found, because it would scare
+ *   a player off a control that costs them nothing. The producer records the
+ *   loss event only for `kind === 'removed'`.
  * - **`economy.delivery-cancelled` is `'info'`**, and it is the only success
  *   here that names a figure. `ProcurementSystem.cancel` already answers
  *   `refundedMinorUnits`, so `{total}` costs nothing; `ConstructionSystem.cancelOrder`
@@ -274,6 +307,10 @@ const EVENT_PRESENTATION: Readonly<
   },
   'construction.redone': { labelKey: 'hud.alert.event.construction.redone', severity: 'info' },
   'construction.undone': { labelKey: 'hud.alert.event.construction.undone', severity: 'info' },
+  'construction.undone-spend-destroyed': {
+    labelKey: 'hud.alert.event.construction.undone-spend-destroyed',
+    severity: 'warning',
+  },
   'contraband.discovered': { labelKey: 'hud.alert.event.contraband.discovered', severity: 'warning' },
   'economy.construction-refused': { labelKey: 'hud.alert.event.economy.construction-refused', severity: 'warning' },
   'economy.deliveries-refused': { labelKey: 'hud.alert.event.economy.deliveries-refused', severity: 'warning' },
@@ -298,6 +335,10 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'danger',
   },
   'incidents.riot-opened': { labelKey: 'hud.alert.event.incidents.riot-opened', severity: 'danger' },
+  'objects.removed-spend-destroyed': {
+    labelKey: 'hud.alert.event.objects.removed-spend-destroyed',
+    severity: 'warning',
+  },
   'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info' },
   'prisoners.relocated': { labelKey: 'hud.alert.event.prisoners.relocated', severity: 'info' },
 };
@@ -930,6 +971,16 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
     case 'construction.undone':
+    // #927's sixth. It carries no figure for the reason the two cancellation
+    // rows above carry none -- `ConstructionSystem.cancelOrder` answers `void`
+    // -- and no count for the reason `construction.undone` carries none.
+    case 'construction.undone-spend-destroyed':
+    // #945's seventh, and the one whose figure is unreachable for a *third*
+    // reason: `PlacedObjectRegistry.remove` answers `boolean`, `PlacedObject`
+    // carries no price, and the money went on materials some deliveries ago. No
+    // count either -- one press, one tile, one object, so there is nothing to
+    // count rather than a count being withheld.
+    case 'objects.removed-spend-destroyed':
     case 'construction.redone':
       return {};
   }
@@ -1032,6 +1083,8 @@ function eventParameterMessages(
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
     case 'construction.undone':
+    case 'construction.undone-spend-destroyed':
+    case 'objects.removed-spend-destroyed':
     case 'construction.redone':
     case 'economy.delivery-cancelled':
       return undefined;

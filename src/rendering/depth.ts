@@ -24,6 +24,30 @@ export type RowSortedLayer = (typeof ROW_SORTED_LAYERS)[number];
  */
 export const DEPTH_ROW_STRIDE = 8;
 
+/**
+ * There is one bias for every actor, and splitting it per population would not
+ * help -- read this before adding `prisoner` and `guard` entries below.
+ *
+ * Issue [#944](https://github.com/matmaxalez/lockstate/issues/944) §4 step 2
+ * proposes exactly that: co-located actors get the identical depth from
+ * `depthForAnchor`, Phaser's sort is stable, and the tie therefore fell to the
+ * feed's array order -- prisoners first, guards second -- so on a shared tile
+ * the guard always won and the prisoners were always the hidden ones. A
+ * distinct bias per population does fit: `DEPTH_ROW_STRIDE` leaves room, and
+ * the row term is in world units, so adjacent rows are 512 apart.
+ *
+ * **It was not done, because it cannot do the thing that is wanted.** A bias
+ * decides which of two figures drawn at one point is on top; it cannot make
+ * both of them visible, so it would move the guarantee from "the prisoners are
+ * always hidden" to "the guards are always hidden" and leave 22 prisoners on
+ * one tile drawing as one figure either way. Two figures where two actors
+ * stood is a *placement* problem, and the answer is
+ * `src/rendering/actors/crowd-spread.ts`: co-located actors are drawn at
+ * distinct points inside their own tile, `ActorLayer` takes this function's
+ * anchor from the drawn foot, and the tie is gone rather than re-pointed.
+ * `tests/unit/rendering-crowd-spread.test.ts` and
+ * `tests/browser/actor-crowding.spec.ts` are the gates.
+ */
 const LAYER_BIAS: Readonly<Record<RowSortedLayer, number>> = {
   /** Walls, doors and placed objects. */
   structure: 0,
