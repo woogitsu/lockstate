@@ -35,6 +35,14 @@ Every prison opened on a grant of **25,000** and the build cost **2,420** of it
 in every act (25,000 → 22,580, measured identically in B, P, Y and D). The
 clock ran at 4×; `DAY_LENGTH_TICKS` is 2,400.
 
+**`main` moved under this record while it was being written, and one thing it
+moved is quoted here.** The branch was merged with `origin/main` at v0.0.467 (`36a5644c`)
+after every act had run; that merge brought issue #941, which **retires the
+coverage sentence §1 quotes** for the reason
+[§5.1](#51-measured--the-only-act-that-contained-an-incident-is-the-only-act-that-went-broke)
+measures. Every number above and below was taken at v0.0.465 and is left as it
+was read.
+
 ---
 
 ## The answer in one paragraph
@@ -52,6 +60,14 @@ went **backwards** was act D: the restored penalty plus **six** guards for four
 prisoners, which rose for eight days and then paid **−40, −80, −80, −80** at
 four consecutive boundaries. On the shipped tree that same prison would need
 **sixteen** guards to do the same thing.
+
+**And the sting is in which prison that was.** Acts B, P and Y — the ones with
+the one guard the game asks for — closed **every** incident with *"the last one
+ran out of time instead of being contained, and everyone caught in it was
+hurt."* Act D, the one that goes broke, closed every incident with *"The prison
+is under control again."* So with the penalty restored the two prisons on offer
+are **+320 a day and nothing contained**, or **−80 a day and everything
+contained**, and neither figure is anywhere on the screen.
 
 ---
 
@@ -102,6 +118,17 @@ The prison the game itself calls correct:
 > for.**
 >
 > ON THE PAYROLL — 80 a day
+
+**That sentence is retired and this record is the last thing that will quote it
+from play.** It was on screen at the commit measured here (`4c00eaba`,
+v0.0.465); issue #941 replaced it with `'Only free guards answer incidents.'`
+(`src/content/default-locale-en.ts`, `hud.security.coverage-met-hint`) and that
+landed on `main` at v0.0.467 (`36a5644c`), **on the same day, for the reason
+[§5.1](#51-measured--the-only-act-that-contained-an-incident-is-the-only-act-that-went-broke)
+measures independently.** Its replacement's docblock says why: `required` is the
+posts a sector asks to be filled and *"a player who hires exactly the
+requirement will watch every incident lapse."* Quoted here rather than
+substituted, because it is what the prison below was actually told.
 
 `roomOccupants: 4`, `prisonersInIntake: 0`, `accommodationCapacity: 5`,
 `dailyWageBillMinorUnits: 80`, `COVERAGE 4 · Covered`, at every sample.
@@ -337,12 +364,54 @@ at the end of act D, verbatim:
 > … ON DUTY — **1 held · 5 free** — Guard · Sector Post — Release …
 > ON THE PAYROLL — **480 a day**
 
+(the coverage sentence as it stood at `4c00eaba`; see §1 for its retirement)
+
 One `Release` control, for the one assigned guard. The five free guards costing
 400 a day are named only by the count `5 free`. That is the same mechanism
 finding 2 of `docs/research/2026-09-04-can-this-prison-fail.md` measured at
 sixty guards — the held list draws only *assigned* guards — reproduced at a
 scale a player would actually reach. **This record did not enumerate the DOM
 rows in act D**, so it claims only what the rendered panel offered.
+
+### 5.1 MEASURED — the only act that contained an incident is the only act that went broke
+
+This was not looked for. Every distinct sentence the event band held, across the
+four populated acts:
+
+| act | guards | `ON DUTY` | every distinct incident-closing sentence |
+| --- | --- | --- | --- |
+| **B** | 1 | `1 held · 0 free` | *"…the last one ran out of time instead of being contained, and everyone caught in it was hurt."* |
+| **P** | 1 | `1 held · 0 free` | *"…ran out of time instead of being contained…"* |
+| **Y** | 1 | `1 held · 0 free` | *"…ran out of time instead of being contained…"* |
+| **D** | **6** | `1 held · **5 free**` | *"**The prison is under control again — no incident is still open.**"* |
+
+**Three acts at the staffing the game asks for closed every incident by
+lapse, and not one by containment. The act with five idle guards on the
+payroll closed every incident by containment, and never once showed the lapse
+sentence.** The bands are the whole distinct set from each log, not a
+selection.
+
+**What would establish the cause, stated separately** (`docs/AGENT_WORKFLOW.md`
+§3, *"a measurement is not a diagnosis"*). The mechanism is already written
+down on `main`, in the docblock of the sentence that replaced the one §1
+quotes: `IncidentResponseSystem.claimableResponders` is the only path that puts
+a guard on an incident and it draws from `GuardRoster.unassignedGuardIds()`
+filtered to post-eligible roles, so *"a guard `DeploymentSystem` has posted is
+`'travelling'` or `'on-post'` rather than `'unassigned'`, so it is **never** in
+that pool."* Acts B, P and Y had `0 free` and therefore an empty pool; act D had
+five. This record **read** that docblock and did not test the path, so the
+correspondence is consistent with it rather than proof of it. What would settle
+it: an act at 2 guards, where one is posted and one is free.
+
+**Why this is the finding rather than a footnote.** With the penalty restored,
+those are the two prisons a player can have. The one the game calls correctly
+staffed makes **+320 a day and contains nothing**; the one that contains its
+incidents makes **−80 a day**. That is a real decision with a real cost on both
+sides, and it is the first one measured in this repository — but it is a
+decision the interface does not present, because neither number is on screen
+([§5](#5-measured--a-prison-can-be-made-to-sink-and-it-takes-six-guards-rather-than-sixty))
+and, until v0.0.467 (`36a5644c`), the coverage line said the requirement was the
+whole bill.
 
 ---
 
@@ -397,14 +466,23 @@ things need correcting, and one of them changes the answer.
    than 0.75 ([§4](#4-measured--60-is-not-a-number-a-staffed-prison-can-reach)).
 
 3. **"does this game apply any pressure at all"** — the brief expected the
-   answer to be about the penalty. Measured, the penalty is not what is
-   missing: act B's prison had **five of six needs at zero** and was paid in
-   full, and act P's had the same five and was paid a third. **The thing that
-   applies pressure in neither tree is the prison's own condition.** Restoring
-   the constant does not create a failure mode; it narrows the overhire a prison
-   survives from sixteen guards to six ([§5](#5-measured--a-prison-can-be-made-to-sink-and-it-takes-six-guards-rather-than-sixty)),
-   which is a *staffing* pressure, not a *care* pressure. A player who never
-   hires can neglect everyone for ever on either tree.
+   answer to be about the penalty, and half of that is wrong. Measured, the
+   penalty is not what makes *neglect* cost anything: act B's prison had **five
+   of six needs at zero** and was paid in full, act P's had the same five and
+   was paid a third, and **both grew**. Nothing in either tree punishes a
+   prison for the state its prisoners are in — the penalty only prices it, and
+   the price is affordable. A player who never hires a second guard can neglect
+   everyone for ever on either tree, because with no wage bill any positive
+   income is growth (ARITHMETIC: no act was played with beds and no guard).
+
+   What restoring the constant *does* create is a **staffing** pressure, and it
+   is sharper than a smaller number: the overhire a prison survives falls from
+   sixteen guards to six ([§5](#5-measured--a-prison-can-be-made-to-sink-and-it-takes-six-guards-rather-than-sixty)),
+   and the guards it must overhire to reach are exactly the ones that contain
+   an incident ([§5.1](#51-measured--the-only-act-that-contained-an-incident-is-the-only-act-that-went-broke)).
+   So the answer to the question as asked is: **today, no pressure at all;
+   restored, a pressure on how many guards you keep free, and none on how you
+   treat anybody.**
 
 4. **The role id is `staff-role.guard`, not `role.guard`** — `wageBand:
    { minPerDay: 80, maxPerDay: 140 }` at
@@ -442,8 +520,10 @@ had a bed each and a toilet standing in the cell. A toilet that never serves
 
 Put together those read like a **ratchet**: needs decay → riot opens → the riot
 forbids every action that would serve a need except recreation → needs stay at
-zero → the next riot opens. **That is an inference, not a measurement, and this
-record did not test it.** What would establish it: a run that samples the need
+zero → the next riot opens. And [§5.1](#51-measured--the-only-act-that-contained-an-incident-is-the-only-act-that-went-broke)
+is what would hold the ratchet shut: the three acts whose incidents all lapsed
+are the three that had no free guard to answer one. **That is an inference, not
+a measurement, and this record did not test it.** What would establish it: a run that samples the need
 levels inside and outside riot windows, or one that never triggers an incident
 at all. If it is right, it is the most important thing here, because it means
 the settled 5-of-6 composition every act reached is not the player's neglect —
