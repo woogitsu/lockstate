@@ -292,6 +292,10 @@ test('act 1 — a player who has one prison asks for a second', async ({ page })
   console.log(`[act1] HUD after loading the older row :: ${JSON.stringify(await savePanel(page))}`);
   console.log(`[act1] STATE what came back when the player returned to prison A :: ${await shape(page)}`);
   console.log(`[act1] STATE what was on screen before they left A :: ${beforeSecond}`);
+  // Which row the game now considers active. Both prisons' generation 1 is a
+  // bare world at tick 0 with 25,000, so the numbers above cannot say *which*
+  // prison came back — only that A's play is not in it. This can.
+  console.log(`[act1] HUD which row is active after the load :: ${JSON.stringify(await rows(page))}`);
 });
 
 /* ================================================================== */
