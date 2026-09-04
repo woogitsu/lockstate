@@ -967,8 +967,18 @@ export interface RoomsProbe {
    * began enumerating all of them, so this is now the heading over that list.
    */
   readonly needsLineText: string;
-  /** One entry per object the named room is short, with its quantity, in the order drawn (#529). */
+  /** One entry per thing the named room is short, with its quantity where there is one, in the order drawn (#529). */
   readonly needsItemText: readonly string[];
+  /**
+   * `data-kind` per line, in the same order (#938).
+   *
+   * `'object'` for an unmet object requirement and `'doorway'` for a room
+   * whose walls hold no door. Read as data rather than by matching the
+   * sentence, because a spec that told the two apart by their English would be
+   * a spec of the locale -- and the defect #938 records is exactly a readout
+   * whose two states rendered the same.
+   */
+  readonly needsItemKinds: readonly string[];
   /**
    * The whole block's laid-out height, in CSS pixels.
    *

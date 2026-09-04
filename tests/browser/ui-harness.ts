@@ -1967,9 +1967,13 @@ window.lockstateUiHarness = {
       // and the panel undoes that class's uppercasing, so reading the rendered
       // text would make this assertion depend on a CSS rule it is not about.
       needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
-      /** One entry per object the named room is short, in the order drawn (#529). */
+      /** One entry per thing the named room is short, in the order drawn (#529). */
       needsItemText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
         (item) => item.textContent?.trim() ?? '',
+      ),
+      /** The same lines' `data-kind`, so a spec need not read English to tell an object line from a doorway one (#938). */
+      needsItemKinds: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
+        (item) => item.dataset['kind'] ?? '',
       ),
       /**
        * The readout's own height, so a spec can measure what the block costs the

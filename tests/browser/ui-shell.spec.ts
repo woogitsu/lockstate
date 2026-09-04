@@ -4449,7 +4449,79 @@ test.describe('the Rooms panel', () => {
     );
     expect((await probe()).needsItemText).toEqual(['1 × something this build cannot name']);
 
-    // 7. And it goes away again when the answer changes back, rather than
+    /*
+     * 7. **A room nobody can get into** -- issue #938, and the one line in this
+     *    block that is not about an object.
+     *
+     *    The state it renders was invisible to every readout a player had: the
+     *    room's object requirements were satisfied, so this block drew nothing,
+     *    and the enclosure readout above said "Walled in on every side" for a
+     *    working room and a dead one alike. The integration measurement is
+     *    `tests/integration/dead-room-no-doorway.test.ts` -- hygiene 0 against
+     *    the ceiling, on the same seed with one edge different.
+     *
+     *    Asserted three ways because each could be wrong on its own: the
+     *    sentence, so the wording is pinned where the harmonising pass can find
+     *    it; `data-kind`, so the branch is proven rather than the text; and the
+     *    header's own figures, so a doorway counts as one thing the room is
+     *    short exactly as an object does.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 3,
+        totalNeeds: 1,
+        needs: [
+          {
+            kind: 'doorway',
+            instanceId: 'room.shower-room:26:1',
+            roomLabelKey: 'room.shower-room.name',
+            tile: { x: 26, y: 1 },
+          },
+        ],
+      }),
+    );
+    const doorway = await probe();
+    expect(doorway.needsLaidOut, 'a room nobody can enter must earn the block').toBe(true);
+    expect(doorway.needsLineText).toBe('Shower Room at 26, 1 is missing');
+    expect(doorway.needsItemText).toEqual(['a door — nobody can get in']);
+    expect(doorway.needsItemKinds).toEqual(['doorway']);
+    expect(doorway.needsUnfinished).toBe('1');
+    expect(doorway.needsTotal).toBe('1');
+    expect(doorway.needsCountText).toBe('1 of 3');
+    await expectLaidOut(page, '.hud-rooms__needs', 'the readout for a room with no way in');
+
+    /*
+     * 8. **The doorway line and the object lines in one room**, which is the
+     *    ordering `roomNeedsFromProjections` chooses and the reason it does:
+     *    `ROOM_NEEDS_NAMED_LIMIT` is 4, and the door is the line that makes the
+     *    others pointless, because nothing can be carried into a room nobody
+     *    can enter.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 3,
+        totalNeeds: 2,
+        needs: [
+          { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
+          {
+            kind: 'object',
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.bed.name',
+            missingQuantity: 1,
+          },
+        ],
+      }),
+    );
+    const both = await probe();
+    expect(both.needsItemText).toEqual(['a door — nobody can get in', '1 × Bed']);
+    expect(both.needsItemKinds).toEqual(['doorway', 'object']);
+    expect(both.needsTotal).toBe('2');
+
+    // 9. And it goes away again when the answer changes back, rather than
     // leaving the last sentence standing over a prison it no longer describes.
     // The item lines go with it: they are rebuilt from the model on every paint,
     // so a stale one left behind would be a readout describing a finished room.
