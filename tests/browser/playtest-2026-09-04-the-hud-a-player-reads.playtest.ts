@@ -310,6 +310,70 @@ test.describe('the HUD a player reads', () => {
       if (text.includes('ABSENT') || text.includes('not laid out')) continue;
       console.log(`[act4]   ${name} >>>\n${text}\n<<<`);
     }
+
+    /*
+     * ADR 0087's standing conditions, on the wire of a prison that is
+     * actually in trouble. `2026-09-04-what-the-game-shows-nobody.md` §5.1
+     * says nothing reads them; this asks whether they are ever non-empty in a
+     * session a player can drive, which that text census could not settle.
+     */
+    const conditionSeries = await page.evaluate(() => {
+      const messages = (window as unknown as TeeWindow).lockstateFromWorker ?? [];
+      const out: { tick: number; conditions: unknown }[] = [];
+      for (const message of messages) {
+        const typed = message as { kind?: string; payload?: { tick?: number; counts?: Record<string, unknown> } };
+        if (typed.kind !== 'simulation/status-counts') continue;
+        out.push({ tick: typed.payload?.tick ?? -1, conditions: typed.payload?.counts?.['conditions'] });
+      }
+      return out;
+    });
+    const nonEmpty = conditionSeries.filter((s) => Array.isArray(s.conditions) && s.conditions.length > 0);
+    console.log(
+      `[act4] standing conditions: ${conditionSeries.length} counts publications,` +
+        ` ${nonEmpty.length} with a non-empty condition set`,
+    );
+    console.log(`[act4] first ten non-empty: ${JSON.stringify(nonEmpty.slice(0, 10))}`);
+    console.log(`[act4] last: ${JSON.stringify(conditionSeries[conditionSeries.length - 1])}`);
+
+    // And the same populated prison at 1280x800 -- the width #719 names. Act 5
+    // measured an EMPTY prison there and found nothing overflowing, which is a
+    // different measurement: the chips that carry badges only exist once the
+    // prison does.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.waitForTimeout(800);
+    for (const id of TABS) {
+      await tab(page, id).click();
+      await page.waitForTimeout(300);
+      const overflow = await page.evaluate(() => {
+        const out: unknown[] = [];
+        for (const element of Array.from(document.querySelectorAll<HTMLElement>('.hud *'))) {
+          if (element.getClientRects().length === 0) continue;
+          const r = element.getBoundingClientRect();
+          if (r.right > window.innerWidth + 0.5 || r.left < -0.5 || r.bottom > window.innerHeight + 0.5) {
+            out.push({
+              cls: String(element.className),
+              left: Math.round(r.left),
+              right: Math.round(r.right),
+              bottom: Math.round(r.bottom),
+            });
+          }
+        }
+        const strip = document.querySelector<HTMLElement>('.hud-strip__metrics');
+        return {
+          out,
+          stripScroll:
+            strip === null
+              ? null
+              : {
+                  clientW: strip.clientWidth,
+                  scrollW: strip.scrollWidth,
+                  hiddenPx: strip.scrollWidth - strip.clientWidth,
+                },
+        };
+      });
+      console.log(`[act4] POPULATED AT-1280 ${id}: ${JSON.stringify(overflow)}`);
+    }
+    console.log(`[act4] strip text at 1280: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
   });
 
   /**
