@@ -262,9 +262,27 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * left as a `file:line` for the reason given above: the number is what makes
    * the failure message point at the offending code.
    */
-  'ui/hud/build-panel.ts:1952':
+  /*
+   * **A seventh and eighth move, later the same day, and again neither site
+   * changed.** Issue #920 gave `hud.build.note` a renderer again -- an element
+   * and a paint branch in `paintQueue`, plus the docblock that carries the
+   * measurement -- so `:1952` became `:2033` and `:2321` became `:2427`. Read
+   * off the tree by grepping for the expressions themselves, exactly as the
+   * paragraph above says to.
+   *
+   * **Eight re-pins for two unchanged expressions**, and the count is now the
+   * argument rather than an anecdote: every one of them was a line above the
+   * site moving, none was a change to what the site does, and each cost a red
+   * gate on a branch whose author had no reason to expect one. The fix is to
+   * key this map on the quoted expression, which is the durable half of the
+   * entry already. It is deliberately **not** done here: this branch is a HUD
+   * layout fix, changing the map's key changes what the failure message points
+   * a reader at, and doing it as a side effect of an unrelated diff is how a
+   * gate loses the property it exists for. Recorded as owed.
+   */
+  'ui/hud/build-panel.ts:2033':
     'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2321':
+  'ui/hud/build-panel.ts:2427':
     'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
 };
 

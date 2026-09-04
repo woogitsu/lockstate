@@ -2676,8 +2676,10 @@
 
      What the exemption costs, in the only state it is laid out in: two lines
      instead of one, so 26.4px instead of 13.2px, and the panel's overflow in
-     the queued state goes from 191 to about 208 at 900x600. That is height in a
-     box which is already 178px over its content there and is `overflow-y: auto`
+     the queued state goes from 195 to 208 at 900x600 -- both figures measured
+     from production code, the second by deleting this rule and watching
+     `ui-build-order-note.spec.ts` report a clipped 238x13.2 box. That is
+     height in a box already 178px over its content there and `overflow-y: auto`
      -- the same currency `.hud-staff__hire-unassigned` above is paid in, and
      the same reason: one more line of eyebrow text moves a scroll threshold and
      loses nothing. The sentence's own box stays inside the panel's unscrolled
