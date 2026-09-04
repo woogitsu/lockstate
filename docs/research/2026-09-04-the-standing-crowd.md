@@ -55,7 +55,7 @@ score is the mean need deficit over every prisoner on owned land and sixteen of
 twenty-two are serving no need at all, but `needsPressure` crosses no boundary
 this instrument can ask for, so I did not read it.
 
-**And one thing the brief told me to check is measured false at v0.0.470.**
+**And one thing the brief told me to check is measured false at `995b631f`, v0.0.470.**
 `2026-09-04-can-i-see-my-prison.md` §6b's *"nothing walks"* and #944 §5 are
 overturned by exactly the evidence #944 §7 said would overturn them: of
 **52,879 actor-samples over 22,329 ticks**, ten carried a non-zero velocity and
@@ -92,7 +92,7 @@ and both are given rather than the better one.
 
 ---
 
-## 1. The crowd, reproduced whole at v0.0.470 — and the arithmetic corrected
+## 1. The crowd, reproduced whole at `995b631f` (v0.0.470) — and the arithmetic corrected
 
 **MEASURED, act 1.** The rail and the counts first, so the prison is the prison
 the question is about:
@@ -267,8 +267,8 @@ out of scope"*:
 > decision about how much slower a riot becomes containable, not a mechanical
 > wiring of an existing store.
 
-(ADR 0088's `response-system.ts:818` has drifted to `:867` at v0.0.470; the
-`search-system.ts:372` citation is exact.)
+(ADR 0088's `response-system.ts:818` has drifted to `:867` at `995b631f`,
+v0.0.470; the `search-system.ts:372` citation is exact.)
 
 ---
 
@@ -545,7 +545,7 @@ was written for, and it is the first time it has been played.
 
 ## 9. What this changes about the record so far
 
-- **`docs/research/2026-09-04-why-they-stack.md` holds at v0.0.470.** Its three
+- **`docs/research/2026-09-04-why-they-stack.md` holds at `995b631f`, v0.0.470.** Its three
   write sites are the same three lines at the same numbers
   (`prisoner-operations-runtime.ts:981-982`, `action-system.ts:1125-1126`,
   `:1438`), its `destinationTileOf` citation is exact, and its refutation of the
@@ -571,8 +571,8 @@ was written for, and it is the first time it has been played.
   all of them documents: that one, the squash, and the release that merged it.
   A one-word documentation fix, handed over rather than made — this pass is
   read-only outside its own two files.
-- **ADR 0088's `response-system.ts:818` has drifted to `:867`** at v0.0.470.
-  Its `search-system.ts:372` citation is still exact.
+- **ADR 0088's `response-system.ts:818` has drifted to `:867`** at `995b631f`,
+  v0.0.470. Its `search-system.ts:372` citation is still exact.
 
 ---
 
@@ -727,8 +727,24 @@ patch.
   ports is this round's design — but the rule says report it, so it is reported.
   Nothing in this record is a wall-clock claim: every tick is from
   `simulation/clock-state` and every position from a decoded worker payload.
-- **Not run, and named rather than implied:** `pnpm test`, the browser gate
-  suite, and the production build. This branch adds one `*.playtest.ts` and one
+- **`tests/foundation`, 52 files** — run because this branch adds prose and that
+  directory gates prose. **50 passed, 2 failed**, and the two are different:
+  - `documentation-version-claim-contract` failed on **this record** and was
+    fixed rather than argued with: five sentences named `v0.0.470` with no
+    commit beside them, which the contract calls *"a claim about a tree that is
+    no longer there"* the moment `main` bumps the patch. Each now reads
+    `` `995b631f`, v0.0.470 ``. Re-run: `5 passed`.
+  - `documentation-commit-citation-contract` failed for a reason that is not
+    about this branch and its own message says so: *"this checkout is shallow,
+    so no citation can be resolved and every case below would fail for a reason
+    that is not about the citations."* `git rev-parse --is-shallow-repository`
+    answers `true` in this container, and the 337 unresolvable citations it
+    lists are the whole repository's, not this record's. CI's `verify` job sets
+    `fetch-depth: 0` precisely so it is not in this state. **Reported, not
+    fixed** — unshallowing a container-wide clone while another agent is
+    working in it is not mine to do.
+- **Not run, and named rather than implied:** `pnpm test` as a whole, the
+  browser gate suite, and the production build. This branch adds one `*.playtest.ts` and one
   document and changes nothing under `src/`, so no `.spec.ts` presses anything
   it touches — but *"I did not run the suite"* is the honest sentence and this
   is it.
