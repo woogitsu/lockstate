@@ -1744,80 +1744,104 @@
  *
  * `.hud-build__order-note` is laid out only while something is queued, and it
  * goes in `.hud-build__map` under the arm hint -- the one home a player can
- * read it from without scrolling. **But the map block has no room there.** It
- * ends in the deliveries block (#703 ruling 2), whose spend line and first
- * refund are guaranteed on screen with nothing opened and nothing scrolled --
- * `tests/browser/build-deliveries-outside-the-fold.spec.ts` asserts exactly
- * that -- and in the loaded state that block sits right against the panel's
- * fold.
+ * read it from without scrolling. **And in the queued state this panel has no
+ * spare height at all, at any viewport.** Three separate pinned assertions say
+ * so, and each one caught a version of this change that had not paid for
+ * itself:
  *
- * **Measured, and this rule exists because the first attempt broke it.** With
- * the sentence added and nothing given back, the first refund's Cancel left the
- * panel's unscrolled box at two of the seven viewports: y=607..651 against a
- * fold at 637.6 at 1280x720, and y=478.6..522.6 against 521.7 at 900x600. That
- * is #703's ruling undone by a note, and it went red where it should.
+ *   - `tests/browser/build-deliveries-outside-the-fold.spec.ts` -- the owner's
+ *     ruling of 2026-08-31 (#703 ruling 2): the spend line and the **first
+ *     refund** are on screen with nothing opened and nothing scrolled. In the
+ *     loaded state the deliveries block sits right against the panel's fold, so
+ *     an unpaid note pushed the refund's Cancel out: y=607..651 against a fold
+ *     at 637.6 at 1280x720, y=478.6..522.6 against 521.7 at 900x600.
+ *   - `app-shell.spec.ts`'s #88 sweep -- the body's spill must be *this* block
+ *     and not some other box quietly clipping: `bodyShortfall` within one
+ *     gutter of the deliveries block's own height. An unpaid note read 242px
+ *     against a 235px bound at 1280x720.
+ *   - `app-shell.spec.ts`'s #390 filter test -- `panelOverflow === 0` with a
+ *     queue and **no** pending delivery, which is a state the game reaches once
+ *     the lorries have landed and the orders have not been built. An unpaid
+ *     note read 7px there.
  *
- * So the height is paid for out of the arm hint's **fourth** line. That hint is
- * three sentences: two about the gesture, then *"Two fingers, the middle button
- * or the arrow keys still move the camera."* At the rail's 238px it is four
- * lines (measured, `scrollHeight` 53 at `line-height` 13.2), and both gesture
- * sentences are inside the first three -- 62 characters of the wall hint and 73
- * of `hud.build.arm-hint-object` against about 34 per line. **Three is
- * therefore the clamp, not two**: two lines would cut *"One press, one
- * object"*, which issue #904 landed in order to say.
+ * So the requirement is not "small". It is **net zero**: the sentence has to
+ * cost the queued panel nothing at all, or one of those three fails and is
+ * right to.
  *
- * Only while a queue exists, so nothing about the arrival state moves; only
- * above 700px tall, because the block at the foot of this file already clamps
- * every `.hud-build__note` to one line below that and a `-webkit-line-clamp: 3`
- * here would *loosen* it -- measured, that put the panel 39px over instead of
- * 26px and pushed the first refund out again. 701 is the same paired boundary
- * `.hud-build__list`'s own note cites.
+ * ### Where the height comes from
+ *
+ * The arm hint's third and fourth lines. That hint is three sentences: two
+ * about the gesture, then *"Two fingers, the middle button or the arrow keys
+ * still move the camera."* At the rail's 238px it is four lines -- measured,
+ * `scrollHeight` 53 against a 13.2px `line-height` -- and at 375px's 333px it
+ * is three. Clamping it to two frees 26.4px at the rail and 13.2px on the
+ * phone; the note costs exactly 26.4px and 13.2px there, plus one map-block
+ * gutter that the negative margin below cancels. **The arithmetic is exact
+ * rather than approximate**, which is why the measurement below reads
+ * *identical* and not *within tolerance*.
+ *
+ * Two rather than three, and this is the cost to state plainly: three lines
+ * would keep both gesture sentences of both hints intact -- 62 characters of
+ * the wall hint and 73 of `hud.build.arm-hint-object`, against about 34 per
+ * line -- but it frees only 13.2px, and 13.2px is what the #88 and #390
+ * assertions above went red on. At two lines the wall hint keeps both gesture
+ * sentences and loses the camera one; the object hint loses *"one object"* from
+ * *"One press, one object"* (#904's clause), reading *"One press, o…"*. That is
+ * a hint's clarifying clause against the sentence that is the exit from the
+ * game's one measured dead end, and only while a queue exists.
+ *
+ * Scoped to `.hud-build[data-queued]`, so nothing about the arrival state
+ * moves. Scoped above 700px tall, because the block at the foot of this file
+ * already clamps every `.hud-build__note` to one line below that and a
+ * `-webkit-line-clamp: 2` here would *loosen* it -- measured, that put the
+ * panel 39px over instead of 26px and pushed the first refund out again. 701 is
+ * the same paired boundary `.hud-build__list`'s own note cites.
  *
  * The text is untouched: `-webkit-line-clamp` clips the box, the full sentence
- * stays in the DOM, and the ellipsis is the signal that there is more. That is
- * the same trade the `max-height: 700px` block makes for this hint already, and
- * it is a *hint's* tail rather than the readout a player is looking for.
+ * stays in the DOM for a screen reader, and the ellipsis is the signal that
+ * there is more. That is the same trade the `max-height: 700px` block already
+ * makes for this hint, and it is a *hint's* tail rather than the readout a
+ * player is looking for.
  *
- * What it comes to, on the assembled page, loaded state -- six orders queued
- * and six deliveries pending, nothing opened, nothing scrolled. `.hud-build`'s
- * `scrollHeight - clientHeight`, then the first refund's Cancel against the
- * panel's fold, before and after:
+ * ### What it comes to
  *
- * | viewport | overflow | Cancel before | Cancel after | fold | margin after |
- * | --- | --- | --- | --- | --- | --- |
- * | 1920x1080 | 0 -> 0 | ..740.3 | ..740.3 | 997.6 | 257.3px |
- * | 1440x900 | 94 -> 107 | ..661.6 | ..674.8 | 817.6 | 142.8px |
- * | 1280x800 | 169 -> 182 | ..636.6 | ..649.8 | 717.6 | 67.8px |
- * | 375x812 | 158 -> 171 | ..639.7 | ..652.9 | 717.8 | 64.9px |
- * | 1024x768 | 193 -> 206 | ..628.6 | ..641.8 | 685.6 | 43.8px |
- * | 1280x720 | 229 -> 242 | ..616.6 | ..629.8 | 637.6 | **7.8px** |
- * | 900x600 | 178 -> 204 | ..492.2 | ..518.6 | 521.7 | **3.1px** |
+ * Assembled page, six orders queued and six deliveries pending, nothing opened,
+ * nothing scrolled. `.hud-build`'s `scrollHeight - clientHeight`, and the first
+ * refund's Cancel against the panel's fold, without the sentence and with it:
  *
- * 900x600 pays the full 26.4px because the hint is already on its one-line
- * clamp there and has nothing to give. 3.1px is the thinnest margin in this
- * panel outside its own arrival state's 7.8px, and it is measured rather than
- * derived. `tests/browser/ui-build-order-note.spec.ts` asserts the property --
- * the spend line and the first refund inside the fold while the sentence is
- * shown -- rather than these numbers, because the numbers depend on how many
- * lines a *locale's* arm hint takes and the property does not.
+ * | viewport | overflow | first refund | fold |
+ * | --- | --- | --- | --- |
+ * | 1920x1080 | 0 -> 0 | ..740.3 -> ..740.3 | 997.6 |
+ * | 1440x900 | 94 -> 94 | ..661.6 -> ..661.6 | 817.6 |
+ * | 1280x800 | 169 -> 169 | ..636.6 -> ..636.6 | 717.6 |
+ * | 1024x768 | 193 -> 193 | ..628.6 -> ..628.6 | 685.6 |
+ * | 375x812 | 158 -> 158 | ..639.7 -> ..639.7 | 717.8 |
+ * | 1280x720 | 229 -> 229 | ..616.6 -> ..616.6 | 637.6 |
+ *
+ * Every measured box identical, with the sentence added inside the fold. That
+ * is what "net zero" bought and it is the whole argument for taking the height
+ * from a line rather than from nowhere.
+ *
+ * **900x600 is not in that table, and it is the honest gap in this fix.** See
+ * `.hud-build__order-note` in the `max-height: 700px` block at the foot of this
+ * file for why the sentence is not shown there at all.
  */
 @media (min-height: 701px) {
   .hud-build[data-queued] .hud-build__arm-hint {
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     overflow: hidden;
   }
 }
 
-/* The two note lines under the arm button are one paragraph about one subject,
-   so the gutter between them is decorative rather than structural -- and it is
-   also 8px this block does not have (see the table above). Cancelling it is
-   what makes the sentence cost its own 26.4px and not 34.4px, which is the
-   difference between the first refund clearing the fold at 1280x720 and
-   missing it. The token, not a literal: the map block's gap and this margin
-   have to move together or the block's own comment about summing one token
-   four times stops being true. */
+/* The clamped hint and the sentence under it are one paragraph now, so the
+   gutter between them is decorative -- and it is also 8px this block does not
+   have. Cancelling it is the difference between the arithmetic above coming to
+   zero and coming to 8px, which is what the #390 assertion went red on. The
+   token, not a literal: the map block's gap and this margin have to move
+   together or that block's own comment about summing one token four times stops
+   being true. */
 .hud-build__order-note { margin-top: calc(-1 * var(--hud-build-map-gutter)); }
 
 /* `[hidden]` on the "and N more" line has to win, and it does not win on its
@@ -1841,12 +1865,15 @@
  * And once more, for the sentence that says a queue waits on the clock
  * (`hud.build.note`, #920 and the owner's first ruling of 2026-08-30 in #639).
  *
- * This one has to beat **two** author `display` declarations rather than one.
- * `.hud-build__note` takes `display: -webkit-box` from the `max-height: 700px`
- * block at the foot of this file, and `.hud-build__order-note` takes
- * `display: block` from that block's own clamp exemption below -- so the user
- * agent's `[hidden] { display: none }` loses twice. A class and an attribute
- * beats one class either way, which is what makes one rule enough.
+ * Same trap, same shape: `.hud-build__note` takes an author
+ * `display: -webkit-box` from the `max-height: 700px` block at the foot of this
+ * file in order to clamp the arm hint, and an author `display` beats the user
+ * agent's `[hidden] { display: none }`. A class and an attribute beats one
+ * class, which is what makes one rule enough.
+ *
+ * It does **not** have to beat that block's own `.hud-build__order-note
+ * { display: none }`, and does not try to: below 701px tall the sentence is not
+ * shown in any state, so the two rules agree there rather than compete.
  *
  * It is hidden in the arrival state, which is every state a player loads the
  * game into, and that is exactly the state this panel has no height for: an
@@ -2738,42 +2765,47 @@
     overflow: visible;
   }
 
-  /* The Build panel's queued-order sentence, exempted on the same terms and by
-     the same argument -- and this is the selector the block above cites as
-     *"not in this file yet"*, because PR #647 added it on a branch whose
-     renderer was dropped before the merge. It is here now (#920), under the
-     same class name that branch chose.
+  /*
+     The Build panel's queued-order sentence, and the one place it is **not**
+     shown. This is the honest gap in the fix for #920 and it is written out
+     rather than left to be discovered.
 
-     **Half of this sentence is worse than none, which is what makes an
-     exemption the only option rather than the generous one.** Clamped to one
-     line at 900x600 the box is 238x13.2 with `scrollHeight` over
-     `clientHeight`, and what survives is *"An order is queued now and built
-     while the..."* -- the half saying the order was taken, with the half saying
-     nothing happens until the clock runs cut off. A player who has just spent
-     1,920 on twenty-four orders reads that as a confirmation. Measured on the
-     assembled page at 900x600 on 2026-09-04; PR #647 measured the identical
-     `scrollHeight` 26 against `clientHeight` 13 at the same viewport in August
-     and drew the same conclusion.
+     PR #647's shape, which the block above cites, exempted
+     `.hud-build__order-note` from this clamp so the sentence could be two lines
+     here. That is the right instinct and it does not fit. At 900x600 the arm
+     hint is already on this block's one-line clamp, so the 26.4px the sentence
+     needs has nowhere to come from -- and the three assertions named beside the
+     `[data-queued]` clamp above all require net zero in the queued state. An
+     exempted two-line note measured 204px of panel overflow against 178px
+     without it, and pushed the first refund's Cancel to y=518.6 against a fold
+     at 521.7: inside by 3.1px in the state with deliveries, and 26px over the
+     box in the state without them, where `app-shell.spec.ts`'s #390 test pins
+     the panel at exactly 0.
 
-     What the exemption costs, in the only state it is laid out in: two lines
-     instead of one, so 26.4px instead of 13.2px, and the panel's overflow in
-     the queued state goes from 195 to 208 at 900x600 -- both figures measured
-     from production code, the second by deleting this rule and watching
-     `ui-build-order-note.spec.ts` report a clipped 238x13.2 box. That is
-     height in a box already 178px over its content there and `overflow-y: auto`
-     -- the same currency `.hud-staff__hire-unassigned` above is paid in, and
-     the same reason: one more line of eyebrow text moves a scroll threshold and
-     loses nothing. The sentence's own box stays inside the panel's unscrolled
-     fold at y=424.9..451.3 of 521.7, which is the property that matters and the
-     one the fold placement could not deliver at any viewport.
+     And **one line is worse than none here**, which is what rules out simply
+     letting the clamp apply. Clipped to one line at 238px the box is 238x13.2
+     and what survives is *"An order is queued now and built while the..."* --
+     the half saying the order was taken, with the half saying nothing happens
+     until the clock runs cut off. A player who has just spent 1,920 on
+     twenty-four orders reads that as a confirmation. PR #647 measured the same
+     `scrollHeight` 26 against `clientHeight` 13 at this viewport in August and
+     drew the same conclusion.
 
-     `.hud-build__order-note[hidden]` above still wins over this rule -- a class
-     and an attribute against one class -- so the arrival state stays free. */
-  .hud-build__order-note {
-    display: block;
-    -webkit-line-clamp: none;
-    overflow: visible;
-  }
+     So below 701px tall the sentence is not rendered, and the dead end issue
+     #920 is about stays open at that one viewport.
+     `tests/browser/ui-build-order-note.spec.ts` asserts this rather than
+     hiding it: it requires the sentence laid out at the four taller viewports
+     and requires it to have no box here, so a change that closes the gap fails
+     the test and has to say so.
+
+     **What would close it is a shorter sentence** -- one that fits 238px on a
+     single line and still names the clock. That is wording, and wording is
+     recorded for the owner rather than invented in a layout fix.
+
+     This rule beats `.hud-build__order-note`'s own `margin-top` above and the
+     `[hidden]` guard is unaffected: both are `display`-neutral, and a hidden
+     element is hidden either way. */
+  .hud-build__order-note { display: none; }
 
   /* The priced hire sentence itself, exempted on the same terms as the other
      exemptions in this block -- and this one was forced by the owner's second

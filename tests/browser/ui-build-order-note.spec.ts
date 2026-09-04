@@ -43,9 +43,16 @@ import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
  *   an unconditionally laid-out line costs 27px of overflow at 1280x720 and 9px
  *   at 900x600, measured on 2026-09-04 by injecting it from a test.
  * - **Queued**: the sentence must be laid out, unclipped, and **inside the
- *   panel's unscrolled fold**, at every viewport. Not merely "in the DOM": PR
- *   #647's own review found a variant that resolved to one element with a 0x0
- *   box inside a shut fold, which is issue #627's defect exactly.
+ *   panel's unscrolled fold**, at every viewport 701px tall or taller. Not
+ *   merely "in the DOM": PR #647's own review found a variant that resolved to
+ *   one element with a 0x0 box inside a shut fold, which is issue #627's defect
+ *   exactly. And at 900x600 it must have **no box at all** -- the panel cannot
+ *   pay for it there, and that gap fails this test the moment it closes rather
+ *   than passing quietly either way.
+ * - **Queued, and what the sentence is paid for with**: the arm hint is clamped
+ *   to two of its lines while a queue exists, and the deliveries block below the
+ *   sentence keeps #703 ruling 2's guarantee. That coupling is the assertion the
+ *   first version of this fix did not have, and it is the one that caught it.
  *
  * Every subject is found by its **rendered text**, read out of the shipped
  * catalogue, rather than by the class this change adds. A test that looked for
@@ -306,7 +313,7 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
       // rules leave it, no line taken by this change.
       expect(
         arrival.armHintLinesShown,
-        `the arm hint is clamped with nothing queued at ${width}x${height}`,
+        `the arm hint lost a line with nothing queued at ${width}x${height}`,
       ).toBe(height > 700 ? arrival.armHintLinesTotal : 1);
     }
   });
@@ -340,6 +347,38 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
       expect(queued.panelHeight, `the Build panel is not laid out at ${width}x${height}`).toBeGreaterThan(150);
       // The state is the one this test claims to be about.
       expect(queued.queueLaidOut, `nothing is queued at ${width}x${height}`).toBe(true);
+
+      /*
+       * The one viewport where this fix does not reach the player, asserted
+       * rather than left to be discovered.
+       *
+       * Below 701px tall `hud.css` does not render the sentence at all, because
+       * the arm hint it is paid for out of is already on that block's one-line
+       * clamp and there is nothing to take -- and because one clipped line of
+       * this sentence reads as a confirmation that the order is being built.
+       * The reasoning is beside `.hud-build__order-note { display: none }` in
+       * that block.
+       *
+       * This is a **failing-closed** assertion, not an exemption: a change that
+       * makes the sentence fit here fails this test and has to come and say so,
+       * which is the opposite of the silence that let `hud.build.note` go
+       * unrendered for twelve days.
+       */
+      if (height <= 700) {
+        expect(
+          queued.matches,
+          `the sentence is laid out at ${width}x${height}, which is below the 701px boundary hud.css suppresses it under`,
+        ).toBe(0);
+        expect(
+          queued.spendInFold,
+          `the spend line left the panel's fold at ${width}x${height} with no sentence on the panel at all`,
+        ).toBe(true);
+        expect(
+          queued.firstRefundInFold,
+          `the first refund's Cancel left the panel's fold at ${width}x${height} with no sentence on the panel at all`,
+        ).toBe(true);
+        continue;
+      }
 
       expect(queued.matches, `laid-out carriers of "${NOTE_TEXT}" at ${width}x${height}`).toBe(1);
       expect(
@@ -391,16 +430,14 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
         `the first refund's Cancel left the panel's fold at ${width}x${height}: it ends at y=${queued.firstRefundBottom} in a panel clipped at y=${queued.fold}`,
       ).toBe(true);
 
-      // And what was taken to pay for it: three of the arm hint's four lines
-      // stay, which is what keeps both of its gesture sentences -- 62
-      // characters of the wall hint, 73 of the object one, against about 34 per
-      // line. Two lines would cut "One press, one object" (#904). Below 701px
-      // tall the hint is already on the one-line clamp `hud.css` gives every
-      // note, and this change adds nothing there.
-      expect(
-        queued.armHintLinesShown,
-        `the arm hint shows too few lines at ${width}x${height}`,
-      ).toBeGreaterThanOrEqual(height > 700 ? Math.min(3, queued.armHintLinesTotal ?? 3) : 1);
+      // And what was taken to pay for it: the arm hint is clamped to two lines
+      // while a queue exists, which is exactly the 26.4px the sentence costs at
+      // the rail's width and the 13.2px it costs at 375px. Asserted as "two,
+      // and not fewer" -- the number is the price, so a clamp that drifted
+      // tighter would be taking more from the hint than the sentence needs.
+      expect(queued.armHintLinesShown, `the arm hint is not clamped to two lines at ${width}x${height}`).toBe(
+        Math.min(2, queued.armHintLinesTotal ?? 2),
+      );
       // The text itself is never replaced -- the clamp cuts the box, and a
       // screen reader still gets the whole sentence.
       expect(queued.armHintTextIntact, `the arm hint's text was truncated rather than clipped at ${width}x${height}`).toBe(
