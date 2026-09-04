@@ -96,10 +96,19 @@ async function installActorTee(page: Page): Promise<void> {
         super.addEventListener('message', (event: MessageEvent) => {
           const message = event.data as {
             kind?: string;
-            payload?: { tick?: number; payload?: { body?: ArrayBuffer } };
+            payload?: { tick?: number; delta?: { data?: ArrayBuffer } };
           };
           if (message.kind !== 'simulation/delta') return;
-          const body = message.payload?.payload?.body;
+          // `payload.delta.data`, and this line read `payload.payload.body`
+          // for the whole of act 2 — a guess at the envelope rather than a
+          // reading of it. The shape is `deltaMessageSchema`
+          // (`src/simulation/protocol/types.ts:538-559`): `{ baseTick, tick,
+          // delta }`, where `delta` is an `arrayBufferPayloadSchema` whose
+          // buffer member is `data` (`:73-82`). The wrong path threw nothing
+          // and matched nothing, so act 2 reported *"the worker has published
+          // no actor keyframe at all"* about a prison with six prisoners and
+          // three guards visibly standing in it.
+          const body = message.payload?.delta?.data;
           if (!(body instanceof ArrayBuffer)) return;
           try {
             const view = new DataView(body);
@@ -449,14 +458,17 @@ test('act 2 — a running prison with people in it', async ({ page }) => {
 /* act 3 — does anything move, and does a guard walk (#740)             */
 /* ------------------------------------------------------------------ */
 
-test('act 3 — watching it run: what moves on the wire, and what moves on the screen', async ({ page }) => {
+test('act 3 — a crowd, and what moves on the wire against what moves on the screen', async ({ page }) => {
   await installActorTee(page);
   await installTee(page);
   await openApp(page);
 
-  const origin = await buildAndPopulate(page, { beds: 6, admits: 6, guards: 3, label: 'watch' });
+  const origin = await buildAndPopulate(page, { beds: 6, admits: 22, guards: 6, label: 'crowd' });
   await fastForwardToMax(page);
   await page.waitForTimeout(3000);
+  await look(page, '31-twenty-odd-actors-full-frame');
+  await look(page, '32-twenty-odd-actors-the-block', tileBox(origin, { tx: 9, ty: 9 }, { tx: 21, ty: 21 }));
+  await magnify(page, '33-twenty-odd-actors-magnified', tileBox(origin, { tx: 12, ty: 12 }, { tx: 17, ty: 17 }), 3);
 
   const box = tileBox(origin, { tx: 9, ty: 9 }, { tx: 21, ty: 21 });
   const startTick = await currentTick(page);
@@ -518,4 +530,134 @@ test('act 3 — watching it run: what moves on the wire, and what moves on the s
   console.log(`\n---- what the worker reported happening (last 40) ----`);
   events.forEach((line) => console.log(`  ${line}`));
   console.log(`\nthe alerts panel, meanwhile: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+});
+
+/* ------------------------------------------------------------------ */
+/* act 4 — the art itself, at the size the game draws it                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A contact sheet of the actor atlases, cut with the manifest's own
+ * rectangles.
+ *
+ * This is not the game screen and does not pretend to be — but it is the only
+ * way to separate two very different answers to *"can you tell a guard from a
+ * prisoner"*: **the art does not distinguish them** and **the art does and the
+ * screen is too small to show it**. The left column of each row is the frame at
+ * exactly the size the world draws it (a 256px frame on a 64px tile is quarter
+ * scale, `docs/RENDERING.md`'s *Coordinates*); the rest is the same frame at 2x
+ * so a reader can see what was lost.
+ */
+test('act 4 — the actor art, at the size the world draws it', async ({ page }) => {
+  await page.goto('/index.html');
+  await page.waitForSelector('#game-root canvas');
+
+  const dataUrl = await page.evaluate(async () => {
+    interface Manifest {
+      readonly image: string;
+      readonly frame: { readonly widthPx: number; readonly heightPx: number };
+      readonly directions: readonly string[];
+      readonly clips: Record<string, { readonly frames: Record<string, readonly { x: number; y: number; width: number; height: number }[]> }>;
+    }
+    const load = async (url: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`could not load ${url}`));
+        image.src = url;
+      });
+
+    const rows: { label: string; sheet: HTMLImageElement; frames: readonly { x: number; y: number; width: number; height: number }[] }[] = [];
+    for (const assetId of ['actor.prisoner.base', 'actor.guard.base']) {
+      const manifests = (await (await fetch(`/assets/actors/${assetId}.atlas-manifests.json`)).json()) as Manifest[];
+      for (const clip of ['idle', 'walk']) {
+        const manifest = manifests.find((entry) => entry.clips[clip] !== undefined);
+        if (manifest === undefined) continue;
+        const sheet = await load(`/assets/actors/${manifest.image}`);
+        const byDirection = manifest.clips[clip]!.frames;
+        if (clip === 'idle') {
+          // One frame per direction, all eight, in the manifest's own order.
+          rows.push({
+            label: `${assetId} idle — the eight authored directions`,
+            sheet,
+            frames: manifest.directions.map((direction) => byDirection[direction]![0]!),
+          });
+        } else {
+          // Every frame of one direction, which is the walk cycle itself.
+          rows.push({ label: `${assetId} walk south — every frame of the cycle`, sheet, frames: byDirection['south']! });
+        }
+      }
+    }
+
+    const CELL_W = 64;
+    const CELL_H = 96;
+    const SCALE = 2;
+    const LABEL_H = 22;
+    const columns = Math.max(...rows.map((row) => row.frames.length));
+    const canvas = document.createElement('canvas');
+    canvas.width = 16 + columns * (CELL_W * SCALE + 8);
+    canvas.height = rows.length * (CELL_H * SCALE + LABEL_H + 12) + 12;
+    const context = canvas.getContext('2d')!;
+    context.fillStyle = '#11151b';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.imageSmoothingEnabled = true;
+    context.font = '13px monospace';
+    let y = 12;
+    for (const row of rows) {
+      context.fillStyle = '#cfd6de';
+      context.fillText(row.label, 12, y + 14);
+      y += LABEL_H;
+      row.frames.forEach((frame, index) => {
+        const x = 16 + index * (CELL_W * SCALE + 8);
+        context.fillStyle = '#6a5744'; // the dirt the world is actually made of
+        context.fillRect(x, y, CELL_W * SCALE, CELL_H * SCALE);
+        context.drawImage(row.sheet, frame.x, frame.y, frame.width, frame.height, x, y, CELL_W * SCALE, CELL_H * SCALE);
+      });
+      y += CELL_H * SCALE + 12;
+    }
+    return canvas.toDataURL('image/png');
+  });
+
+  mkdirSync(SHOTS, { recursive: true });
+  const bytes = Buffer.from(dataUrl.split(',')[1] ?? '', 'base64');
+  writeFileSync(`${SHOTS}/40-actor-contact-sheet.png`, bytes);
+  console.log(`  [contact sheet] 40-actor-contact-sheet.png (${bytes.length} bytes)`);
+
+  // The same thing at exactly the size a 64px tile gives it, with no
+  // magnification at all, so the judgement is made on the real pixels.
+  const trueSize = await page.evaluate(async () => {
+    interface Manifest {
+      readonly image: string;
+      readonly directions: readonly string[];
+      readonly clips: Record<string, { readonly frames: Record<string, readonly { x: number; y: number; width: number; height: number }[]> }>;
+    }
+    const load = async (url: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(url));
+        image.src = url;
+      });
+    const canvas = document.createElement('canvas');
+    canvas.width = 8 * 72 + 16;
+    canvas.height = 2 * 108 + 16;
+    const context = canvas.getContext('2d')!;
+    context.fillStyle = '#6a5744';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    let row = 0;
+    for (const assetId of ['actor.prisoner.base', 'actor.guard.base']) {
+      const manifests = (await (await fetch(`/assets/actors/${assetId}.atlas-manifests.json`)).json()) as Manifest[];
+      const manifest = manifests.find((entry) => entry.clips['idle'] !== undefined)!;
+      const sheet = await load(`/assets/actors/${manifest.image}`);
+      manifest.directions.forEach((direction, index) => {
+        const frame = manifest.clips['idle']!.frames[direction]![0]!;
+        context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, 8 + index * 72, 8 + row * 108, 64, 96);
+      });
+      row += 1;
+    }
+    return canvas.toDataURL('image/png');
+  });
+  const trueBytes = Buffer.from(trueSize.split(',')[1] ?? '', 'base64');
+  writeFileSync(`${SHOTS}/41-actor-true-size-prisoner-then-guard.png`, trueBytes);
+  console.log(`  [true size] 41-actor-true-size-prisoner-then-guard.png (${trueBytes.length} bytes)`);
 });
