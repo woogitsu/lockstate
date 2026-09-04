@@ -1,7 +1,7 @@
 # What pressure there is at fifty — 2026-09-04
 
-**IN PROGRESS.** Acts B, P and F are measured and written up below. Acts G and
-Y are not yet run; every section that names them is a placeholder. This file is
+**IN PROGRESS.** Acts B, P, F and Y are measured and written up below. Act G —
+the shipped tree's break-even — is still running. This file is
 committed in this state deliberately: a container restart already destroyed one
 set of readings for this task that lived only in a transcript.
 
@@ -29,7 +29,7 @@ see [§0](#0-the-mutation-and-its-restore).
 | **P** the penalty restored | `withheld = 40` | identical script | 728 s | 53,225 |
 | **F** the break-even, penalty restored | `withheld = 40` | settle at 7, then **137** guards, then **138** | 1,117 s | 49,835 |
 | **G** the break-even, shipped | `withheld = 0` | the same | *pending* | |
-| **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard` east of the cell | *pending* | |
+| **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard`, panned east | 772 s | 55,922 |
 
 ---
 
@@ -52,7 +52,10 @@ which is still **19.6× what the game asks for** — and 137.5 is not a
 quotient here, it is where the sign was watched flipping: **+40 a day at 137
 guards, −40 a day at 138**, three consecutive boundaries each way, same world,
 one hire apart. That same hire is also the moment the prison starts *containing*
-its incidents, and the response time collapses from 610 ticks to 70.
+its incidents, and the response time collapses from 610 ticks to 70. **And the
+cheapest repair the mechanic was designed to reward pays nothing at all here:**
+an 8×8 yard, zoned first attempt on owned ground, left the settled delta at
++10,440 — identical to the prison without one, to the unit.
 
 ---
 
@@ -493,8 +496,119 @@ readout must convey, and whether it should exist, is a design question.
 
 ---
 
-## 6. Pending
+## 6. MEASURED — the yard incentive is worth exactly nothing at fifty
 
-Acts G and Y. The shipped break-even, the yard question, the mutation restore
-verification, the weakest claim and the instrument failures are written when
-they have run.
+This is the second four-prisoner finding that **did not survive**, and it is the
+one the restored constant's own docblock rests an argument on:
+
+> **The cheapest repair pays for itself in days.** `room.yard` requires no
+> object at all (`src/content/room-catalog.ts`), so zoning 8x8 of owned ground
+> turns `recreation` from unmet to served and returns 40 a prisoner a day for
+> nothing. That is the incentive the mechanic exists to create…
+
+At four prisoners that was measured true to the unit: `+480` against `+320`,
+`480 − 320 = 160 = 4 × 40`. **At fifty it returns zero.**
+
+**Reproduction** (act Y). Act P exactly, plus: after the build and before the
+intake, press `ArrowRight` eight times, recalibrate, and zone an 8×8
+`room.yard` on the bare ground the pan revealed.
+
+The yard was zoned **on the first attempt**, and the pan is the escape issue
+#957 §3 names, exercised and measured:
+
+```
+[Y50] pan round 1 (8 ArrowRight presses): origin = (-1118, -574)
+[Y50] reachable columns [24,25,26,27,28,29,30,31] rows [11..21]
+[Y50] the yard will be {"x0":24,"y0":11,"x1":31,"y1":18}
+[Y50] YARD attempt 1: rooms=2 roomCapacity=50
+```
+
+Eight presses moved the origin 814 px, about 12.7 tiles, and the Rooms panel
+before the press read `NEEDS AT LEAST 8 × 8 TILES · MUST BE OUTDOORS · NO
+OBJECTS NEEDED`, with the enclosure verdict *"Open on at least one side"*
+afterwards — `RoomZoningService.zone` refusing only `'enclosed'`. `rooms` went
+`1 → 2`. **So a 10×10 cell for fifty and an 8×8 yard both fit in one prison;
+what does not fit is both on one screen**, which is what #957 actually claims.
+
+**And it bought nothing:**
+
+| boundary | act P (no yard) | act Y (8×8 yard) |
+| --- | --- | --- |
+| settled delta | **+10,440** | **+10,440** |
+| consecutive boundaries at it | 4 (days 19–22) | 3 (days 21–23) |
+| implied daily grant | 10,999–11,000 | 10,999 |
+| implied price per place | 220 | 220 |
+| `recreation` permille, all fifty | 0 | **0** |
+| `recreation` unmet for state income | 50 of 50 | **50 of 50** |
+| unmet-need histogram | 50 at 2 unmet | **41 at 2, 9 at 3** |
+
+Identical to the unit, and the histogram moved the **wrong way**: nine
+prisoners are at *three* unmet needs in act Y, because `bladder` fell from a
+median of 929 permille (unmet for 0 of 50) to **357** (unmet for 9 of 50).
+
+```
+[Y50] FINAL   unmetNeedCount histogram: ["41 prisoner(s) at 2 unmet","9 prisoner(s) at 3 unmet"]
+[Y50] FINAL   recreation: unmet for 50 of 50  permille min=0  median=0   max=0
+[Y50] FINAL   bladder:    unmet for  9 of 50  permille min=43 median=357 max=475
+```
+
+**Not one of the fifty performed `action.yard-recreation` even once**, on a
+prison that has a zoned, legal, outdoor yard.
+
+**What would establish the cause, stated separately.** Three candidates, and
+the measurement rules the first one out on its own:
+
+1. **Capacity — ruled out as a sufficient explanation.** An 8×8 yard is four
+   places: `max(1, floor(width × height / TILES_PER_OPEN_GROUND_PLACE))` with
+   `TILES_PER_OPEN_GROUND_PLACE = 16`
+   (`src/simulation/prisoners/room-instance-registry.ts:222,341`), so 64 tiles
+   is `floor(64/16) = 4`. Four places rotating among fifty people would leave
+   *some* prisoners with a non-zero `recreation` reading. **All fifty read
+   exactly 0**, so capacity cannot be the whole of it.
+2. **Reachability — the strongest candidate, and untested.** The cell is walled
+   on all four sides and **neither instrument ever builds a door** — grep for
+   `door` in either playtest file returns nothing. Issue #938 records that a
+   room with no doorway is dead while every readout says it works, and
+   `ActionSystem` gates on exactly this: it counts *"reconsideration cycles
+   where no legal action had a reachable, available target"*
+   (`src/simulation/prisoners/action-system.ts:105`). A prisoner sealed in the
+   cell can take the cell-side actions — which is consistent with `hunger`,
+   `sleep` and `bladder` being served in every act — and can reach nothing
+   else. **What would establish it: an act that builds one door in the cell's
+   east wall and re-measures `recreation`.**
+3. **Distance.** The four-prisoner yard was *adjacent* to its cell — cell
+   (12,12)–(14,15), yard (15,12)–(22,19), sharing the wall line — and it paid.
+   This one sits three tiles clear of the cell's east wall at (24,11)–(31,18),
+   because the pan that makes an 8×8 reachable at all also moves the cell off
+   screen. **What would separate this from (2): the same door act, with the
+   yard adjacent and then far.**
+
+**This record does not claim which.** What it claims is the number the ruling
+needs: **on the prison a player can actually build for fifty, the repair the
+penalty is designed to reward returns nothing, and the state's ledger says so
+by paying exactly 220 a place either way.**
+
+### 6.1 The two four-prisoner findings the brief asked about, answered
+
+The brief asked whether the fork *"+320/day with nothing contained or −80/day
+with everything contained"* still exists at fifty. **It does, and it is wider.**
+The staffed-at-the-requirement prison earns **+10,440** a day with every
+incident lapsing after ~610 ticks; the prison that contains them costs **131
+free guards**, which is where the sign flips at −40
+([§5.1](#51-measured--the-hire-that-flips-the-sign-is-the-hire-that-starts-containing-incidents-and-this-act-settles-the-cause)).
+At four prisoners the gap between those two prisons was 5 guards; at fifty it
+is **131**.
+
+It also asked whether the yard incentive still pays `50 × 40`. **It pays 0**
+([§6](#6-measured--the-yard-incentive-is-worth-exactly-nothing-at-fifty)) — and
+the sub-question it raised, *"does one 8×8 yard even serve fifty people,"* has a
+sharper answer than the capacity arithmetic it expected: no prisoner used it at
+all.
+
+---
+
+## 7. Pending
+
+Act G — the shipped tree's break-even, predicted at 187/188. The mutation
+restore verification, the weakest claim, the corrections to the brief and the
+instrument failures are written when it has run.
