@@ -905,7 +905,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * What a control says when it *works* (issue #749, the owner's ruling of
    * 2026-09-01).
    *
-   * These five are the first sentences on this channel about something the
+   * These are the first sentences on this channel about something the
    * *player* did, and they exist because four controls said nothing at all when
    * they succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
    * measured Cancel on a queued build order, Cancel on a delivery, Undo and
@@ -932,7 +932,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * the worst option"*, and it is why the second sentence exists at all rather
    * than the first being stretched to cover both.
    *
-   * **Only one of the four names a figure, and that is deliberate.**
+   * **Only the delivery names a figure, and that is deliberate.**
    * `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
    * `{total}` is nearly free; `ConstructionSystem.cancelOrder` answers `void`,
    * so the two order sentences cannot name an amount without plumbing the
@@ -941,23 +941,87 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * own delivery row already uses for the same money (`hud.build.delivery`,
    * "{total} back").
    *
-   * **Neither history sentence names a count**, which is ruling 4: Undo and
+   * **No history sentence names a count**, which is ruling 4: Undo and
    * Redo each reverse a whole transaction, so a sentence naming one order would
    * be a small lie whenever a run of several moved. "The last change" is what
-   * UR3 says instead, and it is true of a run of one and of twelve.
+   * UR3 says instead, and it is true of a run of one and of twelve. That
+   * applies to #927's third history sentence below as well as to the two UR3
+   * gave.
    *
-   * A cancelled order that had already **finished** gets no sentence here.
-   * Neither of the two below is true of it -- the money did not come back and
-   * the materials are not gone, they went into the container (ADR 0076
-   * decision B) -- no control can reach that press, and inventing a third
-   * sentence for it would be exactly the promise-the-code-does-not-keep that
-   * `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
-   * `SimulationEventLog.recordBuildOrderCancelled`.
+   * **A cancelled order that had already finished got no sentence here until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * paragraph that withheld it is kept below rather than deleted -- it is why
+   * the defect survived.** It read:
+   *
+   * > A cancelled order that had already **finished** gets no sentence here.
+   * > Neither of the two below is true of it -- the money did not come back and
+   * > the materials are not gone, they went into the container (ADR 0076
+   * > decision B) -- no control can reach that press, and inventing a third
+   * > sentence for it would be exactly the promise-the-code-does-not-keep that
+   * > `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
+   * > `SimulationEventLog.recordBuildOrderCancelled`.
+   *
+   * Both of its premises were dead when it was found:
+   *
+   * - **The materials are gone.** The owner's ruling of 2026-09-01 -- *"Taking
+   *   a finished object away returns nothing. Not its materials, not its
+   *   money."*, ADR 0076's amendment of that date -- withdrew decision B, and
+   *   `ConstructionSystem.cancelOrder` has followed it since: its
+   *   `destroysSpendOnCancel` arm drops a `'completed'` order's allocation
+   *   unreleased and unpaid.
+   * - **A control reaches that press.** It is `Z`.
+   *   `ConstructionSystem.undo()` cancels every order in the transaction
+   *   *"including a `completed` one"*, in its own comment. What is true is the
+   *   narrower claim about the queue *list*: `PENDING_BUILD_ORDER_STATES`
+   *   excludes `'completed'`, so no Build-panel row names a finished order.
+   *
+   * So the second sentence below **is** true of a finished order -- the money
+   * did not come back and the materials were destroyed, which is what *"anything
+   * already spent past the point of no return stays spent"* says -- and
+   * `recordBuildOrderCancelled` now records it for `'completed'` as well as for
+   * `'in-progress'`. Under the owner's own reasoning, *"silence about a loss is
+   * the worst option"*, the larger loss was the one getting no mention.
+   *
+   * **`undone-spend-destroyed` is the third sentence, and it is authored here
+   * rather than reused, under the 2026-09-04 release of `AGENTS.md`'s
+   * reservation 4** (*"the choice of words is ours; the requirement that a
+   * sentence be TRUE is not"*). Two things make it a new string rather than the
+   * one above raised on the Undo channel:
+   *
+   * - **The band shows one sentence.** `admitToEventBand`
+   *   (`src/ui/hud/event-band-dwell.ts`) gives an arriving `'warning'` the line
+   *   at once and *discards* the `'info'` it displaces, so raising both
+   *   `construction.undone` and `order-cancelled-underway` on one tick would
+   *   have painted only *"The order was cancelled…"*.
+   * - **"The order" is the singular the no-count ruling warns about.** An undo
+   *   reverses a whole transaction, so a drag of twelve walls is not *"the
+   *   order"*. *"The last change to the build queue"* is the phrase ruling 4
+   *   chose for exactly that reason, and this sentence keeps it.
+   *
+   * It is assembled from two clauses already approved rather than newly
+   * written, the way the pair above was assembled from the candidates in
+   * `docs/research/2026-09-01-copy-variants-for-the-owner.md` §5c: UR3's *"The
+   * last change to the build queue was undone"* joined by this family's em dash
+   * to CO3's *"anything already spent past the point of no return stays
+   * spent"*. **Verified true, not merely plausible**: the first clause is
+   * recorded only when `ConstructionSystem.undo()` answers `reversed: true`
+   * (`createConstructionCommandHandler`, the `Undo` branch), and the second only
+   * when that same answer carries `spendDestroyed`, which `undo()` sets from
+   * `destroysSpendOnCancel` over each order's state *before* `cancelOrder` runs
+   * -- the two states for which `cancelOrder` neither releases the allocation
+   * nor calls `refundSurplusOf`. The clause's hedge is what makes it true of a
+   * mixed transaction: what was *not* past that point still comes back.
+   *
+   * **It names no count and no figure**, which is both rulings kept:
+   * `ConstructionUndoSpendOutcome` is one bit, and `cancelOrder` still answers
+   * `void` so no amount is reachable here either.
    */
   'hud.alert.event.construction.order-cancelled': 'The order was cancelled — the money it cost is refunded.',
   'hud.alert.event.construction.order-cancelled-underway':
     'The order was cancelled. Anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.undone': 'The last change to the build queue was undone.',
+  'hud.alert.event.construction.undone-spend-destroyed':
+    'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.redone': 'The last change to the build queue was redone.',
   'hud.alert.event.economy.delivery-cancelled': 'The delivery was cancelled — {total} back.',
 
