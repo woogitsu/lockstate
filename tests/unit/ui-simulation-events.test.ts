@@ -263,6 +263,7 @@ describe('what the prison says when nothing went wrong', () => {
     };
     const zoned = noticeFor(SAMPLE['rooms.zoned'](1));
     const escape = noticeFor(SAMPLE['incidents.escape-attempt-opened'](2));
+    const relocated = noticeFor(SAMPLE['prisoners.relocated'](3));
 
     expect(zoned.severity, 'the acknowledgement is the least severe thing this channel can say').toBe('info');
 
@@ -273,8 +274,26 @@ describe('what the prison says when nothing went wrong', () => {
     expect(arriving.paint, 'the escape sentence keeps the line').toBe(escape);
     expect(arriving.state.waiting, 'and the acknowledgement waits rather than being dropped').toBe(zoned);
 
-    // And the other direction, which is the half a `'warning'` grade would
-    // break: bad news arriving over an acknowledgement takes the line at once.
+    /*
+     * **The incumbent a wrong grade would actually destroy, measured rather
+     * than assumed.** Regrading this `'warning'` and re-running the two
+     * assertions above changes nothing: `outranks` is strict, so a `'warning'`
+     * still loses to the escape's `'danger'`. What it changes is this case --
+     * with a `'warning'` grade the acknowledgement takes the line from an
+     * `'info'` incumbent and `admitToEventBand` **discards** it, so
+     * designating a room would delete *"{name} had nowhere to sleep and moved
+     * to {room}."*, a sentence naming a person that ADR 0076 exists to stop
+     * being silent. Both directions were measured on 2026-09-04 and this is
+     * the assertion that pins the property rather than the label: with the
+     * severity assertion above removed, the grade mutation still fails here.
+     */
+    const housed = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, relocated, 0);
+    const overHoused = admitToEventBand(housed.state, zoned, 100);
+    expect(overHoused.paint, 'an acknowledgement never takes the line from another info row').toBe(relocated);
+    expect(overHoused.state.waiting, 'it waits behind it instead').toBe(zoned);
+
+    // And the other direction: bad news arriving over an acknowledgement takes
+    // the line at once, which is what makes the wait above safe.
     const acknowledged = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, zoned, 0);
     const interrupted = admitToEventBand(acknowledged.state, escape, 100);
     expect(interrupted.paint, 'bad news never waits behind an acknowledgement').toBe(escape);
