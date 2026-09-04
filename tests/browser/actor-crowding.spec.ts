@@ -34,6 +34,16 @@ import type { LockstateActorMotionHarness } from './actor-motion-harness-api';
  *   north). That is the improvement being claimed -- part of a second figure
  *   where before there was none of it -- and it is reasoned from the numbers
  *   here rather than sampled from a canvas.
+ *
+ *   The picture was nonetheless looked at once, by hand, on the tree this file
+ *   landed on, at 900x600 with the harness camera's default framing: **two
+ *   co-located actors read as two whole separate people** with a clear gap of
+ *   background between them, **six read as a line of six** with a guard's blue
+ *   uniform legible among five orange ones, and **twenty-two read as a dense
+ *   crowd** -- a block of overlapping bodies with a row of heads along its top,
+ *   plainly many people and plainly not countable. That is the limit below,
+ *   seen rather than predicted. The screenshots were scratch and are not
+ *   committed; this paragraph is the record of them.
  * - **It says nothing about a stack of twenty-two.** The spread stays inside
  *   one tile on purpose, so a large stack reads as a crowd on one tile and not
  *   as a countable population. The simulation is what stacks them
