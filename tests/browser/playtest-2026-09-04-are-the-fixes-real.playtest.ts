@@ -200,7 +200,7 @@ async function coverageBlock(page: Page): Promise<{
     return {
       tone: block?.dataset['tone'] ?? 'ABSENT',
       summary: text('.hud-staff__coverage-summary'),
-      badge: text('.hud-staff__coverage .ui-status-badge'),
+      badge: text('.hud-staff__coverage .ui-badge'),
       note: plain === null ? 'ABSENT' : (plain.innerText ?? '').replace(/\s+/g, ' ').trim(),
       noteLaidOut: laidOut(plain),
       consequence: consequence === null ? 'ABSENT' : (consequence.innerText ?? '').replace(/\s+/g, ' ').trim(),
@@ -255,8 +255,18 @@ test('act 1: hire exactly what the Security panel asks for, then watch the incid
     const block = await coverageBlock(page);
     const counts = await latestCounts(page);
     console.log(`[act1] after hire ${hire} (staff=${counts?.staff}): ${JSON.stringify(block)}`);
-    if (block.badge.toLowerCase() === 'covered') {
-      console.log(`[act1] === the panel says Covered at ${hire} guard(s) hired ===`);
+    /*
+     * **Broken on the tone rather than on the badge's word**, because an
+     * earlier run of this act read the badge through
+     * `.hud-staff__coverage .ui-status-badge` -- a class that does not exist
+     * (`src/ui/primitives/status-badge.ts:59` makes `.ui-badge`) -- so the
+     * badge answered `ABSENT`, this test never broke, six guards were hired
+     * instead of three, and the incidents that followed were a *reserved*
+     * prison's rather than the one #941 is about. `data-tone` is the handle
+     * `paintCoverage` puts on the block for exactly this.
+     */
+    if (block.tone === 'success') {
+      console.log(`[act1] === the panel stopped asking for more at ${hire} guard(s) hired: badge ${JSON.stringify(block.badge)} ===`);
       break;
     }
   }
@@ -900,6 +910,54 @@ test('act 4b: Load pressed on the prison already being played', async ({ page })
   console.log(`[act4b] dialogs: ${JSON.stringify(dialogs.messages)} + ${await domDialogs(page)} DOM dialog(s)`);
   console.log(`[act4b] save panel after :: ${JSON.stringify(await savePanel(page))}`);
   console.log(`[act4b] screen after :: ${JSON.stringify(await say(page))}`);
+});
+
+/**
+ * Act 4c -- the same sibling, with play the autosave has never seen.
+ *
+ * Act 4b found nothing lost because an autosave had just run. The autosave is
+ * **command-driven, not play-driven** (`src/main.ts` wires
+ * `commandSender?.onCommandAccepted(() => controller.markDirty())`), so a
+ * prison that is *watched* rather than played is never marked dirty and never
+ * saved. This act plays a prison, lets the autosave take it, then watches it
+ * for ninety seconds without pressing anything, and only then presses Load on
+ * its own row.
+ */
+test('act 4c: Load on the live prison after play nothing has saved', async ({ page }) => {
+  test.setTimeout(1_800_000);
+  const dialogs = armDialogs(page);
+  await installTee(page);
+  await openApp(page);
+
+  await buildAndPopulate(page, { beds: 3, admits: 5, guards: 2, label: 'act4c' });
+  await fastForwardToMax(page);
+  // Long enough for the command-driven autosave to have taken the prison.
+  await page.waitForTimeout(45_000);
+  const saved = await savePanel(page);
+  console.log(`[act4c] save panel once the autosave has run :: ${JSON.stringify(saved)}`);
+  const atSave = await shape(page);
+  console.log(`[act4c] the prison when it was last saved :: ${atSave}`);
+
+  // Ninety seconds of watching, nothing pressed.
+  await page.waitForTimeout(90_000);
+  const watched = await shape(page);
+  console.log(`[act4c] after 90s of watching and pressing nothing :: ${watched}`);
+  console.log(`[act4c] save panel after that watching :: ${JSON.stringify(await savePanel(page))}`);
+
+  const rows = page.locator('.save-panel__item');
+  const count = await rows.count();
+  let activeIndex = 0;
+  for (let index = 0; index < count; index += 1) {
+    if ((await rows.nth(index).getAttribute('data-active')) === 'true') activeIndex = index;
+  }
+  await rows.nth(activeIndex).getByRole('button', { name: 'Load' }).click();
+  await page.waitForTimeout(6000);
+  const after = await shape(page);
+  console.log(`[act4c] === watched to :: ${watched}`);
+  console.log(`[act4c] === came back to :: ${after}`);
+  console.log(`[act4c] dialogs: ${JSON.stringify(dialogs.messages)} + ${await domDialogs(page)} DOM dialog(s)`);
+  console.log(`[act4c] save panel after :: ${JSON.stringify(await savePanel(page))}`);
+  console.log(`[act4c] screen after :: ${JSON.stringify(await say(page))}`);
 });
 
 /* ================================================================== */
