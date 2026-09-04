@@ -297,3 +297,224 @@ structured as numbered acts so one finding can be re-run without re-running the
 round. **Nothing there is collected by CI** — `playwright.config.ts` is
 `testMatch: /.*\.spec\.ts$/` and `playwright.playtest.config.ts` is what matches
 `*.playtest.ts`. **A playtest is evidence, never a gate.**
+
+---
+
+## Amendment, 2026-09-04: the Tier C and D citations, re-opened
+
+**§7 is left exactly as it stands and is not corrected in place.** It was true
+when written and this section is what dated it — the form
+`docs/adr/README.md` requires of an amendment, and the form §2 above already
+uses. §7 named its weakest claim as *"that roughly thirty re-verified citations
+generalise to the rest"* and said what would change it: *"re-opening the Tier C
+citations, which is a reading pass rather than a play session."* That pass was
+run against `origin/main` at **v0.0.465** (`4c00eaba`), sixteen merges and
+fourteen releases past the **v0.0.451** (`0e614c7`) the round played.
+
+### How the tiers were resolved, because the report is not in this repository
+
+The consolidated report carried the tier labels — §2 above cites its findings
+`B2`, `C3` and `D2` by them — and **that report is on no branch**: its unique
+contributions were carried forward into this note rather than merged, which §1
+above says in its second paragraph. So there is no Tier C row to enumerate by
+name. Rather than guess at the mapping, the pass took the **superset**: every
+`file:line` in the five primary records, mechanically extracted and then opened,
+including the ones §1 and §2 above had already opened. That is strictly more
+than Tier C and D and it removes the tier question from the result.
+
+**176 distinct citations**, counted per record as a (record, coordinate) pair
+and de-duplicated: touch-only 34, can-i-see-my-prison 25, hour two 51, the
+misplay 39, many prisons 27. The extraction had to allow for three citation
+shapes, because two of them are invisible to the obvious grep: a full path
+(`src/ui/tokens.css:415`), a bare filename (`appearance.ts:276`), and a bare
+continuation that inherits the file named before it (`` `:1898` ``). The third
+shape alone accounts for **47** of the 176.
+
+### The result in one table
+
+| | touch-only | see my prison | hour two | the misplay | many prisons | **all** |
+| --- | --- | --- | --- | --- | --- | --- |
+| coordinate still exact on `main` | 29 | 22 | 35 | 25 | 22 | **133** |
+| coordinate stale (drifted or dead) | 5 | 3 | 16 | 14 | 5 | **43** |
+
+Of the 43 stale coordinates, **28** were correct at `0e614c7` and moved
+afterwards, and **15 were already stale on the very commit that carried their
+own record onto `main`** — falsified by #932, #940 and #950, each of which
+merged *before* the record did. Nobody re-pinned them, and nothing gated it:
+`tests/foundation/documentation-commit-citation-contract.test.ts` checks cited
+*commits*, not cited lines.
+
+**What "still exact" means, said narrowly, because it is not the same as
+"true".** It means the line at that number holds, byte for byte, the text the
+record was written against. It does not mean the record read it correctly —
+three citations are exact by that test and wrong by inspection, and they are in
+the refutations below.
+
+### 1. Seven claims are no longer true, and six of them because they were fixed
+
+**This is the most valuable half of the pass**: it stops a future agent working
+on something already done.
+
+| record | claim, and the coordinate it rested on | what `main` says now | fixed by |
+| --- | --- | --- | --- |
+| hour two §1 | *"`const DEFAULT_LEAD_TICKS = 20; // 1 second at the kernel's 20 Hz.`"* — `src/ui/simulation-commands.ts:77` | the comment is gone. `const DEFAULT_LEAD_TICKS = 20;` is at `:118` under a docblock at `:86-117` that states the old sentence *"was true at ×1 and false at every other speed"* | **PR #952** (#942) |
+| hour two §1 | *"a 20-tick lead is **250 ms of real time** at 4×"* — `projectFromClock`, `:190-195` | `:246-251` adds `leadTicks * TICK_MILLISECONDS` **before** the speed conversion, so the margin is one *real* second at every speed | **PR #952** |
+| hour two §1 | *"A rejection means our idea of the sequence is wrong in an unknown direction. Drop the baseline"* — `:327`, and *"every press after it is refused until the next snapshot"* | `:385-388` calls `observeRejection` (`:483`), which **rewinds** the baseline on a `past-tick` refusal instead of dropping it, because that refusal proves the sequence was the expected one | **PR #952** |
+| the misplay §1 | *"a bed standing on the wrong tile → `(not laid out)` — nothing"*, and *"the whole set of player-command successes the game will speak about is **four**"* | `ObjectPlacementService.remove` calls `recordObjectRemoved` at `:653`, and the locale carries `'hud.alert.event.objects.removed-spend-destroyed': 'The object was removed — the money it cost does not come back.'` The set is **five** | **PR #951** (#945) |
+| the misplay §1 | *"`:174` `recordConstructionUndone`"* — `src/simulation/construction/handler.ts` | `:191`, and the signature changed: `recordConstructionUndone(undone.spendDestroyed ? 'spend-destroyed' : 'nothing-destroyed', context.tick)` — one call, two sentences | **PR #932** (#927), merged *before* this record landed |
+| many prisons §1, §1.1 | *"`await this.host.startNew(masterSeed)` and `this.adoptSession(prisonId)` — it never captures or saves the outgoing session"* — `session-controller.ts:166-167` | `:216-217`, preceded at `:215` by `await this.captureOutgoingSession()`, inside a `try` whose `catch` runs `discardFailedCreation` | **PR #950** (#943), merged *before* this record landed |
+| see my prison §5, §5b | *"Two actors on one tile therefore get the identical depth … the guard always wins and **the prisoners are always the ones hidden**"* — `actor-layer.ts:146`, `depth.ts:14-31`, `actors-from-snapshot.ts:149-172` | `src/rendering/actors/crowd-spread.ts` draws co-located actors at distinct points inside their own tile and `ActorLayer` takes the depth anchor from the **drawn** foot (`:224`), so there is no tie left to break. `actors-from-snapshot.ts` now says in its own comment that this order became load-bearing | **PR #954** (#944) |
+
+**The last one is bounded and the bound matters.** `crowd-spread.ts`'s own
+docblock says it: *"two or three actors on a tile read as two or three figures;
+twenty-two read as a crowd standing on one tile rather than as one person… It
+reports the crowd. It does not count it, and it does not unstack it."* So §5b's
+headline — twenty-eight people drawing two figures — is dead, and its
+underlying question, *how many are there*, is not answered on the canvas. The
+simulation still puts them on one tile by construction.
+
+**And one trap this pass is here to disarm.** the misplay §1's load-bearing
+grep — *"`grep -n "events\.record" src/simulation/runtime/session-commands.ts`
+returns exactly one line"* — is **still literally true** at `:539`, because
+#951 recorded the removal in `ObjectPlacementService` rather than in that file.
+An agent re-running that grep will see one line and draw the withdrawn
+conclusion. The fact drifted; the inference behind it is dead.
+
+### 2. Three citations that were wrong when written — the pass's actual refutations
+
+Each is exact by the byte test above and wrong on inspection. This is the
+category §7 could not have found by the method it used, and it is why a reading
+pass is not the same as a diff.
+
+- **`src/content/default-locale-en.ts:852-856`** (the misplay §1), cited for the
+  owner's reasoning *"silence about a loss is the worst option"*. That range is
+  a comment about `ProtocolFaultCode` locale entries and contains no such
+  quote. The quote is in the same file at **`:929-933`** — at `:931` on
+  `0e614c7` too, so the coordinate was **wrong the day it was written**, and it
+  is wrong on the tree the record landed on. It also appears in four other files
+  (`simulation-events.ts:225`, `types.ts:2204`, `event-log.ts:568`,
+  `default-locale-en.ts:984`). **The substance is unaffected** — the quote is
+  real and 75 lines away — which is exactly what makes this the cheap error to
+  leave in place and the expensive one to follow.
+- **`src/simulation/runtime/session-commands.ts:673`** (the misplay §1), cited
+  for the `RemoveObject` arm's `refusals.supersede(removeKey)`. That statement
+  was at `:672` on `0e614c7`; `:673` is the closing brace. Off by one, now at
+  `:696`.
+- **`src/main.ts:3164-3166`** (many prisons §1.1), cited for *"`WorkerPerSessionHost`
+  **terminates** it"*. Those three lines are the worker-per-session comment the
+  record quotes correctly and they do not mention termination; the sentence
+  *"the outgoing worker is terminated before its replacement is built"* is at
+  `:3171-3173`, and `terminate()` appears nowhere in `main.ts`. Imprecise
+  rather than false.
+
+### 3. Thirty-three coordinates drifted and stayed true
+
+Recorded so nobody re-derives them. Every one was located by its own text, not
+by a guess at the offset.
+
+| record | as cited | now on `main` |
+| --- | --- | --- |
+| touch-only | `hud.css:3716` (`@media (max-width: 720px)`) | `:3894` |
+| touch-only | `default-locale-en.ts:1216` (`hud.build.arm-hint`) | `:1354` |
+| touch-only | `default-locale-en.ts:1253` (`hud.build.arm-hint-object`) | `:1390-1391` |
+| touch-only | `default-locale-en.ts:1933` (`hud.rooms.arm-hint`) | `:2071` |
+| touch-only | `object-placement-service.ts:582-620` (`remove`, no wall edge in it) | `:627-687` |
+| touch-only | `build-panel.ts:2010` (*"`queueSection` opens collapsed"*) | `:2133` |
+| see my prison | `actor-layer.ts:146` (`setDepth(depthForAnchor(…))`) | `:224` |
+| see my prison | `depth.ts:14-31` (`LAYER_BIAS` `{structure: 0, actor: 1}`) | `:14-25` and `:51-56` |
+| see my prison | `actors-from-snapshot.ts:149-172` (guards built last) | `:149-177` |
+| hour two | `simulation-commands.ts:251-253` (the *"has not reported its command sequence"* throw) | `:310-312` |
+| hour two | `session-commands.ts:543` (`roster-full` at 500 hires) | `:567` |
+| hour two | `default-locale-en.ts:1869` / `:1898` (the two refusal sentences) | `:2007` / `:2036` |
+| hour two | `simulation-events.ts:447` (`MAX_EVENT_ALERT_ROWS = 8`) | `:488` |
+| hour two | `new-session.ts:1187` / `:1190-1194` (`applyDefaultSecuritySector`) | `:1205` / `:1208-1212` |
+| hour two | `construction/system.ts:1316` (`order.progress += 10`) | `:1419` |
+| hour two | `construction/system.ts:210` (`intervalTicks: 10`) | `:269` |
+| hour two | `construction/system.ts:203` / `:1310` (`MOCK_CREW_WORKER_ID`) | `:262` / `:1413` |
+| hour two | `construction/system.ts:1142` (*"one order in progress at a time"*) | `:1245-1246` |
+| the misplay | `session-commands.ts:515` (`recordDeliveryCancelled`) | `:539` |
+| the misplay | `session-commands.ts:239` (`refusals.supersede(unzoneKey)`) | `:263` |
+| the misplay | `object-placement-service.ts:582` / `:586` / `:608` | `:627` / `:631` / `:674` |
+| the misplay | `construction/handler.ts:178` (`recordConstructionRedone`) | `:197` |
+| the misplay | `build-panel.ts:1938` (`formatNumber(delivery.paidMinorUnits)`) | `:2061` |
+| the misplay | `build-panel.ts:2146` (`collapsed: true` on the queue) | `:2269` |
+| the misplay | `build-panel.ts:2283-2298` (*"`setUnavailable`, not `setDisabled`"*) | `:2431-2446` |
+| the misplay | `simulation-events.ts:869-876` / `:877` (the *"render alike"* docblock and the raw integer under it) | `:910-917` / `:918` |
+| the misplay | `default-locale-en.ts:1375` (`hud.build.queue-more`) | `:1513` |
+| many prisons | `session-controller.ts:10` (`DEFAULT_AUTOSAVE_INTERVAL_MS`) | `:11` |
+| many prisons | `session-controller.ts:434-437` (`adoptSession`) | `:603-606` |
+| many prisons | `default-locale-en.ts:2049` / `:2051` (`save.list.item`, `save.status.idle`) | `:2187` / `:2189` |
+
+Three of the drifted are worth a sentence of their own. `construction/system.ts`
+carries **five** of them, all from one commit — `889ff5f9`, *"fix(construction):
+an undo says what it destroyed (#927)"*, PR #932 — which merged before hour two
+landed, so §8's arithmetic (59.1 measured ticks a wall against 60 predicted)
+survives with every one of its five coordinates already stale on arrival. And
+hour two §1's `simulation-commands.ts:167` is **not a citation at all**: the
+record says so itself, in terms, before anyone could mistake it — it is a
+`console.warn` stack frame from the Vite-served module, and the record's own
+paragraph explains that the served line numbers are not the file's.
+
+### 4. What is still live, checked rather than assumed
+
+Of §4's seven ranked rows above, **four are done and one is not**:
+
+- Row 1, the Security panel (#941), is **still true on `main`**. PR #955 is
+  open, not merged (`mergeable_state: unstable`), and its own body sharpens the
+  arithmetic further than §1 above did: *"requirement +1 is arithmetically
+  insufficient for every incident this build can open — assault ≥3→2,
+  escape ≥6→3, riot/gang ≥7→4, ceiling 10→5."* Every citation behind hour two
+  §2 was re-opened and every one is exact: `sector-staffing.ts:190` and `:147`,
+  `default-sector.ts:113` and `:100-112` (the quoted prediction is at
+  `:108-111`, inside the cited range), `response-system.ts:345`, `:26` and
+  `:499-512`, `trigger-system.ts:444`, `flashpoint.ts:373`.
+- Rows 3, 4 and 5 — #942, #943, #945 — landed as PRs #952, #950 and #951.
+- Row 2 splits. #954 fixed the *drawing*; the question underneath it — why the
+  simulation stacks twenty-two prisoners on one tile — is answered in a
+  measurement record and **unchanged in the simulation**, which
+  `crowd-spread.ts`'s docblock states as its own limit.
+- Rows 6 and 7 are untouched, and row 6's two citations are exact:
+  `icon-button.ts:34` still puts the label in `title`, and
+  `action-button.ts:8-10` still states the rule it breaks.
+
+### 5. Was §7 too harsh, or not harsh enough?
+
+**Both, in different directions, and the second is the finding.**
+
+**Too harsh about the testers.** §7 worried that thirty verified citations might
+not generalise. They do: 133 of 176 coordinates are byte-identical at the number
+cited, and every claim this pass read beside its code was supported by it. Three
+errors in 176 — one wrong range, one off-by-one, one imprecise — is a better
+record than §7's caution implied, and two of the three are in one paragraph of
+one record.
+
+**Not harsh enough about the audit.** §7 framed the risk as *were these
+citations right?* The risk it missed is that **a citation can be right and dead
+at the same time**, and 43 of 176 are — including **15 that were already stale
+on the commit that carried their own record onto `main`**. That is not a
+tester's error. It is the merge sequence: #932, #940 and #950 landed between the
+round's play session and the round's merges, and neither the testers (finished)
+nor this audit (looking for wrong claims, not for stale ones) re-pinned
+anything. `docs/AGENT_WORKFLOW.md` §4 already names this exact hazard — *"a
+`file:line` into a document under active edit is the least durable citation
+here"* — and it turns out to hold for a `file:line` into *code* under active
+edit just as sharply, at a rate of 24% over one day.
+
+**The sharpest single instance, and it is not flattering.** many prisons §1.1
+ends by proposing the fix: *"`createPrison` could capture and save the outgoing
+session before `startNew`, and then there would be nothing to warn about."* PR
+#950 did precisely that, and merged **before** PR #953 put the record on `main`.
+So the round's second-ranked destructive finding shipped as a live finding
+hours after it had been fixed, in a note whose citation pointed at code that no
+longer read that way. §7's stated weakness would not have caught it; a look at
+the merge order would have.
+
+**What would change this amendment's own mind.** Its method is a byte comparison
+of a coordinate plus a reading of the claim around it. The claim was read beside
+the code for touch-only §1-§7 and §9-§10, see my prison §1-§3, §5-§6 and §8-§9,
+hour two §1-§3 and §8, the misplay §1 and §4-§9, and many prisons §1-§5 and §7 —
+and **not** for the remaining sections, where only the coordinate was opened.
+A record could still describe an unchanged line incorrectly in one of those, and
+this pass would call it exact. Three such errors were found in the sections that
+were read; the honest expectation is that a few more sit in the sections that
+were not.
