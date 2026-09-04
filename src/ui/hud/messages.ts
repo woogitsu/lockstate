@@ -353,6 +353,21 @@ export const HUD_MESSAGE_KEY = {
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  /**
+   * The armed-tool hint for a row that stands on a tile rather than on an edge
+   * (issue #904).
+   *
+   * `buildArmHint` above describes an edge click and a dragged run, which is
+   * the wall gesture and the only gesture it has ever described; a tile object
+   * has neither. `paintArmed` chooses between the two on the selected row's
+   * `placesObject`, which is the same shape fact the panel already uses to
+   * decide which command the numeric route sends -- so the sentence and the
+   * command can never disagree about what the press does.
+   *
+   * Three keys reach that one line, not two: `buildRemoveHint` wins over both
+   * while removal is on, because a removal names no row.
+   */
+  buildArmHintObject: 'hud.build.arm-hint-object',
   buildTargetNone: 'hud.build.target-none',
   buildTargetValue: 'hud.build.target-value',
   buildTargetRun: 'hud.build.target-run',

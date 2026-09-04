@@ -1214,6 +1214,43 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  /*
+   * The same hint for a buildable that stands on a **tile** rather than on an
+   * edge (issue #904).
+   *
+   * **The sentence above was shown for every row, and for two thirds of the
+   * catalogue it described the wrong gesture**: arming a Bed, a Toilet or a
+   * Storage Rack told the player to click a tile *edge* and to drag a *run*,
+   * and neither is how one is placed. `ObjectTool.place` is *"one press, one
+   * tile, one command"* -- it reports a single anchor tile and there is no drag
+   * route for it at all, the dragged-run producer being `BuildTool.attachOrders`
+   * and walls only (`src/ui/object-tool.ts`, `src/ui/hud/hud.ts`).
+   *
+   * **"Inside a designated room" is a refusal reason and not advice.**
+   * `ObjectPlacementService` asks `roomInstanceContaining` of the anchor tile
+   * and answers `'outside-room'` when there is none
+   * (`src/simulation/objects/object-placement-service.ts`), so a press on bare
+   * land is refused however good the tile looks. Containment is asked of the
+   * **anchor** only, which is why the sentence names the tile the player
+   * presses rather than the whole footprint: a bed whose second tile pokes out
+   * of the cell is legal, and a hint saying the object must fit inside the room
+   * would be false in exactly that case.
+   *
+   * "Designated" is the word `hud.rooms.arm-hint` and `hud.refusal.zone-room`
+   * already use for what the Rooms panel does, rather than a second verb for
+   * the same act.
+   *
+   * The camera clause is repeated verbatim from the sentence above rather than
+   * factored out: it is the same fact about the same armed pointer, and one
+   * sentence per armed state is what `paintArmed` renders -- see
+   * `src/ui/hud/build-panel.ts`, where the hint is one line either way so that
+   * the controls under it do not move.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04
+   * (*"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*).
+   */
+  'hud.build.arm-hint-object':
+    'Click a tile inside a designated room to place it. One press, one object. Two fingers, the middle button or the arrow keys still move the camera.',
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
