@@ -56,7 +56,8 @@ stopped doing anything at all.
 `2026-09-04-can-i-see-my-prison.md` §6b's *"nothing walks"* and #944 §5 are
 overturned by exactly the evidence #944 §7 said would overturn them: of
 **52,879 actor-samples over 22,329 ticks**, ten carried a non-zero velocity and
-two carried a sub-tile position. ADR 0059's locomotion is live and visible. The
+two carried a sub-tile position — and three further runs reproduced it
+independently. ADR 0059's locomotion is live and visible. The
 crowd is not a locomotion failure — **there is simply nowhere else to walk to,
 and after tick 5,133 nobody walked again for seventeen thousand ticks.**
 
@@ -77,9 +78,14 @@ LOCKSTATE_BROWSER_TEST_PORT=5323 node node_modules/@playwright/test/cli.js test 
 
 | act | what it plays | result |
 | --- | --- | --- |
-| 1 | the reported configuration exactly — 6 beds, 22 admitted, 6 guards — run to day 10 past a riot, with both channels, the event log and a whole-run keyframe aggregate | `1 passed (5.3m)` |
-| 2 | six beds and **one prisoner at a time**, a tile tally after each admission from n=1 to n=8 | (below) |
-| 3 | eight prisoners, both stacks, then **every bed removed** under the six who are housed | (below) |
+| 1 | the reported configuration exactly — 6 beds, 22 admitted, 6 guards — run to day 10 past a riot, with both channels, the event log and a whole-run keyframe aggregate | run 1 `1 passed (5.3m)`, run 2 `1 passed (5.2m)` |
+| 2 | six beds and **one prisoner at a time**, a tile tally after each admission up to eight | `1 passed (4.1m)` |
+| 3 | eight prisoners, both stacks, then **every bed removed** under the six who are housed | `1 passed (3.8m)` |
+
+**Act 1 was run twice**, at `34f9d5e` and again at `e2a699d` after the
+instrument fix in §12. Both are quoted; where a figure differs between them it
+is because they are two runs of a stochastic prison, not two readings of one,
+and both are given rather than the better one.
 
 ---
 
@@ -225,15 +231,30 @@ That is [ADR 0036](../adr/0036-a-derived-default-security-sector.md)'s design
 why, in act 1, six assaults and a riot naming all twenty-two prisoners produced
 no visible movement of any guard at all.
 
-**One guard did change tile, and it teleported.** The early reading has one
-guard on (12,12) and the late reading has none; no guard ever published a
-non-zero velocity in 2,644 keyframes (§5). The two systems that can move a guard
+**One guard did change tile, and it teleported — MEASURED in act 1 run 2, and
+the differential is inside a single run.** Of the twenty-four tile changes the
+keyframe channel carried, eighteen are six prisoners walking in three sampled
+steps each, and the other six are **one guard, crossing the same eight tiles in
+one sampled step, four times**:
+
+```
+#3 pop1 (16,16)->(12,12) 8 tile(s) across ticks 13210->13218
+#3 pop1 (12,12)->(16,16) 8 tile(s) across ticks 13864->13872
+#3 pop1 (16,16)->(12,12) 8 tile(s) across ticks 16267->16276
+#3 pop1 (12,12)->(16,16) 8 tile(s) across ticks 17410->17418
+```
+
+Eight tiles is sixteen kernel ticks at the shipped walking speed, so a walk
+would have to appear as at least two sampled steps with a published velocity —
+which is exactly what the six prisoners did on the same channel in the same run.
+**No guard published a non-zero velocity or a sub-tile position in 2,646
+keyframes** (`12 prisoner, 0 guard`). The two systems that can move a guard
 without `GuardLocomotionSystem` are `SearchSystem`, which writes
 `this.guards.setTile(guardId, destination)` at
 `src/simulation/contraband/search-system.ts:372`, and `IncidentResponseSystem`
-at `response-system.ts:867` — and act 1's event log carries two
-`contraband.discovered` events (ticks 10,280 and 12,050) around the window the
-guard was away. **This is decided, not broken.**
+at `response-system.ts:867`; run 2's event log carries `contraband.discovered`
+at ticks 12,050, 14,420 and 15,680, bracketing the trips. **This is decided, not
+broken.**
 [ADR 0088](../adr/0088-does-a-guard-walk-to-its-post.md), *"What is deliberately
 out of scope"*:
 
@@ -286,8 +307,9 @@ paragraph is an inference from three opened files and not a reading.
 
 ## 5. Nothing walks — overturned, with the exact evidence #944 asked for
 
-**MEASURED, act 1, whole-run aggregate.** Every keyframe from page load, not the
-last four hundred:
+**MEASURED, act 1 run 1, whole-run aggregate** — and independently again in run
+2 (§13) and in acts 2 and 3 (§7). Every keyframe from page load, not the last
+four hundred:
 
 ```
 [act1] whole-run keyframe aggregate: 2644 keyframe(s) spanning ticks 1..22329; 52879 actor-sample(s);
@@ -686,8 +708,8 @@ patch.
 - **act 1, run 1** — `1 passed (5.3m)` at `LOCKSTATE_BROWSER_TEST_PORT=5323`.
 - **act 2** — `1 passed (4.1m)`.
 - **act 3** — `1 passed (3.8m)`.
-- **act 1, run 2** — the same act after the instrument fix in §12, as a second
-  independent reproduction.
+- **act 1, run 2** — `1 passed (5.2m)`, the same act after the instrument fix
+  in §12, as a second independent reproduction (§13).
 - **Machine idleness, reported rather than claimed.** It was **not** idle:
   `ps -eo etime,args | grep -E "[p]laywright/test/cli|[v]itest"` found the other
   tester's playtest running when act 1 started, and `/proc/loadavg` read
@@ -743,3 +765,100 @@ its own `admitUntil` racing the counts publication rather than a refusal. #942
 (*"a run of presses is a run"*) landed between v0.0.451 and v0.0.469 and is the
 other tester's surface this round; this is one line of corroboration and not a
 finding of mine.
+
+---
+
+## 13. Act 1, run 2 — the same prison twice, and what it adds
+
+**MEASURED.** The second run of the same act, on the fixed instrument. Every
+headline reproduces:
+
+```
+[act1-early] tick 12154: 28 actor(s) on 2 distinct tile(s), 0 with a non-zero velocity
+    (12.00,12.00): 6 prisoner(s), 0 guard(s)
+    (16.00,16.00): 16 prisoner(s), 6 guard(s)
+[act1-late]  tick 22184: 28 actor(s) on 2 distinct tile(s), 0 with a non-zero velocity
+    (12.00,12.00): 6 prisoner(s), 0 guard(s)
+    (16.00,16.00): 16 prisoner(s), 6 guard(s)
+[act1] 2646 keyframe(s) spanning ticks 1..22363; 47121 actor-sample(s);
+       12 actor-sample(s) with a NON-ZERO velocity (12 prisoner, 0 guard);
+       8 with a NON-INTEGER position
+```
+
+**The riot again followed the crowd**, at a different tick, which is what makes
+it an ordering rather than a coincidence: the crowd was complete at tick 12,154
+and `incidents.riot-opened … participantCount=22` fired at **20,150** — 8,000
+ticks later in run 1, 8,000 ticks later in run 2, from different starting ticks.
+
+**And the alert column, which run 1 could not read (§12.2), is worth quoting for
+the player-cost question:**
+
+```
+A fight has broken out between two prisoners. 5× Day 8
+No incident is still open — but the last one ran out of time instead of being
+  contained, and everyone caught in it was hurt. 2× Day 9
+A riot has broken out — 22 prisoners have stopped taking orders. Day 9  [Critical]
+Contraband found: Phone. 2× Day 7
+```
+
+Five fights, a riot naming every prisoner in the building, and a lapse that hurt
+everyone caught in it — **while the tile tally did not change by one body.** The
+alerts are the game telling the player a great deal; the world is telling them
+nothing, and §6's cost is the gap between those two channels rather than either
+one of them.
+
+---
+
+## 14. Weakest claim, what would change my mind, and what I did not reach
+
+**The weakest claim is §4's second half — that the sixteen are what carries
+`needsPressure` over `hotThreshold`.** Everything else in §4 is measured (the
+crowd's completion tick, the riot's tick, the unchanged tally); this part is
+**REASONED** from three opened files and I could not read the quantity itself.
+`needsPressure` crosses no boundary I can request, `ActionMetrics.getMetrics()`
+has exactly one occurrence under `src/` — its own declaration at
+`action-system.ts:370` — and no HUD surface publishes either. So I can show that
+sixteen prisoners take no action and that the score is the mean deficit over
+every prisoner on owned land; I cannot show the score.
+
+**What would change my mind:** the same prison with **a bed for all twenty-two**
+that still riots. That would prove the neglect term is carried by the housed
+population's ordinary decay rather than by the homeless, and §4's chain would be
+wrong in its middle. It is a real experiment and I did not run it — the harness
+places beds along two rows of a 6×6 cell, twelve slots, so twenty-two beds need
+a different prison than the one every act here shares.
+
+**Second-weakest: that "one room, one tile" generalises to two rooms in use at
+once.** I never built a second room, and neither did the pass before me
+(`2026-09-04-why-they-stack.md` §8 names it as unreached for the same reason —
+an 8×8 yard and a 6×6 cell do not both fit in the starter plot's clear
+rectangle). What I have instead is act 2's four different actions all resolving
+to one anchor and `destinationTileOf`'s single `return` statement
+(`action-system.ts:199-202`), which is a mechanism rather than a second
+observation. **The reading that would settle it** is a prison with a cell and a
+yard and a door between them, watched across a recreation block: two anchors
+should be occupied in turn, and the population should be seen walking between
+them. `tests/browser/playtest-2026-09-03-the-errand-walks.playtest.ts`'s typed
+build route (`.hud-build__coordinates`, `.hud-rooms__coord-*`) is how to build
+it without fighting the canvas, and it is the next act somebody should write.
+
+**What else I did not reach:**
+
+- **Pixels.** I did not screenshot the world once. #944's depth fix
+  (`44852b2b`) is *cited* here and **not verified by me**; whether a shared tile
+  now draws every actor on it is `2026-09-04-can-i-see-my-prison.md`'s question
+  and somebody should re-play it, because §1 shows the underlying stack is
+  unchanged.
+- **A save and reload of the crowd.** ADR 0059 records that a restored traveller
+  drops to `idle` on the tile they had reached; a crowd that is entirely
+  stationary should survive a round trip unchanged, and that is a cheap check I
+  did not make.
+- **The `unmetDemandCycles` value itself.** Named above; unreadable from
+  outside the worker.
+- **Whether a prisoner ever leaves the arrival tile once a bed frees up.** Act 3
+  removed beds; nobody added one back. The prediction from §2 is that they walk
+  the moment `IntakeSystem` assigns them an instance, which is what the six in
+  every act did at admission — but *"a bed freeing up releases the crowd"* is
+  an inference here and not a measurement.
+- **Anything about the other tester's surface.** One line of corroboration on
+  the Admit control is in §12 and nothing else.
