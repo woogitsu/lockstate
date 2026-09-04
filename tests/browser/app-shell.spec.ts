@@ -5216,6 +5216,34 @@ test.describe('the assembled application', () => {
    * quantity, because both sides of that comparison are hand-written.
    */
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
+    /*
+     * `test.slow()` triples the 60 s budget, and unlike its three siblings this
+     * sweep was left without it -- which made it a test that could not pass
+     * rather than a test that sometimes did not.
+     *
+     * Measured 2026-09-04 on an idle machine (no `playwright` or `vitest`
+     * process running, load average **1.55**): at the bare 60 s it failed
+     * `Test timeout of 60000ms exceeded` on the `locator.click` below, and the
+     * call log had already reported the row *resolved*, *"visible, enabled and
+     * stable"* and *"done scrolling"* -- so nothing was being waited on, the
+     * budget had simply run out mid-sweep. The same commit, the same idle
+     * machine, run with `--timeout 180000`: **`1 passed (1.9m)`**, the test
+     * itself 1.8 m. It needs about 108 s and was being given 60.
+     *
+     * The budget is arithmetic here and not a race, which is why raising it
+     * hides nothing: the sweep is 18 rooms x 5 viewports, every step is
+     * awaited, and the work does not vary with timing. Nothing about the
+     * assertions changes -- a mutation of the production code this measures
+     * (`ROOM_NEEDS_NAMED_LIMIT` 4 -> 8) is still red inside the raised budget,
+     * on the fold assertion rather than on the clock.
+     *
+     * `main`'s CI runner does the whole browser suite in about 14 minutes and
+     * has never been red on this test, so the 60 s fitted there and only there.
+     * A canary entry in `docs/AGENT_WORKFLOW.md` recorded that asymmetry for
+     * one afternoon; the budget is the fix and the entry was the workaround.
+     */
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
@@ -5884,13 +5912,31 @@ test.describe('the assembled application', () => {
       );
       const expectedItem = (objectKey: string, count: string): string =>
         localeText('hud.rooms.needs-object').replace('{count}', count).replace('{object}', localeText(objectKey));
+      /*
+       * **The doorway line came first, and finding it here is what #938 is.**
+       *
+       * This assertion read `[bed, toilet]` and `data-needs` `'4'` until then,
+       * and both were true of what the panel drew and false of the prison:
+       * `wallRectanglesFromTheKeyboard` builds a `wall-brick` on **every**
+       * perimeter segment and no door anywhere, so the two cells this test
+       * zones are rooms no prisoner can ever walk into -- which is the exact
+       * state #938 measured, sitting inside this suite's own fixture, green,
+       * for as long as the readout had no way to say it.
+       *
+       * So this is the fix arriving on the assembled page rather than a
+       * fixture repaired to suit it: three lines per cell now, six unmet
+       * things across the two, and the door named before the furniture because
+       * nothing can be carried into a room nobody can enter.
+       */
       expect(shown.items, `the readout does not enumerate what the room needs at ${width}x${height}`).toEqual([
+        localeText('hud.rooms.needs-doorway'),
         expectedItem('object.bed.name', '1'),
         expectedItem('object.toilet.name', '1'),
       ]);
       // The same figure as a number rather than as prose, so the count above is
-      // not being read off the sentence it is meant to be checking.
-      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('4');
+      // not being read off the sentence it is meant to be checking. Six: a
+      // door, a bed and a toilet, twice over.
+      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('6');
 
       // 5. Nothing else in the panel was pushed out to make room. The
       // catalogue list is deliberately absent: it is the one box here that is

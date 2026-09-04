@@ -7,8 +7,9 @@ import type { SecurityGradeDefinition } from '../../content/security-grade-catal
 import { defaultSecurityGradeRegistry } from '../../content/security-grade-catalog';
 import type { EntityId } from '../entity/entity-store';
 import type { PlacedObject } from '../objects/placed-object';
-import { roomContains } from '../objects/room-capacity';
+import { roomBoundsOf, roomContains } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
+import { roomPerimeterAccess, type RoomDoorReader, type RoomEdgeReader, type RoomPerimeterAccess } from '../rooms/enclosure';
 import type { SecuritySectorDefinition } from '../security/sector';
 import {
   compareEntityIds,
@@ -86,6 +87,26 @@ export interface RoomProjectionOptions {
    * takes that path.
    */
   readonly placedObjects?: RoomObjectSource;
+  /**
+   * The two reads that answer whether anybody can get into a room (#938).
+   *
+   * **One option holding both, rather than two**, because neither is any use
+   * alone: `roomPerimeterAccess` needs the edge layers to know the perimeter
+   * is closed *and* the door registry to know whether one of those edges is a
+   * doorway, and a half-supplied pair would be a caller that had answered
+   * only the question that cannot distinguish the two cases. The type refuses
+   * it instead of the projection having to.
+   *
+   * **Optional, and its absence is silence rather than a guess**, exactly as
+   * `placedObjects`' is: without it `RoomListRowViewModel.access` is absent,
+   * which is "nobody told this projection about the walls" and not "the room
+   * has a way in". The worker supplies it (`worker/projection-catalog.ts`),
+   * so no session a player runs takes that path.
+   */
+  readonly perimeter?: {
+    readonly edges: RoomEdgeReader;
+    readonly doors: RoomDoorReader;
+  };
 }
 
 /**
@@ -241,6 +262,35 @@ export interface RoomListRowViewModel {
   readonly anchorTile: TileViewModel;
   readonly occupancy: RoomOccupancyViewModel;
   readonly objectCapabilities: readonly string[];
+  /**
+   * Whether anything can cross this room's own boundary (#938).
+   *
+   * `'no-way-in'` is the state issue #938 measured: a room the game accepts,
+   * counts, and reports requirement-complete, that no prisoner can ever enter
+   * because every edge on its perimeter is a wall and none of them is a
+   * registered door. It is `RoomPerimeterAccess`' own vocabulary, carried
+   * whole rather than reduced to a boolean, because `'gap'` and `'doorway'`
+   * are different facts about the player's building and a consumer that wants
+   * only the warning can test one value.
+   *
+   * **Absent is a real state and is not `'doorway'`.** Two ways to get it,
+   * and both are "this projection was not told" rather than "the room is
+   * fine": the caller supplied no `RoomProjectionOptions.perimeter`, or the
+   * instance carries no rectangle to walk (`RoomInstance.width`/`height`
+   * undefined -- a row no zoning plane supports). Defaulting it either way
+   * would turn a question nobody asked into an answer, which is the invention
+   * `satisfyingQuantity`'s own comment refuses in the same shape.
+   *
+   * Not part of `requirementSummary`, and deliberately not a fourth
+   * `RoomRequirementDefinition['type']`: that vocabulary is closed at
+   * `src/simulation/rooms/definition.ts` and widening it is an architectural
+   * decision with an ADR's worth of consequences (issue #938 §6 option 1),
+   * beginning with the fact that a doorway cannot be checked where the other
+   * requirements are -- `zone` runs before any door order could exist. This
+   * is a *fact about the instance*, published beside the requirement verdict
+   * rather than inside it.
+   */
+  readonly access?: RoomPerimeterAccess;
   /** Counts over the catalog's `object` requirements only; the rest are `'not-evaluated'`. */
   readonly requirementSummary: {
     readonly total: number;
@@ -518,6 +568,30 @@ function projectSecurity(
   };
 }
 
+/**
+ * The room's own boundary, or nothing at all (#938).
+ *
+ * Two absences, and neither may be softened into an answer: no `perimeter`
+ * option means nobody asked, and an instance with no rectangle has no
+ * perimeter to walk.
+ *
+ * The rectangle is `roomBoundsOf`'s, not one assembled here. That function is
+ * this repository's single definition of "which tiles this instance occupies"
+ * -- `anchorTile` as the north-west corner plus the recorded `width`/`height`,
+ * `undefined` for an instance carrying no bounds or degenerate ones -- and it
+ * is what `roomContains` attributes objects through two functions below. A
+ * second assembly of the same three fields here would be a second definition
+ * of a room's extent, and the perimeter walk would be reading a different
+ * rectangle from the one the object count is attributed to.
+ */
+function projectAccess(instance: RoomInstance, options: RoomProjectionOptions): RoomPerimeterAccess | undefined {
+  const { perimeter } = options;
+  if (perimeter === undefined) return undefined;
+  const bounds = roomBoundsOf(instance);
+  if (bounds === undefined) return undefined;
+  return roomPerimeterAccess(perimeter.edges, perimeter.doors, bounds);
+}
+
 function projectRow(
   source: RoomProjectionSource,
   instance: RoomInstance,
@@ -545,6 +619,7 @@ function projectRow(
   }
 
   const security = projectSecurity(instance.instanceId, options, grades);
+  const access = projectAccess(instance, options);
 
   return {
     instanceId: instance.instanceId,
@@ -553,6 +628,7 @@ function projectRow(
     anchorTile: toTileViewModel(instance.anchorTile),
     occupancy: projectOccupancy(source, instance),
     objectCapabilities: [...instance.objectCapabilities].sort(compareStableIds),
+    ...(access !== undefined ? { access } : {}),
     requirementSummary: {
       total: requirements.length,
       objectRequirements,
