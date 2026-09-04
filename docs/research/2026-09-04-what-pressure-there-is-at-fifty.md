@@ -1,6 +1,6 @@
 # What pressure there is at fifty — 2026-09-04
 
-**IN PROGRESS.** Acts B and P are measured and written up below. Acts F, G and
+**IN PROGRESS.** Acts B, P and F are measured and written up below. Acts G and
 Y are not yet run; every section that names them is a placeholder. This file is
 committed in this state deliberately: a container restart already destroyed one
 set of readings for this task that lived only in a transcript.
@@ -27,7 +27,7 @@ see [§0](#0-the-mutation-and-its-restore).
 | --- | --- | --- | --- | --- |
 | **B** the shipped curve | `withheld = 0` | 10×10 cell, **50 beds, no toilet**, 50 prisoners, **7 guards** — `ceil(50/8)`, exactly what the game asks | 758 s | 54,756 |
 | **P** the penalty restored | `withheld = 40` | identical script | 728 s | 53,225 |
-| **F** the break-even, penalty restored | `withheld = 40` | settle at 7, then overhire in two stages | *pending* | |
+| **F** the break-even, penalty restored | `withheld = 40` | settle at 7, then **137** guards, then **138** | 1,117 s | 49,835 |
 | **G** the break-even, shipped | `withheld = 0` | the same | *pending* | |
 | **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard` east of the cell | *pending* | |
 
@@ -48,7 +48,11 @@ the game asks for**. **Restoring the constant the owner suspended takes that
 prison from +14,440 a day to +10,440** — a **27.7% cut, not the 71% the same
 change cost a four-prisoner prison**, because the composition it prices at fifty
 is two unmet needs and not five. Break-even falls from 187.5 guards to 137.5,
-which is still **19.6× what the game asks for**.
+which is still **19.6× what the game asks for** — and 137.5 is not a
+quotient here, it is where the sign was watched flipping: **+40 a day at 137
+guards, −40 a day at 138**, three consecutive boundaries each way, same world,
+one hire apart. That same hire is also the moment the prison starts *containing*
+its incidents, and the response time collapses from 610 ticks to 70.
 
 ---
 
@@ -373,8 +377,124 @@ after the seventh guard was hired.
 
 ---
 
-## 5. Pending
+## 5. MEASURED — the sign flips between 137 and 138 guards, with the penalty restored
 
-Acts F, G and Y. The break-even measurements, the yard question, the mutation
-restore verification, the weakest claim and the instrument failures are written
-when they have run.
+**Reproduction** (act F). Act P's prison, on the mutated tree, then: run five
+in-game days at the seven guards the game asks for until the delta repeats;
+**pause the clock**; hire 130 more; fast-forward; watch two days; pause; hire
+**one** more; watch two days.
+
+The pause is not a convenience. A sentence is drawn uniformly from 14 to 90
+in-game days (`MIN_SENTENCE_DAYS`/`MAX_SENTENCE_DAYS`,
+`src/simulation/prisoners/sentence.ts`), so a prison stays fifty strong for
+fourteen days after its intake and then starts discharging people — and the 130
+presses cost **380 seconds of wall clock**, which at 4× is about seventeen
+in-game days. This act's first attempt (recorded in the instrument's own
+`pauseClock` docblock, from the session a container restart interrupted) spent
+that time with the clock running and measured a **thirty-eight**-prisoner prison
+without saying so.
+
+| boundary | tick | treasury | delta | staff | free | wage bill | implied grant |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| day 15 | 36,000 | 108,750 → 119,270 | +10,520 | 7 | 0 | 560 | 11,079 |
+| day 16 | 38,400 | 108,870 → 108,910 | **+40** | **137** | 129 | 10,960 | 11,000 |
+| day 17 | 40,800 | 108,910 → 108,950 | **+40** | 137 | 129 | 10,960 | 11,000 |
+| day 18 | 43,200 | 108,950 → 108,990 | **+40** | 137 | 129 | 10,960 | 11,000 |
+| day 19 | 45,600 | 108,910 → 108,870 | **−40** | **138** | 130 | 11,040 | 11,000 |
+| day 20 | 48,000 | 108,870 → 108,830 | **−40** | 138 | 130 | 11,040 | 10,999 |
+| day 21 | 50,400 | 108,830 → 108,790 | **−40** | 138 | 130 | 11,040 | 10,999 |
+
+`50 × 220 − 137 × 80 = 11,000 − 10,960 = +40` and
+`11,000 − 138 × 80 = −40`, each exactly, each at three consecutive boundaries,
+with `unpaidWagesMinorUnits: 0` and the histogram at
+`50 prisoner(s) at 2 unmet` throughout both stages.
+
+**So the break-even with the penalty restored is 137 guards — measured, not
+divided.** The hire that flips it is a single press; the day-19 boundary is the
+first negative one this repository has measured on a fifty-prisoner prison. The
+131 free guards cost 10,480 a day and the seven posted ones cost 560.
+
+### 5.1 MEASURED — the hire that flips the sign is the hire that starts containing incidents, and this act settles the cause
+
+The four-prisoner note found that the only act which contained an incident was
+the only act that went broke, read it off the event *band*, and said plainly
+what it could not do: *"This record **read** that docblock and did not test the
+path… What would settle it: an act at 2 guards, where one is posted and one is
+free."* Act F settles it better than that, because it is **one world with one
+variable changed** and the event channel gives the tick.
+
+Every `incidents.*` event act F published, in order, with the 130 hires at tick
+38,104:
+
+| assault opened | closed at | how | ticks | free guards |
+| --- | --- | --- | --- | --- |
+| 14,751 | 15,361 | `all-clear-after-lapse` | 610 | 0 |
+| 17,151 | 17,761 | `all-clear-after-lapse` | 610 | 0 |
+| 19,551 | 20,162 | `all-clear-after-lapse` | 611 | 0 |
+| 21,951 | 22,561 | `all-clear-after-lapse` | 610 | 0 |
+| 24,351 | 24,961 | `all-clear-after-lapse` | 610 | 0 |
+| 26,751 | 27,362 | `all-clear-after-lapse` | 611 | 0 |
+| 29,151 | 29,762 | `all-clear-after-lapse` | 611 | 0 |
+| 31,601 | 32,211 | `all-clear-after-lapse` | 610 | 0 |
+| 34,301 | 34,911 | `all-clear-after-lapse` | 610 | 0 |
+| 36,701 | 37,311 | `all-clear-after-lapse` | 610 | 0 |
+| *— 130 guards hired at tick 38,104 —* | | | | |
+| 39,101 | 39,171 | **`all-clear`** | **70** | 129 |
+| 41,501 | 41,571 | **`all-clear`** | **70** | 129 |
+| 43,901 | 43,972 | **`all-clear`** | **71** | 129 |
+| 46,301 | 46,371 | **`all-clear`** | **70** | 130 |
+| 48,702 | 48,771 | **`all-clear`** | **69** | 130 |
+| 51,101 | 51,171 | **`all-clear`** | **70** | 130 |
+
+**Sixteen assaults, one prison, one hire between them. Every one of the ten
+before it lapsed after ~610 ticks and every one of the six after it was
+contained in ~70 — an 8.7× collapse in response time, with no other change to
+the world.** The band changed with it, from *"the last one ran out of time
+instead of being contained, and everyone caught in it was hurt"* to *"The prison
+is under control again — no incident is still open."*
+
+That is as close to a controlled experiment as this instrument can produce, and
+it promotes the four-prisoner note's §5.1 from a correspondence across four
+separate worlds to a **within-world** result. What it still does not do is open
+`IncidentResponseSystem`; the mechanism named in `hud.security.coverage-met-hint`'s
+docblock — that `claimableResponders` draws from `GuardRoster.unassignedGuardIds()`,
+so a posted guard is `'travelling'` or `'on-post'` and never in the pool — is
+**VERIFIED, read** and is what these ticks are consistent with.
+
+**And the staffing sentence #941 landed is the one that is true of it.** The
+Staff panel at the end of act F, verbatim:
+
+> GUARD COVERAGE — **7 of 7** — Covered — **Only free guards answer
+> incidents.** … ON DUTY — **7 held · 131 free** … ON THE PAYROLL — **11,040 a
+> day**
+
+The panel says `7 of 7 Covered` on a prison carrying 138 guards, which is
+accurate (`required` is the posts a sector asks to be filled) and is exactly
+what the retired sentence — *"This prison has the guards it asks for"* — made
+misleading. **The four-prisoner note recorded that sentence being retired the
+same day it measured the harm; this act is the first measurement taken with the
+replacement on screen, and the replacement is true of what it measured.**
+
+### 5.2 What is still not on screen at −40 a day
+
+The chips at the day-21 boundary, three consecutive negative days in:
+
+```
+prisoners 50 | high-risk 4 | staff 138 | coverage 50 Covered | rooms 1
+incidents 0 Clear | contraband 3 | funds 108,790 | earned-today (rising)
+```
+
+`FUNDS` carries no badge, the band is about an incident, and `EARNED TODAY` is a
+within-day accrual that rises all day on a prison losing money. **Nothing on
+this screen distinguishes +14,440 a day from −40 a day** — the same observation
+the four-prisoner note made at −80, at a population and a payroll a player
+would actually reach. That is an observation and not a defect claim: what a
+readout must convey, and whether it should exist, is a design question.
+
+---
+
+## 6. Pending
+
+Acts G and Y. The shipped break-even, the yard question, the mutation restore
+verification, the weakest claim and the instrument failures are written when
+they have run.
