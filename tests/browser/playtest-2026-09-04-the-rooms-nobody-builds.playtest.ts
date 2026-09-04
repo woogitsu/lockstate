@@ -68,13 +68,14 @@ import {
  * twelve rows:
  *
  * ```
- *   x=  11 12 13 14 15 16 17 18 19 ...
- * y=10  +--------------------+                canteen (11,10)-(16,15), 6x6
- * y=15  |  canteen           |                door: west edge of (17,12)
- * y=16  +--------------------+   corridor
- * y=17  +--------+  +----------+               cell (11,17)-(13,20), 3x4
- * y=20  |  cell  |  |  shower  |               door: west edge of (14,18)
- * y=21  +--------+  +----------+               shower (16,17)-(18,19), 3x3
+ *        x=12 .. 17   18 .. 20
+ * y=11   +----------+              canteen (12,11)-(17,16), 6x6
+ *  ..    |  canteen |              door: west edge of (18,13)
+ * y=16   +----------+
+ * y=17     corridor row 17
+ * y=18   +--------+ +--------+     cell   (12,18)-(16,20), 5x3, door west edge of (17,19)
+ *  ..    |  cell  |^| shower |     shower (18,18)-(20,20), 3x3, door west edge of (18,19)
+ * y=20   +--------+ +--------+     ^ = corridor column 17
  * ```
  *
  * and `room.yard` needs 8×8 of *outdoors* — no walls, no objects, no money
@@ -110,10 +111,22 @@ interface Origin {
   readonly originY: number;
 }
 
-const CANTEEN: Rect = { x0: 11, y0: 10, x1: 16, y1: 15 };
-const CELL: Rect = { x0: 11, y0: 17, x1: 13, y1: 20 };
-const SHOWER: Rect = { x0: 16, y0: 17, x1: 18, y1: 19 };
-
+/*
+ * **Every rectangle boundary is inside measured-clear canvas, and that is what
+ * fixed the geometry rather than taste.**
+ *
+ * A wall run is dragged along a rectangle's *boundary line*, which sits on the
+ * seam between two tiles — 32px from either tile centre — so a rectangle whose
+ * interior tiles are all clear can still have a boundary the HUD covers.
+ * `2026-09-04-is-there-anything-to-do.md` §0 measured tile *centres*; act 1 of
+ * this file re-measured them at v0.0.471 and they agree (x = 12..22 clear for
+ * y = 10..21). The boundaries used below are therefore held to k = 11..21 on y
+ * and 12..21 on x, which keeps every drag endpoint at least 32px inside a
+ * clear tile in both directions.
+ */
+const CANTEEN: Rect = { x0: 12, y0: 11, x1: 17, y1: 16 };
+const CELL: Rect = { x0: 12, y0: 18, x1: 16, y1: 20 };
+const SHOWER: Rect = { x0: 18, y0: 18, x1: 20, y1: 20 };
 /** The last tile a new prison has ground on: one 32x32 chunk (`new SparseWorld(32)`). */
 const WORLD_LAST_TILE = 31;
 
@@ -398,13 +411,30 @@ test.describe('the rooms nobody builds', () => {
      * four 2-wide benches at 2 each is 21. Bought with slack, because a short
      * delivery stalls the queue and reads as a broken build.
      */
-    await buy(page, 'wall-brick', 120);
-    await buy(page, 'door-wooden', 5);
-    await buy(page, 'bed-wooden', 6);
-    await buy(page, 'toilet-brick', 2);
-    await buy(page, 'shower-head-brick', 3);
-    await buy(page, 'dining-table-wooden', 3);
-    await buy(page, 'bench-wooden', 5);
+    for (const order of [
+      { id: 'wall-brick', quantity: 120 },
+      { id: 'door-wooden', quantity: 5 },
+      { id: 'bed-wooden', quantity: 6 },
+      { id: 'toilet-brick', quantity: 3 },
+      { id: 'shower-head-brick', quantity: 6 },
+      { id: 'dining-table-wooden', quantity: 8 },
+      { id: 'bench-wooden', quantity: 10 },
+    ]) {
+      await page.locator(`.hud-build__list [data-buildable="${order.id}"]`).click({ timeout: 15_000 });
+      const buyRow = page.locator('.hud-build__buy');
+      if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click({ timeout: 15_000 });
+      await page.locator('.hud-build__buy .ui-number__input').fill(String(order.quantity));
+      await page.waitForTimeout(200);
+      /*
+       * **The one price a player is ever shown, captured where it is shown.**
+       * `buySubmit.setLabel` is fed `count` and the total
+       * `material.unitPriceMinorUnits * quantity` (`src/ui/hud/build-panel.ts`,
+       * the `const total =` line in the buy-row updater), so the Buy control's
+       * own text is the only figure in the game that says what anything costs.
+       */
+      console.log(`[act2] buy ${order.id} x${order.quantity}: the control reads ${JSON.stringify((await page.locator('.hud-build__buy-submit').innerText()).trim())}`);
+      await buy(page, order.id, order.quantity);
+    }
     console.log(`[act2] strip after buying: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
     await fastForwardToMax(page);
     await page.waitForTimeout(6000);
@@ -422,29 +452,29 @@ test.describe('the rooms nobody builds', () => {
     await wallSide(page, 'act2 canteen north', origin, { x: midX(CANTEEN.x0), y: edgeY(CANTEEN.y0) }, { x: midX(CANTEEN.x1), y: edgeY(CANTEEN.y0) });
     await wallSide(page, 'act2 canteen south', origin, { x: midX(CANTEEN.x0), y: edgeY(CANTEEN.y1 + 1) }, { x: midX(CANTEEN.x1), y: edgeY(CANTEEN.y1 + 1) });
     await wallSide(page, 'act2 canteen west', origin, { x: edgeX(CANTEEN.x0), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x0), y: midY(CANTEEN.y1) });
-    await wallSide(page, 'act2 canteen east above door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(11) });
-    await wallSide(page, 'act2 canteen east below door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(13) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y1) });
+    await wallSide(page, 'act2 canteen east above door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y0) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(12) });
+    await wallSide(page, 'act2 canteen east below door', origin, { x: edgeX(CANTEEN.x1 + 1), y: midY(14) }, { x: edgeX(CANTEEN.x1 + 1), y: midY(CANTEEN.y1) });
 
     // Cell: full perimeter except the east edge at y=18.
     await wallSide(page, 'act2 cell north', origin, { x: midX(CELL.x0), y: edgeY(CELL.y0) }, { x: midX(CELL.x1), y: edgeY(CELL.y0) });
     await wallSide(page, 'act2 cell south', origin, { x: midX(CELL.x0), y: edgeY(CELL.y1 + 1) }, { x: midX(CELL.x1), y: edgeY(CELL.y1 + 1) });
     await wallSide(page, 'act2 cell west', origin, { x: edgeX(CELL.x0), y: midY(CELL.y0) }, { x: edgeX(CELL.x0), y: midY(CELL.y1) });
-    await wallSide(page, 'act2 cell east above door', origin, { x: edgeX(CELL.x1 + 1), y: midY(17) }, { x: edgeX(CELL.x1 + 1), y: midY(17) });
-    await wallSide(page, 'act2 cell east below door', origin, { x: edgeX(CELL.x1 + 1), y: midY(19) }, { x: edgeX(CELL.x1 + 1), y: midY(20) });
+    await wallSide(page, 'act2 cell east above door', origin, { x: edgeX(CELL.x1 + 1), y: midY(18) }, { x: edgeX(CELL.x1 + 1), y: midY(18) });
+    await wallSide(page, 'act2 cell east below door', origin, { x: edgeX(CELL.x1 + 1), y: midY(20) }, { x: edgeX(CELL.x1 + 1), y: midY(20) });
 
     // Shower: full perimeter except the west edge at y=18.
     await wallSide(page, 'act2 shower north', origin, { x: midX(SHOWER.x0), y: edgeY(SHOWER.y0) }, { x: midX(SHOWER.x1), y: edgeY(SHOWER.y0) });
     await wallSide(page, 'act2 shower south', origin, { x: midX(SHOWER.x0), y: edgeY(SHOWER.y1 + 1) }, { x: midX(SHOWER.x1), y: edgeY(SHOWER.y1 + 1) });
     await wallSide(page, 'act2 shower east', origin, { x: edgeX(SHOWER.x1 + 1), y: midY(SHOWER.y0) }, { x: edgeX(SHOWER.x1 + 1), y: midY(SHOWER.y1) });
-    await wallSide(page, 'act2 shower west above door', origin, { x: edgeX(SHOWER.x0), y: midY(17) }, { x: edgeX(SHOWER.x0), y: midY(17) });
-    await wallSide(page, 'act2 shower west below door', origin, { x: edgeX(SHOWER.x0), y: midY(19) }, { x: edgeX(SHOWER.x0), y: midY(19) });
+    await wallSide(page, 'act2 shower west above door', origin, { x: edgeX(SHOWER.x0), y: midY(18) }, { x: edgeX(SHOWER.x0), y: midY(18) });
+    await wallSide(page, 'act2 shower west below door', origin, { x: edgeX(SHOWER.x0), y: midY(20) }, { x: edgeX(SHOWER.x0), y: midY(20) });
 
     // ---- doors ----
     await armBuildable(page, 'door-wooden');
     for (const door of [
-      { name: 'canteen door', x: edgeX(CANTEEN.x1 + 1), y: midY(12), expect: '17,12 west' },
-      { name: 'cell door', x: edgeX(CELL.x1 + 1), y: midY(18), expect: '14,18 west' },
-      { name: 'shower door', x: edgeX(SHOWER.x0), y: midY(18), expect: '16,18 west' },
+      { name: 'canteen door', x: edgeX(CANTEEN.x1 + 1), y: midY(13), expect: '18,13 west' },
+      { name: 'cell door', x: edgeX(CELL.x1 + 1), y: midY(19), expect: '17,19 west' },
+      { name: 'shower door', x: edgeX(SHOWER.x0), y: midY(19), expect: '18,19 west' },
     ]) {
       await assertCanvasAt(page, door.x, door.y, `act2 ${door.name}`);
       const produced = await press(page, door.x, door.y);
@@ -469,13 +499,13 @@ test.describe('the rooms nobody builds', () => {
         );
       }
     };
-    // Beds are 1x2: three across the top of the cell (rows 17-18), one at (11,19).
-    await place('bed-wooden', [[11, 17], [12, 17], [13, 17], [11, 19]]);
-    await place('toilet-brick', [[13, 20]]);
-    await place('shower-head-brick', [[18, 17], [18, 19]]);
+    // Beds are 1x2, so each covers rows 18-19; four of them across the cell.
+    await place('bed-wooden', [[12, 18], [13, 18], [14, 18], [15, 18]]);
+    await place('toilet-brick', [[12, 20]]);
+    await place('shower-head-brick', [[20, 18], [20, 20]]);
     // Dining tables are 3x2, benches 2x1.
-    await place('dining-table-wooden', [[11, 10], [14, 10]]);
-    await place('bench-wooden', [[11, 13], [13, 13], [15, 13], [11, 15]]);
+    await place('dining-table-wooden', [[12, 11], [15, 11]]);
+    await place('bench-wooden', [[12, 14], [14, 14], [16, 14], [12, 16]]);
 
     const queueMs = await waitForQueueEmpty(page, 600_000);
     console.log(`[act2] the Build panel says the queue is empty after ${queueMs}ms, at tick ${await currentTick(page)}`);
@@ -550,7 +580,7 @@ test.describe('the rooms nobody builds', () => {
      * world rectangles chosen to provably miss all three rooms; the first
      * whose sixty-four tile centres are all clear canvas is the one used.
      */
-    const focus = centreOf(origin, 20, 12);
+    const focus = centreOf(origin, 21, 12);
     await assertCanvasAt(page, focus.x, focus.y, 'act2 camera-focus point');
     await page.mouse.click(focus.x, focus.y);
     for (let index = 0; index < 6; index += 1) {
