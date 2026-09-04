@@ -598,6 +598,23 @@ not repeat them.** The list below is ordered by dependency, not by duration.
    protected `main`, in a form that is not the bypass §2.5 measures. *Parallel
    because it touches no source file and blocks nothing above it.*
 
+### How this relates to the 2026-09-03 play-driven note
+
+That note (branch `research/what-to-build-next`, not yet on `main`) answered a
+different question — *what is the highest-value thing to build next* — and
+answered it **the prisoner inspector**, on the evidence that
+`hud/prisoner-detail` is implemented, routed and answered in the worker with all
+six needs while nothing in `src/ui/` asks for it. **I am not contradicting it
+and I am not repeating it.** Its own §1 says the honest larger answer is that
+*"the game is not yet fun and this does not fix that"*, and that what is missing
+is pressure, which is a balance decision. **My §5 is that sentence turned into
+an order:** the inspector is the strongest candidate *inside* step 5 — it is
+where an acknowledgement, a withheld grant and a sentence ending all have to
+land before they can be shown at all — but it sits after step 4 because step 4
+decides what there is to acknowledge. **If the owner answers O-1 with "yes, the
+prison must be able to fail", the inspector is the first thing built after it,
+and that note is the brief for it.**
+
 **Deliberately not on this list, and why:** freezing scope (nothing in §2 shows
 scope-widening is what is hurting); a linter (§4); cleaning branches (already
 done, §2.3); building migration or determinism harnesses (already exist, §2.7);
