@@ -32,7 +32,7 @@ LOCKSTATE_BROWSER_TEST_PORT=5324 node node_modules/@playwright/test/cli.js test 
 | 1 | the eighteen-row Rooms catalogue and the twenty-one-row Build catalogue, before anything is built | `1 passed (1.1m)` |
 | 2 | four rooms zoned **before** anything is furnished — the run that measured the ordering rule, and the repository's first `room.yard` | `1 passed (13.2m)` |
 | 3 | the same four rooms in the order the game allows: wall, door, designate, furnish, one room per phase with three in-game days after each | `1 passed (13.3m)` |
-| 4 | one whole in-game day in the finished four-room prison, sampled across it — the repair for acts 2 and 3 both reading the roster inside the sleep block | *(see §8)* |
+| 4 | one whole in-game day in the finished four-room prison, sampled across it — the repair for acts 2 and 3 both reading the roster inside the sleep block | `1 passed (7.5m)` |
 
 ## The answer, in one paragraph
 
@@ -42,8 +42,10 @@ of purchase says nothing at all.** Four rooms were built in one prison for the
 first time in this repository: a 5 × 3 cell (905 of materials), a 6 × 6
 canteen (2,830), a 3 × 3 shower room (1,040), and an 8 × 8 yard (**0** — and
 the first and second `room.yard` ever placed in a Lockstate playtest, both
-accepted on the first attempt). All four are genuinely used: the roster shows
-`Eating`, `Showering`, `Yard Time` and `Heading to …` for each. `hygiene` went
+accepted on the first attempt). All four are genuinely used, and act 4 proves it across a whole day rather
+than by luck: eleven samples of a settled four-room prison show `Eating` in
+the meal block, `Yard Time` in the recreation blocks and `Showering` in the
+hygiene ones, with `Eating in Cell` never appearing at all. `hygiene` went
 **0% → 90%** two in-game days after the shower room opened and `recreation`
 went **0% → 93%** two days after the yard did, and the four-room prison ends
 with every one of the six needs above 60% and every prisoner at `Minimal`
@@ -679,6 +681,78 @@ a room is being used is the verb on a Regime roster row** — `Showering`,
 `src/content/simulation-message-keys.ts:164-176`. One tab, one column, four
 words.
 
+## 8. A whole day in the four-room prison, sampled across it — act 4
+
+**An instrument defect in acts 2 and 3, and the repair.** Both acts read the
+roster at *day boundaries*, and a day boundary lands inside
+`GENERAL_POPULATION_REGIME`'s `[0, 400)` sleep block
+(`src/simulation/prisoners/regime.ts:107`, VERIFIED, read). So both acts
+sampled the same ninety seconds of every prisoner's day and **could not have
+seen a meal, a shower or a yard session however well the rooms worked** — the
+`Eating` and `Yard Time` sightings in §6 are two lucky overshoots. Act 4 builds
+the same four rooms in one pass, settles for two in-game days, and then samples
+the whole roster across one complete 2,400-tick day.
+
+**MEASURED, act 4.** The prison after two settling days, built in one pass
+rather than in phases — an independent replication of §6.4's end state on a
+different seed:
+
+> `Petra Engel | Low | Hunger **89%** | Sleep **84%** | Hygiene **82%** |
+> Bladder **99%** | Safety **100%** | Recreation **96%**`
+
+and the day, eleven samples, four prisoners each, with the block each sample
+falls in:
+
+| tick-of-day | regime block | what the four were doing |
+| --- | --- | --- |
+| 153, 379 | `sleep` | `Sleeping` ×4 |
+| 604, 849 | `work / education / association` | **`Association` ×4** |
+| 1054 | `recreation` | `Heading to Yard Time` ×2, `Yard Time` ×2 |
+| 1279 | `meal` | **`Eating` ×4** |
+| 1505, 1730 | `work / education / association` | **`Association` ×4** |
+| 1974 | `recreation + hygiene` | `Yard Time` ×2, `Showering` ×2 |
+| 2103 | `recreation + association + hygiene` | `Heading to Using Toilet` ×2, `Heading to Showering` ×2 |
+| 2349 | `sleep` | `Yard Time` ×2, `Sleeping` ×2 |
+
+```
+[act4] verbs seen across one whole day, with how many prisoner-samples each:
+  [["Association",16],["Sleeping",10],["Yard Time",8],["Showering",4],["Eating",4],["Using Toilet",2]]
+```
+
+**Three things this settles.**
+
+1. **Every one of the four rooms is genuinely used, on schedule.** `Eating`
+   fills the meal block, `Yard Time` the recreation blocks, `Showering` the
+   hygiene ones. **`Eating in Cell` does not appear once** — so all four
+   `Eating` samples are `action.eat-meal` in the canteen, not the cell-side
+   sibling, and the two have distinct words
+   (`src/content/simulation-message-keys.ts:165-166`). The canteen *wins* the
+   meal block whenever it exists; §6.2's point is that winning it changes
+   nothing, not that it does not win it.
+2. **The biggest hole in a prisoner's day is the work block, and it is 1,000
+   ticks wide.** `[500, 1000)` and `[1300, 1800)` are 42% of the day, and all
+   four samples inside them are `Association` — `action.free-association`,
+   which declares `needEffectsPerTick: {}` and *"fulfils no need"*
+   (`src/simulation/prisoners/actions.ts:220-228`, VERIFIED, read). **36% of
+   all prisoner-samples across the whole day are a prisoner doing something
+   that is authored to do nothing.** The three rooms that would fill it —
+   `room.kitchen`, `room.laundry`, `room.classroom` — all have live actions
+   (§3) and none was built here. **That is the concrete shape of what issue
+   #592 is for**, and it is a stronger argument for it than "a work window
+   should be a real pie": the window exists, it is 42% of the day, and it is
+   empty.
+3. **Nothing about any of that reaches the player except through this one
+   column.** Over the 8,603 ticks from admission to the end of the scanned
+   day, in the healthiest prison in this record:
+
+   ```
+   [act4] DELTA admission -> end of the scanned day
+     MOVED (2/21): stateIncomeAccruedTodayMinorUnits: 635 -> 137 | treasuryMinorUnits: 17875 -> 22355
+   [act4] events over the whole act: []
+   ```
+
+   **Two counts, both the clock's own, and not one simulation event.**
+
 ## 8b. A four-room prison's Overview screen is 83% word-for-word identical to a one-cell prison's
 
 The brief asks this record to test, from the other side, the claim that a
@@ -980,9 +1054,14 @@ Three things could refute it and none was tested:
    blocks — the cell route may stop covering everybody, and then the canteen's
    4-a-tick against 3 would matter. **A twelve-prisoner run with and without a
    canteen, hunger sampled inside the meal blocks, would settle it.**
-2. **Sampling.** Acts 2 and 3 read the roster at day boundaries, which fall in
-   the `[0, 400)` sleep block, so what those acts saw of the canteen is two
-   incidental samples. Act 4 exists precisely because that is not good enough.
+2. **Sampling — half repaired.** Acts 2 and 3 read the roster at day
+   boundaries, which fall in the `[0, 400)` sleep block, so what those acts saw
+   of the canteen is two incidental overshoots. Act 4 repairs *whether the
+   canteen is used* (§8: it wins the meal block outright, four samples of four
+   prisoners, with `Eating in Cell` never once appearing). It does **not**
+   repair the counterfactual: I never ran the same day-scan on a prison with
+   *no* canteen, so "hunger would have been just as high without it" is still
+   an inference from §6.1's 97% rather than a paired measurement.
 3. **#592.** If kitchen labour ever makes a meal consume a portion, a canteen
    with no portions becomes a way to *fail* hunger and the whole reading
    changes.
