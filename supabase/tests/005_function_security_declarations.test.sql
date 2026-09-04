@@ -81,6 +81,7 @@ enforce_challenge_verification_transition:invoker:public, pg_temp
 enforce_prison_slot_capacity:definer:public, pg_temp
 enforce_save_version_size:invoker:public, pg_temp
 enforce_save_version_storage_prefix:definer:public, pg_temp
+enforce_telemetry_retention:definer:public, pg_temp
 max_challenge_evidence_bytes:invoker:<unpinned>
 max_save_payload_bytes:invoker:<unpinned>
 max_save_slot_capacity:invoker:<unpinned>
@@ -226,6 +227,13 @@ select is(
 -- as every other entry here and is driven behaviourally in suite 012, which
 -- plants a `pg_temp.telemetry_events` and asserts the row lands in the real
 -- table.
+--
+-- The eleventh, `enforce_telemetry_retention` (same migration, ADR 0046
+-- section 7 item 1), is definer for the *forward* version of that reason: no
+-- role holds EXECUTE on it today, and when the owner grants one to whatever
+-- ends up scheduling it, that role needs no DELETE on `telemetry_events` and
+-- no INSERT on `telemetry_retention_runs`. A retention job whose scheduler
+-- holds table DELETE is a scheduler that can delete anything.
 select is(
   (select string_agg(p.proname, ' ' order by p.proname)
      from pg_proc p
@@ -234,9 +242,9 @@ select is(
       and p.prosecdef),
   'account_save_slot_capacity create_prison create_save_version enforce_challenge_evidence_size '
     || 'enforce_prison_slot_capacity enforce_save_version_storage_prefix '
-    || 'recompute_entitlement_projection record_entitlement_event record_telemetry_events '
-    || 'submit_challenge_evidence',
-  'exactly ten functions run with their definer''s rights, and each one is a documented trusted path'
+    || 'enforce_telemetry_retention recompute_entitlement_projection record_entitlement_event '
+    || 'record_telemetry_events submit_challenge_evidence',
+  'exactly eleven functions run with their definer''s rights, and each one is a documented trusted path'
 );
 
 select * from finish();

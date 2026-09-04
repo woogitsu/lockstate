@@ -116,6 +116,17 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason) value
   ('user_settings',         'settings_schema_version', 'range-check', 'user_settings_schema_version_check', null),
   ('telemetry_events',      'consent_version',         'range-check', 'telemetry_events_consent_version_check', null),
 
+  -- The retention audit's three counted columns (20260904090000, ADR 0046
+  -- section 7 item 1). `retention_days` is bounded ABOVE as well as below and
+  -- that is the one worth reading twice: a run recorded with 100,000 days is a
+  -- run that retained everything, and an audit trail should not be able to
+  -- describe one as retention. `deleted_count` is the count the DELETE itself
+  -- reported, so its floor is the only bound available -- there is no ceiling
+  -- on how many rows a window may legitimately reach.
+  ('telemetry_retention_runs', 'run_id',              'range-check', 'telemetry_retention_runs_run_id_check', null),
+  ('telemetry_retention_runs', 'retention_days',      'range-check', 'telemetry_retention_runs_retention_days_check', null),
+  ('telemetry_retention_runs', 'deleted_count',       'range-check', 'telemetry_retention_runs_deleted_count_check', null),
+
   -- `claimed_occurred_at` is the client's `occurredAt` in epoch milliseconds,
   -- deliberately a `bigint` and not a `timestamptz` so that no retention window
   -- can key on it (ADR 0046 section 7 item 1: the wire schema is
@@ -158,7 +169,19 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason) value
   ('challenge_definitions', 'opens_at',                'relational-check', 'challenge_definitions_window', null),
   ('challenge_definitions', 'closes_at',               'relational-check', 'challenge_definitions_window', null),
   ('entitlement_events',    'occurred_at',             'relational-check', 'entitlement_events_expiry_after_occurrence', null),
-  ('entitlement_events',    'expires_at',              'relational-check', 'entitlement_events_expiry_after_occurrence', null);
+  ('entitlement_events',    'expires_at',              'relational-check', 'entitlement_events_expiry_after_occurrence', null),
+
+  -- The retention audit's two timestamps, constrained against each other by
+  -- `telemetry_retention_runs_window` for exactly the reason the two rows above
+  -- are: a `cutoff` at or after `ran_at` is a run that deleted rows it had just
+  -- accepted, and that is a property of their ordering rather than of where
+  -- either sits in the calendar. Note that neither is an
+  -- `unconstrained-by-decision` entry even though both are server-written: they
+  -- are genuinely constrained, so declaring them unconstrained would fail this
+  -- suite's own "no column recorded as unconstrained has quietly gained a
+  -- constraint" rule.
+  ('telemetry_retention_runs', 'ran_at',              'relational-check', 'telemetry_retention_runs_window', null),
+  ('telemetry_retention_runs', 'cutoff',              'relational-check', 'telemetry_retention_runs_window', null);
 
 -- Unconstrained, with reasons, and each one declaring whether a client role can
 -- write it. Two distinct kinds, and the difference matters: the first kind is

@@ -137,7 +137,24 @@ insert into bounded_columns (tbl, col, mechanism, object_name) values
   ('telemetry_events',      'release_commit',       'length-check', 'telemetry_events_release_commit_check'),
   ('telemetry_events',      'attributes',           'length-check', 'telemetry_events_attributes_bytes_check'),
   ('telemetry_events',      'category',             'value-set-check', 'telemetry_events_category_check'),
-  ('telemetry_events',      'environment',          'value-set-check', 'telemetry_events_environment_check');
+  ('telemetry_events',      'environment',          'value-set-check', 'telemetry_events_environment_check'),
+
+  -- telemetry_retention_runs (same migration, ADR 0046 section 7 item 1 and
+  -- ADR 0008 section 3 step 6). The audit half of the retention job: one row
+  -- per run per category, recording the rule applied, the boundary used and
+  -- how many rows stopped existing. Bounded for the same reason its sibling is
+  -- -- no role holds a privilege on it either, and the bound is what stops a
+  -- second writer added later being the one that stores something enormous.
+  --
+  -- `keyed_on` is the interesting entry: it is a `value-set-check` over a set
+  -- of ONE, `'received_at'`, because ADR 0046 section 7 item 1's whole
+  -- correction is that a retention window must key on the server's stamp and
+  -- never on the client's claim. An audit row that named a different column
+  -- would be a record of the defect that ADR corrects, so the column cannot
+  -- hold one.
+  ('telemetry_retention_runs', 'run_by',            'length-check', 'telemetry_retention_runs_run_by_check'),
+  ('telemetry_retention_runs', 'category',          'value-set-check', 'telemetry_retention_runs_category_check'),
+  ('telemetry_retention_runs', 'keyed_on',          'value-set-check', 'telemetry_retention_runs_keyed_on_check');
 
 -- --- The enumeration, from the catalog rather than from a list ---------
 
