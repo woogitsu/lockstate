@@ -544,28 +544,53 @@ test('act 2: a real stack on one tile, in pixels', async ({ page }) => {
 /* act 3 — #942, a run of presses is a run                             */
 /* ================================================================== */
 
-/** Presses a control `count` times as fast as the mouse can, with no waits between. */
-async function fastRun(page: Page, selector: string, count: number): Promise<{ elapsedMs: number; box: string }> {
+/**
+ * Presses a control `count` times as fast as the mouse can.
+ *
+ * `mode: 'resolved'` re-reads the control's box before every press, which is
+ * what a player who is *looking at* the button does. `mode: 'fixed'` presses
+ * the same physical point every time, which is what a player's hand does --
+ * and the difference between the two is a finding in its own right, because
+ * the Intake panel re-lays out while the run is in progress.
+ */
+async function fastRun(
+  page: Page,
+  selector: string,
+  count: number,
+  mode: 'resolved' | 'fixed',
+): Promise<{ elapsedMs: number; onControl: number; offControl: number; firstMissAt: number; box: string }> {
   const handle = page.locator(selector);
   await expect(handle).toBeVisible();
-  const box = await handle.boundingBox();
-  if (box === null) throw new Error(`${selector} has no box`);
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  // The press has to land on the control and not on something covering it —
-  // a press on a covered point submits nothing at all.
-  const hit = await page.evaluate(
-    ({ px, py, sel }) => {
-      const node = document.elementFromPoint(px, py);
-      return `${node?.tagName ?? 'none'}.${node?.className ?? ''} closest=${node?.closest(sel) === null ? 'NO' : 'yes'}`;
-    },
-    { px: x, py: y, sel: selector },
-  );
+  const first = await handle.boundingBox();
+  if (first === null) throw new Error(`${selector} has no box`);
+  let onControl = 0;
+  let offControl = 0;
+  let firstMissAt = -1;
   const started = Date.now();
   for (let index = 0; index < count; index += 1) {
+    const box = mode === 'fixed' ? first : ((await handle.boundingBox()) ?? first);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    // A press on a point the control no longer occupies submits nothing at
+    // all, and has cost this repository three withdrawn findings.
+    const hit = await page.evaluate(
+      ({ px, py, sel }) => document.elementFromPoint(px, py)?.closest(sel) !== null,
+      { px: x, py: y, sel: selector },
+    );
+    if (hit) onControl += 1;
+    else {
+      offControl += 1;
+      if (firstMissAt < 0) firstMissAt = index;
+    }
     await page.mouse.click(x, y);
   }
-  return { elapsedMs: Date.now() - started, box: `${Math.round(x)},${Math.round(y)} :: ${hit}` };
+  return {
+    elapsedMs: Date.now() - started,
+    onControl,
+    offControl,
+    firstMissAt,
+    box: `first box ${Math.round(first.x)},${Math.round(first.y)} ${Math.round(first.width)}x${Math.round(first.height)}`,
+  };
 }
 
 async function submittedOfType(page: Page, type: string): Promise<number> {
@@ -574,65 +599,171 @@ async function submittedOfType(page: Page, type: string): Promise<number> {
 }
 
 test('act 3: runs of Admit and Hire presses at every speed', async ({ page }) => {
-  test.setTimeout(900_000);
-  const console_lines: string[] = [];
+  test.setTimeout(1_500_000);
+  const consoleLines: string[] = [];
   page.on('console', (message) => {
-    const text = message.text();
-    if (/sequence|rejected|refus|command/i.test(text)) console_lines.push(`[${message.type()}] ${text}`);
+    const text = message.text().replace(/\s+/g, ' ').slice(0, 200);
+    if (/sequence|reject|refus|command/i.test(text)) consoleLines.push(`[${message.type()}] ${text}`);
   });
   await installTee(page);
   await openApp(page);
 
-  const transport = page.locator('.hud-strip__transport button');
+  /*
+   * **One prison, zoned, before a single press.** The first shape of this act
+   * pressed `Admit` on a bare fresh prison and got twenty-five refusals of
+   * `no-room-to-hold-anybody` -- `src/main.ts:2911` throws before
+   * `sender.submit`, so nothing reached the command sender at all and the act
+   * measured the wrong refusal. `counts.rooms === 0` is the whole condition,
+   * so one zoned cell is what the run needs to be about #942.
+   */
+  await buildAndPopulate(page, { beds: 6, admits: 0, guards: 0, label: 'act3' });
+  console.log(`[act3] the prison the runs happen in: ${JSON.stringify(await latestCounts(page))}`);
 
-  for (const [index, speed] of [
-    { press: 1, label: '1x' },
-    { press: 2, label: '2x' },
-    { press: 2, label: '4x' },
-  ].entries()) {
-    await page.getByRole('button', { name: 'New prison' }).click();
-    await expect(page.locator('.hud-clock__day')).toHaveText('1');
-    await page.waitForTimeout(600);
-    // Paused -> 1x -> 2x -> 4x, by pressing the transport the way a player does.
-    await transport.nth(1).click();
+  const transport = page.locator('.hud-strip__transport button');
+  const pause = transport.nth(0);
+  const play = transport.nth(1);
+  const faster = transport.nth(2);
+
+  const setSpeed = async (steps: number): Promise<void> => {
+    await pause.click();
     await page.waitForTimeout(200);
-    for (let step = 0; step < index; step += 1) {
-      await transport.nth(2).click();
+    await play.click();
+    await page.waitForTimeout(200);
+    for (let step = 0; step < steps; step += 1) {
+      await faster.click();
       await page.waitForTimeout(200);
     }
     await page.waitForTimeout(1500);
+  };
+
+  /*
+   * A warm-up run before any measurement, so every measured run starts from
+   * the same panel layout. The Intake panel grows a "with no bed" warning the
+   * moment the population passes `accommodationCapacity`, and a run that
+   * crosses that boundary is measuring the layout change rather than the
+   * command sender.
+   */
+  await setSpeed(0);
+  await tab(page, 'overview').click();
+  await fastRun(page, '.hud-intake__admit', 10, 'resolved');
+  await page.waitForTimeout(5000);
+  console.log(`[act3] after the warm-up: ${JSON.stringify(await latestCounts(page))}`);
+  console.log(`[act3] intake panel after the warm-up: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+
+  for (const speed of [
+    { steps: 0, label: '1x' },
+    { steps: 1, label: '2x' },
+    { steps: 2, label: '4x' },
+    // Repeated in the opposite order, because the population grows through
+    // the act and a single pass cannot separate speed from population.
+    { steps: 2, label: '4x (again)' },
+    { steps: 1, label: '2x (again)' },
+    { steps: 0, label: '1x (again)' },
+  ]) {
+    await setSpeed(speed.steps);
     console.log(`[act3] --- ${speed.label}: clock says ${JSON.stringify(await currentClock(page))} ---`);
 
     await tab(page, 'overview').click();
+    await page.waitForTimeout(300);
     const beforeAdmit = await submittedOfType(page, 'AdmitPrisoner');
-    const run = await fastRun(page, '.hud-intake__admit', 25);
-    await page.waitForTimeout(4000);
+    const beforeCounts = await latestCounts(page);
+    const run = await fastRun(page, '.hud-intake__admit', 25, 'resolved');
+    await page.waitForTimeout(6000);
     const afterAdmit = await submittedOfType(page, 'AdmitPrisoner');
-    const counts = await latestCounts(page);
+    const afterCounts = await latestCounts(page);
     console.log(
-      `[act3] ${speed.label} 25 Admit presses in ${run.elapsedMs}ms at ${run.box}` +
-        ` -> ${afterAdmit - beforeAdmit} AdmitPrisoner command(s) submitted, worker says prisoners=${counts?.prisoners}`,
+      `[act3] ${speed.label} 25 Admit presses in ${run.elapsedMs}ms (${run.onControl} landed on the control,` +
+        ` ${run.offControl} off it, ${run.box}) -> ${afterAdmit - beforeAdmit} AdmitPrisoner command(s) submitted` +
+        ` | prisoners ${beforeCounts?.prisoners} -> ${afterCounts?.prisoners}` +
+        ` (+${(afterCounts?.prisoners ?? 0) - (beforeCounts?.prisoners ?? 0)})`,
     );
-    console.log(`[act3] ${speed.label} admit control disabled=${await page.locator('.hud-intake__admit').getAttribute('disabled')} aria-disabled=${await page.locator('.hud-intake__admit').getAttribute('aria-disabled')}`);
-    console.log(`[act3] ${speed.label} screen after the run: ${JSON.stringify(await say(page))}`);
+    console.log(`[act3] ${speed.label} screen after the admit run: ${JSON.stringify(await say(page))}`);
 
     await tab(page, 'security').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
+    await page.waitForTimeout(300);
     const beforeHire = await submittedOfType(page, 'HireStaff');
-    const hireRun = await fastRun(page, '.hud-staff__hire', 8);
-    await page.waitForTimeout(4000);
+    const beforeStaff = await latestCounts(page);
+    const hireRun = await fastRun(page, '.hud-staff__hire', 8, 'resolved');
+    await page.waitForTimeout(6000);
     const afterHire = await submittedOfType(page, 'HireStaff');
-    const hired = await latestCounts(page);
+    const afterStaff = await latestCounts(page);
     console.log(
-      `[act3] ${speed.label} 8 Hire presses in ${hireRun.elapsedMs}ms at ${hireRun.box}` +
-        ` -> ${afterHire - beforeHire} HireStaff command(s) submitted, worker says staff=${hired?.staff}` +
-        ` funds=${hired?.treasuryMinorUnits}`,
+      `[act3] ${speed.label} 8 Hire presses in ${hireRun.elapsedMs}ms (${hireRun.onControl} on, ${hireRun.offControl} off)` +
+        ` -> ${afterHire - beforeHire} HireStaff command(s) submitted` +
+        ` | staff ${beforeStaff?.staff} -> ${afterStaff?.staff} (+${(afterStaff?.staff ?? 0) - (beforeStaff?.staff ?? 0)})` +
+        ` | funds ${beforeStaff?.treasuryMinorUnits} -> ${afterStaff?.treasuryMinorUnits}`,
     );
-    console.log(`[act3] ${speed.label} console lines so far: ${JSON.stringify(console_lines.slice(-8))}`);
   }
-  console.log(`[act3] === every command-ish console line of the whole act (${console_lines.length}) ===`);
-  for (const line of console_lines) console.log(`[act3]   ${line}`);
+
+  /*
+   * And the same run with the hand held still: twenty-five presses on the
+   * point the control occupied when the run began. This is the gesture a
+   * player actually makes, and it is a different measurement from the one
+   * above.
+   */
+  await setSpeed(2);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(400);
+  const fixedBefore = await submittedOfType(page, 'AdmitPrisoner');
+  const fixedCounts = await latestCounts(page);
+  const fixedRun = await fastRun(page, '.hud-intake__admit', 25, 'fixed');
+  await page.waitForTimeout(6000);
+  const fixedAfter = await submittedOfType(page, 'AdmitPrisoner');
+  const fixedAfterCounts = await latestCounts(page);
+  console.log(
+    `[act3] FIXED-POINT 25 Admit presses at one point in ${fixedRun.elapsedMs}ms:` +
+      ` ${fixedRun.onControl} of them were still on the control, ${fixedRun.offControl} were not` +
+      ` (first miss at press ${fixedRun.firstMissAt}, ${fixedRun.box})` +
+      ` -> ${fixedAfter - fixedBefore} AdmitPrisoner command(s)` +
+      ` | prisoners ${fixedCounts?.prisoners} -> ${fixedAfterCounts?.prisoners}`,
+  );
+
+  const sequenceLines = consoleLines.filter((line) => /sequence/i.test(line));
+  console.log(`[act3] === console lines mentioning a command sequence: ${sequenceLines.length} ===`);
+  for (const line of sequenceLines.slice(0, 20)) console.log(`[act3]   ${line}`);
+  const refusalLines = consoleLines.filter((line) => /refus|reject/i.test(line));
+  console.log(`[act3] === console lines mentioning a refusal/rejection: ${refusalLines.length} ===`);
+  for (const line of refusalLines.slice(0, 20)) console.log(`[act3]   ${line}`);
+});
+
+/**
+ * Act 3b -- the run #942 is actually about, made from the state a *player*
+ * starts one in: a prison that has just been built, nobody admitted yet, and
+ * a hand that does not move between presses.
+ *
+ * Act 3 warms the prison up to a stable layout on purpose, because that is
+ * the only way to ask the command sender's question alone. This act asks the
+ * player's question instead, and the two answers differ.
+ */
+test('act 3b: a fixed-point run of Admit presses on a prison nobody has been admitted to', async ({ page }) => {
+  test.setTimeout(1_200_000);
+  await installTee(page);
+  await openApp(page);
+  await buildAndPopulate(page, { beds: 6, admits: 0, guards: 0, label: 'act3b' });
+  const before = await latestCounts(page);
+  console.log(`[act3b] the prison: ${JSON.stringify(before)}`);
+  console.log(`[act3b] intake panel before a single press: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(400);
+  const handle = page.locator('.hud-intake__admit');
+  const box = await handle.boundingBox();
+  console.log(`[act3b] Admit sits at ${JSON.stringify(box)} before the run`);
+  const beforeSubmitted = await submittedOfType(page, 'AdmitPrisoner');
+  const run = await fastRun(page, '.hud-intake__admit', 25, 'fixed');
+  await page.waitForTimeout(6000);
+  const after = await latestCounts(page);
+  console.log(
+    `[act3b] 25 presses at one point in ${run.elapsedMs}ms: ${run.onControl} on the control, ${run.offControl} off it,` +
+      ` first miss at press ${run.firstMissAt}` +
+      ` -> ${(await submittedOfType(page, 'AdmitPrisoner')) - beforeSubmitted} AdmitPrisoner command(s)` +
+      ` | prisoners ${before?.prisoners} -> ${after?.prisoners}`,
+  );
+  console.log(`[act3b] Admit sits at ${JSON.stringify(await handle.boundingBox())} after the run`);
+  console.log(`[act3b] intake panel after: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+  console.log(`[act3b] screen: ${JSON.stringify(await say(page))}`);
 });
 
 /* ================================================================== */
@@ -775,108 +906,158 @@ test('act 4b: Load pressed on the prison already being played', async ({ page })
 /* act 5 — #945, removing a standing object says so                    */
 /* ================================================================== */
 
-test('act 5: removing a standing bed, and removing a pending one', async ({ page }) => {
-  test.setTimeout(1_200_000);
+test('act 5: removing a standing bed, a pending one, and an occupied one', async ({ page }) => {
+  test.setTimeout(1_800_000);
   await installTee(page);
   await openApp(page);
-  await page.getByRole('button', { name: 'New prison' }).click();
-  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+  /*
+   * **A zoned room first, because a bed on bare ground is refused.** The
+   * first shape of this act placed a bed on open world and read
+   * *"The object was not placed -- it has to stand in a room you have
+   * zoned."*, so nothing was ever standing to remove.
+   */
+  const origin = await buildAndPopulate(page, { beds: 3, admits: 3, guards: 0, label: 'act5' });
+  await page.waitForTimeout(4000);
+  console.log(`[act5] the prison: ${JSON.stringify(await latestCounts(page))}`);
+
   await tab(page, 'build').click();
-  const origin = await calibrate(page);
-  console.log(`[act5] calibration: (${origin.originX}, ${origin.originY})`);
+  await buy(page, 'bed-wooden', 4);
+  await page.waitForTimeout(8000);
+  console.log(`[act5] after buying four more beds: ${JSON.stringify(await latestCounts(page))}`);
 
-  const fundsAtStart = await latestCounts(page);
-  console.log(`[act5] funds at start: ${fundsAtStart?.treasuryMinorUnits}`);
-  await buy(page, 'bed-wooden', 3);
-  const fundsAfterBuy = await latestCounts(page);
-  console.log(`[act5] funds after buying 3 beds: ${fundsAfterBuy?.treasuryMinorUnits}`);
-  await fastForwardToMax(page);
-  await page.waitForTimeout(6000);
-  console.log(`[act5] deliveries: ${JSON.stringify(await panelText(page, '.hud-build__deliveries'))}`);
+  const removeArmed = async (armed: boolean): Promise<void> => {
+    await tab(page, 'build').click();
+    const label = (await page.locator('.hud-build__remove').innerText()).trim().toLowerCase();
+    const isArmed = label.startsWith('stop');
+    if (isArmed !== armed) await page.locator('.hud-build__remove').click();
+    await page.waitForTimeout(150);
+  };
+  const queue = async (): Promise<string> => (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
+  const alerts = async (): Promise<readonly string[]> => (await say(page)).alerts;
 
-  // --- 5a: a STANDING object -----------------------------------------
+  // --- 5a: an UNOCCUPIED STANDING object ------------------------------
   await armBuildable(page, 'bed-wooden');
-  const standing = centreOf(origin, 14, 14);
-  const placed = await press(page, standing.x, standing.y);
-  console.log(`[act5] 5a placed a bed at (14,14): ${placed.length} command(s) ${JSON.stringify(placed)}`);
+  const spare = centreOf(origin, 13, 16);
+  await press(page, spare.x, spare.y);
   await waitForQueueEmpty(page);
-  await page.waitForTimeout(3000);
-  const fundsBuilt = await latestCounts(page);
-  console.log(`[act5] 5a funds with the bed standing: ${fundsBuilt?.treasuryMinorUnits}`);
-  console.log(`[act5] 5a screen before the removal: ${JSON.stringify(await say(page))}`);
+  await page.waitForTimeout(4000);
+  const built = await latestCounts(page);
+  console.log(`[act5] 5a the bed IS standing: accommodationCapacity=${built?.accommodationCapacity} (was 3), queue=${JSON.stringify(await queue())}`);
+  const alertsBefore5a = await alerts();
 
-  await tab(page, 'build').click();
-  await page.locator('.hud-build__remove').click();
-  const onPoint = await page.evaluate(
-    ({ x, y }) => {
-      const node = document.elementFromPoint(x, y);
-      return `${node?.tagName ?? 'none'}#${(node as HTMLElement)?.id ?? ''}.${node?.className ?? ''}`;
-    },
-    standing,
-  );
-  console.log(`[act5] 5a what is under the removal press point: ${onPoint}`);
-  const removed = await press(page, standing.x, standing.y);
-  await page.waitForTimeout(1200);
-  const fundsRemoved = await latestCounts(page);
+  await removeArmed(true);
+  const removed = await press(page, spare.x, spare.y);
+  await page.waitForTimeout(900);
+  const afterRemove = await latestCounts(page);
   console.log(`[act5] 5a removal produced ${removed.length} command(s): ${JSON.stringify(removed)}`);
   console.log(
-    `[act5] 5a funds ${fundsBuilt?.treasuryMinorUnits} -> ${fundsRemoved?.treasuryMinorUnits}` +
-      ` (${(fundsRemoved?.treasuryMinorUnits ?? 0) - (fundsBuilt?.treasuryMinorUnits ?? 0)})`,
+    `[act5] 5a accommodation ${built?.accommodationCapacity} -> ${afterRemove?.accommodationCapacity}` +
+      ` | funds ${built?.treasuryMinorUnits} -> ${afterRemove?.treasuryMinorUnits}`,
   );
-  console.log(`[act5] 5a THE SCREEN RIGHT AFTER: ${JSON.stringify(await say(page))}`);
-  // The band holds a sentence for a floor of 600ms; read it again a moment
-  // later so a sentence that arrived and was displaced is distinguishable
-  // from one that was never said.
-  await page.waitForTimeout(2500);
-  console.log(`[act5] 5a the screen 2.5s later: ${JSON.stringify(await say(page))}`);
-  await page.locator('.hud-build__remove').click();
+  const screen5a = await say(page);
+  console.log(`[act5] 5a BAND: ${JSON.stringify(screen5a.band)}`);
+  console.log(`[act5] 5a NEW ALERT ROWS: ${JSON.stringify(screen5a.alerts.filter((row) => !alertsBefore5a.includes(row)))}`);
+  await removeArmed(false);
 
-  // --- 5b: a PENDING order, the sibling channel ------------------------
+  /* --- 5b: a PENDING order, the sibling channel ------------------------
+   *
+   * **With the clock PAUSED, so the crew cannot finish the bed between the
+   * two presses.** Two earlier shapes of this act failed here and both are
+   * worth recording: one placed a single order and removed it a second later,
+   * and at x4 the bed was already standing; the next placed eight orders
+   * against what was left of the bought materials, and the materials were not
+   * the constraint -- `accommodationCapacity` went 3 -> 8 inside the press
+   * loop and the tile that was left over had never taken an order at all
+   * (*"Nothing was removed -- there is no object on that tile, and none being
+   * built there."*). Paused, no tick passes between the two commands, so the
+   * order is provably still an order when the removal reaches it.
+   */
+  const transport = page.locator('.hud-strip__transport button');
+  await transport.nth(0).click();
+  await page.waitForTimeout(600);
+  console.log(`[act5] 5b clock before the order: ${JSON.stringify(await currentClock(page))} at tick ${await currentTick(page)}`);
+  const alertsBefore5b = await alerts();
   await armBuildable(page, 'bed-wooden');
-  const pending = centreOf(origin, 16, 14);
-  const ordered = await press(page, pending.x, pending.y);
-  console.log(`[act5] 5b ordered a bed at (16,14): ${ordered.length} command(s)`);
-  await page.waitForTimeout(300);
-  const fundsOrdered = await latestCounts(page);
-  console.log(`[act5] 5b queue right after the order: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-  await tab(page, 'build').click();
-  await page.locator('.hud-build__remove').click();
-  const cancelled = await press(page, pending.x, pending.y);
-  await page.waitForTimeout(1200);
-  const fundsCancelled = await latestCounts(page);
-  console.log(`[act5] 5b removal of a pending order produced ${cancelled.length} command(s): ${JSON.stringify(cancelled)}`);
+  const pendingTile = centreOf(origin, 16, 16);
+  const ordered = await press(page, pendingTile.x, pendingTile.y);
+  console.log(`[act5] 5b ordered a bed at (16,16) with the clock paused: ${JSON.stringify(ordered)}`);
+  await removeArmed(true);
+  const cancelled = await press(page, pendingTile.x, pendingTile.y);
+  console.log(`[act5] 5b removal command with the clock still paused: ${JSON.stringify(cancelled)}`);
+  const beforeResume = await latestCounts(page);
+  await transport.nth(1).click();
+  await page.waitForTimeout(4000);
+  const afterPending = await latestCounts(page);
   console.log(
-    `[act5] 5b funds ${fundsOrdered?.treasuryMinorUnits} -> ${fundsCancelled?.treasuryMinorUnits}` +
-      ` (${(fundsCancelled?.treasuryMinorUnits ?? 0) - (fundsOrdered?.treasuryMinorUnits ?? 0)})`,
+    `[act5] 5b accommodationCapacity ${beforeResume?.accommodationCapacity} -> ${afterPending?.accommodationCapacity}` +
+      ` | queue after ${JSON.stringify(await queue())}`,
   );
-  console.log(`[act5] 5b THE SCREEN RIGHT AFTER: ${JSON.stringify(await say(page))}`);
-  await page.locator('.hud-build__remove').click();
+  const screen5b = await say(page);
+  console.log(`[act5] 5b BAND (sticky -- it keeps the last event): ${JSON.stringify(screen5b.band)}`);
+  console.log(`[act5] 5b NEW ALERT ROWS: ${JSON.stringify(screen5b.alerts.filter((row) => !alertsBefore5b.includes(row)))}`);
+  console.log(`[act5] 5b WHOLE ALERTS LIST: ${JSON.stringify(screen5b.alerts)}`);
+  await removeArmed(false);
+  await fastForwardToMax(page);
 
-  // --- 5c: the same standing removal at a short viewport ---------------
-  // `hud.css` drops the alerts list below 720px, so the event band is the
-  // only place the sentence can land there.
-  await armBuildable(page, 'bed-wooden');
-  const third = centreOf(origin, 12, 14);
-  await press(page, third.x, third.y);
+  // --- 5c: an OCCUPIED standing bed, with somewhere to move to ---------
   await waitForQueueEmpty(page);
-  await page.waitForTimeout(3000);
-  await page.setViewportSize({ width: 900, height: 600 });
-  await page.waitForTimeout(800);
-  const origin600 = await (async () => {
-    await tab(page, 'build').click();
-    return calibrate(page, { x: 400, y: 300 }, 16);
-  })();
-  const thirdAt600 = centreOf(origin600, 12, 14);
-  await tab(page, 'build').click();
-  await page.locator('.hud-build__remove').click();
-  const removedSmall = await press(page, thirdAt600.x, thirdAt600.y);
-  await page.waitForTimeout(1200);
-  console.log(`[act5] 5c at 900x600 the removal produced ${removedSmall.length} command(s): ${JSON.stringify(removedSmall)}`);
-  console.log(`[act5] 5c THE SCREEN AT 900x600: ${JSON.stringify(await say(page))}`);
+  await page.waitForTimeout(4000);
+  const beforeOccupied = await latestCounts(page);
+  console.log(`[act5] 5c before: ${JSON.stringify(beforeOccupied)}`);
+  const alertsBefore5c = await alerts();
+  await removeArmed(true);
+  const occupied = centreOf(origin, 12, 12);
+  const removedOccupied = await press(page, occupied.x, occupied.y);
+  console.log(`[act5] 5c removing the bed at (12,12): ${removedOccupied.length} command(s)`);
+  const bands: string[] = [];
+  for (let sample = 0; sample < 12; sample += 1) {
+    const screen = await say(page);
+    bands.push(`+${sample * 250}ms ${JSON.stringify(screen.band)}`);
+    await page.waitForTimeout(250);
+  }
+  console.log(`[act5] 5c BAND over three seconds: ${bands.join(' | ')}`);
+  const screen5c = await say(page);
+  console.log(`[act5] 5c NEW ALERT ROWS: ${JSON.stringify(screen5c.alerts.filter((row) => !alertsBefore5c.includes(row)))}`);
+  const afterOccupied = await latestCounts(page);
   console.log(
-    `[act5] 5c alerts list laid out at 900x600: ${await page.evaluate(() => {
-      const list = document.querySelector<HTMLElement>('.hud-alerts__list');
-      return list === null ? 'ABSENT' : String(list.getClientRects().length > 0);
+    `[act5] 5c accommodation ${beforeOccupied?.accommodationCapacity} -> ${afterOccupied?.accommodationCapacity}` +
+      ` | occupants ${beforeOccupied?.roomOccupants} -> ${afterOccupied?.roomOccupants}`,
+  );
+  await removeArmed(false);
+
+  // --- 5d: the same removal at 900x600, where `hud.css` drops the list --
+  //
+  // The origin measured at 1440x900 is re-used and then *checked*: the
+  // `RemoveObject` command carries the tile it resolved to, so a camera that
+  // moved on the resize shows up as the wrong tile rather than as a silent
+  // wrong answer. An earlier shape re-calibrated here and could not: at
+  // 900x600 `calibrate`'s probe found no point that answered with a
+  // `RemoveObject` at all, which is recorded in the note as not reached.
+  await page.setViewportSize({ width: 900, height: 600 });
+  await page.waitForTimeout(1500);
+  const alertsBefore5d = await alerts();
+  await removeArmed(true);
+  const target600 = centreOf(origin, 14, 12);
+  const beforeSmall = await latestCounts(page);
+  const removedSmall = await press(page, target600.x, target600.y);
+  await page.waitForTimeout(1200);
+  const afterSmall = await latestCounts(page);
+  console.log(
+    `[act5] 5d pressed the 1440x900 coordinates of tile (14,12) at 900x600: ${JSON.stringify(removedSmall)}` +
+      ` | accommodationCapacity ${beforeSmall?.accommodationCapacity} -> ${afterSmall?.accommodationCapacity}`,
+  );
+  const screen5d = await say(page);
+  console.log(`[act5] 5d BAND at 900x600: ${JSON.stringify(screen5d.band)}`);
+  console.log(`[act5] 5d NEW ALERT ROWS: ${JSON.stringify(screen5d.alerts.filter((row) => !alertsBefore5d.includes(row)))}`);
+  console.log(
+    `[act5] 5d where a sentence can land at 900x600: ${await page.evaluate(() => {
+      const laidOut = (selector: string): string => {
+        const node = document.querySelector<HTMLElement>(selector);
+        if (node === null) return 'ABSENT';
+        return node.getClientRects().length > 0 ? 'laid out' : 'not laid out';
+      };
+      return `event band ${laidOut('.hud__event')} | alerts list ${laidOut('.hud-alerts__list')} | alerts panel ${laidOut('.hud-alerts')}`;
     })}`,
   );
 });
