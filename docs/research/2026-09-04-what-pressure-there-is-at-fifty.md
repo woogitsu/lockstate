@@ -18,60 +18,66 @@ measure at fifty prisoners first.** This is that measurement.
 Played through
 `tests/browser/playtest-2026-09-04-what-pressure-there-is-at-fifty.playtest.ts`
 at **1440×900**, on this branch merged with `origin/main` at v0.0.467
-(`36a5644c`). Nothing in CI collects that file
+(`36a5644c`). **`main` then moved under this record, to v0.0.473 (`70599d54`),
+and one of the things it brought explains the largest open question in it** —
+see [§6.2](#62-main-moved-under-this-record-and-answered-6s-open-question).
+Every number here was taken at v0.0.467 and is left as it was read. Nothing in CI collects that file
 (`tests/browser/playwright.config.ts` is `testMatch: /.*\.spec\.ts$/`), so it is
 evidence and never a gate. **Nothing in `src/` is changed on this branch** —
-see [§0](#0-the-mutation-and-its-restore).
+see [§8](#8-the-mutation-and-its-restore).
 
 | act | tree | what was played | wall clock | end tick |
 | --- | --- | --- | --- | --- |
 | **B** the shipped curve | `withheld = 0` | 10×10 cell, **50 beds, no toilet**, 50 prisoners, **7 guards** — `ceil(50/8)`, exactly what the game asks | 758 s | 54,756 |
 | **P** the penalty restored | `withheld = 40` | identical script | 728 s | 53,225 |
 | **F** the break-even, penalty restored | `withheld = 40` | settle at 7, then **137** guards, then **138** | 1,117 s | 49,835 |
-| **G** the break-even, shipped | `withheld = 0` | the same | *pending* | |
+| **G** the break-even, shipped | `withheld = 0` | settle at 7, then **187** guards, then **188** | 1,145 s | 50,600 |
 | **Y** the yard | `withheld = 40` | act P plus an 8×8 `room.yard`, panned east | 772 s | 55,922 |
 
 ---
 
-## The answer so far, in one paragraph
+## The answer in one paragraph
 
 **MEASURED.** Fifty prisoners *can* be housed on the ground a new prison starts
-with, and it takes the whole of the reachable map to do it: a **10×10 cell, 100
+with, and it takes the whole of the enclosable map to do it: a **10×10 cell, 100
 tiles, fifty beds and no room for the toilet the game's own Rooms panel says the
-room is missing.** It houses all fifty anyway —
-`accommodationCapacity: 50`, `occupiedPlaces: 50`, `prisonersInIntake: 0`. On
-the tree as shipped that prison's day-boundary treasury delta is **+14,440 at
-eight consecutive boundaries**, which is `50 × 300 − 560` to the unit, and
-wages are **3.7%** of income rather than the four-prisoner prison's 6.7%. The
-break-even on the shipped tree is therefore **187.5 guards**, or **26.8× what
-the game asks for**. **Restoring the constant the owner suspended takes that
-prison from +14,440 a day to +10,440** — a **27.7% cut, not the 71% the same
-change cost a four-prisoner prison**, because the composition it prices at fifty
-is two unmet needs and not five. Break-even falls from 187.5 guards to 137.5,
-which is still **19.6× what the game asks for** — and 137.5 is not a
-quotient here, it is where the sign was watched flipping: **+40 a day at 137
-guards, −40 a day at 138**, three consecutive boundaries each way, same world,
-one hire apart. That same hire is also the moment the prison starts *containing*
-its incidents, and the response time collapses from 610 ticks to 70. **And the
-cheapest repair the mechanic was designed to reward pays nothing at all here:**
-an 8×8 yard, zoned first attempt on owned ground, left the settled delta at
-+10,440 — identical to the prison without one, to the unit.
+room is missing.** It houses all fifty anyway. On the tree as shipped that
+prison's day-boundary treasury delta is **+14,440 at eight consecutive
+boundaries** — `50 × 300 − 560` to the unit — and **restoring the constant the
+owner suspended makes it +10,440**, a **27.7% cut, against the 71% the same
+change cost a four-prisoner prison.** It bites less at fifty for a measured
+reason: a prison built to the limit of the map settles at **two** unmet needs
+per prisoner rather than five, so the schedule prices a place at 220 instead of
+100. Break-even, measured by watching the sign flip one hire at a time, is
+**187 guards shipped and 137 restored** — `+40` a day at each, `−40` at one
+more — which is **26.7×** and **19.6×** what the game asks for. And the repair
+the mechanic was designed to reward returns nothing: an 8×8 yard, zoned first
+attempt on owned ground, leaves the settled delta at **+10,440**, identical to
+the prison without one, with `recreation` at **0 permille on all fifty**.
 
----
+**One fact conditions all of it, and it was not known while the acts ran.**
+Every act's cell is walled on four sides with **no doorway**, because neither
+instrument ever builds a door — and issue #938's fix, which landed on `main` in v0.0.472
+(`c6e89146` — absent at v0.0.471, present at v0.0.472) while this was being
+measured, is a controlled measurement that **a
+sealed room with no doorway is dead**: two prisons differing by one edge, and
+`hygiene` after ten days reads 254.8/255 with a door and **0** without. That is
+the exact signature of the two unmet needs measured here, and it means the
+composition this record prices — `hygiene` and `recreation` at 0 on all fifty —
+is **a dead cell's composition**, not a well-built prison's. It is still the
+composition a player gets from the prison the game's own readouts call finished,
+which is #938's whole point; but a prison with a door would settle somewhere
+else and the penalty would cost it something else
+([§6.2](#62-main-moved-under-this-record-and-answered-6s-open-question)).
 
-## 0. The mutation, and its restore
-
-*Filled in when the mutated acts have run and been restored.*
-
-```
-$ sha256sum src/simulation/economy/income.ts
-34a59cd222eccf85d44c9743068f57f6bf59f5c0788e2855462163fc3a612744  src/simulation/economy/income.ts
-```
-
-That is the clean hash of `src/simulation/economy/income.ts` at v0.0.467, and it
-is **the same hash the four-prisoner note recorded at v0.0.465** — the file did
-not move between the two measurements, which is worth one line because it means
-the two records price the same code.
+**So the shape of the answer at fifty is the opposite of the four-prisoner
+one.** There, restoring the penalty created a sharp staffing pressure — the
+overhire a prison survived fell from sixteen guards to six — and the yard was a
+real, cheap, measurable repair. Here the penalty moves break-even from 187
+guards to 137, which no player will ever approach, and the repair does not work
+at all. **The pressure the constant creates at four prisoners does not scale;
+what scales is the gap between the prison that earns and the prison that
+contains its incidents, and that gap is now 131 guards wide.**
 
 ---
 
@@ -605,10 +611,311 @@ the sub-question it raised, *"does one 8×8 yard even serve fifty people,"* has 
 sharper answer than the capacity arithmetic it expected: no prisoner used it at
 all.
 
+### 6.2 `main` moved under this record, and answered §6's open question
+
+**Written after the acts ran, at v0.0.473 (`70599d54`), and kept separate from
+them for that reason.** Merging `origin/main` into this branch to write this note
+brought issue #938's fix (PR #980, first released in v0.0.472),
+`tests/integration/dead-room-no-doorway.test.ts` — and its docblock is a
+controlled measurement of exactly the mechanism [§6](#6-measured--the-yard-incentive-is-worth-exactly-nothing-at-fifty)
+named as its strongest untested candidate:
+
+> Two prisons that differ by **one edge**. Both zone a `room.shower-room` and
+> place both of its shower heads; one has a wooden door in the wall line and one
+> does not. On the same seed, after ten in-game days:
+>
+> | | with a door | without |
+> | --- | --- | --- |
+> | `hygiene`, both prisoners | 254.8 / 253.2 of 255 | **0 / 0** |
+> | `roomPerimeterEnclosure` | `'sealed'` | `'sealed'` |
+> | `requirementSummary.missingCapability` | 0 | **0** |
+
+**That is the signature this record measured, for a different need, at fifty
+people.** `recreation` at exactly 0 permille on all fifty, with a legal zoned
+yard standing, is what a prisoner who cannot leave the cell looks like — and
+`hygiene` at exactly 0 on all fifty is the same thing, measured here in every
+one of the five acts. Neither playtest in this pair has ever built a door: grep
+for `door` in either file returns nothing.
+
+**So candidate 2 is promoted from "untested" to "measured on `main`, by someone
+else, for another need"** — which is a stronger claim than this record could
+make and a weaker one than running the act. It does not settle the yard: this
+record still has not built a door and re-measured `recreation`, and until it
+does, *"the yard pays nothing at fifty"* and *"the yard pays nothing to a prison
+whose cell has no door"* are the same measurement wearing two labels. **The
+second is the one the evidence supports.**
+
+**What this costs the rest of the record, stated plainly.** The two unmet needs
+every act settled at are `hygiene` and `recreation` — the two that need a room
+outside the cell. If a door changes them, it changes the price per place, and
+with it every ratio in [§4](#4-measured--restoring-the-constant-costs-this-prison-277-of-its-daily-gain)
+and both break-evens. What does **not** move is the shape: the shipped tree pays
+300 a place whatever the composition, so **act B's +14,440, act G's 187/188 flip
+and the whole shipped column are unaffected by any of this.** It is the restored
+column that is conditional, and the direction is knowable: a door can only
+*reduce* the number of unmet needs, so a prison with one earns **more** than
+11,000 and its break-even is **above** 137. The penalty's bite at fifty is
+therefore **at most** the 27.7% measured here, and the ruling is being made on
+the pessimistic end of the range.
+
+
 ---
 
-## 7. Pending
+## 7. MEASURED — on the shipped tree the sign flips between 187 and 188 guards
 
-Act G — the shipped tree's break-even, predicted at 187/188. The mutation
-restore verification, the weakest claim, the corrections to the brief and the
-instrument failures are written when it has run.
+**Reproduction** (act G). Act F's script on the unmutated tree, hiring 187 and
+then 188.
+
+| boundary | tick | treasury | delta | staff | free | wage bill | implied grant |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| day 15 | 36,000 | 117,050 → 131,490 | +14,440 | 7 | 0 | 560 | 15,000 |
+| day 16 | 38,400 | 131,490 → 145,930 | +14,440 | 7 | 0 | 560 | 14,999 |
+| day 17 | 40,800 | 131,530 → 131,570 | **+40** | **187** | 179 | 14,960 | 14,999 |
+| day 18 | 43,200 | 131,570 → 131,610 | **+40** | 187 | 179 | 14,960 | 15,000 |
+| day 19 | 45,600 | 131,530 → 131,490 | **−40** | **188** | 180 | 15,040 | 14,999 |
+| day 20 | 48,000 | 131,490 → 131,450 | **−40** | 188 | 180 | 15,040 | 14,999 |
+| day 21 | 50,400 | 131,450 → 131,410 | **−40** | 188 | 180 | 15,040 | 14,999 |
+
+`50 × 300 − 187 × 80 = +40` and `− 188 × 80 = −40`, exactly, and the
+composition is `50 prisoner(s) at 2 unmet` throughout — which on the shipped
+tree costs nothing, and is printed only to show the two acts are comparing the
+same prison.
+
+And the containment result replicates on the second tree, with the 180 hires at
+tick 38,582: the assault opened at 37,151 lapsed after 611 ticks; the five
+opened from 39,551 on were each `all-clear` in 69–70. **Ten lapses then five
+containments in act G, ten then six in act F — the same boundary, at the same
+hire, on both trees.**
+
+### 7.1 The two break-evens, side by side
+
+| | shipped (`withheld = 0`) | restored (`withheld = 40`) |
+| --- | --- | --- |
+| state income, 50 places at 2 unmet | 15,000 | **11,000** |
+| settled delta at the 7 guards the game asks for | **+14,440** | **+10,440** |
+| last guard count still positive | **187** (+40) | **137** (+40) |
+| first guard count negative | **188** (−40) | **138** (−40) |
+| headroom over what the game asks | **26.7×** | **19.6×** |
+| guards per prisoner at break-even | 3.75 | **2.75** |
+| what the game asks for, per prisoner | 0.14 | 0.14 |
+
+**Both flips are measured, not divided**, three or two consecutive boundaries
+either side of one hire, in one world each.
+
+---
+
+## 8. The mutation, and its restore
+
+`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` has one production reader —
+`stateIncomeForPrisonerDay`, `src/simulation/economy/income.ts:503` — and no
+seam a test can inject through, by a design its own docblock states. Acts P, F
+and Y ran against a source mutation of it from `0` to `40`; acts B and G ran on
+the unmutated tree. The mutation was made **once**, before act P, and restored
+**once**, after act Y and before act G:
+
+```
+$ sha256sum src/simulation/economy/income.ts > income.sha256
+34a59cd222eccf85d44c9743068f57f6bf59f5c0788e2855462163fc3a612744  src/simulation/economy/income.ts
+$ sed -i 's/^export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;$/…= 40;/'     src/simulation/economy/income.ts
+$ grep -n 'WITHHELD_PER_UNMET_NEED_MINOR_UNITS = ' src/simulation/economy/income.ts
+401:export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;
+  ... acts P, F, Y ...
+$ git checkout -- src/simulation/economy/income.ts
+$ sha256sum -c income.sha256
+src/simulation/economy/income.ts: OK
+$ grep -n 'WITHHELD_PER_UNMET_NEED_MINOR_UNITS = ' src/simulation/economy/income.ts
+401:export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;
+$ git diff --stat origin/main..HEAD -- src/
+  (empty)
+```
+
+**`OK`**, and `git diff origin/main..HEAD -- src/` is empty at the commit that
+carries this note. **Balance is the owner's; this record is a set of numbers.**
+
+**A fourth mutation was found already applied and was restored before any act
+ran.** The worktree this measurement inherited from the interrupted session had
+`= 40` uncommitted in `src/simulation/economy/income.ts` — the previous
+session's mutation, left in place when its container died. It was restored
+first, and the clean file hashed to
+`34a59cd222eccf85d44c9743068f57f6bf59f5c0788e2855462163fc3a612744` — **the same
+hash the four-prisoner note recorded at v0.0.465.** The file did not move
+between the two measurements, so the two records price the same code.
+
+The mutation was **not** proved live by a `vitest` probe this time, as the
+four-prisoner note's §0 did. It did not need to be: acts P, F and Y each
+divide to a price of exactly **220** a place, which is the schedule's row for
+two unmet needs at a withheld rate of 40 and is not a number the unmutated tree
+can produce — acts B and G divide to 300 on the identical composition. The
+mutation is therefore evidenced by four acts' arithmetic rather than by a probe.
+
+---
+
+## 9. What this record does *not* claim
+
+- **That any of the restored-tree numbers describe a prison with a door.**
+  **This is the weakest claim in the file with weight on it**, and it is
+  weakest in a knowable direction. Every act's cell is sealed with no doorway;
+  `tests/integration/dead-room-no-doorway.test.ts` on `main` measures that such
+  a room is dead; so the two unmet needs priced throughout are a dead cell's
+  two, and a prison with a door would earn more than 11,000 a day and break
+  even above 137 guards
+  ([§6.2](#62-main-moved-under-this-record-and-answered-6s-open-question)). The
+  shipped column is immune — 300 a place is paid at any composition — so what
+  is conditional is exactly the 27.7% and the 137, and both are the
+  *pessimistic* end. What would refute it: an act that builds one door and
+  re-measures the composition.
+- **That the yard's zero has a cause this record established.** It measures that
+  the yard returns nothing and rules capacity out as a *sufficient* explanation
+  — all fifty at exactly 0, where four rotating places would leave some
+  non-zero. Reachability is measured on `main` for `hygiene` and inferred here
+  for `recreation`; distance is untested. What would separate them: one act with
+  a door and the yard adjacent, one with a door and the yard far.
+- **That acts B and P are the same world.** They are the same *script* on two
+  trees, and the RNG trajectories diverge — this is the four-prisoner note's own
+  weakest claim, inherited. It matters much less here, because **acts F and G
+  each contain their own controlled comparison**: the sign flip is two stages of
+  one run, one hire apart, same world, same population, same composition. The
+  cross-tree comparison in [§4](#4-measured--restoring-the-constant-costs-this-prison-277-of-its-daily-gain)
+  is stated as *price per place at a matched composition* (300 against 220 at
+  `50 prisoner(s) at 2 unmet`, measured on both), not as one curve minus the
+  other. What would refute it: a boundary where the two trees are shown the same
+  composition and do not pay 300 and 220.
+- **That the composition is stable past day 23.** Every act ran seven in-game
+  days after intake and stopped. A sentence is 14–90 in-game days, so **no act
+  here ran long enough for the roster to start discharging** — act F's first
+  attempt did, by accident, and measured a thirty-eight-prisoner prison. What a
+  fifty-prisoner prison's curve does at day 40 is unmeasured.
+- **That fifty is the ceiling.** Fifty is what the *starting camera* can enclose
+  in one rectangle. #957 establishes the world is one owned 32×32 chunk with no
+  command that buys more, so the ceiling is a few hundred; nothing here tests a
+  prison built with the camera moved, which act Y shows is possible.
+- **That anything here is about rendering.** Every number is off the worker's
+  `simulation/status-counts` and `simulation/event` channels and the
+  `hud/prisoner-roster` / `hud/prisoner-detail` projections. Git LFS content is
+  smudged in this worktree (`file public/assets/actors/actor.guard.base.idle.png`
+  → `PNG image data, 260 x 3104`), so the actors did draw, but nothing was
+  concluded from a pixel.
+- **That any of this is a defect.** *Defect*, *regression* and *too easy* are
+  claims about impact, and the impact question here is balance, which is the
+  owner's.
+
+---
+
+## 10. What the brief that commissioned this got wrong
+
+Correcting the brief is expected (`docs/AGENT_WORKFLOW.md` §3). Five things, and
+two of them change the answer.
+
+1. **"Housing fifty is the hard part and is where your time will go … If fifty
+   cannot be housed, that is the finding."** Fifty can be housed, it took one
+   attempt, and no press was refused. The time went into the *break-even* acts
+   instead: 380 and 431 seconds of wall clock spent on 130 and 180 Hire Guard
+   presses, which is where act F's first attempt had been lost.
+2. **"issue #957 records that the clear area is 12×11 tiles."** True of #957 and
+   not applicable to this build: #957 measured clear tile *centres*, which is
+   where an object may go. Walls run on tile *edges*, so the **enclosable**
+   rectangle is ten by ten
+   ([§1](#1-measured--fifty-can-be-housed-on-a-cell-the-game-says-is-not-ready)).
+   Ten by ten is a hundred tiles is fifty beds, exactly — the two figures differ by
+   the two tiles that decide whether the ruling's population fits.
+3. **"`safety` read 1000 permille on every prisoner … At fifty with seven
+   guards, is safety still saturated for everyone, or does a sector's return get
+   spread thin?"** Still saturated: 1000 permille, `unmet: false`, on all fifty,
+   in every settled reading of all five acts. Not spread thin at all. The
+   documented floor of 60 remains unreachable for a staffed prison and the real
+   staffed floor is still 100 — **but at fifty that no longer matters**, because
+   the prison does not get near it: it settles at **two** unmet needs, which is
+   220, four rows above the floor.
+4. **"the two prisons on offer were +320/day with nothing contained or −80/day
+   with everything contained … Does that fork still exist at fifty?"** It does,
+   and it is wider by a factor of 26: at four prisoners the gap between the two
+   prisons was **5** guards, at fifty it is **131**
+   ([§6.1](#61-the-two-four-prisoner-findings-the-brief-asked-about-answered)).
+5. **"Whether the yard incentive still pays to the unit — at four it was exactly
+   4 × 40 = 160/day. At fifty, is it 50 × 40?"** **It is 0**, and the brief's
+   own follow-up — *"does one 8×8 yard even serve fifty people, or does
+   `recreation` stay unmet for most of them because a yard has a capacity"* —
+   understates it: not *most of them*, **all** of them, and not because of
+   capacity, which the measurement rules out as sufficient
+   ([§6](#6-measured--the-yard-incentive-is-worth-exactly-nothing-at-fifty)).
+
+Everything else the brief cited opened where it said.
+`resolveOccupancyScaledGuardCount` is
+`Math.max(scheduledGuardCount, Math.ceil(occupantCount / 8))` at
+`src/simulation/security/sector-staffing.ts:190`, and `ceil(50/8) = 7` does
+dominate the schedule floor of one — measured, `GUARD COVERAGE 7 of 7 Covered`,
+`dailyWageBillMinorUnits: 560`.
+
+---
+
+## 11. Instrument failures
+
+- **The branch was handed over with `tests/foundation` red**, at `2 failed |
+  473 passed`, and all three defects were citations in the instrument's own
+  docblocks: `ProjectionRequester` is declared nowhere (the class is
+  `SimulationProjectionRequester`, `src/ui/simulation-projections.ts:114`), and
+  two rooted paths that do not exist on this branch — the four-prisoner
+  instrument, which lives on an unmerged branch, and this note, which did not
+  yet exist. Fixed in `c8b6b2a9`; the gate is green at 475/475 at the commit
+  carrying this note. **Neither the instrument nor this note may cite the
+  four-prisoner pair by rooted path** while PR #971 is open, and both now say so
+  where the citation is.
+- **The worktree still held the previous session's source mutation**, `= 40`,
+  uncommitted. Anything run before noticing it would have been a mutated-tree
+  measurement reported as a shipped one. Restored and hash-verified before any
+  act ran ([§8](#8-the-mutation-and-its-restore)).
+- **A `READY` reading of `safety` is a reading of the build phase.** Act B's
+  first need sample, 800 ticks after the hires, read `safety` unmet for **39 of
+  50** with `COVERAGE 50 · Covered` on the same sample, and would have supported
+  the exact opposite of [§3.1](#31-measured--safety-still-saturates-at-fifty-and-the-reading-that-says-otherwise-is-a-transient).
+  The prison spends its whole ~520 s build with zero guards, so `safety` has
+  decayed to the floor by the time anyone is hired and needs about 17,000 ticks
+  to come back at +0.03 a tick. Every settled claim here is from a `FINAL`,
+  `SETTLED` or `STAGE-2` sample.
+- **Nothing hit the 600 s per-test timeout, because nothing was run under it.**
+  These acts set `test.setTimeout(2_400_000)` in the file rather than raising
+  `tests/browser/playwright.playtest.config.ts`, so the repository's 600 s
+  budget is untouched for every other playtest. The five acts took 758, 728,
+  1,117, 772 and 1,145 seconds — **three of the five would have been killed by
+  the config's budget**, and the four-prisoner file's yard act already was. This
+  is not a timeout raised to hide a race: no assertion in the file waits on
+  anything, and every reading is printed as it is taken.
+- **The instrument's own prediction of zero riots was refuted three times.**
+  Its `printEvents` docblock derives a `needsPressure` ceiling of about 0.48 at
+  two-of-six against a 0.65 line. Three riots opened across acts B and P
+  (`participantCount` 40, 45, 50) — every one of them while the prison was still
+  filling, unguarded, and not yet at two-of-six. The ceiling holds for the
+  settled prison and the docblock does not say that it is only about the settled
+  prison.
+- **`console.log` inside a `vitest` test is swallowed by the default reporter**
+  — carried forward from the four-prisoner file, and the reason the schedule
+  probe was not repeated here (see [§8](#8-the-mutation-and-its-restore) for
+  what replaced it).
+
+---
+
+## Reproduction
+
+```
+# acts B and G -- unmodified tree
+LOCKSTATE_BROWSER_TEST_PORT=5412 node node_modules/@playwright/test/cli.js test   --config tests/browser/playwright.playtest.config.ts   tests/browser/playtest-2026-09-04-what-pressure-there-is-at-fifty.playtest.ts   --grep "B the shipped curve at fifty"
+
+# acts P, F and Y -- mutate once, run all three, restore once, verify
+sha256sum src/simulation/economy/income.ts > /tmp/income.sha256
+sed -i 's/^export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;$/export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;/'   src/simulation/economy/income.ts
+#   ... --grep "P the curve with the penalty restored at fifty"
+#             | "F the break-even guard count with the penalty restored"
+#             | "Y the yard with the penalty restored at fifty" ...
+git checkout -- src/simulation/economy/income.ts
+sha256sum -c /tmp/income.sha256          # must print OK
+```
+
+One act at a time, twelve to nineteen wall-clock minutes each. Do not edit
+`src/**` while a run is in flight — Vite serves it live. **Never push the
+mutated constant.**
+
+The break-even acts take the guard counts from the environment, so a re-run at
+another population does not need the file edited:
+`LOCKSTATE_PT_GUARDS_PENALTY` (default 137) and `LOCKSTATE_PT_GUARDS_SHIPPED`
+(default 187) are the *first* stage; each act then hires one more.
+
