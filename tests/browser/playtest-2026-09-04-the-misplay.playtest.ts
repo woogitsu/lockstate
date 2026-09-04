@@ -267,6 +267,35 @@ test.describe('the misplay', () => {
       );
       console.log(`[${L}]   rows after that press: ${JSON.stringify(await queueRows(page))}`);
       console.log(`[${L}]   header now: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+      /*
+       * **Can a player tell the dead Cancel from a live one?** A cancelled
+       * row keeps its box and a button still labelled `Cancel`, marked only by
+       * `aria-disabled` — so this reads what the pixels say, not what the
+       * attribute says. If the two look identical, a press on the dead one is
+       * a control that does nothing and says nothing.
+       */
+      if (index === 0) {
+        const look = await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')]
+            .filter((row) => row.getClientRects().length > 0)
+            .map((row) => {
+              const button = row.querySelector<HTMLElement>('button');
+              if (button === null) return 'no button';
+              const style = getComputedStyle(button);
+              const box = button.getBoundingClientRect();
+              return {
+                dead: button.getAttribute('aria-disabled') === 'true',
+                label: (button.innerText ?? '').trim(),
+                opacity: style.opacity,
+                color: style.color,
+                background: style.backgroundColor,
+                cursor: style.cursor,
+                box: `${Math.round(box.width)}x${Math.round(box.height)}`,
+              };
+            }),
+        );
+        console.log(`[${L}]   how the three Cancel controls LOOK: ${JSON.stringify(look)}`);
+      }
     }
     const afterCancels = await funds(page);
     console.log(`[${L}] after pressing every Cancel on offer: worker=${afterCancels.worker}, ${paid} back of ${before.worker - afterDraw.worker} spent`);
@@ -752,9 +781,46 @@ test.describe('the misplay', () => {
     );
     console.log(`[${L}] what the game said: ${JSON.stringify(await say(page))}`);
 
-    const dismiss = page.locator('.hud-staff__roster button').filter({ hasText: /dismiss/i }).first();
-    console.log(`[${L}] dismiss controls found: ${await page.locator('.hud-staff__roster button').count()}`);
-    console.log(`[${L}] roster block: ${JSON.stringify(await panelText(page, '.hud-staff__roster'))}`);
+    /*
+     * **Whether a Dismiss control is on the screen at all is the measurement.**
+     * The roster rows are pooled and painted from a publication
+     * (`staff-panel.ts:1200-1250`, `assignPooledRows`), so this reports the row
+     * count and how many of them are laid out — first with the clock as the
+     * player found it, then after the clock has run.
+     */
+    const rosterState = async (): Promise<string> =>
+      page.evaluate(() => {
+        const section = document.querySelector<HTMLElement>('.hud-staff__roster');
+        const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__roster-row')];
+        const visible = rows.filter((row) => row.getClientRects().length > 0);
+        return JSON.stringify({
+          sectionCollapsed: section?.dataset['collapsed'] ?? '(no section)',
+          rows: rows.length,
+          rowsLaidOut: visible.length,
+          labels: visible.map((row) => (row.innerText ?? '').replace(/\s+/g, ' ').trim()),
+        });
+      });
+    console.log(`[${L}] roster with the clock as the player found it: ${await rosterState()}`);
+    console.log(`[${L}] roster block text: ${JSON.stringify(await panelText(page, '.hud-staff__roster'))}`);
+    console.log(`[${L}] clock: ${JSON.stringify(await currentClock(page))}`);
+    // Open the block if it is folded, which is a step a player has to find.
+    if ((await page.locator('.hud-staff__roster').getAttribute('data-collapsed')) === 'true') {
+      console.log(`[${L}] the ON THE PAYROLL block was folded shut; opening it`);
+      await page.locator('.hud-staff__roster .ui-section__header').first().click();
+      await page.waitForTimeout(300);
+      console.log(`[${L}] roster after opening the block: ${await rosterState()}`);
+    }
+    // And then with the clock running, because the rows are painted from a
+    // publication and a publication needs a tick.
+    await page.locator('.hud-strip__transport button').nth(1).click();
+    await page.waitForTimeout(2500);
+    console.log(`[${L}] roster after the clock ran to tick ${await currentTick(page)}: ${await rosterState()}`);
+    console.log(`[${L}] roster block text now: ${JSON.stringify(await panelText(page, '.hud-staff__roster'))}`);
+    await page.locator('.hud-strip__transport button').nth(0).click();
+    await page.waitForTimeout(400);
+
+    const dismiss = page.locator('.hud-staff__roster-row button').first();
+    console.log(`[${L}] dismiss controls in the roster block: ${await page.locator('.hud-staff__roster-row button').count()}`);
     const beforeDismiss = await latestCounts(page);
     await dismiss.click();
     await page.waitForTimeout(400);
@@ -775,6 +841,9 @@ test.describe('the misplay', () => {
     // A cell first, because `admit.no-accommodation` refuses otherwise. The
     // fast route: a yard is `openArea`, but accommodation needs a cell, so
     // this builds the enclosed 2×3 the harness's own recipe uses.
+    // Back to the Build tab: `calibrate` presses `.hud-build__remove`, which is
+    // not laid out while the Security tab is showing.
+    await tab(page, 'build').click();
     const origin = await calibrate(page);
     await armBuild(page, 'wall-brick');
     const westX = origin.originX + 12 * TILE;
