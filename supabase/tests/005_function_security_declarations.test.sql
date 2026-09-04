@@ -86,6 +86,7 @@ max_save_payload_bytes:invoker:<unpinned>
 max_save_slot_capacity:invoker:<unpinned>
 recompute_entitlement_projection:definer:public, pg_temp
 record_entitlement_event:definer:public, pg_temp
+record_telemetry_events:definer:public, pg_temp
 reject_entitlement_event_update:invoker:public, pg_temp
 stamp_updated_at:invoker:public, pg_temp
 submit_challenge_evidence:definer:public, pg_temp$expected$, e'\r', ''),
@@ -216,6 +217,15 @@ select is(
 -- hold SELECT on that table -- and would see only the rows that table's RLS
 -- policy shows them, which for a trusted importer is none of the ones it
 -- needs to validate against.
+--
+-- The tenth, `record_telemetry_events` (20260904090000, ADR 0046), is definer
+-- so that the telemetry ingest's dedicated role can hold EXECUTE on it and no
+-- table privilege at all: the write runs as the table owner, so
+-- `telemetry_ingest` needs neither INSERT on `telemetry_events` nor the right
+-- to read back what it wrote. Its pinned `search_path` is doing the same work
+-- as every other entry here and is driven behaviourally in suite 012, which
+-- plants a `pg_temp.telemetry_events` and asserts the row lands in the real
+-- table.
 select is(
   (select string_agg(p.proname, ' ' order by p.proname)
      from pg_proc p
@@ -224,8 +234,9 @@ select is(
       and p.prosecdef),
   'account_save_slot_capacity create_prison create_save_version enforce_challenge_evidence_size '
     || 'enforce_prison_slot_capacity enforce_save_version_storage_prefix '
-    || 'recompute_entitlement_projection record_entitlement_event submit_challenge_evidence',
-  'exactly nine functions run with their definer''s rights, and each one is a documented trusted path'
+    || 'recompute_entitlement_projection record_entitlement_event record_telemetry_events '
+    || 'submit_challenge_evidence',
+  'exactly ten functions run with their definer''s rights, and each one is a documented trusted path'
 );
 
 select * from finish();

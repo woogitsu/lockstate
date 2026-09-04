@@ -116,7 +116,28 @@ insert into bounded_columns (tbl, col, mechanism, object_name) values
   ('challenge_submissions', 'evidence_hash',       'regex-check',  'challenge_submissions_evidence_hash_check'),
   ('challenge_submissions', 'verification_status', 'value-set-check', 'challenge_submissions_verification_status_check'),
   ('challenge_submissions', 'evidence',            'row-trigger',  'challenge_submissions_enforce_evidence_size'),
-  ('challenge_submissions', 'evidence_digest',     'generated-column', null);
+  ('challenge_submissions', 'evidence_digest',     'generated-column', null),
+
+  -- telemetry_events (20260904090000, ADR 0046). The whole table is
+  -- trusted-tier-only -- no role holds any privilege on it and the single
+  -- write path is a SECURITY DEFINER function -- and it is bounded anyway, for
+  -- the reason `entitlement_events` is: the bound is what stops a second write
+  -- path added later from being the one that stores 33 MB. `attributes` is the
+  -- one that could: it is free-form `jsonb` fed from an unauthenticated
+  -- endpoint, and 12 KiB is `MAX_ENVELOPE_BYTES` from
+  -- src/worker/telemetry-ingest.ts, so the column cannot hold more than the
+  -- endpoint admits for the entire envelope it belongs to.
+  --
+  -- `release_commit` is the only nullable text column in the set, matching
+  -- `releaseIdentitySchema`'s `commit: identifierSchema.optional()`.
+  ('telemetry_events',      'event_id',             'length-check', 'telemetry_events_event_id_check'),
+  ('telemetry_events',      'name',                 'length-check', 'telemetry_events_name_check'),
+  ('telemetry_events',      'session_id',           'length-check', 'telemetry_events_session_id_check'),
+  ('telemetry_events',      'release_build_version','length-check', 'telemetry_events_release_build_version_check'),
+  ('telemetry_events',      'release_commit',       'length-check', 'telemetry_events_release_commit_check'),
+  ('telemetry_events',      'attributes',           'length-check', 'telemetry_events_attributes_bytes_check'),
+  ('telemetry_events',      'category',             'value-set-check', 'telemetry_events_category_check'),
+  ('telemetry_events',      'environment',          'value-set-check', 'telemetry_events_environment_check');
 
 -- --- The enumeration, from the catalog rather than from a list ---------
 

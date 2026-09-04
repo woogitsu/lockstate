@@ -114,13 +114,37 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason) value
   ('save_versions',         'revision',                'range-check', 'save_versions_revision_positive', null),
   ('save_versions',         'save_schema_version',     'range-check', 'save_versions_save_schema_version_check', null),
   ('user_settings',         'settings_schema_version', 'range-check', 'user_settings_schema_version_check', null),
+  ('telemetry_events',      'consent_version',         'range-check', 'telemetry_events_consent_version_check', null),
 
-  -- Pinned rather than bounded, and deliberately the only one: the ledger's
-  -- schema version is part of ADR 0008's event contract, so a new version needs
-  -- a migration by design. The two other `*_schema_version` columns are ranges
-  -- for the opposite reason -- a pin would refuse a version before the
-  -- migration admitting it could exist.
+  -- `claimed_occurred_at` is the client's `occurredAt` in epoch milliseconds,
+  -- deliberately a `bigint` and not a `timestamptz` so that no retention window
+  -- can key on it (ADR 0046 section 7 item 1: the wire schema is
+  -- `z.number().int().min(0)` with no upper bound, from an unauthenticated
+  -- endpoint, so a batch dated the year 4000 is admissible). Bounded at
+  -- `Number.MAX_SAFE_INTEGER`, the ceiling `z.number().int()` can actually
+  -- carry and the same one `tickSchema` uses.
+  ('telemetry_events',      'claimed_occurred_at',     'range-check', 'telemetry_events_claimed_occurred_at_check', null),
+
+  -- The two sample rates. Both are `double precision` bounded to [0, 1], which
+  -- refuses NaN and both infinities for free -- every comparison against NaN is
+  -- false -- so neither needs the separate `finite-check`
+  -- `challenge_submissions.ranked_score` carries. `registry_sample_rate` is the
+  -- receiver's own registry value and the only one an aggregate may weight by;
+  -- `claimed_sample_rate` is the caller's claim and is named so that nothing
+  -- multiplies by it (ADR 0046 section 7 item 7).
+  ('telemetry_events',      'registry_sample_rate',    'range-check', 'telemetry_events_registry_sample_rate_check', null),
+  ('telemetry_events',      'claimed_sample_rate',     'range-check', 'telemetry_events_claimed_sample_rate_check', null),
+
+  -- Pinned rather than bounded, and there are now two. The ledger's schema
+  -- version is part of ADR 0008's event contract, so a new version needs a
+  -- migration by design; `telemetry_events.schema_version` is pinned because
+  -- `telemetryEnvelopeSchema` declares `z.literal(TELEMETRY_SCHEMA_VERSION)`,
+  -- so the ingest refuses anything but 1 before the column is reached and a
+  -- range here would be looser than the code that feeds it. The two other
+  -- `*_schema_version` columns are ranges for the opposite reason -- a pin
+  -- would refuse a version before the migration admitting it could exist.
   ('entitlement_events',    'schema_version',          'pinned-literal', 'entitlement_events_schema_version_check', null),
+  ('telemetry_events',      'schema_version',          'pinned-literal', 'telemetry_events_schema_version_check', null),
 
   -- The one float. `double precision` admits NaN and both infinities, and
   -- PostgreSQL orders NaN above every other float -- above Infinity -- so on
@@ -190,7 +214,19 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason, clien
   ('profiles',              'updated_at',    'unconstrained-by-decision', null,
    'Server-stamped by profiles_stamp_updated_at since 20260826130000 (#194); the per-column INSERT and UPDATE grants no longer name it.', false),
   ('user_settings',         'updated_at',    'unconstrained-by-decision', null,
-   'Server-stamped by user_settings_stamp_updated_at since 20260826130000 (#194), which replaced this table''s table-level INSERT and UPDATE with per-column lists that omit it.', false);
+   'Server-stamped by user_settings_stamp_updated_at since 20260826130000 (#194), which replaced this table''s table-level INSERT and UPDATE with per-column lists that omit it.', false),
+
+  -- (a3) The telemetry ingest's server stamp (20260904090000, ADR 0046
+  --      section 7 item 1). Group (a)'s shape exactly: `default now()`, no
+  --      grant for any role, and the only writer is a SECURITY DEFINER
+  --      function that never names the column -- so an ingest record's own
+  --      `receivedAt`, which the Worker does send, is ignored rather than
+  --      honoured. Suite 012 drives that direction by sending one dated 1970.
+  --      An absolute calendar bound is the same product question group (a)
+  --      declines, and it is declined here for the stronger reason: the value
+  --      is `now()` by construction.
+  ('telemetry_events',      'received_at',   'unconstrained-by-decision', null,
+   'Server-defaulted with now(); no grant for any role, and record_telemetry_events() never names the column, so an ingest record''s claimed receivedAt is ignored. It is the only time value a retention window may key on (ADR 0046 section 7 item 1).', false);
 
 -- --- The enumeration, from the catalog --------------------------------
 
