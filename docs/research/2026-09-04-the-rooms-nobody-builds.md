@@ -61,8 +61,8 @@ individually: **the canteen is the most expensive room in the game and, at
 this scale, a no-op** — `action.eat-in-cell` already holds hunger at 97% in a
 prison with no canteen, so the canteen buys a 33% faster route to the one need
 that is not scarce; and **seven of the eighteen room types are still bought
-and sold while doing nothing at all** (issue #595 says nine — at v0.0.471 it
-is seven, and §3 is the census).
+and sold while doing nothing at all** (issue #595 says nine — at v0.0.471,
+`9429ba64`, it is seven, and §3 is the census).
 
 ---
 
@@ -70,7 +70,7 @@ is seven, and §3 is the census).
 
 - **MEASURED** — produced by one of the runs above and quoted from its output.
 - **VERIFIED, read** — a file was opened at the line cited, in the played
-  worktree at v0.0.471.
+  worktree at v0.0.471 (`9429ba64`).
 - **DERIVED** — arithmetic over MEASURED or VERIFIED facts, shown.
 - **JUDGEMENT** — about what a *player* would feel rather than what the game
   did.
@@ -278,8 +278,8 @@ Two things fall straight out of that table and neither is on screen anywhere.
 ## 3. Seven dead rooms, not nine — issue #595's figure has moved, and here is the census
 
 Issue #595 is titled *"The nine dead rooms need readers, not functions"*. The
-brief asks that the figure be verified rather than quoted. **At v0.0.471 it is
-seven**, and the two that came alive did so through
+brief asks that the figure be verified rather than quoted. **At v0.0.471
+(`9429ba64`) it is seven**, and the two that came alive did so through
 `docs/adr/0093-a-carry-is-an-action.md`'s delivery route.
 
 **MEASURED**, a grep of every room-catalog id across `src/`, excluding the
@@ -683,7 +683,8 @@ words.
 
 The brief asks this record to test, from the other side, the claim that a
 prison with everything going wrong is *"62% word-for-word identical to an empty
-one"*. That record is not on `main` at v0.0.471 (see the corrections above), so
+one"*. That record is not on `main` at v0.0.471 (`9429ba64`) — see the
+corrections above — so
 its figure is not verified here — but the same measurement runs in this
 direction and this is it.
 
