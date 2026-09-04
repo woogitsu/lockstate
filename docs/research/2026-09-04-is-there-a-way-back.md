@@ -2,9 +2,11 @@
 
 **Played on `playtest/is-there-a-way-back`, cut from `origin/main` at
 `a7925dcd` (v0.0.444).** Instrument:
-`tests/browser/playtest-2026-09-04-is-there-a-way-back.playtest.ts`. Nothing
-under `src/` was changed by this record; one mutation was taken, watched and
-restored by hand, and §5 gives its hashes.
+`tests/browser/playtest-2026-09-04-is-there-a-way-back.playtest.ts`. **Nothing
+under `src/` was changed by this record** — verified with
+`sha256sum -c` and `git status --short src/`, both clean. §5 explains why the
+causal claim in §1 needed no mutation, and §6 reports the instrument failures,
+including the one mutation this session could not take.
 
 The owner ruled on 2026-09-04, in their own words:
 
@@ -19,6 +21,23 @@ days"*. This record asks the question that definition does not: **when a
 player wants to take back the thing they just did, can they?**
 
 ---
+
+## The findings, most load-bearing first
+
+1. **§7** — the game already owns the owner's sentence for a destroyed
+   purchase, and the one press that destroys the most gets silence, justified
+   in two files by two premises that ADR 0076's own amendment withdrew.
+2. **§2** — `KeyZ` after a hire keeps the hire and takes a wall down, and says
+   the build queue changed while the queue block is not on the screen.
+3. **§1** — undo on a finished wall run returns nothing in either currency,
+   and `KeyY` buys the same materials again.
+4. **§6** — the `Remove` control cannot take a wall down, and the line that
+   withholds the queue row from a standing wall says it can. `KeyZ` is the only
+   route, so a finished wall is permanent without a keyboard.
+5. **§5** — the discriminating A/B, plus the fold the priced Cancel sits behind.
+6. **§4** — the refutation: a delivery in flight has an exemplary way back, and
+   the sweep that would have found a stock sell-back found nothing.
+7. **§3** — `Escape` leaves the tool armed and says nothing.
 
 ## The answer in one paragraph
 
@@ -194,8 +213,8 @@ None of them is *"the key you press to change your mind spends money"*.
 - **The money could have come back late** — on the next construction tick, or
   at the day boundary. It did not: 24,200 was still the reading four in-game
   days and 3,600 ticks later, at the end of the act.
-- **§5's mutation is the strongest refuting sample available**, and it is what
-  ties the missing 240 to that one branch rather than to anything else.
+- **§5 is the discriminating sample**, and it is what ties the missing 240 to
+  the order's *state* rather than to `Undo` as such.
 
 ---
 
@@ -485,12 +504,393 @@ text, not the row count.
 
 ---
 
-## 5. The mutation
+## 5. One method, two states: the discriminator, and the fold in front of it
 
-*(Filled below.)*
+**Act 5 is the sample that ties §1's missing money to the order's *state*
+rather than to `Undo`, and it needed no `src/` edit to do it.** Both presses
+end at `ConstructionSystem.cancelOrder`; the only difference is when they are
+taken. One prison, one session, one buildable.
+
+### Arm A — `Cancel` on a queued order, clock paused
+
+**MEASURED.** Paused deliberately: the previous cancellation record measured
+presses landing 36–55 ticks late against a ten-tick transition, so a running
+clock makes the state at the press unknowable.
+
+| step | funds chip | `treasuryMinorUnits` | the band |
+| --- | --- | --- | --- |
+| `New prison` | `"25,000 · FUNDS"` | 25000 | `""` |
+| one drag, 2 orders queued | `"24,840 · FUNDS"` | 24840 | `""` |
+| press row 0's `Cancel` | **`"24,920 · FUNDS"`** | **24920** | **`"The order was cancelled — the money it cost is refunded."`** |
+
+**+80, exactly what the row advertised** (`aria-label="Cancel: Brick wall ·
+12, 12 · North · 80 back"`), and **a sentence that names the money.** The
+press was a coordinate press at (1376,736), and `elementFromPoint` there
+returned `span.ui-action__label` — the button's own label, so the press landed
+on the control.
+
+### Arm B — `KeyZ` on the same buildable, finished
+
+**MEASURED**, in the same prison ten seconds later:
+
+| step | funds chip | `treasuryMinorUnits` | the band |
+| --- | --- | --- | --- |
+| one drag, run finished | `"24,760 · FUNDS"` | 24760 | — |
+| press `Z` | `"24,760 · FUNDS"` | **24760** | `"The last change to the build queue was undone."` |
+| 2.5 s later | `"24,760 · FUNDS"` | **24760** | unchanged |
+
+**So the discriminator is the state, measured: pending pays 80 and says so;
+finished pays nothing and says the same eleven words it says either way.**
+`ARM A: 25000 -> 24840 -> 24920`. `ARM B: 24920 -> 24760 -> 24760 -> 24760`.
+
+**And the game already owns the honest sentence.** `hud.alert.event.order-cancelled`'s
+text is *"The order was cancelled — the money it cost is refunded."*
+(`src/content/default-locale-en.ts`, quoted off the screen above). A player who
+has read that once will read *"The last change to the build queue was
+undone"* as its quieter cousin.
+
+### The fold in front of arm A, which is a finding of its own
+
+**The `Cancel` that paid the 80 is not on the screen when a player queues an
+order.** MEASURED, at 1440×900, immediately after the drag:
+
+```
+A queue section data-collapsed=true
+A the queue header reads "QUEUED 2 waiting · 0 being built" aria-expanded=false
+A queue row 0: {"hidden":false,"rects":0,"rowBox":"0,0 0x0","buttonBox":"0,0 0x0",
+                "buttonLabel":"Cancel: Brick wall · 12, 12 · North · 80 back",
+                "display":"flex","visibility":"visible"}
+A queue row 1: {... "buttonLabel":"Cancel: Brick wall · 13, 12 · North · 80 back" ...}
+A NO PRESSABLE QUEUE ROW at 1440x900 while the section is collapsed
+```
+
+One click on the header, and the same rows measure:
+
+```
+A after opening the fold: data-collapsed=false
+A opened queue row 0: {"rects":1,"rowBox":"1177,714 238x44","buttonBox":"1337,714 78x44", ...}
+A opened queue row 1: {"rects":1,"rowBox":"1177,766 238x44","buttonBox":"1337,766 78x44", ...}
+```
+
+**VERIFIED, read, and it is deliberate**: `queueSection` is built with
+`collapsed: true` (`src/ui/hud/build-panel.ts:2100`) and the comment above it
+gives the reason — *"a queue then costs this panel a header and a count, and
+costs it a list only when the player asks for one"*. The body is `hidden`
+while collapsed (`src/ui/primitives/collapsible-section.ts:87`), which is why
+the rows compute `display: flex` and measure `0x0`.
+
+**So this is not a bug and it is still a finding.** ADR 0096 decision 1 says
+the guarantee is over *"actions the interface offers, not actions the kernel
+would accept"*, and its own weakness 1 names this control as the exit from the
+measured §10c queue lock: *"The queue lock's exit is a cancel control, not a
+rung"*. A prison sitting at −1,240 with 45 orders standing has its exit
+**inside a fold that is shut on arrival**, and the only thing the panel says
+while it is shut is `QUEUED · 2 waiting · 0 being built`, which names no way
+back. Under the owner's directive *"a nie jakieś ukryte funkcje"* that is worth
+the owner's attention even though every line of it was written on purpose.
+
+**And the panel's own reasoning routes around it, into §1.**
+`BUILD_QUEUE_ROW_LIMIT`'s docblock (`src/ui/hud/build-panel.ts:564-566`) says:
+*"the control for 'I have changed my mind about that whole run' is `Undo`,
+which pops the transaction the run was drawn in. So the two controls divide the
+work: `Undo` takes back a gesture, and a row takes back one order."* The
+player-facing half of that is `'hud.build.queue-more'`:
+*"and {count} more behind these — undo takes back a whole run."*
+(`src/content/default-locale-en.ts:1209`). **That sentence is true while the
+run is pending and becomes a bad recommendation the moment it is built** — and
+§1 is the price.
 
 ---
 
-## 6. What this does not establish, and my weakest claim
+## 6. The `Remove` control cannot take a wall down, and one line in the tree says it can
 
-*(Filled below.)*
+**MEASURED**, `--grep "act 6"`. A wall run standing at `12,12 north` and
+`13,12 north`, funds `"24,840 · FUNDS"`. Arm `Remove` — the control's label
+reads `"Stop removing"`, so it is armed — and press the tiles the edge
+divides, each twice, each point proved `canvas` by `elementFromPoint` first:
+
+| press | point | command produced | funds after | the refusal line |
+| --- | --- | --- | --- | --- |
+| (12,12) ×2 | (496,226) | `RemoveObject` | `"24,840 · FUNDS"` | *"Nothing was removed — there is no object on that tile, and none being built there."* |
+| (12,11) ×2 | (496,162) | `RemoveObject` | `"24,840 · FUNDS"` | the same |
+| (13,12) ×2 | (560,226) | `RemoveObject` | `"24,840 · FUNDS"` | the same |
+
+Six real commands, six refusals, wall standing, band empty.
+
+**And the control arm, in the same prison, on the same wall.** Disarm
+`Remove`, press `Z` once: band *"The last change to the build queue was
+undone."*, funds still `"24,840 · FUNDS"` — and re-dragging the run was
+accepted (2 orders) and cost 160, taking the prison to `"24,680 · FUNDS"`.
+**MEASURED.** So the wall was removable all along; it is the *control* that
+cannot do it, and the key that can charges the player twice.
+
+**So this sentence in the tree is false:**
+
+> *"A queue that listed standing walls would be a demolition list wearing a
+> queue's label, and **taking a finished wall down is the Remove gesture's job
+> (ADR 0028 phase 3)** rather than this one's"*
+> — `src/simulation/presentation/construction-projection.ts:83-85`
+
+**VERIFIED, read, and the reason is structural.** `RemoveObject` reaches
+`objectPlacement.remove({x, y})`
+(`src/simulation/runtime/session-commands.ts:665`), which looks up a *placed
+object* at a tile. A wall is an **edge value**, written by `writeEdge` and
+reversed only by `revertConstruction` (`system.ts:1529`), and the only two
+callers of the method that runs it are `CancelBuildOrder` — which
+`PENDING_BUILD_ORDER_STATES` (`construction-projection.ts:87`) forbids from
+naming a `completed` order — and `Undo`.
+
+**That line matters because it is the justification for withholding the queue
+row.** The projection declines to give a standing wall a row *on the grounds
+that another control has the job*, and that control refuses six times out of
+six.
+
+### What it costs: a finished wall is permanent without a keyboard
+
+**`KeyZ` is the only route in the whole interface to take a standing wall
+down.** The Build panel's own docblock (`src/ui/hud/build-panel.ts:1135-1141`)
+describes exactly this trap, for objects, as the reason the `Remove` control
+was built:
+
+> *"until it existed a placed object could be taken back only by `Undo`, and
+> `Undo` is `KeyZ`. So on a touch device a misplaced bed was **permanent for
+> the session** […] and `AGENTS.md` boundary 10 is not satisfied by 'it works
+> with a keyboard' any more than by 'it works with a mouse'. […] That is
+> precisely the state the Rooms tab shipped in and had to fix in a follow-up,
+> and it is not worth repeating."*
+
+**It was repeated, for the buildable a player draws most.** ADR 0076's
+amendment names the same asymmetry from the other side — *"Splitting the rule
+by buildable kind would close the inversion for beds, leave it open for the
+buildable a player draws most"* — about the refund. This is the same sentence
+about the *reachability*.
+
+### What could have refuted this and did not
+
+- **The press could have been aimed wrong.** A tile edge normalises to the
+  lower-numbered tile, so the edge `12,12 north` is also `12,11`'s south side:
+  both tiles were pressed, twice each. The third tile the run covers was
+  pressed too.
+- **The press could have landed on a panel.** `elementFromPoint` returned
+  `canvas` at all three points.
+- **The command could have been swallowed.** Each press produced a real
+  `RemoveObject` on the wire and a real refusal sentence back, so the whole
+  round trip worked and the answer was *no such object*.
+- **`Remove` could have needed a second gesture** (a drag rather than a
+  press). It does not: the same control removes a bed with one press, which is
+  what `calibrate` in this repository's own playtest harness relies on to
+  measure the tile transform.
+
+---
+
+## 7. The silence in §1 is deliberate, and the two premises it rests on were both withdrawn
+
+**This is the sharpest thing in this record.** The game does not lack a
+sentence for "you just destroyed something and nothing came back". **It has
+one, it is the owner's, and it was written for exactly this reason** —
+`'hud.alert.event.construction.order-cancelled-underway'`:
+
+> *"The order was cancelled. Anything already spent past the point of no return
+> stays spent."*
+> — `src/content/default-locale-en.ts:881`
+
+and the docblock above it (`:852-856`) records the owner's reasoning for why a second
+sentence exists at all:
+
+> *"**Two sentences for one control, which is ruling 2**: before the crew
+> started, the money comes back; after, ruling 20 of 2026-08-31 destroys the
+> materials on purpose. The owner's reasoning is **"silence about a loss is the
+> worst option"**, and it is why the second sentence exists at all rather than
+> the first being stretched to cover both."*
+
+**The press that destroys the most gets the silence anyway**, and two places
+in the tree reason it out. Both give the same two grounds, and **both grounds
+are false against the code as it stands.**
+
+`src/content/default-locale-en.ts:872-878`:
+
+> *"A cancelled order that had already **finished** gets no sentence here.
+> Neither of the two below is true of it — the money did not come back and
+> **the materials are not gone, they went into the container (ADR 0076
+> decision B)** — **no control can reach that press**, and inventing a third
+> sentence for it would be exactly the promise-the-code-does-not-keep that
+> `AGENTS.md`'s fourth exclusion reserves."*
+
+`src/simulation/events/event-log.ts:569-577`:
+
+> *"**`'completed'` records nothing, and it is the one exclusion worth
+> arguing.** […] the money did not come back […] **and the materials are not
+> gone either (ADR 0076 decision B puts them back in the container)**. **No
+> control can reach that press today** — `PENDING_BUILD_ORDER_STATES` excludes
+> `'completed'`, so no Build-panel row names one — and it is reachable only by
+> an order finishing between a projection and the press that answers it."*
+
+**Premise 1 — "the materials are not gone, they went into the container" —
+was withdrawn by the owner on 2026-09-01 and the code already follows the
+withdrawal.** **VERIFIED, read**: `cancelOrder`'s arm at `system.ts:739` is
+`stateAtCancellation === 'in-progress' || hadGeometry`, and its own comment
+says *"`hadGeometry` moved into this arm on 2026-09-01"*; ADR 0076's
+`Amendment, 2026-09-01` states *"nothing comes back in either currency"* and
+*"undoing a wall run that has already been built now destroys its bricks"*.
+**MEASURED**: §1 and §5 arm B, three prisons, zero minor units returned.
+
+**Premise 2 — "no control can reach that press" — is refuted by six measured
+presses in this record.** `KeyZ` reaches `cancelOrder` on a `completed` order
+directly and by design: `undo()` calls it for *every* cancellable order in the
+popped transaction, `completed` included, with a comment at `system.ts:570`
+saying so. It is not a race between a projection and a press; it is the
+ordinary press. The narrow half of premise 2 is true and is a different
+claim — **no Build-panel *row* names a completed order** — and it is what makes
+`KeyZ` the only route (§6).
+
+**What follows, and it is the opposite of what those two comments conclude.**
+They conclude that a third sentence would be a promise the code does not keep.
+With both premises corrected, the code *does* keep it: the materials really are
+destroyed, the press really is reachable, and the sentence the owner already
+approved for `in-progress` — *"Anything already spent past the point of no
+return stays spent"* — is **true of a finished order too**. The reservation
+`AGENTS.md`'s fourth exclusion protects is against a sentence the code does not
+honour; this one is the reverse case, a loss the code inflicts and no sentence
+reports.
+
+**Whether the answer is that sentence reused, a third one, or something the
+`construction.undone` event carries, is not decided here** — the event
+`Undo` raises is `construction.undone`, not
+`construction.order-cancelled-*` (`handler.ts:174` against `:156`), so a
+sentence would have to reach a different channel, and **no wording is authored
+in this record.** What is established is that the ground the silence stands on
+has moved out from under it in two files.
+
+---
+
+## 8. What this does not establish, and my weakest claim
+
+### Not established
+
+- **Nothing here prices a fix.** Where a sentence should land, whether `Undo`
+  should refuse a `completed` order instead of destroying it, and whether a
+  wall wants a Remove route are decisions with costs this record does not
+  cost. §7 establishes that two comments justify a silence on withdrawn
+  grounds; it does not decide what replaces the silence.
+- **No `src/` change was made and none is proposed as a diff.** `sha256sum -c`
+  and `git status --short src/` are both clean.
+- **Only 1440×900 was played.** Every geometry figure here — including §5's
+  `0x0` rows and the `1177,714 238x44` they become — is that viewport's. The
+  fold is `collapsed: true` at every viewport by construction, but the *rects*
+  are not a claim about 900×600 or 375px.
+- **The undo stack across a save was not played.** `ConstructionSystem`
+  snapshots `undoStack` and `redoStack` (`system.ts:1627-1628`, restored at
+  `:1693-1694`), so a `KeyZ` after a reload should reach a transaction from
+  before the save — which would make §2's shape worse. **Not measured, so not
+  claimed.** PR #925 covers the reload itself.
+- **No prisoner was in a cell for any of it.** Undoing a *bed* order calls
+  `ObjectPlacementService.onOrderReverted`, which relocates residents left
+  without a place (`object-placement-service.ts:715-726`), and whether a
+  relocated prisoner can be put back where they were is the "consequences are
+  not undoable" question this record did not reach.
+- **`Escape` was pressed once per act, not in a distribution.** §3 is one
+  press and one drag.
+
+### My weakest claim, and what would change it
+
+**The weakest claim in this record is §5's reading of the fold as a way-back
+gap rather than as a height-budget trade the repository made knowingly.**
+Everything about it is measured — `data-collapsed=true`, `aria-expanded=false`,
+`0x0` rows, the header's exact text — and the *interpretation* is the soft
+part: `BUILD_QUEUE_ROW_LIMIT` and `queueSection`'s own comments argue the fold
+from a measured height budget, `hud.build.queue-more` and
+`hud.build.queue-shortfall` are deliberately appended *outside* the fold so a
+player who never opens it still reads them, and #625 is cited as the record of
+what folding a *requirement* cost. So the repository has thought about this
+exact hazard and drawn the line elsewhere.
+
+**What would change my mind:** a played run in which a person who has just
+queued an order finds the Cancel without being told where it is. That is a
+question about a human, not about the DOM, and this record cannot answer it —
+which is why §5 states the geometry and hands the reading to the owner rather
+than filing it as a defect.
+
+**The second weakest is §3.** `Escape` leaving the tool armed is measured, but
+calling it a gap assumes a player expects `Escape` to disarm. Nothing in the
+tree promises that, the arm control's label says `"Stop placing"` while armed,
+and a player who has read it once knows where the off switch is.
+
+**§1, §2, §6 and §7 are the ones I would defend hardest**, and each has a
+one-command falsifier: re-run act 1 and watch the treasury after `Z`; re-run
+act 2 and watch `staff` and the re-drag; re-run act 6 and watch the six
+refusals; and for §7, open the two docblocks quoted and compare them with
+`system.ts:739` and ADR 0076's amendment.
+
+---
+
+## Gates, and how to re-run this
+
+| command | result |
+| --- | --- |
+| `tsc -b --pretty false` | **exit 0** |
+| `tsc -b tsconfig.tools.json --pretty false` | **exit 0** |
+| `tsc -p tsconfig.json --noEmit --listFiles` | the new `.playtest.ts` **is** in the program |
+| `vitest run tests/foundation` | **52 files, 475 tests, all pass** |
+| act 1 · act 2 · act 3 · act 4 · act 5 · act 6 | each **1 passed**, 0.9–2.0 min |
+
+`vitest run tests/foundation` **failed first**, 2 of 475, and it was the
+container rather than this branch: `documentation-commit-citation-contract`
+reported *"this checkout is shallow, so no citation can be resolved"* and
+listed 53 pre-existing citations in files this branch does not touch.
+`git fetch --unshallow` fixed it and the suite then passed 475/475. Anyone
+re-running this in a fresh container should unshallow **first**, or they will
+read 53 other people's citations as their own regression.
+
+```
+LOCKSTATE_BROWSER_TEST_PORT=43201 node node_modules/@playwright/test/cli.js test \
+  --config tests/browser/playwright.playtest.config.ts \
+  tests/browser/playtest-2026-09-04-is-there-a-way-back.playtest.ts --grep "act 1"
+```
+
+One act at a time. `--grep` is a regex, which is why no act title has
+parentheses in it. `tests/browser/playwright.config.ts` is
+`testMatch: /.*\.spec\.ts$/`, so **nothing in CI collects this file**: it is
+evidence, not a gate, and it asserts almost nothing about the figures it
+reports.
+
+## Instrument failures, reported because two of them cost a reading
+
+1. **A `pkill -f` pattern matched the shell running it.**
+   `pkill -9 -f 'vite/bin/vite.js --config tests/browser'` killed the loop's
+   own bash, because that string was in the loop's command line. Two acts
+   never ran. `fuser -k -9 43201/tcp` does the same job without the
+   self-reference.
+2. **`playwright.playtest.config.ts` sets no `actionTimeout`, so a
+   `locator.click` on an element with no box waits for ever.** Act 1's first
+   run stalled in its last helper — the Rooms panel hides its arm row while a
+   rectangle is pending — and lost two readings; act 5's first run stalled on a
+   queue row inside the collapsed fold. Both are fixed in the instrument: a
+   pending rectangle is discarded first, every click carries an explicit
+   timeout, and the queue rows are read by geometry and pressed by coordinate
+   the way `playtest-860-a-row-cancels-what-it-named.playtest.ts` does.
+   **The second stall is how §5's fold was found**, so the trap paid for
+   itself.
+3. **A `src/` mutation could not be taken.** The plan for §1's causal claim
+   was to widen `cancelOrder`'s `hadGeometry` arm, watch the treasury rise,
+   and restore by hand. **The harness's permission layer refused the write to
+   `src/`**, and the brief this record was written under forbids `src/`
+   outright, so it was not attempted a second way. §5's two arms are the
+   replacement and are better evidence: they discriminate the same branch
+   *in the shipped code* rather than in an edited copy.
+4. **`git lfs` is not installed in this container** — `git lfs checkout`
+   answers *"The most similar command is log"* — so the atlases are 131-byte
+   pointer files and every actor is missing. The
+   `Atlas image … did not load` / `The source image could not be decoded`
+   console output in every act is that, and nothing in this record depends on
+   an actor being drawn.
+5. **GitHub's issue search was rate-limited** for this session
+   (*"API rate limit already exceeded"*), so the check for a pre-existing issue
+   covering §1 and §7 was done against `docs/` and `src/` rather than against
+   the issue tracker. ADR 0076's amendment and `docs/research/2026-09-03-what-cancel-actually-gives-back.md`
+   are what establish that §1's *mechanism* is known; whether an issue already
+   carries §7 is **not established**.
+6. **The counts channel goes quiet when nothing changes.** Several tables above
+   show a `treasuryMinorUnits` whose `tick` lags the clock by hundreds — that
+   is `statusCountsEqual` suppressing an identical publication, and it is why
+   "the treasury did not move" is read off *both* the worker sample and the
+   funds chip in every row.
