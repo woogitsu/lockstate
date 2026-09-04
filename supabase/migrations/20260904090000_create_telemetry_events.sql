@@ -28,6 +28,23 @@
 -- a database looser than the code that feeds it turns the code's bound into
 -- decoration.
 --
+-- BEFORE APPLYING, and stated because `docs/DEPLOYMENT.md` asks each migration
+-- to name the query that answers whether it can. This one has exactly two
+-- conditions, and both are about the role rather than about any row -- the
+-- table is new, so unlike `20260824101000`, `20260824120000` and
+-- `20260824130000` there is no existing data a CHECK can refuse:
+--
+--   1. The applying role must hold CREATEROLE, or section 1 fails and nothing
+--      else in this file applies. Supabase's `postgres` does; a restricted
+--      operator role may not.
+--        select rolcreaterole from pg_roles where rolname = current_user;
+--
+--   2. `telemetry_ingest` must not already exist. The DO block below skips
+--      creation if it does, which would leave the grants below attaching to a
+--      role somebody else defined, with attributes this file did not choose.
+--        select rolname, rolcanlogin, rolsuper, rolbypassrls
+--        from pg_roles where rolname = 'telemetry_ingest';   -- expect 0 rows
+--
 -- EXECUTED against plain PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm verify:sql`,
 -- and driven in both directions by
 -- supabase/tests/012_telemetry_ingest.test.sql -- which probes every privilege
