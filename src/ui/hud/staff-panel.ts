@@ -142,12 +142,25 @@ export const HELD_GUARD_ROW_LIMIT = 3;
  * `hidden` while nothing is queued and collapsed when it appears, so the
  * panel's arrival height is unchanged"*).
  *
- * **The fold measurement for the expanded block has not been taken**, because
- * this environment has no browser and `vitest.config.ts` is `environment:
- * 'node'`. The claim made here is therefore the weaker one it can support: the
- * *arrival* height is unchanged, which is checkable from the collapse alone, and
- * the expanded height is the browser job's to confirm. Saying so is cheaper than
- * a measurement nobody took.
+ * **The fold measurement for the expanded block used to be missing, and this
+ * paragraph used to say so.** It read: *"...has not been taken, because this
+ * environment has no browser and `vitest.config.ts` is `environment: 'node'`.
+ * The claim made here is therefore the weaker one it can support: the arrival
+ * height is unchanged, which is checkable from the collapse alone, and the
+ * expanded height is the browser job's to confirm."* That was honest and it was
+ * also the gap that let issue #912 happen. It is quoted rather than deleted,
+ * because a paragraph admitting a missing measurement is exactly the note a
+ * later reader needs to see was acted on.
+ *
+ * **Taken 2026-09-04 in a browser, and the expanded block failed it at four of
+ * the five viewports** (issue #912): sixty guards hired into a prison with
+ * nothing zoned, the fold opened, and every one of the three Dismiss controls
+ * below the panel's own client box at 1280x720, 1024x768 and 900x600, with two
+ * of three below it at 375x812. Only 1440x900 was clear. `rosterSection`'s
+ * `onToggle` carries the table and the fix; the three rows are not what has to
+ * change, because with the block brought into view on the press that opens it
+ * all three controls are inside the fold at all five viewports. So the limit is
+ * still three, and it is now three for a measured reason at both ends.
  */
 export const STAFF_ROSTER_ROW_LIMIT = 3;
 
@@ -181,6 +194,33 @@ export const STAFF_ROSTER_ROW_LIMIT = 3;
  * question about the wrong person.
  */
 export const STAFF_ROSTER_ROW_SETTLE_MS = 1_000;
+
+/**
+ * The block's own name, beside the held block's.
+ *
+ * `hud-staff__held-list` is what carries the layout -- one declaration in
+ * `hud.css`, shared with the held block above because the two lists are the
+ * same shape -- and `hud-staff__roster-list` is what makes *this* list
+ * addressable. Both, not one, because dropping the first would fork a
+ * stylesheet rule for nothing.
+ *
+ * **It is here because a shared class name cost a measurement its conclusion**
+ * (issue #912). This list and the held block's list carried one class between
+ * them and so did their rows, so `document.querySelector('.hud-staff__held-list')`
+ * answered for the *held* list -- correctly `hidden` in a prison holding
+ * nobody -- while `querySelectorAll('.hud-staff__held-row')` returned six rows
+ * from two different blocks. `docs/research/2026-09-04-can-this-prison-fail.md`
+ * finding 2 read exactly that pair and concluded the dismiss control "can never
+ * be reached", including a refuting sample that could not refute anything
+ * because both readings were about a block that was not the one under test. A
+ * block a probe cannot name is a block whose defects cannot be stated.
+ *
+ * `.hud-regime__roster-list` one panel over is the same name for the same thing.
+ */
+const ROSTER_LIST_CLASS = 'hud-staff__held-list hud-staff__roster-list';
+
+/** The row's own name, on `ROSTER_LIST_CLASS`' terms and for its reason. */
+const ROSTER_ROW_CLASS = 'hud-staff__held-row hud-staff__roster-row';
 
 /** What one press of a dismiss control asks for: a staff id and nothing else. */
 export interface StaffPanelDismissIntent {
@@ -1157,7 +1197,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     freedAtMs: number | undefined;
   }
 
-  const rosterList = element('div', { className: 'hud-staff__held-list' });
+  const rosterList = element('div', { className: ROSTER_LIST_CLASS });
 
   /**
    * The dismissal one press away from happening, or `undefined` while none is
@@ -1173,7 +1213,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   const rosterRows: readonly RosterRow[] = Array.from({ length: STAFF_ROSTER_ROW_LIMIT }, (): RosterRow => {
     const label = valueText('', 'hud-staff__held-label');
     const row: RosterRow = {
-      element: element('div', { className: 'hud-staff__held-row' }),
+      element: element('div', { className: ROSTER_ROW_CLASS }),
       label,
       dismiss: createActionButton({
         label: t(HUD_MESSAGE_KEY.securityRosterDismiss),
@@ -1358,6 +1398,43 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
         armedDismissal = undefined;
         paintDismissConfirmation();
       }
+      /*
+       * Opened, the block is brought into view (issue #912).
+       *
+       * **`STAFF_ROSTER_ROW_LIMIT` said the expanded fold measurement had not
+       * been taken. It has now, and the block failed it at four of the five
+       * viewports the browser suite visits.** With sixty guards on the payroll
+       * and none of them assigned -- the prison finding 2 of
+       * `docs/research/2026-09-04-can-this-prison-fail.md` was played into --
+       * the three Dismiss controls land below the panel's own client box the
+       * moment the fold opens:
+       *
+       * | viewport | Dismiss bottoms | panel fold | inside |
+       * | --- | --- | --- | --- |
+       * | 1440x900 | 692.8 / 744.8 / 796.8 | 817.5 | 3 of 3 |
+       * | 1280x720 | 692.8 / 744.8 / 796.8 | 637.5 | **0 of 3** |
+       * | 1024x768 | 692.8 / 744.8 / 796.8 | 685.5 | **0 of 3** |
+       * | 900x600 | 597.1 / 645.1 / 693.1 | 522.0 | **0 of 3** |
+       * | 375x812 | 636.4 / 688.4 / 740.4 | 718.0 | **2 of 3** |
+       *
+       * That is #220's and #285's shape -- a control with a real box, enabled,
+       * that a player cannot see -- reachable only by scrolling a panel they
+       * have no reason to think has more in it. It is the same defect the buy
+       * row met when its disclosure opened, and the answer is the one
+       * `paintBuyTotal` already gives one panel over: the panel is a scroll
+       * container (`.ui-panel.hud-staff` carries `overflow-y: auto`), so this
+       * scrolls the panel and nothing else, and after it every one of the three
+       * controls is inside the fold at all five viewports.
+       *
+       * **The body and not the list**, so the overflow line and the sentence
+       * saying what a dismissal costs come with the rows rather than being the
+       * part left below the fold. `block: 'nearest'` leaves a fold that already
+       * fits where it is.
+       *
+       * Last in the handler, after `setCollapsed`: the body is `hidden` until
+       * that call returns, and scrolling to a node with no box scrolls nowhere.
+       */
+      if (!collapsed) rosterSection.body.scrollIntoView({ block: 'nearest' });
     },
   });
   rosterSection.element.classList.add('hud-staff__roster');

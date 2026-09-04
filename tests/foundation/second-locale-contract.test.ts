@@ -252,9 +252,19 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * quoted sentence is the most -- which is why the value beside each key
    * quotes the expression and the key is the part that rots.
    */
-  'ui/hud/build-panel.ts:1906':
+  /*
+   * **A fifth and sixth move, on 2026-09-04, and again neither site changed.**
+   * Issue #904 added `armedHintKey` and its docblock above both of these, so
+   * `:1906` became `:1952` and `:2275` became `:2321`. Read off the tree by
+   * grepping for the expressions themselves, exactly as the paragraph above
+   * says to. Six re-pins for two unchanged expressions is the whole of the
+   * argument for keying this map on the quoted expression instead, and it is
+   * left as a `file:line` for the reason given above: the number is what makes
+   * the failure message point at the offending code.
+   */
+  'ui/hud/build-panel.ts:1952':
     'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2275':
+  'ui/hud/build-panel.ts:2321':
     'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
 };
 

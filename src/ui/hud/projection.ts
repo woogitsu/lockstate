@@ -535,7 +535,7 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * and a prison at -1,300 are not the same state told louder: the first can
  * still buy the plank that finishes the cell, and the second can buy nothing
  * at all -- every press that costs money is refused, and none of them will
- * stop being refused until the state pays. That is exactly the distinction the
+ * stop being refused until the prison earns some. That is exactly the distinction the
  * coverage ladder draws between understaffed and unguarded, *"the rung where
  * the cheapest possible action changes the outcome"*.
  *
@@ -566,7 +566,7 @@ function atTreasuryFloor(counts: HudCountsViewModel): boolean {
  * #771 (2026-09-01, ADR 0017's equalisation amendment) moved the construction
  * rung onto the same -1,250 this tone already keys off.** `danger` now means
  * exactly what it reads as: no discretionary spend of any kind, player-pressed
- * or scheduled, moves the balance again until the state pays what it owes.
+ * or scheduled, moves the balance again until the prison earns the money.
  * Only the payday exception survives, and it is named above rather than
  * implied. **And it does not mean "the deepest a prison can go" either** --
  * that is `critical` now, the ruling on issue #768's own boundary.

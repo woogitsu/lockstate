@@ -1618,7 +1618,11 @@ decision about what to build next.
     `RefusalReason` member, `construction.materials-unfunded`, a new
     `REFUSAL_LABEL_KEYS` entry and a new key,
     `hud.alert.refusal.construction.materials-unfunded`, reading *"The build
-    queue is stalled — no more materials until the state pays what it owes."*
+    queue is stalled — no more materials until the prison earns the money."*
+    (that tail read *"until the state pays what it owes"* until 2026-09-04,
+    when issue #913 measured the state owing nothing to a prison that is not
+    earning; ruling 19's requirement — name what stops, not the number it
+    stops at — is what the replacement keeps)
     `reportMaterialsFunding` records that instead of
     `purchase.insufficient-funds`, so rung 2's event no longer reports rung
     1's sentence. What is **still** owed is the other half: the sentence names
