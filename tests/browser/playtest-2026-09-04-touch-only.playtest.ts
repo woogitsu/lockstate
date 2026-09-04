@@ -856,40 +856,67 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
 
   /*
    * Which tiles a finger can reach without moving the camera, and the biggest
-   * square cell that fits among them.
+   * square cell it can draw in one camera position.
    *
-   * One `page.evaluate` over the whole grid rather than three per tile: the
-   * first version of this made 4,800 round trips and took minutes. What it
-   * answers is the load-bearing number of this act -- a wall run's two
-   * endpoints must both be on canvas, so the size of the largest reachable
-   * block is the size of the largest cell a touch player can draw in one go.
+   * **The lattice is half a tile, and that is a correction this act paid for.**
+   * The first version required only tile *centres* to be canvas, and the run
+   * then died at `wall north start: (416,64) is covered by
+   * span.ui-eyebrow.ui-stat__label` -- because a wall run is aimed at a tile
+   * *edge*, not a centre, and the north edge of the block it chose was 20px
+   * inside the status strip. A cell of side `s` needs the whole closed
+   * rectangle from its north-west corner to its south-east one, sampled every
+   * half tile: `(2s+1)²` lattice points, all canvas. That is exactly what the
+   * four drags touch, and nothing less is enough.
+   *
+   * One `page.evaluate` for the whole thing rather than three per tile: the
+   * first version made 4,800 round trips and took minutes.
    */
   const grid = await page.evaluate(
     ([ox, oy, tile]: readonly number[]) => {
+      const step = (tile as number) / 2;
+      const LATTICE = 96; // 48 tiles in each axis, at half-tile resolution.
+      const free: boolean[][] = [];
+      for (let j = 0; j < LATTICE; j += 1) {
+        const row: boolean[] = [];
+        for (let i = 0; i < LATTICE; i += 1) {
+          const x = (ox as number) + i * step;
+          const y = (oy as number) + j * step;
+          if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) {
+            row.push(false);
+            continue;
+          }
+          const node = document.elementFromPoint(x, y);
+          row.push(node !== null && node.tagName === 'CANVAS');
+        }
+        free.push(row);
+      }
+      // Tile centres are the odd lattice points; that is the "reachable tiles"
+      // figure #899 reports, kept comparable.
       const reachable: { x: number; y: number }[] = [];
-      for (let ty = 0; ty < 48; ty += 1) {
-        for (let tx = 0; tx < 48; tx += 1) {
-          // The wall runs of a cell at (tx,ty) touch the tile's own top-left
-          // corner as well as its centre, so both are required to be canvas.
-          const cx = (ox as number) + tx * (tile as number) + (tile as number) / 2;
-          const cy = (oy as number) + ty * (tile as number) + (tile as number) / 2;
-          if (cx < 0 || cy < 0 || cx > window.innerWidth || cy > window.innerHeight) continue;
-          const node = document.elementFromPoint(cx, cy);
-          if (node !== null && node.tagName === 'CANVAS') reachable.push({ x: tx, y: ty });
+      for (let ty = 0; ty < LATTICE / 2; ty += 1) {
+        for (let tx = 0; tx < LATTICE / 2; tx += 1) if (free[2 * ty + 1]?.[2 * tx + 1] === true) reachable.push({ x: tx, y: ty });
+      }
+      // Prefix sums, so a candidate rectangle is O(1).
+      const sum: number[][] = [];
+      for (let j = 0; j <= LATTICE; j += 1) sum.push(new Array<number>(LATTICE + 1).fill(0));
+      for (let j = 0; j < LATTICE; j += 1) {
+        for (let i = 0; i < LATTICE; i += 1) {
+          sum[j + 1]![i + 1] = sum[j]![i + 1]! + sum[j + 1]![i]! - sum[j]![i]! + (free[j]![i] === true ? 1 : 0);
         }
       }
-      const set = new Set(reachable.map((t) => `${t.x},${t.y}`));
-      const fits = (x0: number, y0: number, size: number): boolean => {
-        for (let dy = 0; dy <= size; dy += 1) for (let dx = 0; dx <= size; dx += 1) if (!set.has(`${x0 + dx},${y0 + dy}`)) return false;
-        return true;
-      };
+      const allFree = (i0: number, j0: number, side: number): boolean =>
+        i0 + side <= LATTICE &&
+        j0 + side <= LATTICE &&
+        sum[j0 + side]![i0 + side]! - sum[j0]![i0 + side]! - sum[j0 + side]![i0]! + sum[j0]![i0]! === side * side;
       let bestSize = 0;
       let bestAt: { x0: number; y0: number } | null = null;
-      for (const tile of reachable) {
-        for (let size = bestSize + 1; size <= 12; size += 1) {
-          if (!fits(tile.x, tile.y, size)) break;
-          bestSize = size;
-          bestAt = { x0: tile.x, y0: tile.y };
+      for (let ty = 0; ty < LATTICE / 2; ty += 1) {
+        for (let tx = 0; tx < LATTICE / 2; tx += 1) {
+          for (let size = bestSize + 1; size <= 12; size += 1) {
+            if (!allFree(2 * tx, 2 * ty, 2 * size + 1)) break;
+            bestSize = size;
+            bestAt = { x0: tx, y0: ty };
+          }
         }
       }
       return { reachable, bestSize, bestAt };
@@ -903,9 +930,10 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
       ` spanning x ${Math.min(...xs)}..${Math.max(...xs)}, y ${Math.min(...ys)}..${Math.max(...ys)}`,
   );
   log(
-    `the largest square cell whose every tile AND far wall a finger can reach in one camera position:` +
-      ` ${grid.bestSize}x${grid.bestSize} at ${JSON.stringify(grid.bestAt)}` +
-      ` (the harness's own starter cell, and the one every prior playtest builds, is 6x6)`,
+    `the largest square cell a finger can draw in one camera position -- every point of its closed rectangle,` +
+      ` sampled every half tile, on canvas: ${grid.bestSize}x${grid.bestSize} at ${JSON.stringify(grid.bestAt)}.` +
+      ` The shared harness's starter cell, and every prior playtest's, is 6x6; room.canteen's minimum footprint` +
+      ` is 6x6 too (src/content/room-catalog.ts:124), and room.cell's is 2x3 (:94)`,
   );
   expect(grid.bestAt, `${label}: no cell of any size fits in the canvas a finger can reach`).not.toBeNull();
   const cellSize = Math.min(6, grid.bestSize);
