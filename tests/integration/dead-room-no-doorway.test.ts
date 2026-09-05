@@ -30,6 +30,15 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * short, silent in both. Every published signal agreed the dead room was
  * finished, while the need it was built for sat on the floor.
  *
+ * **The middle row still renders identically in both columns and it no longer
+ * reads as a verdict** (#1006 finding 2, 2026-09-05): that key now says
+ * *"Walled in — not a door check"*. The quotation above is left as it stands
+ * because it is what a player was told when this was measured, and because the
+ * *identity* of the two columns -- which is this file's finding -- is
+ * unchanged: `roomPerimeterEnclosure` reads the edge layers and never the door
+ * registry, so no wording can make that enum tell the two prisons apart. What
+ * changed is that the sentence says so.
+ *
  * ## Why the assertions are shaped this way
  *
  * The behavioural half is a **measurement**, not a proxy: `hygiene` only ever

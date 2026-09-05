@@ -167,6 +167,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.prisoners-without-bed': '{count} with no bed',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
+  /*
+   * How many of the rooms the chip above counts are not ready
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1),
+   * or nothing when they all are.
+   *
+   * **Authored under `AGENTS.md` reservation 4's partial release of
+   * 2026-09-04** -- *"the CHOICE OF WORDS is ours now; the requirement that a
+   * sentence be TRUE is not"* -- so each half is proved against the code that
+   * renders it rather than reasoned about.
+   *
+   * **`{count}`.** `HudRoomNeedsViewModel.unfinishedRooms`, and nothing derived
+   * from it: `roomNeedsFromProjections` (`src/ui/simulation-room-needs.ts`)
+   * increments it once per row whose `shortfallOf` is above zero, which is
+   * `requirementSummary.missingCapability + (access === 'no-way-in' ? 1 : 0)`
+   * -- the projection's own verdicts, read and not recomputed. It is therefore
+   * the same figure the Rooms panel's header prints as `hud.rooms.needs-count`'s
+   * `{unfinished}`, off the same view model, so the strip and the panel cannot
+   * disagree about it.
+   *
+   * **"not ready".** `hud.rooms.needs` below is *"Not ready"*, the words this
+   * repository already chose for a room that exists and cannot yet do the job it
+   * was designated for. The same words for the same fact, because this badge's
+   * whole purpose is to send a player to the panel that says more -- and a
+   * synonym on the way there would read as a second condition.
+   *
+   * **What it does not say, and that is the load-bearing part.** Not *why*: a
+   * missing bed and a missing door are both counted here and only the panel
+   * tells them apart. Not that the rest of the prison is fine -- the count is
+   * taken over the projection's default window of a hundred rooms
+   * (`HudRoomNeedsViewModel`'s own comment), so in a larger prison it can
+   * understate and can never overstate. And it is absent rather than `0`
+   * whenever nothing has been asked, because "nobody asked" and "every room is
+   * ready" are different facts; `roomsNotReadyBadge`
+   * (`src/ui/hud/projection.ts`) is where that is enforced.
+   */
+  'hud.status.rooms-not-ready': '{count} not ready',
   'hud.status.incidents': 'Incidents',
   'hud.status.coverage': 'Coverage',
   'hud.status.contraband': 'Contraband',
@@ -2331,7 +2367,49 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.too-small': 'Too small — this room needs at least {width} × {height} tiles.',
   'hud.rooms.enclosure': 'Enclosure',
   'hud.rooms.enclosure-none': 'Not evaluated yet',
-  'hud.rooms.enclosure-sealed': 'Walled in on every side',
+  /*
+   * What `roomPerimeterEnclosure` actually found, and the scope of it
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 2).
+   *
+   * **This read `'Walled in on every side'` and the words alone were the
+   * defect.** They are the pass half of a pass/fail pair, they sit two lines
+   * under `MUST BE ENCLOSED`, and a play-test on 2026-09-05 read the three
+   * together as "this room is finished" while the block directly above them
+   * said *"a door — nobody can get in"*. The clause the comment on
+   * `hud.alert.event.rooms.zoned` already carried -- that the panel's *"Walled
+   * in on every side"* renders identically for a reachable room and a sealed
+   * box (#938) -- was written down and shipped anyway, which is what makes this
+   * a rewrite rather than a note.
+   *
+   * **Authored under `AGENTS.md` reservation 4's partial release of
+   * 2026-09-04**, so each half is proved against the code that produces the
+   * value being rendered:
+   *
+   * - *"Walled in"* -- `RoomEnclosure`'s own definition
+   *   (`src/simulation/rooms/enclosure.ts`): *"`'sealed'` -- every perimeter
+   *   edge holds edge geometry"*, decided in `2 * (width + height)` edge reads
+   *   over the rectangle's own boundary. Unchanged in meaning from the sentence
+   *   this replaces.
+   * - *"not a door check"* -- `roomPerimeterEnclosure` reads
+   *   `RoomEdgeReader.getTopEdge`/`getLeftEdge` and **never** the door
+   *   registry. That is why `roomPerimeterAccess` beside it exists at all, and
+   *   that module says so in its own words: *"a `'sealed'` answer no longer
+   *   implies \"no way in\""*, because a completed door order writes
+   *   `DOOR_EDGE_NUMERIC_ID` into the same edge slot a wall order writes into.
+   *   So this line cannot tell a doorway from a wall, and now says so instead
+   *   of leaving the player to infer it.
+   *
+   * It deliberately does **not** say whether the room has a door. That answer
+   * is `hud.rooms.needs-doorway`'s, it is drawn in the block above this one,
+   * and it comes from a different function on a different signal -- putting a
+   * second copy of it here would be two verdicts to drift.
+   *
+   * MEASUREMENT PENDING -- see the browser case
+   * *"the enclosure readout is drawn whole rather than clipped"* in
+   * `tests/browser/ui-shell.spec.ts`, which is what actually holds this to the
+   * panel's width.
+   */
+  'hud.rooms.enclosure-sealed': 'Walled in — not a door check',
   'hud.rooms.enclosure-open': 'Open on at least one side',
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',

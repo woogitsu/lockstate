@@ -4416,8 +4416,66 @@ test.describe('the Rooms panel', () => {
       window.lockstateUiHarness.reportZoning({ sequence: 3, enclosure: 'sealed', requirement: 'enclosed' }),
     );
     const sealed = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
-    expect(sealed.enclosureText).toBe('Walled in on every side');
+    /*
+     * **This read `'Walled in on every side'` until #1006 finding 2.** Those
+     * words are the pass half of a pass/fail pair sitting two lines under
+     * `MUST BE ENCLOSED`, and a play-test read the three together as "this room
+     * is finished" while the block above them said *"a door — nobody can get
+     * in"*. `roomPerimeterEnclosure` never reads the door registry -- that is
+     * why `roomPerimeterAccess` exists beside it -- so the readout now states
+     * its own scope instead of leaving a player to infer it.
+     */
+    expect(sealed.enclosureText).toBe('Walled in — not a door check');
     expect(sealed.noteTone).toBe('');
+  });
+
+  test('the enclosure readout is drawn whole rather than clipped (#1006 finding 4)', async ({ page }) => {
+    /*
+     * Measured on the assembled page at 900x600 before the fix: `scrollWidth`
+     * **268** against `clientWidth` **238**, with `overflow-x: visible` and
+     * `text-overflow: clip` -- 30px of the sentence outside the panel, cut off
+     * mid-word. The fix is `flex-wrap: wrap` on the block, so a value that does
+     * not fit beside its label takes its own line instead of hanging off the
+     * edge; see `.hud-rooms__enclosure` in `hud.css` for why that rather than
+     * an ellipsis or a shorter sentence.
+     *
+     * Asserted as a measurement rather than against a pixel figure, because the
+     * claim is "nothing overflows", not "the block is 238px wide" -- a figure
+     * would go stale the day a gutter moved and would say nothing about any
+     * other locale's wording.
+     */
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'sealed', requirement: 'enclosed' }),
+    );
+
+    const measured = await page.evaluate(() => {
+      const block = document.querySelector<HTMLElement>('.hud-rooms__enclosure');
+      const value = document.querySelector<HTMLElement>('.hud-rooms__enclosure-value');
+      if (block === null || value === null) return null;
+      return {
+        laidOut: block.getClientRects().length > 0,
+        scrollWidth: block.scrollWidth,
+        clientWidth: block.clientWidth,
+        // The value's own box against the text inside it: a block that no
+        // longer overflows because the *value* was truncated would still be
+        // the defect, one element down.
+        valueScrollWidth: value.scrollWidth,
+        valueClientWidth: value.clientWidth,
+        text: value.textContent?.trim() ?? '',
+      };
+    });
+
+    expect(measured).not.toBeNull();
+    expect(measured!.laidOut, 'the readout has no box to measure').toBe(true);
+    expect(measured!.text).toBe('Walled in — not a door check');
+    expect(
+      measured!.scrollWidth,
+      `the enclosure block overflows its panel by ${measured!.scrollWidth - measured!.clientWidth}px`,
+    ).toBeLessThanOrEqual(measured!.clientWidth);
+    expect(measured!.valueScrollWidth, 'the sentence itself is clipped inside its own box').toBeLessThanOrEqual(
+      measured!.valueClientWidth,
+    );
   });
 
   test('says what a designated room is missing, and says nothing when nothing is (#331)', async ({ page }) => {
@@ -4703,6 +4761,87 @@ test.describe('the Rooms panel', () => {
     expect(cleared.needsUnfinished).toBe('');
   });
 
+  test('says on the status strip that a room is not ready, on the tab the game opens on (#1006 finding 1)', async ({
+    page,
+  }) => {
+    /*
+     * The defect, measured by play-test on 2026-09-05: `hud.rooms.needs-doorway`
+     * is true, fires at the earliest possible moment and survives a reload --
+     * and it has exactly one render site, `.hud-rooms`, which is not laid out at
+     * all while any other tab is showing. Eight game days sat on OVERVIEW
+     * produced two messages, neither about the door, while the strip read
+     * `1 ROOMS` with no qualifier and the panel behind the tab read
+     * `NOT READY 1 of 1`.
+     *
+     * This is asserted in a browser and not only in `ui-hud-projection.test.ts`
+     * because the projection is only half of the claim. The other half is that
+     * the element is *laid out* on a tab where `.hud-rooms` is not -- which is
+     * the whole finding, and which no `node`-environment test can see.
+     */
+    const badge = page.locator('.ui-stat[data-metric="rooms"] .ui-badge');
+    const roomsPanel = page.locator('.hud-rooms');
+
+    // 1. Nothing has been asked: no badge. A chip reading `0 not ready` would be
+    //    a claim about a prison nothing is answering for.
+    await page.evaluate(() => window.lockstateUiHarness.reportRoomNeeds(undefined));
+    await expect(badge).toHaveCount(0);
+
+    // 2. Every room is ready: still no badge, and a different fact from the one
+    //    above -- `prisonersWithoutBedBadge`'s rule, that a strip which is
+    //    always amber teaches players to ignore amber.
+    await page.evaluate(() =>
+      // `totalRooms` matches the strip's own room count in this fixture (61),
+      // so the two readouts describe one prison rather than two.
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 61, totalNeeds: 0, needs: [] }),
+    );
+    await expect(badge).toHaveCount(0);
+
+    /*
+     * 3. A room with no way into it. The needs entry is the doorway one on
+     *    purpose: it is the state the play-test was in, and the state every
+     *    other readout a player has is silent about.
+     */
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 61,
+        totalNeeds: 1,
+        needs: [
+          { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
+        ],
+      }),
+    );
+    await expect(badge).toHaveCount(1);
+    await expect(badge).toHaveAttribute('data-tone', 'warning');
+    await expect(badge.locator('.ui-badge__text')).toHaveText('1 not ready');
+
+    /*
+     * 4. **And now the finding.** Leave the Rooms tab for the one the game
+     *    opens on. The panel loses its box entirely -- which is the defect --
+     *    and the badge keeps its own, on the strip, where it is laid out at
+     *    every tab and every viewport.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
+    // Measured rather than read off `hidden`: `.hud-rooms` carries the
+    // attribute, and what the play-test recorded is that the panel has no box
+    // -- so nothing inside it can reach a player, whatever the DOM holds.
+    expect(
+      await roomsPanel.evaluate((node) => node.getClientRects().length),
+      'the Rooms panel still has a box on OVERVIEW, so this test is not measuring the defect',
+    ).toBe(0);
+    await expect(badge).toHaveCount(1);
+    await expect(badge.locator('.ui-badge__text')).toHaveText('1 not ready');
+    expect(
+      await badge.evaluate((node) => node.getClientRects().length > 0),
+      'the badge is in the DOM on OVERVIEW and has no box, which is the defect one element over',
+    ).toBe(true);
+
+    // 5. The chip itself is untouched: it still counts rooms, and it is not
+    //    toned as well, so one fact reaches the player through one channel.
+    await expect(page.locator('.ui-stat[data-metric="rooms"] .ui-stat__value')).toHaveText('61');
+    expect(await page.locator('.ui-stat[data-metric="rooms"]').getAttribute('data-tone')).toBeNull();
+  });
+
   test('hands the pointer back when the player leaves the tab', async ({ page }) => {
     // A tool that stayed armed behind a hidden panel would swallow every click
     // on a world the player thought they were only looking at.
@@ -4792,7 +4931,9 @@ test.describe('the Rooms panel', () => {
     );
     const evaluated = await probe();
     expect(evaluated.enclosureLaidOut).toBe(true);
-    expect(evaluated.enclosureText).toBe('Walled in on every side');
+    // The wording changed in #1006 finding 2; what this case is about is that
+    // a verdict brings the block back, which is unaffected.
+    expect(evaluated.enclosureText).toBe('Walled in — not a door check');
 
     // 4. `data-needs` follows the readout and carries the figure, so the
     //    stylesheet spends the catalogue's floor on a block that is really
