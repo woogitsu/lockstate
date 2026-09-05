@@ -1,9 +1,28 @@
 # What pressure there is at fifty — 2026-09-04
 
-**IN PROGRESS.** Acts B, P, F and Y are measured and written up below. Act G —
-the shipped tree's break-even — is still running. This file is
-committed in this state deliberately: a container restart already destroyed one
-set of readings for this task that lived only in a transcript.
+**Complete.** All five acts — B, P, F, Y and G — are measured and written up
+below; act G's shipped-tree break-even is in section 7.
+
+*The paragraph this replaces read:* **"IN PROGRESS.** Acts B, P, F and Y are
+measured and written up below. Act G — the shipped tree's break-even — is still
+running. This file is committed in this state deliberately: a container restart
+already destroyed one set of readings for this task that lived only in a
+transcript." **That was true when written and stopped being true inside the same
+session**, when act G finished and section 7 was written against it — and it
+survived to the point of review, where an agent reading this note for a
+different task caught the header contradicting the body. The commit-early rule
+it describes is what saved this note; the stale header is the cost of that rule
+and is cheaper than the alternative.
+
+**Two figures for one quantity, and both are kept because they are not the same
+quantity.** The headroom over what the game asks appears below as both **26.8×**
+and **26.7×**. `26.8×` is the *arithmetic crossing* — income equals wages at
+**187.5** guards, and `187.5 / 7 = 26.79`. `26.7×` is the *measured* figure —
+the treasury still rose at **187** and fell at **188**, so the last hire that
+pays for itself is 187, and `187 / 7 = 26.71`. The measured pair brackets the
+arithmetic one, which is the agreement worth having; neither is a correction of
+the other, and a reader who needs one number should take **26.8×** and say it
+is the crossing.
 
 Asked because the owner ruled it. The four-prisoner measurement — the note
 named `2026-09-04-what-pressure-there-is.md` in this directory on branch
