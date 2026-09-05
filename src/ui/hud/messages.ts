@@ -1172,6 +1172,50 @@ export const HUD_MESSAGE_KEY = {
   roomsNeedsItemMore: 'hud.rooms.needs-item-more',
   roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
   roomsNeedsDoorway: 'hud.rooms.needs-doorway',
+  /*
+   * The same block, saying the other thing a room can be wrong about: it is
+   * finished, and it is full (ADR 0028 phase 5, issues #997 and #1003).
+   *
+   * **A different subject, not a fourth kind of need**, and the distinction is
+   * what these four keys exist for. Every key above describes something the
+   * player has not built. These describe a room that holds every object its
+   * definition asks for and is nonetheless refusing arrivals, because ADR 0028
+   * derives a concurrent-use ceiling from the objects standing in the room and
+   * the prison has outgrown it. #1003 measured the sharp case: a shower room's
+   * capacity is its **shower heads**, not its floor -- two heads is a ceiling
+   * of two -- so a fifty-prisoner prison in which nobody washes is reachable
+   * with every room reading complete and the only signal a need sitting at zero
+   * in the Regime panel.
+   *
+   * That is the hidden mechanic this readout exists to remove. The owner's
+   * standing brief is a game with none.
+   *
+   * `roomsAtCapacity` and `roomsAtCapacityCount` replace `roomsNeeds` and
+   * `roomsNeedsCount` in the block's header when the block is drawing this
+   * subject, and `roomsAtCapacityRoom` replaces `roomsNeedsRoom` under it.
+   * `roomsAtCapacityPlaces` is the one line beneath, and it carries both
+   * figures rather than a verdict: how many may use the room at once and how
+   * many are. A player who reads "places: 2 of 2 in use" under a shower room
+   * has been told the mechanism, which "full" alone would not do.
+   *
+   * **Why the header is replaced rather than joined.** The two subjects are
+   * never drawn together -- `paintNeeds` carries the reason and the
+   * measurement -- so one header is enough, and a block that showed both would
+   * be a second block in a panel whose deepest measured shape already sits on
+   * its fold (`ROOM_NEEDS_NAMED_LIMIT`).
+   *
+   * **No count placeholder is spelled `{count}`** in any of these, deliberately:
+   * `tests/foundation/second-locale-contract.test.ts` pins every flat message
+   * that interpolates `{count}`, because such a message can never be given
+   * plural forms by a translator. These interpolate named figures instead, so
+   * they add nothing to that debt -- and `roomsAtCapacityPlaces` puts its noun
+   * in front of the numerals rather than after them, so no number makes it
+   * ungrammatical.
+   */
+  roomsAtCapacity: 'hud.rooms.at-capacity',
+  roomsAtCapacityCount: 'hud.rooms.at-capacity-count',
+  roomsAtCapacityRoom: 'hud.rooms.at-capacity-room',
+  roomsAtCapacityPlaces: 'hud.rooms.at-capacity-places',
 
   /*
    * The Regime panel, on the fifth tab (issue #451).

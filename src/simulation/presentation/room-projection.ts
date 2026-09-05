@@ -232,17 +232,83 @@ export interface RoomOccupancyViewModel {
    * concurrent-use readout is a readout of that -- one number per thing the
    * room can be used for, not one number for the room.
    *
-   * The concurrent-use figure is **not projected at all yet**, and that is a
-   * gap rather than a decision: it is the Rooms tab readout ADR 0028 phase 5
-   * owes, along with "over capacity" -- which this shape still cannot say,
-   * because `free` clamps at zero and `utilization` clamps at 1. An
-   * over-capacity room therefore reads as full at 100 %, which is tolerable
-   * and is exactly what that phase is for.
+   * The concurrent-use figure is projected, and it is **not here**: it is
+   * `RoomListRowViewModel.concurrentUse`, one entry per capability, which is
+   * the shape the paragraph above says the answer has to take. This comment
+   * read *"The concurrent-use figure is **not projected at all yet**, and that
+   * is a gap rather than a decision: it is the Rooms tab readout ADR 0028
+   * phase 5 owes"* until that field landed; the sentence is kept rather than
+   * deleted because it is the reason the field is a sibling of this one rather
+   * than a reinterpretation of it.
+   *
+   * **"Over capacity" is a separate half and is still owed a surface, but not
+   * a projection field** -- and the sentence here used to say otherwise. It
+   * read *"along with 'over capacity' -- which this shape still cannot say,
+   * because `free` clamps at zero and `utilization` clamps at 1"*, and the
+   * clamping half is true while the conclusion is not: `current` and
+   * `capacity` are both published raw, so `current > capacity` is derivable
+   * from this view model by any reader. What no reader does is *say* it, which
+   * is a gap in the HUD and not in this shape. An over-capacity room still
+   * reads as full at 100 % in `free`/`utilization`.
    */
   readonly capacity: number;
   /** Absent for an instance whose resident capacity is zero -- a share of nothing has no meaning. */
   readonly utilization?: BoundedValue;
   readonly free: number;
+}
+
+/**
+ * How many actors may use one room at once **for one thing it can be used
+ * for**, and how many are doing so at the moment this was projected.
+ *
+ * ## Why this is not a field on `RoomOccupancyViewModel`
+ *
+ * That type's own comment forbids it twice over: `capacity` there is the
+ * *resident* ceiling, and projecting `RoomInstance.concurrentUseCapacity`
+ * beside it "would make a canteen read as a dormitory for its furniture". The
+ * second half is sharper -- `concurrentUseCapacity` is the summed footprint
+ * width of **every** object in the room and no gate reads it (issue #326), so
+ * a readout of that scalar is a readout of nothing enforced. The ceiling lives
+ * per capability, in `RoomInstance.concurrentUseCapacityByCapability`, and one
+ * number for the room cannot carry it: ADR 0028's worked canteen seats 6
+ * diners on 8 bench places while its scalar reads 14.
+ *
+ * So this is a **list**, one entry per capability the room supplies, and the
+ * scalar is still projected nowhere.
+ *
+ * ## Both numbers, and neither derived from the other
+ *
+ * `capacity` is `RoomInstanceRegistry.concurrentUseCapacityFor`'s answer --
+ * the same function `findAvailableForUse` and `claimUse` gate against, read
+ * rather than re-summed here, so a readout cannot disagree with the gate.
+ * `inUse` is `useOccupancyOf` scoped to the same capability, which is the
+ * count that gate compares against.
+ *
+ * **`inUse` may exceed `capacity`.** `claimUse` refuses above the ceiling, but
+ * `reinstateUseClaim` records a restored claim either way, and an object
+ * removed under a performing actor drops the ceiling beneath a claim that
+ * already stands (ADR 0028 decision 2: nobody is evicted). Neither figure is
+ * clamped here, for `RoomOccupancyViewModel.free`'s opposite reason: clamping
+ * is what makes an over-capacity room indistinguishable from a full one.
+ *
+ * ## The one ceiling this does not carry
+ *
+ * A room whose action names **no** capability -- `room.yard` and
+ * `action.yard-recreation` -- is bounded by its own ground rather than by its
+ * objects (`concurrentUseCapacityFor` case 1, ADR 0071), and that ceiling is
+ * keyed by no capability, so it has no entry here. It is deliberately left to
+ * a follow-up rather than approximated: the claims against it cannot be
+ * counted from this side, because `useOccupancyOf` with no capability counts
+ * *every* claim on the instance rather than only the capability-less ones, and
+ * narrowing it is a change in `RoomInstanceRegistry`.
+ */
+export interface RoomConcurrentUseViewModel {
+  /** The thing the room can be used for: an object capability (`'hygiene'`, `'dining'`). A stable simulation id, never rendered. */
+  readonly capability: string;
+  /** How many may use the room for it at once. `concurrentUseCapacityFor`'s answer. */
+  readonly capacity: number;
+  /** How many are using it for that right now. `useOccupancyOf`, scoped to the same capability. */
+  readonly inUse: number;
 }
 
 export interface RoomSecurityViewModel {
@@ -262,6 +328,26 @@ export interface RoomListRowViewModel {
   readonly anchorTile: TileViewModel;
   readonly occupancy: RoomOccupancyViewModel;
   readonly objectCapabilities: readonly string[];
+  /**
+   * The concurrent-use ceiling and the live count against it, one entry per
+   * capability, ascending by capability (ADR 0028 phase 5).
+   *
+   * **Keyed by the same list `objectCapabilities` above carries, in the same
+   * order**, because both come from `RoomInstance` and a second ordering rule
+   * here would be a second answer to "what can this room be used for".
+   *
+   * **Required, not optional, and empty is a real answer**: a room supplying
+   * no capability -- a bare rectangle, a yard -- has nothing to be used for
+   * through this rule and says so, rather than a producer being allowed to
+   * stay silent and a consumer defaulting the silence to "nothing". That is
+   * `HudRoomViewModel.objectRequirements`' recorded reason, applied here.
+   *
+   * **Cost:** per row, one `concurrentUseCapacityFor` and one `useOccupancyOf`
+   * per capability. The first walks the instance's own breakdown; the second
+   * walks the claims held on that one instance, which that room's own ceiling
+   * bounds. The shipped catalogue's deepest room supplies four capabilities.
+   */
+  readonly concurrentUse: readonly RoomConcurrentUseViewModel[];
   /**
    * Whether anything can cross this room's own boundary (#938).
    *
@@ -620,6 +706,10 @@ function projectRow(
 
   const security = projectSecurity(instance.instanceId, options, grades);
   const access = projectAccess(instance, options);
+  // One sorted list, read twice: the capabilities the row publishes and the
+  // keys of the concurrent-use list are the same set in the same order, and
+  // sorting twice would be two chances to disagree.
+  const objectCapabilities = [...instance.objectCapabilities].sort(compareStableIds);
 
   return {
     instanceId: instance.instanceId,
@@ -627,7 +717,12 @@ function projectRow(
     ...(definition !== undefined ? { roomNameKey: definition.nameKey, category: definition.category } : {}),
     anchorTile: toTileViewModel(instance.anchorTile),
     occupancy: projectOccupancy(source, instance),
-    objectCapabilities: [...instance.objectCapabilities].sort(compareStableIds),
+    objectCapabilities,
+    concurrentUse: objectCapabilities.map((capability) => ({
+      capability,
+      capacity: source.roomInstances.concurrentUseCapacityFor(instance, capability),
+      inUse: source.roomInstances.useOccupancyOf(instance.instanceId, capability),
+    })),
     ...(access !== undefined ? { access } : {}),
     requirementSummary: {
       total: requirements.length,
