@@ -12,7 +12,7 @@ import { DEFAULT_SECURITY_SECTOR_ID, DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUN
 import { DEFAULT_SECTOR_PRISONERS_PER_GUARD, resolveOccupancyScaledGuardCount } from '../../src/simulation/security/sector-staffing';
 import { staffDailyWageMinorUnits } from '../../src/simulation/economy/wages';
 import { NEED_DECAY_PER_TICK, NEED_IDS, NEED_MAX, NEED_SCALE, SAFETY_COVERAGE_PROVISION_MULTIPLIER, SAFETY_COVERAGE_PROVISION_PER_TICK, type NeedId } from '../../src/simulation/prisoners/needs';
-import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
+import { ACTION_CATEGORIES, DAY_LENGTH_TICKS, GENERAL_POPULATION_REGIME, HIGH_RISK_REGIME, type ActionCategory } from '../../src/simulation/prisoners/regime';
 import { TILES_PER_OPEN_GROUND_PLACE } from '../../src/simulation/prisoners/room-instance-registry';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -1486,6 +1486,34 @@ function dailyLine(row: readonly [number, number, number, number, number, string
     `  general-population ${String(general).padStart(3)}  high-risk ${String(highRisk).padStart(3)}`;
 }
 
+/**
+ * **The one genuinely load-bearing assertion #1004's acts add.**
+ *
+ * `stateIncomeForCompletedDay` walks the occupied places and sums
+ * `stateIncomeForPrisonerDay` (`src/simulation/economy/income.ts`); this
+ * recomputes the same total from the *histogram* -- a different walk over a
+ * different accessor (`unmetNeedCount` per resident, bucketed) -- and requires
+ * the two to agree to the minor unit. It is not a fixture supplying both sides
+ * of a comparison: neither side is computed by the other, and only the two
+ * authored constants are shared.
+ *
+ * [#1003 §method] found `recovered = (n - unmet) x 40` held to the unit in
+ * every row and named a break in it as a finding about the income seam. This
+ * makes that check a condition of every #1004 row rather than an observation
+ * about some of them, so a shortage that moved the grant by a route the
+ * histogram cannot see would fail here instead of being quoted.
+ */
+function expectGrantReconciles(run: Measurement): void {
+  let unmetTotal = 0;
+  for (const [count, prisoners] of run.unmetHistogram.entries()) unmetTotal += count * prisoners;
+  const fromHistogram = run.occupiedPlaces * STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS
+    - unmetTotal * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS;
+  expect(
+    run.settledGrant,
+    'the settled grant must be the grant the unmet-need histogram accounts for, or the income seam has a term neither of them sees',
+  ).toBe(fromHistogram);
+}
+
 function shortageRow(run: Measurement, population: number): string {
   const highRisk = run.recreationByGroup.find(([group]) => group === 'high-risk');
   return `guards ${String(run.guardsOnRoster).padStart(2)}  coverage ${JSON.stringify(run.coverage)}` +
@@ -1540,6 +1568,7 @@ describe('#1004 act Q -- where the threshold is, sweeping the establishment down
       print(`  --- seed 0x${seed.toString(16)} ---`);
       for (const guards of GUARD_LEVELS_50) {
         const run = measure({ prisoners: 50, yards: 1, yardPlacement: 'at-the-door', showerRoom: true, canteen: true, guards, seed }, SHORTAGE_DAYS);
+        expectGrantReconciles(run);
         print(`    ${shortageRow(run, 50)}`);
         print(`      needs: ${NEED_IDS.map((needId) => `${needId} ${String(run.needs[needId].unmet)}`).join(' ')}   unmet histogram ${JSON.stringify(run.unmetHistogram)}`);
         print(`      grant series ${JSON.stringify(run.dailyGrant)}`);
@@ -1561,6 +1590,7 @@ describe('#1004 act R -- the same sweep at a hundred, which is where the issue s
       print(`  --- seed 0x${seed.toString(16)} ---`);
       for (const guards of [14, 13, 12, 10, 7, 4, 1, 0]) {
         const run = measure({ prisoners: 100, yards: 1, yardPlacement: 'at-the-door', wideCell: true, showerRoom: true, canteen: true, guards, seed }, SHORTAGE_DAYS);
+        expectGrantReconciles(run);
         print(`    ${shortageRow(run, 100)}`);
         print(`      needs: ${NEED_IDS.map((needId) => `${needId} ${String(run.needs[needId].unmet)}`).join(' ')}   unmet histogram ${JSON.stringify(run.unmetHistogram)}`);
         print(`      grant series ${JSON.stringify(run.dailyGrant)}`);
@@ -1590,11 +1620,49 @@ describe('#1004 act S -- whether staffing coming back takes the promotion back',
     ] as const;
     for (const [label, options] of arms) {
       const run = measure(options, days);
+      expectGrantReconciles(run);
       print(`  --- ${label} ---`);
       print(`    ${shortageRow(run, 50)}`);
       print(`    incidents ${JSON.stringify(run.incidentCensus)}   disciplinary points ${JSON.stringify(run.disciplinaryPoints)}`);
       print(`    grant series ${JSON.stringify(run.dailyGrant)}`);
       for (const row of run.daily) print(`      ${dailyLine(row)}`);
+    }
+  });
+});
+
+describe('#1004 act T -- what the two regimes actually differ by, derived from the schedules', () => {
+  it('sums the ticks a day each category is allowed under each classification group', () => {
+    print('');
+    print('=== ACT T: GENERAL_POPULATION_REGIME against HIGH_RISK_REGIME, category by category ===');
+    print('  Derived from `blocks` by summing `endTickOfDay - startTickOfDay`, not quoted -- #1004 quotes three');
+    print('  recreation windows and stops there, and the recreation column is not the only one that moves.');
+    const windows = new Map<ActionCategory, [number, number]>();
+    for (const category of ACTION_CATEGORIES) windows.set(category, [0, 0]);
+    for (const [column, schedule] of [[0, GENERAL_POPULATION_REGIME], [1, HIGH_RISK_REGIME]] as const) {
+      for (const block of schedule.blocks) {
+        for (const category of block.allowedCategories) {
+          const row = windows.get(category)!;
+          row[column] += block.endTickOfDay - block.startTickOfDay;
+        }
+      }
+    }
+    print(`  day length ${String(DAY_LENGTH_TICKS)} ticks`);
+    print('  category           | general-population | high-risk | high-risk as a share');
+    for (const category of ACTION_CATEGORIES) {
+      const [general, high] = windows.get(category)!;
+      const share = general === 0 ? (high === 0 ? '--' : 'from nothing') : `${((high / general) * 100).toFixed(0)}%`;
+      print(`  ${category.padEnd(18)} | ${String(general).padStart(18)} | ${String(high).padStart(9)} | ${share.padStart(20)}`);
+    }
+    print('');
+    print('  which needs each category can serve, from DEFAULT_ACTIONS -- so the table above can be read as needs:');
+    const byCategory = new Map<string, Set<string>>();
+    for (const action of DEFAULT_ACTIONS) {
+      const set = byCategory.get(action.category) ?? new Set<string>();
+      for (const needId of Object.keys(action.needEffectsPerTick)) set.add(needId);
+      byCategory.set(action.category, set);
+    }
+    for (const category of ACTION_CATEGORIES) {
+      print(`    ${category.padEnd(18)} serves ${JSON.stringify([...(byCategory.get(category) ?? new Set<string>())].sort())}`);
     }
   });
 });
