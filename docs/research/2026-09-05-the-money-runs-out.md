@@ -181,7 +181,7 @@ So the one price a player can see is *per unit of raw material*, behind a
 disclosure, and it is a price for **bricks** rather than for the wall the
 catalogue offered them.
 
-### One press, 24,800
+### One press, 24,800 — and one gesture, 1,040
 
 ```
 [act1] BUY 620 bricks: submitted=1 funds 25000 -> 200
@@ -189,8 +189,31 @@ catalogue offered them.
          clock runs, into the stock a build draws from."
 ```
 
-The Buy control *does* price itself, and priced this honestly. What did not
-change is the chip:
+The Buy control *does* price itself, and priced this honestly. A second run of
+the act, after its calibration was fixed, took the same press at a different
+balance and reads the same way — `BUY 519 bricks IN ONE PRESS: funds 20,840 ->
+80`, with `chip before "20,840 | FUNDS" tone null` and the chip after it
+identical in every attribute.
+
+**The drag does not price itself, and it is not cheap.** Four gestures, each one
+sustained drag along a tile edge:
+
+```
+[act1] ONE DRAG: 13 command(s), funds 25000 -> 23960 = 1040 spent
+[act1] drag 2 (row 13): 13 command(s), funds 23960 -> 22920 | chip "22,920 | FUNDS" | tone null
+[act1] drag 3 (row 14): 13 command(s), funds 22920 -> 21880 | chip "21,880 | FUNDS" | tone null
+[act1] drag 4 (row 15): 13 command(s), funds 21880 -> 20840 | chip "20,840 | FUNDS" | tone null
+```
+
+**Thirteen segments a gesture, 80 a segment, 1,040 a drag, four drags and 4,160
+gone — with `tone: null` on every reading and the `.hud__refusal` band still
+holding the calibration's own sentence throughout.** #641's *"a single sustained
+drag reaches it"* is still refuted (24 drags was
+`2026-08-30-playing-into-the-lock.md`'s figure and this act's rate agrees with
+it), and #641's point survives intact: the gesture is repeatable, silent, and
+priced nowhere.
+
+What did not change across any of it is the chip:
 
 ```
 [act1] funds chip at the start:
@@ -237,17 +260,22 @@ by `treasuryMinorUnits < 0`.** There is no state between "solvent" and
 the `earned-today` descriptor opened at `:1035`: `tone: undefined, badge: undefined, description: undefined`,
 with the comment *"'a good day' is a threshold, and nobody has set one."*
 
-**MEASURED, act 1**, crossing the boundary one brick at a time from a positive
-balance:
+**MEASURED, act 1**, crossing the boundary one brick at a time with the chip
+read after every single press. **This is the exact press on which the game
+starts talking:**
 
 ```
-[act1] BUY 1 brick at balance 200: submitted=1 aria-disabled=false -> 160  | shortfall "not laid out"
-[act1] BUY 1 brick at balance 160: submitted=1 aria-disabled=false -> 120  | shortfall "not laid out"
-[act1] BUY 1 brick at balance 120: submitted=1 aria-disabled=false -> 80   | shortfall "not laid out"
-[act1] BUY 1 brick at balance  80: submitted=1 aria-disabled=false -> 40   | shortfall "not laid out"
-[act1] BUY 1 brick at balance  40: submitted=1 aria-disabled=false -> 0    | shortfall "not laid out"
-[act1] BUY 1 brick at balance   0: submitted=1 aria-disabled=false -> -40  | shortfall "not laid out"
+[act1] BUY 1 brick at balance 40: -> 0   | chip "0 | FUNDS" tone null
+[act1] BUY 1 brick at balance  0: -> -40 | chip "-40 | FUNDS | 1,145 left | 1,145 left before
+       deliveries stop — past that, no materials can be ordered until the prison earns the
+       money. The state pays at the end of each day, for prisoners who have a bed."
+[act1] BUY 1 brick at balance -40: -> -80 | chip "-80 | FUNDS | 1,105 left | 1,105 left before …"
 ```
+
+**At a balance of exactly zero the chip is a bare number with no tone, no badge
+and no tooltip.** One press of 40 later it has all three. Every press in that
+walk reported `aria-disabled=false` and the shortfall line
+(`.hud-build__buy-shortfall`) was `not laid out` at every one of them.
 
 Six presses across the whole of the last 200 the prison had, **`aria-disabled`
 `false` at every one of them, including the press that took the balance to
