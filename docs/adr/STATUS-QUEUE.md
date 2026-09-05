@@ -10861,12 +10861,26 @@ prose**: *"room needs"*, *"no way in"*, *"no-way-in"*, *"projection catalog"* an
 returns eight and *"perimeter"* seven, and every one of the fifteen was opened.
 None is about these modules. The enclosure hits are ADR 0068 counted by number in
 the `Proposed` enumerations (three of them), ADR 0012's *"#447's enclosure
-refusal"* in §6 and §5, which is about `src/simulation/world/zoning.ts` and dated
+refusal"* in §6 and §5, which is about `src/simulation/rooms/zoning.ts` and dated
 to `bb3a01e`, and §5's note that #498's *"client-side room-enclosure work"* moved
 four `src/simulation/protocol/types.ts` anchors by five lines at `07add3e`. The
 perimeter hits are all `wallRoomPerimeter`, a test helper, and ADR 0045's refusal
 of an open perimeter. **So no claim in this file can have rotted against any of
 the three.**
+
+**And this paragraph's first draft put `zoning.ts` under a `simulation/world/`
+directory that does not exist — caught by
+`tests/foundation/documentation-links-contract.test.ts` in the same run that made
+the anchor green.** It is `src/simulation/rooms/zoning.ts`, which every other
+citation of it in this file already gets right. Recorded rather than quietly
+fixed, because it is the exact failure this section spends its length on,
+committed by the pass writing about it: a path stated from memory while five
+correct copies of it sat elsewhere in the same file. **The useful half is that a
+gate caught it and no reader had to** — which is the argument for that contract
+existing, and the reason a wrong path costs a re-run here rather than an anchor.
+It is also worth one clause that the gate exempts a path containing `*` from its
+existence check, so this note quotes the wrong directory without the filename on
+it rather than tripping the same test twice.
 
 **And the brief was wrong about where they came from, which is the sharper
 half.** It says #980 *"added `src/simulation/rooms/enclosure.ts`,
