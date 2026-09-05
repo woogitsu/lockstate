@@ -103,21 +103,31 @@ async function installProjectionProbe(page: Page): Promise<void> {
 
 /** Asks the live worker for a projection the HUD never asks for, and answers the reply. */
 async function pullProjection(page: Page, projectionId: string, messageId: string): Promise<unknown> {
-  await page.evaluate(
+  const posted = await page.evaluate(
     ([id, mid]) => {
       const probe = window as unknown as ProbeWindow;
-      probe.__lsProjections = [];
-      probe.__lsWorker?.postMessage({
+      /*
+       * `length = 0`, NOT `= []`. The capture array is a closure variable
+       * inside the init script and `window.__lsProjections` is the *same*
+       * array; assigning a fresh one here orphans the listener's target and
+       * every pull answers `[]` for ever. Measured, on the first run of act 1.
+       */
+      const captured = probe.__lsProjections;
+      if (captured !== undefined) captured.length = 0;
+      if (probe.__lsWorker === undefined) return 'no worker captured';
+      probe.__lsWorker.postMessage({
         protocolVersion: 1,
         messageId: mid,
         kind: 'simulation/request-projection',
         payload: { projectionId: id },
       });
+      return 'posted';
     },
     [projectionId, messageId],
   );
-  await page.waitForTimeout(1500);
-  return page.evaluate(() => (window as unknown as ProbeWindow).__lsProjections ?? []);
+  await page.waitForTimeout(2000);
+  const replies = await page.evaluate(() => (window as unknown as ProbeWindow).__lsProjections ?? []);
+  return { posted, replies };
 }
 
 interface ContrabandEventRow {
@@ -187,68 +197,68 @@ async function runSampling(page: Page, target: number, label: string, everyMs = 
 }
 
 test.describe('contraband, played', () => {
-  test('act 1 — a prison that cannot search, then one that can', async ({ page }) => {
-    test.setTimeout(1_200_000);
+  test('act 1 — one guard, then two, then three', async ({ page }) => {
+    test.setTimeout(1_800_000);
     await installTee(page);
     await installProjectionProbe(page);
     await openApp(page);
 
-    // One guard: the posted requirement exactly, so no guard is claimable and
-    // `SectorSearchDutySystem` can order nothing.
     await buildAndPopulate(page, { beds: 12, admits: 12, guards: 1, label: 'contraband' });
 
-    console.log(`[contraband] === PHASE A: one guard, nothing can search ===`);
-    console.log(`[contraband] canvas at phase A start: ${await canvasDigest(page)}`);
-    await runSampling(page, 12_000, 'A');
+    const phase = async (label: string, target: number, probeId: string): Promise<void> => {
+      console.log(`[contraband] === PHASE ${label} ===`);
+      await runSampling(page, target, label);
+      const rows = await events(page);
+      console.log(`[contraband] phase ${label} events: ${JSON.stringify(rows)}`);
+      console.log(`[contraband] phase ${label} discoveries: ${JSON.stringify(rows.filter((r) => r.type === 'contraband.discovered'))}`);
+      console.log(`[contraband] phase ${label} strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+      console.log(`[contraband] phase ${label} staff panel: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
+      console.log(`[contraband] phase ${label} hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', probeId))}`);
+      console.log(`[contraband] phase ${label} canvas: ${await canvasDigest(page)}`);
+    };
 
-    const phaseAEvents = await events(page);
-    console.log(`[contraband] phase A events: ${JSON.stringify(phaseAEvents)}`);
-    console.log(`[contraband] phase A alerts panel: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
-    console.log(`[contraband] phase A strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
-    const canvasBefore = await canvasDigest(page);
-    console.log(`[contraband] canvas at end of phase A: ${canvasBefore}`);
+    const hireGuard = async (): Promise<number> => {
+      await tab(page, 'security').click();
+      const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+      if ((await guardRow.count()) > 0) await guardRow.first().click();
+      await page.locator('.hud-staff__hire').click();
+      await page.waitForTimeout(2500);
+      const tick = await currentTick(page);
+      console.log(`[contraband] hired a guard at tick ${tick}: staff=${(await latestCounts(page))?.staff}`);
+      return tick;
+    };
 
-    // The projection nothing draws, pulled from a prison that has found nothing.
-    console.log(`[contraband] hud/contraband at end of phase A: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.contraband.a'))}`);
+    // A: one guard. Required is `ceil(population / 8)` = 2 at twelve prisoners
+    // (`DEFAULT_SECTOR_PRISONERS_PER_GUARD = 8`,
+    // `src/simulation/security/sector-staffing.ts:147`), so the sector is
+    // understaffed and nothing is claimable.
+    await phase('A-one-guard', 11_000, 'probe.contraband.a');
 
-    // The second guard: one posts, one is spare, sweeps become possible.
-    console.log(`[contraband] === PHASE B: hire a second guard ===`);
-    await tab(page, 'security').click();
-    const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
-    if ((await guardRow.count()) > 0) await guardRow.first().click();
-    await page.locator('.hud-staff__hire').click();
-    await page.waitForTimeout(2000);
-    const hired = await latestCounts(page);
-    console.log(`[contraband] after the second hire: staff=${hired?.staff}`);
-    console.log(`[contraband] staff panel: ${await panelText(page, '.hud-staff')}`);
-    const hiredAtTick = await currentTick(page);
-    console.log(`[contraband] second guard hired at tick ${hiredAtTick}`);
+    // B: two guards -- the requirement exactly met, which is what the Staff
+    // panel asks the player for and calls "Covered". Both post; the claimable
+    // pool is still empty.
+    const hiredSecond = await hireGuard();
+    await phase('B-two-guards', 19_000, 'probe.contraband.b');
 
-    await runSampling(page, 30_000, 'B');
+    // C: three guards -- one past the requirement, so one is spare and
+    // `SectorSearchDutySystem` can finally staff a sweep.
+    const hiredThird = await hireGuard();
+    await phase('C-three-guards', 34_000, 'probe.contraband.c');
 
-    const allEvents = await events(page);
-    const found = allEvents.filter((row) => row.type === 'contraband.discovered');
-    console.log(`[contraband] ALL events over the run: ${JSON.stringify(allEvents)}`);
-    console.log(`[contraband] contraband.discovered rows: ${JSON.stringify(found)}`);
-    console.log(`[contraband] first discovery tick vs second-guard tick: ${found[0]?.tick ?? 'none'} vs ${hiredAtTick}`);
-
-    console.log(`[contraband] final strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+    const all = await events(page);
+    const found = all.filter((row) => row.type === 'contraband.discovered');
+    console.log(`[contraband] hires at ticks: second=${hiredSecond} third=${hiredThird}`);
+    console.log(`[contraband] every contraband.discovered: ${JSON.stringify(found)}`);
     console.log(`[contraband] final chip: ${JSON.stringify(await contrabandChip(page))}`);
-    console.log(`[contraband] final alerts panel: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
-    console.log(`[contraband] final events band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
-    const canvasAfter = await canvasDigest(page);
-    console.log(`[contraband] canvas after discoveries: ${canvasAfter} (before: ${canvasBefore})`);
-    console.log(`[contraband] canvas changed across the discoveries: ${canvasAfter !== canvasBefore}`);
+    console.log(`[contraband] final alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+    console.log(`[contraband] final band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
 
-    console.log(`[contraband] hud/contraband at the end: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.contraband.b'))}`);
-
-    // What the player has actually pressed, all session.
     const commandTypes = (await sentCommands(page)).map((command) => String(command['type']));
     const histogram: Record<string, number> = {};
     for (const type of commandTypes) histogram[type] = (histogram[type] ?? 0) + 1;
     console.log(`[contraband] every command this session sent: ${JSON.stringify(histogram)}`);
 
-    expect(await currentTick(page)).toBeGreaterThan(29_000);
+    expect(await currentTick(page)).toBeGreaterThan(33_000);
   });
 
   test('act 2 — the whole surface a player can see, swept', async ({ page }) => {
@@ -257,7 +267,7 @@ test.describe('contraband, played', () => {
     await installProjectionProbe(page);
     await openApp(page);
 
-    await buildAndPopulate(page, { beds: 8, admits: 10, guards: 2, label: 'contraband-surface' });
+    await buildAndPopulate(page, { beds: 8, admits: 8, guards: 3, label: 'contraband-surface' });
     await runSampling(page, 18_000, 'S');
 
     const found = (await events(page)).filter((row) => row.type === 'contraband.discovered');
@@ -307,7 +317,7 @@ test.describe('contraband, played', () => {
     await installProjectionProbe(page);
     await openApp(page);
 
-    await buildAndPopulate(page, { beds: 8, admits: 12, guards: 2, label: 'contraband-alerts' });
+    await buildAndPopulate(page, { beds: 8, admits: 12, guards: 3, label: 'contraband-alerts' });
 
     // Sample the alerts list and the events band densely, so the lifetime of a
     // contraband row is measured in ticks rather than guessed.
