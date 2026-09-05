@@ -97,6 +97,13 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     both trees.** One command settles it and it is the same command either way:
     `file public/assets/actors/actor.guard.base.idle.png`. `ASCII text` is a
     pointer; `PNG image data, 260 x 3104` is the art.
+    **"One command settles it" is the half of that sentence a fourth container
+    falsified on 2026-09-05, and the sentence is kept because everything else
+    in it holds.** `file` still tells you whether the tree you are in has the
+    bytes; it cannot tell you *why not*, so it cannot tell you what the remedy
+    costs. Two of the states below both read `ASCII text` and their remedies
+    are a free local checkout and a 93 MB metered fetch. `git lfs version` and
+    `du -sh .git/lfs` are what separate them and they cost nothing.
     - Measured that day, in a fresh `git worktree add` off `origin/main` and in
       `/workspace/lockstate` side by side: **the worktree had the art and the
       primary checkout had the pointers.** `git lfs ls-files` names 62 paths and
@@ -136,6 +143,132 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
         `process = git-lfs filter-process --skip`. **`--skip` means no checkout
         in this container smudges anything, `git worktree add` included.** Read
         the values, not the key names.
+    - **A FOURTH STATE, measured 2026-09-05 in a different container on the
+      same day: git-lfs IS NOT INSTALLED, there is no `.git/lfs`, and
+      `git lfs checkout` is not a command that can be run at all.** The entry
+      above is left exactly as it stands, its withdrawal of the "unfixable
+      baseline" advice included, because it was measured and it was true of the
+      container it was measured in — and §4's rule about marking both
+      directions rather than overwriting is the whole reason this chain is
+      worth reading. What this adds is that its remedy is not available
+      everywhere. It does not take it back.
+
+      Measured on `main` at `75ecd7c` (v0.0.491), in `/workspace/lockstate` and
+      in a fresh `git worktree add` off `origin/main`, side by side:
+      - `git lfs version` prints `git: 'lfs' is not a git command.` and exits
+        1; `which git-lfs` finds nothing and exits 1.
+      - `du -sh .git/lfs` prints `No such file or directory`. **There is no
+        local object store**, so the 54 MB the entry above found already
+        present is not present here, and there would be nothing for
+        `git lfs checkout` to materialise even if the subcommand existed.
+      - `file public/assets/actors/actor.guard.base.idle.png` returns
+        `ASCII text` in **both** trees, and the file's first line is
+        `version https://git-lfs.github.com/spec/v1`.
+      - `node tooling/validate-runtime-atlas.mjs public/assets/actors` — what
+        `verify:assets` runs — exits 1 with
+        `actor.cook.base.idle.png is a Git LFS pointer, not image data` and a
+        line like it for every atlas.
+      - **The `file` check is still the advice, and by itself it is not
+        enough — which is the conclusion this chain has been reaching for and
+        the reason this entry exists at all.** `ASCII text` is *identical* in
+        state 3 and state 4 while the remedies are a free 1.07-second local
+        checkout and a package install plus a 93 MB metered fetch — **the
+        second half of which was priced without being run, and was measured at
+        2.45 s the same day; see the transition entry below.** Two more
+        commands separate them and both are instant: **`git lfs version`**
+        (is the client there at all?) and **`du -sh .git/lfs`** (are the
+        objects local?). Run those two beside `file` and you know which state
+        you are in; run `file` alone and you know the bytes are pointers with
+        no idea why, which is a guess dressed as a measurement.
+      - **The mechanism entry above does not describe this container either,
+        and the difference is not `--skip`.** There is no `/etc/gitconfig` here
+        at all — `cat /etc/gitconfig` prints `No such file or directory` — and
+        `git config --show-origin --get-regexp '^filter\.lfs\.'` exits 1 with
+        no output. **No LFS filter is configured in any scope**, so nothing was
+        skipped: the smudge filter does not exist and git wrote the pointer
+        blobs out verbatim. That is one more container's filesystem and not a
+        diagnosis, exactly as the entry above says of its own reading.
+      - **What is now unknown, said rather than papered over:** which of these
+        four states the next container is in, and why they differ at all.
+        Nothing in this repository sets any of it — `/etc/gitconfig` is not in
+        git, and neither is whether the image ships `git-lfs` — so **no
+        direction written here, this one included, can be trusted ahead of the
+        three commands above.**
+      - **In this container the session-start hook's sentence is the CORRECT
+        instruction rather than the one to disbelieve:** *"To get the real
+        bytes: bash scripts/provision-git-lfs.sh && git lfs pull (metered
+        bandwidth -- that is why this hook leaves it to you)."* It is the only
+        route to `verify:assets` and to `app-shell.spec.ts`'s art test here,
+        and the agent that measured this **did not run it** — installing a
+        package and spending 93 MB of somebody else's metered bandwidth is not
+        an agent's call, and the hook deliberately left it to a human. So the
+        assets gate is an unfixable baseline *in this container until a human
+        takes that route*, which is a fact about this container and not a
+        re-reversal of the withdrawal above.
+    - **ADDED LATER THE SAME DAY, AND IT IS THE STRONGEST THING IN THIS CHAIN:
+      a human took the provisioning route and THIS CONTAINER MOVED FROM THE
+      FOURTH STATE INTO THE THIRD.** Nothing above is withdrawn and the fourth
+      state was not wrong — it was measured, and it was the truth of this
+      container for the first hour of the session that recorded it. It is
+      history now in the same way the other three are, which is the whole
+      reason this chain keeps them.
+
+      **So the four states are not properties of a container. They are
+      properties of a moment**, and one `apt` install moved this one across a
+      boundary the chain had been treating as environmental. That is the
+      conclusion to carry, and it is a stronger version of the one the entry
+      above draws: `file` plus `git lfs version` plus `du -sh .git/lfs` is not
+      merely how you tell the states apart, it is **the only thing that stays
+      true, because the state can change under you inside one session.** A
+      direction you read at the top of a session may be false by the middle of
+      it, and that is not a stale document — it is a moving environment.
+      - **What the integrator measured**, in `/workspace/lockstate` on `main`,
+        in this order: `bash scripts/provision-git-lfs.sh` installed
+        `git-lfs/3.4.1 (GitHub; linux amd64; go 1.22.2)` from the distribution
+        archive, then `git lfs pull` took **2.45 s** wall clock, then `file`
+        returned `PNG image data, 260 x 3104, 8-bit/color RGBA, non-interlaced`
+        and `node tooling/validate-runtime-atlas.mjs public/assets/actors`
+        printed *"Validated 10 clip atlases"* and exited 0, and `.git/lfs` was
+        **54 MB**.
+      - **2.45 s is the measurement and no mechanism is offered for it.** Both
+        the brief that produced the entry above and the entry itself priced
+        this route as *"a package install plus a 93 MB metered fetch"*, and
+        that pricing is marked here rather than deleted because it is what two
+        readers believed. The install is real. The fetch was not slow enough to
+        have moved 93 MB over a metered link — and **why** is not established:
+        a proxy or an image-level cache is a guess, and §3's rule that a
+        measurement is not a diagnosis applies to a *fast* number exactly as it
+        applies to a slow one.
+      - **The transition is into the third state specifically, to the byte and
+        to the message.** `.git/lfs` is 54 MB and `git lfs checkout` in a tree
+        still holding pointers prints
+        `Checking out LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` — the
+        third state's own recorded figures. Three timings for that command are
+        now on record and none of them is worth pinning: **1.07 s**, **1.26 s**
+        and **0.464 s**, the last measured in a worktree whose working tree
+        then stayed clean under `git status` and whose
+        `validate-runtime-atlas.mjs` run printed *"Validated 10 clip atlases"*
+        and exited 0. So `verify:assets` and `app-shell.spec.ts`'s art test are
+        reachable from a worktree again, which is what the third state said and
+        what the fourth state could not do.
+      - **One thing is NOT the third state, and it is the half a reader would
+        assume:** `/etc/gitconfig` did not exist an hour earlier and exists
+        now, carrying `smudge = git-lfs smudge -- %f` and
+        `process = git-lfs filter-process` — **without `--skip`**, which is the
+        flag the third state's mechanism entry reads as the reason no checkout
+        smudges. So the prediction that entry would make here is wrong, and it
+        was tested rather than reasoned about: a `git worktree add` performed
+        **after** the install lands `PNG image data, 260 x 3104` and 459,767
+        bytes on disk — the size the pointer file declares — while a worktree
+        created **before** it still read `ASCII text` until `git lfs checkout`
+        was run in it. **A checkout's bytes depend on when the tree was
+        materialised, not only on which container it is in**, which is one more
+        reason a tree-by-tree `file` check beats every direction in this chain.
+      - **What is still unknown, and the list has not shrunk:** why the images
+        differ, whether `/etc/gitconfig` carries `--skip` or not in any given
+        one, and what `git lfs pull` actually costs on a link that is genuinely
+        metered. None of it is in git. **The three commands stay the answer,
+        and now they have to be re-run rather than remembered.**
     - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
       `filter.lfs.process` and `filter.lfs.required` are set in
       **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
@@ -250,6 +383,91 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   like a broken test file or a broken install. Omit the flag; the default
   reporter is fine. Recorded because the failure mode is expensive to diagnose
   and cheap to avoid.
+- **This container's clone is SHALLOW, which turns three of
+  `tests/foundation/`'s tests red on plain `main` and quietly breaks
+  `git log -S` as an answer to "was this ever here?"** Measured 2026-09-05 in a
+  fresh worktree off `origin/main` at `75ecd7c`, with nothing modified in it:
+  `git rev-list --count HEAD` is **374** and the root commit is `558fbad`,
+  dated **2026-09-03**, so the history simply stops a few days back;
+  `.git/shallow` exists in `/workspace/lockstate/.git`.
+  `tests/foundation/documentation-commit-citation-contract.test.ts` fails 3 of
+  its 8 — *"runs on a checkout deep enough to answer, and fails rather than
+  skipping when it is not"*, *"resolves every cited commit"* and *"cites only
+  commits this repository publishes, so CI reads the same history a reader
+  can"* — and it is **not a defect in the citations**: the first of the three
+  says so itself, at length, and names the remedy. Its message is worth having
+  here because the other two failures list dozens of `file:line -> sha` pairs
+  and read exactly like a documentation audit finding:
+  *"this checkout is shallow, so no citation can be resolved and every case
+  below would fail for a reason that is not about the citations […] This is
+  deliberately a failure and not a skip: a gate that passes on a checkout too
+  shallow to answer manufactures confidence, which is worse than having no
+  gate."*
+  CI is not in this state — `.github/workflows/ci.yml` sets `fetch-depth: 0` on
+  the `verify` job for this reason — so a red here is a container fact and the
+  pull request's own `verify` job is the gate that means something.
+  **Two consequences worth carrying.** First, `tests/foundation/` is the cheap
+  habit this document recommends and **its clean baseline in this container is
+  three short of green**: measured on plain `origin/main` at `75ecd7c`,
+  `3 failed | 488 passed (491)`, and the same three on a branch that adds a
+  contract of its own, `3 failed | 493 passed (496)`. The tally moves whenever
+  a test is added and the *three* does not; establish it in a clean worktree
+  before reading three reds as yours. Second, and more expensive:
+  **`git log -S` and `--diff-filter=A` cannot distinguish "never existed" from
+  "predates the graft"** here, and they answer confidently either way:
+  `--diff-filter=A` on a file older than the root commit names the release
+  commit nearest the graft as the commit that added it, which is simply
+  false. An integrator's *"`git
+  log -S` shows these were never added"* was checked against this and could not
+  be confirmed for anything before 2026-09-03. The way round it without paying
+  for history is the GitHub API: list the commits for a path with `until=`,
+  then read the file at one of those shas. `git fetch --unshallow` is the other
+  route and its cost is not known — 374 commits are 22.6 MiB of pack here, and
+  nobody has measured the whole history.
+  **A third command belongs on that list and it caught the agent who wrote the
+  two above out within the hour: `git branch -r --contains <sha>` answers
+  "nothing" and means "cannot say".**
+  `tests/foundation/documentation-commit-citation-contract.test.ts`'s third
+  failure lists `docs/adr/STATUS-QUEUE.md`'s citations of `c56e18bd` and
+  `24ef7aec` as commits *"on this disk and on no ref this repository
+  publishes"*, and that test's check is `--contains`. Both are plainly real
+  published history — `git log --oneline -1` on them gives #913's copy fix and
+  #897's merge commit — and `--contains` finds nothing for either because the
+  graft truncates the ancestry walk before it reaches them.
+  **The reason this is one cause and not two is a control, and it is worth
+  running before blaming a ref set:** with 200 remote-tracking branches against
+  origin's 198 heads — essentially all of them — `--contains` still returns 0
+  refs for both, while `829d3c11`, a commit *inside* the visible walk, is
+  contained by 21 and `git merge-base --is-ancestor 829d3c11 origin/main` exits
+  0. Same refs, same command, different answers, and what separates the two
+  cases is only whether the walk can reach.
+  **THAT CORRECTS A CLAIM THIS BULLET'S OWN AUTHOR PUBLISHED, and the wrong
+  figure is named rather than quietly dropped:** a commit message on
+  `docs/re-anchor-status-queue` attributed the third failure to the container
+  knowing *"16 of origin's 196 branches"* and called it *"a different container
+  artifact from the shallow depth"*. Both halves are wrong. `git branch -r`
+  returns **200** in the primary checkout and in every worktree — worktrees
+  share refs, so a per-tree ref set was never possible — and the cause is the
+  graft, the same one. The 16 was measured in this shared clone earlier the
+  same hour and is not reproducible; what it was counting is unknown, and the
+  useful lesson is that it was **reconciled instead of re-measured**, which is
+  how one number became a mechanism.
+  **So the generalisation, which is cheap and now has three instances:
+  `--contains`, `log -S` and `--diff-filter=A` all answer confidently and
+  wrongly when the walk cannot complete, and one command tells you before any
+  of them lies to you:** `git rev-parse --is-shallow-repository`. Run it once
+  at the start of any pass that will reason about history, and treat a `true`
+  as making every containment and every "when did this first appear" answer
+  **undecidable rather than negative**. `.git/shallow` lists the boundary
+  commits and `git log --oneline --max-parents=0` shows where the walk bottoms
+  out.
+  **What this does NOT license:** the three reds are still not a licence to
+  edit the citations they name, and the fix is not
+  `UNPUBLISHED_BY_ORIGIN`. The argument that settles it is that CI's `verify`
+  job runs at `fetch-depth: 0` and is green on the same file content, so the
+  citations resolve where anybody with a full clone reads them; that
+  allowlist's own comment says an entry *"preserves a citation nobody can
+  check"*, and these are checkable.
 - **Two tests sit close enough to their 5s budget that box load pushes them
   over, and neither is a flake to wave through.**
   `tests/foundation/comment-symbol-existence-contract.test.ts` (a
@@ -588,6 +806,23 @@ deliberate:
 The effect is a bounded loss window -- three minutes -- that does not depend on
 how many agents are running or on any of them behaving correctly. `wip/` refs
 are scratch: delete them once the branch they shadow has merged.
+
+**The check that catches a lost row is counting the rows you owe, not reading
+the diff.** Added 2026-09-05, twice in one day, on `docs/research/README.md` —
+a table with one append point, which is the structural conflict §2 already
+warns about. What is new is the *resolution*: the correct answer is always
+"keep every row", and a resolver cannot tell by inspection whether they have.
+Both times the merge was wrong in a way the diff looked fine for. Once an agent
+dropped a row while resolving; once one branch had pulled twenty-four drifted
+rows back *into* the table while `main` had extended the drifted region with a
+twenty-fifth, so git saw one side delete a block and the other grow it. **The
+move that settled it in seconds was arithmetic over the two parents**: the
+parents carried 93 and 84 rows, the union of their labels was 94, the resolved
+file had 94, and `comm -23` over the union reported nothing missing. **Do that
+before you read the hunks, not after** — and where a contract counts the same
+thing (`tests/foundation/research-index-contract.test.ts` fails on a record
+with no row and on a row outside the table), run it, because those are exactly
+the two ways such a merge goes wrong silently.
 
 ### Handovers between parallel agents
 
