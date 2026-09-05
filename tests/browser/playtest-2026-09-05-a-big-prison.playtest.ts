@@ -401,9 +401,11 @@ async function drainQueue(
   const started = Date.now();
   const marks: { tick: number; ms: number; total: number; started_: number }[] = [];
   for (;;) {
-    const view = await ask<{ view?: { orders?: { total?: number }; started?: number } }>(page, 'hud/build-queue', { limit: 1 });
-    const total = view.view?.orders?.total ?? -1;
-    const inFlight = view.view?.started ?? -1;
+    // `view.data`, not `view` — see the roster reader in `report` for the
+    // envelope this keeps catching people out with.
+    const view = await ask<{ view?: { data?: { orders?: { total?: number }; started?: number } } }>(page, 'hud/build-queue', { limit: 1 });
+    const total = view.view?.data?.orders?.total ?? -1;
+    const inFlight = view.view?.data?.started ?? -1;
     const tick = await currentTick(page);
     const panel = (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
     marks.push({ tick, ms: Date.now() - started, total, started_: inFlight });
