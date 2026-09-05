@@ -397,6 +397,19 @@
      the strip by hand any more -- the grid does it. Still a token rather than
      a literal because the 720px breakpoint overrides it. */
   --hud-strip-height: calc(48px * var(--ui-scale));
+  /* How much vertical room the zoom island in `.hud__corner` takes: one tap
+     target, its two hairline borders, and the gap above it. It is a token
+     rather than a literal in `hud.css` because two rules have to agree on the
+     same number and they are 150 lines apart -- the island's own box, and the
+     `max-height` the minimap square gives back so the corner's total height
+     does not move (#1023). When they disagreed, the corner grew from 440px to
+     502px against 482.8px of grid row and squeezed the alerts list from 76px
+     to 68px, which `ui-alerts-column.spec.ts` caught at 900x600 only.
+     Declared here rather than only in `hud.css` because
+     `tests/unit/ui-design-tokens.test.ts` requires every `var()` a component
+     stylesheet reads to exist in this file -- the same reason
+     `--hud-strip-height` above is here and then overridden locally. */
+  --hud-zoom-block: calc(var(--tap-target) + 2 * var(--hairline) + var(--space-2));
   /* The border-box width of every panel in the HUD's right rail, above the
      720px breakpoint where the rail stretches and its panels go full-width
      instead. The panels have to agree exactly or the column stops reading as
