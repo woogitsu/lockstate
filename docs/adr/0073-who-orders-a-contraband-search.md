@@ -208,6 +208,76 @@ afford one at all. Those are measurements A produces and B needs.
   survives unchanged: this document still widens nothing. Whether tier 3 should
   have a producer is [#540](https://github.com/matmaxalez/lockstate/issues/540).
 
+## Amendment, 2026-09-05 — the measurement this document asked for, and the one hire it costs
+
+**Appended rather than folded in, because this ADR is still `Proposed` and its
+Decision is what the owner will rule on.** Nothing above is rewritten; what
+follows is what running Option A produced.
+
+### The measurement Part 2 said it needed
+
+The recommendation above defers Option B on the grounds that *"nobody yet knows
+what a search costs in practice — how long a sector sweep ties up a guard, how
+often detection succeeds at the shipped concealment values, whether a prison
+with one guard can afford one at all"*. The first and third of those now have
+answers (`docs/research/2026-09-05-what-a-sweep-costs-the-response.md`):
+
+- **A sector sweep ties one guard up for 110–130 ticks**, mean 114 over 40
+  sweeps in a twelve-prisoner prison and 130 in a four-prisoner one. At the
+  600-tick cadence that is **≈19% of a 2,400-tick day**.
+- **A prison with one spare guard could afford the sweep and not the
+  consequence.** For 466 ticks a day (520 in the four-prisoner prison) the
+  post-eligible free pool stood empty with a sweep as the sole cause — and the
+  pool it emptied is the one `IncidentResponseSystem` claims responders from.
+
+### What that changed, and what it did not
+
+[Issue #996](https://github.com/matmaxalez/lockstate/issues/996) put it to the
+owner, who ruled that a search must draw on its own allowance so that an
+incident always has somebody to send. `SearchSystem` and `SectorSearchDutySystem`
+now read `claimableSearchGuardIds` — the same pool less
+`INCIDENT_RESPONSE_GUARD_RESERVE`, which is 1.
+
+**The Consequences bullet about the balance coupling is sharpened, not
+contradicted.** It says a guard away searching is a guard not suppressing riot
+pressure, and that stands. What it did not say is that the same guard is the one
+a *response* is mounted from, so the coupling was tighter than the bullet
+described.
+
+**One sentence in the Status note is now false, and this is the correction.** It
+reads: *"What shipped is therefore a **staffed** sector orders sweeps and a
+**spare** guard walks them [...] while taking nobody off a wall."* The clause
+about the wall is still true — a posted guard has never been claimable — but
+"a spare guard walks them" is now "a spare guard **beyond the incident reserve**
+walks them". A prison at the posted requirement plus one no longer searches.
+
+### The cost, in the currency this ADR uses
+
+The Decision's stated consequence — *"a prison that hires exactly its posted
+requirement never searches, and the first guard hired past that requirement is
+what makes contraband findable"* — becomes **the second guard hired past that
+requirement**. In the twelve-prisoner prison the integration suite builds that
+is four hires rather than three. It is the whole player-visible price of the
+change and no other figure in this document moves.
+
+**What the reserved guard does not buy, measured.** Every incident that opened
+across 24 configurations carried severity 3 or more, and
+`requiredResponderCount` is `max(1, ceil(severity × 0.5))`, so each asked for at
+least two responders. One reserved guard therefore answers none of them today:
+the guarantee is structural. Sizing the reserve to two was measured and rejected
+— it stops sweeps at two spare guards as well, and changed no incident outcome
+in any configuration. Whether `respondersPerSeverityPoint` should move so that
+one guard *can* answer something is balance, and `AGENTS.md` reserves it to the
+owner.
+
+### What this does not touch
+
+Option B is still unbuilt and still recommended second, and this amendment
+strengthens the reason: a targeted search control spends guards deliberately,
+and the guard it spends is now visibly the prison's third rather than its
+second. The cadence (`DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS`), the four policies,
+the save format and the reachable contraband set are all unchanged.
+
 ## Options considered and not taken
 
 **Leave it.** The strip would go on showing a number that cannot change. #552's

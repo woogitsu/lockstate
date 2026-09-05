@@ -106,3 +106,115 @@ export function claimableGuardIds(
 ): readonly EntityId[] {
   return source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)));
 }
+
+/**
+ * How many claimable guards a contraband search must leave behind for incident
+ * response ([issue #996](https://github.com/matmaxalez/lockstate/issues/996)).
+ *
+ * ## What it is for
+ *
+ * The owner's ruling on #996 is *"osobna pula dla przeszukań ... istnienie
+ * trwającego przeszukania nie może opróżnić puli odpowiadających na
+ * incydenty"* -- a search draws on its own allowance, and the existence of a
+ * running search may not empty the pool a riot is answered from. This number is
+ * the whole of that rule: `claimableSearchGuardIds` refuses to hand a search
+ * the last `INCIDENT_RESPONSE_GUARD_RESERVE` free guards, so no sweep can be
+ * the reason there is nobody left to send.
+ *
+ * ## Why one, measured rather than chosen
+ *
+ * Three candidates were run through the real command path on `origin/main` at
+ * `1ad2189a` and again with this constant at 0, 1 and 2 -- 24 configurations
+ * each: prisons of 4 and 12 prisoners, one to six guards, seeds `0x996` and
+ * `0x997`, ten in-game days apiece. `0` reproduces `main` exactly, because
+ * `slice(0, length - 0)` is the whole array.
+ *
+ * - **`0` (today).** The free pool stands empty with a sweep as its sole cause
+ *   for **466 ticks a day** in the twelve-prisoner prison at one spare guard,
+ *   and **520** in the four-prisoner one -- 19% and 22% of a 2,400-tick day.
+ *   At two spare guards or more it is 0, because a sector sweep claims exactly
+ *   one guard (`DEFAULT_SEARCH_POLICIES`' `sector.requiredGuardCount`).
+ * - **`1` (this).** That figure is **0 ticks a day in all 24 configurations**,
+ *   and every other number measured is unchanged at two spare guards or more --
+ *   same sweeps started and finished, same discoveries, same incidents
+ *   resolved, lapsed and responders dispatched. The whole behavioural
+ *   difference is at *exactly one* spare guard, where sweeps stop: 40 sweeps
+ *   per ten days become 0.
+ * - **`2`.** Stops sweeps at two spare guards as well (40 per ten days to 0,
+ *   and at seed `0x997` four discoveries to none) and **changed no incident
+ *   outcome anywhere**: every resolved/lapsed/dispatched triple was identical
+ *   to `1`'s.
+ *
+ * So `1` is the smallest number that makes the ruling true, and the next one up
+ * was measured to buy nothing. The numbers, the probe and the commands are in
+ * `docs/research/2026-09-05-what-a-sweep-costs-the-response.md`.
+ *
+ * ## What one guard does **not** buy, stated because it is the tempting misread
+ *
+ * A reserved guard is not a mounted response. The cheapest incident this build
+ * can open asks for **two**: `IncidentResponseSystem.requiredResponderCount` is
+ * `max(1, ceil(severity * 0.5))` and `ASSAULT_SEVERITY_CEILING`'s docblock
+ * (`src/simulation/incidents/flashpoint.ts`) fixes the floor -- *"A
+ * threshold-grazing assault is severity 3 and asks for two guards"*. Across
+ * those 24 runs every incident that opened carried severity 3 or more, so a
+ * single free guard answered none of them, and this constant at 1 therefore
+ * removed no lapse and added no dispatch. **It is a structural guarantee, not
+ * a measured improvement**, and saying otherwise would be the "true and
+ * meaningless" completion issue #457 warns about.
+ *
+ * What still costs something at 1, measured: with the pool at exactly two, a
+ * sweep holding one of them delays a two-responder dispatch for **11 to 26
+ * ticks a day**. It never turned into a lapse in any run -- the response
+ * deadline is 600 ticks -- and raising this constant to 2 is the one-line
+ * change that removes it, at the price the bullet above prices. **How many
+ * guards a prison must hire is balance and the owner's** (`AGENTS.md`, and
+ * `staff-panel.ts` says the same about the posted requirement), so the number
+ * moves on their word and not on a later agent's taste.
+ *
+ * A constant rather than a policy field: it is derived from the incident
+ * policy's arithmetic rather than authored beside it, and a second authored
+ * number would be a second thing to keep in step with
+ * `respondersPerSeverityPoint`. If that field moves, this derivation is what
+ * has to be re-run.
+ */
+export const INCIDENT_RESPONSE_GUARD_RESERVE = 1;
+
+/**
+ * The unassigned staff a **contraband search** may claim, ascending entity id:
+ * `claimableGuardIds` less the guards held back for incident response.
+ *
+ * This is the separate pool issue #996 asks for, and it is one function in this
+ * module rather than a rule copied into the two search call sites for exactly
+ * the reason `claimableGuardIds` is: ADR 0053's *"one place decides"*.
+ * `SectorSearchDutySystem.update` gates a sweep on it and
+ * `SearchSystem.assignQueuedOrders` staffs one from it, so what a duty is
+ * willing to order and what the system will staff cannot disagree.
+ *
+ * **`IncidentResponseSystem` keeps calling `claimableGuardIds` and is not
+ * narrowed by anything here.** The asymmetry is the decision: a response is
+ * reactive and cannot be deferred, a sweep is scheduled and can, so the
+ * deferrable duty is the one that yields. Nothing in this function can reduce
+ * what a responder may claim.
+ *
+ * **The guarantee is about the claim, not about every later tick**, and the
+ * difference is worth stating because a test that asserted the stronger form
+ * would be asserting something false. A search never *takes* the last
+ * `INCIDENT_RESPONSE_GUARD_RESERVE` free guards; a response claiming those
+ * guards a tick later still empties the pool, which is the priority order
+ * working rather than a hole in it.
+ *
+ * ## Determinism
+ *
+ * `Array.prototype.slice` from the front of an already ascending array, so the
+ * result is ascending entity id and the guards a sweep picks are the same ones
+ * it picked before wherever the surplus is large enough to run at all. No RNG,
+ * no clock, no `Map` iteration.
+ */
+export function claimableSearchGuardIds(
+  source: ClaimableGuardSource,
+  isEligible: PostEligibilityResolver = isPostEligibleStaffRoleId,
+  reserve: number = INCIDENT_RESPONSE_GUARD_RESERVE,
+): readonly EntityId[] {
+  const claimable = claimableGuardIds(source, isEligible);
+  return claimable.slice(0, Math.max(0, claimable.length - reserve));
+}
