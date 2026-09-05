@@ -3672,48 +3672,44 @@
 /* Folded until the simulation has evaluated a room, for the reason and with
    the `:not([hidden])` guard `.hud-rooms__area` above gives in full.
 
-   `flex-wrap: wrap` is the fix for issue #1006 finding 4, and it was missing
-   here rather than decided against. Measured on the assembled page at 900x600
-   before this rule: the block's `scrollWidth` was **268px** against a
-   `clientWidth` of **238px**, and the value itself measured **179.4px** beside
-   an 80.8px label in a 238px box. Nothing here declared `overflow` or
-   `text-overflow`, so both were at their initial values and the sentence
-   spilled out of the panel and was cut mid-word by the ancestor that clips --
-   the screenshot in issue #1006 reads `Walled in on every si`. That is the
-   failure mode `.hud-rooms__note` above already carries an
-   `overflow: hidden; text-overflow: ellipsis` pair for (#739 finding D5).
+   **Issue #1006 finding 4: this readout was cut off mid-word.** Measured on the
+   assembled page at 900x600 before the fix: the block's `scrollWidth` was
+   **268px** against a `clientWidth` of **238px**, and the screenshot in that
+   issue reads `Walled in on every si`. Nothing here declared `overflow` or
+   `text-overflow`, so both were at their initial values and the sentence simply
+   spilled out of the panel and was cut by the ancestor that clips.
 
-   **It is not the sealed sentence's fault, which is why the fix is here rather
-   than in the catalogue.** Measured in the same box on `main`: `Open on at
-   least one side` -- the *other* half of this pair, shipped and unchanged --
-   needs 195px and overflowed by 46px, and the widest string that fits beside
-   the label is about 149px. Every sentence this readout can render was clipped.
+   **It was never the sentence's fault, which is why nothing about it was the
+   fix.** The eyebrow `Enclosure` was 80.8px and the gap 8px, leaving a value
+   **149px** in a 238px box -- and both sentences this readout can render are
+   wider than that: `Walled in on every side` 179.4px, `Open on at least one
+   side` 195px, the second of them shipped and unchanged. Every state of this
+   block was clipped.
 
-   Wrapping rather than ellipsis, and rather than a shorter sentence, because
-   the three are not equivalent. Flex line-breaking uses each item's
-   hypothetical main size, so the value moves to its own line **only** when it
-   does not fit beside the label -- a readout that fits costs the panel no
-   height at all, which is the thing ADR 0022's 7.9px budget is protecting, and
-   one that does not is drawn whole instead of truncated. Ellipsis alone would
-   have kept the panel's height and thrown away the end of the sentence; a
-   shorter sentence alone would have left the next locale, or the next wording,
-   clipped exactly as this one was.
+   **The fix is in `rooms-panel.ts`**, which now builds the label as
+   `.ui-sr-only` instead of a visible eyebrow -- out of flow, so the sentence
+   gets the whole 238px. That docblock carries the arithmetic and the two
+   options it rules out; the short version is that wrapping the value onto a
+   second line draws it whole and costs 13.2px, and the panel body at 900x600
+   has 5.9px of slack with a needs readout showing.
 
-   `margin-left: auto` on the value keeps the "label left, figure right" shape
-   in both cases: `justify-content: space-between` puts a lone item on a wrapped
-   line at the *start*, which would leave the value left-aligned under the label
-   only when it wrapped, so the block would change alignment as well as height.
+   **The backstop is `white-space: normal` on the value, and it is not
+   `flex-wrap`.** That was the first attempt and it is recorded because it does
+   not work here: `flex-wrap` breaks *between* items, and with the label out of
+   flow the value is the only one -- a single flex item wider than its line
+   overflows exactly as before. Measured with the wrap rule in place and the
+   value left `nowrap`: a 257.5px draft still reported `scrollWidth` 257 against
+   `clientWidth` 238. `.ui-value` sets `white-space: nowrap` for a good reason
+   (a ticking counter that changes width makes the strip twitch) and this
+   element is a sentence rather than a counter, so it opts out. A locale whose
+   sentence is wider than 238px then takes a second line and fails
+   `app-shell.spec.ts`'s panel-body assertion loudly, instead of being quietly
+   cut in half.
 
-   `row-gap: 0` because `gap` is both axes and a wrapped line would otherwise
-   pay for a gutter twice. Measured at 900x600: the block is 14.3px on one line;
-   wrapped it is 27.5px with this rule and **35.5px without it**, and the 8px
-   is a second gutter between a label and its own value where
-   `.hud-rooms__rule-block` -- the panel's own stacked readout, three lines up
-   in the same panel -- has none at all. Both figures are recorded because the
-   cost is real either way: a wrapped readout is one line taller than an
-   unwrapped one, in a panel ADR 0022 gives 7.9px of always-visible budget. What
-   pays for it is that the block is `hidden` entirely until a room has been
-   evaluated, so a player who has designated nothing spends none of it.
+   `flex-wrap: wrap` and `row-gap: 0` are kept for the day this block has two
+   in-flow children again: together they cost a wrapped line exactly one line
+   rather than a line plus a gutter, which is what `.hud-rooms__rule-block` --
+   the panel's own stacked readout three rules up -- already does.
    */
 .hud-rooms__enclosure:not([hidden]) {
   display: flex;
@@ -3731,9 +3727,9 @@
    answer actually disagree. */
 .hud-rooms__enclosure-value {
   font-variant-numeric: tabular-nums;
-  /* Right-aligned whether or not the value wrapped onto its own line -- see the
-     block rule above for why `justify-content` alone cannot do it. */
-  margin-left: auto;
+  /* See the block rule above: this is a sentence, not a counter, and it is the
+     only in-flow child -- so `nowrap` here is what would clip it. */
+  white-space: normal;
 }
 
 /* ------------------------------------------------------------------ */

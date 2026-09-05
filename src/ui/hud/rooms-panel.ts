@@ -2,7 +2,7 @@ import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { describeBy, element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
+import { describeBy, element, eyebrowText, nextUiId, screenReaderText, valueText } from '../primitives/dom';
 import { ambientFocusOwner, handOffFocus, holdsFocus } from '../primitives/focus-handoff';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
@@ -1341,9 +1341,45 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * which is why nothing here is toned as a warning any more.
    */
   const enclosureValue = valueText(t(HUD_MESSAGE_KEY.roomsEnclosureNone), 'hud-rooms__enclosure-value');
+  /*
+   * **The label is `.ui-sr-only` since #1006 finding 4, and it was a visible
+   * eyebrow before.** The reason is arithmetic and the alternative was worse.
+   *
+   * Measured on the assembled panel at 900x600: the box is 238px, the eyebrow
+   * `Enclosure` is 80.8px, the gap 8px -- so a value has **149px** and every
+   * sentence this readout can render is wider than that. `Walled in on every
+   * side` is 179.4px and `Open on at least one side` is 195px, both of them
+   * shipped, and the block's `scrollWidth` was 268 against a `clientWidth` of
+   * 238 with the sentence cut off mid-word. Wrapping the value onto its own
+   * line draws it whole and costs the block 13.2px, and the panel body at that
+   * viewport has **5.9px** of slack with a needs readout showing -- measured
+   * by `app-shell.spec.ts`, which failed on exactly that: *".hud-rooms >
+   * .ui-panel__body is 7px shorter than its own content"*. The catalogue's
+   * floor is where a block in this panel borrows height from and #529 already
+   * halved it; there are 8px left there and this needs 13.2.
+   *
+   * So the three options were an ellipsis (keeps the height, throws away the
+   * end of the sentence), a shorter sentence (impossible -- 149px is under
+   * every string in the pair, including the one nobody is changing), or this.
+   *
+   * **`.ui-sr-only` costs no width at all** (`position: absolute`, 1px), so
+   * the sentence gets the whole 238px and fits on one line with 19.6px to
+   * spare. What is given up is the word `ENCLOSURE` on screen -- and the
+   * sentence does not need it: `Walled in ...` and `Open on at least one
+   * side ...` name their own subject, which is exactly how the three
+   * `.hud-rooms__rule` lines immediately above this block read
+   * (`NEEDS AT LEAST 2 x 3 TILES`, `MUST BE ENCLOSED`, `NEEDS 1 x BED`). This
+   * block was the only label/value pair in that section.
+   *
+   * **The counter-precedent is in `hud.css` and it does not reach this.**
+   * `.hud-regime__roster-need-value` records issue #909 -- a figure that was
+   * `.ui-sr-only` "told a screen reader the need was at 20% and left a sighted
+   * player an unlabelled bar". That is a *number*, which is meaningless
+   * without its label. This is a sentence.
+   */
   const enclosureBlock = element('div', {
     className: 'hud-rooms__enclosure',
-    children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
+    children: [screenReaderText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
   });
 
   function paintEnclosure(): void {

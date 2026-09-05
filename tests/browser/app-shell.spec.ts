@@ -6101,10 +6101,11 @@ test.describe('the assembled application', () => {
      *
      * So the assertion is not that the badge exists; it is that the badge is
      * **laid out on a tab where `.hud-rooms` is not**, off a readout this
-     * thread has to keep pulling for it. `refreshRoomNeeds` in `src/main.ts`
-     * used to return early on any tab but Rooms, and restoring that gate turns
-     * this red while every assertion above it stays green -- which is the
-     * whole point of measuring it here rather than in the harness.
+     * thread has to keep pulling for it. That is why it is measured here and
+     * not in `ui-shell.spec.ts`: the harness never runs `src/main.ts`, which is
+     * where the tab gate lives. **The assertion that actually distinguishes the
+     * two behaviours is the second tab hop below**, and the block there says
+     * why the three immediately following this paragraph do not.
      *
      * The number is the panel's own: `2` unfinished rooms is `shown.unfinished`
      * asserted at every viewport above, off the same `HudRoomNeedsViewModel`.
@@ -6129,6 +6130,36 @@ test.describe('the assembled application', () => {
       await page.evaluate(() => document.querySelector('.hud-rooms')?.getClientRects().length ?? -1),
       'the Rooms panel still has a box on OVERVIEW, so this assertion is not measuring the finding',
     ).toBe(0);
+
+    /*
+     * **A second hop, and it is the assertion that actually bites.**
+     *
+     * The three above pass on `origin/main`'s `src/main.ts` as well, and the
+     * reason is worth writing down because it is a race rather than a bug in
+     * this test: leaving the Rooms tab used to call `applyRoomNeeds(undefined)`,
+     * but the `read()` started on the Rooms tab resolves *after* that and puts
+     * the readout back with no tab check. The badge is then on screen and
+     * **frozen** -- nothing refreshes it again for the rest of the session --
+     * which is a state the assertions above cannot tell from a live one.
+     *
+     * A second tab change is what separates them. On the old behaviour there is
+     * no read in flight this time, so the clear stands and the badge never
+     * comes back; on this one every tab asks, so it is there on BUILD and still
+     * there on the way back. Both directions are checked, because "it survived
+     * one hop" is exactly the weaker claim the paragraph above describes.
+     */
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+    await expect(
+      notReady.locator('.ui-badge__text'),
+      'the badge went away on a tab nothing refreshes the room readout from',
+    ).toHaveText(localeText('hud.status.rooms-not-ready').replace('{count}', '2'));
+
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    await expect(page.locator('.hud-rooms')).toBeHidden();
+    await expect(notReady.locator('.ui-badge__text')).toHaveText(
+      localeText('hud.status.rooms-not-ready').replace('{count}', '2'),
+    );
   });
 
   /**
