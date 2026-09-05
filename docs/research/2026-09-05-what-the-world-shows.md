@@ -497,7 +497,29 @@ Rooms panel reports the room ready.
 
 ## 6. Act 6 — the same box, designated four different ways
 
-_Pending — see §9._
+The same 6×6 brick enclosure, built four times in four fresh prisons and
+designated **Cell** (category `housing`), **Kitchen** (`food`), **Solitary
+Cell** (`security`) and **Classroom** (`education`) — the four widest-apart
+hues in `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:84`):
+`0x4f7fd0`, `0xd0854f`, `0xd05a4f`, `0x9a4fd0`. No objects, no people, so the
+floor is all there is to read. Screenshots:
+`2026-09-05-what-the-world-shows/act6-cell.png`, `act6-kitchen.png`,
+`act6-solitary.png`, `act6-classroom.png`, each with an `-x2`.
+
+**Every room type is drawn on the same floor image.** `zonedFloorSprite`
+(`src/rendering/world/environment-art.ts:104`) returns
+`'env.floor.institutional'` for **any** known zoning id — the function does not
+branch on category at all, and its own docblock says so: *"One floor for every
+category today."* Eleven categories, one floor. The only thing that separates
+them is `zoningTint` washed over it at `ZONING_TINT_ALPHA_OVER_ART` `0.14`
+(`src/rendering/world/appearance.ts:110`), which is deliberately weak, for a
+reason the same docblock gives and which is correct: at `0.28` *"a photographed
+linoleum floor stops reading as a floor and becomes a coloured rectangle
+again"*.
+
+**What 14% buys, measured.** Mean RGB over the same 192×192 patch of clean
+floor in each picture:
+
 
 ## 6b. Act 7 — what the wheel does
 
