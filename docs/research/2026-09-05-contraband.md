@@ -87,7 +87,7 @@ Quoted from the run:
 ```
 
 **Why**, VERIFIED, read: `SectorSearchDutySystem.update`
-(`src/simulation/contraband/sector-search-duty.ts:120-131`) skips a sector unless
+(`src/simulation/contraband/sector-search-duty.ts:123-130`) skips a sector unless
 `this.assignedGuardCount(sector.id) !== 0` **and**
 `claimableGuardIds(this.guards).length >= policy.requiredGuardCount`.
 `claimableGuardIds` is the *unassigned*, post-eligible pool (ADR 0053), never a
@@ -257,7 +257,7 @@ one number and one word: `1 · CONTRABAND · Tool`.
 **`itemsMissed` moves too**, MEASURED in act 3: `"itemsMissed":1` at tick ~10,900
 with `itemsDiscovered: 0` — a search stood next to a concealed item, failed the
 detection roll, and nothing anywhere records that for the player. VERIFIED, read:
-`search-system.ts:423-424` increments it when `rng.nextFloat() >= probability`.
+`search-system.ts:422-424` increments it when `rng.nextFloat() >= probability`.
 
 ---
 
@@ -302,7 +302,7 @@ inert, not the *possession* half.
 **VERIFIED, read**: `GUARD_CLAIM_KINDS` includes `'search'`
 (`src/simulation/security/guard-release.ts:25`), resolved live for an
 `'on-search'` guard at `:201-203`, and
-`src/content/simulation-message-keys.ts:326` labels it **`Contraband Search`**.
+`src/content/simulation-message-keys.ts:327` labels it **`Contraband Search`**.
 `guard-release.ts:220` — `if (claim === 'search') this.search.releaseGuard(guardId);`
 — means the Staff panel's **Release** button on that row **aborts the sweep.**
 
@@ -409,7 +409,7 @@ maps the covered case, and the panel already renders *"Only free guards answer
 incidents."* in exactly this slot — MEASURED, quoted in §1 — so a second
 consequence of the same fact is the same kind of sentence about the same value.
 The claim *"searches wait"* is true of
-`sector-search-duty.ts:129` (`claimableGuardIds(...).length < policy.requiredGuardCount` → `continue`),
+`sector-search-duty.ts:126` (`claimableGuardIds(...).length < policy.requiredGuardCount` → `continue`),
 which is the guard this proposal is describing. **This is the single highest-value
 change on the list**: it is one sentence, in the place the player already is,
 about a number already on screen, and it is the whole difference between a
@@ -465,7 +465,7 @@ projection has `foundAtHolder: {"kind":"prisoner","id":"8"}` and
 **Truth check**: `ContrabandRegistry` ground truth is explicitly not for the UI
 (`docs/CONTRABAND.md`, *Hidden state vs. player-visible intelligence*), but a
 **confiscated** item's holder is already published to the projection as
-*"Confiscated evidence, not hidden state"* (`contraband-projection.ts:110`), so
+*"Confiscated evidence, not hidden state"* (`contraband-projection.ts:113`), so
 the holder *kind* is inside what the architecture already permits. This is a
 protocol change to `SimulationEvent` and therefore larger than P1 and P2, and it
 is listed last for that reason.
@@ -477,7 +477,7 @@ normally-staffed game, and `0` reads as *clean*. The chip primitive already
 carries a `trailing` slot and a `tone`. A title of the form *"Items found by
 searches this session."* would make `0` mean *"nothing has been found"* rather
 than *"there is none"* — which is exactly what
-`status-strip-projection.ts:452` already says in its own comment about the field
+`status-strip-projection.ts:451` already says in its own comment about the field
 (*"Cumulative items found by searches this session."*), and therefore
 demonstrably true of the code that renders it.
 
