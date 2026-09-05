@@ -450,3 +450,68 @@ diagnose nor fix from the interface. The panel names the rule (`only free
 guards`), names the state (`0 free`), names a verdict that contradicts both
 (`Covered`), and the only control it offers makes the number worse.
 
+## 7. The interface at 68: four rows of sixty-eight, one room named of eight, three of ten guards, and a nine-day-old alert at the top of the column
+
+**MEASURED, act 1**, every laid-out line of all five tabs at game day 26,
+68 residents, 8 rooms, 10 guards. Every list is a window and every window is
+small.
+
+**The Regime tab's roster:**
+
+> PRISONERS / **4 of 68** / Sonia Novak · Medium · Heading to Class · **Hygiene
+> 20%** / Bram Kowal · Medium · Heading to Class · Recreation 35% / Fiona
+> Guerra · Medium · Heading to Class · Hygiene 52% / Rafal Wagner · Medium ·
+> Heading to Class · **Hygiene 0%** / **and 64 more**
+
+`PRISONER_ROSTER_ROW_LIMIT = 4` (`src/ui/hud/regime-panel.ts:293`),
+`'hud.regime.roster-count': '{shown} of {total}'`
+(`src/content/default-locale-en.ts:2005`), and **there is no page control** —
+the window is `roster.rows.slice(0, PRISONER_ROSTER_ROW_LIMIT)`
+(`regime-panel.ts:1280`) over a projection that accepts `offset` and a `limit`
+of up to `MAX_PROJECTION_PAGE_LIMIT = 500`
+(`src/simulation/protocol/types.ts:369`). The data is paged; the interface is
+not. **64 of 68 people are `and 64 more`.**
+
+**The Rooms tab's audit:**
+
+> NOT READY / **5 of 8** / **Cell at 1, 4 is missing** / 1 × Toilet
+
+`ROOM_NEEDS_ROOMS_LIMIT = 1` (`src/ui/hud/rooms-panel.ts:407`) — one room is
+named completely, and its own docblock says why: *"there is no surface in this
+application that audits everything"* (`:388-392`). With **five** unfinished
+rooms the player is told about one, and must finish it before being told the
+next.
+
+**The Security tab's roster:** `10 held · 0 free`, then three rows and
+**`and 7 more`** — `HELD_GUARD_ROW_LIMIT = 3` (`src/ui/hud/staff-panel.ts:125`).
+
+**The alerts column, which the brief expected to overflow, and does not:**
+
+```
+"A fight has broken out between two prisoners. 4× Day 18",
+"No incident is still open — but the last one ran out of time … 4× Day 18",
+"Contraband found: Tool. Day 19",
+"Contraband found: Currency. 2× Day 23",
+"Contraband found: Phone. 2× Day 20",
+"Nothing was removed — there is no object on that tile, and none being built there."
+```
+
+**Six rows against a cap of eight** (`MAX_EVENT_ALERT_ROWS = 8`,
+`src/ui/simulation-events.ts:488`), at day 26, in a prison of 68. **The cap does
+not bite, because rows collapse by kind** — `4×`, `2×` — so nine incidents and
+five contraband finds occupy five rows. What the player gets instead is worse
+than an overflow: **the top of the column is a fight from day 18 and it is still
+there on day 26**, because a collapsed row keeps the position its *first*
+arrival earned (`src/ui/simulation-events.ts:646-657`, and #209's rule that
+*"the position of a row the player is already reading must not change under
+them"*). The newest thing is at the bottom.
+
+**And one row that never leaves.** The last row is a build refusal produced by a
+single mis-aimed remove press **on day 1**, and it is the only row in the column
+with no *Clear this alert* control beside it. It is still on screen at day 26,
+and it also occupies the refusal band above the minimap. **One stray click in
+the first minute is a permanent line of the interface.** *(Noted in one line
+because it is the other tester's surface — the build flow — and it is not
+scale-specific; it is here because at 68 prisoners it is competing for the same
+column as the incidents.)*
+
