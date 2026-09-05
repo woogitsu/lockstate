@@ -515,3 +515,63 @@ because it is the other tester's surface — the build flow — and it is not
 scale-specific; it is here because at 68 prisoners it is competing for the same
 column as the incidents.)*
 
+## 8. Room contention finally bites, and what the losers do is *walk to the classroom anyway*
+
+The brief's central unreached thing: `docs/adr/0062-…` decides who gets a room
+when more prisoners want it than it seats, and **no playtest had ever made that
+decision fire**.
+
+**MEASURED, act 1**, the Regime tab at game day 26, 68 residents, verbatim:
+
+> PRISONERS / 4 of 68 / Sonia Novak · Medium · **Heading to Class** · Hygiene
+> **20%** / Bram Kowal · Medium · **Heading to Class** · Recreation 35% / Fiona
+> Guerra · Medium · **Heading to Class** · Hygiene **52%** / Rafal Wagner ·
+> Medium · **Heading to Class** · Hygiene **0%** / and 64 more
+
+and the regime block that put them there:
+
+> TODAY'S BLOCKS / General Population / 12% THROUGH / **Allows Work, Education,
+> Free Association** / High Risk / 68% THROUGH / Allows Sleep, Meal, Hygiene
+
+**VERIFIED, read — the ceilings this prison actually has.**
+`concurrentUseCapacityFor` gates on *"the summed footprint width of the objects
+inside the rectangle carrying that capability"*
+(`src/simulation/prisoners/room-instance-registry.ts:98-104`), derived by
+`deriveRoomCapacity` as `byCapability.set(capability, … + definition.footprint.width)`
+(`src/simulation/objects/room-capacity.ts:187-189`). For this prison:
+
+| room | objects | capability | ceiling | contenders |
+| --- | --- | --- | --- | --- |
+| classroom | 1 × bookshelf (`2×1`) | `education` | **2** | 68 |
+| classroom | 4 × chairs (`1×1`) | `seating` | 4 | 68 |
+| shower room | 2 × shower head (`1×1`) | `shower` | **2** | 68 |
+| canteen | 6 benches (`2×1`) | `seating` | 12 | 68 |
+
+**Thirty-four contenders per education place, and thirty-four per shower head.**
+The previous tester computed that a classroom's ceiling of 2 would bind at
+twelve prisoners; at 68 it binds by a factor of nearly six.
+
+**MEASURED — that it bit.** `Hygiene 0%` on the fourth roster row is a prisoner
+who has not reached a shower head, in a prison whose player built one. ADR 0062
+predicted exactly this shape (*"a shower room at its authored 3×3 minimum with
+two `1×1` shower heads — a derived hygiene ceiling of two against
+twenty-four"*), and its own measurement was a kernel fixture. **This is the
+first time it has been seen through the interface, in a prison built with a
+mouse.**
+
+**MEASURED — what the losers do.** All four visible prisoners read *Heading to
+Class* simultaneously, in a room that seats **two**. `findAvailableForUse` is
+*"an answer, not a reservation"* — its own docblock says *"two actors selecting
+in the same tick can both be answered this instance and only the first
+`concurrentUseCapacityFor` of them will get in"*
+(`room-instance-registry.ts:986-999`). So the losers of a contended room are not
+told and do not stop: **they walk there and are refused on arrival**, and the
+interface's word for that is `Heading to Class`.
+
+**JUDGEMENT, and this is the playability half.** A player looking at this roster
+sees four people all doing the same sensible thing. Nothing on any surface says
+that 66 of them will not get in, that the number who can is two, or that the
+number two comes from the *width of one bookshelf*. The one control that would
+fix it — build a second bookshelf — is not suggested anywhere, and the Rooms
+panel calls the classroom finished.
+
