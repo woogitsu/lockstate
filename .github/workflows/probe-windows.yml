@@ -1,0 +1,92 @@
+name: Probe Windows runner
+
+# THROWAWAY. Added on a `probe/**` branch to answer one question with a
+# measurement instead of a guess: what does a `woogitsu-win-*` runner actually
+# have on it? The owner added five native-Windows runners and asked for every
+# job to move onto them, and this repository's workflows are written for Linux
+# -- ten `bash scripts/*.sh` calls, `set -euo pipefail` in blocks that would be
+# interpreted by PowerShell on Windows, and provisioning scripts that use apt,
+# sudo, pg_ctlcluster and a `supabase_linux_${arch}.tar.gz` download.
+#
+# Triggering on a push to `probe/**` rather than on `pull_request` deliberately:
+# it costs one short job instead of a full CI run, and needs no pull request.
+#
+# This file is not meant to reach `main`.
+on:
+  push:
+    branches: ['probe/**']
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: [self-hosted, Windows, X64, woogitsu]
+    timeout-minutes: 10
+    steps:
+      # PowerShell first, and explicitly, because the whole question is what the
+      # default is here. Nothing in this step may assume a POSIX tool exists.
+      - name: What is on this machine (PowerShell)
+        shell: pwsh
+        run: |
+          Write-Host "== identity =="
+          Write-Host "runner.os          = ${{ runner.os }}"
+          Write-Host "runner.arch        = ${{ runner.arch }}"
+          Write-Host "runner.name        = ${{ runner.name }}"
+          Write-Host "workspace          = ${{ github.workspace }}"
+          Write-Host "OS caption         = $((Get-CimInstance Win32_OperatingSystem).Caption)"
+          Write-Host ""
+          Write-Host "== tools on PATH =="
+          foreach ($t in @('git','bash','sh','node','npm','pnpm','corepack','psql','pg_ctl','supabase','wrangler','git-lfs','tar','curl','python','python3','wsl')) {
+            $c = Get-Command $t -ErrorAction SilentlyContinue
+            if ($c) { Write-Host ("{0,-10} {1}" -f $t, $c.Source) }
+            else    { Write-Host ("{0,-10} MISSING" -f $t) }
+          }
+          Write-Host ""
+          Write-Host "== versions, where the tool exists =="
+          foreach ($t in @('git','node','npm','pnpm','psql')) {
+            if (Get-Command $t -ErrorAction SilentlyContinue) {
+              try { Write-Host ("{0}: {1}" -f $t, (& $t --version 2>&1 | Select-Object -First 1)) } catch { Write-Host "$t : version call failed" }
+            }
+          }
+          Write-Host ""
+          Write-Host "== Git Bash, the thing that decides whether `shell: bash` works =="
+          foreach ($p in @('C:\Program Files\Git\bin\bash.exe','C:\Program Files\Git\usr\bin\bash.exe','C:\Program Files (x86)\Git\bin\bash.exe')) {
+            if (Test-Path $p) { Write-Host "present: $p" } else { Write-Host "absent : $p" }
+          }
+          Write-Host ""
+          Write-Host "== is WSL available on this box =="
+          if (Get-Command wsl -ErrorAction SilentlyContinue) { wsl --list --verbose 2>&1 | Out-String | Write-Host } else { Write-Host "wsl: MISSING" }
+
+      # Whether a `shell: bash` step runs at all is the single fact that decides
+      # how expensive the migration is. Allowed to fail so the run still reports.
+      - name: Does a bash step run here at all
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          echo "bash ran. version: ${BASH_VERSION:-unknown}"
+          echo "uname -s: $(uname -s 2>/dev/null || echo 'uname missing')"
+          echo "uname -m: $(uname -m 2>/dev/null || echo 'uname missing')"
+          for t in git node pnpm psql apt-get sudo tar curl; do
+            if command -v "$t" >/dev/null 2>&1; then echo "$t -> $(command -v "$t")"; else echo "$t -> MISSING"; fi
+          done
+
+      # `actions/checkout` is used by every job in this repository. If it cannot
+      # run here, nothing else matters.
+      - name: Can actions/checkout run here
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        continue-on-error: true
+        with:
+          persist-credentials: false
+
+      - name: What the checkout produced
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          if (Test-Path 'package.json') {
+            Write-Host "checkout OK; package.json present"
+            Write-Host (Get-Content 'package.json' -TotalCount 4 | Out-String)
+          } else {
+            Write-Host "checkout did not produce package.json"
+          }
