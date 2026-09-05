@@ -9,6 +9,7 @@ import {
 } from '../primitives/async-action';
 import { describeBy, element, eyebrowText, nextUiId, undescribeBy } from '../primitives/dom';
 import type { IconId } from '../primitives/icon';
+import { createIconButton } from '../primitives/icon-button';
 import { type CollapsibleSection, createCollapsibleSection } from '../primitives/collapsible-section';
 import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
@@ -819,6 +820,34 @@ export interface MountHudOptions {
    */
   readonly onMinimapNavigate?: (point: { readonly fx: number; readonly fy: number }) => boolean;
   /**
+   * One zoom step, in the direction the player pressed (issue #1023).
+   *
+   * A plain callback rather than a port object, on exactly the grounds
+   * `onMinimapNavigate` above states: moving the camera is the renderer's, the
+   * HUD may not import `src/rendering/**`, and there is no shared mutable
+   * state for a port to carry -- one press, one call. In the running app the
+   * composition root hands this to `WorldScene.stepCameraZoom`, which takes the
+   * keyboard's own step through the keyboard's own code path, so a button and
+   * a key are the same movement.
+   *
+   * Not on the gated `dispatchCommand`/`dispatchShell` paths every other
+   * control here uses, and for the same reason a minimap click is not: zooming
+   * never reaches the simulation (`AGENTS.md` boundary 1), so there is nothing
+   * to gate and nothing for a host to refuse.
+   *
+   * **Returns nothing, deliberately, where `onMinimapNavigate` returns
+   * whether it worked.** That boolean exists because the minimap has a
+   * *sentence* to correct -- it says it is not available yet and has to stop
+   * once it demonstrably is. Zoom has no such sentence: the two buttons name a
+   * direction, and a press at the clamp changing nothing is what the keyboard
+   * already does. Reporting it would only let the HUD invent a claim about the
+   * bounds, which live in the renderer and are not the HUD's to state.
+   *
+   * Omitted, the buttons are laid out and do nothing at all -- the state of
+   * every harness in `tests/browser/` that does not pass it.
+   */
+  readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  /**
    * Receives every player action, and may be async.
    *
    * A *command* (`set-clock`) is gated: while one is in flight the transport
@@ -975,7 +1004,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1036,7 +1082,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1127,7 +1190,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1585,7 +1665,76 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
   minimapPanel.body.append(minimapSurface, alertsSection.element);
 
-  const corner = element('div', { className: 'hud__corner', children: [minimapPanel.element] });
+  /*
+   * ---- the camera zoom, on screen (issue #1023) ----------------------
+   *
+   * `WorldScene` has zoomed over `ZOOM_BOUNDS` -- `{ min: 0.2, max: 3 }`, a
+   * deliberate fifteen-fold range with a docblock explaining the two ends --
+   * since it was written, on the wheel, on a pinch and on `+`/`-`, and until
+   * this block **no control anywhere in the DOM named it**. Measured on the
+   * assembled page at 1280x800 rather than inferred from this file: the
+   * substring `zoom` did not occur once in `document.body.innerHTML`, and the
+   * only sentence about moving the view is the Build panel's arm hint, which
+   * names panning. The owner's standing brief is a game with no hidden
+   * features; that was one.
+   *
+   * **In `.hud__corner` beside the minimap and NOT inside its panel**, which
+   * is the one layout decision here and is about what a collapse does. The
+   * minimap panel is collapsible and starts expanded; a zoom pair in its body
+   * would vanish with one press on `Collapse` and take the only visible
+   * mention of zoom in the game with it. As a sibling it survives that, and it
+   * is still in the corner a player looks in for the view controls, next to
+   * the surface that already moves the camera.
+   *
+   * The corner is a flex column with `justify-content: flex-end`, so this row
+   * sits directly above the minimap frame and the pair stays anchored to the
+   * bottom-left. `.hud__corner > *` already opts every child back into
+   * `pointer-events`, so this needs no rule of its own for that.
+   *
+   * `createIconButton` rather than hand-built buttons: it gives each one the
+   * `--tap-target` box `app-shell.spec.ts` measures at 1280x800 and 375x812,
+   * and it puts the label in `screenReaderText` as well as `title`, so the
+   * meaning never depends on a hover a touch player does not have.
+   */
+  const zoomLegend = eyebrowText(t(HUD_MESSAGE_KEY.zoomRegion), 'hud-zoom__legend');
+  // The group below already carries the same words as its accessible name, so
+  // exposing the visible copy too would have a screen reader read them twice --
+  // `createDisplayScaleControl`'s own arrangement, for its own reason.
+  zoomLegend.setAttribute('aria-hidden', 'true');
+  const zoomOut = createIconButton({
+    icon: 'zoom-out',
+    label: t(HUD_MESSAGE_KEY.zoomOut),
+    variant: 'bordered',
+    onActivate: () => {
+      options.onCameraZoom?.('out');
+    },
+  });
+  zoomOut.element.classList.add('hud-zoom__out');
+  const zoomIn = createIconButton({
+    icon: 'zoom-in',
+    label: t(HUD_MESSAGE_KEY.zoomIn),
+    variant: 'bordered',
+    onActivate: () => {
+      options.onCameraZoom?.('in');
+    },
+  });
+  zoomIn.element.classList.add('hud-zoom__in');
+  const zoomControl = element('div', {
+    className: 'hud-zoom',
+    attributes: {
+      role: 'group',
+      // Names the pair "zoom" rather than leaving two glyphs beside a game
+      // that also has an interface scale. The same word is on screen in the
+      // legend, so this is a machine-readable copy of a visible label rather
+      // than the only place the meaning exists.
+      'aria-label': t(HUD_MESSAGE_KEY.zoomRegion),
+    },
+    // Out before in, so the pair reads left to right the way a range does and
+    // the way the keys do on the row they are bound to.
+    children: [zoomLegend, zoomOut.element, zoomIn.element],
+  });
+
+  const corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the

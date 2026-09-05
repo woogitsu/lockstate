@@ -261,6 +261,17 @@
   max-height: 100%;
   min-height: 0;
   box-sizing: border-box;
+  /*
+   * Exactly what the zoom island below costs this column, named once so the
+   * minimap square can give back exactly it (#1023).
+   *
+   * It is a sum of the island's own parts rather than a number: the tap
+   * target, its top and bottom hairlines, and the gap to the frame under it.
+   * `--tap-target` and `--space-2` both scale with `--ui-scale` and
+   * `--hairline` deliberately does not, so this tracks the island at every
+   * interface scale instead of being right at 100 % and wrong at 175 %.
+   */
+  --hud-zoom-block: calc(var(--tap-target) + 2 * var(--hairline) + var(--space-2));
 }
 
 /* Both `min-height: 0`s are the shrink the block above depends on: a flex
@@ -268,6 +279,48 @@
    keep the square square and the corner too tall. */
 .hud-minimap { min-height: 0; }
 .hud-minimap__surface { min-height: 0; }
+
+/*
+ * The camera zoom pair, above the minimap frame (issue #1023).
+ *
+ * `flex: none` is the load-bearing declaration in this block, and it is the
+ * other half of the shrink the two lines above buy. The corner is a bounded
+ * flex column: whatever this row does not give up comes out of the minimap
+ * frame below it, which is exactly the direction that is wanted -- the square
+ * has a documented cap and a `min-height: 0` chain built to let it shrink,
+ * and a 44px tap target that shrank would stop being one. So the pair keeps
+ * its height and the frame absorbs it.
+ *
+ * `align-self: flex-start` so the row is only as wide as the two buttons and
+ * their legend, rather than stretching to the frame's 396px and putting a
+ * band of surface across the corner. Its own background and border make it
+ * read as an island rather than as part of the frame under it, which is what
+ * it is: the minimap panel can be collapsed and this cannot.
+ */
+.hud-zoom {
+  display: flex;
+  flex: none;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  /*
+   * No vertical padding, and that is arithmetic rather than taste: the row is
+   * exactly one tap target plus its two hairlines, which is what
+   * `--hud-zoom-block` above says it is and what the minimap square gives
+   * back. Padding here would put the two numbers a few pixels apart, and the
+   * corner would grow by the difference at the one viewport that cannot
+   * afford it.
+   */
+  padding: 0 var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+/* The legend never shrinks and never wraps: it is one short word, and a
+   wrapped one would take the row past the tap targets beside it. */
+.hud-zoom__legend { flex: none; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed a fixed width while the type
@@ -334,6 +387,37 @@
    * points back to.
    */
   max-width: calc(224px * var(--ui-scale));
+  /*
+   * AND SHORTER THAN IT IS WIDE BY EXACTLY THE ZOOM ISLAND, SINCE 2026-09-05
+   * (#1023). THE FRAME STOPS BEING SQUARE, ON PURPOSE.
+   *
+   * The corner is a bottom-anchored column with `max-height: 100%` of a grid
+   * row, so everything in it shares one bounded height -- and the block above
+   * this one records what that costs when the bound bites: the square shrinks
+   * *and so does the alerts list under it*, because both are flex children
+   * with `min-height: 0`. Measured on the `ui-harness` at 900x600, which is
+   * the viewport where the row is shortest: adding the zoom island took the
+   * corner's wanted height from 440px to 502px against 482.8px of row, and
+   * the alerts list went 76px -> 68px against a 76px alert row --
+   * `tests/browser/ui-alerts-column.spec.ts`'s *"a single alert never measures
+   * taller than the list box that holds it"*, red at exactly that viewport and
+   * green at the other four.
+   *
+   * **So the square gives the height back, rather than the list.** That is
+   * this file's own order of preference, stated one block up for a different
+   * pressure: *"the frame stops being square before it stops being on screen,
+   * which is the right way round for a placeholder whose whole content is one
+   * centred line of text"* -- and the minimap still draws nothing at all,
+   * while the alerts list is the only place on a desktop viewport an escape is
+   * reported. A `max-height` and not a smaller `max-width`, so the frame keeps
+   * the 224px footprint ADR 0085's discussion settled and loses only what the
+   * control above it takes: 224x224 becomes 224x170 at 100 %.
+   *
+   * The corner's wanted height is therefore exactly what it was before the
+   * island existed -- 440px at 100 % -- and the alerts list is back to 76px at
+   * all five viewports.
+   */
+  max-height: calc(224px * var(--ui-scale) - var(--hud-zoom-block));
   align-self: center;
   /* Square: the renderer will draw a square region of the world here. */
   aspect-ratio: 1 / 1;

@@ -423,6 +423,49 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // x = -9.5 and fail the assertions in `tests/browser/ui-shell.spec.ts`.
   'hud.tab.rooms': 'Rooms',
 
+  /*
+   * The camera zoom, said out loud at last (issue #1023).
+   *
+   * `WorldScene` has zoomed on the wheel, on a pinch and on `+`/`-` since it
+   * was written, over a deliberate fifteen-fold range
+   * (`src/rendering/scene/world-scene.ts:68`, `ZOOM_BOUNDS = { min: 0.2, max: 3 }`,
+   * with the docblock above it naming the intent: *"far enough out to plan a
+   * wing, close enough in to see which way a prisoner is facing"*). Nothing on
+   * screen said so: measured on the assembled page at 1280x800 on `main` at
+   * `bd6fa32`, the string `zoom` did not occur anywhere in `document.body.innerHTML`,
+   * and the only sentence about moving the view is `hud.build.arm-hint`'s
+   * *"Two fingers, the middle button or the arrow keys still move the camera"*
+   * -- which names panning, is Build-tab only, and says nothing about zoom.
+   * The owner's standing brief is a game with no hidden features; a
+   * fifteen-fold zoom nobody is told about is one.
+   *
+   * **These three strings are authored here under `AGENTS.md` reservation 4 as
+   * partly released on 2026-09-04 -- the wording is ours, the truth is not --
+   * and each was checked against the code that renders it rather than assumed:**
+   *
+   * - `hud.zoom.in` / `hud.zoom.out` name what the two buttons do. The press
+   *   reaches `WorldScene.stepCameraZoom` (`src/rendering/scene/world-scene.ts`),
+   *   which calls the same `stepZoom` the keyboard does with
+   *   `KEYBOARD_ZOOM_STEP` (1.25) one way and its reciprocal the other, so "in"
+   *   raises `camera.zoom` and "out" lowers it. Neither string promises a
+   *   *range*, a step size or a key, because a control at the clamp
+   *   (`clampZoom`, `src/rendering/camera/coordinates.ts:88`) changes nothing
+   *   and a sentence claiming otherwise would be the false-promise defect the
+   *   reservation exists for. No key is named for a second reason: the bindings
+   *   are `Equal` and `Minus` by *code* (`src/input/bindings.ts:34-35`), which
+   *   is a different physical key on an AZERTY keyboard, and `AGENTS.md`
+   *   boundary 10 says this game supports both.
+   * - `hud.zoom.title` names the group and is the visible legend above the
+   *   pair, in the same arrangement `INTERFACE SCALE` uses one panel over
+   *   (`src/ui/display-scale.ts`) and for the reason that control records: a
+   *   bare glyph beside a game that has both an interface scale and a camera
+   *   zoom needs to say which one it is. "Zoom" is the camera's, and the
+   *   display-scale control already took "interface".
+   */
+  'hud.zoom.title': 'Zoom',
+  'hud.zoom.in': 'Zoom in',
+  'hud.zoom.out': 'Zoom out',
+
   'hud.minimap.title': 'Minimap',
   'hud.minimap.placeholder': 'Minimap is not available yet',
   /*

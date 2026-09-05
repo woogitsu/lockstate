@@ -2122,6 +2122,11 @@ const INTERACTIVE_SELECTOR =
  * `hud.css` drops `.hud__corner` there: the minimap and the alerts section go
  * away entirely rather than compete with the Build panel for a phone's width.
  *
+ * **Since 2026-09-05 the camera zoom pair goes with them (#1023), and it is
+ * not the same kind of entry.** The two originals have a second route on a
+ * phone or nothing to show yet; the zoom has neither. See the comment on those
+ * two entries below, which is where the argument is kept.
+ *
  * Written out rather than inferred. A reachability check that skips whatever
  * happens not to be laid out cannot tell a considered responsive decision from
  * a control that has quietly collapsed to nothing, and the second is the shape
@@ -2272,6 +2277,35 @@ const NEVER_LAID_OUT_BELOW_720 = [
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
     'button.ui-section__header "Alerts"',
+  /*
+   * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
+   * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
+   *
+   * They are here for the same mechanical reason -- `.hud__corner` is
+   * `display: none` at 720px and below, and these two buttons are in it -- and
+   * that is where the similarity stops. The minimap draws nothing yet and the
+   * alerts log has a second route on a phone (`.hud__event`, and the refusal
+   * and unavailable bands, all of which `hud.ts` documents as existing because
+   * this corner does not). **The zoom has no second route on a phone at all**:
+   * there is no wheel, there are no `+`/`-` keys, and the one gesture that
+   * zooms -- a pinch -- has no affordance anywhere, which is the exact defect
+   * #1023 was filed about, surviving at one viewport.
+   *
+   * It is exempted rather than fixed because the fix is not a breakpoint edit.
+   * `hud.css`'s own comment on that rule records two attempts at removing it,
+   * the diagnosis they produced (the corner collides with the **stretched
+   * rail**, and this very test is what caught it), and the owner's steer that
+   * the desktop browser comes first and mobile is refined later. This test also
+   * pins the rule directly, at "still mounts the interface when the simulation
+   * worker cannot start (#82)", so bringing the corner back is a decision with
+   * an owner and not a line for an implementing agent to change on its way past.
+   *
+   * So this pair belongs on the mobile layout pass's list, and these two
+   * entries are how it stays on it: the accounting assertion below fails the
+   * moment they become reachable, which is what will retire them.
+   */
+  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__out "Zoom out"',
+  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__in "Zoom in"',
 ] as const;
 
 /*
