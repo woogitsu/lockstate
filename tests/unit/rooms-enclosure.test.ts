@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
-import { roomPerimeterEnclosure } from '../../src/simulation/rooms/enclosure';
+import { DOOR_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
+import { DoorConstructionService } from '../../src/simulation/construction/door-construction';
+import { DoorRegistry } from '../../src/simulation/navigation/door';
+import { roomPerimeterAccess, roomPerimeterEnclosure, type RoomDoorReader } from '../../src/simulation/rooms/enclosure';
 import { enclosureRequirement, minimumSizeRequirement } from '../../src/simulation/rooms/requirements';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { RoomZoningService } from '../../src/simulation/rooms/zoning';
@@ -490,5 +493,159 @@ describe('what the ruling costs: an open-plan room inside a sealed hall', () => 
         1,
       ),
     ).toMatchObject({ kind: 'zoned', enclosure: 'sealed' });
+  });
+});
+
+/**
+ * **Whether anybody can get in, which `RoomEnclosure` cannot answer** -- issue
+ * #938.
+ *
+ * `roomPerimeterEnclosure` above answers `'sealed'` for two rooms that behave
+ * completely differently, and the module's own header has said so since a
+ * completed door order began writing `DOOR_EDGE_NUMERIC_ID` into the same edge
+ * layer a wall writes into: *"a `'sealed'` answer no longer implies \"no way
+ * in\""*. What #938 measured is that `'sealed'` was the only thing a player was
+ * ever told -- `hud.rooms.enclosure-sealed`, "Walled in on every side",
+ * rendered identically for a working shower room and one nobody could enter --
+ * and `tests/integration/dead-room-no-doorway.test.ts` is the behavioural half
+ * of that measurement.
+ *
+ * This block is the predicate. Three states, and the door is written the way a
+ * completed `door-wooden` order writes it -- `DoorConstructionService` for the
+ * registration and `DOOR_EDGE_NUMERIC_ID` into the edge layer -- through the
+ * same service `finalizeConstruction` calls, so the fixture cannot register a
+ * door the construction path would not have.
+ */
+describe('whether anything can cross a room perimeter (#938)', () => {
+  /** A registry with a door where a completed `door-wooden` order would have put one. */
+  function doorAt(world: SparseWorld, position: { readonly x: number; readonly y: number }, side: 'left' | 'top'): DoorRegistry {
+    const doors = new DoorRegistry();
+    expect(
+      // `BuildEdge`'s spelling of the same two edges the registry keys as
+      // `'top'`/`'left'`; `doorSideForBuildEdge` inside the service is what
+      // maps between them, and going through it is what keeps this fixture on
+      // the construction path rather than beside it.
+      new DoorConstructionService(doors).onDoorOrderCompleted(
+        'door-wooden',
+        tile(position.x, position.y),
+        side === 'top' ? 'north' : 'west',
+      ),
+      'the fixture must register the door it says it registers',
+    ).toBe(true);
+    if (side === 'top') world.setTopEdge(tile(position.x, position.y), DOOR_EDGE_NUMERIC_ID);
+    else world.setLeftEdge(tile(position.x, position.y), DOOR_EDGE_NUMERIC_ID);
+    return doors;
+  }
+
+  it('answers `gap` for a perimeter with a hole in it, without reading a door at all', () => {
+    const world = ownedWorld();
+    const room = { x: 4, y: 4, width: 3, height: 3 };
+    wallPerimeter(world, room);
+    // One segment of the south boundary taken back out: the north edge of the
+    // row below, which is where the world stores it.
+    world.setTopEdge(tile(4, 7), 0);
+
+    expect(roomPerimeterEnclosure(world, room), 'the two answers must agree about the gap').toMatchObject({
+      enclosure: 'open',
+    });
+    // A registry that throws if it is consulted, which is the assertion: an
+    // open perimeter is crossable whatever the doors say, so the door read is
+    // not merely unnecessary here, it must not happen.
+    const refuses: RoomDoorReader = {
+      getByEdge() {
+        throw new Error('a rectangle with a gap in its perimeter must not need a door read');
+      },
+    };
+    expect(roomPerimeterAccess(world, refuses, room)).toBe('gap');
+  });
+
+  it('answers `no-way-in` for a sealed perimeter with no door anywhere on it', () => {
+    const world = ownedWorld();
+    const room = { x: 4, y: 4, width: 3, height: 3 };
+    wallPerimeter(world, room);
+
+    expect(roomPerimeterEnclosure(world, room)).toEqual({ enclosure: 'sealed' });
+    expect(roomPerimeterAccess(world, new DoorRegistry(), room)).toBe('no-way-in');
+  });
+
+  /*
+   * **Every one of the `2 * (width + height)` perimeter edges, one at a time.**
+   *
+   * A single door on one side would pass against an implementation that walked
+   * only that side, and against one that walked three sides out of four. The
+   * cheapest thing this test can be wrong about is which edges belong to the
+   * rectangle -- the south boundary is the row below's north edge and the east
+   * boundary is the column to the right's west edge, which is the mistake
+   * `wallRoomPerimeter`'s own header records two fixtures having made -- so the
+   * assertion is over the whole set rather than a sample of it.
+   */
+  it('answers `doorway` for a door on any one of the twelve perimeter edges of a 3x3', () => {
+    const room = { x: 4, y: 4, width: 3, height: 3 };
+    const perimeter: readonly { readonly x: number; readonly y: number; readonly side: 'left' | 'top' }[] = [
+      // North boundary: each tile's own north edge.
+      { x: 4, y: 4, side: 'top' },
+      { x: 5, y: 4, side: 'top' },
+      { x: 6, y: 4, side: 'top' },
+      // South boundary: the north edge of the row below.
+      { x: 4, y: 7, side: 'top' },
+      { x: 5, y: 7, side: 'top' },
+      { x: 6, y: 7, side: 'top' },
+      // West boundary: each tile's own west edge.
+      { x: 4, y: 4, side: 'left' },
+      { x: 4, y: 5, side: 'left' },
+      { x: 4, y: 6, side: 'left' },
+      // East boundary: the west edge of the column to the right.
+      { x: 7, y: 4, side: 'left' },
+      { x: 7, y: 5, side: 'left' },
+      { x: 7, y: 6, side: 'left' },
+    ];
+    expect(perimeter, 'a 3x3 has 2 * (3 + 3) perimeter edges').toHaveLength(12);
+
+    for (const edge of perimeter) {
+      const world = ownedWorld();
+      wallPerimeter(world, room);
+      const doors = doorAt(world, edge, edge.side);
+      expect(
+        roomPerimeterEnclosure(world, room),
+        `a door at ${String(edge.x)},${String(edge.y)} ${edge.side} keeps the perimeter sealed`,
+      ).toEqual({ enclosure: 'sealed' });
+      expect(
+        roomPerimeterAccess(world, doors, room),
+        `a door at ${String(edge.x)},${String(edge.y)} ${edge.side} is a way in`,
+      ).toBe('doorway');
+    }
+  });
+
+  it('reads no door outside the perimeter, so a neighbouring room’s door is not a way into this one', () => {
+    const world = ownedWorld();
+    const room = { x: 4, y: 4, width: 3, height: 3 };
+    wallPerimeter(world, room);
+    // One tile further out on every side than any edge of `room`: the north
+    // edge of the row two below its bottom, which belongs to whatever is down
+    // there and not to this rectangle.
+    const doors = doorAt(world, { x: 4, y: 8 }, 'top');
+
+    expect(roomPerimeterAccess(world, doors, room)).toBe('no-way-in');
+  });
+
+  /*
+   * A locked door is still a door to this question, and that is the same policy
+   * `buildNavigationGraph` applies -- it records a portal for a door
+   * "regardless of its current lock state", and permission is checked later at
+   * traversal time. A room whose only door is locked is a room with a way in
+   * that some actors may not use, which is a different fact from a room with no
+   * way in at all.
+   */
+  it('counts a locked door as a way in, because navigation does', () => {
+    const world = ownedWorld();
+    const room = { x: 4, y: 4, width: 3, height: 3 };
+    wallPerimeter(world, room);
+    const doors = doorAt(world, { x: 4, y: 7 }, 'top');
+    const door = doors.getByEdge(tile(4, 7), 'top');
+    expect(door, 'the fixture must have a door to lock').not.toBeUndefined();
+    doors.setState(door!.id, 'locked');
+    expect(doors.getById(door!.id)?.state).toBe('locked');
+
+    expect(roomPerimeterAccess(world, doors, room)).toBe('doorway');
   });
 });
