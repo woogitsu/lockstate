@@ -105,6 +105,35 @@ async function upscale(page: Page, sourcePath: string, name: string, factor: num
   writeFileSync(`${SHOTS}/${name}.png`, Buffer.from(out, 'base64'));
 }
 
+
+/**
+ * Buys `quantity` of one buildable, or reports that the game would not sell it.
+ *
+ * **Why this is not `buy` from the harness.** That one presses the submit
+ * control unconditionally, and #772 landed a Buy button that *disables itself
+ * when the press would be refused* -- so on an order the treasury cannot cover,
+ * `locator.click()` waits for an actionable control until the test timeout.
+ * A showroom of eighteen buildables is exactly the order that runs out of
+ * money, and the first attempt at this act sat on a disabled Buy for six
+ * minutes before it was killed. So this reads the control first and reports
+ * the refusal as data.
+ */
+async function buyOrReport(page: Page, buildableId: string, quantity: number): Promise<boolean> {
+  await page.locator(`.hud-build__list [data-buildable="${buildableId}"]`).click();
+  const buyRow = page.locator('.hud-build__buy');
+  if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
+  await page.locator('.hud-build__buy .ui-number__input').fill(String(quantity));
+  const submit = page.locator('.hud-build__buy-submit');
+  await page.waitForTimeout(150);
+  if (await submit.isDisabled()) {
+    console.log(`buy ${buildableId} x${quantity}: REFUSED, control disabled — ${JSON.stringify((await page.locator('.hud-build__buy').innerText()).replace(/\s+/g, ' ').trim())}`);
+    return false;
+  }
+  await submit.click();
+  await page.waitForTimeout(200);
+  return true;
+}
+
 /** The canvas's own box, in CSS pixels, so a clip can be checked against it. */
 async function canvasBox(page: Page): Promise<{ x: number; y: number; width: number; height: number }> {
   const box = await page.locator('#game-root canvas').boundingBox();
@@ -351,18 +380,30 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
    * pointer events, so a press at tile x=24 or at tile (10,17) lands on a
    * panel and produces no command -- which is exactly what happened to
    * `fridge-brick`, `stove-brick`, `prep-counter-brick`, `utility-panel-brick`
-   * and `waste-bin-brick` on the first attempt. Tiles 12..22 by 12..20 are
-   * canvas a pointer can actually reach at 1440x900.
+   * and `waste-bin-brick` on the first attempt, and to the whole **east wall
+   * run** on the second -- a drag along the edge of tile x=23 sits at page
+   * x=1168, four pixels inside the rail, and produced *zero* commands, so the
+   * rectangle was never enclosed and the designation was refused ten times
+   * over. Tiles 12..21 by 12..20 are canvas a pointer can actually reach at
+   * 1440x900.
    */
-  await buy(page, 'wall-brick', 100);
-  for (const id of SHOWROOM) await buy(page, id, 2);
-  await buy(page, 'door-wooden', 2);
+  const sold: string[] = [];
+  const unsold: string[] = [];
+  await buyOrReport(page, 'wall-brick', 100);
+  await buyOrReport(page, 'door-wooden', 2);
+  for (const id of SHOWROOM) {
+    if (await buyOrReport(page, id, 1)) sold.push(id);
+    else unsold.push(id);
+  }
+  console.log(`sold: ${JSON.stringify(sold)}`);
+  console.log(`unsold: ${JSON.stringify(unsold)}`);
+  console.log(`funds after buying: ${JSON.stringify((await latestCounts(page))?.treasuryMinorUnits)}`);
   await fastForwardToMax(page);
   await page.waitForTimeout(4000);
 
   await armBuildable(page, 'wall-brick');
   const westX = origin.originX + 12 * TILE;
-  const eastX = origin.originX + 23 * TILE;
+  const eastX = origin.originX + 22 * TILE;
   const northY = origin.originY + 12 * TILE;
   const southY = origin.originY + 21 * TILE;
   for (const run of [
@@ -386,7 +427,7 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
     }
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 22, 20));
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 21, 20));
     await page.locator('.hud-rooms__confirm').click();
     await page.waitForTimeout(800);
     if (((await latestCounts(page))?.rooms ?? 0) > 0) break;
@@ -397,7 +438,7 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
 
   await tab(page, 'build').click();
   const placed: { id: string; tx: number; ty: number }[] = [];
-  for (const [index, id] of SHOWROOM.entries()) {
+  for (const [index, id] of sold.entries()) {
     const tx = 13 + (index % 5) * 2;
     const ty = 13 + Math.floor(index / 5) * 2;
     await armBuildable(page, id);
@@ -410,13 +451,17 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
   // A door in the south wall, as the reference: act 1 showed walls drawn with
   // real texture, so the door beside them says whether that generalises.
   await armBuildable(page, 'door-wooden');
-  const doorPoint = centreOf(origin, 17, 20);
+  const doorPoint = centreOf(origin, 16, 20);
   console.log(`door: ${JSON.stringify(await press(page, doorPoint.x, doorPoint.y + TILE / 2 - 4))}`);
 
-  await waitForQueueEmpty(page);
+  try {
+    await waitForQueueEmpty(page, 300_000);
+  } catch (error) {
+    console.log(`the queue never emptied: ${String(error)}`);
+  }
   await page.waitForTimeout(4000);
   console.log(`queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-  console.log(`placed ${placed.length} of ${SHOWROOM.length}: ${JSON.stringify(placed)}`);
+  console.log(`placed ${placed.length} of ${sold.length} sold (${SHOWROOM.length} in the catalogue): ${JSON.stringify(placed)}`);
   console.log(`refusal: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   await tab(page, 'overview').click();
   await page.waitForTimeout(600);
@@ -425,7 +470,7 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
   const rect = {
     x: origin.originX + 12 * TILE,
     y: origin.originY + 12 * TILE,
-    width: 11 * TILE,
+    width: 10 * TILE,
     height: 9 * TILE,
   };
   console.log(`showroom rect: ${JSON.stringify(rect)}`);
@@ -436,7 +481,7 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
   const rowOne = await shotRect(page, 'act2-row-one', {
     x: origin.originX + 12 * TILE,
     y: origin.originY + 12 * TILE,
-    width: 11 * TILE,
+    width: 10 * TILE,
     height: 3 * TILE,
   });
   await upscale(page, rowOne, 'act2-row-one-x4', 4);
@@ -647,10 +692,17 @@ test('act 6 — the same box, designated four different ways', async ({ page }) 
   await installTee(page);
   await openApp(page);
   for (const [roomId, label] of [
+    /*
+     * Four different `ZONING_TINT_BY_CATEGORY` hues, chosen from
+     * `src/rendering/world/appearance.ts` rather than at random: housing is
+     * `0x4f7fd0`, food `0xd0854f`, security `0xd05a4f` and education
+     * `0x9a4fd0`. If a player cannot tell these four apart on screen, no pair
+     * of room types in the game is distinguishable.
+     */
     ['room.cell', 'cell'],
     ['room.kitchen', 'kitchen'],
-    ['room.canteen', 'canteen'],
     ['room.solitary-cell', 'solitary'],
+    ['room.classroom', 'classroom'],
   ] as const) {
     await designateOnly(page, roomId, label);
   }
