@@ -343,32 +343,29 @@ vertical window slot and a handle plate — `EDGE_ART_BY_NUMERIC_ID` maps
 (`src/rendering/world/environment-art.ts:75`). Eight tiles away in the same
 picture, the bed a prisoner sleeps in is a rectangle of `0x7f8ba0`.
 
-### THE CONFOUND, NAMED FIRST
+### The controlled pair, and it is the largest finding in this record
 
-**The two runs are not the controlled pair they were meant to be.** In the
-sealed run the toilet press placed a **fifth bed** instead of a toilet — the
-same `armBuildable` race act 2 measured — so the sealed cell reads
-`roomCapacity=5, accommodationCapacity=5` against the working cell's `4`, and
-its Rooms panel says it is missing `1 × Toilet` as well as a door. So the
-pictures differ in furniture as well as in the door, and **the whole-frame
-comparison this act was designed to make is spoiled.** I am reporting the
-comparison that survives it rather than the one I set out to make.
+**The first attempt at this act was spoiled and the second was not, and both
+are reported.** In the first sealed run the toilet press placed a fifth bed
+instead of a toilet — the `armBuildable` race act 2 measured — so that cell read
+`roomCapacity=5` against the working cell's `4`, and the run then threw
+`stuck at tick 20031, wanted 24000` on `runUntilTick`'s default 180 s budget at
+load average around 9. Given a fifteen-minute budget and re-run, act 3b placed
+its toilet, reached **tick 24,135**, and reported `roomCapacity: 4`,
+`accommodationCapacity: 4`, `roomOccupants: 4` — the working cell's numbers
+exactly, minus the door.
 
-**The re-run.** Act 3b also failed its first attempt outright —
-`runUntilTick`'s default 180 s budget threw `stuck at tick 20031, wanted 24000`
-at load average around 9 with another agent's browser suite alongside — so it
-was given a fifteen-minute budget and a fall-short is now a logged reading
-rather than a thrown act.
+So the pair is:
 
-### The comparison that survives, and it is the largest finding in this record
-
-Act 1's cell is the **sealed** one — no door, `1 ROOMS  1 not ready`, four
-prisoners inside, at tick 7506, **day 4**. Act 3a's is the **working** one —
-door built, room ready, `1 ROOMS` with no badge, four prisoners, at tick 24,214,
-**day 11**. Both have two guards, both report `roomOccupants: 4`, both report
-`0 INCIDENTS Clear`, and in both the treasury rises the whole way (24,290 and
-28,530). Both crops cover exactly tiles (12,12)–(17,17) at 1:1, and act 1's is
-the inner 384×384 of its padded 512×512 file, so they align tile for tile.
+| | working (act 3a) | sealed (act 3b) |
+| --- | --- | --- |
+| door | wooden door, south wall of (14,17) | none |
+| tick | 24,214 | 24,135 |
+| prisoners / occupants | 4 / 4 | 4 / 4 |
+| `roomCapacity` | 4 | 4 |
+| staff | 2 | 2 |
+| treasury | 28,530, rising | 30,450, rising |
+| Rooms panel | ready | `Cell at 12, 12 is missing / a door — nobody can get in` |
 
 **Differing pixels: 6,061 of 147,456 — 4.11%.** Per tile, out of 4,096 each:
 
@@ -384,27 +381,31 @@ y17:  0      0      3072   0      0      0
 
 **Thirty-two of the thirty-six tiles are pixel-identical.** The 3,072 pixels at
 (14,17) are the door itself. The 2,989 across row y=12 are the four prisoner
-sprites shifting slightly in how they overlap in the same corner tile — not a
-different place, not a different pose family, not a different colour: the same
-four orange figures in the same corner in both pictures. Three regions checked
-separately came back at **exactly zero**: the two guards (36,864 px), a
-four-by-two patch of open floor (32,768 px), and every tile in rows y=13
-through y=16.
+sprites overlapping slightly differently in the same corner tile — same tile,
+same four orange figures, same pose family.
+
+**The same measurement, taken twice, independently, gives the same map.** Before
+act 3b was re-run I compared act 1's *sealed* cell at tick 7506, **day 4**,
+against act 3a's *working* cell at tick 24,214, **day 11** — a different pair,
+seven in-game days apart, cropped from a differently-padded file — and it
+returned `6,061` of `147,456`, `4.11%`, and this per-tile map digit for digit.
+Three regions checked separately in that pass came back at **exactly zero**: the
+two guards (36,864 px), a four-by-two patch of open floor (32,768 px), and every
+tile in rows y=13 through y=16.
 
 So, to the brief's third question — **does the world show state, or only the
-HUD?** A prison whose only cell nobody can enter, and a working prison seven
-in-game days later, are the same picture apart from the door the player built.
-No distress, no need indicator, no posture, no tint, no icon, nothing. Every bit
-of "how is my prison doing" lives in the HUD, and the strip's whole contribution
-is a `1 not ready` badge beside the `ROOMS` chip.
+HUD?** A prison whose only cell nobody can enter, and a working prison, are the
+same picture apart from the door the player built. No distress, no need
+indicator, no posture, no tint, no icon, nothing. Every bit of "how is my prison
+doing" lives in the HUD, and the strip's whole contribution is a `1 not ready`
+badge beside the `ROOMS` chip.
 
 **#944's headline claim was that a working cell and a dead cell screenshot
 byte-identically. Measured without art, that was guaranteed by the art being
 absent. Measured with the art, it is 95.89% true, and the 4.11% is a door.**
 
-The measurement is reproducible from the two committed files: decode both PNGs,
-take the inner 384×384 of `act1-room.png` at offset (64,64), and compare
-against `act3-working.png` pixel by pixel.
+The measurement is reproducible from the committed files: decode
+`act3-working.png` and `act3-sealed.png` and compare pixel by pixel.
 
 ## 5. Act 4 — stacking at twelve and at fifty
 
