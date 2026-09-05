@@ -4710,6 +4710,107 @@ test.describe('the Rooms panel', () => {
     expect(cleared.needsUnfinished).toBe('');
   });
 
+  test('says when a finished room is full, and says it in the same block (ADR 0028 phase 5)', async ({ page }) => {
+    // The other thing a room can be wrong about, and the one no readout could
+    // say before: it holds every object its definition asks for and it is
+    // refusing arrivals, because the concurrent-use ceiling ADR 0028 derives
+    // from those objects has been reached. Issue #1003 measured it on a shower
+    // room -- two heads is a ceiling of two, whatever the floor area.
+    //
+    // The verdict is `projectRoomList`'s, carried by
+    // `HudRoomNeedsViewModel.atCapacity`; what is proven here is the panel's
+    // half, which is which subject the one block draws and what it then says.
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    const FULL_SHOWER = {
+      instanceId: 'room.shower-room:4:6',
+      roomLabelKey: 'room.shower-room.name',
+      tile: { x: 4, y: 6 },
+      places: 2,
+      inUse: 2,
+    } as const;
+
+    // 1. Every room finished, one of them full. The block that would otherwise
+    // be absent draws its second subject.
+    await page.evaluate(
+      (full) =>
+        window.lockstateUiHarness.reportRoomNeeds({
+          unfinishedRooms: 0,
+          totalRooms: 3,
+          totalNeeds: 0,
+          needs: [],
+          atCapacity: [full],
+        }),
+      FULL_SHOWER,
+    );
+    const full = await probe();
+    expect(full.needsLaidOut, 'a room turning prisoners away must earn the block').toBe(true);
+    expect(full.needsLabelText).toBe('At capacity');
+    expect(full.needsCountText).toBe('1 of 3');
+    expect(full.needsLineText).toBe('Shower Room at 4, 6 is full');
+    expect(full.needsItemText).toEqual(['places in use: 2 of 2']);
+    // Read as data as well as as text, so telling this line from `1 × Bed`
+    // does not depend on the English locale.
+    expect(full.needsItemKinds).toEqual(['at-capacity']);
+    expect(full.needsFull).toBe('1');
+    // The unfinished subject's own figures must be absent rather than zero: a
+    // finished room may not be counted as unfinished anywhere.
+    expect(full.needsUnfinished).toBe('');
+    expect(full.needsTotal).toBe('');
+    // And the catalogue's floor is donated on this subject too, which is what
+    // keeps the block inside the panel's fold.
+    expect(full.panelFull).toBe('1');
+    expect(full.panelNeeds).toBe('');
+
+    // 2. One room unfinished as well. The block goes back to the unfinished
+    // subject, which is the priority `roomNeedsSubjectOf` documents and the
+    // cost it names: the shower room says nothing until the cell is finished.
+    await page.evaluate(
+      (full) =>
+        window.lockstateUiHarness.reportRoomNeeds({
+          unfinishedRooms: 1,
+          totalRooms: 3,
+          totalNeeds: 1,
+          needs: [
+            {
+              kind: 'object',
+              instanceId: 'room.cell:2:2',
+              roomLabelKey: 'room.cell.name',
+              tile: { x: 2, y: 2 },
+              objectLabelKey: 'object.bed.name',
+              missingQuantity: 1,
+            },
+          ],
+          atCapacity: [full],
+        }),
+      FULL_SHOWER,
+    );
+    const both = await probe();
+    expect(both.needsLabelText).toBe('Not ready');
+    expect(both.needsLineText).toBe('Cell at 2, 2 is missing');
+    expect(both.needsItemKinds).toEqual(['object']);
+    expect(both.needsFull, 'the two subjects must not be drawn together').toBe('');
+    expect(both.panelFull).toBe('');
+    expect(both.panelNeeds).toBe('1');
+
+    // 3. Nothing unfinished and nothing full: the block goes away entirely,
+    // and takes the header it was last drawing with it.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 0,
+        totalRooms: 3,
+        totalNeeds: 0,
+        needs: [],
+        atCapacity: [],
+      }),
+    );
+    const calm = await probe();
+    expect(calm.needsLaidOut).toBe(false);
+    expect(calm.needsItemText).toEqual([]);
+    expect(calm.needsFull).toBe('');
+    expect(calm.panelFull).toBe('');
+    expect(await page.locator('.hud-rooms').innerText()).not.toContain('At capacity');
+  });
+
   test('hands the pointer back when the player leaves the tab', async ({ page }) => {
     // A tool that stayed armed behind a hidden panel would swallow every click
     // on a world the player thought they were only looking at.

@@ -1467,7 +1467,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * leaves the block in the state it mounts in rather than in whichever state
    * it was last drawn in.
    */
-  const needsLabel = eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds));
+  const needsLabel = eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds), 'hud-rooms__needs-label');
   const needsLine = eyebrowText('', 'hud-rooms__needs-line');
   /*
    * The object lines, in a box of their own with no gap between them.
@@ -1629,7 +1629,12 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     }
     const shown = needs;
     panel.element.dataset['needs'] = String(shown.totalNeeds);
+    // Both `full` attributes, and the header, because the previous paint may
+    // have drawn the other subject into this same box: a `data-full` left
+    // standing beside `data-unfinished` would say the two were drawn together,
+    // which is the one thing `roomNeedsSubjectOf` guarantees never happens.
     delete panel.element.dataset['full'];
+    delete needsBlock.dataset['full'];
     needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsNeeds);
 
     needsCount.textContent = t(HUD_MESSAGE_KEY.roomsNeedsCount, {
