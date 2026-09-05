@@ -102,9 +102,23 @@ LOCKSTATE_BROWSER_TEST_PORT=5328 node node_modules/@playwright/test/cli.js test 
   tests/browser/playtest-2026-09-05-the-money-runs-out.playtest.ts -g "act 1"
 ```
 
-`-g "act 2"` and `-g "act 3"` for the others. `git lfs checkout` first in a
+`-g "act 2"` and `-g "act 4"` for the others. `git lfs checkout` first in a
 worktree, or the atlases fail to decode and every actor is missing while the run
 still passes.
+
+**Which acts produced what, and which one is superseded.**
+
+| act | what it plays | state |
+| --- | --- | --- |
+| **1** | one gesture, the price nobody shows, and the balance at which the first sentence arrives | run; findings 1 and 2 |
+| **2** | an earning prison over-hired to the floor, nine paydays there, then dismissal | run to the end of the descent; findings 3, 4, 6, 7. **Its recovery half was abandoned** — see "Instrument failures" |
+| **3** | the same prison held at the floor without dismissing | **not run**, and named in "What this record does not claim" |
+| **4** | the same descent stopped two paydays in, then the whole roster dismissed and the climb measured | run; finding 8 |
+
+Act 4 exists because act 2's recovery half could not be finished: it reads the
+worker through `fastCounts` instead of the harness's `countsSeries` and bounds
+every dismiss press at ten seconds, both for reasons the instrument-failures
+section gives.
 
 ---
 
@@ -745,14 +759,29 @@ drag start before trusting it — which is the brief's *"prove your presses land
 rule met the second time rather than the first. **The finding this cost is
 stated as pending in "What this record does not claim".**
 
-**2. `countsSeries` gets slower the longer a session runs, and act 2 is the
-first playtest long enough to feel it.** The harness's tee keeps every
-non-delta worker message, and `countsSeries` maps over the whole array on every
-call; by tick 45,000 that array holds tens of thousands of `simulation/clock-state`
-messages, and each `latestCounts` call walks all of them. Act 2 calls it twice
-per dismissal. This is a probe cost and not a game one — every figure it returns
-is correct — but it is why the dismissal loop's wall-clock durations are not
-quoted as a claim about the game anywhere in this record.
+**2. Act 2's recovery half was abandoned, and the cause is the probe rather
+than the game.** The dismissal loop logged four dismissals — `staff 30 -> 29`,
+`29 -> 28`, `28 -> 27`, `27 -> 26`, each taking about a second and a half — and
+then produced **no output for seven wall-clock minutes**, at which point the run
+was stopped and act 4 written in its place.
+
+The most likely cause, and it is stated as likely rather than as measured:
+`latestCounts` calls `countsSeries`, which **maps every
+`simulation/status-counts` message the tee has kept into a fresh object and
+returns the whole array across the CDP boundary**. Act 2's prison changes on
+every tick — `stateIncomeAccruedTodayMinorUnits` rises continuously, so
+`statusCountsEqual`'s deduplication never fires — so by tick 45,000 that array
+is very large, and the dismissal loop calls it three times per iteration. Act 4
+replaces it with `fastCounts`, which scans the tee backwards and stops at the
+first hit.
+
+**What this record does *not* claim about it**: that the roster control itself
+became unactionable. That is the other candidate and it was not separated —
+act 2's presses were unbounded, so a hang and a very slow read look identical
+from outside. Act 4 bounds every press at ten seconds precisely so that the two
+can be told apart, and its result is reported in finding 8 whichever way it
+fell. **No wall-clock duration from either act is quoted as a claim about the
+game anywhere in this record.**
 
 ---
 
