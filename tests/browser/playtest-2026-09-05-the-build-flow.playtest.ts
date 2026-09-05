@@ -666,6 +666,7 @@ test('act 6: queued, building, finished', async ({ page }) => {
 test('act 7: the screen as area', async ({ page }) => {
   await installTee(page);
   for (const viewport of [
+    { width: 1920, height: 1080 },
     { width: 1440, height: 900 },
     { width: 1280, height: 720 },
   ]) {
@@ -675,6 +676,8 @@ test('act 7: the screen as area', async ({ page }) => {
     await tab(page, 'build').click();
     await page.waitForTimeout(400);
     const label = `${viewport.width}x${viewport.height}`;
+    log(`[A7 ${label}] catalogue list ${JSON.stringify(await scrollBox(page, '.hud-build__list'))}`);
+    log(`[A7 ${label}] rooms list ${JSON.stringify(await scrollBox(page, '.hud-rooms__list'))}`);
 
     const census = await page.evaluate(() => {
       const boxes: { what: string; x: number; y: number; w: number; h: number; area: number }[] = [];
@@ -683,7 +686,8 @@ test('act 7: the screen as area', async ({ page }) => {
         '.hud__refusal',
         '.hud__event',
         '.hud-minimap',
-        '.hud-alerts',
+        '.hud-minimap__surface',
+        '.hud-alerts__list',
         '.save-panel',
         '.hud__scale',
         '.hud-build',
@@ -720,4 +724,133 @@ test('act 7: the screen as area', async ({ page }) => {
     // The minimap island, which says it has nothing in it.
     log(`[A7 ${label}] minimap says: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
   }
+});
+
+/**
+ * Act 8 — the FUNDS chip across the whole positive range and over the edge.
+ *
+ * Spends the grant down through zero with the Buy control, reading the chip's
+ * text, badge and colour at every step, so the range over which the money
+ * readout says nothing is measured rather than derived.
+ */
+test('act 8: what the money readout says', async ({ page }) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await tab(page, 'build').click();
+  await page.waitForTimeout(400);
+
+  const fundsChip = async () =>
+    page.evaluate(() => {
+      const chips = [...document.querySelectorAll<HTMLElement>('.hud-strip__metrics > *')];
+      const chip = chips.find((c) => /FUNDS/i.test(c.innerText ?? ''));
+      if (chip === undefined) return 'NO FUNDS CHIP';
+      const badge = chip.querySelector<HTMLElement>('[class*=badge]');
+      const value = chip.querySelector<HTMLElement>('[class*=value]') ?? chip;
+      return {
+        text: (chip.innerText ?? '').replace(/\n/g, ' | '),
+        badge: badge === null ? null : (badge.innerText ?? '').trim(),
+        badgeTone: badge?.dataset['tone'] ?? null,
+        colour: getComputedStyle(value).color,
+        title: chip.getAttribute('title'),
+      };
+    });
+
+  await page.locator('.hud-build__buy-toggle').click();
+  await page.waitForTimeout(200);
+  const field = page.locator('.hud-build__buy .ui-number__input');
+  const max = await field.evaluate((n) => (n as HTMLInputElement).max);
+  log(`[A8] the quantity field's max is ${JSON.stringify(max)}`);
+
+  const readings: string[] = [];
+  for (let round = 0; round < 40; round += 1) {
+    const counts = await latestCounts(page);
+    const funds = counts?.treasuryMinorUnits ?? 0;
+    const chip = await fundsChip();
+    readings.push(`funds ${funds} → ${JSON.stringify(chip)}`);
+    if (funds < -2000) break;
+    await field.fill('100');
+    const submit = page.locator('.hud-build__buy-submit');
+    if ((await submit.getAttribute('disabled')) !== null) {
+      log(`[A8] the Buy control refuses at funds ${funds}: ${JSON.stringify((await submit.innerText()).trim())}`);
+      log(`[A8] shortfall line: ${JSON.stringify(await panelText(page, '.hud-build__buy-shortfall'))}`);
+      break;
+    }
+    await submit.click({ timeout: 5000 }).catch((error: unknown) => log(`[A8] Buy press failed at funds ${funds}: ${String(error).split('\n')[0]}`));
+    await page.waitForTimeout(350);
+  }
+  log(`[A8] the FUNDS chip, every reading:\n  ${readings.join('\n  ')}`);
+  log(`[A8] final strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+});
+
+/**
+ * Act 9 — how long after a wall is built does it appear.
+ *
+ * Act 6 measured the world byte-identical at queued, being built and finished.
+ * This is the refuting sample: the clip is hashed every second from the moment
+ * the queue empties until the pixels change, and the camera is nudged at the
+ * end to establish whether the frame was stale or the wall genuinely looks the
+ * same finished as planned.
+ */
+test('act 9: when the wall appears', async ({ page }) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await tab(page, 'build').click();
+  await page.waitForTimeout(400);
+  const origin = await calibrate(page);
+  const clip = { x: origin.originX + 12 * TILE, y: origin.originY + 11 * TILE, width: 8 * TILE, height: 8 * TILE };
+  const { createHash } = await import('node:crypto');
+  const hash = async () => createHash('md5').update(await page.screenshot({ clip })).digest('hex').slice(0, 10);
+
+  const bare = await hash();
+  log(`[A9] bare ground: ${bare}`);
+
+  await armBuildable(page, 'wall-brick');
+  const y = origin.originY + 12 * TILE;
+  await drag(
+    page,
+    { x: origin.originX + 13 * TILE + TILE / 2, y },
+    { x: origin.originX + 17 * TILE - TILE / 2, y },
+  );
+  await page.mouse.move(20, 500);
+  await page.waitForTimeout(400);
+  const queued = await hash();
+  log(`[A9] four walls queued (paused): ${queued} — differs from bare: ${queued !== bare}`);
+
+  await page.locator('.hud-strip__transport button').nth(1).click();
+  const startedAt = Date.now();
+  let emptiedAtMs: number | undefined;
+  let emptiedAtTick: number | undefined;
+  const samples: string[] = [];
+  for (let i = 0; i < 90; i += 1) {
+    const text = await panelText(page, '.hud-build__queue');
+    const empty = /(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out');
+    if (empty && emptiedAtMs === undefined) {
+      emptiedAtMs = Date.now() - startedAt;
+      emptiedAtTick = await currentTick(page);
+      log(`[A9] the panel said the queue was empty at t+${emptiedAtMs}ms, tick ${emptiedAtTick}`);
+    }
+    await page.mouse.move(20, 500);
+    const h = await hash();
+    samples.push(`t+${Date.now() - startedAt}ms tick ${await currentTick(page)} queue ${JSON.stringify(text.replace(/\n/g, ' '))} clip ${h}${h === queued ? ' (SAME AS QUEUED)' : ' (CHANGED)'}`);
+    if (emptiedAtMs !== undefined && h !== queued) break;
+    if (emptiedAtMs !== undefined && Date.now() - startedAt - emptiedAtMs > 45_000) break;
+    await page.waitForTimeout(1000);
+  }
+  log(`[A9] samples:\n  ${samples.join('\n  ')}`);
+
+  // Force a repaint by nudging the camera, and see whether that is what
+  // brings the finished wall onto the screen.
+  const afterWait = await hash();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(400);
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForTimeout(600);
+  await page.mouse.move(20, 500);
+  const afterNudge = await hash();
+  log(`[A9] clip before the camera nudge ${afterWait}, after ${afterNudge} — nudge changed it: ${afterWait !== afterNudge}`);
+  await page.screenshot({ path: 'test-results/the-build-flow-A9-after-nudge.png', clip });
 });
