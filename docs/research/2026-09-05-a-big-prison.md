@@ -617,3 +617,126 @@ one unrelated comment), so a playtest has no channel to compare two runs on. The
 repository's own `tests/determinism/` is the instrument for that and this record
 is not evidence about it either way.
 
+---
+
+## Improvement proposals
+
+Each is grounded in a measurement above, and each names the code that would have
+to make it true. `AGENTS.md` reservation 4's release means the *words* are ours;
+the requirement that a sentence be true of the code that renders it is not, so
+every string below is quoted with the file that would have to produce it.
+
+### P1. The four roster rows should be the four worst-off, not the four highest-tier
+
+**Grounded in §7 and §8.** At 68 residents the roster's four rows read
+`Medium · Heading to Class`, `Medium · Heading to Class`, `Medium · Heading to
+Class`, `Medium · Heading to Class` — four indistinguishable rows and
+`and 64 more`. One of them was at `Hygiene 0%` and one at `Recreation 35%`, and
+which four a player sees is decided by risk tier.
+
+**Not paging**, and the repository has already ruled that out with a reason this
+proposal accepts: *"the projection walks entity indices, and `EntityStore`
+recycles an index behind a wrapping generation when a prisoner leaves (ADR
+0026), so an offset is not a stable name for a set of people across ticks"*
+(`src/ui/simulation-prisoner-roster.ts:279-285`). That same passage names what
+*would* help: *"what would make one is a filter or an ordering"*, and notes the
+ordering exists while a filter does not.
+
+**The proposal is a second four-row block: the four lowest `lowestNeed.level`.**
+`PrisonerRosterRowViewModel` already carries `lowestNeed`
+(`src/simulation/presentation/prisoner-projection.ts:197`), and the cost
+objection does not reach it: what `projectPrisonerRoster` refuses is a
+*comparison sort* over 5,000 rows (`:463-470`), and selecting the four smallest
+is a linear scan with a four-element running minimum — the same `O(n)` walk the
+counting sort already makes, with no allocation per prisoner. The block's
+heading is the sentence to write; `'Worst off'` with the existing
+`hud.regime.roster-count` shape (`{shown} of {total}`,
+`src/content/default-locale-en.ts:2005`) under it is true of that selection and
+of nothing else.
+
+### P2. A room should say how many people it can serve at once — ADR 0028 phase 5's owed readout, now with a played cost
+
+**Grounded in §8.** Sixty-eight prisoners walked to a classroom that seats two,
+because the ceiling for `education` is the summed footprint width of one
+bookshelf.
+
+**This is not a new idea and the repository says so itself.** The room
+projection's own docblock: *"The concurrent-use figure is **not projected at all
+yet**, and that is a gap rather than a decision: it is the Rooms tab readout ADR
+0028 phase 5 owes"* (`src/simulation/presentation/room-projection.ts:235-237`),
+and it names the right shape in the line above — *"The ceiling is per capability,
+in `concurrentUseCapacityByCapability`, so a concurrent-use readout is a readout
+of that — one number per thing the room can be used for, not one number for the
+room"* (`:231-234`). The data is on the instance already
+(`src/simulation/prisoners/room-instance-registry.ts:117`).
+
+**What the player would see**, in the Rooms panel's detail block, one line per
+capability the room carries: `Classroom at 24, 4 — 2 can study here at once`.
+It is true because `concurrentUseCapacityFor` is the number `claimUse` gates on
+(`room-instance-registry.ts:98-104`), and it is the number that turns "the
+classroom is finished" into "the classroom is finished and too small".
+
+### P3. `Covered` must not be the word when no guard is free
+
+**Grounded in §6.** `9 of 9 · Covered · Only free guards answer incidents.` and
+`10 held · 0 free`, with four incidents lapsing.
+
+The panel already has every number it needs: `{held}` and `{unassigned}` are
+both rendered (`hud.security.held-summary`,
+`src/content/default-locale-en.ts:1718`), and the verdict is chosen between
+`'hud.security.coverage-met'` (`Covered`) and `'hud.security.coverage-short'`
+(`Understaffed`) at `:1827,1918`. **The proposal is a third verdict for the case
+that is neither**: the requirement is met *and* `unassigned === 0`.
+
+The words: **`No one spare`**, with the hint **`Every guard is on a post — an
+incident needs a free one.`** Both are true of the code that would render them:
+`unassigned` is `hired − held`
+(`src/simulation/presentation/guard-release-projection.ts:213`), and an incident
+needs `max(1, ceil(severity × 0.5)) ≥ 2` free responders
+(`response-system.ts:345`, quoted at `default-locale-en.ts:1876-1884`). It
+replaces a verdict that is presently the opposite of the truth beside it.
+
+### P4. Collapse the minimap while it has no map
+
+**Grounded in §2 and §2a.** `.hud__corner` is `0,406 422x425` and costs the
+player **60 tiles** of a 1,024-tile plot, to hold a panel whose entire content is
+`Minimap is not available yet`. `createPanel(… collapsed: isPanelCollapsed(state,
+'minimap') …)` (`src/ui/hud/hud.ts:1545`) already supports it; the change is
+which way that defaults while `hud.minimap.placeholder` is the surface's text.
+No new string, and 60 tiles of prison come back.
+
+### P5. The Build panel's arm hint should name the zoom keys, because they are bound and it already names the others
+
+**Grounded in §1.** The whole plot fits on a 1440×900 screen only at about 40%
+zoom, four presses of `-`, and nothing on screen says so. The hint that is
+already there reads:
+
+> `'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.'`
+> (`src/content/default-locale-en.ts:1354`)
+
+It names three ways to *move* the camera and none to zoom it — while
+`{ code: 'Minus', action: 'camera.zoom.out' }` and `{ code: 'Equal', action:
+'camera.zoom.in' }` are bound in contexts `['world', 'construction']`
+(`src/input/bindings.ts:33-34`) and handled at
+`src/rendering/scene/world-scene.ts:737-738`, so they work *while a tool is
+armed*. Adding `— and the - and = keys zoom out and in.` would be true of that
+binding today.
+
+### P6. The queue readout should say how much work is in it, not how many rows
+
+**Grounded in §3a.** `{count} waiting · {started} being built`
+(`src/content/default-locale-en.ts:1509`) said `173 waiting · 1 being built`,
+which tells a player nothing about a serial one-crew queue where a wall is 50
+work at +10 per scheduled tick every 10 ticks.
+
+The arithmetic is available where the rows are: `view.orders.rows` carries
+`definitionId` (`src/ui/simulation-build-queue.ts:117-120`) and
+`BUILDABLE_DEFINITIONS` carries `workRequired`
+(`src/simulation/construction/definition.ts:88,141,179`), so the sum is
+computable in `src/ui/simulation-build-queue.ts` — which is outside
+`src/ui/hud/` and therefore not blocked by `AGENTS.md` boundary 1 — or in the
+projection itself. **The honest sentence is about work, not time**, because the
+tick-to-clock relation depends on the speed control: `{count} waiting · about
+{ticks} ticks of work` is derivable and true; "about 4 days" is not, unless the
+speed is read too.
+
