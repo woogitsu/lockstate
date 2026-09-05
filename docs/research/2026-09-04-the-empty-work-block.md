@@ -6,9 +6,7 @@ none of them — and the reason nobody had seen it is that the tab named for the
 schedule shows one block out of ten, has no control on it at all, and the rooms
 that do the filling are bought blind.**
 
-Asked because
-[`docs/research/2026-09-04-the-rooms-nobody-builds.md`](2026-09-04-the-rooms-nobody-builds.md)
-§8 measured one whole in-game day in a four-room prison and found **every
+Asked because `docs/research/2026-09-04-the-rooms-nobody-builds.md` §8 measured one whole in-game day in a four-room prison and found **every
 sample inside the two `work / education / free-association` blocks was
 `action.free-association`** — an action whose own catalogue comment says it
 "fulfils no need" and scores "exactly 0". Those blocks are `[500, 1000)` and
@@ -16,6 +14,19 @@ sample inside the two `work / education / free-association` blocks was
 **42%** of a prisoner's life. The three rooms that would fill them —
 `room.kitchen`, `room.laundry`, `room.classroom` — have live actions and had
 never been built in a playtest in this repository.
+
+**That record is not on `main`.** It lives on the unmerged branch
+`origin/agent/playtest-the-rooms-nobody-builds` (`bf9a9906`), which is where
+its §8 was read for this record; nothing under `docs/research/` on `main`
+carries it, and a reader who greps for the filename in a checked-out `main`
+will not find it. Its whole-day tally there, verbatim, is
+
+```
+[["Association",16],["Sleeping",10],["Yard Time",8],["Showering",4],["Eating",4],["Using Toilet",2]]
+```
+
+— four prisoners, forty-four prisoner-samples, and **`Association` ×4 at every
+sample inside both work blocks.**
 
 That pass named a paired counterfactual as its own weakest claim: it never
 scanned a day in a prison *without* the room it was judging. **This record runs
