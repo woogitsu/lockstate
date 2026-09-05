@@ -393,7 +393,74 @@ against `act3-working.png` pixel by pixel.
 
 ## 5. Act 4 — stacking at twelve and at fifty
 
-_Pending — see §9._
+Twelve beds in the same 6×6 cell, twelve prisoners admitted, run to tick 9,078
+(`roomCapacity: 12`, `accommodationCapacity: 12`, `roomOccupants: 12`), then
+thirty-eight more Admit presses. Screenshots:
+`2026-09-05-what-the-world-shows/act4-twelve.png` and `act4-fifty.png` at 1:1,
+`act4-twelve-anchor-x4.png` and `act4-fifty-anchor-x4.png` magnified four
+times, plus the two `-full.png` pages.
+
+### At twelve, the crowd spread has run out of room, exactly as it says it will
+
+`CROWD_SPREAD_SPAN_TILES_X` `0.44` and `_Y` `0.3` are 28 px by 19 px at
+`TILE` 64, and the fan divides that span across `count - 1` gaps. At four that
+is ~9 px a rank and four countable figures (§2). **At twelve it is ~2.5 px a
+rank**, and what is on screen is a single corrugated orange mass with a comb of
+overlapping cap brims along its top edge. You can see that it is many people —
+the brims are individually visible and countable — and you cannot see twelve
+people.
+
+That is `src/rendering/actors/crowd-spread.ts` behaving as documented rather
+than failing: its docblock says in terms that *"two or three actors on a tile
+read as two or three figures; twenty-two read as a crowd standing on one tile
+rather than as one person. It reports the crowd. It does not count it, and it
+does not unstack it."* Twelve is past the point where reporting is all it can
+do. **The finding is not about the renderer; it is that a twelve-prisoner
+prison, at the default zoom, shows the player one orange smudge in a corner and
+no way to tell whether it is three people or thirty.**
+
+### And the room the twelve live in has stopped reading as a room
+
+Twelve beds fill nearly the whole 6×6 floor, and because every object is
+§3's flat slab, a fully furnished cell is a **wall-to-wall field of
+`0x7f8ba0`** with the linoleum showing only in the strip the beds do not reach.
+So the one thing the world view does well for rooms — the floor art that says
+"this is an interior" — is covered up by the thing it does worst, in exactly
+the prison a player is trying to build. `act4-twelve.png` is that picture.
+
+### At fifty, a prison of fifty people is two orange smudges
+
+Thirty-eight more Admit presses, 49 s of clicking, and the counts read
+`prisoners: 50`, `prisonersInIntake: 38`, `roomCapacity: 12`,
+`roomOccupants: 12`. The strip reads `50 PRISONERS  38 with no bed`,
+`COVERAGE Understaffed`, `1 ROOMS  1 not ready`; the Intake panel reads
+`38 waiting with no bed to sleep in`, `IN INTAKE 38 of 50`,
+`38 at Cell Assignment`; and the alerts column has picked up *"A fight has
+broken out between two prisoners. Day 6"* and *"No incident is still open — but
+the last one ran out of time instead of being contained, and everyone caught in
+it was hurt. Day 6"*.
+
+**On screen there are two orange lumps and one guard.** One lump is the twelve
+housed prisoners on the room's `anchorTile` (12,12); the other is the
+thirty-eight unhoused on `NEW_PRISON_ORIGIN_TILE` (16,16), with a guard drawn
+in front of it. The second guard is somewhere inside that lump and cannot be
+seen at all. Screenshot: `2026-09-05-what-the-world-shows/act4-fifty-full.png`.
+
+**And the two lumps are the same size.** The pile of twelve and the pile of
+thirty-eight are both one bounded fan inside one tile, because the fan's span is
+a constant. Measured on the two magnified anchor crops, over the 320×400 region
+of the `-x4` files that contains the pile: **0 differing pixels of 128,000**
+between `act4-twelve-anchor-x4.png` and `act4-fifty-anchor-x4.png`. Thirty-eight
+further admissions changed that tile by nothing, which is correct — they went
+to a different tile — and is also the point: **there is no drawn difference
+between twelve people in a place and fifty.**
+
+So, to the brief's fourth question — what does the stacking cost a player
+trying to read their prison? At four it costs nothing. At twelve it costs the
+count. At fifty it costs the population: a fight has broken out, thirty-eight
+people have nowhere to sleep, the prison is understaffed, and the world view's
+entire report on all of that is two orange shapes that look exactly like each
+other.
 
 ## 6. Act 6 — the same box, designated four different ways
 
