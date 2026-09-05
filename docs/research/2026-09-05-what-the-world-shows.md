@@ -513,9 +513,9 @@ branch on category at all, and its own docblock says so: *"One floor for every
 category today."* Eleven categories, one floor. The only thing that separates
 them is `zoningTint` washed over it at `ZONING_TINT_ALPHA_OVER_ART` `0.14`
 (`src/rendering/world/appearance.ts:110`), which is deliberately weak, for a
-reason the same docblock gives and which is correct: at `0.28` *"a photographed
-linoleum floor stops reading as a floor and becomes a coloured rectangle
-again"*.
+reason **that constant's own** docblock gives and which is correct: at `0.28`
+*"a photographed linoleum floor stops reading as a floor and becomes a coloured
+rectangle again"*.
 
 **What 14% buys, measured.** Mean RGB over the same 192×192 patch of clean
 floor in each picture:
