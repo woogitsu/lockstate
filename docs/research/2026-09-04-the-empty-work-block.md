@@ -67,8 +67,8 @@ LOCKSTATE_BROWSER_TEST_PORT=5326 node node_modules/@playwright/test/cli.js test 
 
 Sentences come from `.hud` `innerText`; numbers come from the worker through
 the harness tee. **Neither is a census of what prisoners are doing.** The HUD
-roster draws at most four rows (`PRISONER_ROSTER_ROW_LIMIT`,
-`src/ui/hud/regime-panel.ts`), so a player with eight prisoners sees four of
+roster draws at most four rows (`PRISONER_ROSTER_ROW_LIMIT = 4`,
+`src/ui/hud/regime-panel.ts:293`), so a player with eight prisoners sees four of
 them, ever. The instrument therefore opens its own channel: it keeps the
 `Worker` instance and posts `simulation/request-projection` for
 `hud/prisoner-roster` with a limit of 20.
@@ -349,3 +349,147 @@ those are open proposals with no linked pull request and nothing implemented**
 (read 2026-09-04; #591 "Prison labour: pay for work performed", #592 "Kitchen
 labour feeds the meal block"). The system is not built yet, and this is exactly
 how far it goes.
+
+---
+
+## 4. Proposals
+
+Every one is grounded in a measurement above, and for each the code that would
+render the sentence is opened, per `AGENTS.md` reservation 4's *verify, then
+write*. **Nothing here is landed; this branch is read-only on `src/`.**
+
+### P1. The Regime panel already receives the block's start and end tick, and throws them away
+
+**VERIFIED, read.** `RegimeBlockViewModel` crosses the worker boundary carrying
+**five** fields — `classificationGroupId`, `allowedCategories`,
+`blockStartTickOfDay`, `blockEndTickOfDay`, `blockProgress`
+(`src/simulation/presentation/status-strip-projection.ts:850-860`). The UI
+adapter `regimeFromProjection` maps **four** of them and drops both tick fields
+on the floor (`src/ui/simulation-regime.ts:99-115`), so
+`HudRegimeBlockViewModel` has no way to say *when* (`src/ui/hud/view-model.ts:1684-1697`).
+
+**The change:** carry the two tick fields through the adapter and add a second
+eyebrow line to the block row beside `hud.regime.block-progress`:
+
+> `Until 1000` — or, with `DAY_LENGTH_TICKS` and the clock projection already on
+> the same view model, the same instant rendered as a clock time.
+
+**Why this is true of the code that renders it**: the number is
+`block.endTickOfDay`, resolved by `resolveActiveRegimeBlock`
+(`src/simulation/prisoners/regime.ts:133-140`), which is the same function
+`ActionSystem` uses to decide what a prisoner may do. It cannot disagree with
+the simulation because it *is* the simulation's answer.
+
+**What it buys a player**, from §1: a player looking at *"Allows Work,
+Education, Free Association · 30% through"* currently cannot tell whether that
+block ends in ten ticks or four hundred, which is the whole question when they
+are deciding whether to build a kitchen now or later.
+
+### P2. "Today's blocks" should show today's blocks
+
+**MEASURED, §1.1.** The header is `hud.regime.blocks` = **"Today's blocks"**
+(`src/content/default-locale-en.ts:1986`) and the list under it has one row per
+classification *group* showing only the block running now.
+`GENERAL_POPULATION_REGIME` has ten (`src/simulation/prisoners/regime.ts:104-118`).
+
+**The change:** a ten-segment day bar, one segment per block, width proportional
+to `endTickOfDay - startTickOfDay`, each segment tinted by its dominant category
+and carrying its category list on hover/focus, with a now-marker at
+`tickOfDay / 2400`. One row per group as today.
+
+**What it costs**: the projection must carry `schedule.blocks` rather than the
+one resolved block — and `schedules` is *already in scope* at exactly that point
+(`status-strip-projection.ts:848`, `const schedules = source.regimeSchedules ??
+DEFAULT_REGIME_SCHEDULES` at `:807`), so this is a wider map over data the
+function already holds, not a new read of simulation state.
+
+**The cheap alternative if that is too much**: change the *header* instead. A
+string that said `Now` rather than `Today's blocks` would be true of the code
+that renders it today, and costs one locale value.
+
+### P3. A room's panel says what it needs and never what it is for
+
+**MEASURED, act 4.** The Rooms panel with a Yard selected, verbatim from the run:
+
+```
+DRAG A RECTANGLE ACROSS THE TILES THIS ROOM SHOULD COVER.
+NEEDS AT LEAST 8 × 8 TILES
+MUST BE OUTDOORS
+NO OBJECTS NEEDED
+ENCLOSURE
+Open on at least one side
+```
+
+and with a Kitchen selected, mid-build:
+
+```
+NEEDS AT LEAST 4 × 4 TILES
+MUST BE ENCLOSED
+NEEDS 1 × STOVE
+NEEDS 1 × PREP COUNTER
+NEEDS 1 × FRIDGE
+```
+
+**Eighteen room types are offered by bare name and not one sentence anywhere
+says what any of them does.** A player deciding between a Kitchen and a
+Classroom — which §2.1 shows is a real choice between three needs — is choosing
+between two words.
+
+**The change:** one derived line under the selected room, generated from
+`DEFAULT_ACTIONS` rather than authored per room, so it cannot go stale:
+
+> **Kitchen** — Prisoners work here in work blocks. Serves hunger.
+> **Yard** — Prisoners take recreation here. Serves recreation.
+> **Garbage Room** — Nothing happens here yet.
+
+**Why each is true of the code that renders it.** The generator reads the
+actions whose `target` is `{ kind: 'room-catalog-id', roomCatalogId: <this
+room> }` and reports their `category` and the keys of their `needEffectsPerTick`
+(`src/simulation/prisoners/actions.ts`, `action.kitchen-work` at `:346` naming
+`room.kitchen`, `work` and `hunger: 1`). A room with no such action renders the
+third form — which is the honest answer for `room.garbage-room`,
+`room.staff-room` and `room.utility-room`, the three
+`tests/foundation/unconsumed-content-contract.test.ts` still lists as
+*"Declared with no reader anywhere"* (`:159,197,198`). **The sentence is
+derived from the same array `ActionSystem` selects out of, so it cannot promise
+a behaviour the kernel does not have** — which is precisely reservation 4's
+subject.
+
+### P4. Nothing on screen counts how many prisoners are working
+
+**MEASURED.** The status strip in act 4 during a work block reads `8 PRISONERS ·
+0 HIGH RISK · 2 STAFF · 8 COVERAGE · Covered · 6 ROOMS · 0 INCIDENTS · Clear · 2
+CONTRABAND · 22,640 FUNDS · 2,313 EARNED TODAY`. **Not one of those numbers
+changes when the work block opens.** The only place the work is visible at all
+is four roster rows out of eight prisoners (§2.3).
+
+**The change:** during a block whose `allowedCategories` include `work` or
+`education`, the strip shows one more pair — `6 WORKING / 2 IDLE` — counting
+prisoners whose `currentActionId` has `category: 'work' | 'education'` against
+those on `action.free-association`.
+
+**Why it is true**: both halves are already projected per prisoner —
+`currentActionId` is on `hud/prisoner-roster`'s row (this record's whole census
+channel reads it) and the category is a lookup in `DEFAULT_ACTIONS`. **This is
+issue [#591](https://github.com/matmaxalez/lockstate/issues/591)'s own
+`employed N / idle N`,** proposed there on 2026-08-29 and not built; what this
+record adds is that the number is now *worth showing*, because §3's table proves
+it is not always 0 and §2's proves it is not always 8.
+
+### P5. The four-row roster cannot see half a prison, and the fix is a tally rather than a longer list
+
+**MEASURED, §2.3.** `4 of 8`, honestly labelled, with `and 4 more` and no way to
+page. The record only knows what the other four were doing because the
+instrument opened a private worker channel to ask.
+
+**The change:** put an activity tally above the four rows — `Laundry Duty 3 ·
+Kitchen Duty 3 · Class 2` — computed over the *whole* population rather than
+the four rows drawn. It answers "what is my prison doing" in one line, which
+four rows out of eight cannot, and it does not fight
+`PRISONER_ROSTER_ROW_LIMIT`'s layout budget, whose derivation
+(`src/ui/hud/regime-panel.ts:293`, `PRISONER_ROSTER_ROW_LIMIT = 4`) is about **row**
+height and is unaffected by one eyebrow line.
+
+**Why it is true**: the labels already exist and already land — §2.3 quotes
+"Kitchen Duty" and "Laundry Duty" off the real screen — and the aggregate is a
+sum over the same projection rows the panel already receives.
