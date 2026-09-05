@@ -700,7 +700,7 @@ test('act 4a: a door that leads into a sealed pocket', async ({ page }) => {
  * every side (a room type that needs no furniture at all), and a room zoned and
  * then taken straight back.
  */
-test('act 4b: a sealed yard, and a room taken back at once', async ({ page }) => {
+test('act 4b: a sealed storage room, and a room taken back at once', async ({ page }) => {
   test.setTimeout(900_000);
   await installTee(page);
   await openApp(page);
@@ -708,16 +708,26 @@ test('act 4b: a sealed yard, and a room taken back at once', async ({ page }) =>
   await page.waitForTimeout(400);
   await tab(page, 'build').click();
   const origin = await calibrate(page);
+  console.log(`origin = ${origin.originX},${origin.originY}`);
   await buy(page, 'wall-brick', 60);
   await fastForwardToMax(page);
   await page.waitForTimeout(6000);
 
-  // A 5x5 sealed yard at (22,12)-(26,16).
+  /*
+   * Tiles (13,14)-(17,18). The first shape of this act used (22,12)-(26,16),
+   * whose far corner lands at screen x=1392 -- **under the HUD's right-hand
+   * rail**, which opts back into pointer events. The drag was swallowed, no
+   * rectangle was ever drawn, and `.hud-rooms__confirm` never became
+   * actionable; with no `actionTimeout` set in `playwright.playtest.config.ts`
+   * a Playwright click waits for ever, so the run hung rather than failing.
+   * This rectangle sits in clear canvas: x 528..848, y 322..642 at 1440x900,
+   * clear of the minimap island on the left and the rail on the right.
+   */
   await armBuildable(page, 'wall-brick');
-  const w = origin.originX + 22 * TILE;
-  const e = origin.originX + 27 * TILE;
-  const n = origin.originY + 12 * TILE;
-  const s = origin.originY + 17 * TILE;
+  const w = origin.originX + 13 * TILE;
+  const e = origin.originX + 18 * TILE;
+  const n = origin.originY + 14 * TILE;
+  const s = origin.originY + 19 * TILE;
   for (const run of [
     { name: 'north', a: { x: w + TILE / 2, y: n }, b: { x: e - TILE / 2, y: n } },
     { name: 'south', a: { x: w + TILE / 2, y: s }, b: { x: e - TILE / 2, y: s } },
@@ -725,44 +735,134 @@ test('act 4b: a sealed yard, and a room taken back at once', async ({ page }) =>
     { name: 'east', a: { x: e, y: n + TILE / 2 }, b: { x: e, y: s - TILE / 2 } },
   ]) {
     await drag(page, run.a, run.b);
-    console.log(`  yard wall run ${run.name} drawn`);
+    console.log(`  box wall run ${run.name} drawn`);
   }
-  await waitForQueueEmpty(page);
+  /*
+   * The queue block arrives collapsed (#862), and `waitForQueueEmpty` treats a
+   * collapsed block -- "not laid out" -- as an empty one, so it returned at
+   * tick 3105 with twenty wall segments still unbuilt and the designation was
+   * then refused for a wall that genuinely was not up. The block is opened
+   * first here, and the wait is on the text rather than on its absence.
+   */
+  const queueSection = page.locator('.hud-build__queue');
+  if ((await queueSection.count()) > 0 && (await queueSection.getAttribute('data-collapsed')) === 'true') {
+    await queueSection.locator('.ui-section__header').first().click({ timeout: 30_000 });
+    await page.waitForTimeout(200);
+  }
+  console.log(`  queue after the runs: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  /*
+   * And `waitForQueueEmpty` cannot be used at all here, because its first act
+   * is to click the Build tab, which re-renders the queue block collapsed
+   * again -- so its very first read is "not laid out" and it answers "empty"
+   * at tick 3123 with the walls still going up. This wait re-opens the block
+   * on every poll and waits for the sentence, not for its absence.
+   */
+  for (let poll = 0; ; poll += 1) {
+    if ((await queueSection.getAttribute('data-collapsed')) === 'true') {
+      await queueSection.locator('.ui-section__header').first().click({ timeout: 30_000 });
+      await page.waitForTimeout(150);
+    }
+    const text = await panelText(page, '.hud-build__queue');
+    if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) {
+      console.log(`  queue empty at tick ${await currentTick(page)} after ${poll} poll(s): ${JSON.stringify(text)}`);
+      break;
+    }
+    if (poll > 120) throw new Error(`the wall queue never emptied: ${text}`);
+    await page.waitForTimeout(1000);
+  }
 
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'rooms').click({ timeout: 30_000 });
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
-    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
-    await page.locator('.hud-rooms__list [data-room="room.yard"]').click();
-    await page.locator('.hud-rooms__arm').click();
-    await drag(page, centreOf(origin, 22, 12), centreOf(origin, 26, 16));
-    await page.locator('.hud-rooms__confirm').click();
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click({ timeout: 30_000 });
+    await page.locator('.hud-rooms__list [data-room="room.storage-room"]').click({ timeout: 30_000 });
+    // The arm control hides itself once armed, so a retry must not click it again.
+    const arm = page.locator('.hud-rooms__arm');
+    if (await arm.isVisible()) await arm.click({ timeout: 30_000 });
+    await drag(page, centreOf(origin, 13, 14), centreOf(origin, 17, 18));
+    const note = await panelText(page, '.hud-rooms');
+    if (attempts <= 2) console.log(`  attempt ${attempts} FULL ROOMS PANEL:\n${note}`);
+    console.log(`  attempt ${attempts} note element: ${JSON.stringify(await panelText(page, '.hud-rooms__note'))}`);
+    console.log(`  attempt ${attempts} coords readout: ${JSON.stringify(await panelText(page, '.hud-rooms__coords'))}`);
+    const confirmButton = page.locator('.hud-rooms__confirm');
+    if (await confirmButton.isDisabled()) {
+      console.log(`  attempt ${attempts}: the Confirm control is disabled; waiting and redrawing`);
+      if (attempts >= 8) throw new Error('Confirm never became pressable for the storage room');
+      await page.waitForTimeout(6000);
+      continue;
+    }
+    await confirmButton.click({ timeout: 30_000 });
     await page.waitForTimeout(1000);
     const counts = await latestCounts(page);
-    console.log(`  yard designate attempt ${attempts}: rooms=${counts?.rooms}`);
+    console.log(`  storage-room designate attempt ${attempts}: rooms=${counts?.rooms}`);
     if ((counts?.rooms ?? 0) > 0) break;
-    if (attempts >= 8) throw new Error('the yard was never accepted');
+    if (attempts >= 6) throw new Error('the storage room was never accepted');
     await page.waitForTimeout(4000);
   }
 
-  console.log(`\n### A YARD, SEALED ON EVERY SIDE, no furniture rule to hide behind ###`);
-  const yard = await roomsPanel(page);
-  console.log(yard.text);
-  console.log(`needs: ${JSON.stringify(yard.needs)}`);
+  console.log(`\n### A STORAGE ROOM, SEALED ON EVERY SIDE. Not a Cell -- is the sentence the room type's, or the game's? ###`);
+  const sealed = await roomsPanel(page);
+  console.log(sealed.text);
+  console.log(`needs: ${JSON.stringify(sealed.needs)}`);
   console.log(`ambient: ${JSON.stringify(await ambient(page))}`);
-  await shot(page, 'act4b-sealed-yard');
-  await shotOf(page, '.hud-rooms', 'act4b-sealed-yard-element');
+  await shot(page, 'act4b-sealed-storage-room');
+  await shotOf(page, '.hud-rooms', 'act4b-sealed-storage-room-element');
 
-  // Now take it straight back.
+  /*
+   * How much of each line in that block a player can actually see. The
+   * enclosure readout looked cut off mid-word in act 1's screenshot; this is
+   * the measurement rather than the impression.
+   */
+  console.log(`\n### CLIPPING, at ${JSON.stringify(page.viewportSize())} ###`);
+  const clipped = await page.evaluate(() =>
+    [
+      '.hud-rooms__needs-header',
+      '.hud-rooms__needs-item',
+      '.hud-rooms__enclosure',
+      '.hud-rooms__enclosure-value',
+      '.hud-rooms__rule-block',
+    ].flatMap((selector) =>
+      [...document.querySelectorAll<HTMLElement>(selector)].map((n) => {
+        const style = window.getComputedStyle(n);
+        return (
+          `${selector} :: ${JSON.stringify((n.innerText ?? '').replace(/\s+/g, ' ').trim())}` +
+          ` scrollWidth=${n.scrollWidth} clientWidth=${n.clientWidth} overflowX=${style.overflowX}` +
+          ` textOverflow=${style.textOverflow} whiteSpace=${style.whiteSpace}` +
+          ` CLIPPED=${n.scrollWidth > n.clientWidth}`
+        );
+      }),
+    ),
+  );
+  for (const line of clipped) console.log(`  ${line}`);
+
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 1024, height: 768 },
+    { width: 1920, height: 1080 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.waitForTimeout(600);
+    const lines = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item, .hud-rooms__enclosure-value')].map(
+        (n) =>
+          `${JSON.stringify((n.innerText ?? '').replace(/\s+/g, ' ').trim())} scrollWidth=${n.scrollWidth} clientWidth=${n.clientWidth} CLIPPED=${n.scrollWidth > n.clientWidth}`,
+      ),
+    );
+    console.log(`  at ${size.width}x${size.height}: ${JSON.stringify(lines)}`);
+    await shotOf(page, '.hud-rooms', `act4b-rooms-${size.width}x${size.height}`);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(500);
+
   console.log(`\n### AND TAKE IT BACK AT ONCE ###`);
-  await page.locator('.hud-rooms__remove').click();
+  await page.locator('.hud-rooms__remove').click({ timeout: 30_000 });
   await page.waitForTimeout(300);
-  await drag(page, centreOf(origin, 22, 12), centreOf(origin, 26, 16));
+  await drag(page, centreOf(origin, 13, 14), centreOf(origin, 17, 18));
   const confirm = page.locator('.hud-rooms__confirm');
-  if ((await confirm.count()) > 0 && (await confirm.isVisible())) await confirm.click();
-  await page.waitForTimeout(2000);
+  if ((await confirm.count()) > 0 && (await confirm.isVisible())) await confirm.click({ timeout: 30_000 });
+  await page.waitForTimeout(2500);
   console.log(`counts after the removal: ${JSON.stringify(await latestCounts(page))}`);
   console.log(`rooms panel:\n${(await roomsPanel(page)).text}`);
   console.log(`ambient: ${JSON.stringify(await ambient(page))}`);
