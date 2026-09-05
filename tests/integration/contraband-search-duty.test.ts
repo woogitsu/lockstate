@@ -14,6 +14,7 @@ import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
 import { MAX_EVENT_ALERT_ROWS, hudEventAlertsFromWorkerMessage } from '../../src/ui/simulation-events';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { claimableGuardIds } from '../../src/simulation/security/post-eligibility';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -83,23 +84,35 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 
 /**
  * A prison a player could plausibly have after an hour: one walled, zoned and
- * furnished cell, three guards, and twelve admissions spread out rather than
+ * furnished cell, four guards, and twelve admissions spread out rather than
  * arriving at once.
  *
- * **Three guards, and the number is the point.** The derived sector's
- * requirement scales with population (ADR 0048), so two of the three are posted
- * and the third is the spare a sweep is walked by. Two guards would leave none
- * spare and, per `SectorSearchDutySystem`'s own rule, order no sweeps at all --
- * which is the case `security-default-sector.test.ts` keeps.
+ * **Four guards, and the number is the point.** The derived sector's
+ * requirement scales with population (ADR 0048), so two of the four are posted;
+ * of the two left over, one is the reserve
+ * `claimableSearchGuardIds` holds back for incident response (issue #996) and
+ * one is the spare a sweep is walked by.
+ *
+ * **It was three until #996**, and the fourth hire is the balance cost of that
+ * change stated where a reader meets it: a prison at the posted requirement
+ * plus one now searches nothing, which is the case
+ * *"finds nothing with a single spare guard"* below keeps, and the one at plus
+ * two searches as this prison used to. Two guards leave none spare at all and
+ * are `security-default-sector.test.ts`'s case.
  */
 function playedPrison(seed = SEED): SimulationRuntime {
+  return prisonWithGuards(4, seed);
+}
+
+/** `playedPrison` with the hire count made an argument, so the cases that differ by one hire cannot differ by anything else. */
+function prisonWithGuards(guards: number, seed = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   stepTo(runtime, 200); // delivery delay plus build progress, the margin the furnished-cell loop uses
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < guards; index += 1) {
     submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ORIGIN }));
   }
   for (let index = 0; index < 12; index += 1) {
@@ -192,7 +205,7 @@ describe('a prison a player can start finds the contraband it admits', () => {
     // back in the pool -- a searcher that was never released would sit on
     // `'on-search'` for ever with no job naming it.
     const phases = runtime.securityGuards.allGuardIds().map((id) => runtime.securityGuards.getDeploymentPhase(id));
-    expect(phases).toHaveLength(3);
+    expect(phases).toHaveLength(4);
     for (const phase of phases) expect(['on-post', 'travelling', 'on-search', 'unassigned']).toContain(phase);
     expect(runtime.searchSystem.claimedGuardIds().length).toBeLessThanOrEqual(1);
   });
@@ -220,6 +233,75 @@ describe('a prison a player can start finds the contraband it admits', () => {
 
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)[0]).toMatchObject({ required: 2, assigned: 2, shortage: 0 });
     expect(runtime.securityGuards.unassignedGuardIds()).toEqual([]);
+    expect(runtime.searchSystem.getMetrics()).toMatchObject({ searchesCompleted: 0, searchesQueued: 0, itemsDiscovered: 0 });
+    expect(contrabandDiscovered(runtime)).toBe(0);
+  });
+
+  /**
+   * **A sweep cannot be the reason a riot has nobody to send**
+   * ([issue #996](https://github.com/matmaxalez/lockstate/issues/996), the
+   * owner's ruling of 2026-09-05).
+   *
+   * Asserted tick by tick over sixteen in-game days rather than at the end,
+   * because the defect it closes was a *window*: the pool stood empty for the
+   * length of a sweep and was full again by the time anything looked.
+   *
+   * **Both prisons, and the pair is the test.** Measured on `origin/main` at
+   * 1ad2189a, the three-guard prison spent **466 ticks a day** -- 19% of a
+   * 2,400-tick day -- with a sweep holding its only free guard, and the
+   * four-guard prison spent none, because a sector sweep claims exactly one
+   * guard and that prison has two spare
+   * (`docs/research/2026-09-05-what-a-sweep-costs-the-response.md`). So the
+   * three-guard half is what goes red if the reserve is removed, and the
+   * four-guard half is what goes red if the reserve is raised until sweeps stop
+   * happening at all. Neither half is worth much without the other.
+   *
+   * What is asserted is what `claimableSearchGuardIds` actually promises: a
+   * search never *claims* the last free guard. An `IncidentResponseSystem`
+   * claim can still empty the pool a tick later, which is the priority order
+   * working rather than a hole in it, so the count below excludes ticks a
+   * response is holding somebody.
+   */
+  it('never leaves the responder pool empty while a sweep holds a guard, at one spare guard or two (#996)', () => {
+    interface Window {
+      readonly ticksWithASweep: number;
+      readonly ticksEmptyWithASweep: number;
+    }
+
+    const watch = (runtime: SimulationRuntime): Window => {
+      let ticksWithASweep = 0;
+      let ticksEmptyWithASweep = 0;
+      while (runtime.kernel.tick < SIXTEEN_DAYS) {
+        runtime.kernel.step();
+        if (runtime.searchSystem.claimedGuardIds().length === 0) continue;
+        ticksWithASweep += 1;
+        if (runtime.incidentResponseSystem.claimedGuardIds().length > 0) continue;
+        if (claimableGuardIds(runtime.securityGuards).length === 0) ticksEmptyWithASweep += 1;
+      }
+      return { ticksWithASweep, ticksEmptyWithASweep };
+    };
+
+    const oneSpare = watch(prisonWithGuards(3));
+    expect(oneSpare.ticksEmptyWithASweep, 'the one free guard is the reserve, so no sweep may hold it').toBe(0);
+
+    const twoSpare = watch(playedPrison());
+    expect(twoSpare.ticksWithASweep, 'a run with no sweep in it would make the assertion below vacuous').toBeGreaterThan(0);
+    expect(twoSpare.ticksEmptyWithASweep).toBe(0);
+  });
+
+  /**
+   * **What the fourth hire buys, and it is the balance change #996 asks to be
+   * named.** The same prison one hire short searches nothing at all: two guards
+   * are posted, the third is the reserve, and `SectorSearchDutySystem` orders
+   * no sweep it could not staff. Before #996 this prison was the one that
+   * *did* search -- it is the fixture two cases up, with three hires.
+   */
+  it('finds nothing with a single spare guard, because that guard is the incident reserve (#996)', () => {
+    const runtime = prisonWithGuards(3);
+    stepTo(runtime, SIXTEEN_DAYS);
+
+    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)[0]).toMatchObject({ required: 2, assigned: 2, shortage: 0 });
+    expect(runtime.securityGuards.unassignedGuardIds(), 'the third guard is free, and stays free').toHaveLength(1);
     expect(runtime.searchSystem.getMetrics()).toMatchObject({ searchesCompleted: 0, searchesQueued: 0, itemsDiscovered: 0 });
     expect(contrabandDiscovered(runtime)).toBe(0);
   });
