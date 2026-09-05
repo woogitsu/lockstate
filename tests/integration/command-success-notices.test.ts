@@ -644,7 +644,7 @@ describe('a removal that destroys what an object cost says so (#945)', () => {
     expect(session.types().slice(before), 'a removal that removed nothing destroyed nothing').toEqual([]);
   });
 
-  it('says nothing about destroyed money when the press cancelled a placement still in flight', () => {
+  it('says the money came back when the press cancelled a placement still in flight, not that it was destroyed', () => {
     /*
      * **The other success `remove` answers, and the assertion that stops the
      * fix being "say the loud sentence always".** A press on a tile whose object
@@ -653,22 +653,43 @@ describe('a removal that destroys what an object cost says so (#945)', () => {
      * money that does not come back would be false of it, and false in the
      * direction that scares a player off a control that costs them nothing.
      *
-     * **This case also pins a silence, and the reason is recorded so it cannot
-     * close by accident and cannot be mistaken for a considered answer.** The
-     * refund here says nothing either, and #945's brief and its §1 both describe
-     * this path as *"the channel #932 fixed"*. **It is not.** `remove` calls
-     * `ObjectOrderSink.cancelOrder` -- `ConstructionSystem.cancelOrder` --
-     * directly, and no event is recorded anywhere in `ConstructionSystem`: the
-     * state-aware `events.recordBuildOrderCancelled` #932 made state-aware sits
-     * in `createConstructionCommandHandler`'s `CancelBuildOrder` branch, which
-     * this route does not go through. So a `RemoveObject` on a bed the crew has
-     * *started* destroys its spend and is still silent, exactly as a standing
-     * one was.
+     * **This case pinned a *silence* until
+     * [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+     * paragraph that argued for it is kept rather than deleted, because it is
+     * the diagnosis the fix finally acts on.** It read:
      *
-     * That is a second finding rather than this issue, which is scoped to the
-     * standing object, and #945 §4 leaves *"whether the other silent commands
-     * should speak"* to an ADR. A change that gives this path a sentence comes
-     * here and says which one and why.
+     * > **This case also pins a silence, and the reason is recorded so it
+     * > cannot close by accident and cannot be mistaken for a considered
+     * > answer.** The refund here says nothing either, and #945's brief and its
+     * > §1 both describe this path as *"the channel #932 fixed"*. **It is not.**
+     * > `remove` calls `ObjectOrderSink.cancelOrder` --
+     * > `ConstructionSystem.cancelOrder` -- directly, and no event is recorded
+     * > anywhere in `ConstructionSystem`: the state-aware
+     * > `events.recordBuildOrderCancelled` #932 made state-aware sits in
+     * > `createConstructionCommandHandler`'s `CancelBuildOrder` branch, which
+     * > this route does not go through. So a `RemoveObject` on a bed the crew
+     * > has *started* destroys its spend and is still silent, exactly as a
+     * > standing one was.
+     * >
+     * > That is a second finding rather than this issue, which is scoped to the
+     * > standing object, and #945 §4 leaves *"whether the other silent commands
+     * > should speak"* to an ADR. A change that gives this path a sentence comes
+     * > here and says which one and why.
+     *
+     * Every sentence of that diagnosis is still true of the routing, and it is
+     * still `grep -c "events\." src/simulation/construction/system.ts` → 0. What
+     * turned out not to follow is the conclusion that the silence could wait
+     * for an ADR: on a band that holds exactly one sentence, a press that says
+     * nothing leaves the *previous* press's sentence standing over it, and the
+     * previous press here is the removal above saying money was destroyed. So
+     * the silence was not neutral, and #988 measured it with the clock paused.
+     *
+     * **Which sentence, and why it needed no decision.** The same one
+     * `CancelBuildOrder` records, chosen by the same state, because it is the
+     * same act on the same `cancelOrder`: `ObjectPlacementService.remove` reads
+     * the order's state before cancelling and carries it out on the outcome,
+     * and `createSessionCommandHandler` passes it to
+     * `recordBuildOrderCancelled`. No new event type and no new string.
      */
     const session = createSession();
     wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
@@ -681,11 +702,53 @@ describe('a removal that destroys what an object cost says so (#945)', () => {
     expect(session.stateOf('bed-flight')).toBe('materials-pending');
     expect(session.runtime.placedObjects.size).toBe(0);
 
+    const treasuryBefore = session.runtime.treasury.balanceMinorUnits;
     const before = session.types().length;
     session.send({ type: 'RemoveObject', ...BED_TILE });
 
     expect(session.stateOf('bed-flight'), 'the press really did cancel the order').toBe('cancelled');
-    expect(session.types().slice(before), 'a refund is not the loss sentence').toEqual([]);
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'the money really did come back, which is what makes the refund sentence true and the loss sentence false',
+    ).toBe(treasuryBefore + ONE_PLANK);
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type), 'a refund is not the loss sentence').toEqual([
+      'construction.order-cancelled',
+    ]);
+    expect(Object.keys(said[0]!).sort(), 'no figure and no count').toEqual(['sequence', 'tick', 'type']);
+  });
+
+  it('says what a cancellation past the point of no return really costs, when the press caught the crew mid-build', () => {
+    /*
+     * The other side of the `switch`, and the reason this case exists at all:
+     * `recordBuildOrderCancelled` picks between two sentences, and a `switch`
+     * is exactly the thing that can be right for one member and wrong for
+     * another. A bed the crew has *started* destroys what it spent
+     * (`destroysSpendOnCancel` holds `'in-progress'`, ruling 20 of 2026-08-31),
+     * so the refund sentence would be false here in the other direction --
+     * telling a player money came back that did not.
+     *
+     * The order is still in flight, so `remove` takes the same arm the case
+     * above takes; only the state differs, which is the whole point.
+     */
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-underway', definitionId: 'bed-wooden', ...BED_TILE });
+
+    session.runUntilState('bed-underway', 'in-progress');
+    expect(session.runtime.placedObjects.size, 'the crew has started but the bed does not exist yet').toBe(0);
+
+    const treasuryBefore = session.runtime.treasury.balanceMinorUnits;
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...BED_TILE });
+
+    expect(session.stateOf('bed-underway'), 'the press really did cancel the order').toBe('cancelled');
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'and nothing came back, which is what the second sentence claims',
+    ).toBe(treasuryBefore);
+    expect(session.types().slice(before)).toEqual(['construction.order-cancelled-underway']);
   });
 
   it('records the loss before the relocation it caused, so the band paints both sentences', () => {
