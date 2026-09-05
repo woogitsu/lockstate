@@ -14,7 +14,7 @@ is advertising.
 Played on `agent/playtest-getting-lost`, merged with `origin/main` at
 **v0.0.475** (`b984445f`); the tree played is the merge commit `72896dd2`, and
 every act's own first log line quotes the version strip it read at run time —
-`v0.0.475 · 72896dd`. Viewport **1440×900** unless a line says otherwise.
+`v0.0.475 · <hash>`. Viewport **1440×900** unless a line says otherwise.
 Instrument: `tests/browser/playtest-2026-09-05-getting-lost.playtest.ts`.
 
 **Nothing in CI collects that file.** `tests/browser/playwright.config.ts` is
@@ -24,8 +24,9 @@ a gate. **Nothing under `src/` is changed on this branch.**
 
 This record **resumes a session an API limit cut off.** That session built the
 instrument and ran acts 1 and 2 at v0.0.473 and gathered no findings; acts 1–2
-were re-run here at v0.0.475 and read identically, and acts 3–7 are run here for
-the first time. Where a v0.0.473 reading is quoted it is labelled as such.
+were re-run here at v0.0.475 and read identically, acts 3–5 are run here for the
+first time, act 6 was rewritten after its first run measured something it could
+not interpret (§6), and acts 7 and 8 are new to this pass. Where a v0.0.473 reading is quoted it is labelled as such.
 
 ## Claim tiers
 
