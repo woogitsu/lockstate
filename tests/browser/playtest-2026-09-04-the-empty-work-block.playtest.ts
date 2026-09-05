@@ -126,7 +126,14 @@ async function installCensusChannel(page: Page): Promise<void> {
     class CensusWorker extends RealWorker {
       public constructor(url: string | URL, options?: WorkerOptions) {
         super(url, options);
-        held ??= this;
+        /*
+         * **The LAST worker, not the first**, and the difference cost one
+         * seven-minute run. "New prison" tears the session down and builds a
+         * new `Worker`; a reference taken with `??=` therefore points at a
+         * dead one for every prison after the first, and the request goes
+         * nowhere with no error — it simply never answers.
+         */
+        held = this;
       }
     }
     (window as unknown as { Worker: typeof Worker }).Worker = CensusWorker as unknown as typeof Worker;
@@ -170,10 +177,20 @@ interface CensusRow {
 
 /** Every prisoner the worker knows about, and what each is doing. */
 async function census(page: Page, limit = 20): Promise<{ total: number; rows: readonly CensusRow[] }> {
-  const payload = (await page.evaluate(
-    (n) => (window as unknown as { lockstateAskRoster: (limit: number) => Promise<unknown> }).lockstateAskRoster(n),
-    limit,
-  )) as { view?: { total?: number; rows?: readonly Record<string, unknown>[] } };
+  let raw: unknown;
+  try {
+    raw = await page.evaluate(
+      (n) => (window as unknown as { lockstateAskRoster: (limit: number) => Promise<unknown> }).lockstateAskRoster(n),
+      limit,
+    );
+  } catch (error) {
+    // Non-fatal: a sample the census could not take is reported as such rather
+    // than ending a run that has already built a prison.
+    console.log(`[census] the worker did not answer: ${error instanceof Error ? error.message : String(error)}`);
+    return { total: -1, rows: [] };
+  }
+  const payload = raw as { view?: { total?: number; rows?: readonly Record<string, unknown>[] }; projectionId?: string; code?: string };
+  if (payload.view === undefined) console.log(`[census] a reply with no view: ${JSON.stringify(payload).slice(0, 400)}`);
   const view = payload.view;
   const rows = (view?.rows ?? []).map((row) => {
     const need = row['lowestNeed'] as { needId?: string; permille?: number } | undefined;
@@ -578,6 +595,9 @@ async function buildPrison(page: Page, label: string, withWorkRooms: boolean): P
   }
   await page.waitForTimeout(2500);
   console.log(`[${label}] eight admitted, two guards hired: ${JSON.stringify(await latestRawCounts(page))}`);
+  const probe = await census(page, 20);
+  console.log(`[${label}] census probe right after admission: total=${probe.total}, ${probe.rows.length} row(s): ${JSON.stringify(probe.rows)}`);
+  expect(probe.rows.length, 'the census channel answered nothing, so the day scan would measure nothing').toBeGreaterThan(0);
 }
 
 /**
