@@ -11396,9 +11396,13 @@ current, and reported as weak for the fourth time.
 ## 3. What the anchor pass of 2026-09-05 evening did to the blind spot its predecessor named: nine merges, three movers, and two citations no delta pass could ever have reached
 
 **NINE at `c57f5fa8` (v0.0.493), inside the budget by one, and the second
-consecutive anchor taken with its own gate green.** `Next free number: 0097`
+consecutive anchor taken with its own gate green.** `Next free number: 0098`
 here, restated from `docs/adr/README.md` rather than recomputed, and the index
-and this file agree on it. **89 ADR files at both ends of the window**, so no
+and this file agree on it. **That restatement read `0097` when this section was
+written and was corrected in the same commit that reserved 0097** (ADR 0097,
+`docs/adr/0097-what-the-world-view-is-required-to-communicate.md`): the index
+line is the authority and this is a restatement of it, so a row landing there
+moves this number and nothing else in this section. **89 ADR files at both ends of the window**, so no
 ADR arrived and none left, and the agreement is reported as weak for the fifth
 consecutive time: the mechanism that splits the four counting sites was not
 exercised. The one `docs/adr/` change besides this file is ADR 0073's own
