@@ -1,0 +1,847 @@
+import { inflateSync } from 'node:zlib';
+import { expect, type Page, test } from '@playwright/test';
+import { TILE, installTee, openApp, panelText, press, tab } from './playtest-harness';
+
+/**
+ * **Getting lost: a player drags the world to look around, and keeps dragging.**
+ *
+ * An *instrument*, not a gate. `tests/browser/playwright.config.ts` collects
+ * `*.spec.ts`; this file is `*.playtest.ts` and only
+ * `tests/browser/playwright.playtest.config.ts` collects it, so nothing in CI
+ * runs it. One act at a time:
+ *
+ * ```
+ * LOCKSTATE_BROWSER_TEST_PORT=5327 node node_modules/@playwright/test/cli.js test \
+ *   --config tests/browser/playwright.playtest.config.ts \
+ *   tests/browser/playtest-2026-09-05-getting-lost.playtest.ts -g "act 1"
+ * ```
+ *
+ * **The question, as given.** Can a player pan far enough that they cannot
+ * find their prison again, and does anything on the screen bring them back?
+ * `docs/research/2026-09-02-the-world-view.md` §2-§3 is the baseline: at
+ * v0.0.344 the pan had no clamp, the minimap took clicks and did nothing, and
+ * the far end of a four-drag pan was solid `VOID_COLOR`. Both of those became
+ * issues (#794, #793) and **#793 has since been implemented** --
+ * `WorldScene.navigateToMinimapPoint` and the `onMinimapNavigate` wiring at
+ * `src/main.ts:2106` -- so this pass re-derives both rather than inheriting
+ * either, and then asks the questions that record did not: every zoom level,
+ * the edges, and what a reload or a prison switch does to the view.
+ *
+ * **No wall-clock timing claim is made anywhere in this file.** Every camera
+ * movement is driven by a fixed *pixel* distance dispatched as one synthetic
+ * `mousemove` (the world-view record's own instrument fix 2: an OS-level
+ * multi-step drag is coalesced under load and is not the deterministic
+ * gesture it looks like), or by a *counted* number of discrete zoom
+ * keypresses. The continuous keyboard pan in `update()` is frame-time driven
+ * and is therefore only ever cited as a READ fact, never used to produce a
+ * number.
+ *
+ * **Every camera readout here is taken from the running game**, by pressing
+ * the world with the Build panel's `Remove` tool armed and reading the tile
+ * the resulting `RemoveObject` command names. There is no debug hook for
+ * camera position on the assembled page -- `app-shell.spec.ts:4515` says so in
+ * those words -- so this is the only honest instrument, and it has the useful
+ * property of answering in the game's own screen->tile transform rather than
+ * in one this file reimplements.
+ */
+
+const SHOTS = 'docs/research/2026-09-05-getting-lost';
+
+const log = (act: string, line: string): void => {
+  console.log(`[${act}] ${line}`);
+};
+
+/**
+ * `VOID_COLOR`, `src/rendering/world/appearance.ts:45`.
+ *
+ * Not a tile fill: it is the Phaser camera's background colour
+ * (`world-scene.ts:317`) showing through wherever `TileLayer` draws nothing.
+ * A screen made entirely of it is a screen with no world on it at all.
+ */
+const VOID_RGB = { r: 0x0b, g: 0x0e, b: 0x12 } as const;
+
+/** A fresh session owns exactly chunk (0,0): tiles 0..31 on both axes. */
+const OWNED_TILE_MIN = 0;
+const OWNED_TILE_MAX = 31;
+
+/** `NEW_PRISON_ORIGIN_TILE`, `src/main.ts:621` -- where staff and prisoners arrive. */
+const PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;
+
+// ------------------------------------------------------------------
+// Instruments
+// ------------------------------------------------------------------
+
+/**
+ * A middle-button drag, dispatched **synchronously in the page**.
+ *
+ * Verbatim in idiom from `playtest-2026-09-02-the-world-view.playtest.ts:245`,
+ * whose own record explains why: an OS-level `page.mouse.down/move({steps})/up`
+ * is coalesced by CDP under load and measured shifts of `-800, +666, 0, +666`
+ * for four identical 800px drags. One `mousedown`, one `mousemove` to the
+ * final point, one `mouseup`, straight at the canvas, has no input queue to
+ * coalesce against.
+ */
+async function middleDrag(page: Page, from: { x: number; y: number }, to: { x: number; y: number }): Promise<void> {
+  await page.evaluate(
+    ([fx, fy, tx, ty]) => {
+      const canvas = document.querySelector('canvas');
+      if (canvas === null) throw new Error('middleDrag: no canvas on the page');
+      const fire = (type: string, x: number, y: number, button: number, buttons: number): void => {
+        canvas.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, button, buttons, bubbles: true, cancelable: true, view: window }));
+      };
+      fire('mousedown', fx, fy, 1, 4);
+      fire('mousemove', tx, ty, 0, 4);
+      fire('mouseup', tx, ty, 1, 0);
+    },
+    [from.x, from.y, to.x, to.y] as const,
+  );
+  await page.waitForTimeout(40);
+}
+
+/** `document.elementsFromPoint`, topmost first, with just enough to identify each node. */
+async function elementsAt(page: Page, x: number, y: number): Promise<readonly Record<string, unknown>[]> {
+  return page.evaluate(
+    ([px, py]) =>
+      document.elementsFromPoint(px, py).map((el) => ({
+        tag: el.tagName,
+        cls: typeof el.className === 'string' ? el.className : '',
+        pointerEvents: getComputedStyle(el).pointerEvents,
+      })),
+    [x, y] as const,
+  );
+}
+
+/**
+ * Arms the Build panel's `Remove` tool and leaves it armed.
+ *
+ * `calibrate()` in the shared harness arms and disarms around every
+ * bisection; this pass takes dozens of single readings instead of a few
+ * bisections, so the toggling is hoisted out. The tool is disarmed by
+ * `disarmProbe` at the end of each measurement block.
+ */
+async function armProbe(page: Page): Promise<void> {
+  await tab(page, 'build').click();
+  const removeControl = page.locator('.hud-build__remove');
+  const label = (await removeControl.innerText()).trim().toLowerCase();
+  // The control is a toggle whose label says which way it will go. Only press
+  // it if it is currently off, so a second call in the same act is a no-op
+  // rather than a disarm.
+  if (!label.startsWith('stop') && !label.startsWith('done')) await removeControl.click();
+}
+
+async function disarmProbe(page: Page): Promise<void> {
+  await page.locator('.hud-build__remove').click();
+}
+
+/**
+ * Which world tile the game itself thinks is under a screen point.
+ *
+ * With the `Remove` tool armed a press submits a `RemoveObject` carrying the
+ * tile it resolved -- so this is the *game's* screen->tile transform read back,
+ * not one this file recomputes. Returns `undefined` when the press produced no
+ * such command, which is itself information (a press that landed on a HUD
+ * panel, or a press the world refused to resolve at all).
+ */
+async function probeTile(page: Page, x: number, y: number): Promise<{ x: number; y: number } | undefined> {
+  const commands = await press(page, x, y);
+  const removal = commands.find((c) => c['type'] === 'RemoveObject');
+  if (removal === undefined) return undefined;
+  return { x: removal['x'] as number, y: removal['y'] as number };
+}
+
+/**
+ * The visible tile rectangle, measured by probing the four extreme points of
+ * the canvas that a pointer can actually reach.
+ *
+ * **Why not the corners of the canvas rect.** The HUD covers 26-44% of the
+ * canvas (`docs/research/2026-09-02-the-world-view.md` §0) and every corner of
+ * it is behind a panel, so a press there produces no command at all. This
+ * walks inward from each edge until `elementFromPoint` says the canvas is on
+ * top, and reports which point it actually used.
+ */
+async function visibleTileBox(page: Page): Promise<{
+  readonly left: number; readonly top: number; readonly right: number; readonly bottom: number;
+  readonly probes: readonly { readonly label: string; readonly x: number; readonly y: number; readonly tile: { x: number; y: number } }[];
+} | undefined> {
+  const canvas = await page.evaluate(() => {
+    const el = document.querySelector('canvas');
+    if (el === null) return undefined;
+    const r = el.getBoundingClientRect();
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+  });
+  if (canvas === undefined) throw new Error('no canvas on the page');
+
+  const freePointNear = async (
+    startX: number, startY: number, stepX: number, stepY: number,
+  ): Promise<{ x: number; y: number } | undefined> => {
+    for (let i = 0; i < 60; i += 1) {
+      const x = startX + stepX * i;
+      const y = startY + stepY * i;
+      if (x < canvas.left || x > canvas.right || y < canvas.top || y > canvas.bottom) return undefined;
+      const top = await page.evaluate(
+        ([px, py]) => {
+          const el = document.elementFromPoint(px, py);
+          return el === null ? 'NONE' : el.tagName;
+        },
+        [x, y] as const,
+      );
+      if (top === 'CANVAS') return { x, y };
+    }
+    return undefined;
+  };
+
+  const midY = (canvas.top + canvas.bottom) / 2;
+  const midX = (canvas.left + canvas.right) / 2;
+  const corners = [
+    { label: 'leftmost', p: await freePointNear(canvas.left + 2, midY, 12, 0) },
+    { label: 'rightmost', p: await freePointNear(canvas.right - 2, midY, -12, 0) },
+    { label: 'topmost', p: await freePointNear(midX, canvas.top + 2, 0, 12) },
+    { label: 'bottommost', p: await freePointNear(midX, canvas.bottom - 2, 0, -12) },
+  ];
+
+  const probes: { label: string; x: number; y: number; tile: { x: number; y: number } }[] = [];
+  for (const corner of corners) {
+    if (corner.p === undefined) return undefined;
+    const tile = await probeTile(page, corner.p.x, corner.p.y);
+    if (tile === undefined) return undefined;
+    probes.push({ label: corner.label, x: corner.p.x, y: corner.p.y, tile });
+  }
+  const [left, right, top, bottom] = probes;
+  if (left === undefined || right === undefined || top === undefined || bottom === undefined) return undefined;
+  return { left: left.tile.x, right: right.tile.x, top: top.tile.y, bottom: bottom.tile.y, probes };
+}
+
+/** Does any tile of the owned chunk fall inside the visible tile box? */
+function ownedLandVisible(box: { left: number; top: number; right: number; bottom: number }): boolean {
+  return box.right >= OWNED_TILE_MIN && box.left <= OWNED_TILE_MAX && box.bottom >= OWNED_TILE_MIN && box.top <= OWNED_TILE_MAX;
+}
+
+/**
+ * Screen pixels per tile, measured from two probes far apart on the same row.
+ *
+ * The camera's zoom is `screen px per world unit` and a tile is
+ * `TILE_SIZE_PX = 64` world units (`src/rendering/tile-metrics.ts:21`), so
+ * this is `64 * zoom` read off the running game rather than assumed from the
+ * number of keypresses sent. Whole-tile readings make it approximate; the
+ * baseline is deliberately wide so the error is about one part in the tile
+ * count.
+ */
+async function measureTilePx(page: Page, leftX: number, rightX: number, y: number): Promise<number | undefined> {
+  const a = await probeTile(page, leftX, y);
+  const b = await probeTile(page, rightX, y);
+  if (a === undefined || b === undefined || a.x === b.x) return undefined;
+  return (rightX - leftX) / (b.x - a.x);
+}
+
+// ---- pixels -------------------------------------------------------
+//
+// A minimal PNG reader, because the question "is the screen black" cannot be
+// answered from the DOM and this container has no resolvable image library
+// (`require('sharp')` throws here). Playwright screenshots are 8-bit
+// non-interlaced PNGs, colour type 6 (RGBA) or 2 (RGB); nothing else is
+// handled and an unexpected header throws rather than guessing.
+
+interface Bitmap {
+  readonly width: number;
+  readonly height: number;
+  readonly channels: number;
+  readonly data: Buffer;
+}
+
+function decodePng(buffer: Buffer): Bitmap {
+  if (buffer.readUInt32BE(0) !== 0x89504e47) throw new Error('not a PNG');
+  let offset = 8;
+  let width = 0;
+  let height = 0;
+  let channels = 0;
+  const idat: Buffer[] = [];
+  while (offset < buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString('ascii', offset + 4, offset + 8);
+    const body = buffer.subarray(offset + 8, offset + 8 + length);
+    if (type === 'IHDR') {
+      width = body.readUInt32BE(0);
+      height = body.readUInt32BE(4);
+      const bitDepth = body.readUInt8(8);
+      const colorType = body.readUInt8(9);
+      const interlace = body.readUInt8(12);
+      if (bitDepth !== 8 || interlace !== 0) throw new Error(`unsupported PNG: depth ${String(bitDepth)}, interlace ${String(interlace)}`);
+      if (colorType === 6) channels = 4;
+      else if (colorType === 2) channels = 3;
+      else throw new Error(`unsupported PNG colour type ${String(colorType)}`);
+    } else if (type === 'IDAT') idat.push(Buffer.from(body));
+    else if (type === 'IEND') break;
+    offset += 12 + length;
+  }
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * channels;
+  const out = Buffer.alloc(stride * height);
+  let pos = 0;
+  for (let row = 0; row < height; row += 1) {
+    const filter = raw[pos];
+    pos += 1;
+    const line = raw.subarray(pos, pos + stride);
+    pos += stride;
+    const target = out.subarray(row * stride, (row + 1) * stride);
+    const previous = row === 0 ? undefined : out.subarray((row - 1) * stride, row * stride);
+    for (let i = 0; i < stride; i += 1) {
+      const x = line[i] ?? 0;
+      const a = i >= channels ? (target[i - channels] ?? 0) : 0;
+      const b = previous?.[i] ?? 0;
+      const c = i >= channels ? (previous?.[i - channels] ?? 0) : 0;
+      let value: number;
+      switch (filter) {
+        case 0: value = x; break;
+        case 1: value = x + a; break;
+        case 2: value = x + b; break;
+        case 3: value = x + ((a + b) >> 1); break;
+        case 4: {
+          const p = a + b - c;
+          const pa = Math.abs(p - a);
+          const pb = Math.abs(p - b);
+          const pc = Math.abs(p - c);
+          value = x + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c);
+          break;
+        }
+        default: throw new Error(`unknown PNG filter ${String(filter)}`);
+      }
+      target[i] = value & 0xff;
+    }
+  }
+  return { width, height, channels, data: out };
+}
+
+function pixelAt(bitmap: Bitmap, x: number, y: number): { r: number; g: number; b: number } {
+  const px = Math.max(0, Math.min(bitmap.width - 1, Math.round(x)));
+  const py = Math.max(0, Math.min(bitmap.height - 1, Math.round(y)));
+  const index = (py * bitmap.width + px) * bitmap.channels;
+  return { r: bitmap.data[index] ?? 0, g: bitmap.data[index + 1] ?? 0, b: bitmap.data[index + 2] ?? 0 };
+}
+
+/**
+ * Samples the canvas on an 80px grid, skipping every point a HUD element
+ * covers, and reports how many samples are exactly `VOID_COLOR`.
+ *
+ * The HUD skip matters: the panels are not void-coloured, so counting them
+ * would make "the screen is black" unprovable at any camera position.
+ */
+async function sampleWorldPixels(page: Page, shotPath: string): Promise<{
+  readonly total: number; readonly void: number; readonly others: readonly string[];
+}> {
+  const points = await page.evaluate(() => {
+    const canvas = document.querySelector('canvas');
+    if (canvas === null) return [] as { x: number; y: number }[];
+    const rect = canvas.getBoundingClientRect();
+    const collected: { x: number; y: number }[] = [];
+    for (let y = rect.top + 20; y < rect.bottom - 20; y += 80) {
+      for (let x = rect.left + 20; x < rect.right - 20; x += 80) {
+        if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') collected.push({ x, y });
+      }
+    }
+    return collected;
+  });
+  const buffer = await page.screenshot({ path: shotPath });
+  const bitmap = decodePng(buffer);
+  let voids = 0;
+  const others = new Map<string, number>();
+  for (const point of points) {
+    const pixel = pixelAt(bitmap, point.x, point.y);
+    if (pixel.r === VOID_RGB.r && pixel.g === VOID_RGB.g && pixel.b === VOID_RGB.b) voids += 1;
+    else {
+      const key = `${String(pixel.r)},${String(pixel.g)},${String(pixel.b)}`;
+      others.set(key, (others.get(key) ?? 0) + 1);
+    }
+  }
+  return {
+    total: points.length,
+    void: voids,
+    others: [...others.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, n]) => `${k} x${String(n)}`),
+  };
+}
+
+/** Every visible control on the page, by tag, class and trimmed text. */
+async function controlInventory(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('button, [role="button"], a[href]')]
+      .filter((el) => el.getClientRects().length > 0)
+      .map((el) => {
+        const cls = typeof el.className === 'string' ? el.className : '';
+        const text = (el as HTMLElement).innerText.replace(/\s+/g, ' ').trim();
+        const label = el.getAttribute('aria-label') ?? '';
+        const title = el.getAttribute('title') ?? '';
+        return `${el.tagName}.${cls}|text="${text}"|aria="${label}"|title="${title}"`;
+      }),
+  );
+}
+
+async function newPrison(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+}
+
+/** The strip's own version line, so every act says which build it played. */
+async function versionLine(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const strip = document.querySelector<HTMLElement>('.hud-strip');
+    const text = strip?.innerText ?? '';
+    return (/v\d+\.\d+\.\d+\s*·?\s*[0-9a-f]{7}/.exec(text) ?? ['no version line found'])[0];
+  });
+}
+
+// ------------------------------------------------------------------
+// Act 1 -- arrival: where the camera starts, what the screen offers, and
+// whether anything on it is a way home.
+// ------------------------------------------------------------------
+test('act 1: arrival, and the complete inventory of what the screen offers a lost player', async ({ page }) => {
+  test.setTimeout(240_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act1', `version line: ${await versionLine(page)}`);
+
+  // A landmark at the prison's own origin tile, so "the prison" is a thing on
+  // screen and not only an ownership shade: a hired guard first stands at
+  // `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:621`, ADR 0025 decision 4).
+  await tab(page, 'security').click();
+  const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+  if ((await guardRow.count()) > 0) await guardRow.first().click();
+  await page.locator('.hud-staff__hire').click();
+  await page.waitForTimeout(1200);
+  log('act1', `after one hire, staff panel says: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
+
+  const canvasRect = await page.evaluate(() => {
+    const r = document.querySelector('canvas')?.getBoundingClientRect();
+    return r === undefined ? undefined : { left: r.left, top: r.top, width: r.width, height: r.height };
+  });
+  log('act1', `canvas rect: ${JSON.stringify(canvasRect)}`);
+
+  const minimapRect = await page.evaluate(() => {
+    const panel = document.querySelector('.hud-minimap');
+    const surface = document.querySelector('.hud-minimap__surface');
+    const box = (el: Element | null) => {
+      if (el === null) return undefined;
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, w: r.width, h: r.height };
+    };
+    return { panel: box(panel), surface: box(surface), viewport: { w: window.innerWidth, h: window.innerHeight } };
+  });
+  const panelArea = (minimapRect.panel?.w ?? 0) * (minimapRect.panel?.h ?? 0);
+  const viewportArea = minimapRect.viewport.w * minimapRect.viewport.h;
+  log('act1', `.hud-minimap panel ${JSON.stringify(minimapRect.panel)} = ${(100 * panelArea / viewportArea).toFixed(2)}% of the ${String(minimapRect.viewport.w)}x${String(minimapRect.viewport.h)} viewport`);
+  log('act1', `.hud-minimap__surface ${JSON.stringify(minimapRect.surface)}`);
+  log('act1', `minimap panel innerText: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+
+  // Every control the player can see, on every tab. The question "is there a
+  // way back" is answered by this list or it is not answered at all.
+  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    await tab(page, id).click();
+    await page.waitForTimeout(250);
+    const controls = await controlInventory(page);
+    log('act1', `--- ${id} tab: ${String(controls.length)} visible controls`);
+    for (const control of controls) log('act1', `    ${control}`);
+    const minimapOnThisTab = await page.evaluate(() => {
+      const el = document.querySelector('.hud-minimap');
+      if (el === null) return 'ABSENT';
+      const r = el.getBoundingClientRect();
+      return `${String(Math.round(r.width))}x${String(Math.round(r.height))} at ${String(Math.round(r.x))},${String(Math.round(r.y))}`;
+    });
+    log('act1', `    .hud-minimap on ${id}: ${minimapOnThisTab}`);
+  }
+
+  await tab(page, 'build').click();
+  await armProbe(page);
+  const box = await visibleTileBox(page);
+  log('act1', `visible tile box on arrival: ${JSON.stringify(box)}`);
+  log('act1', `owned chunk (tiles 0..31) visible on arrival: ${String(box === undefined ? 'unknown' : ownedLandVisible(box))}`);
+  const tilePx = await measureTilePx(page, 500, 1300, 300);
+  log('act1', `measured screen px per tile on arrival: ${tilePx === undefined ? 'unknown' : tilePx.toFixed(2)} (zoom = ${tilePx === undefined ? '?' : (tilePx / TILE).toFixed(3)})`);
+  await disarmProbe(page);
+
+  const pixels = await sampleWorldPixels(page, `${SHOTS}/act1-arrival.png`);
+  log('act1', `arrival pixels: ${String(pixels.void)}/${String(pixels.total)} sampled world points are exactly VOID_COLOR; other colours: ${JSON.stringify(pixels.others)}`);
+});
+
+// ------------------------------------------------------------------
+// Act 2 -- get lost on purpose, at zoom 1: how many drags, and what is on
+// the screen when it has happened.
+// ------------------------------------------------------------------
+test('act 2: how many drags it takes to lose the prison at zoom 1, and what is on the screen then', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act2', `version line: ${await versionLine(page)}`);
+  await tab(page, 'security').click();
+  const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+  if ((await guardRow.count()) > 0) await guardRow.first().click();
+  await page.locator('.hud-staff__hire').click();
+  await page.waitForTimeout(1000);
+
+  await tab(page, 'build').click();
+  await armProbe(page);
+
+  const strokeStart = { x: 1200, y: 300 };
+  const strokeEnd = { x: 400, y: 300 };
+  const sane = await elementsAt(page, strokeStart.x, strokeStart.y);
+  expect(sane[0]?.['tag']).toBe('CANVAS');
+  log('act2', `drag start point resolves to ${JSON.stringify(sane[0])}`);
+
+  const box0 = await visibleTileBox(page);
+  log('act2', `drag 0 (arrival): visible tiles ${JSON.stringify(box0)} owned-visible=${String(box0 === undefined ? '?' : ownedLandVisible(box0))}`);
+
+  let lostAfter = -1;
+  for (let drag = 1; drag <= 8; drag += 1) {
+    await disarmProbe(page);
+    await middleDrag(page, strokeStart, strokeEnd);
+    await page.waitForTimeout(120);
+    await armProbe(page);
+    const box = await visibleTileBox(page);
+    const visible = box === undefined ? undefined : ownedLandVisible(box);
+    log('act2', `after drag ${String(drag)} (800px east each): visible tiles x ${String(box?.left)}..${String(box?.right)}, y ${String(box?.top)}..${String(box?.bottom)}; owned-visible=${String(visible)}`);
+    await disarmProbe(page);
+    const pixels = await sampleWorldPixels(page, `${SHOTS}/act2-drag-${String(drag)}.png`);
+    log('act2', `    pixels: ${String(pixels.void)}/${String(pixels.total)} VOID_COLOR; others ${JSON.stringify(pixels.others)}`);
+    await armProbe(page);
+    if (visible === false && lostAfter < 0) lostAfter = drag;
+    if (lostAfter > 0 && drag >= lostAfter + 1) break;
+  }
+  log('act2', `THE PRISON LEFT THE SCREEN AFTER ${String(lostAfter)} DRAG(S) of 800px at zoom 1`);
+
+  await disarmProbe(page);
+  // What the rest of the screen says while the world is gone.
+  log('act2', `strip:    ${JSON.stringify((await panelText(page, '.hud-strip')).replace(/\n/g, ' | '))}`);
+  log('act2', `minimap:  ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+  log('act2', `clock:    ${JSON.stringify((await panelText(page, '.hud-clock')).replace(/\n/g, ' | '))}`);
+  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    await tab(page, id).click();
+    await page.waitForTimeout(200);
+    const text = (await panelText(page, '.hud')).replace(/\n/g, ' | ');
+    log('act2', `${id} tab, whole HUD text while lost: ${JSON.stringify(text.slice(0, 900))}`);
+  }
+  await page.screenshot({ path: `${SHOTS}/act2-lost.png` });
+});
+
+// ------------------------------------------------------------------
+// Act 3 -- both ends of ZOOM_BOUNDS. Can a player see their whole prison at
+// the far end, and can they still tell where they are at the near end?
+// ------------------------------------------------------------------
+test('act 3: both ends of the zoom range, and how far a drag takes you at each', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act3', `version line: ${await versionLine(page)}`);
+  await tab(page, 'security').click();
+  const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+  if ((await guardRow.count()) > 0) await guardRow.first().click();
+  await page.locator('.hud-staff__hire').click();
+  await page.waitForTimeout(1000);
+  await tab(page, 'build').click();
+
+  // `KEYBOARD_ZOOM_STEP` is 1.25 (`world-scene.ts:86`) and `ZOOM_BOUNDS` is
+  // {0.2, 3} (`:68`). From zoom 1 that is ceil(ln5/ln1.25) = 8 presses of
+  // `Minus` to reach the floor and ceil(ln3/ln1.25) = 5 of `Equal` to reach
+  // the ceiling; 12 of each is sent so the clamp is certainly reached and the
+  // zoom is known exactly rather than counted.
+  const zoomTo = async (direction: 'in' | 'out'): Promise<void> => {
+    await page.mouse.move(900, 300);
+    for (let i = 0; i < 12; i += 1) {
+      await page.keyboard.press(direction === 'in' ? 'Equal' : 'Minus');
+      await page.waitForTimeout(60);
+    }
+  };
+
+  for (const end of ['out', 'in'] as const) {
+    await openApp(page);
+    await newPrison(page);
+    await tab(page, 'build').click();
+    await page.waitForTimeout(400);
+    await zoomTo(end);
+    await page.waitForTimeout(300);
+
+    await armProbe(page);
+    const tilePx = await measureTilePx(page, 500, 1300, 300);
+    const box = await visibleTileBox(page);
+    await disarmProbe(page);
+    log('act3', `=== zoomed fully ${end}`);
+    log('act3', `  measured px per tile: ${tilePx === undefined ? 'unknown' : tilePx.toFixed(2)} -> zoom ${tilePx === undefined ? '?' : (tilePx / TILE).toFixed(3)} (ZOOM_BOUNDS is {min:0.2,max:3}, world-scene.ts:68)`);
+    log('act3', `  visible tile box: ${JSON.stringify(box)}`);
+    if (box !== undefined) {
+      const wide = box.right - box.left + 1;
+      const tall = box.bottom - box.top + 1;
+      log('act3', `  visible ${String(wide)}x${String(tall)} tiles; the owned chunk is 32x32, so the whole prison ${wide >= 32 && tall >= 32 ? 'FITS' : 'DOES NOT FIT'} on screen`);
+      log('act3', `  owned land visible: ${String(ownedLandVisible(box))}; prison origin tile (16,16) on screen: ${String(box.left <= 16 && box.right >= 16 && box.top <= 16 && box.bottom >= 16)}`);
+    }
+    const pixels = await sampleWorldPixels(page, `${SHOTS}/act3-zoom-${end}.png`);
+    log('act3', `  pixels: ${String(pixels.void)}/${String(pixels.total)} VOID_COLOR; others ${JSON.stringify(pixels.others)}`);
+
+    // How far one 800px drag carries you at this zoom, and how many it takes
+    // to lose the prison from here.
+    let lostAfter = -1;
+    for (let drag = 1; drag <= 10; drag += 1) {
+      await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+      await page.waitForTimeout(100);
+      await armProbe(page);
+      const after = await visibleTileBox(page);
+      await disarmProbe(page);
+      const visible = after === undefined ? undefined : ownedLandVisible(after);
+      log('act3', `  after drag ${String(drag)} at zoom-${end}: tiles x ${String(after?.left)}..${String(after?.right)}; owned-visible=${String(visible)}`);
+      if (visible === false) { lostAfter = drag; break; }
+    }
+    log('act3', `  LOST AFTER ${String(lostAfter)} DRAG(S) at zoom-${end}`);
+    await page.screenshot({ path: `${SHOTS}/act3-lost-at-zoom-${end}.png` });
+  }
+});
+
+// ------------------------------------------------------------------
+// Act 4 -- the way back. Only what the screen offers, and every interaction
+// counted.
+// ------------------------------------------------------------------
+test('act 4: from lost, what on the screen brings a player back, and in how many interactions', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act4', `version line: ${await versionLine(page)}`);
+  await tab(page, 'build').click();
+
+  log('act4', `minimap sentence BEFORE anything: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+
+  // Get lost: four 800px drags east and two south, so the return is not a
+  // single-axis problem.
+  for (let i = 0; i < 4; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  for (let i = 0; i < 2; i += 1) await middleDrag(page, { x: 900, y: 700 }, { x: 900, y: 200 });
+  await page.waitForTimeout(200);
+
+  await armProbe(page);
+  const lostBox = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act4', `lost at: visible tiles ${JSON.stringify(lostBox)} owned-visible=${String(lostBox === undefined ? '?' : ownedLandVisible(lostBox))}`);
+  const lostPixels = await sampleWorldPixels(page, `${SHOTS}/act4-lost.png`);
+  log('act4', `lost pixels: ${String(lostPixels.void)}/${String(lostPixels.total)} VOID_COLOR`);
+  log('act4', `minimap sentence WHILE LOST: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+
+  // Interaction 1: the minimap. Does it take the click, and where does it go?
+  const surface = await page.evaluate(() => {
+    const el = document.querySelector('.hud-minimap__surface');
+    if (el === null) return undefined;
+    const r = el.getBoundingClientRect();
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+  });
+  log('act4', `.hud-minimap__surface rect: ${JSON.stringify(surface)}`);
+  if (surface === undefined) throw new Error('.hud-minimap__surface is not on the page -- instrument is stale');
+
+  const centre = { x: (surface.left + surface.right) / 2, y: (surface.top + surface.bottom) / 2 };
+  const under = await elementsAt(page, centre.x, centre.y);
+  log('act4', `elementsFromPoint at the minimap centre: ${JSON.stringify(under.slice(0, 2))}`);
+  expect(String(under[0]?.['cls'])).toContain('hud-minimap');
+
+  const commandsFromMinimap = await press(page, centre.x, centre.y);
+  await page.waitForTimeout(300);
+  log('act4', `ONE press at the minimap centre -> simulation commands: ${JSON.stringify(commandsFromMinimap)}`);
+  log('act4', `minimap sentence AFTER one press: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+
+  await armProbe(page);
+  const afterMinimap = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act4', `after ONE minimap press: visible tiles ${JSON.stringify(afterMinimap)} owned-visible=${String(afterMinimap === undefined ? '?' : ownedLandVisible(afterMinimap))}`);
+  const backPixels = await sampleWorldPixels(page, `${SHOTS}/act4-after-one-minimap-press.png`);
+  log('act4', `after-one-press pixels: ${String(backPixels.void)}/${String(backPixels.total)} VOID_COLOR; others ${JSON.stringify(backPixels.others)}`);
+
+  // Where exactly does the centre of the surface land? The mapping is linear
+  // across `WorldRenderView.loadedBounds` (`world-scene.ts:1279`), so on a
+  // fresh session the centre should be the middle of chunk (0,0).
+  if (afterMinimap !== undefined) {
+    const centreTileX = Math.round((afterMinimap.left + afterMinimap.right) / 2);
+    const centreTileY = Math.round((afterMinimap.top + afterMinimap.bottom) / 2);
+    log('act4', `tile now at the middle of the screen: (${String(centreTileX)},${String(centreTileY)}); NEW_PRISON_ORIGIN_TILE is (${String(PRISON_ORIGIN_TILE.x)},${String(PRISON_ORIGIN_TILE.y)})`);
+  }
+
+  // The three other corners of the surface, so "does it navigate" is not one
+  // sample: each should land somewhere different and all inside the chunk.
+  for (const spot of [
+    { label: 'top-left', fx: 0.02, fy: 0.02 },
+    { label: 'top-right', fx: 0.98, fy: 0.02 },
+    { label: 'bottom-right', fx: 0.98, fy: 0.98 },
+  ]) {
+    const point = { x: surface.left + surface.width * spot.fx, y: surface.top + surface.height * spot.fy };
+    await press(page, point.x, point.y);
+    await page.waitForTimeout(200);
+    await armProbe(page);
+    const box = await visibleTileBox(page);
+    await disarmProbe(page);
+    if (box === undefined) { log('act4', `  minimap ${spot.label}: could not read the camera`); continue; }
+    log('act4', `  minimap ${spot.label} (fx=${String(spot.fx)},fy=${String(spot.fy)}) -> centre tile (${String(Math.round((box.left + box.right) / 2))},${String(Math.round((box.top + box.bottom) / 2))}), visible x ${String(box.left)}..${String(box.right)} y ${String(box.top)}..${String(box.bottom)}`);
+  }
+});
+
+// ------------------------------------------------------------------
+// Act 5 -- are there edges? How far can a player go, what does the boundary
+// look like, and does anything degrade out there?
+// ------------------------------------------------------------------
+test('act 5: how far the world goes, and whether anything degrades when a player goes there', async ({ page }) => {
+  test.setTimeout(300_000);
+  const consoleLines: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') consoleLines.push(`${message.type()}: ${message.text().slice(0, 300)}`);
+  });
+  page.on('pageerror', (error) => consoleLines.push(`pageerror: ${error.message.slice(0, 300)}`));
+
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act5', `version line: ${await versionLine(page)}`);
+  await tab(page, 'build').click();
+
+  // What the edge of the world looks like, up close: the boundary between the
+  // one owned chunk and whatever is beyond it. Two drags east puts tile 31's
+  // east face near the middle of the screen at zoom 1.
+  await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  await page.waitForTimeout(150);
+  await armProbe(page);
+  const edgeBox = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act5', `near the east edge of owned land: visible tiles ${JSON.stringify(edgeBox)}`);
+  await page.screenshot({ path: `${SHOTS}/act5-the-edge.png` });
+  const edgePixels = await sampleWorldPixels(page, `${SHOTS}/act5-the-edge-sampled.png`);
+  log('act5', `edge pixels: ${String(edgePixels.void)}/${String(edgePixels.total)} VOID_COLOR; others ${JSON.stringify(edgePixels.others)}`);
+
+  // Now a long way out. Each stroke is 800px = 12.5 tiles at zoom 1; 40
+  // strokes is 500 tiles, about sixteen chunk-widths from home.
+  const STROKES = 40;
+  for (let i = 0; i < STROKES; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  await page.waitForTimeout(300);
+  await armProbe(page);
+  const farBox = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act5', `after ${String(STROKES)} strokes east: visible tiles ${JSON.stringify(farBox)}`);
+  const farPixels = await sampleWorldPixels(page, `${SHOTS}/act5-far-out.png`);
+  log('act5', `far-out pixels: ${String(farPixels.void)}/${String(farPixels.total)} VOID_COLOR; others ${JSON.stringify(farPixels.others)}`);
+  log('act5', `console errors/warnings so far: ${JSON.stringify(consoleLines.slice(-12))}`);
+
+  // Absurdly far, in one gesture: is there any clamp at all, and does the
+  // renderer survive coordinates this large?
+  await page.evaluate(() => {
+    const canvas = document.querySelector('canvas');
+    if (canvas === null) throw new Error('no canvas');
+    const fire = (type: string, x: number, y: number, button: number, buttons: number): void => {
+      canvas.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, button, buttons, bubbles: true, cancelable: true, view: window }));
+    };
+    // One press, one move of a million pixels' worth in ten synthetic hops
+    // (the handler is incremental -- it reads `pointer - lastPanScreenPoint`
+    // each move -- so the hops accumulate).
+    fire('mousedown', 1200, 300, 1, 4);
+    for (let i = 0; i < 200; i += 1) fire('mousemove', 1200 - 5000, 300, 0, 4);
+    fire('mouseup', 1200, 300, 1, 0);
+  });
+  await page.waitForTimeout(400);
+  await armProbe(page);
+  const absurdBox = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act5', `after a synthetic million-pixel pan: visible tiles ${JSON.stringify(absurdBox)}`);
+  const absurdPixels = await sampleWorldPixels(page, `${SHOTS}/act5-absurdly-far.png`);
+  log('act5', `absurd pixels: ${String(absurdPixels.void)}/${String(absurdPixels.total)} VOID_COLOR`);
+  log('act5', `console errors/warnings: ${JSON.stringify(consoleLines.slice(-15))}`);
+  log('act5', `HUD still reads: ${JSON.stringify((await panelText(page, '.hud-strip')).replace(/\n/g, ' | '))}`);
+
+  // And from there, does the minimap still bring the player home?
+  const surface = await page.evaluate(() => {
+    const el = document.querySelector('.hud-minimap__surface');
+    if (el === null) return undefined;
+    const r = el.getBoundingClientRect();
+    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
+  });
+  if (surface !== undefined) {
+    await press(page, surface.x, surface.y);
+    await page.waitForTimeout(300);
+    await armProbe(page);
+    const home = await visibleTileBox(page);
+    await disarmProbe(page);
+    log('act5', `one minimap press from absurdly far: visible tiles ${JSON.stringify(home)} owned-visible=${String(home === undefined ? '?' : ownedLandVisible(home))}`);
+    await page.screenshot({ path: `${SHOTS}/act5-home-from-absurd.png` });
+  }
+  log('act5', `final console errors/warnings: ${JSON.stringify(consoleLines.slice(-15))}`);
+});
+
+// ------------------------------------------------------------------
+// Act 6 -- does the view survive a reload, and does it survive a prison
+// switch? `framedOnWorld` (`world-scene.ts:262`) is set once per scene and
+// never reset, which predicts two different answers.
+// ------------------------------------------------------------------
+test('act 6: where the camera is after a reload, and after a prison switch', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act6', `version line: ${await versionLine(page)}`);
+  await tab(page, 'build').click();
+
+  // Park the camera somewhere deliberate and *not* lost -- the south-east
+  // corner of owned land -- because "does the view come back" is a question
+  // about a view a player chose, not only about the void.
+  for (let i = 0; i < 2; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  await middleDrag(page, { x: 900, y: 700 }, { x: 900, y: 300 });
+  await page.waitForTimeout(200);
+  await armProbe(page);
+  const chosen = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act6', `camera the player parked: visible tiles ${JSON.stringify(chosen)}`);
+  await page.screenshot({ path: `${SHOTS}/act6-before-reload.png` });
+
+  // Wait for a save to exist before reloading, the way a player would: the
+  // save panel says what it holds.
+  await page.waitForTimeout(2000);
+  log('act6', `save panel before reload: ${JSON.stringify((await panelText(page, '.save-panel')).replace(/\n/g, ' | '))}`);
+
+  await page.reload();
+  await page.waitForSelector('#game-root canvas');
+  await page.waitForSelector('.hud');
+  await page.waitForTimeout(3000);
+  log('act6', `save panel after reload: ${JSON.stringify((await panelText(page, '.save-panel')).replace(/\n/g, ' | '))}`);
+  log('act6', `clock after reload: ${JSON.stringify((await panelText(page, '.hud-clock')).replace(/\n/g, ' | '))}`);
+  await tab(page, 'build').click();
+  await armProbe(page);
+  const afterReload = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act6', `camera after reload: visible tiles ${JSON.stringify(afterReload)}`);
+  if (chosen !== undefined && afterReload !== undefined) {
+    log('act6', `  shift: dx=${String(afterReload.left - chosen.left)} tiles, dy=${String(afterReload.top - chosen.top)} tiles`);
+  }
+  await page.screenshot({ path: `${SHOTS}/act6-after-reload.png` });
+
+  // Now the other half: pan into the void and switch prisons *without*
+  // reloading, which is the case `framedOnWorld` never resets for.
+  for (let i = 0; i < 5; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  await page.waitForTimeout(200);
+  await armProbe(page);
+  const beforeSwitch = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act6', `lost before the prison switch: visible tiles ${JSON.stringify(beforeSwitch)} owned-visible=${String(beforeSwitch === undefined ? '?' : ownedLandVisible(beforeSwitch))}`);
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(3000);
+  log('act6', `clock after New prison: ${JSON.stringify((await panelText(page, '.hud-clock')).replace(/\n/g, ' | '))}`);
+  await tab(page, 'build').click();
+  await armProbe(page);
+  const afterSwitch = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act6', `camera after New prison: visible tiles ${JSON.stringify(afterSwitch)} owned-visible=${String(afterSwitch === undefined ? '?' : ownedLandVisible(afterSwitch))}`);
+  const switchPixels = await sampleWorldPixels(page, `${SHOTS}/act6-after-new-prison.png`);
+  log('act6', `after-switch pixels: ${String(switchPixels.void)}/${String(switchPixels.total)} VOID_COLOR; others ${JSON.stringify(switchPixels.others)}`);
+  log('act6', `minimap sentence after the switch: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+
+  // And the load path: switch back to the first prison from the save panel's
+  // own list, which is the gesture a player with two prisons actually uses.
+  const rows = await page.evaluate(() =>
+    [...document.querySelectorAll('.save-panel [data-prison-id], .save-panel button')]
+      .filter((el) => el.getClientRects().length > 0)
+      .map((el) => `${el.tagName}.${typeof el.className === 'string' ? el.className : ''}|${(el as HTMLElement).innerText.replace(/\s+/g, ' ').trim()}`),
+  );
+  log('act6', `save panel rows/controls: ${JSON.stringify(rows)}`);
+});
