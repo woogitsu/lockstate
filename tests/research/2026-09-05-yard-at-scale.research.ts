@@ -287,6 +287,16 @@ interface PrisonOptions {
    * numbers are untouched by this option existing.
    */
   readonly bricks?: number;
+  /**
+   * **#1003.** The RNG seed, defaulting to `SEED` so every act A-G row is
+   * byte-for-byte the row it was.
+   *
+   * It exists because [#997 §7] named its own weakest claim as *"one seed"* --
+   * *"A second seed would tell you whether the 80/90/100 tail is stable; it
+   * has not been run"* -- and a shape claim about where hygiene frays is the
+   * same claim about the same kind of tail. Act O runs one.
+   */
+  readonly seed?: number;
 }
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
@@ -305,7 +315,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * edges completed `wall-brick` and `door-wooden` orders would have written.
  */
 function build(options: PrisonOptions): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createNewSimulationRuntime(options.seed ?? SEED);
   const cellDoor = options.cellDoor ?? true;
   const cell = options.wideCell === true ? WIDE_CELL : CELL;
   const beds = options.wideCell === true ? WIDE_BEDS : BEDS;
@@ -1096,14 +1106,24 @@ describe('#1003 act L -- what a shower room costs, against what it earns', () =>
     }
     print('  room.yard, authored 8x8 minimum: no `enclosed` requirement, no `object` requirement => 0 minor units and 0 work');
 
-    // What the treasury actually paid, rather than what the arithmetic above
-    // says it should: `build` buys materials through `PurchaseMaterials`, and
-    // walls are written by `wallRoomPerimeter` rather than ordered, so this
-    // number is the *objects* only and is printed beside the arithmetic rather
-    // than instead of it.
+    // The rest of the prison, for scale, on the same arithmetic: `CELL` is
+    // 11x10, so 2*(11+10) = 42 perimeter segments, and it carries fifty beds
+    // and a toilet.
+    const cellSegments = 2 * (CELL.width + CELL.height);
+    const cellMoney = (cellSegments - 1) * costOf('wall-brick').money + costOf('door-wooden').money
+      + BEDS * costOf('bed-wooden').money + costOf('toilet-brick').money;
+    print(`  the cell every act builds, for scale: ${String(cellSegments)} perimeter segments, ${String(BEDS)} beds and a toilet => ${String(cellMoney)} minor units, against a starting treasury of 25000 (TREASURY_STARTING_BALANCE_MINOR_UNITS)`);
+
+    // **The treasury cannot answer this and is printed saying so.**
+    // `PurchaseMaterials` charges the treasury at *purchase*, and
+    // `PlaceObject` consumes stock rather than money -- so two arms that buy
+    // the same materials and place different objects have identical balances,
+    // and the difference is in the stock, not in the money. The price of a
+    // room is the price of the materials it consumes, which is the arithmetic
+    // above.
     const bare = build({ prisoners: 4, yards: 0, bricks: HYGIENE_BRICKS });
     const showered = build({ prisoners: 4, yards: 0, showerRooms: 1, showerPlacement: 'near', bricks: HYGIENE_BRICKS });
-    print(`  treasury after building, n=4, ${String(HYGIENE_BRICKS)} bricks bought either way: no shower ${String(bare.treasury.balanceMinorUnits)}, one shower room ${String(showered.treasury.balanceMinorUnits)} (walls are written by the fixture, not ordered, so this is the objects only)`);
+    print(`  treasury after building, n=4, ${String(HYGIENE_BRICKS)} bricks bought either way: no shower ${String(bare.treasury.balanceMinorUnits)}, one shower room ${String(showered.treasury.balanceMinorUnits)} -- EQUAL BY CONSTRUCTION: money leaves at PurchaseMaterials and PlaceObject spends stock, so this measures nothing about the room's price.`);
 
     print('  against the earnings: the state pays 300 a place a day and withholds 40 a place a day per unmet need (`src/simulation/economy/income.ts`),');
     print('  so one need turned from unmet to served is worth 40 x n a day: 160 at n=4, 2000 at n=50, 4000 at n=100.');
@@ -1168,6 +1188,29 @@ describe('#1003 act N -- whether twenty days is long enough for hygiene', () => 
         print(`      histogram ${JSON.stringify(run.unmetHistogram)}   metrics ${JSON.stringify(run.metrics)}`);
         print(`      grant series ${JSON.stringify(run.dailyGrant)}`);
       }
+    }
+  });
+});
+
+describe('#1003 act O -- the same sweep on two more seeds', () => {
+  it('re-runs the near-shower arm at n = 16, 24, 32, 40, 50 on three seeds', () => {
+    print('');
+    print(`=== ACT O: act I's near arm on three seeds, ${String(SETTLED_DAYS)} days ===`);
+    print('  Act I reads 0, 0, 1, 13 and 7 short at n = 16, 24, 32, 40 and 50, which is a non-monotone sequence from one');
+    print('  trajectory. This act asks whether the *shape* survives a different one. [#997 §7] named "one seed" as its own');
+    print('  weakest claim for exactly this reason.');
+    print('  n | seed 0x997 unmet/grant | seed 0x1003 unmet/grant | seed 0xbeef unmet/grant');
+    for (const population of [16, 24, 32, 40, 50]) {
+      const cells: string[] = [];
+      for (const seed of [0x997, 0x1003, 0xbeef]) {
+        const run = measure({ prisoners: population, yards: 0, showerRooms: 1, showerPlacement: 'near', bricks: HYGIENE_BRICKS, seed }, SETTLED_DAYS);
+        const bare = measure({ prisoners: population, yards: 0, bricks: HYGIENE_BRICKS, seed }, SETTLED_DAYS);
+        cells.push(
+          `${String(run.needs.hygiene.unmet).padStart(2)} of ${String(population).padStart(2)}, +${String(run.settledGrant - bare.settledGrant).padStart(4)}` +
+          ` (visits ${String(Math.round((run.visits['action.shower'] ?? 0) / SETTLED_DAYS))}/day)`,
+        );
+      }
+      print(`${String(population).padStart(3)} | ${cells.join(' | ')}`);
     }
   });
 });
