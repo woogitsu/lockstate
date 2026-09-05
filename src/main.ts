@@ -2149,6 +2149,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * whether a worker started, exactly like every other camera control.
      */
     onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    /*
+     * And the HUD's zoom pair, joined to the same camera on the same terms
+     * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
+     * scene was written and no control on the page named it; these buttons are
+     * that control, and `stepCameraZoom` is deliberately the *keyboard's* step
+     * through the keyboard's own code path, so pressing the button and pressing
+     * the key are one movement rather than two zooms that disagree.
+     *
+     * Passed unconditionally, exactly as `onMinimapNavigate` above is and for
+     * the reason it gives: `worldScene` exists from the top of this module
+     * whether or not a worker started, and zooming a camera is not something
+     * the simulation could refuse.
+     */
+    onCameraZoom: (direction) => {
+      worldScene.stepCameraZoom(direction);
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*

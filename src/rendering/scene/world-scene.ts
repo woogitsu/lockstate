@@ -793,6 +793,34 @@ export class WorldScene extends Phaser.Scene {
     camera.setScroll(next.scroll.x, next.scroll.y);
   }
 
+  /**
+   * One zoom step for a control that is not a key (issue #1023).
+   *
+   * The range `ZOOM_BOUNDS` declares has been reachable on the wheel, on a
+   * pinch and on `+`/`-` since this scene was written, and nothing on screen
+   * said so -- no zoom control existed in the HUD at all, which is issue
+   * #1023's whole subject. This is the seam the HUD's pair of buttons presses
+   * through, and it is public for the same reason `navigateToMinimapPoint`
+   * above is: the HUD may not import `src/rendering/**` (`AGENTS.md` boundary
+   * 1), so the composition root joins the two.
+   *
+   * **Deliberately the keyboard's step and the keyboard's code path, not a
+   * second zoom.** `KEYBOARD_ZOOM_STEP` one way and its reciprocal the other,
+   * through `stepZoom`, so a button press and a key press are the same
+   * movement about the same point and eight presses cross the whole range --
+   * the property that constant's own comment was chosen for. A separate
+   * factor here would give the game two zooms that disagree about how far one
+   * press goes, and a `camera.setZoom` of its own would walk past the bounds
+   * the wheel respects, which is the mistake `stepZoom` documents.
+   *
+   * Presentational only, per `AGENTS.md` boundary 1: writes
+   * `this.cameras.main` and nothing else, exactly as every other camera
+   * gesture on this scene does. No simulation command is built or sent.
+   */
+  public stepCameraZoom(direction: 'in' | 'out'): void {
+    this.stepZoom(direction === 'in' ? KEYBOARD_ZOOM_STEP : 1 / KEYBOARD_ZOOM_STEP);
+  }
+
   // ---- build tool ---------------------------------------------------
   //
   // The interaction is **modal**, and deliberately so. The alternative --

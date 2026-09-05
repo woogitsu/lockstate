@@ -268,6 +268,33 @@ export const HUD_MESSAGE_KEY = {
   tabRegime: 'hud.tab.regime',
   tabRooms: 'hud.tab.rooms',
 
+  /**
+   * The camera zoom control in the bottom-left corner (issue #1023).
+   *
+   * The capability was finished, deliberate and documented -- `ZOOM_BOUNDS`
+   * in `src/rendering/scene/world-scene.ts:68` is `{ min: 0.2, max: 3 }`, a
+   * fifteen-fold range reachable on the wheel, on a pinch and on `+`/`-` --
+   * and no control named it anywhere. Measured on the assembled page at
+   * 1280x800 before this landed: the substring `zoom` appeared **nowhere** in
+   * `document.body.innerHTML`.
+   *
+   * `zoomRegion` is both the group's accessible name and the visible legend
+   * above the two buttons, which is `createDisplayScaleControl`'s own
+   * arrangement (`src/ui/display-scale.ts`) and is there for the reason that
+   * control records: this game has an interface scale *and* a camera zoom, so
+   * a pair of glyphs that named neither would be ambiguous between them.
+   *
+   * `zoomIn`/`zoomOut` are the buttons' `screenReaderText` and `title`, and
+   * they name a direction rather than a range -- a press at the clamp changes
+   * nothing, exactly as the keyboard's does, and a string promising a range
+   * would be a claim the code does not keep. See the default locale's own
+   * comment above `hud.zoom.title` for the verification these three were
+   * written from.
+   */
+  zoomRegion: 'hud.zoom.title',
+  zoomIn: 'hud.zoom.in',
+  zoomOut: 'hud.zoom.out',
+
   minimapTitle: 'hud.minimap.title',
   minimapPlaceholder: 'hud.minimap.placeholder',
   /**

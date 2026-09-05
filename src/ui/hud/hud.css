@@ -269,6 +269,40 @@
 .hud-minimap { min-height: 0; }
 .hud-minimap__surface { min-height: 0; }
 
+/*
+ * The camera zoom pair, above the minimap frame (issue #1023).
+ *
+ * `flex: none` is the load-bearing declaration in this block, and it is the
+ * other half of the shrink the two lines above buy. The corner is a bounded
+ * flex column: whatever this row does not give up comes out of the minimap
+ * frame below it, which is exactly the direction that is wanted -- the square
+ * has a documented cap and a `min-height: 0` chain built to let it shrink,
+ * and a 44px tap target that shrank would stop being one. So the pair keeps
+ * its height and the frame absorbs it.
+ *
+ * `align-self: flex-start` so the row is only as wide as the two buttons and
+ * their legend, rather than stretching to the frame's 396px and putting a
+ * band of surface across the corner. Its own background and border make it
+ * read as an island rather than as part of the frame under it, which is what
+ * it is: the minimap panel can be collapsed and this cannot.
+ */
+.hud-zoom {
+  display: flex;
+  flex: none;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+/* The legend never shrinks and never wraps: it is one short word, and a
+   wrapped one would take the row past the tap targets beside it. */
+.hud-zoom__legend { flex: none; }
+
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed a fixed width while the type
    inside it grew would be the one island the scale did not reach.

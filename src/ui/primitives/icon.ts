@@ -30,6 +30,8 @@ export const ICON_IDS = [
   'brand',
   'ui-scale',
   'dismiss',
+  'zoom-in',
+  'zoom-out',
 ] as const;
 
 export type IconId = (typeof ICON_IDS)[number];
@@ -85,6 +87,31 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   // pointing at one path would make a content sweep read the brand as a
   // contraband indicator, and the shapes want to diverge: `contraband` is a
   // closed lock and this one is the identity of the game.
+  // The camera zoom, in the HUD's bottom-left corner (issue #1023). A
+  // magnifier -- circle and handle -- with a plus or a minus across it, which
+  // is the glyph a player already reads as "zoom" in a map, a document viewer
+  // and a photo library.
+  //
+  // Strokes only and on the same 24-unit grid as every other entry, so the
+  // pair sits at `--icon-size-md` beside the transport controls' own glyphs.
+  // Deliberately not the characters `+` and `-`: `dismiss` above records why
+  // (a literal character is one a locale might not have and a screen reader
+  // would announce), and the two buttons carry their words in
+  // `screenReaderText` instead.
+  //
+  // The circle and the handle are byte-identical between the two, so the only
+  // difference on screen is the bar the player is being asked about.
+  'zoom-in': [
+    'M10.5 4.75a5.75 5.75 0 1 1 0 11.5 5.75 5.75 0 0 1 0-11.5Z',
+    'M14.85 14.85 19.25 19.25',
+    'M7.75 10.5h5.5',
+    'M10.5 7.75v5.5',
+  ],
+  'zoom-out': [
+    'M10.5 4.75a5.75 5.75 0 1 1 0 11.5 5.75 5.75 0 0 1 0-11.5Z',
+    'M14.85 14.85 19.25 19.25',
+    'M7.75 10.5h5.5',
+  ],
   brand: [
     'M8 10.25V7.5a4 4 0 0 1 8 0v2.75',
     'M5.75 10.25h12.5v9.5H5.75z',
