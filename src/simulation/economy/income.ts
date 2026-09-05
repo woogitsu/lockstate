@@ -398,7 +398,7 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  * it leaves the arithmetic exact, and it makes the withheld term vanish
  * without changing the shape of the expression that computes it.
  */
-export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;
+export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;
 
 /** Integer division. `%` and `-` are exact on safe integers, so the quotient is exact rather than a rounded float. */
 function floorDiv(numerator: number, denominator: number): number {
