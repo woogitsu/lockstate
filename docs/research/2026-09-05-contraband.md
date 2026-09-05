@@ -37,8 +37,9 @@ cannot order a search: `commands.ts` declares fifteen command types and none is
 one** (VERIFIED), so ADR 0073's Option B is genuinely unbuilt, exactly as the ADR
 asks. The one control that touches a search at all is **Release** on a
 `Guard · Contraband Search` row — which cancels the sweep, is not labelled as
-doing so, and was refused on both attempts at ×4 because the row goes stale
-faster than a press lands. And a live `hud/contraband` projection carries 40
+doing so, and could not be reached on any of three attempts at ×4: twice refused
+with the designed *"that guard is already off duty"*, and once the row was gone
+before a Pause press could land. And a live `hud/contraband` projection carries 40
 completed searches, one item missed, full provenance for every find and an empty
 intelligence ledger — pulled here out of the running worker, and drawn by
 nothing.
@@ -318,10 +319,12 @@ whole run:
 [contraband] held-row samples: 93; samples showing a search row: 17
 ```
 
-So **a searching guard is visible about 18% of the time** (17 of 93 samples) —
-this is the only place inside a *tab* where contraband work appears at all, and
-it appears as a status word on a staff row rather than as anything about
-contraband.
+So **a searching guard is on the panel a noticeable minority of the time** —
+**17 of 93** samples in one run and **9 of 70** in a second (18% and 13%; the two
+runs are on different seeds and the second shared the machine with another
+tester's suite). This is the only place inside a *tab* where contraband work
+appears at all, and it appears as a status word on a staff row rather than as
+anything about contraband.
 
 **Pressing Release on it was refused, both times.** MEASURED, act 3, pressing as
 soon as the row was read, with no probe in between:
@@ -340,6 +343,22 @@ the press."* **REASONED**: at ×4 a sector sweep leg is short enough that the
 round trip from reading the row to landing the click outruns it, so the control
 the panel offers on a searching guard is, at that speed, one a player is more
 likely to miss than to hit. `searchesCancelled` stayed `0`.
+
+**And pausing first did not help either, which is the discriminating attempt.**
+MEASURED, act 3, third attempt: on a later sighting the clock was paused *before*
+pressing, and the held-guard rows were re-read after the pause landed:
+
+```
+[contraband] PAUSED at tick 17044; rows now:
+  [{"guard":"0","text":"Guard · Sector Post Release"},{"guard":"1","text":"Guard · Sector Post Release"}]
+[contraband]   the row was gone before the pause landed -- no paused press made
+```
+
+The row that had been read one iteration earlier was **already gone** by the time
+a Pause click and a 400 ms settle had completed. **REASONED**: at ×4 the
+`Guard · Contraband Search` row is stale inside roughly one second of page time,
+which is less than the time it takes to notice it and move a pointer to it. So
+three attempts in two runs reached the control zero times.
 
 **JUDGEMENT**: even if it landed, the row does not say what Release would cost.
 It reads `Guard · Contraband Search` beside a button whose panel-level note is
@@ -509,15 +528,18 @@ demonstrably true of the code that renders it.
 ## 11. My weakest claim, and what would change my mind
 
 **That the Release control on a searching guard is effectively unreachable
-(§6).** It rests on two presses, both at ×4, both refused with the same designed
-`not-held` refusal — and the second attempt in act 3, which pauses the clock
-before pressing, had not returned a result when this record was written, so the
-discriminating measurement is the one I do not have. If a paused press succeeds,
-the correct claim is much narrower: *"the row is stale within a second at ×4, so
-the control needs a pause"*, which is a speed observation and not a defect. If a
-paused press is **also** refused, the claim gets stronger and different: the row
-would be publishing a claim the command layer no longer agrees with, which is a
-plumbing question rather than a timing one. Either way, **two presses is not a
+(§6).** It rests on three attempts in two runs, all at ×4: two presses refused
+with the designed `not-held` refusal, and one where the row vanished before a
+Pause press landed. That is consistent and it is still three. **What would change
+my mind** is a run at ×1, which I did not do: a sweep leg lasts the same number
+of *ticks* either way, so at ×1 a player has four times the wall-clock window and
+the control may be perfectly reachable — in which case the honest claim shrinks
+to *"at ×4 this row is stale before you can press it"*, which is a speed
+observation about one row rather than anything about contraband. **What would
+make it worse** is a paused press that is *also* refused with the row still on
+screen: that would mean the panel is publishing a claim the command layer no
+longer agrees with, which is plumbing rather than timing. I did not obtain that
+case — my paused attempt never got a row to press. **Three attempts is not a
 measurement of a control**, and the number I would want is ten, half of them at
 ×1.
 
