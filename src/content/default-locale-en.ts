@@ -2022,14 +2022,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * **It read *"Only free guards answer incidents."*, it was true, and it is
    * still true. What retired it is that it named ONE consumer of the free pool
    * and there are TWO.** `SearchSystem.assignQueuedOrders`
-   * (`src/simulation/contraband/search-system.ts:287`) staffs a contraband
-   * search from `claimableGuardIds(this.guards)` -- the same call, on the same
-   * roster, as the responder claim the section above opens -- and
+   * (`src/simulation/contraband/search-system.ts`, by symbol for the reason
+   * two paragraphs down) staffs a contraband search from the same roster, and
    * `SectorSearchDutySystem.update`
    * (`src/simulation/contraband/sector-search-duty.ts`) will not even *order*
    * a sweep unless that pool already holds `policy.requiredGuardCount` (`1`
    * for `'sector'`, `DEFAULT_SEARCH_POLICY_BY_SCOPE` in
-   * `src/simulation/contraband/default-search-policies.ts`). **Both of those
+   * `src/simulation/contraband/default-search-policies.ts`).
+   *
+   * **Both of those calls said `claimableGuardIds(this.guards)` -- *"the same
+   * call, on the same roster, as the responder claim"* -- until 2026-09-05,
+   * and issue #996 made that clause false while leaving the sentence on screen
+   * true.** They now read `claimableSearchGuardIds`, which is that pool less
+   * `INCIDENT_RESPONSE_GUARD_RESERVE`, so a search still needs free guards --
+   * it needs *more* of them than it did, one more than a response does. The
+   * enumeration this hint makes is untouched: two duties draw on the free
+   * pool, and the change is which slice of it one of them may take. The retired
+   * clause is left visible rather than overwritten because the rewritten
+   * sentence is the one a reader will check against the code. **Both of those
    * are cited by symbol and not by line, and the second one is why**: this
    * paragraph first read `sector-search-duty.ts:126`, and the docblock this
    * change added to that same file moved the line to `:139` before the commit

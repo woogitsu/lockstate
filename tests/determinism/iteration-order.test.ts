@@ -377,6 +377,18 @@ describe('search jobs and room instances are ordered canonically, not by registr
     // `snapshot-restore-fidelity.test.ts`; this keeps the canonical order
     // itself visible.
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
+    /*
+     * One hire on top of the scenario's five, and it belongs to this case
+     * rather than to the shared fixture: since issue #996 a search claims from
+     * `claimableSearchGuardIds`, which withholds
+     * `INCIDENT_RESPONSE_GUARD_RESERVE` free guards, and the scenario's spare
+     * pool is exactly the two these two orders need. Without it one order stays
+     * queued and this case would be asserting the order of a single job.
+     * Hiring here keeps every entity id the scenario allocates -- and the
+     * populations `render-delta-publication.test.ts` and
+     * `session-restore-rng-ownership.test.ts` pin -- exactly as they are.
+     */
+    runtime.securityGuards.hire('staff-role.guard', TILE(0, 0));
     runtime.kernel.step();
     expect(runtime.searchSystem.getSnapshot().active.map(([id]) => id)).toEqual(['search-a', 'search-b']);
   });

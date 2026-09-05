@@ -323,6 +323,14 @@ describe('the rung the panel calls covered does not say whether anyone can answe
  * measured over ~9 in-game days on one seed -- 1 guard 0 discoveries, 2 guards
  * (`2 of 2 · Covered`) 0 discoveries, 3 guards finds.
  *
+ * **The last figure moved on 2026-09-05 and the sentence around it did not**
+ * (issue [#996](https://github.com/matmaxalez/lockstate/issues/996)): a sweep
+ * is now staffed from `claimableSearchGuardIds`, the same pool less
+ * `INCIDENT_RESPONSE_GUARD_RESERVE`, so it is **4 guards** that finds and 3
+ * that does not. What #989 named is untouched by that -- the panel still reads
+ * `2 of 2 · Covered` for every one of those prisons -- which is why the cases
+ * below now carry three of them rather than two.
+ *
  * ## What is asserted, and what is deliberately not
  *
  * Whether a sweep is **ordered**, not whether one **finds** something.
@@ -330,8 +338,8 @@ describe('the rung the panel calls covered does not say whether anyone can answe
  * admissions may or may not have brought in, so an assertion about discoveries
  * would be an assertion about a seed;
  * `tests/integration/contraband-search-duty.test.ts` is where the finding half
- * is measured, in a prison built for it. The difference between the two
- * prisons below is exactly one `HireStaff` command and nothing else.
+ * is measured, in a prison built for it. The difference between the prisons
+ * below is `HireStaff` commands and nothing else.
  *
  * Nothing here rules on how big the requirement should be. That is balance and
  * `AGENTS.md` reserves it to the owner; this file establishes the arithmetic.
@@ -359,9 +367,21 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     return runtime;
   }
 
-  it('orders no sweep at exactly the requirement, orders them one hire later, and reads the same either way', () => {
+  /**
+   * **Renamed and re-measured on 2026-09-05 (issue #996).** It read *"orders
+   * no sweep at exactly the requirement, orders them one hire later"*, and the
+   * second clause was true until the owner ruled that a search must draw on a
+   * pool that cannot be emptied of responders. The hire that turns searching on
+   * is now the **second** one past the requirement: the first is the reserve
+   * `claimableSearchGuardIds` holds back. Both prisons past the requirement are
+   * kept here rather than one, because the case's subject is that the panel
+   * reads the same for all three -- which is the defect #989 named and #996
+   * did not close.
+   */
+  it('orders no sweep at the requirement or one hire past it, orders them two hires past, and reads the same either way (#989, #996)', () => {
     const atRequirement = prisonWithGuards(2);
     const oneHirePast = prisonWithGuards(3);
+    const twoHiresPast = prisonWithGuards(4);
 
     // The premise: both prisons are on the covered rung, with the same badge,
     // the same pair of figures and the same shortage. `assigned` is 2 in both
@@ -377,6 +397,7 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     };
     expect(readout(atRequirement)).toMatchObject(covered);
     expect(readout(oneHirePast)).toEqual(readout(atRequirement));
+    expect(readout(twoHiresPast)).toEqual(readout(atRequirement));
 
     // The pool the two duties compete for, through the function both of them
     // call rather than a re-derivation of it.
@@ -395,8 +416,18 @@ describe('the rung the panel calls covered does not say whether anyone can searc
       searchesCancelled: 0,
     });
 
-    // One hire later, the same panel, and the duty runs.
-    expect(oneHirePast.searchSystem.getMetrics().searchesCompleted).toBeGreaterThan(0);
+    /*
+     * One hire later, the same panel, and **still** no order: that guard is
+     * the incident reserve (#996), and the duty will not spend it. This is the
+     * balance cost of that change, asserted in the file that measures what a
+     * hire buys rather than only described in the ADR amendment.
+     */
+    expect(claimableGuardIds(oneHirePast.securityGuards)).toHaveLength(1);
+    expect(oneHirePast.searchSystem.orderIds()).toEqual([]);
+    expect(oneHirePast.searchSystem.getMetrics()).toMatchObject({ searchesCompleted: 0, searchesQueued: 0, searchesCancelled: 0 });
+
+    // Two hires past, the same panel again, and the duty runs.
+    expect(twoHiresPast.searchSystem.getMetrics().searchesCompleted).toBeGreaterThan(0);
   });
 
   it('renders the sentence that says so, as real text from the bundled catalog', () => {
@@ -415,32 +446,34 @@ describe('the rung the panel calls covered does not say whether anyone can searc
   });
 
   /**
-   * **The two duties share one reserve, and a sweep takes all of it.**
+   * **The two duties shared one reserve, a sweep took all of it, and issue #996
+   * closed that.**
    *
-   * #989 asked whether there is a *third* consumer of `claimableGuardIds`.
-   * There is not -- `DeploymentSystem` fills the posts, `IncidentResponseSystem`
-   * and the two contraband call sites claim from what is left, and
-   * `tests/foundation/claimable-guard-pool-contract.test.ts` pins that set. What
-   * there is instead is this, which no test in the repository put together
-   * before: the guard #941's sentence points at and the guard a sweep walks are
-   * **the same guard**, and while the sweep has him the responder pool is empty.
+   * The paragraph below is what this case asserted until 2026-09-05 and is kept
+   * because it is the finding that produced the fix, not because it still
+   * describes the code:
    *
-   * Both halves were already asserted here, one block apart, and neither
-   * implied the other: the block above measures `claimableGuardIds` at exactly
-   * `1` one hire past the requirement, and `requiredResponderCount(3)` at `2`
-   * for the mildest incident this build can open. So requirement+1 is the hire
-   * that makes contraband findable and is **not** the hire that makes an
-   * incident answerable, and for part of every cadence it is neither.
+   * > #989 asked whether there is a *third* consumer of `claimableGuardIds`.
+   * > There is not [...] What there is instead is this, which no test in the
+   * > repository put together before: the guard #941's sentence points at and
+   * > the guard a sweep walks are **the same guard**, and while the sweep has
+   * > him the responder pool is empty.
    *
-   * **This asserts no balance and must not.** Whether the reserve should be
-   * sized for both duties at once -- a second guard, a sweep that yields to an
-   * open incident, or nothing at all -- is exactly the question `AGENTS.md`
-   * reserves to the owner, and `SectorSearchDutySystem`'s own docblock declines
-   * to reserve against the pool for a separate reason (ADR 0053: one staffing
-   * rule, in one place). What is asserted is the arithmetic underneath the
-   * decision.
+   * It was measured, in this prison, at **every tick a sweep was staffed**. The
+   * owner ruled on it the next day -- *"osobna pula dla przeszukań"* -- and
+   * `claimableSearchGuardIds` now withholds `INCIDENT_RESPONSE_GUARD_RESERVE`
+   * free guards from a search, so the prison one hire past the requirement
+   * orders no sweep at all and the pool it would have emptied stays full.
+   *
+   * **What is asserted now is the same arithmetic from the other side**, and it
+   * still asserts no balance: that the free pool is never empty at a tick a
+   * sweep holds a guard, in the prison where it used to be empty at every such
+   * tick. The mildest incident this build can open still asks for two guards
+   * and one reserved guard cannot answer it -- that number is
+   * `respondersPerSeverityPoint`, it is balance, and `AGENTS.md` reserves it to
+   * the owner exactly as the retired paragraph said.
    */
-  it('spends the whole reserve on a sweep, in the prison one hire past the requirement', () => {
+  it('never empties the responder pool for a sweep, in the prison one hire past the requirement (#996)', () => {
     const runtime = prisonWithGuards(3);
     // The premise, from the block above: one spare guard, and the mildest
     // incident this build can open asks for two.
@@ -451,23 +484,25 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     // sweep interval written out for `NINTH`'s reason, and 6,000 ticks is ten
     // opportunities.
     let ticksWithASweep = 0;
-    let ticksWithASweepAndNoResponder = 0;
+    let ticksWithAnEmptyPool = 0;
     for (let step = 0; step < 6_000; step += 1) {
       runtime.kernel.step();
-      if (runtime.searchSystem.claimedGuardIds().length === 0) continue;
-      ticksWithASweep += 1;
-      if (claimableGuardIds(runtime.securityGuards).length === 0) ticksWithASweepAndNoResponder += 1;
+      if (claimableGuardIds(runtime.securityGuards).length === 0) ticksWithAnEmptyPool += 1;
+      if (runtime.searchSystem.claimedGuardIds().length > 0) ticksWithASweep += 1;
     }
 
-    // The prison really does search -- without this the assertion below would
-    // be vacuously true of a prison that never sweeps at all.
-    expect(ticksWithASweep, 'the spare guard is never claimed for a sweep, so this case measures nothing').toBeGreaterThan(0);
-    // And for every one of those ticks the pool a responder comes from is
-    // empty. `toBe` rather than `toBeGreaterThan`: the claim is that a sweep
-    // takes the *whole* reserve, not that it sometimes does.
-    expect(ticksWithASweepAndNoResponder).toBe(ticksWithASweep);
+    // Not one sweep in ten opportunities, and never an empty pool: the spare
+    // guard is the reserve and nothing but a response may take him. Before
+    // #996 this prison swept on every cadence and this pool was empty for
+    // every tick of every sweep.
+    expect(ticksWithASweep).toBe(0);
+    expect(ticksWithAnEmptyPool).toBe(0);
+    // Non-vacuous: the duty is not switched off, it is out of guards. The
+    // prison one hire further on sweeps, which the case above asserts.
+    expect(runtime.searchSystem.orderIds()).toEqual([]);
   });
 });
+
 
 describe('hiring visibly fixes it, through the same command a player presses', () => {
   it('walks the block from unguarded to understaffed to covered, one hire at a time', () => {
