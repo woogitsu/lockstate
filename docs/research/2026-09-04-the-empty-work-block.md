@@ -64,9 +64,14 @@ evidence and never a gate. **Nothing under `src/` is changed on this branch.**
 | act | prison | what it answers |
 | --- | --- | --- |
 | **1** | a stock cell-and-toilet prison, 4 prisoners | what the **Regime tab** actually lets a player do |
-| **2** | — | the clear-canvas geometry acts 3 and 4 are laid out against |
+| **2** | — | the clear-canvas geometry acts 3 and 4 are laid out against — **inherited, not re-run at v0.0.475**; see [§5](#5-what-this-record-did-not-reach) |
 | **3** | cell + shower room + yard, **8** prisoners | the counterfactual day-scan: the work block with no work rooms |
 | **4** | the same **plus kitchen + laundry + classroom** | the same day-scan with them |
+
+**The filename says 2026-09-04 and this record is written on 2026-09-05.** The
+instrument was authored by the previous session under that date and is
+committed; renaming it would break the three commits that cite it, so the name
+is kept and the discrepancy is said out loud instead.
 
 Reproduction, one act at a time:
 
@@ -201,10 +206,6 @@ tick 500 to 1,000 is looking at the tab named for it, reading a heading that
 says *Today's blocks*, and being shown neither today nor the blocks — only the
 minute they are in. The schedule that decides 42% of a prisoner's life is not
 displayed anywhere in the game.
-
----
-
-*(§2–§5 follow as the acts complete.)*
 
 ---
 
