@@ -959,6 +959,19 @@ const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
  */
 const BARE_WORLD_SCAN_MAX_PX = 336;
 
+/**
+ * How finely `dragRectangleOnWorld`'s `wholeSquare` scan samples a candidate
+ * gesture, in CSS pixels.
+ *
+ * 16, which is the same step the scan itself walks the page in, so the lattice
+ * is the scan's own grid rather than a second number -- and it is a quarter of
+ * `TILE_SIZE_PX`, so no tile of a candidate rectangle goes unsampled on either
+ * axis. Nothing this is aimed against is anywhere near that small: the HUD
+ * islands that swallow a pointer are whole panels, the narrowest of them
+ * `.hud-rooms` at 264px wide (measured at 1280x800).
+ */
+const BARE_SQUARE_SAMPLE_STEP_PX = 16;
+
 /** One pending-rectangle control, measured as a tap target and hit-tested. */
 interface RoomControlHit {
   readonly control: string;
@@ -1108,10 +1121,47 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
  *
  * `null` still means what `false` meant: there was no square of bare world to
  * draw in, which is a measurement and not a failure -- see the paragraph above.
+ *
+ * ### `wholeSquare`, and the measurement that made it necessary
+ *
+ * The scan's default is three points on a diagonal -- press, midpoint, release
+ * -- and the paragraph below calls that coarse on purpose. It is coarse in a
+ * direction that matters to any caller which draws the *same* rectangle twice:
+ * a square whose three diagonal points are canvas may still lie mostly under a
+ * HUD island, and an island that later grows takes the aim point with it.
+ *
+ * **Measured on 2026-09-05, at 1280x800, on the branch that added the first
+ * acknowledgement (#966 site 2).** The second room drag of the `#331` spec
+ * aimed at `(328,344)`, which was bare canvas by **3.8px** -- the bottom-left
+ * minimap panel's top edge was at `347.8`. Designating the first room put a row
+ * in the alerts list inside that panel, the list went `32px -> 60px`, and
+ * `.hud__corner` grew upward from `y=334.8` to `y=306.8` (its bottom pinned at
+ * `730.8`). `elementFromPoint(328,344)` then returned `h2.ui-panel__title`, the
+ * scan slid right to `(424,344)`, and the drag drew `12,15 4x4` where its walls
+ * had been built around `11,15 4x4`.
+ *
+ * The canvas did not move: `0,0 1280x800`, attributes `1280x800`, identical
+ * before and after. What moved was how much world a HUD island covers.
+ *
+ * So `wholeSquare` asks the question the caller actually has -- *is this square
+ * world?* -- by sampling the whole gesture on a 16px lattice instead of three
+ * points on its diagonal. The aim it returns is then bounded by the islands'
+ * horizontal extent rather than by an island's top edge, and a panel that grows
+ * upward by a row cannot slide it. That is a stronger property than the default
+ * and not a proof: nothing here can promise a square stays bare, which is why
+ * `drawRoomRectangle` still asserts the rectangle it drew rather than trusting
+ * the aim.
+ *
+ * **Off by default, and the two other callers are the reason.** Both drag once,
+ * never redraw, assert only `not.toBeNull()`, and run at 375x812 where
+ * `.hud-minimap`'s `calc(396px * var(--ui-scale))` is wider than the viewport --
+ * so a strictly bare square is a different and much scarcer thing there, and
+ * tightening what they aim with would change what they measure. Only a caller
+ * that has to hit the same tiles twice needs this.
  */
 async function dragRectangleOnWorld(
   page: Page,
-  options: { readonly minY?: number } = {},
+  options: { readonly minY?: number; readonly wholeSquare?: boolean } = {},
 ): Promise<WorldDragGesture | null> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
@@ -1120,14 +1170,39 @@ async function dragRectangleOnWorld(
   // midpoint and release -- lands on the canvas wins. Coarse on purpose; this is
   // aiming at open ground, not measuring a boundary, and a fine grid would spend
   // hundreds of round trips to find the same point.
+  //
+  // `wholeSquare` trades that coarseness for a lattice over the whole square,
+  // for the reason recorded above. Both forms are one `evaluate` -- the cost is
+  // `elementFromPoint` calls in the page, not round trips -- and both stop at
+  // the first point that is not canvas, so a candidate under an island is
+  // rejected on its first or second sample.
   const aim = await page.evaluate(
-    ({ width, height, deltas, minY }) => {
+    ({ width, height, deltas, minY, wholeSquare, step }) => {
       const free = (x: number, y: number): boolean =>
         document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
+      // Inclusive on both axes, and the last offset is the exact far edge rather
+      // than the last multiple of `step` below it: the release point is a corner
+      // of the square and is exactly where a drag ends.
+      const offsetsWithin = (delta: number): number[] => {
+        const offsets: number[] = [];
+        for (let d = 0; d < delta; d += step) offsets.push(d);
+        offsets.push(delta);
+        return offsets;
+      };
+      const bare = (x: number, y: number, delta: number): boolean => {
+        if (!wholeSquare) return free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta);
+        const offsets = offsetsWithin(delta);
+        for (const dy of offsets) {
+          for (const dx of offsets) {
+            if (!free(x + dx, y + dy)) return false;
+          }
+        }
+        return true;
+      };
       for (const delta of deltas) {
         for (let y = Math.max(8, minY); y + delta < height - 8; y += 16) {
           for (let x = 8; x + delta < width - 8; x += 16) {
-            if (free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta)) {
+            if (bare(x, y, delta)) {
               return { x, y, delta };
             }
           }
@@ -1135,7 +1210,14 @@ async function dragRectangleOnWorld(
       }
       return null;
     },
-    { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX], minY: options.minY ?? 8 },
+    {
+      width: viewport.width,
+      height: viewport.height,
+      deltas: [...ROOM_DRAG_DELTAS_PX],
+      minY: options.minY ?? 8,
+      wholeSquare: options.wholeSquare ?? false,
+      step: BARE_SQUARE_SAMPLE_STEP_PX,
+    },
   );
 
   if (aim === null) return null;
@@ -1289,7 +1371,15 @@ async function drawRoomRectangle(
   what: string,
   options: { readonly roomCatalogId: string; readonly minY?: number; readonly clearOf?: readonly TileRectangle[] },
 ): Promise<{ readonly rectangle: TileRectangle; readonly gesture: WorldDragGesture }> {
-  const gesture = await dragRectangleOnWorld(page, options.minY === undefined ? {} : { minY: options.minY });
+  const gesture = await dragRectangleOnWorld(page, {
+    // Every drag through this helper is one half of a pair: a probe that
+    // decides where thirty wall segments go, and the real drag that has to land
+    // on the same tiles once they are up. `wholeSquare` is what stops a HUD
+    // island that grew in between from moving the second one -- see
+    // `dragRectangleOnWorld`'s own note for the 3.8px this was measured at.
+    wholeSquare: true,
+    ...(options.minY === undefined ? {} : { minY: options.minY }),
+  });
   if (gesture === null) {
     throw new Error(
       `${what}: no square of bare world to draw a room in, from y=${String(options.minY ?? 8)} down` +
