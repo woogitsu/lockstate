@@ -16,6 +16,12 @@ small. The largest was 30 prisoners; most were four to twelve. Build a big
 prison — many blocks, many rooms, as many prisoners as the game will take — and
 find out what happens.*
 
+**`main` moved under this record while it was being played**, from `b984445f`
+(v0.0.475) to `376b48bf` (**v0.0.477**), and among the merges is
+`docs/research/2026-09-04-what-pressure-there-is-at-fifty.md`, which §1a and §10
+below both engage with. **Every measurement here is at v0.0.475**, confirmed
+from inside the running page at every act.
+
 **LFS.** `git lfs checkout` was run in the worktree before anything, confirmed
 by `file public/assets/actors/actor.guard.base.idle.png` →
 `PNG image data, 260 x 3104, 8-bit/color RGBA`.
@@ -180,6 +186,20 @@ four earlier records derived, so the arrival camera has not moved.
                               {"sx":840,"tx":20},{"sx":980,"tx":25},{"sx":1120,"tx":31}]
 [act0] zoomed-out tile pitch from the read-back = 25.926 px (zoom = 0.4051)
 ```
+
+### 1a. A correction to a record that merged today: the enclosable map is ten times what it says
+
+`docs/research/2026-09-04-what-pressure-there-is-at-fifty.md` §1 reads, of its
+10×10 cell: *"the biggest square the pointer can enclose at 1440×900 and it
+leaves no tile over"*, and its verdict says fifty prisoners *"takes the whole of
+the enclosable map to do it"*.
+
+**MEASURED, act 0 and act 1.** That is true **at zoom 1 only**. Four presses of
+`Minus` put 902 of the plot's 1,024 tiles under the pointer (§2), and this
+record's prison encloses **eight rooms totalling 291 tiles** — 2.9× that "whole
+map" — with 173 wall segments, on the same 1440×900 viewport. The 100-tile
+ceiling is a property of the arrival zoom, not of the plot. **The real ceiling
+is the one 32×32 chunk**, and it is about ten times larger.
 
 **JUDGEMENT.** A player who wants to see their whole prison has to zoom out to
 about 40%, at which a tile is 26 px. That is workable, and the four keypresses
@@ -629,9 +649,20 @@ backwards or stalled.
 
 **How far did it actually get, and what did it cost?** **68 prisoners, 8 rooms,
 173 wall segments, 10 staff, on one 32×32 plot, in 61,354 ticks — 25 in-game
-days.** That is **2.3× the largest population any playtest in
-`docs/research/` had reached** (30, `2026-09-04-hour-two.md`) and the first with
-more than two rooms. It is also **1.4% of the README's "several thousand active
+days.**
+
+**The brief's premise that 30 was the record is out of date, and the correction
+matters more than the record does.** `docs/research/2026-09-04-what-pressure-there-is-at-fifty.md`
+housed **fifty** — it merged into `main` while this was being played — so 68 is
+1.4× the largest, not 2.3×. What is unshared is the shape: that prison is *"a
+10×10 cell, 100 tiles, fifty beds and no room for the toilet the game's own
+Rooms panel says the room is missing"* and *"every act's cell is walled on four
+sides with **no doorway**"*, which its own author calls *"a dead cell's
+composition, not a well-built prison's"*. **This one is eight rooms with a door
+in every wall** — the room-list projection reports `access: "doorway"` for all
+seven enclosed rooms and `"gap"` for the yard, which is correct — so it is the
+first playtest prison whose rooms a prisoner can walk into, and the first with
+more than two rooms at all. It is also **1.4% of the README's "several thousand active
 actors"**, and §1 says why a player cannot get closer: the plot is 1,024 tiles
 and there is no way to buy another.
 
@@ -830,10 +861,27 @@ if (definition.capabilities.includes(SLEEP_SURFACE_CAPABILITY)) {
 [act2] counts: {"tick":4850,…,"rooms":1,"roomCapacity":4,"accommodationCapacity":4,…}
 ```
 
-**Four beds, one toilet, capacity 4.** So the second `armBuildable` in a run
-*does* change the armed buildable — the arm label stays `Stop placing` and the
-placement still carries `definitionId: "toilet-brick"` — and a toilet does *not*
-add a resident place. Both candidate explanations for act 1's `+8` are dead.
+**Four beds, one toilet, capacity 4.** One of the two candidate explanations is
+dead outright: the second `armBuildable` in a run *does* change the armed
+buildable — the arm label stays `Stop placing` and the placement still carries
+`definitionId: "toilet-brick"`.
+
+**The other half of that control is weaker than it looks, and this record says
+so rather than leaning on it.** `latestCounts` returns the last counts the
+worker *published*, and the worker skips a publication whose payload equals the
+previous one (`statusCountsEqual`, `src/simulation/worker/status-counts.ts`).
+The sample above is stamped `tick 4850` while the toilet order was placed after
+tick 5,000 — so **`capacity 4` may be a reading from before the toilet
+existed**, and act 2 does not actually rule out "a toilet adds a resident
+place".
+
+**A third measurement, from a record that merged today, points the same way.**
+`2026-09-04-what-pressure-there-is-at-fifty.md` built a 10×10 cell with **fifty
+beds and no toilet at all** — its Rooms panel said so — and measured
+`roomCapacity=50 accommodationCapacity=50`: **exact, with no surplus.** So every
+prison measured *without* toilets reports exactly its bed count, and the one
+measured *with* eight toilets reports eight too many. That is suggestive and it
+is not a diagnosis.
 
 **So this is a measurement without a diagnosis, and it is reported as one.** Two
 things are true together and I cannot yet reconcile them: at four beds the
