@@ -1242,6 +1242,52 @@ export interface HudRoomNeedViewModel {
 }
 
 /**
+ * One room that cannot take another user right now, and the ceiling it is
+ * against (ADR 0028 phase 5).
+ *
+ * **Not a `HudRoomNeedViewModel`, and the distinction is the whole point.** A
+ * need is something the player has not built yet: a cell short of a bed, a
+ * room with no door in its wall line. A room here is *finished* -- it holds
+ * every object its catalogue definition asks for -- and is nonetheless
+ * refusing arrivals, because ADR 0028 derives a concurrent-use ceiling from
+ * the objects standing in it and the prison has outgrown it. Issue #1003
+ * measured the sharp case: `room.shower-room` asks for two shower heads, two
+ * heads is a ceiling of two, and a fifty-prisoner prison in which nobody
+ * washes is reachable with every room reading complete.
+ *
+ * Folding that into `needs` would have made `unfinishedRooms` count a finished
+ * room, which is a false figure in a sentence the player reads. Two lists,
+ * two counts, one block -- see `rooms-panel.ts`'s `paintNeeds` for which of
+ * them the block draws and why it is never both.
+ *
+ * ## What `places` and `inUse` are, and what they are not
+ *
+ * They are `RoomConcurrentUseViewModel.capacity` and `.inUse` for **one**
+ * capability of this room: the first, in the projection's ascending capability
+ * order, whose ceiling is fully claimed. A room can be full for one use and
+ * free for another -- a canteen's dining places and its bench seating are
+ * different ceilings -- so this names one of them rather than a total, and
+ * `src/ui/simulation-room-needs.ts` records why it does not try to name which.
+ *
+ * `inUse` may exceed `places`: a claim reinstated at restore, or an object
+ * removed under a performing actor, stands above a dropped ceiling (ADR 0028
+ * decision 2). Neither figure is clamped anywhere between the registry and
+ * this type.
+ */
+export interface HudRoomAtCapacityViewModel {
+  /** The room instance this is about (`room.shower-room:4:6`). A row identity, never rendered. */
+  readonly instanceId: string;
+  /** The room type's `nameKey`. A key, never text. */
+  readonly roomLabelKey: LocalizationKey;
+  /** Where the room is, so a player with three shower rooms knows which one this is. */
+  readonly tile: { readonly x: number; readonly y: number };
+  /** How many may use the room at once for the thing it is full for. At least 1: a ceiling of zero cannot be reached. */
+  readonly places: number;
+  /** How many are using it for that right now. At least `places`. */
+  readonly inUse: number;
+}
+
+/**
  * What the rooms the player has designated are still missing (#331 milestone).
  *
  * Session state that arrives on a **pull**, unlike everything else on
@@ -1273,6 +1319,21 @@ export interface HudRoomNeedsViewModel {
   readonly totalNeeds: number;
   /** The ones there is room to name, in the projection's canonical order. */
   readonly needs: readonly HudRoomNeedViewModel[];
+  /**
+   * Every room in the projected page that cannot take another user right now,
+   * in the projection's canonical order (ADR 0028 phase 5).
+   *
+   * **Complete over that page, unlike `needs`**, and the difference is where
+   * each comes from: a need is read off a per-room *detail* projection, so
+   * only `ROOM_NEEDS_ROOMS_LIMIT` rooms are ever asked about, while this is
+   * read off the one *list* reply every drive already fetches. So its length
+   * is the count -- there is no second figure beside it for the same reason
+   * `unfinishedRooms` needs one: nothing truncated it.
+   *
+   * Empty is the ordinary state and is not silence: it means the projection
+   * was read and no room's ceiling was fully claimed at that moment.
+   */
+  readonly atCapacity: readonly HudRoomAtCapacityViewModel[];
 }
 
 /**

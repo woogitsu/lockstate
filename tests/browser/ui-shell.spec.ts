@@ -4442,6 +4442,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 0,
         totalRooms: 4,
         totalNeeds: 0,
+        atCapacity: [],
         needs: [],
       }),
     );
@@ -4458,6 +4459,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 4,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4501,6 +4503,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 2,
         totalRooms: 4,
         totalNeeds: 5,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4569,6 +4572,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4592,6 +4596,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           { kind: 'object', instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
         ],
@@ -4621,6 +4626,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 3,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
             kind: 'doorway',
@@ -4653,6 +4659,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 3,
         totalNeeds: 2,
+        atCapacity: [],
         needs: [
           { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
           {
@@ -4694,7 +4701,7 @@ test.describe('the Rooms panel', () => {
     // The item lines go with it: they are rebuilt from the model on every paint,
     // so a stale one left behind would be a readout describing a finished room.
     await page.evaluate(() =>
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     const cleared = await probe();
     expect(cleared.needsLaidOut).toBe(false);
@@ -4802,6 +4809,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 2,
         totalRooms: 2,
         totalNeeds: 4,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4821,7 +4829,7 @@ test.describe('the Rooms panel', () => {
     // A prison with nothing missing draws no readout, so it must donate
     // nothing either -- the catalogue's row comes back with the last cell.
     await page.evaluate(() =>
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     expect((await probe()).panelNeeds, 'a finished prison still spends the catalogue floor').toBe('');
   });

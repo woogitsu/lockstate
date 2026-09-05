@@ -2420,6 +2420,69 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * this sentence is only ever shown for `'no-way-in'`.
    */
   'hud.rooms.needs-doorway': 'a door — nobody can get in',
+  /*
+   * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
+   * reservation 4** (ADR 0028 phase 5; issues #997 and #1003). Four strings,
+   * and every clause of each was proved against code opened for the purpose:
+   *
+   * - *"At capacity"* -- the block is drawn with this header only for rooms the
+   *   HUD received in `HudRoomNeedsViewModel.atCapacity`, which
+   *   `src/ui/simulation-room-needs.ts`'s `fullestUseOf` fills only where a
+   *   capability has `inUse >= capacity` and `capacity > 0`. In that state
+   *   `RoomInstanceRegistry.claimUse` refuses the next claim -- *"if
+   *   (this.useOccupancyOf(instanceId, capability) >= ceiling) return false;"*
+   *   -- and `findAvailableForUse` skips the instance on the same comparison.
+   *   So the room is at a real ceiling that a real gate enforces, and not at a
+   *   readout's idea of one.
+   * - *"{room} at {x}, {y} is full"* -- `{room}` is the room type's own
+   *   `nameKey` and `{x}, {y}` its `anchorTile`, both the projection's, the
+   *   same pair `hud.rooms.needs-room` above already names a room by. *"is
+   *   full"* is a claim about a use prisoners are actually making, and that is
+   *   provable rather than assumed: the only writers of a use claim are
+   *   `claimUse` and `reinstateUseClaim`, both called by `ActionSystem` with
+   *   `action.requiredObjectCapability`, so a capability with a non-zero
+   *   `inUse` is one some action consumes -- and `inUse >= capacity >= 1`
+   *   makes `inUse` non-zero. A room reported here therefore has somebody in
+   *   it, doing the thing it is full for.
+   * - *"places in use: {inUse} of {capacity}"* -- `{capacity}` is
+   *   `RoomInstanceRegistry.concurrentUseCapacityFor`, which is the number
+   *   `claimUse` compares against, and `{inUse}` is `useOccupancyOf` scoped to
+   *   the same capability, which is the number it compares. Neither is
+   *   recomputed on this side of the boundary. *"places"* is this repository's
+   *   own word for the quantity (`residentsWithExistingPlace`,
+   *   `TILES_PER_OPEN_GROUND_PLACE`, and `src/simulation/economy/income.ts`
+   *   paying "per occupied place").
+   * - *"{full} of {total}"* -- `{full}` counts the rooms in the projected page
+   *   that are in the state above and `{total}` is
+   *   `RoomListViewModel.totals.instances`, every registered instance whatever
+   *   window was asked for. Exactly the mixture `hud.rooms.needs-count` above
+   *   already carries, for the same reason, and `HudRoomNeedsViewModel` states
+   *   it.
+   *
+   * What these deliberately do **not** say:
+   *
+   * - **Not that the room is full for everything.** A canteen's dining places
+   *   and its bench seating are separate ceilings, so *"is full"* is about the
+   *   one named on the line below and not about every use of the room. The
+   *   sentence names no use, rather than naming one: object capabilities are
+   *   simulation ids with no player-facing English anywhere in this tree, and
+   *   authoring twelve of them is a content decision this change does not take.
+   * - **Not that building more will help, and not how much more.** How many
+   *   shower heads fifty prisoners need is balance, reserved to the owner at
+   *   #997, and whether a room-served need should have a hard ceiling at all
+   *   rather than a queue with a visible wait is #1003 point 4's open question.
+   *   These four sentences report the ceiling; they recommend nothing.
+   * - **Not that this is why a need is unmet.** Nothing in the simulation
+   *   records a per-room refusal -- `ActionMetrics.unmetDemandCycles` and
+   *   `contendedSubstitutionCycles` are prison-wide and per-prisoner
+   *   respectively, and neither is projected anywhere -- so a sentence
+   *   asserting the causal link would be a claim this repository cannot
+   *   support. The player is given the two facts and draws it themselves.
+   */
+  'hud.rooms.at-capacity': 'At capacity',
+  'hud.rooms.at-capacity-count': '{full} of {total}',
+  'hud.rooms.at-capacity-room': '{room} at {x}, {y} is full',
+  'hud.rooms.at-capacity-places': 'places in use: {inUse} of {capacity}',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

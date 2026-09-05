@@ -407,6 +407,49 @@ export const ROOM_NEEDS_NAMED_LIMIT = 4;
 export const ROOM_NEEDS_ROOMS_LIMIT = 1;
 
 /**
+ * Which of the two things the "not ready" block can be about, or neither
+ * (ADR 0028 phase 5).
+ *
+ * - `'none'` -- nothing has been asked, or the projection says every room is
+ *   finished and none is full. The block is not drawn at all, which is what
+ *   keeps it from becoming furniture in a panel whose always-visible budget
+ *   ADR 0022 measured at 7.9px.
+ * - `'unfinished'` -- at least one designated room is short something the
+ *   player has not built. `HudRoomNeedsViewModel.unfinishedRooms`.
+ * - `'at-capacity'` -- every room is finished and at least one of them cannot
+ *   take another user right now. `HudRoomNeedsViewModel.atCapacity`.
+ *
+ * ## Why one block and never both, which is a measurement and not taste
+ *
+ * `ROOM_NEEDS_NAMED_LIMIT` above carries the figures: the readout's deepest
+ * shipped shape -- header, room line and three object lines -- **measures
+ * 100px**, and the panel's slack at its binding viewport is **7.89px**. A
+ * second subject drawn beside the first is a second header, a second room line
+ * and at least one more item line on top of that 100px, so it does not fit and
+ * no donation is left to pay for it. Given the choice, the block shows the
+ * unfinished rooms: a room the player has not finished building is the cheaper
+ * thing to act on, and it is also the state a player reaches first.
+ *
+ * **What that costs, stated rather than discovered.** A prison with one
+ * unfinished cell and a chronically full shower room shows the cell and says
+ * nothing about the shower room until the cell is finished. That is a real
+ * loss, and the alternative -- a second block -- is a layout change whose only
+ * gate is a browser test. Whether the panel should grow to hold both is a
+ * question for whoever next measures this panel.
+ *
+ * A pure function, exported, and called by `paintNeeds` rather than inlined
+ * there, for the reason `docs/AGENT_WORKFLOW.md` §2 gives: `vitest.config.ts`
+ * runs in `node` with no jsdom, so a decision taken inside a function that
+ * touches `document` is unreachable from `pnpm test` *at all* -- a mutation of
+ * it would survive because nothing could observe it. This one is observable.
+ */
+export function roomNeedsSubjectOf(needs: HudRoomNeedsViewModel | undefined): 'none' | 'unfinished' | 'at-capacity' {
+  if (needs === undefined) return 'none';
+  if (needs.unfinishedRooms > 0) return 'unfinished';
+  return needs.atCapacity.length > 0 ? 'at-capacity' : 'none';
+}
+
+/**
  * The largest side a *typed* rectangle may name, per axis.
  *
  * A second declaration of the simulation's `MAX_ZONE_DIMENSION_TILES`, and it
@@ -1417,6 +1460,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * laid out and empty still takes its gap and its border.
    */
   const needsCount = valueText('', 'hud-rooms__needs-count');
+  /*
+   * The header's eyebrow, held rather than inlined, because the block has two
+   * subjects and they do not share a heading -- see `roomNeedsSubjectOf`. It is
+   * built with the unfinished-rooms text so that a paint which draws nothing
+   * leaves the block in the state it mounts in rather than in whichever state
+   * it was last drawn in.
+   */
+  const needsLabel = eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds));
   const needsLine = eyebrowText('', 'hud-rooms__needs-line');
   /*
    * The object lines, in a box of their own with no gap between them.
@@ -1435,7 +1486,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     children: [
       element('div', {
         className: 'hud-rooms__needs-header',
-        children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds)), needsCount],
+        children: [needsLabel, needsCount],
       }),
       needsLine,
       needsItems,
@@ -1475,6 +1526,60 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       : t(HUD_MESSAGE_KEY.roomsNeedsObject, { count: need.missingQuantity, object });
   }
 
+  /**
+   * The block, drawing the other subject: rooms that are finished and full
+   * (ADR 0028 phase 5).
+   *
+   * The same three slots the unfinished subject uses -- header eyebrow and
+   * figure, a room line, then item lines -- with the room line taken from the
+   * first entry exactly as `paintNeeds` takes it from the first need, and for
+   * the same reason: this block names one room, and `roomsAtCapacityRoom` is
+   * that room's heading.
+   *
+   * **One line under it and not one per full ceiling.** A room can be full for
+   * two things at once, and two lines reading `places in use: 2 of 2` and
+   * `places in use: 6 of 6` with nothing to tell them apart would be a readout
+   * whose two states look the same -- the defect #938 records. The list the
+   * boundary carries already names one ceiling per room and says why
+   * (`fullestUseOf`), so this draws that one.
+   */
+  function paintAtCapacity(full: HudRoomNeedsViewModel): void {
+    needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsAtCapacity);
+    needsCount.textContent = t(HUD_MESSAGE_KEY.roomsAtCapacityCount, {
+      full: full.atCapacity.length,
+      total: full.totalRooms,
+    });
+    needsBlock.dataset['full'] = String(full.atCapacity.length);
+    needsItems.replaceChildren();
+
+    // Non-empty by `roomNeedsSubjectOf`, which is the only route here; read
+    // through the index rather than asserted, so a caller that reached this
+    // with an empty list draws a header and no room instead of throwing out of
+    // a paint.
+    const first = full.atCapacity[0];
+    if (first === undefined) {
+      needsLine.textContent = '';
+      return;
+    }
+    needsLine.textContent = t(HUD_MESSAGE_KEY.roomsAtCapacityRoom, {
+      room: t(first.roomLabelKey),
+      x: first.tile.x,
+      y: first.tile.y,
+    });
+    const line = eyebrowText(
+      t(HUD_MESSAGE_KEY.roomsAtCapacityPlaces, { inUse: first.inUse, capacity: first.places }),
+      'hud-rooms__needs-item',
+    );
+    line.dataset['room'] = first.instanceId;
+    // The same two attributes the unfinished lines carry, for the same reason:
+    // a test that had to tell this line from `1 × Bed` by reading the sentence
+    // would be a test of the English locale.
+    line.dataset['kind'] = 'at-capacity';
+    line.dataset['places'] = String(first.places);
+    line.dataset['inUse'] = String(first.inUse);
+    needsItems.append(line);
+  }
+
   function paintNeeds(): void {
     /*
      * Two states draw nothing and stay two facts: `undefined` is "nothing has
@@ -1482,26 +1587,50 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
      * is finished". Collapsing them here is correct -- neither earns a line --
      * and collapsing them *upstream* would not be, which is why the view model
      * keeps them apart.
+     *
+     * **Zero unfinished rooms no longer means the block draws nothing** (ADR
+     * 0028 phase 5): a prison whose rooms are all finished can still hold one
+     * that cannot take another user, and that is the state issue #1003
+     * measured as invisible. `roomNeedsSubjectOf` is the decision and carries
+     * the reason the two subjects are never drawn together.
      */
-    const shown = needs !== undefined && needs.unfinishedRooms > 0 ? needs : undefined;
-    needsBlock.hidden = shown === undefined;
+    const subject = roomNeedsSubjectOf(needs);
+    needsBlock.hidden = subject === 'none';
     /*
      * The block's presence, on the panel, because a stylesheet cannot ask
      * whether a descendant has a box -- and `hud.css` has to, to donate the
      * catalogue's floor to this readout exactly as `.hud-build[data-queued]`
      * donates to the build queue. See that rule for the argument; the numbers
      * for this one are in `.hud-rooms[data-needs]`.
+     *
+     * Two attributes and not one, because the value of each is a figure a test
+     * reads: `data-needs` is how many things the unfinished rooms are short and
+     * `data-full` is how many rooms are at a ceiling. The stylesheet donates on
+     * either.
      */
-    if (shown === undefined) delete panel.element.dataset['needs'];
-    else panel.element.dataset['needs'] = String(shown.totalNeeds);
-    if (shown === undefined) {
+    // `needs === undefined` is unreachable for either drawing subject --
+    // `roomNeedsSubjectOf` answers `'none'` for it -- and the guard is written
+    // as a pair rather than asserted, so a subject added without a branch
+    // clears the block instead of drawing a stale one.
+    const full = subject === 'at-capacity' ? needs : undefined;
+    if (subject !== 'unfinished' || needs === undefined) {
+      if (full === undefined) delete panel.element.dataset['full'];
+      else panel.element.dataset['full'] = String(full.atCapacity.length);
+      delete panel.element.dataset['needs'];
+      needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsNeeds);
       needsCount.textContent = '';
       needsLine.textContent = '';
       needsItems.replaceChildren();
       delete needsBlock.dataset['unfinished'];
       delete needsBlock.dataset['needs'];
+      delete needsBlock.dataset['full'];
+      if (full !== undefined) paintAtCapacity(full);
       return;
     }
+    const shown = needs;
+    panel.element.dataset['needs'] = String(shown.totalNeeds);
+    delete panel.element.dataset['full'];
+    needsLabel.textContent = t(HUD_MESSAGE_KEY.roomsNeeds);
 
     needsCount.textContent = t(HUD_MESSAGE_KEY.roomsNeedsCount, {
       unfinished: shown.unfinishedRooms,

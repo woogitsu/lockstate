@@ -3227,7 +3227,20 @@
  * which is #174 for the fourth time and on the one block #529 exists to make
  * reachable.
  */
-.hud-rooms[data-needs] { --hud-rooms-catalogue-floor: var(--space-2); }
+/*
+ * `[data-full]` alongside `[data-needs]` (ADR 0028 phase 5).
+ *
+ * The same block, drawing its other subject -- rooms that are finished and
+ * cannot take another user -- and it needs the same donation because it is the
+ * same box in the same column. It is strictly *cheaper* than the shape measured
+ * above: header, one room line and **one** item line, against the header, room
+ * line and three item lines the unfinished subject can reach. `rooms-panel.ts`'s
+ * `roomNeedsSubjectOf` is what guarantees only one of the two attributes is ever
+ * present, so no state adds the two boxes together and the 100px measured above
+ * is still this readout's deepest shape.
+ */
+.hud-rooms[data-needs],
+.hud-rooms[data-full] { --hud-rooms-catalogue-floor: var(--space-2); }
 
 .hud-rooms > .ui-panel__body > .hud-rooms__catalogue {
   display: flex;

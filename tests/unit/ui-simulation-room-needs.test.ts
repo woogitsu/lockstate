@@ -162,6 +162,7 @@ describe('what the interface is told a zoned room is missing', () => {
       unfinishedRooms: 0,
       totalRooms: 1,
       totalNeeds: 0,
+      atCapacity: [],
       needs: [],
     });
   });
@@ -438,6 +439,7 @@ describe('a room with no way into it (#938)', () => {
       unfinishedRooms: 1,
       totalRooms: 1,
       totalNeeds: 1,
+      atCapacity: [],
       needs: [
         {
           kind: 'doorway',
@@ -500,6 +502,7 @@ describe('a room with no way into it (#938)', () => {
       unfinishedRooms: 0,
       totalRooms: 1,
       totalNeeds: 0,
+      atCapacity: [],
       needs: [],
     });
   });
@@ -562,6 +565,7 @@ describe('a room with no way into it (#938)', () => {
       unfinishedRooms: 0,
       totalRooms: 1,
       totalNeeds: 0,
+      atCapacity: [],
       needs: [],
     });
   });
@@ -655,6 +659,7 @@ describe('the reader that asks the worker what the rooms are missing', () => {
       unfinishedRooms: 1,
       totalRooms: 1,
       totalNeeds: 2,
+      atCapacity: [],
       // Both of the cell's unmet requirements come back from the one detail
       // request, which is the point of the split between "rooms to ask about"
       // and "lines to draw": one message, the room's whole shopping list.
@@ -694,7 +699,7 @@ describe('the reader that asks the worker what the rooms are missing', () => {
     await settle();
     channel.deliver(reply(channel.idOf(0), 'hud/room-list', list));
 
-    await expect(pending).resolves.toEqual({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] });
+    await expect(pending).resolves.toEqual({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [], atCapacity: [] });
     expect(channel.sent).toHaveLength(1);
   });
 
@@ -762,6 +767,7 @@ describe('the reader that asks the worker what the rooms are missing', () => {
       unfinishedRooms: 1,
       totalRooms: 1,
       totalNeeds: 2,
+      atCapacity: [],
       needs: [],
     });
   });
