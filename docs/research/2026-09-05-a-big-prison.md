@@ -109,6 +109,15 @@ Acts 0b and 2 are reported as failures on purpose rather than deleted: each
 failed on a real property of the application (a HUD-covered gesture; a
 projection request the worker drops in silence), and both are findings.
 
+**Act 1 was run a second time**, after two reader bugs in the instrument were
+found and fixed — the prisoner roster and the build queue were both read one
+level too shallow in the projection reply envelope (`view` rather than
+`view.data`, see the comments on `report` and `drainQueue`), so the first run
+reported `roster rows 0 of total 68` and skipped the 180-order drain. **Every
+number quoted in this record is from the first run unless it says otherwise**;
+the second is a repeat with the readers fixed, and where it is cited it is named
+as the second run.
+
 ---
 
 ## Apparatus — what was built by gesture and what by the harness
