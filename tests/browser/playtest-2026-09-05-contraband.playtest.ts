@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import {
   buildAndPopulate,
   currentTick,
+  fastForwardToMax,
   installTee,
   latestCounts,
   openApp,
@@ -356,6 +357,7 @@ test.describe('contraband, played', () => {
     let samples = 0;
     let searchRowSamples = 0;
     let firstSearchRowTick = -1;
+    let pausedAttemptTick = -1;
     let seenRowText = '';
     for (;;) {
       const tick = await currentTick(page);
@@ -390,6 +392,26 @@ test.describe('contraband, played', () => {
           console.log(`[contraband]   after Release, chip: ${JSON.stringify(await contrabandChip(page))}`);
           console.log(`[contraband]   after Release, hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.release.after'))}`);
         }
+      }
+      /*
+       * The second sighting, played the way a player would after the first
+       * press was refused: **pause first, then press.** If the control works
+       * with the clock stopped and not with it running, the finding is "the
+       * row goes stale faster than a hand moves at x4" rather than "the control
+       * is broken", and those are different things to report.
+       */
+      if (searchRow !== undefined && firstSearchRowTick >= 0 && pausedAttemptTick < 0 && tick > firstSearchRowTick + 1_000) {
+        pausedAttemptTick = tick;
+        await page.locator('.hud-strip__transport button').nth(0).click();
+        await page.waitForTimeout(400);
+        console.log(`[contraband] PAUSED at tick ${await currentTick(page)}; rows now: ${JSON.stringify(rows)}`);
+        await page.locator(`.hud-staff__held-row[data-guard="${searchRow.guard}"] button`).first().click();
+        await page.waitForTimeout(1200);
+        console.log(`[contraband]   paused Release, alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+        console.log(`[contraband]   paused Release, staff: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
+        console.log(`[contraband]   paused Release, hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.release.paused'))}`);
+        await fastForwardToMax(page);
+        await page.waitForTimeout(500);
       }
       if (tick >= 26_000) break;
       if (Date.now() - started > 700_000) break;
