@@ -363,6 +363,37 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * around the clip rather than repairing it. #985 is still open and still owns
  * the repair.
  *
+ * ### Two clauses of that paragraph are now wrong, and it is kept whole
+ *
+ * The ruling above is untouched -- an acknowledgement still goes to the log and
+ * not to the band -- but the paragraph is a description of code, and #985's
+ * repair landed on 2026-09-05. Marked rather than overwritten
+ * (`docs/AGENT_WORKFLOW.md` section 4), because the reasoning the owner ruled
+ * on is what it records.
+ *
+ * - **"once anything raises a band the cost stands for the session" is false of
+ *   this band now.** `EVENT_BAND_HOLD_CEILING_MS` and `advanceEventBand`
+ *   (`src/ui/hud/event-band-dwell.ts`) give the row back when nothing has
+ *   replaced the sentence. It stays true of the other two: a refusal clears on
+ *   its own terms (ADR 0091) and *"this browser cannot start a worker"* cannot
+ *   stop being true while the page is loaded.
+ * - **"the rail is already documented in `hud.css` as OVER by 30" cites a
+ *   configuration that was never shipped.** That table is `hud.css`'s record of
+ *   an **uncapped** `.hud-minimap__surface`, and the declaration immediately
+ *   under it -- `max-width: calc(224px * var(--ui-scale))` -- is the cap that
+ *   rejected it; the figure is the alerts list inside `.hud__corner`, not the
+ *   rail. Measured on the assembled application at 900x600 with no band up, the
+ *   rail is 482.8px and nothing in it is over its box: the Rooms panel's body is
+ *   291 client / 291 scroll and the Build panel 336 / 336. The 30px was never
+ *   the rail's, and #985's clip is the band's 32px on its own.
+ *
+ * **What the two bands beside this one cost is additive, not shared**, which
+ * neither the paragraph above nor #985 says: they are three separate grid rows
+ * (`grid-template-areas: 'strip' 'unavailable' 'notice' 'event' 'middle'
+ * 'tabs'`). Measured on the same page, a refusal and an event up together take
+ * 64px, and the Rooms panel is then 288 client over 300 scroll on a prison with
+ * no rooms in it at all.
+ *
  * ### The argument this replaces, quoted rather than deleted
  *
  * It was true of the code that carried it, so it is kept
