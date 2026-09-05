@@ -26,6 +26,37 @@ below is about frame rate, and none should be read as one.
 
 ---
 
+## The verdict, in one paragraph
+
+**The simulation holds and the prison does not.** Sixty-eight prisoners, eight
+rooms, three cell blocks, 173 wall segments and 61,354 ticks: the kernel never
+stalled, the ledger paid `300 × 68 − 80 × 10 = 19,600` at five consecutive day
+boundaries to the minor unit, the DOM settled at 1,102 nodes and stayed there,
+and **68 of 68 Admit presses and 10 of 10 Hire presses reached the worker** —
+retiring `2026-09-04-hour-two.md` §1's lost-presses defect at 2.7× the run that
+found it. What breaks is everything around the simulation. **The plot is one
+32×32 chunk with no way to buy another** (`world.setOwned` has a single call
+site), so "as many prisoners as the game will take" is bounded at about a
+thousand tiles and not at `DEFAULT_PRISONER_CAPACITY`'s 5,000; at the zoom that
+shows the whole plot, **the HUD stands on 122 of its 1,024 tiles** and a build
+gesture that lands there submits *nothing at all* — the largest obstruction
+being a 422×425 panel reading *"Minimap is not available yet"*. **Room
+contention finally bites, at 34 contenders per place**: all four visible roster
+rows read *Heading to Class* toward a classroom whose `education` ceiling is the
+width of one bookshelf — **two** — while one of them sits at `Hygiene 0%` with
+two shower heads for 68 people, and nothing on any surface names a ceiling.
+**Ten guards leave zero free**, four incidents lapse one-for-one, and the panel
+says `Covered` next to `0 free` and `Only free guards answer incidents.`
+Meanwhile the interface shows **4 of 68** prisoners with no page control, **1 of
+5** unfinished rooms, and **3 of 10** guards; the eight-row alert cap never
+bites because rows collapse, so what a player gets instead is a fight from day
+18 pinned above everything on day 26. And the money stops mattering: income and
+payroll scale 30:1 for ever, the whole prison cost 1.1 days of its own revenue,
+and by day 26 the treasury holds 202,150 with a built-out plot and nothing to
+spend it on.
+
+---
+
 ## Claim tiers
 
 - **MEASURED** — produced by one of the runs below and quoted from its output.
