@@ -354,11 +354,22 @@ export function formatHeldGuardText(
  * because what #989 found is not that #941 was wrong but that it was *one
  * short*: the free pool has two consumers and the sentence enumerated one.
  * `SearchSystem.assignQueuedOrders` claims a contraband search from the same
- * `claimableGuardIds`, and `SectorSearchDutySystem.update` refuses to order a
- * sweep at all while that pool is smaller than the search policy's
- * `requiredGuardCount`. So a prison at exactly its posted requirement reads
- * `Covered` and cannot search either -- measured at 1, 2 and 3 guards over ~9
- * in-game days on one seed, with `2 of 2 · Covered` finding nothing.
+ * roster, and `SectorSearchDutySystem.update` refuses to order a sweep at all
+ * while that pool is smaller than the search policy's `requiredGuardCount`. So
+ * a prison at exactly its posted requirement reads `Covered` and cannot search
+ * either -- measured at 1, 2 and 3 guards over ~9 in-game days on one seed,
+ * with `2 of 2 · Covered` finding nothing.
+ *
+ * **This paragraph said *"the same `claimableGuardIds`"*, and issue #996 made
+ * that false on 2026-09-05 without making the sentence on screen false.** The
+ * two search call sites now read `claimableSearchGuardIds`, the free pool less
+ * `INCIDENT_RESPONSE_GUARD_RESERVE`, so that a sweep can never be the reason a
+ * riot has nobody to send. What it costs the reading of this panel is one more
+ * hire: `Covered` plus **two** free guards is what searches now, where
+ * `Covered` plus one used to. The hint beside the badge is unchanged and still
+ * true -- it names the two duties a free guard is for and promises no count,
+ * which `hud.security.coverage-met-hint`'s own entry establishes as a truth
+ * requirement rather than a style.
  *
  * `hintKey` therefore names both duties now. The wording, every clause opened
  * to prove it, what it gives up and the clamp it was measured against are in

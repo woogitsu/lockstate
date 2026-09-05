@@ -15,6 +15,7 @@ import {
 import type { EntityId } from '../../src/simulation/entity/entity-store';
 import type { SimulationContext } from '../../src/simulation/kernel/system';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
+import { INCIDENT_RESPONSE_GUARD_RESERVE } from '../../src/simulation/security/post-eligibility';
 import type { SecuritySectorDefinition } from '../../src/simulation/security/sector';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
@@ -121,6 +122,20 @@ function post(guards: GuardRoster, sectorId: string): EntityId {
   return guardId;
 }
 
+/**
+ * The spare guards a sweep needs: `count` to walk it, plus
+ * `INCIDENT_RESPONSE_GUARD_RESERVE` the duty may not count
+ * ([issue #996](https://github.com/matmaxalez/lockstate/issues/996)).
+ *
+ * Read from the constant rather than written out, so the cases below stay
+ * about *their own* subject -- who orders a sweep and when. The case that is
+ * about the reserve itself is the last one in this file, and it says the
+ * number out loud.
+ */
+function spares(guards: GuardRoster, count = 1): void {
+  for (let index = 0; index < count + INCIDENT_RESPONSE_GUARD_RESERVE; index += 1) guards.hire('staff-role.guard', ORIGIN);
+}
+
 describe('the four default search policies', () => {
   it('covers every scope exactly once, so `findPolicy` cannot throw for one nobody authored', () => {
     // Written out rather than derived from the module under test: an expected
@@ -210,7 +225,7 @@ describe('when a staffed sector orders a sweep', () => {
   it('orders one, over its own occupants, once a guard stands the post and another is spare', () => {
     const harness = buildHarness();
     post(harness.guards, SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN); // the spare who will walk it
+    spares(harness.guards); // the spare who will walk it, plus the reserve #996 keeps for incidents
 
     harness.run(600);
 
@@ -249,7 +264,7 @@ describe('when a staffed sector orders a sweep', () => {
     // order given here would queue for ever instead of being walked.
     expect(harness.searches.submitted).toEqual([]);
 
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    spares(harness.guards);
     harness.run(1_200);
     expect(harness.searches.submitted).toHaveLength(1);
   });
@@ -270,7 +285,7 @@ describe('when a staffed sector orders a sweep', () => {
   it('holds to one sweep per sector at a time, and orders the next once that one is done', () => {
     const harness = buildHarness();
     post(harness.guards, SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    spares(harness.guards);
 
     harness.run(600);
     harness.run(1_200);
@@ -290,7 +305,7 @@ describe('when a staffed sector orders a sweep', () => {
     const harness = buildHarness({ sectors: [SECTOR, OTHER_SECTOR] });
     post(harness.guards, SECTOR.id);
     post(harness.guards, OTHER_SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    spares(harness.guards);
 
     harness.run(600);
 
@@ -303,7 +318,10 @@ describe('when a staffed sector orders a sweep', () => {
   it('orders nothing for a staffed sector holding nobody', () => {
     const harness = buildHarness({ occupants: [] });
     post(harness.guards, SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    // Enough spares that the empty sector is the only reason nothing is
+    // ordered: after #996 a lone spare would satisfy the assertion for the
+    // wrong reason.
+    spares(harness.guards);
 
     harness.run(600);
 
@@ -313,7 +331,7 @@ describe('when a staffed sector orders a sweep', () => {
   it('returns rather than throwing when a scenario authored no sector policy', () => {
     const harness = buildHarness();
     post(harness.guards, SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    spares(harness.guards);
     const index = harness.policies.findIndex((policy) => policy.scope === 'sector');
     expect(index, 'the harness must start from a list that does have one').toBeGreaterThanOrEqual(0);
     harness.policies.splice(index, 1);
@@ -329,7 +347,9 @@ describe('when a staffed sector orders a sweep', () => {
     const index = harness.policies.findIndex((policy) => policy.scope === 'sector');
     harness.policies.splice(index, 1, { ...harness.policies[index]!, requiredGuardCount: 2 });
     post(harness.guards, SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    // One walker plus the reserve: enough for a one-guard policy and one short
+    // of this two-guard one, which is the condition under test.
+    spares(harness.guards);
 
     harness.run(600);
     expect(harness.searches.submitted).toEqual([]);
@@ -339,10 +359,34 @@ describe('when a staffed sector orders a sweep', () => {
     expect(harness.searches.submitted).toHaveLength(1);
   });
 
+  /**
+   * The separate pool, at the gate rather than at the claim
+   * ([issue #996](https://github.com/matmaxalez/lockstate/issues/996)).
+   *
+   * The number is written out here on purpose, against the rule the helper
+   * above follows: this is the one case whose subject *is* the reserve, so it
+   * asserts a prison with exactly one free guard orders nothing, and one with
+   * `1 + INCIDENT_RESPONSE_GUARD_RESERVE` orders a sweep. Deriving the counts
+   * from the constant would make it pass for a reserve of nine.
+   */
+  it('leaves the incident reserve alone: one spare orders nothing, and the reserve plus one orders a sweep (#996)', () => {
+    expect(INCIDENT_RESPONSE_GUARD_RESERVE, 'this case is written against a reserve of one').toBe(1);
+    const harness = buildHarness();
+    post(harness.guards, SECTOR.id);
+    harness.guards.hire('staff-role.guard', ORIGIN); // the reserve, and nothing else
+
+    harness.run(600);
+    expect(harness.searches.submitted, 'the only free guard is the one a response would be mounted from').toEqual([]);
+
+    harness.guards.hire('staff-role.guard', ORIGIN); // now there is a walker as well
+    harness.run(1_200);
+    expect(harness.searches.submitted).toHaveLength(1);
+  });
+
   it('mints an id that is a function of the sector and the tick, so a replayed tick cannot collide', () => {
     const harness = buildHarness();
     post(harness.guards, SECTOR.id);
-    harness.guards.hire('staff-role.guard', ORIGIN);
+    spares(harness.guards);
 
     harness.run(3_000);
     // The same tick again -- what a restore that resumes on a tick this system
