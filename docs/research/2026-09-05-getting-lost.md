@@ -409,3 +409,45 @@ result agrees exactly: 5,000/64 = 78.1 tiles, and the box moved from 517..539 to
 with no clamp", not "a million pixels out"**, and the larger claim is not made.
 
 ---
+
+## §6 — A reload does not lose the camera; it loses the prison
+
+**MEASURED**, act 6 (rewritten — see the instrument note at the end of this
+section). The camera was parked deliberately east and south of the prison, not
+lost, at `visible tiles x 29..52, y 17..30`, and the save panel confirmed a save
+existed: `Saved (generation gen-mtnpgxvp-1).` Then the page was reloaded.
+
+```
+[act6] save panel after reload: "... New Prison (1 gen) | Load | Delete | Local saves only — no network required."
+[act6] camera immediately after reload: UNREADABLE -- no session is running, so a world press submits nothing
+```
+
+The page console carried, on every probe press:
+
+```
+HUD action failed {"actionId":"remove-object","error":{"message":
+"No simulation session is running yet, so the order cannot be submitted."}}
+```
+
+— `src/ui/simulation-commands.ts:214`. **The reload does not resume the prison.**
+The player comes back to a page with their prison in a list and a `Load` button
+beside it, and the question *"where is the camera"* has no answer yet because
+there is no world for a camera to be on.
+
+That is not this record's surface —
+`docs/research/2026-09-04-does-a-prison-come-back.md` and
+`docs/research/2026-09-04-many-prisons.md` own the save and load story, and the
+second of those already measured the `Local saves only — no network required.`
+idle status and the `New Prison (1 gen)` row label. It is recorded here because
+it is **the state that makes P1 below a predicate rather than a flip**: a page
+where `Load` has not been pressed is a page where the minimap genuinely cannot
+navigate, and the honest sentence there is the placeholder.
+
+**Instrument note.** Act 6's first run probed the camera straight after the
+reload, read `undefined`, and would have been reported as *"the camera does not
+survive a reload"* — which would have been a false diagnosis of a true
+measurement. The act was rewritten to measure the no-session state first and
+then take the player's real next gesture. This is exactly the failure the brief
+warns about, caught by the probe returning `undefined` rather than a number.
+
+---
