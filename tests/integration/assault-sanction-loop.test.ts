@@ -183,19 +183,22 @@ describe('an assault sanctions its instigator, not both participants, and follow
     // restricting the day, read back through the same functions
     // `StateIncomeSystem` calls at every day boundary.
     //
-    // **The 220 is suspended, 2026-09-03, and the measurement is not.** The
-    // owner set the withheld rate to `0` for now (their ruling is in
-    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`), so this place now
-    // pays the flat 300 with two needs unmet. The paragraph above is left as it
-    // stands, because the fact it measured is `unmet: 2` -- what
-    // `HIGH_RISK_REGIME` does to this prisoner's day -- and that is unchanged.
-    // Both figures are asserted below: what the game pays today, and what the
-    // same two unmet needs cost at ADR 0064's own rate, so the sentence "down
-    // by 80, from 300 to 220" stays checkable rather than becoming prose
-    // nothing runs.
+    // **The 220 was suspended on 2026-09-03 and is back on 2026-09-04**, and
+    // the measurement was never either. Both directions are marked rather than
+    // overwritten (`docs/AGENT_WORKFLOW.md` §4). From 2026-09-03 the owner had
+    // the withheld rate at `0`, so this place paid the flat 300 with two needs
+    // unmet and the assertion below read `income: 300`; they restored the rate
+    // to `40` on 2026-09-04 after the measurement they made it conditional on,
+    // and both rulings are in
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s docblock. The
+    // paragraph above stood through both, because the fact it measures is
+    // `unmet: 2` -- what `HIGH_RISK_REGIME` does to this prisoner's day -- and
+    // that did not move on either date. The count is asserted beside the money
+    // for exactly that reason, and the literal `40` line below keeps "down by
+    // 80, from 300 to 220" checkable at any shipped rate.
     stepTo(runtime, endTick - 500);
     expect(accommodationCatalogIdOf(runtime, instigatorId)).toBe('room.solitary-cell');
-    expect(unmetAndIncomeOf(runtime, instigatorId)).toEqual({ unmet: 2, income: 300 });
+    expect(unmetAndIncomeOf(runtime, instigatorId)).toEqual({ unmet: 2, income: 220 });
     expect(stateIncomeForPrisonerDayAt(40, 2)).toBe(220);
 
     // The term ends and this prisoner is moved back to an ordinary cell --

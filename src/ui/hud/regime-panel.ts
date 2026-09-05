@@ -146,19 +146,27 @@ import type {
  * is that **`describeNeed` is the single place the flag becomes a colour**;
  * every other reader copies it out as data for a probe and decides nothing.
  *
- * **Corrected 2026-09-03, and the paragraph above is left standing because the
- * claim it makes is the one that broke.** The owner suspended the withheld
- * share at `0` -- *"usuń na razie kary, zobaczymy jak pogram i ocenię
- * łatwość"*, recorded in
- * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own docblock -- so
- * *"the state is withholding for this need"* and *"`stateIncomeForPrisonerDay`
- * really does pay less"* are both false today. **What the tone means now, and
- * what it will still mean when the rate comes back, is that this need is at or
+ * **Corrected 2026-09-03, and corrected back on 2026-09-04.** Both directions
+ * are marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4). The
+ * correction of 2026-09-03 read:
+ *
+ * > The owner suspended the withheld share at `0` -- *"usuń na razie kary,
+ * > zobaczymy jak pogram i ocenię łatwość"*, recorded in
+ * > `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own docblock -- so
+ * > *"the state is withholding for this need"* and
+ * > *"`stateIncomeForPrisonerDay` really does pay less"* are both false today.
+ *
+ * The owner restored the rate to `40` on 2026-09-04, after the two
+ * measurements they made the restoration conditional on, so both of those
+ * sentences are true again and the paragraph above them describes the game.
+ * **What the tone means did not move on either date: that this need is at or
  * below `STATE_INCOME_UNMET_NEED_LEVEL`** -- the line the state reads when it
- * settles a day, whatever it currently charges for crossing it. That is still
- * a fact about the simulation the panel takes from a projected flag rather
- * than a threshold of its own, so the refusal's condition is still met and the
- * bar is kept.
+ * settles a day, whatever it currently charges for crossing it. That is a fact
+ * about the simulation the panel takes from a projected flag rather than a
+ * threshold of its own, so the refusal's condition was met at both rates and
+ * the bar was never in question. **This block is the clearest evidence on
+ * either side that the readout was built on the threshold rather than on the
+ * money: the rate moved twice in two days and not a line of it changed.**
  *
  * **No player-visible sentence changed, and none needed to.** The tone is a
  * colour plus the need's own word plus `aria-valuetext`'s percentage; nothing
@@ -1345,14 +1353,16 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
       //   at all".
       //
       //   **This read "whether the state is withholding grant over it" and
-      //   "is this prisoner costing the prison income at all", and both became
+      //   "is this prisoner costing the prison income at all", both became
       //   false on 2026-09-03**, when the owner suspended
       //   `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` while they
-      //   play (their words are in that constant's docblock). The old wording
-      //   is kept here rather than dropped because it is the question this
-      //   attribute was built to answer and will answer again the moment the
-      //   rate moves; what the attribute *reports* did not change at all, only
-      //   what it costs.
+      //   played, **and both are true again since they restored it to `40` on
+      //   2026-09-04** (both rulings are in that constant's docblock). Every
+      //   wording is kept rather than dropped (`docs/AGENT_WORKFLOW.md` §4):
+      //   the sentence answered the question at the shipped rate, stopped
+      //   answering it for one day, and answers it again. What the attribute
+      //   *reports* did not change across either ruling, only what it costs --
+      //   which is the prediction the 2026-09-03 note made, now measured.
       //
       // On the row rather than on the bar for `data-prisoner`'s reason: the
       // rows are pooled, so a probe keys everything about one prisoner off the
