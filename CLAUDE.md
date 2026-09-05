@@ -3,19 +3,36 @@
 `AGENTS.md` is the canonical agent contract for this repository and MUST be read before implementation work.
 `docs/AGENT_WORKFLOW.md` is the operating method that accompanies it — how work continues across sessions, how it is split across several agents, and what evidence a finding needs. Read it before dispatching agents.
 
-`AGENTS.md`'s section "The owner's standing mandate" is the posture every agent
-works under: decide after research rather than asking, quality over cheapness,
-cost is not a constraint — and four exclusions that stay the owner's (a server
-entry point, `supabase/migrations/`, deploy configuration, and any
-player-visible promise the code does not keep). Read it before deciding whether
-a question is yours to answer.
+`AGENTS.md`'s section "The owner's standing mandate, and the four things it
+does not cover" is the posture every agent works under: decide after research
+rather than asking, quality over cheapness, cost is not a constraint — and four
+exclusions that stay the owner's (a server entry point, `supabase/migrations/`,
+deploy configuration, and any player-visible promise the code does not keep).
+Read it before deciding whether a question is yours to answer.
+
+**This file paraphrases `AGENTS.md` and therefore rots when `AGENTS.md` moves.
+It has done so twice, both times in the direction of asking for permission the
+owner had already given, which is the expensive direction.** What follows is
+correct as of 2026-09-05; `AGENTS.md` is the contract and wins wherever the two
+differ.
 
 **The first of those four was released on 2026-09-03, narrowly.** The owner
 authorised the one `main` and the one Worker module that carry ADR 0046's
 telemetry ingest, in their own words and dated, in that section. Nothing else
 about server-side execution moved: a second route or any server behaviour that
-is not that ingest is still theirs, and so are the other three exclusions —
-including the migration the ingest needs before it can store anything.
+is not that ingest is still theirs.
+
+**The fourth was partly released on 2026-09-04:** the CHOICE OF WORDS in a
+player-facing string is ours; the requirement that the sentence be TRUE is not.
+Quote every string you author verbatim in the commit message and in the pull
+request body, beside the code that proves it true.
+
+**This clause read "and so are the other three exclusions — including the
+migration the ingest needs before it can store anything", and both halves of
+that are now wrong.** The telemetry migration landed on 2026-09-04
+(`supabase/migrations/20260904090000_create_telemetry_events.sql`), and
+reservation 4 is no longer whole. `supabase/migrations/` itself is still the
+owner's: that migration was authorised one at a time, not as a category.
 
 Additional Claude-specific rules:
 - Use repository docs and ADRs as the source of truth.
