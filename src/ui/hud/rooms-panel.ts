@@ -1379,7 +1379,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   const enclosureBlock = element('div', {
     className: 'hud-rooms__enclosure',
-    children: [screenReaderText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
+    children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
   });
 
   function paintEnclosure(): void {
