@@ -537,10 +537,12 @@ pairwise Euclidean RGB distance
 
 **A Kitchen and a Solitary Cell are 5.8 RGB units apart**, on a speckled
 photographic floor, seen at 64 px a tile. That is not a subtle distinction; it
-is no distinction. The widest pair in the whole game's palette — a Cell against
+is no distinction. The widest pair **of the four I measured** — a Cell against
 a Solitary Cell — is 25.2, which is the difference between "bluish grey" and
-"warm grey" and is readable only with the two side by side. In the pictures the
-Cell is recognisably blue and the other three are all grey.
+"warm grey". Looking at the four pictures: the Cell is recognisably blue, the
+Classroom is a blue-violet I can tell from it, and the Kitchen and the Solitary
+Cell are the same neutral warm grey to my eye. The other seven categories are
+unmeasured (§9).
 
 **And the palette is coarser than the room list before the alpha touches it.**
 Eighteen room types map onto **eleven** categories
@@ -643,6 +645,15 @@ of the four. What I can say about the other three is that their sheets decode
    surface that would let a player see a prison larger than a screen is a
    placeholder, and the zoom that would substitute for it is the hidden
    mechanic in item 3.
+7. **A room reads as a room and not as which room.** One floor image for all
+   eighteen room types, eleven category tints at 14% alpha over it, and the two
+   I measured closest — a Kitchen and a Solitary Cell — are **5.8 RGB units**
+   apart (§6).
+8. **Nothing moves.** Six frames over 1,144 ticks: `0` differing pixels of
+   409,600 (§5b). Act 8 re-runs that in a cell with a door, because act 5's
+   prison had nowhere to walk to.
+9. **The whole world is a 32×32-tile square** and the only way to see that it
+   is is the undocumented zoom (§6b).
 
 **What I am deliberately not proposing.** Whether object art should be drawn is
 already decided and scheduled by the module that declines to draw it; that is
@@ -675,6 +686,11 @@ wall and said so.
 
 ### What I did not reach
 
+- **Seven of the eleven room-tint categories.** Act 6 measured four
+  (`housing`, `food`, `security`, `education`). `administration`, `hygiene`,
+  `logistics`, `medical`, `operations`, `recreation` and `utility` are
+  unmeasured, and the two I would look at next are `hygiene` `0x4fc0d0` and
+  `utility` `0x4fd0a2`, which are the two closest hues in the table.
 - **Any viewport but 1440×900, and touch.** The playtest config is 1440×900 at
   `devicePixelRatio` 1. `tests/browser/playtest-2026-09-04-touch-only.playtest.ts`
   owns the touch surface.
