@@ -404,8 +404,29 @@ test.describe('contraband, played', () => {
         pausedAttemptTick = tick;
         await page.locator('.hud-strip__transport button').nth(0).click();
         await page.waitForTimeout(400);
-        console.log(`[contraband] PAUSED at tick ${await currentTick(page)}; rows now: ${JSON.stringify(rows)}`);
-        await page.locator(`.hud-staff__held-row[data-guard="${searchRow.guard}"] button`).first().click();
+        /*
+         * Re-read AFTER the pause. The first attempt logged the pre-pause array
+         * and then clicked a row that had already gone, and the click hung for
+         * seven minutes on Playwright's default zero action timeout -- which is
+         * itself the measurement this act is about, arriving as a hang instead
+         * of as a result. Bounded below, and the miss is reported rather than
+         * waited on.
+         */
+        const afterPause = await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>('.hud-staff__held-row')]
+            .filter((row) => row.getClientRects().length > 0)
+            .map((row) => ({ guard: row.dataset['guard'] ?? '', text: (row.innerText ?? '').replace(/\s+/g, ' ').trim() })),
+        );
+        console.log(`[contraband] PAUSED at tick ${await currentTick(page)}; rows now: ${JSON.stringify(afterPause)}`);
+        const stillSearching = afterPause.find((row) => /Contraband Search/i.test(row.text));
+        if (stillSearching === undefined) {
+          console.log(`[contraband]   the row was gone before the pause landed -- no paused press made`);
+        } else {
+          await page
+            .locator(`.hud-staff__held-row[data-guard="${stillSearching.guard}"] button`)
+            .first()
+            .click({ timeout: 10_000 });
+        }
         await page.waitForTimeout(1200);
         console.log(`[contraband]   paused Release, alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
         console.log(`[contraband]   paused Release, staff: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
