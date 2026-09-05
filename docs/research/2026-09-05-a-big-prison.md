@@ -575,3 +575,45 @@ number two comes from the *width of one bookshelf*. The one control that would
 fix it — build a second bookshelf — is not suggested anywhere, and the Rooms
 panel calls the classroom finished.
 
+## 9. What held, plainly
+
+Answering the brief's five questions in order, so that the things that did *not*
+break are on the record as loudly as the things that did.
+
+**Does the simulation hold?** Yes, over the range played. From `New prison` to
+game day 26 the worker published **819 `simulation/status-counts` messages**;
+the last reads `{tick: 61354, prisoners: 68, rooms: 8, roomCapacity: 76,
+accommodationCapacity: 76, roomOccupants: 68, treasury: 202150,
+dailyWageBill: 800, staff: 10}`. The clock never left `{mode: 'running',
+speed: 4}`, the tick advanced through every one of eight sampling rounds
+(42,548 → 44,954 → 47,198 → 49,402 → 51,604 → 53,807 → … → 61,354, deltas
+2,202–2,406 against a requested 2,200), and no counts field ever moved
+backwards or stalled.
+
+**How far did it actually get, and what did it cost?** **68 prisoners, 8 rooms,
+173 wall segments, 10 staff, on one 32×32 plot, in 61,354 ticks — 25 in-game
+days.** That is **2.3× the largest population any playtest in
+`docs/research/` had reached** (30, `2026-09-04-hour-two.md`) and the first with
+more than two rooms. It is also **1.4% of the README's "several thousand active
+actors"**, and §1 says why a player cannot get closer: the plot is 1,024 tiles
+and there is no way to buy another.
+
+**Does anything grow without bound?** Not in 25 days at 68. `hudNodes` steps
+1,023 (arrival) → 1,063 (built) → 1,078 → 1,102 and then holds 1,102 across
+four consecutive day-long samples. The alerts column holds six rows against a
+cap of eight, because repeats collapse.
+
+**Does the economy change shape?** Yes, and it flattens: `+19,600` a day, five
+boundaries running, with a 30:1 income-to-payroll ratio that widens with every
+prisoner (§4a).
+
+**Does contention bite?** Yes, at 34 contenders per place, and nothing tells the
+player (§8).
+
+**One thing I could not measure and will not claim: determinism.** No
+`simulation/*` message carries a state fingerprint (`grep -rn
+"fingerprint\|checksum" src/simulation/worker/ src/simulation/protocol/` returns
+one unrelated comment), so a playtest has no channel to compare two runs on. The
+repository's own `tests/determinism/` is the instrument for that and this record
+is not evidence about it either way.
+
