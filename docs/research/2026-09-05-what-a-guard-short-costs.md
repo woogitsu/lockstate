@@ -41,7 +41,7 @@ balance.
 sixty-eight times its own wage.** At a hundred prisoners the thirteenth guard
 is worth **5,420 a day** on the income line and costs **80** — measured, not
 derived — and every prison in every arm of every act ended richer than it
-started, the worst of them at **664,030** from a 25,000 opening grant. **The
+started, the poorest of them at **385,080** from a 25,000 opening grant. **The
 chain in the issue is wrong in its middle two links, and correcting them makes
 the finding sharper rather than softer.** `reviewClassification` has no
 `safety` term at all: the promotion runs on **disciplinary findings**, and what
@@ -190,10 +190,17 @@ tree's; every figure at or below it is identical on both.
 
 **Every treasury in the table grew, from an opening balance of 25,000**
 (`TREASURY_STARTING_BALANCE_MINOR_UNITS`, `src/simulation/economy/treasury.ts:203`).
-The worst-run prison in this record — a hundred prisoners and **no guard at
-all**, nine lapsed riots, every prisoner on the restricted timetable — finished
-thirty days holding **664,030**, which is 26 times what it opened with. There is
-no point of no return in this game at these constants, and nothing measured here
+A hundred prisoners and **no guard at all**, nine lapsed riots, every prisoner
+on the restricted timetable, finished thirty days holding **664,030** — 26 times
+what it opened with.
+
+**And that is not even the poorest prison here, which is the sharper way to put
+it.** The minimum treasury across all five acts is **385,080** — act Q, fifty
+prisoners, zero guards, seed `0x1004`, thirty days — and it is lower than the
+hundred-prisoner row for the obvious reason that it has half the prisoners to be
+paid for, not because it is failing harder. **Fifteen times its opening balance
+is what "the worst this measurement could arrange" looks like.** There is no
+point of no return in this game at these constants, and nothing measured here
 approaches one.
 
 The band is narrow across seeds: at the establishment, 27,880–28,080; one guard
