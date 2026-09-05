@@ -26,6 +26,17 @@ import { describe, expect, it } from 'vitest';
  * every test in the repository stayed green. **A third consumer would do it
  * again, silently.** This is the assertion that goes red instead.
  *
+ * **A third consumer arrived on 2026-09-05 and this is what it looked like**
+ * (issue [#996](https://github.com/matmaxalez/lockstate/issues/996)). It was
+ * not a third *duty*: the owner ruled that a contraband search must draw on its
+ * own allowance so that a sweep can never leave a riot with nobody to send, and
+ * the two search call sites moved off `claimableGuardIds` and on to
+ * `claimableSearchGuardIds` -- the same pool less
+ * `INCIDENT_RESPONSE_GUARD_RESERVE`. So the count of *functions* went up and
+ * the count of *duties* did not, which is exactly the distinction the covered
+ * rung's sentence turns on, and it is why the walk below now spells both names
+ * and the last case still counts duties.
+ *
  * A third consumer is not forbidden. It has to arrive with a decision about
  * what the covered rung tells a player, and this is where that decision is
  * asked for. `tests/foundation/deployment-phase-producer-contract.test.ts` is
@@ -46,9 +57,10 @@ import { describe, expect, it } from 'vitest';
  *
  * ## What is matched, and what is deliberately not
  *
- * A *call* -- `claimableGuardIds(` -- on a line that is not a comment, with
- * the declaration in `post-eligibility.ts` excluded by name. Prose mentions do
- * not count and must not: this repository's comments cite the function
+ * A *call* -- `claimableGuardIds(` or `claimableSearchGuardIds(` -- on a line
+ * that is not a comment, with the declaration in `post-eligibility.ts` excluded
+ * by name (it holds both, and `claimableSearchGuardIds` calls the other one).
+ * Prose mentions do not count and must not: this repository's comments cite the function
  * constantly, and one of them (`default-locale-en.ts`) even quotes a call with
  * its argument. Keying on the file rather than on `file:line` keeps the pin
  * from drifting on every unrelated edit above it, which is the cost
@@ -60,8 +72,11 @@ import { describe, expect, it } from 'vitest';
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
 const SOURCE_ROOT = join(REPOSITORY_ROOT, 'src');
 
-/** Where the function is declared, so the declaration is not counted as one of its consumers. */
+/** Where the two functions are declared, so neither declaration is counted as one of its own consumers. */
 const DECLARATION = 'src/simulation/security/post-eligibility.ts';
+
+/** The two pools: what a response may claim, and what a search may claim (issue #996). */
+const POOL_FUNCTIONS = ['claimableGuardIds', 'claimableSearchGuardIds'] as const;
 
 function sourceFiles(directory: string, found: string[] = []): string[] {
   for (const entry of readdirSync(directory)) {
@@ -90,7 +105,15 @@ function isProse(line: string): boolean {
   return trimmed.startsWith('*') || trimmed.startsWith('//') || trimmed.startsWith('/*');
 }
 
-/** `<path> x<call sites>` for every module that calls `claimableGuardIds`, sorted. */
+/**
+ * `<path> <function> x<call sites>` for every module that claims from either
+ * pool, sorted.
+ *
+ * The function name is part of the row rather than collapsed away, because
+ * *which* pool a module reads is the whole subject since #996: a module moving
+ * from the search pool back to the responder pool is a change of rule, and a
+ * row keyed only on the path would not notice it.
+ */
 function poolConsumers(): readonly string[] {
   const counts = new Map<string, number>();
   for (const file of sourceFiles(SOURCE_ROOT)) {
@@ -98,11 +121,17 @@ function poolConsumers(): readonly string[] {
     if (path === DECLARATION) continue;
     for (const line of readFileSync(file, 'utf8').split('\n')) {
       if (isProse(line)) continue;
-      const calls = line.split('claimableGuardIds(').length - 1;
-      if (calls > 0) counts.set(path, (counts.get(path) ?? 0) + calls);
+      for (const callee of POOL_FUNCTIONS) {
+        // `claimableGuardIds(` is a substring of nothing else here, but
+        // `split` on it would also match `claimableSearchGuardIds(` if the
+        // longer name ever gained that suffix, so each name is counted against
+        // the whole identifier rather than against a tail of it.
+        const calls = line.split(new RegExp(`(?<![A-Za-z])${callee}\\(`)).length - 1;
+        if (calls > 0) counts.set(`${path} ${callee}`, (counts.get(`${path} ${callee}`) ?? 0) + calls);
+      }
     }
   }
-  return [...counts.entries()].map(([path, count]) => `${path} x${String(count)}`).sort();
+  return [...counts.entries()].map(([key, count]) => `${key} x${String(count)}`).sort();
 }
 
 describe('who draws on the free guard pool', () => {
@@ -118,13 +147,15 @@ describe('who draws on the free guard pool', () => {
       // The producer, not a consumer of the surplus: this is the call that
       // *fills* the posts the panel prints, and the pool it leaves behind is
       // what the two below compete for.
-      'src/simulation/security/deployment-system.ts x1',
-      // The duty that gates whether a sweep is ordered at all (#989).
-      'src/simulation/contraband/sector-search-duty.ts x1',
-      // The one that staffs it once it is (#989).
-      'src/simulation/contraband/search-system.ts x1',
-      // The responder claim (#941).
-      'src/simulation/incidents/response-system.ts x1',
+      'src/simulation/security/deployment-system.ts claimableGuardIds x1',
+      // The duty that gates whether a sweep is ordered at all (#989), on the
+      // narrowed pool since #996.
+      'src/simulation/contraband/sector-search-duty.ts claimableSearchGuardIds x1',
+      // The one that staffs it once it is (#989), likewise.
+      'src/simulation/contraband/search-system.ts claimableSearchGuardIds x1',
+      // The responder claim (#941), which #996 deliberately did not narrow:
+      // a response is what the reserve is held for.
+      'src/simulation/incidents/response-system.ts claimableGuardIds x1',
     ].sort());
   });
 

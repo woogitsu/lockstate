@@ -58,16 +58,57 @@ describe('the sentence a prisoner is admitted to serve', () => {
     expect(MAX_SENTENCE_LENGTH_TICKS_DRAWN).toBe(216_000);
   });
 
+  /**
+   * **Sixty thousand draws, and not one `expect` inside the loop
+   * ([#1005](https://github.com/matmaxalez/lockstate/issues/1005)).**
+   *
+   * Every draw is still checked against all three predicates, and the count of
+   * draws has not moved -- what moved is what a *conforming* draw costs. This
+   * loop used to make three `expect` calls per iteration, 180,000 of them, and
+   * that was 99% of the test: measured on an idle box, this test took 2,024 ms
+   * while its sibling below drew 30,000 sentences from the same function with
+   * no per-draw assertion and took **10 ms**. So the cost was never
+   * `drawSentenceLengthTicks` and never the sample size; it was the assertion
+   * objects, which are built and matched whether or not anything is wrong.
+   *
+   * That mattered because the file-wide budget is `testTimeout` 5,000 ms in
+   * `vitest.config.ts`: 2,024 ms is a margin of 2.4x, which ordinary parallel
+   * load on a four-core box eats, and the test then fails with
+   * `Error: Test timed out in 5000ms` rather than with an assertion. A gate
+   * that goes red for the machine's reasons teaches its readers to discount
+   * red, which is how a real regression gets waved through.
+   *
+   * **Deliberately not the other way out.** Cutting the sample would have
+   * attacked the 1%: the seventy-seven-value assertion below is the reason
+   * this loop is long, and a shorter one buys nothing measurable while making
+   * the exhaustion claim thinner. The budget itself is also kept, for the
+   * reason `sentence.ts` gives in `drawSentenceLengthTicks`'s docblock -- the
+   * draw contains a rejection loop, and a rejection loop that stopped
+   * terminating should surface as a red test rather than as a hung suite.
+   */
   it('draws only whole in-game days inside the bounds, and reaches both ends', () => {
     const rng = streamAt(0x5eed_1234);
     const drawn = new Set<number>();
+    // Up to eight examples of each violation, and the full count of it, so a
+    // failure names what went wrong without printing sixty thousand numbers.
+    const offGrid: number[] = [];
+    const outOfBounds: number[] = [];
+    let offGridCount = 0;
+    let outOfBoundsCount = 0;
     for (let index = 0; index < 60_000; index += 1) {
       const sentence = drawSentenceLengthTicks(rng);
-      expect(sentence % 2_400).toBe(0);
-      expect(sentence).toBeGreaterThanOrEqual(33_600);
-      expect(sentence).toBeLessThanOrEqual(216_000);
+      if (sentence % 2_400 !== 0) {
+        offGridCount += 1;
+        if (offGrid.length < 8) offGrid.push(sentence);
+      }
+      if (sentence < 33_600 || sentence > 216_000) {
+        outOfBoundsCount += 1;
+        if (outOfBounds.length < 8) outOfBounds.push(sentence);
+      }
       drawn.add(sentence);
     }
+    expect({ offGridCount, offGrid }).toEqual({ offGridCount: 0, offGrid: [] });
+    expect({ outOfBoundsCount, outOfBounds }).toEqual({ outOfBoundsCount: 0, outOfBounds: [] });
     // All seventy-seven whole-day values, none of them missing and none of them
     // invented: a draw that could only ever return the middle of the range
     // would satisfy every bound above and fail here.
