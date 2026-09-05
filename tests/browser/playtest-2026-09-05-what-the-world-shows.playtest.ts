@@ -521,7 +521,21 @@ async function cellRun(page: Page, options: { readonly door: boolean; readonly l
   console.log(`[${options.label}] rooms panel: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
 
   await fastForwardToMax(page);
-  await runUntilTick(page, options.untilTick);
+  /*
+   * **`runUntilTick`'s default 180 s budget is not enough for this on a loaded
+   * box, and it cost act 3b its screenshot.** The first attempt threw
+   * `stuck at tick 20031, wanted 24000` at load average around 9 with another
+   * agent's browser suite running, and a thrown act produces no evidence at
+   * all -- which is the worst outcome for an instrument whose only product is
+   * evidence. So the budget is fifteen minutes, and falling short is a logged
+   * reading rather than a failure: the act screenshots whatever tick it
+   * reached and says so.
+   */
+  try {
+    await runUntilTick(page, options.untilTick, 900_000);
+  } catch (error) {
+    console.log(`[${options.label}] did not reach tick ${options.untilTick}: ${String(error)}`);
+  }
   await tab(page, 'overview').click();
   await page.waitForTimeout(600);
 
