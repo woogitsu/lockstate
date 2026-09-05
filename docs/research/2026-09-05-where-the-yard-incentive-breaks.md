@@ -85,10 +85,15 @@ node ./node_modules/vitest/vitest.mjs run --config tests/research/vitest.researc
 
 **Every figure in this record is a tick count, a need level or a grant, and
 none of them is a duration** — the kernel is fixed-step and the instrument reads
-state, so machine load cannot move a single number below. The one wall-clock
-figure anywhere in this record is how long the whole file takes to run: **65 s**
-and **71 s** on two runs, the second at a load average of about 13 with several
-agents working, which is the spread to expect rather than a threshold.
+state, so machine load cannot move a single number below. Checked rather than
+asserted: the whole file was re-run after merging `origin/main` at `829d3c11`
+(v0.0.484) and its output was **byte-identical** to the run this record quotes,
+under a load average that had moved from about 13 to 4.05 in between.
+
+The only wall-clock figures anywhere in this record are how long that file takes
+to run — **65 s, 71 s and 67 s** across three runs, the last at a load average
+of 4.05 — and the 2.0 s in [§8](#8-what-was-not-measured-and-why). Both are
+spreads on a shared container, not thresholds.
 
 One act at a time, with `-t`:
 
