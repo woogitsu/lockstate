@@ -15,6 +15,8 @@ import {
   openApp,
   panelText,
   press,
+  runUntilTick,
+  sentCommands,
   tab,
   waitForQueueEmpty,
 } from './playtest-harness';
@@ -292,5 +294,365 @@ test('act 1 — four prisoners and two guards, and whether you can tell them apa
   const half = await shotRect(page, 'act1-canvas-left', { x: 0, y: 80, width: 720, height: 740 });
   await upscale(page, half, 'act1-canvas-left-x2', 2);
 
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+/**
+ * Every object in the build catalogue, one per tile, on bare ground, in the
+ * order the catalogue lists them.
+ *
+ * **Why on bare ground rather than inside a room.** A room paints its own floor
+ * and the question here is what the *object* draws, so a designated floor under
+ * it would be one more thing to subtract. If a placement is refused outside a
+ * room the refusal is logged and the tile stays empty, which is itself an
+ * answer.
+ */
+const SHOWROOM: readonly string[] = [
+  'bed-wooden',
+  'toilet-brick',
+  'desk-wooden',
+  'chair-wooden',
+  'dining-table-wooden',
+  'bench-wooden',
+  'bookshelf-wooden',
+  'fridge-brick',
+  'stove-brick',
+  'prep-counter-brick',
+  'washing-machine-brick',
+  'shower-head-brick',
+  'storage-rack-wooden',
+  'medical-bed-wooden',
+  'medicine-cabinet-wooden',
+  'security-console-brick',
+  'utility-panel-brick',
+  'waste-bin-brick',
+];
+
+test('act 2 — the showroom: what each buildable actually draws', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(900_000);
+  await installTee(page);
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(500);
+
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  console.log(`origin: ${JSON.stringify(origin)}`);
+
+  /*
+   * **The first shape of this act placed the objects on bare ground and got
+   * nothing at all**, and the game said why, in the refusal band, in a
+   * sentence worth quoting: *"The object was not placed -- it has to stand in
+   * a room you have zoned."* So the showroom is a zoned room.
+   *
+   * Its bounds are chosen against the HUD rather than against the world. The
+   * right-hand rail, the minimap column and the tab bar all opt back into
+   * pointer events, so a press at tile x=24 or at tile (10,17) lands on a
+   * panel and produces no command -- which is exactly what happened to
+   * `fridge-brick`, `stove-brick`, `prep-counter-brick`, `utility-panel-brick`
+   * and `waste-bin-brick` on the first attempt. Tiles 12..22 by 12..20 are
+   * canvas a pointer can actually reach at 1440x900.
+   */
+  await buy(page, 'wall-brick', 100);
+  for (const id of SHOWROOM) await buy(page, id, 2);
+  await buy(page, 'door-wooden', 2);
+  await fastForwardToMax(page);
+  await page.waitForTimeout(4000);
+
+  await armBuildable(page, 'wall-brick');
+  const westX = origin.originX + 12 * TILE;
+  const eastX = origin.originX + 23 * TILE;
+  const northY = origin.originY + 12 * TILE;
+  const southY = origin.originY + 21 * TILE;
+  for (const run of [
+    { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    const before = (await sentCommands(page)).length;
+    await drag(page, run.a, run.b);
+    console.log(`wall run ${run.name}: ${(await sentCommands(page)).length - before} command(s)`);
+  }
+  await waitForQueueEmpty(page);
+
+  let attempts = 0;
+  for (;;) {
+    attempts += 1;
+    await tab(page, 'rooms').click();
+    if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    }
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 22, 20));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(800);
+    if (((await latestCounts(page))?.rooms ?? 0) > 0) break;
+    if (attempts >= 10) throw new Error('the showroom rectangle was never accepted as a room');
+    await page.waitForTimeout(4000);
+  }
+  console.log(`showroom zoned after ${attempts} attempt(s)`);
+
+  await tab(page, 'build').click();
+  const placed: { id: string; tx: number; ty: number }[] = [];
+  for (const [index, id] of SHOWROOM.entries()) {
+    const tx = 13 + (index % 5) * 2;
+    const ty = 13 + Math.floor(index / 5) * 2;
+    await armBuildable(page, id);
+    const point = centreOf(origin, tx, ty);
+    const commands = await press(page, point.x, point.y);
+    console.log(`${id} at (${tx},${ty}): ${JSON.stringify(commands)}`);
+    if (commands.length > 0) placed.push({ id, tx, ty });
+  }
+
+  // A door in the south wall, as the reference: act 1 showed walls drawn with
+  // real texture, so the door beside them says whether that generalises.
+  await armBuildable(page, 'door-wooden');
+  const doorPoint = centreOf(origin, 17, 20);
+  console.log(`door: ${JSON.stringify(await press(page, doorPoint.x, doorPoint.y + TILE / 2 - 4))}`);
+
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(4000);
+  console.log(`queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  console.log(`placed ${placed.length} of ${SHOWROOM.length}: ${JSON.stringify(placed)}`);
+  console.log(`refusal: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(600);
+
+  await shot(page, 'act2-showroom-full');
+  const rect = {
+    x: origin.originX + 12 * TILE,
+    y: origin.originY + 12 * TILE,
+    width: 11 * TILE,
+    height: 9 * TILE,
+  };
+  console.log(`showroom rect: ${JSON.stringify(rect)}`);
+  const showroom = await shotRect(page, 'act2-showroom', rect);
+  await upscale(page, showroom, 'act2-showroom-x2', 2);
+
+  // Row one alone, magnified, so each object is 256px wide on the page.
+  const rowOne = await shotRect(page, 'act2-row-one', {
+    x: origin.originX + 12 * TILE,
+    y: origin.originY + 12 * TILE,
+    width: 11 * TILE,
+    height: 3 * TILE,
+  });
+  await upscale(page, rowOne, 'act2-row-one-x4', 4);
+
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+/**
+ * A cell that works and a cell that is sealed shut, drawn at the same tick,
+ * cropped to the same rectangle, so the two files can be compared byte for
+ * byte.
+ *
+ * **This re-measures issue #944's headline result with the art present.** That
+ * report compared a working cell and a dead cell and found the screenshots
+ * *byte-identical* -- measured in a tree with no actor sprites at all, where
+ * every screenshot was of an empty floor, so the identity was guaranteed by
+ * the missing art rather than by the game. With sprites, the question is open
+ * again and worth asking honestly.
+ */
+async function cellRun(page: Page, options: { readonly door: boolean; readonly label: string; readonly untilTick: number }): Promise<{ origin: { originX: number; originY: number }; shot: string }> {
+  const origin = await buildAndPopulate(page, { beds: 4, admits: 4, guards: 2, label: options.label });
+
+  if (options.door) {
+    await tab(page, 'build').click();
+    await armBuildable(page, 'door-wooden');
+    // The south edge of tile (14,17) -- an edge that already carries a brick
+    // wall, which the game accepts without a removal first.
+    const point = centreOf(origin, 14, 17);
+    const commands = await press(page, point.x, point.y + TILE / 2 - 4);
+    console.log(`[${options.label}] door order: ${JSON.stringify(commands)}`);
+    await waitForQueueEmpty(page);
+    await page.waitForTimeout(2000);
+  }
+
+  await tab(page, 'rooms').click();
+  await page.waitForTimeout(300);
+  console.log(`[${options.label}] rooms panel: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
+
+  await fastForwardToMax(page);
+  await runUntilTick(page, options.untilTick);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(600);
+
+  console.log(`[${options.label}] tick ${await currentTick(page)} counts ${JSON.stringify(await latestCounts(page))}`);
+  console.log(`[${options.label}] ambient: ${JSON.stringify(await ambient(page))}`);
+
+  const shotPath = await shotRect(page, `act3-${options.label}`, roomRect(origin, 0));
+  await upscale(page, shotPath, `act3-${options.label}-x3`, 3);
+  await shot(page, `act3-${options.label}-full`);
+  return { origin, shot: shotPath };
+}
+
+test('act 3a — a cell with a door, run to tick 24000', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(900_000);
+  await installTee(page);
+  await openApp(page);
+  await cellRun(page, { door: true, label: 'working', untilTick: 24_000 });
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+test('act 3b — the same cell sealed shut, run to tick 24000', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(900_000);
+  await installTee(page);
+  await openApp(page);
+  await cellRun(page, { door: false, label: 'sealed', untilTick: 24_000 });
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+/**
+ * Twelve, then fifty. `buildAndPopulate` lays at most twelve beds (two rows of
+ * six), so the second half of this run admits into a prison with no free bed,
+ * which is the case a player reaches by pressing Admit one more time than they
+ * should.
+ */
+test('act 4 — stacking at twelve and at fifty', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(1_200_000);
+  await installTee(page);
+  await openApp(page);
+
+  const origin = await buildAndPopulate(page, { beds: 12, admits: 12, guards: 2, label: 'act4' });
+  await fastForwardToMax(page);
+  await page.waitForTimeout(15_000);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(400);
+  console.log(`twelve: tick ${await currentTick(page)} counts ${JSON.stringify(await latestCounts(page))}`);
+  await shot(page, 'act4-twelve-full');
+  const twelve = await shotRect(page, 'act4-twelve', roomRect(origin, 0));
+  await upscale(page, twelve, 'act4-twelve-x3', 3);
+  const twelveAnchor = await shotRect(page, 'act4-twelve-anchor', {
+    x: origin.originX + ROOM.x0 * TILE - TILE,
+    y: origin.originY + ROOM.y0 * TILE - TILE,
+    width: TILE * 4,
+    height: TILE * 4,
+  });
+  await upscale(page, twelveAnchor, 'act4-twelve-anchor-x4', 4);
+
+  const admitStarted = Date.now();
+  for (let index = 0; index < 38; index += 1) {
+    await page.locator('.hud-intake__admit').click();
+    await page.waitForTimeout(60);
+  }
+  console.log(`38 further admissions took ${Date.now() - admitStarted}ms`);
+  await page.waitForTimeout(20_000);
+  console.log(`fifty: tick ${await currentTick(page)} counts ${JSON.stringify(await latestCounts(page))}`);
+  console.log(`fifty ambient: ${JSON.stringify(await ambient(page))}`);
+  console.log(`intake panel: ${(await panelText(page, '.hud-intake')).replace(/\n/g, ' | ')}`);
+
+  await shot(page, 'act4-fifty-full');
+  const fifty = await shotRect(page, 'act4-fifty', roomRect(origin, 0));
+  await upscale(page, fifty, 'act4-fifty-x3', 3);
+  const fiftyAnchor = await shotRect(page, 'act4-fifty-anchor', {
+    x: origin.originX + ROOM.x0 * TILE - TILE,
+    y: origin.originY + ROOM.y0 * TILE - TILE,
+    width: TILE * 4,
+    height: TILE * 4,
+  });
+  await upscale(page, fiftyAnchor, 'act4-fifty-anchor-x4', 4);
+
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+/**
+ * Is anything moving? Four crops of the same rectangle, two seconds apart, at
+ * 4x speed. Identical files mean the world view is a still picture.
+ */
+test('act 5 — does anything on screen move', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(900_000);
+  await installTee(page);
+  await openApp(page);
+  const origin = await buildAndPopulate(page, { beds: 4, admits: 4, guards: 2, label: 'act5' });
+  await fastForwardToMax(page);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(5000);
+
+  const rect = roomRect(origin, TILE * 2);
+  for (let frame = 0; frame < 6; frame += 1) {
+    console.log(`frame ${frame} at tick ${await currentTick(page)}`);
+    await shotRect(page, `act5-frame-${frame}`, rect);
+    await page.waitForTimeout(2000);
+  }
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+/**
+ * Does a room read as the thing it was designated?
+ *
+ * The same 6x6 enclosure, designated four different ways in four fresh
+ * prisons, cropped identically. Only two floor images ship at all --
+ * `floor.concrete.variants` and `floor.linoleum.institutional`
+ * (`public/game-content/source-art.v1.json`) -- so the ceiling on this
+ * question is low, but "low" and "one" are different answers and only a
+ * picture separates them.
+ */
+async function designateOnly(page: Page, roomId: string, label: string): Promise<void> {
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.waitForTimeout(800);
+  await tab(page, 'build').click();
+  const origin = await calibrate(page);
+  await buy(page, 'wall-brick', 60);
+  await fastForwardToMax(page);
+  await page.waitForTimeout(3000);
+
+  await armBuildable(page, 'wall-brick');
+  const westX = origin.originX + 12 * TILE;
+  const eastX = origin.originX + 18 * TILE;
+  const northY = origin.originY + 12 * TILE;
+  const southY = origin.originY + 18 * TILE;
+  for (const run of [
+    { a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    await drag(page, run.a, run.b);
+  }
+  await waitForQueueEmpty(page);
+
+  let attempts = 0;
+  for (;;) {
+    attempts += 1;
+    await tab(page, 'rooms').click();
+    if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
+      await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    }
+    await page.locator(`.hud-rooms__list [data-room="${roomId}"]`).click();
+    await page.locator('.hud-rooms__arm').click();
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(800);
+    if (((await latestCounts(page))?.rooms ?? 0) > 0) break;
+    if (attempts >= 10) throw new Error(`${roomId} was never accepted`);
+    await page.waitForTimeout(4000);
+  }
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(600);
+  console.log(`${label}: rooms=${(await latestCounts(page))?.rooms} after ${attempts} attempt(s)`);
+  const path = await shotRect(page, `act6-${label}`, roomRect(origin, 0));
+  await upscale(page, path, `act6-${label}-x2`, 2);
+}
+
+test('act 6 — the same box, designated four different ways', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(1_800_000);
+  await installTee(page);
+  await openApp(page);
+  for (const [roomId, label] of [
+    ['room.cell', 'cell'],
+    ['room.kitchen', 'kitchen'],
+    ['room.canteen', 'canteen'],
+    ['room.solitary-cell', 'solitary'],
+  ] as const) {
+    await designateOnly(page, roomId, label);
+  }
   console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
 });
