@@ -92,16 +92,48 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     `node_modules` at all, and every import then fails to resolve in a way that
     looks like the branch is broken. Make it yourself, first thing:
     `ln -sfn /workspace/lockstate/node_modules <worktree>/node_modules`.
-  - **`git worktree add` does not run the Git LFS smudge filter either, and
-    this one does not announce itself.** A worktree gets LFS *pointer files*
-    where the main checkout has images:
-    `file public/assets/actors/actor.guard.base.idle.png` returns `ASCII text`
-    in a worktree and `PNG image data, 260 x 3104` in `/workspace/lockstate`.
-    Fix it first thing, beside the symlink: **`git lfs checkout`** in the
-    worktree (62 objects, 93 MB).
-    - **The session-start hook does not cover you.** It reports *"Git LFS
-      content looks present"*, which is true of the checkout it looked at and
-      false of every worktree made from it.
+  - **Git LFS: check which of your trees has the bytes, and do not assume the
+    direction. On 2026-09-04 it was the opposite of what this bullet said, in
+    both trees.** One command settles it and it is the same command either way:
+    `file public/assets/actors/actor.guard.base.idle.png`. `ASCII text` is a
+    pointer; `PNG image data, 260 x 3104` is the art.
+    - Measured that day, in a fresh `git worktree add` off `origin/main` and in
+      `/workspace/lockstate` side by side: **the worktree had the art and the
+      primary checkout had the pointers.** `git lfs ls-files` names 62 paths and
+      **0** of them were pointers in the worktree. `node
+      tooling/validate-runtime-atlas.mjs public/assets/actors` — which is what
+      `verify:assets` runs — printed *"Validated 10 clip atlases"* and exited 0
+      there, and exited 1 in the primary checkout with *"actor.staff.base.idle.png
+      is a Git LFS pointer, not image data"* and a line like it for every atlas.
+      `app-shell.spec.ts`'s art test therefore has its bytes in a worktree.
+    - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
+      `filter.lfs.process` and `filter.lfs.required` are set in
+      **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
+      in the container image, and *not* by this repository. Its provisioning
+      script says so in its own header:
+      `DOES NOT TOUCH GIT FILTER CONFIGURATION.`
+      (verbatim in `scripts/provision-git-lfs.sh`). So a checkout in this container runs
+      the smudge filter, `git worktree add` included, and gets real bytes. The
+      primary checkout's working tree was materialised without that and nothing
+      has re-smudged it since — which is an observation about one container's
+      filesystem, not a diagnosis, and §3's rule about state this repository
+      cannot read back applies: `/etc/gitconfig` is not in git, so the next
+      image can move this in either direction. **That is exactly why the durable
+      advice is the `file` check and not a direction.**
+    - **This bullet said the reverse — *"`git worktree add` does not run the Git
+      LFS smudge filter either … A worktree gets LFS pointer files where the main
+      checkout has images"*, with `git lfs checkout` as the fix to run first
+      thing — and it is kept because the integrator repeated it in brief after
+      brief on 2026-09-04 and it cost agents work.** It was measured on
+      2026-08-27, when it was presumably true of that container. It is not an
+      error of reasoning; it is a bare direction outliving the environment that
+      produced it, which is what §4 is about. Running `git lfs checkout` in a
+      worktree is still harmless and still the fix when the `file` check says
+      pointer.
+    - **The session-start hook does not cover you**, in either direction. It
+      reports *"Git LFS content looks present"* about the checkout it looked at
+      and says nothing about any other tree — on 2026-09-04 that sentence was
+      false of the very checkout it ran in.
     - **Why it is worse than the symlink trap, which fails loudly:** a browser
       run in a worktree loses *every actor sprite* — ten atlases fail with
       `Failed to process file: image "…"` and
@@ -127,13 +159,15 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   not merely untested. A mutation there survives because nothing could observe
   it. The answer is to extract the decision into a pure function, not to report
   a survivor: that is how `orderPrisonsForDisplay` came to exist.
-- **The browser suite needs Git LFS content.** `public/assets/**` is pointer
-  text in a fresh container, so `pnpm test:browser` fails at atlas decode by
-  design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it runnable,
-  and an agent that must verify a browser change should do that rather than
-  push a guess. A worktree does not carry the blobs **on checkout** — but
-  running `git lfs pull` inside the worktree fetches them there, verified on
-  2026-08-28. The advice this bullet used to give, "work in the main checkout
+- **The browser suite needs Git LFS content.** `public/assets/**` may be pointer
+  text in a fresh container, and then `pnpm test:browser` fails at atlas decode
+  by design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it
+  runnable, and an agent that must verify a browser change should do that rather
+  than push a guess. Running `git lfs pull` inside a worktree fetches the blobs
+  there, verified on 2026-08-28. The sentence this bullet used to carry, *"A
+  worktree does not carry the blobs **on checkout**"*, was measured false on
+  2026-09-04 — see the LFS bullet under the 2026-08-27 mechanics above, and run
+  the `file` check rather than either version of this claim. The advice this bullet used to give, "work in the main checkout
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
@@ -244,6 +278,73 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   spinning on an already-idle machine on 2026-08-28 before one of them worked out
   why. Append `| grep -v "bash -c"`, or just run the check by hand between runs —
   the point is a decision, not a wait.
+  **Added 2026-09-04: two more belong on this list, and a third red in the same
+  file emphatically does not — it fails on an idle machine.** So the opening
+  sentence's tally is stale and is left rather than renumbered, per §4: the
+  count was never the finding, and *"three"* is the form §4 says rots first.
+  All of the below measured in this container on a worktree at `194f31f5`
+  (v0.0.468) with no `src/` change in it, so the application under test is
+  `origin/main`.
+  - **Two more contention canaries.** `app-shell.spec.ts` *"zones a room and
+    admits a prisoner with the keyboard alone (#411)"* and *"takes a room back
+    with the keyboard alone, through the same confirm control (#411)"*. Both
+    take `test.slow()`'s 180 s and both exceeded it, and both died inside the
+    shared `walkFocus` helper — one at its `page.keyboard.press`, one at the
+    `page.evaluate` that reads `document.activeElement` — which is **a walk
+    that ran out of budget mid-hop, not an assertion about focus landing
+    somewhere wrong.** Read *where* it stopped before reading it as a defect,
+    exactly as with the #88 sweep above. Nothing is hung and nothing is broken:
+    run with `--timeout 0`, the first of them **passes in 6.7 m** at load
+    average 9.6–10.4, with another agent's full browser suite and a `vitest`
+    run alongside it. What was not obtained is an idle run of these two, so
+    they are recorded here as failing under load and the precondition in the
+    paragraph above still applies to them.
+  - **`app-shell.spec.ts` *"no room type in the catalogue pushes the Rooms panel
+    past its fold (#529)"* was NOT contention, and it is no longer on this list
+    as a canary at all — the measurement below is kept because it is what
+    justifies the budget it now has.** It carried no `test.slow()`, so it got
+    `playwright.config.ts`'s bare `timeout: 60_000`, and it did not fit inside
+    it on this box at any load. **The same commit that measured that gave it
+    `test.slow()`**, which is where the entry stops being a canary and becomes
+    a budget: a test given 60 s that needs 108 s is a test that *cannot* pass,
+    and writing it down here instead of raising the budget would have been
+    documenting a defect rather than fixing one. `test.slow()` skips, disables
+    and quarantines nothing — the test still runs, still sweeps 18 rooms across
+    5 viewports, and a failure is still a failure; three of its siblings in this
+    same file already carry it and this was the odd one out. Measured on a genuinely idle machine — `ps`
+    clear of `[p]laywright/test/cli` and `[v]itest`, load average **1.55**:
+    `Test timeout of 60000ms exceeded` on `locator.click` at
+    `tests/browser/app-shell.spec.ts:5247`, the call log showing the row
+    *resolved*, *"visible, enabled and stable"* and *"done scrolling"* before
+    the budget ran out — so not a locator that stopped matching. **Same tree,
+    same idle box, `--timeout 180000`: `1 passed (1.9m)`, the test itself
+    1.8 m.** It needs roughly 108 s and is given 60, and no amount of idleness
+    will change that. Its own comment already carries the history:
+    `The first shape of this test did it the other way round and timed out at
+    sixty seconds.`
+    (verbatim in
+    `tests/browser/app-shell.spec.ts`)
+    — and the sweep is 18 rooms × 5 viewports, so the second shape bought a 5×
+    saving on clicks and still does not fit. **That attribution is deliberately
+    wrapped**, after `verbatim in`, because until 2026-09-04
+    `tests/foundation/adr-quotation-verbatim-contract.test.ts` could not match a
+    wrapped one and then silently checked nothing; the corpus now contains the
+    case, so the fix cannot regress unnoticed.
+    **Why `main` is not red on it:** the CI runner is much faster than this
+    container. `main`'s `browser` job at `198fc120` on 2026-09-04 was green
+    with *"Run the real-browser suite"* taking **14m07s for the whole suite**,
+    which is roughly what two of these tests cost here. So it is a property of
+    where it runs, like the others, and that is why it is listed — but the
+    entry to carry forward is *"too slow for its own budget on this
+    container"*, which is a different fact from contention and asks for a
+    different fix. That fix is a decision about `test.slow()` on the spec and
+    it is deliberately not taken here: recording a measurement and changing a
+    test's budget are separate acts, and the second belongs to whoever owns the
+    spec.
+  - `tests/unit/prisoners-sentence.test.ts` was checked against this list and
+    **is already on it** — see the bullet above about the two tests sitting
+    close to their 5 s budget. Re-measured alone on 2026-09-04 at load average
+    3.49: `7 passed`, `Duration 2.60s`. Nothing to add.
 - **A local browser run in the worktree you are editing is not a baseline.** Vite
   serves `src/**` live, so a run started before your edits reads them off disk as
   they land, and a "before" measurement taken that way is a measurement of the

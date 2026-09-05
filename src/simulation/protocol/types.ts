@@ -885,15 +885,20 @@ export const statusCountsSchema = z
      * that particular 40, and a single percentage cannot say which rung the
      * missing ones are on.
      *
-     * **There are no 40s to attribute today, 2026-09-03.** The owner suspended
-     * the withheld share at `0` while they play and judge difficulty -- the
-     * ruling is in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
-     * docblock -- so no grant is smaller than the headline rate for want of a
-     * guard. The paragraph above is kept as the reason these three counts have
-     * the shape they have, and the shape is unaffected: `SafetyCoverageSystem`
-     * still decides whether `safety` is unmet, the counts still say which rung
-     * the uncovered are on, and a restored rate needs no change to this payload
-     * (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+     * **There were no 40s to attribute between 2026-09-03 and 2026-09-04, and
+     * there are again.** On 2026-09-03 the owner suspended the withheld share
+     * at `0` while they played and judged difficulty, so no grant was smaller
+     * than the headline rate for want of a guard; on 2026-09-04, after the two
+     * measurements they made it conditional on, they restored it to `40`. Both
+     * rulings are in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
+     * docblock and both directions are marked here rather than overwritten
+     * (`docs/AGENT_WORKFLOW.md` §4). The paragraph above is the reason these
+     * three counts have the shape they have, and the shape was unaffected by
+     * either move: `SafetyCoverageSystem` still decides whether `safety` is
+     * unmet, the counts still say which rung the uncovered are on, and neither
+     * the suspension nor the restoration needed a change to this payload --
+     * which the 2026-09-03 note predicted and this line now records as
+     * measured.
      *
      * They sum to the population **standing in a sector**, which in the
      * shipped single-sector topology is every living prisoner on owned land
@@ -1671,6 +1676,39 @@ const snapshotMessageSchema = z
  * confirmations evicts itself and other `'info'` rows before it evicts a riot.
  * Both halves are recorded because the first is a claim in that file that these
  * members falsify.
+ *
+ * ## `rooms.zoned` is the first member that acknowledges something, and that is a
+ * narrow widening again (issue #966 site 2)
+ *
+ * A census of this registry (issues #960 and #966) counted twenty members and
+ * classified them: nine bad news, six undos, two recoveries, and one --
+ * `prisoners.discharged` -- that reports something going right on a gate that
+ * is *a clock*, so nothing the player did earns it. This member is the first
+ * one a press earns.
+ *
+ * **It is the same widening #749 made and not a new one.** That ruling put the
+ * prison carrying out an instruction on this channel; an accepted room
+ * designation is a carried-out instruction that was simply not among the five,
+ * and the asymmetry it leaves is stark: all eight `zone.*` refusal sentences
+ * speak when the press fails and nothing spoke when it worked.
+ *
+ * **What it may claim is narrower than what it knows**, and the narrowing is
+ * the point rather than caution. The accepted outcome holds the whole
+ * `RoomInstance`, but a room being designated is not a room being *usable*
+ * ([#938](https://github.com/matmaxalez/lockstate/issues/938): a `sealed`
+ * perimeter reads identically for a reachable room and one with no doorway,
+ * and a prisoner measured hygiene 0 of 255 in a doorless shower room) and not
+ * a room that *works* (every type but `room.yard` needs objects placed in it,
+ * which is what the Rooms panel's own needs readout exists to say). So the
+ * payload is the room type and nothing else, and the sentence says the type
+ * was designated and stops.
+ *
+ * **The type alone is also what bounds the volume.** `simulationEventIdentity`
+ * drops the envelope and keeps the payload, so a run of designations of one
+ * type collapses into a single counted row rather than filling
+ * `MAX_EVENT_ALERT_ROWS`; carrying the rectangle or the anchor tile -- both in
+ * hand -- would make every press a distinct row, which is a real cost for a
+ * fact the player supplied themselves by dragging.
  */
 export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled',
@@ -1693,6 +1731,7 @@ export const SIMULATION_EVENT_TYPES = [
   'objects.removed-spend-destroyed',
   'prisoners.discharged',
   'prisoners.relocated',
+  'rooms.zoned',
 ] as const;
 
 export type SimulationEventType = (typeof SIMULATION_EVENT_TYPES)[number];
@@ -1785,6 +1824,57 @@ const residentRelocatedEventSchema = z
       .strict()
       .optional(),
     /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
+  })
+  .strict();
+
+/**
+ * A rectangle the player designated is now a room of that type
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+ *
+ * **One event per accepted press.** `createSessionCommandHandler`'s `ZoneRoom`
+ * branch records it on the `outcome.kind === 'zoned'` arm, which
+ * `RoomZoningService.zone` reaches only after it has painted every tile of the
+ * rectangle with the definition's `numericId` and registered the instance --
+ * so the fact is already in the world when this is written. A refused press
+ * records nothing here and a refusal reason instead, exactly as the other nine
+ * command successes in that function do.
+ *
+ * ## Why the payload is one message key and nothing else
+ *
+ * The accepted outcome carries the whole `RoomInstance` -- the instance id,
+ * the anchor tile, the rectangle, the derived capacities -- and this schema
+ * declines all of it.
+ *
+ * - **The room type is the fact the screen does not already carry.** A zoned
+ *   rectangle is tinted on the map by `zoningTint`
+ *   (`src/rendering/world/appearance.ts`), which is keyed by the room's
+ *   *category*: six of the eleven categories hold more than one type, so the
+ *   tint cannot tell a `room.cell` from a `room.holding-cell`, or a
+ *   `room.kitchen` from a `room.canteen`. The type is what a player cannot
+ *   read off the paint.
+ * - **The rectangle and the tile are what the player just supplied.** They
+ *   dragged them, and `hud.rooms.area-value` reads them back before the press.
+ *   Carrying them would also give every press a distinct
+ *   `simulationEventIdentity` and therefore its own row, where the type alone
+ *   collapses a run of designations into one counted row.
+ * - **Nothing about enclosure, capacity or readiness.** `enclosure: 'sealed'`
+ *   does not mean anybody can reach the room
+ *   ([#938](https://github.com/matmaxalez/lockstate/issues/938)) and a
+ *   registered instance is not a working one -- `residentCapacity` is 0 until
+ *   an object stands in it. A sentence built on either would be the promise
+ *   `AGENTS.md`'s fourth reservation protects.
+ *
+ * `roomNameKey` is the catalog's own `nameKey`, read from the definition `zone`
+ * decided the request against, and it crosses this boundary for the reason
+ * `prisoners.relocated`'s does: ADR 0011 keeps translated *text* off the wire
+ * and a message key is not text. The main thread resolves it.
+ */
+const roomZonedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('rooms.zoned'),
+    /** The type that was designated, as the room catalog's own `nameKey`. */
     roomNameKey: identifierSchema,
   })
   .strict();
@@ -2444,6 +2534,7 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   constructionRefusedEventSchema,
   dischargedEventSchema,
   residentRelocatedEventSchema,
+  roomZonedEventSchema,
   riotOpenedEventSchema,
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,

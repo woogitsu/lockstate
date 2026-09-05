@@ -132,14 +132,16 @@ export interface PrisonerNeedViewModel {
    * same predicate `unmetNeedCount` sums to compute the money.
    *
    * **This read "whether the state withholds part of this prisoner's day of
-   * the operating grant because of this need", and it stopped being true on
+   * the operating grant because of this need", it stopped being true on
    * 2026-09-03**, when the owner suspended
-   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` while they play
-   * (their words are in that constant's docblock). The flag itself did not
-   * move a bit: it is the same predicate over the same threshold, and it is
-   * what the money is computed from at any rate. Only the withholding it
-   * implied is suspended, so the old wording is kept beside the correction
-   * rather than replaced (`docs/AGENT_WORKFLOW.md` §4).
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `0` while they
+   * played, **and it is true again since they restored it to `40` on
+   * 2026-09-04** (both rulings are in that constant's docblock). The flag
+   * itself did not move a bit across either: it is the same predicate over the
+   * same threshold, and it is what the money is computed from at any rate.
+   * Every wording is kept rather than replaced (`docs/AGENT_WORKFLOW.md` §4),
+   * because the pair of them is what shows the flag is about the threshold and
+   * never about the rate.
    *
    * **A fact about what the state pays, not a claim about what a player should
    * be alarmed by**, and the two are deliberately separate:

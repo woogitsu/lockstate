@@ -1122,6 +1122,61 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // writes it.
   'hud.alert.event.prisoners.relocated': '{name} had nowhere to sleep and moved to {room}.',
 
+  /*
+   * The first thing this game says when a player gets something right (issue
+   * #966 site 2, from the acknowledgement census that issue and #960 carry:
+   * twenty event types, nineteen reachable, nine bad news, six undos, two
+   * recoveries, and no acknowledgement of anything anybody did).
+   *
+   * **Authored here rather than asked for, under `AGENTS.md` reservation 4's
+   * partial release of 2026-09-04** -- *"the CHOICE OF WORDS is ours now; the
+   * requirement that a sentence be TRUE is not"* -- so what follows is the
+   * proof of each clause against the code that renders it, which is what that
+   * release asks for in exchange.
+   *
+   * **`{room}`.** The room *type* that was designated, resolved from the room
+   * catalog's own `nameKey` -- `ZoneRoomAccepted.roomNameKey`, read in
+   * `RoomZoningService.zone` from the very definition that decided the
+   * request, and the same field `prisoners.relocated`'s `{room}` above
+   * resolves. It renders as "Cell", "Yard", "Canteen": the eighteen
+   * `room.*.name` entries at the top of this file. The instance the world
+   * registered carries `roomCatalogId: definition.id`, so the word and the
+   * type cannot disagree.
+   *
+   * **"designated".** The verb of the control the player pressed --
+   * `hud.rooms.confirm` is *"Designate {width} × {height}"* -- and the word
+   * this panel already uses for a room that exists but is not yet ready (see
+   * `hud.rooms.needs`: *"a room the player already designated"*). It is true
+   * at the moment this event is recorded: `zone` reaches its accepted outcome
+   * only after `SparseWorld.setZoning` has painted every tile of the rectangle
+   * with the definition's `numericId` and `RoomInstanceRegistry.register` has
+   * taken the instance, and the command handler records the event on that
+   * outcome.
+   *
+   * **And the full stop, which is the load-bearing part.** Two things the
+   * accepted outcome *knows* and this sentence must not say, both of them paid
+   * for already:
+   *
+   * - **Not that anybody can get in.** `ZoneRoomAccepted.enclosure` may read
+   *   `'sealed'` for a room with no doorway at all, which is
+   *   [#938](https://github.com/matmaxalez/lockstate/issues/938): the Rooms
+   *   panel's *"Walled in on every side"* renders identically for a reachable
+   *   room and a sealed box, and a prisoner in a doorless shower room measured
+   *   hygiene 0 of 255 with 162 route failures. So no clause here implies the
+   *   room will be *used*.
+   * - **Not that it works.** A registered instance has `residentCapacity: 0`
+   *   until an object stands in it, and every room type but `room.yard`
+   *   authors an `object` requirement -- which is why the needs readout
+   *   (`hud.rooms.needs-room`) exists at all. So no clause here promises
+   *   *function*, and none names what is still missing either: that is one
+   *   readout's job and it is already done.
+   *
+   * What is left is the narrow claim, which is also the one the player
+   * currently gets no word about: this designation was accepted and the world
+   * now holds this room.
+   */
+  'hud.alert.event.rooms.zoned': '{room} designated.',
+
   // The incident sentences (issue #555). Same family, same voice, written
   // against two constraints the two above did not have.
   //
@@ -2244,6 +2299,33 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // which is why the requirement counts as unmet. Substituted where the
   // object's own name would go, so the sentence still ends somewhere.
   'hud.rooms.needs-object-unknown': 'something this build cannot name',
+  /*
+   * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
+   * reservation 4** (issue #938), and every clause of it was proved against
+   * code opened for the purpose rather than reasoned about:
+   *
+   * - *"a door"* -- the projection publishes `access: 'no-way-in'` only from
+   *   `roomPerimeterAccess` (`src/simulation/rooms/enclosure.ts`), which
+   *   answers it only when every edge on the room's perimeter holds geometry
+   *   *and* `DoorRegistry.getByEdge` answers `undefined` for every one of
+   *   them. So there is no door in the wall line, and one is what the room is
+   *   short.
+   * - *"nobody can get in"* -- `src/simulation/navigation/traversal.ts`
+   *   states the rule: *"any non-zero value with no registered door is an
+   *   impassable wall"*, and *"a registered door decides the edge, whatever
+   *   value the edge layer holds ... that is the only reason a doorway is not
+   *   a wall"*. `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts`)
+   *   applies it in both of its passes -- it `continue`s past such an edge
+   *   when flood-filling a region and records no portal for it -- so no route
+   *   this repository can produce crosses that boundary, in either direction.
+   *
+   * What it deliberately does **not** say is that the room is reachable once
+   * a door exists: a doorway can open onto a corridor that is itself sealed,
+   * which is a region question this signal does not answer.
+   * `RoomPerimeterAccess`' own comment records that asymmetry, and it is why
+   * this sentence is only ever shown for `'no-way-in'`.
+   */
+  'hud.rooms.needs-doorway': 'a door — nobody can get in',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

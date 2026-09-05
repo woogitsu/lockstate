@@ -384,6 +384,29 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that a rectangle the player designated is now a room of that type
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   *
+   * **One call per accepted press**, like `recordResidentRelocated` above: the
+   * caller is `createSessionCommandHandler`'s `ZoneRoom` branch, on the arm
+   * where `RoomZoningService.zone` answered `'zoned'`.
+   *
+   * **Unguarded, because there is no figure to guard and the caller is what
+   * bounds it** -- the same shape `recordIncidentsAllClear` relies on. A
+   * refused press takes the other arm, which records a `RefusalLog` reason and
+   * calls nothing here; re-deciding that here would be a second, weaker copy
+   * of `zone`'s own answer.
+   *
+   * @param roomNameKey `ZoneRoomAccepted.roomNameKey` -- the room catalog's own
+   * `nameKey`, from the definition `zone` decided the request against. Passed
+   * through rather than derived from the instance's `roomCatalogId`, so the
+   * word the player reads cannot disagree with the type the world recorded.
+   */
+  public recordRoomZoned(roomNameKey: string, tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'rooms.zoned', roomNameKey });
+  }
+
+  /**
    * Records that a prisoner got out
    * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
    *

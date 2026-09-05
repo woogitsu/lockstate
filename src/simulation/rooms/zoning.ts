@@ -261,6 +261,26 @@ export interface ZoneRoomAccepted {
    */
   readonly enclosure: RoomEnclosure;
   readonly enclosureRequirement: RoomEnclosureRequirement;
+  /**
+   * The room type's own word, as the catalog's `nameKey` -- what the
+   * acknowledgement of an accepted designation names
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   *
+   * **A key and not a word, and it is read here rather than looked up again
+   * downstream.** `zone` has already resolved the definition in order to
+   * decide the request, so this is that definition's own `nameKey` handed
+   * over; deriving `${roomCatalogId}.name` at the call site instead would be a
+   * second answer to "what is this room called" that content could falsify
+   * without breaking a compile. ADR 0011 keeps translated text off the worker
+   * boundary, and a message key is exactly what `prisoners.relocated`'s
+   * `roomNameKey` already carries across it --
+   * `src/simulation/events/resident-relocation-notice.ts` reads it from the
+   * same registry field for the same reason.
+   *
+   * On the accepted outcome only. A refusal names no room type, because
+   * `unknown-room-type` is one of the reasons it can carry.
+   */
+  readonly roomNameKey: string;
 }
 
 export type ZoneRoomOutcome = ZoneRoomAccepted | ZoneRoomRefusal;
@@ -642,6 +662,10 @@ export class RoomZoningService {
       instance,
       enclosure: enclosure.enclosure,
       enclosureRequirement: requirement,
+      // The definition this whole function decided the request against, so the
+      // word the player reads and the type the world recorded cannot disagree:
+      // `registered.roomCatalogId` is `definition.id` twenty lines above.
+      roomNameKey: definition.nameKey,
     };
   }
 

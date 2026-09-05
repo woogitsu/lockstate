@@ -139,6 +139,24 @@ import { tileCoordinate } from '../world/coordinates';
  * 2026-09-04; the truth is not, which is why the sentence is authored against
  * `ObjectPlacementService.remove`'s standing-object arm and quoted in the commit
  * that landed it.
+ *
+ * **A fourth route writes to it since #966 site 2, and it is the first one that
+ * moves no money: `ZoneRoom`.** The paragraph above is left exactly as it stood,
+ * for the reason it kept #749's -- its reasoning is the thing that changed. It
+ * grouped zoning with the presses that *"produce something the player can see
+ * arrive"*, which is true and is not the whole truth: a designated rectangle is
+ * tinted on the map by `zoningTint`, and that tint is keyed by the room's
+ * **category**, so the paint cannot tell a `room.cell` from a
+ * `room.holding-cell`, or a `room.kitchen` from a `room.canteen`. The type --
+ * the thing the player chose -- is what no surface stated, while all eight
+ * `zone.*` refusal sentences state their reason when the press fails.
+ *
+ * **Six routes are still silent** -- un-zoning, hiring, admitting, placing an
+ * object, releasing a guard, dismissing staff -- and whether every success
+ * should speak is still the design question #945 marks as needing an ADR. This
+ * is not that decision. It is one site the acknowledgement census (#960, #966)
+ * established as a place where a true claim was available and nothing was
+ * published.
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -213,6 +231,28 @@ export function createSessionCommandHandler(
         // and cheap, and there is no reading of "this rectangle is not
         // enclosed" that survives a room having just been zoned inside it.
         refusals.supersede(zoneAreaSupersessionKey(simCommand.x, simCommand.y, simCommand.width, simCommand.height));
+        // Issue #966 site 2: and now it says so. Until this line the only word
+        // a player got for a designation that *worked* was red text
+        // disappearing -- eight `zone.*` refusal sentences speak when the press
+        // fails, and the branch above withdraws two of them on the grounds that
+        // this rectangle is "a fact the world just confirmed" while confirming
+        // it to nobody. That is the asymmetry #749's ruling already closed for
+        // construction, never applied to zoning.
+        //
+        // Here rather than inside `RoomZoningService.zone`, which is where the
+        // other nine command successes in this function are answered -- and
+        // note that #945 had to make the opposite choice for the opposite
+        // reason: it raised its notice inside `ObjectPlacementService.remove`
+        // because a removal *cascades* into a relocation that also speaks, and
+        // the order of the two decides which one the band keeps. Zoning
+        // cascades into nothing: `zone` returns, this branch returns.
+        //
+        // `outcome.roomNameKey` and not `outcome.instance.roomCatalogId`,
+        // because the sentence names the room *type* and the catalog's
+        // `nameKey` is the word for it. The schema in `../protocol/types.ts`
+        // says why the rest of the instance -- the rectangle, the anchor tile,
+        // the enclosure reading -- is deliberately not carried.
+        events.recordRoomZoned(outcome.roomNameKey, context.tick);
       }
       return;
     }

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import type { SimulationEvent } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -755,6 +756,122 @@ describe('a removal that destroys what an object cost says so (#945)', () => {
   });
 });
 
+/**
+ * **A room the player designates says so** (issue
+ * [#966](https://github.com/matmaxalez/lockstate/issues/966) site 2, whose
+ * body carries the acknowledgement census this closes one site of).
+ *
+ * The asymmetry this closes is the one #749 closed for construction. All eight
+ * `hud.alert.refusal.zone.*` sentences speak when a designation is refused; the
+ * accepted branch of `createSessionCommandHandler`'s `ZoneRoom` arm *withdrew
+ * two standing refusals* on the grounds that the rectangle is "a fact the world
+ * just confirmed" and confirmed it to nobody.
+ *
+ * **The three cases below are separated so that no single mutation passes all
+ * three**, which is what #945's trio was separated for. Deleting the recording
+ * fails the first only; wiring it to the branch rather than to the accepted
+ * outcome fails the second only; hard-coding a room type instead of passing the
+ * accepted outcome's own `roomNameKey` fails the third only.
+ */
+describe('a room that is designated says so (#966)', () => {
+  it('says which type was designated, and carries nothing but the type', () => {
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+
+    const before = session.types().length;
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+
+    // The designation really is in the world, asserted on both halves `zone`
+    // writes -- the registry and the zoning plane -- because the sentence is
+    // worth having only if "designated" is true of the world and not merely of
+    // the outcome object the handler was handed.
+    const instanceId = `room.cell:${String(CELL_RECT.x)}:${String(CELL_RECT.y)}`;
+    expect(
+      session.runtime.prisoners.roomInstances.getById(instanceId)?.roomCatalogId,
+      'the instance the sentence is about is registered',
+    ).toBe('room.cell');
+    expect(
+      session.runtime.world.getZoning({ x: tileCoordinate(CELL_RECT.x), y: tileCoordinate(CELL_RECT.y) }),
+      'and the plane is painted',
+    ).not.toBe(0);
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['rooms.zoned']);
+    /*
+     * **The payload, pinned exhaustively.** `roomNameKey` and the envelope, and
+     * nothing else -- not the rectangle, not the anchor tile, not the enclosure
+     * reading, all three of which `ZoneRoomAccepted` is holding one line above
+     * the call.
+     *
+     * Two reasons, and neither is tidiness. A field on this payload is a field
+     * `simulationEventIdentity` reads, so an anchor tile would give every press
+     * its own row instead of collapsing a run of one type into one counted row.
+     * And `enclosure: 'sealed'` is the #938 trap: it reads identically for a
+     * reachable room and a room with no doorway, so a sentence built on it
+     * would claim the room can be *used*.
+     */
+    expect(Object.keys(said[0]!).sort(), 'the type, and no geometry').toEqual([
+      'roomNameKey',
+      'sequence',
+      'tick',
+      'type',
+    ]);
+    expect(said[0]).toMatchObject({ roomNameKey: 'room.cell.name' });
+  });
+
+  it('says nothing when the press was refused', () => {
+    /*
+     * The absence half, and the reason it is a `1x1`: `room.cell` authors a
+     * `2x3` minimum, so this is refused by `below-minimum-size` before `zone`
+     * touches a tile. A producer wired to the branch rather than to the
+     * accepted outcome would tell the player they had designated a room that
+     * does not exist.
+     */
+    const session = createSession();
+    const before = session.types().length;
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 20, width: 1, height: 1 });
+
+    expect(session.runtime.refusals.last?.reason, 'the press really was refused').toBe('zone.below-minimum-size');
+    expect(
+      session.runtime.prisoners.roomInstances.getById('room.cell:2:20'),
+      'and no room was recorded',
+    ).toBeUndefined();
+    expect(session.types().slice(before), 'a refused designation designated nothing').toEqual([]);
+  });
+
+  it('names the type the player actually asked for, not the last one anybody zoned', () => {
+    /*
+     * **The key travels from the accepted outcome and is not hard-coded.** Two
+     * designations of different types in one session: a `room.cell`, which
+     * authors `enclosed` and needs the perimeter, and a `room.yard`, which
+     * authors `outdoors` and an `8x8` minimum and is the one room type in the
+     * catalogue that authors no `object` requirement at all.
+     *
+     * The yard is deliberately the second: a producer that read the room type
+     * from anywhere but this press -- the last instance registered, the first
+     * catalogue entry, a literal -- says "Cell" twice and fails here while
+     * passing the first case above.
+     *
+     * The yard rectangle is `tests/integration/yard-and-common-room.test.ts`'s
+     * `MINIMUM_YARD`, so the two files agree about which ground a new prison
+     * owns.
+     */
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+
+    const before = session.types().length;
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 6, width: 8, height: 8 });
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['rooms.zoned', 'rooms.zoned']);
+    expect(said.map((event) => (event as { roomNameKey?: string }).roomNameKey)).toEqual([
+      'room.cell.name',
+      'room.yard.name',
+    ]);
+  });
+});
+
 describe('nothing else on the channel changed', () => {
   it('leaves a session that pressed nothing with nothing to say', () => {
     /*
@@ -765,13 +882,19 @@ describe('nothing else on the channel changed', () => {
      *
      * `objects.` joined the filter with #945, whose event is on the same
      * footing: it is a statement about a press and nothing else can produce it.
+     * `rooms.` joined it with #966 site 2, on the same footing again -- nothing
+     * but an accepted `ZoneRoom` can produce one, and no system zones anything.
      */
     const session = createSession();
     session.run(400);
     const said = session
       .types()
       .filter(
-        (type) => type.startsWith('construction.') || type.startsWith('objects.') || type === 'economy.delivery-cancelled',
+        (type) =>
+          type.startsWith('construction.') ||
+          type.startsWith('objects.') ||
+          type.startsWith('rooms.') ||
+          type === 'economy.delivery-cancelled',
       );
     expect(said).toEqual([]);
   });

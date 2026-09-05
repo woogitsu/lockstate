@@ -208,8 +208,18 @@ describe('hiring before there is anybody to guard is a decision the balance now 
      * nothing else. `tests/integration/needs-state-grant-loop.test.ts` prices
      * that same 3,200 off its own measured days at ADR 0064's rate, so the
      * figure this arm gives up is not lost.
+     *
+     * **And it reads 42,640 again since the owner restored the rate to `40` on
+     * 2026-09-04**, after the four-prisoner and fifty-prisoner measurements
+     * they made the restoration conditional on. Both directions are marked
+     * rather than overwritten (`docs/AGENT_WORKFLOW.md` §4), and the whole
+     * point of the paragraph above is that this number had already been both
+     * of its values: the suspension moved it to a figure it had held before
+     * ADR 0064, and the restoration moves it back to the one ADR 0064 gave it.
+     * Nothing else in this fixture moved on either date -- same seed, same
+     * build, same eight admissions, same ten days.
      */
-    expect(runtime.treasury.balanceMinorUnits).toBe(45_840);
+    expect(runtime.treasury.balanceMinorUnits).toBe(42_640);
   });
 });
 
@@ -301,20 +311,62 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * about *which* rungs fire and about their firing together is untouched --
      * only when. Kept rather than rewritten for that reason
      * (`docs/AGENT_WORKFLOW.md` §4).
+     *
+     * **It is day 7 again since the owner restored the rate to `40` on
+     * 2026-09-04**, at -1,320, exactly where the paragraph above says it was
+     * before the suspension. The sink accelerates again, and the one day
+     * between the two readings is this mechanic's whole effect on this prison
+     * -- which is a smaller thing than "the shared rung" and is worth having
+     * measured either way. Both directions are marked rather than overwritten.
      */
-    expect(runtime.events.since(0), 'the two rungs above the wages floor, crossed together before any payday is missed').toEqual([
-      { sequence: 1, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.deliveries-refused' },
-      { sequence: 2, tick: DAY_LENGTH_TICKS * 8 - 1, type: 'economy.construction-refused' },
+    /*
+     * **Both sides of a 2026-09-05 merge conflict are kept here, because each
+     * was right about a different thing and neither alone is.** The filter and
+     * the dropped ordinals are #966 site 2's (an accepted `ZoneRoom` now speaks,
+     * so `sequence: 1` and `2` stopped being facts about the ladder). The tick
+     * is #986's: restoring `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`
+     * to `40` moved the crossing from day 8 to day 7, which is the whole point
+     * of that change and is asserted elsewhere in this file.
+     */
+    /*
+     * **Narrowed to the `economy.*` family on 2026-09-04 (#966 site 2), and the
+     * old line is quoted rather than deleted** (`docs/AGENT_WORKFLOW.md` §4):
+     *
+     * > expect(runtime.events.since(0), '…').toEqual([
+     * >   { sequence: 1, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
+     * >   { sequence: 2, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
+     * > ]);
+     *
+     * An accepted `ZoneRoom` now says so, and this fixture zones its cells
+     * through the real command -- so the two crossings are no longer the first
+     * two things the session said, and the ordinals `1` and `2` were a fact
+     * about the fixture rather than about the ladder. The claim in the message
+     * is *which* rungs fire and that they fire **together**, and the shared
+     * tick is what carries "together"; the ordinals never did. What is dropped
+     * with them is nothing this case asserted: the filter still fails a ladder
+     * that fires a third `economy.*` event, in the wrong order, or on two
+     * different ticks.
+     */
+    expect(
+      runtime.events
+        .since(0)
+        .filter((event) => event.type.startsWith('economy.'))
+        .map((event) => ({ tick: event.tick, type: event.type })),
+      'the two rungs above the wages floor, crossed together before any payday is missed',
+    ).toEqual([
+      { tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
+      { tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
     ]);
 
-    // **Day 12 is the first it cannot meet, and this read day 10 until the
-    // ruling of 2026-09-03.** A prison that is no longer charged for its
-    // unserved needs takes two more in-game days to miss a payday: day 11
-    // leaves it at -2,440, and day 12 has 60 of room against a 960 bill, so it
-    // pays 660 out of the overdraft, lands on the floor and owes 300 -- where
-    // the withheld schedule had it owing 380 on day 10.
-    stepTo(runtime, DAY_LENGTH_TICKS * 12);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(300);
+    // **Day 10 is the first it cannot meet, at 140 of room and 380 owed.**
+    // Between 2026-09-03 and 2026-09-04, with nothing withheld, it was day 12
+    // at 60 of room and 300 owed: a prison no longer charged for its unserved
+    // needs took two more in-game days to miss a payday. The owner restored
+    // the rate on 2026-09-04 and both readings are kept
+    // (`docs/AGENT_WORKFLOW.md` §4) -- two days and 80 of arrears is what the
+    // mechanic is worth to this fixture, measured in both directions.
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
 
     // The two rung crossings above are still the only two of their kind: this
     // is one missed payday, not one event overall, now that the ladder's
@@ -323,7 +375,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     expect(afterFirstMiss.length, 'one missed payday is one wages-unpaid sentence').toBe(1);
     // The figure the player is told is the arrears the save also carries, not
     // the day's shortfall by some other arithmetic.
-    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 300 });
+    expect(afterFirstMiss[0]).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 380 });
 
     const message = workerToMainMessageSchema.parse({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -348,7 +400,7 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const sentence = localizer.format(notice.labelKey, notice.labelParameters);
     expect(sentence, 'the player must not be shown a raw message key').not.toContain('hud.alert.event');
-    expect(sentence, 'and the sentence must name what is owed').toContain('300');
+    expect(sentence, 'and the sentence must name what is owed').toContain('380');
 
     /*
      * **Once a day while it stays broke, not twice a second.** This is the
@@ -358,7 +410,12 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * downstream.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 15);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_380);
+    // 380 owed on day 10 and 520 a day compounding after it -- the 960 bill
+    // less the 440 this prison still earns with both needs unserved. This read
+    // `1_380` (300 owed from day 12, then 360 a day) while the withheld share
+    // was suspended between 2026-09-03 and 2026-09-04, and both are kept
+    // (`docs/AGENT_WORKFLOW.md` §4).
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
     // Filtered to `economy.wages-unpaid` for the reason the first check above
     // is: the two rung-crossing events from day 8 are still on the channel
     // (nothing here retires them) and are not paydays. **This comment said
@@ -367,23 +424,37 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     // the owner's ruling on #771; the day itself moved from 7 to 8 with the
     // ruling of 2026-09-03.**
     //
-    // **Three more in-game days ran from day 12 rather than from day 10, and
-    // the debt compounds at 360 a day rather than 520**, so four missed
-    // paydays now total 1,380 where they totalled 1,940. What this checks is
-    // one sentence per payday, and that is a property of where the producer
-    // sits rather than of either figure.
-    const afterFourMisses = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
+    // **Between 2026-09-03 and 2026-09-04, with the withheld share suspended,
+    // the run to day 15 started missing paydays on day 12 rather than on day
+    // 10 and compounded at 360 a day rather than 520: four missed paydays
+    // totalling 1,380 where the withheld schedule gives six totalling 2,980.**
+    // Both readings are kept (`docs/AGENT_WORKFLOW.md` §4). What this checks
+    // is one sentence per payday, and that is a property of where the producer
+    // sits rather than of any of those figures -- which is why the count moves
+    // with the rate and the rule does not.
+    const afterMisses = runtime.events.since(0).filter((event) => event.type === 'economy.wages-unpaid');
     expect(
-      afterFourMisses.length,
-      'a prison that stays broke says so once per payday -- four missed paydays, four sentences',
-    ).toBe(4);
-    expect(afterFourMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 1_380 });
+      afterMisses.length,
+      'a prison that stays broke says so once per payday -- six missed paydays, six sentences',
+    ).toBe(6);
+    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_980 });
     // And the ladder's whole shape in one assertion: two rung crossings while
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
-    // six events for six real things that happened, none of them repeated.
-    expect(runtime.events.since(0).map((event) => event.type)).toEqual([
+    // eight events for eight real things that happened, none of them repeated.
+    // This list carried four `wages-unpaid` entries, for six events in all,
+    // while the withheld share was suspended between 2026-09-03 and 2026-09-04;
+    // restoring it to `40` (#986) put the other two back.
+    //
+    // **Filtered to the `economy.*` family on 2026-09-04 (#966 site 2)**: an
+    // accepted `ZoneRoom` now says so, and this fixture zones eight cells
+    // through the real command, so the whole log is no longer this case's
+    // subject. The ladder's shape is, and the filter is what keeps this case
+    // about the ladder while the log grows around it.
+    expect(runtime.events.since(0).map((event) => event.type).filter((type) => type.startsWith('economy.'))).toEqual([
       'economy.deliveries-refused',
       'economy.construction-refused',
+      'economy.wages-unpaid',
+      'economy.wages-unpaid',
       'economy.wages-unpaid',
       'economy.wages-unpaid',
       'economy.wages-unpaid',
@@ -453,9 +524,16 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * stands because it is what the withheld schedule does to this same
      * prison, and because the direction it states is exactly what the owner is
      * now judging by playing.
+     *
+     * **The owner judged it, and it reads 520 again since they restored the
+     * rate on 2026-09-04.** Day 5 is once more the first day the state pays
+     * this prison less: 80 plus 520 against 960, met out of the overdraft,
+     * **-360** and owing nothing. Both directions are marked rather than
+     * overwritten, and the 80 between -280 and -360 is one day of one need on
+     * two places -- the smallest unit of this mechanic there is.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 5);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-280);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-360);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'the overdraft is what pays it, so nothing is owed').toBe(0);
 
     /*
@@ -463,16 +541,18 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * crosses the line on day 7 as well -- the 960 bill less an income that is
      * itself falling. -800, -1,320, -1,840, -2,360.
      *
-     * **Since the ruling of 2026-09-03 it goes down at a flat 360 a day, and
-     * the accelerating series above is what the withheld schedule did to it.**
-     * Nothing about the income falls any more, so the balance is 1,520 - 360n
-     * exactly: -640, -1,000, -1,360, -1,720. The old series is kept because
-     * the difference between the two -- a prison sinking faster the worse it
-     * treats its prisoners, against one sinking at the rate of its own payroll
-     * -- is the whole of what the owner asked to feel while they play.
+     * **Between the ruling of 2026-09-03 and its reversal on 2026-09-04 it
+     * went down at a flat 360 a day, and the accelerating series above is what
+     * the withheld schedule does to it.** With nothing withheld the income did
+     * not fall, so the balance was 1,520 - 360n exactly: -640, -1,000, -1,360,
+     * -1,720. Both series are kept (`docs/AGENT_WORKFLOW.md` §4), because the
+     * difference between them -- a prison sinking faster the worse it treats
+     * its prisoners, against one sinking at the rate of its own payroll -- is
+     * the whole of what the owner asked to feel while they played, and the
+     * accelerating one is what they chose after playing it.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_720);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-2_360);
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
 
     /*
@@ -481,18 +561,23 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * -2,500 and owes 300. From there the balance does not move again -- the
      * rung holds -- and the debt compounds at 360 a day.
      *
-     * **This was day 10, 140 of room against a 520 bill, 380 owed, compounding
-     * at 520 a day**, and every one of those figures is the withheld
-     * schedule's. Two extra in-game days of solvency is what the ruling buys
-     * this prison.
+     * **It is day 10 again since the owner restored the rate on 2026-09-04**:
+     * 140 of room against a 960 bill, 380 owed. Every figure in the paragraph
+     * above is the suspended schedule's and is kept rather than overwritten
+     * (`docs/AGENT_WORKFLOW.md` §4) -- two extra in-game days of solvency is
+     * what the suspension bought this prison, and it is what the restoration
+     * takes back.
      */
-    stepTo(runtime, DAY_LENGTH_TICKS * 12);
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
     expect(runtime.treasury.balanceMinorUnits, 'exactly the wage rung, which is the floor').toBe(-2_500);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(300);
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(380);
 
     stepTo(runtime, DAY_LENGTH_TICKS * 15);
     expect(runtime.treasury.balanceMinorUnits, 'and no payday may pass it').toBe(-2_500);
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(1_380);
+    // Five days of debt after the first miss, at 520 a day rather than the
+    // suspended schedule's 360: `380 + 5 x 520`. This read `1_380` between
+    // 2026-09-03 and 2026-09-04, and both are kept.
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
   });
 
   /**
@@ -582,18 +667,20 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
       return -1;
     };
 
-    // Day 8 (-1,360): the shared rung. A player pressing Buy is refused, and the
+    // Day 7 (-1,320): the shared rung. A player pressing Buy is refused, and the
     // sentence they are shown is `AGENTS.md`'s fourth exclusion -- see the four
     // keys named at `src/content/default-locale-en.ts`. Construction fires with
     // it, the same day, at the same balance -- this is #771's own finding, read
     // off a real sink rather than probed as a boundary.
     //
-    // **Day 7 (-1,320) until the owner's ruling of 2026-09-03.** With nothing
-    // withheld for an unserved need the sink is a flat 360 a day and the
-    // shared rung is one day later. What this case measures is the *order* of
-    // the rungs, which is unchanged.
+    // **Day 8 (-1,360) between the owner's ruling of 2026-09-03 and their
+    // restoration of the rate on 2026-09-04.** With nothing withheld the sink
+    // was a flat 360 a day and the shared rung one day later; both readings
+    // are kept (`docs/AGENT_WORKFLOW.md` §4). What this case measures is the
+    // *order* of the rungs, and that did not move on either date -- which is
+    // the property, and the days are the fixture.
     const deliveriesStopped = firstDayThat((state) => !state.deliveries);
-    expect(deliveriesStopped, 'deliveries are refused first').toBe(8);
+    expect(deliveriesStopped, 'deliveries are refused first').toBe(7);
     expect(rungs().construction, 'and construction is refused with it, not two days later').toBe(false);
     expect(rungs().wages, 'and the staff are still being paid').toBe(0);
 
@@ -608,17 +695,18 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      */
     const constructionStopped = deliveriesStopped;
 
-    // Day 12 (-2,500): wages. The payday takes the 60 of room the rung leaves,
-    // pays 660 out of the overdraft and owes the other 300. **Day 10, 140 of
-    // room and 380 owed, until the owner's ruling of 2026-09-03.**
+    // Day 10 (-2,500): wages. The payday takes the 140 of room the rung
+    // leaves, pays 820 out of the overdraft and owes the other 380. **Day 12,
+    // 60 of room and 300 owed, between the owner's ruling of 2026-09-03 and
+    // their restoration of the rate on 2026-09-04.**
     const wagesUnpaid = firstDayThat((state) => state.wages > 0);
-    expect(wagesUnpaid, 'wages go unpaid last').toBe(12);
+    expect(wagesUnpaid, 'wages go unpaid last').toBe(10);
     expect(runtime.treasury.balanceMinorUnits).toBe(-2_500);
 
     // The ordering itself, stated as the assertion it is rather than left to be
     // read off the numbers: the two discretionary rungs are equal, and both
     // precede wages.
-    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([8, 8, 12]);
+    expect([deliveriesStopped, constructionStopped, wagesUnpaid]).toEqual([7, 7, 10]);
     expect(deliveriesStopped).toBe(constructionStopped);
     expect(constructionStopped).toBeLessThan(wagesUnpaid);
 
@@ -637,17 +725,20 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     // Day 5 and `0 / 360` until the owner's ruling 19 of 2026-08-31 moved the
     // third rung to the floor; the channel carries the same three figures.
     //
-    // **Day 10 and `380` until the owner's ruling of 2026-09-03**, which set
-    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`. The subject
-    // here is that a debt is *on the channel* rather than invisible, so the
-    // measurement moves to the first day there is a debt to carry: day 12,
-    // where the same prison owes 300 instead of day 10's 380. Reading day 10
-    // now would assert `0` and would stop testing anything.
+    // **Day 12 and `300` between the owner's ruling of 2026-09-03, which set
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`, and their
+    // restoration of it to `40` on 2026-09-04.** Both readings are kept
+    // (`docs/AGENT_WORKFLOW.md` §4). The subject here is that a debt is *on
+    // the channel* rather than invisible, so the measurement sits on the first
+    // day there is a debt to carry, and that day moves with the rate: day 10
+    // owing 380 at `40`, day 12 owing 300 at `0`. Reading the wrong one of the
+    // two asserts `0` and stops testing anything, which is why the day is
+    // written beside the reason rather than left as a constant.
     const runtime = overcommitted();
-    stepTo(runtime, DAY_LENGTH_TICKS * 12);
+    stepTo(runtime, DAY_LENGTH_TICKS * 10);
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
     expect(counts.treasuryMinorUnits).toBe(-2_500);
-    expect(counts.unpaidWagesMinorUnits).toBe(300);
+    expect(counts.unpaidWagesMinorUnits).toBe(380);
     expect(counts.dailyWageBillMinorUnits).toBe(960);
   });
 
@@ -693,11 +784,18 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * quoted block above and in this paragraph is kept, because the pair of
      * them is the clearest statement in this file of what the suspended
      * mechanic was doing to the game's difficulty.
+     *
+     * **The owner restored the rate on 2026-09-04, so the hole is 480 deeper
+     * again -- -1,840 on day 8 -- and the lever is back to being worth 1,280 a
+     * day against a prison earning 440.** Both directions are marked. The
+     * pairing above is the reason this case is worth reading twice: the
+     * mechanic makes the prison worse off *and* makes the recovery lever
+     * matter more, and neither half is visible from one rate alone.
      */
     const runtime = overcommitted();
     stepTo(runtime, DAY_LENGTH_TICKS * 8);
     expect(runtime.payroll.unpaidWagesMinorUnits, 'the overdraft has met every payday so far').toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(-1_360);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-1_840);
 
     admit(runtime, 6, 2);
     stepTo(runtime, DAY_LENGTH_TICKS * 9);
@@ -706,19 +804,30 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * Six arrivals start at `NEED_MAX` on every need. **They used to be paid
      * the undiminished 300 while the two long-standing prisoners were paid
      * 220 -- 2,240 of income against a 960 bill, 1,280 towards the hole** --
-     * and since the ruling of 2026-09-03 all eight are paid 300: 2,400 against
-     * the same bill, 1,440 towards a hole that is itself shallower.
+     * and between the ruling of 2026-09-03 and its reversal on 2026-09-04 all
+     * eight were paid 300: 2,400 against the same bill, 1,440 towards a hole
+     * that was itself shallower, and this assertion read `80`. The rate is
+     * `40` again, so the six are paid 300 and the two are paid 220 once more:
+     * 2,240 against 960, 1,280 towards a hole of -1,840, which lands on -560
+     * -- still under water on day 9, where the suspended schedule had already
+     * crossed. Both directions are marked (`docs/AGENT_WORKFLOW.md` §4).
      */
     expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0);
-    expect(runtime.treasury.balanceMinorUnits).toBe(80);
+    expect(runtime.treasury.balanceMinorUnits).toBe(-560);
 
-    // Day 10 puts the prison further above water, and it keeps climbing after
-    // that, so the recovery is a recovery rather than a pause. **It crossed
-    // zero on day 10 and read 720 there until the ruling of 2026-09-03**; the
-    // crossing is now a day earlier, on day 9 above.
+    // Day 10 is where the prison crosses zero, and it keeps climbing after
+    // that, so the recovery is a recovery rather than a pause. **It crossed on
+    // day 9 and read 1,520 on day 10, then 2,960 on day 11, while the withheld
+    // share was suspended between 2026-09-03 and 2026-09-04**; both readings
+    // are kept (`docs/AGENT_WORKFLOW.md` §4). The restored schedule costs the
+    // climb one in-game day, 800 at the day-10 sample and 960 at the day-11
+    // one -- the prison rises 1,280 a day here against the suspended
+    // schedule's 1,440, because two of the eight places are priced at 220.
+    // That is what the mechanic does to *recovery* rather than to the sink,
+    // and this case is the only place in the suite it can be read.
     stepTo(runtime, DAY_LENGTH_TICKS * 10);
-    expect(runtime.treasury.balanceMinorUnits).toBe(1_520);
+    expect(runtime.treasury.balanceMinorUnits).toBe(720);
     stepTo(runtime, DAY_LENGTH_TICKS * 11);
-    expect(runtime.treasury.balanceMinorUnits).toBe(2_960);
+    expect(runtime.treasury.balanceMinorUnits).toBe(2_000);
   });
 });
