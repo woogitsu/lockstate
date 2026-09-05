@@ -11493,6 +11493,46 @@ of item 2 is a rewrite of the citations in §§2-6, which is work and not
 engineering, and it can be paid one entry at a time by whichever pass touches
 an entry — which is how these four were paid.
 
+**THE FOUR CONVERSIONS, NAMED, SO THE NEXT PASS CAN SEE WHAT ONE COSTS.**
+`src/simulation/prisoners/action-system.ts` (the target-kind guard, beside the
+three corrected caller lines in §2's ADR 0071 entry), `src/main.ts` twice (the
+`PrisonerDetailReader` construction in §2 and `createTelemetryConsentPrompt({`
+in §5) and `src/ui/hud/view-model.ts` (the `HudPrisonerDetailViewModel`
+declaration in §2). Each is one backtick span and one parenthesis; none
+replaced a line number, all four sit beside one, and the gate now fails if the
+*code* changes rather than when the count above it does. **And this is the
+place to be exact about what recommendation 1 asks for**, because it has been
+cited loosely: its own text at `docs/adr/STATUS-QUEUE.md:15532` says code
+citations *"should stay `file:line`: they are checked by grep, not read
+by eye"*. So a stale `src/` line number is **not** an instance of
+recommendation 1 at all — recommendation 1 is about documents under active
+edit, its item 1 is done, and what these four conversions pay down is **item
+2**, which asks for the quotation gate. Item 2 is *unused, not unbuilt*, which
+is the finding this pass would put in front of a reader before any of its
+coordinate repairs.
+
+**THE THREE `documentation-commit-citation-contract` FAILURES THIS FILE'S OWN
+CITATIONS PRODUCE ARE A CONTAINER ARTEFACT, AND THIS PASS GOT THE MECHANISM
+WRONG BEFORE IT GOT IT RIGHT.** The three name `c56e18bd` and `24ef7aec` —
+#913's copy fix and #897's merge commit, both plainly published history — as
+commits *"on this disk and on no ref this repository publishes"*. Nothing here
+should be edited and `UNPUBLISHED_BY_ORIGIN` stays empty: CI's `verify` job
+runs at `fetch-depth: 0` and is green on this same file content, so the
+citations resolve wherever a full clone reads them, and that allowlist's own
+comment is right that an entry would *"preserve a citation nobody can check"*.
+**The earlier commit message on this branch attributed the third failure to a
+ref set — *"16 of origin's 196 branches"* — and called it a second artefact
+distinct from the shallow clone. Both halves are false and are corrected here
+rather than left in the log alone**: `git branch -r` returns **200** against
+origin's 198 heads, in the primary checkout and in every worktree, and the
+cause is the graft. `git branch -r --contains` returns 0 refs for both commits
+over all 200, while `829d3c11` — inside the visible walk — is contained by 21;
+same refs, same command, and the only difference is whether the walk can
+reach. **A `--contains` that cannot walk answers "no" and means "cannot
+say"**, which is the same shape as `git log -S` and `--diff-filter=A` in a
+shallow clone. `docs/AGENT_WORKFLOW.md` §2 carries the generalisation and the
+one command that detects it.
+
 **Two inherited readings, re-read and labelled as inherited.** ADR 0013's §5
 and §6 absences and `tests/unit/ui-hud-messages.test.ts:270-276` both hold at
 `c57f5fa8`. `git diff --name-only 829d3c11..c57f5fa8 -- supabase/` returns
