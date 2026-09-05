@@ -333,4 +333,68 @@ test.describe('contraband, played', () => {
 
     expect(await currentTick(page)).toBeGreaterThan(29_000);
   });
+
+  test('act 3 — the only contraband control a player has is Release', async ({ page }) => {
+    test.setTimeout(1_800_000);
+    await installTee(page);
+    await installProjectionProbe(page);
+    await openApp(page);
+
+    await buildAndPopulate(page, { beds: 12, admits: 12, guards: 3, label: 'contraband-release' });
+
+    /*
+     * `GUARD_CLAIM_KINDS` includes `'search'`
+     * (`src/simulation/security/guard-release.ts:25`) and
+     * `src/content/simulation-message-keys.ts:326` labels it **"Contraband
+     * Search"**, so a guard walking a sweep is a row in the Staff panel's ON
+     * DUTY list -- the only place inside a *tab* where contraband work can show
+     * at all. This act finds out whether a player ever sees that row, and what
+     * the control beside it does.
+     */
+    await tab(page, 'security').click();
+    const started = Date.now();
+    let samples = 0;
+    let searchRowSamples = 0;
+    let firstSearchRowTick = -1;
+    let seenRowText = '';
+    for (;;) {
+      const tick = await currentTick(page);
+      const rows = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud-staff__held-row')]
+          .filter((row) => row.getClientRects().length > 0)
+          .map((row) => ({ guard: row.dataset['guard'] ?? '', text: (row.innerText ?? '').replace(/\s+/g, ' ').trim() })),
+      );
+      samples += 1;
+      const searchRow = rows.find((row) => /Contraband Search/i.test(row.text));
+      if (searchRow !== undefined) {
+        searchRowSamples += 1;
+        if (firstSearchRowTick < 0) {
+          firstSearchRowTick = tick;
+          seenRowText = searchRow.text;
+          console.log(`[contraband] FIRST "Contraband Search" row at tick ${tick}: ${JSON.stringify(rows)}`);
+          console.log(`[contraband]   summary line: ${JSON.stringify(await panelText(page, '.hud-staff__held-summary'))}`);
+          console.log(`[contraband]   before Release, hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.release.before'))}`);
+          // Press Release on that row -- the only control the HUD offers that
+          // touches a search at all.
+          await page.locator(`.hud-staff__held-row[data-guard="${searchRow.guard}"] button`).first().click();
+          await page.waitForTimeout(2500);
+          console.log(`[contraband]   after Release, staff panel: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
+          console.log(`[contraband]   after Release, band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+          console.log(`[contraband]   after Release, alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+          console.log(`[contraband]   after Release, chip: ${JSON.stringify(await contrabandChip(page))}`);
+          console.log(`[contraband]   after Release, hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.release.after'))}`);
+        }
+      }
+      if (tick >= 26_000) break;
+      if (Date.now() - started > 700_000) break;
+      await page.waitForTimeout(1_500);
+    }
+
+    console.log(`[contraband] held-row samples: ${samples}; samples showing a search row: ${searchRowSamples}; first at tick ${firstSearchRowTick}`);
+    console.log(`[contraband] the row a player would read: ${JSON.stringify(seenRowText)}`);
+    console.log(`[contraband] end: chip=${JSON.stringify(await contrabandChip(page))} tick=${await currentTick(page)}`);
+    console.log(`[contraband] end hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.release.end'))}`);
+
+    expect(samples).toBeGreaterThan(0);
+  });
 });
