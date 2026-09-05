@@ -192,7 +192,104 @@ that prediction is repeating a fixed defect.
 
 ## 3. Act 2 — the showroom: what each buildable actually draws
 
-_Pending — see §9._
+A 10×9 brick enclosure at tiles (12,12)–(21,20), zoned as a Cell, with
+**eighteen** objects placed inside it — one press per row of the build
+catalogue, two tiles apart, in catalogue order. Screenshots:
+`2026-09-05-what-the-world-shows/act2-showroom.png` (1:1 — **this is the file
+to look at**), `act2-showroom-x2.png`, `act2-row-one-x4.png`,
+`act2-showroom-full.png`.
+
+**Eighteen different things were built and the screen shows one thing eighteen
+times.** A bed, a toilet, a desk, a chair, a dining table, a bench, a
+bookshelf, a fridge, a prep counter, a washing machine, a shower head, a
+storage rack, a medicine cabinet and a security console are all the same flat
+light blue-grey rectangle with a darker band along its bottom edge. There is no
+texture, no outline detail, no gradient, no icon, no label. At 4× magnification
+(`act2-row-one-x4.png`) the floor under them is a photographed institutional
+linoleum with individual speckles resolving; the objects are two flat fills and
+a one-pixel border.
+
+**The only thing that varies is the rectangle's size**, because the footprint
+comes from the object catalogue. Across all twenty catalogued objects there are
+exactly **four** sizes — 1×1, 1×2, 2×1 and 3×2
+(`src/content/object-catalog.ts:97` to `:116`) — so twenty objects share four
+silhouettes and nothing else.
+
+### Then the code, and it says so itself
+
+- `STRUCTURE_APPEARANCE` (`src/rendering/world/appearance.ts:148`) has exactly
+  **two** rows: `wall-brick` and `door-wooden`. Everything else resolves
+  through `structureAppearance` (`:196`) to
+  `CATEGORY_FALLBACK[buildable.category]`, and **22 of the 23 buildables in
+  `src/simulation/construction/definition.ts` carry `category: 'object'`** (one
+  carries `'wall'`, none carries `'utility'`). So every object on screen is
+  `CATEGORY_FALLBACK.object` — `heightTiles: 0.4`, `topFill: 0x7f8ba0`,
+  `sideFill: 0x55607a` — which is the light top face and the dark band, pixel
+  for pixel.
+- `CATEGORY_FALLBACK.utility` (`0x4fd0a2`, a green) therefore has **no reachable
+  caller**: no buildable has that category. A colour in the table nothing can
+  draw.
+- `SPRITE_BY_OBJECT_ID` (`src/rendering/world/environment-art.ts:186`) is `{}`,
+  and all twenty catalogued object ids are listed in
+  `OBJECTS_ON_COLOUR_FALLBACK` (`:146`).
+
+**None of that is a bug, and the modules say so before I do.** The docblock over
+`OBJECTS_ON_COLOUR_FALLBACK` prices the decision and closes it in its own words:
+
+> Objects are the declared next slice, not an oversight.
+
+(verbatim in `src/rendering/world/environment-art.ts`.) It also records that
+seven of the twenty have no sheet at all and that the other thirteen do —
+`furniture.cell.bed.single.variants`, `fixture.cell.toilet_sink`,
+`furniture.corridor.bench.variants` and the rest — held back at roughly 1.5 MB
+of download each.
+
+**So the finding is not "the art is missing". It is what the gap costs a player,
+which nobody had looked at.** The thirteen sheets that exist are good: I opened
+`public/game-content/source-art/furniture.cell.bed.single.variants.45bfa2e0ab8d.png`
+and `public/game-content/source-art/fixture.cell.toilet_sink.18b4c51aa610.png`
+and they are eight-view renders of a steel prison bunk and a steel
+toilet-and-basin unit. On screen, the bunk and the basin are the same
+rectangle. A player looking at their prison can read *where the rooms are* and
+*who is in them* and cannot read *what is in them* — not "cannot read it
+easily": there is no information on screen to read.
+
+### The one thing I could not tell from the picture, and it matters
+
+**Four of the eighteen presses placed a different object from the one
+selected**, and I only know because the instrument tees the worker commands:
+`stove-brick` produced a `fridge-brick`, `medical-bed-wooden` produced a
+`storage-rack-wooden`, and `utility-panel-brick` and `waste-bin-brick` both
+produced a `security-console-brick`. The door press at the end did the same.
+
+**I am calling that my instrument, not the game, and here is the reasoning
+rather than the label.** `armBuildable` in `tests/browser/playtest-harness.ts`
+clicks the catalogue row, then reads `.hud-build__arm`'s text and only re-arms
+when it starts with `place` or `draw`. If clicking a row while a tool is armed
+never released it, the *first* object would be right and all seventeen after it
+wrong; fourteen were right, so the release does happen and the four failures are
+the label being read before it re-rendered — on a box at load average 9. What I
+did **not** establish is what that control reads at each step, so I make no
+claim about the panel's behaviour, only about my own helper's race.
+
+It leaves one reading that is entirely about the game, though: **with the
+command log in front of me I still cannot point at which slab is wrong.** The
+four mismatched objects differ in footprint from the ones I asked for, so the
+picture is not identical — and there is nothing on screen that says which
+rectangle is a stove and which is a fridge, so the error is undetectable by
+looking. That is the same finding as the paragraph above, stated the sharpest
+way I found.
+
+### And one oddity worth someone else measuring
+
+The 3×2 dining table pressed at tile (21,13) — the room's easternmost interior
+column — is **drawn straddling the perimeter wall**, its light face continuing
+east past the wall line at page x=1104 and out of the room. The 2×1 objects
+pressed at (21,15) and (21,17) do the same. Every one of those presses was
+accepted, nothing was refused, and the build queue emptied. Whether the
+simulation reserved the tiles outside the room, or only the renderer drew them
+there, I did not establish and it is not answerable from a screenshot.
+Screenshot: `2026-09-05-what-the-world-shows/act2-showroom-full.png`, top right.
 
 ## 4. Act 3 — a working cell and a sealed one, side by side
 
