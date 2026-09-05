@@ -6086,6 +6086,49 @@ test.describe('the assembled application', () => {
         `the rail with the room readout showing at ${width}x${height}`,
       ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
     }
+
+    /*
+     * 6. **And the player is told on the tab the game opens on**
+     *    ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+     *    finding 1).
+     *
+     * Everything above this line is drawn inside `.hud-rooms`, and the
+     * play-test that filed #1006 measured what that costs: this fixture's own
+     * state -- two cells, no door in either, six unmet things -- read as
+     * `1 ROOMS` with no qualifier on OVERVIEW, and eight game days there
+     * produced two messages and not a word about the door. The panel is one
+     * click away and a player who does not click never learns.
+     *
+     * So the assertion is not that the badge exists; it is that the badge is
+     * **laid out on a tab where `.hud-rooms` is not**, off a readout this
+     * thread has to keep pulling for it. `refreshRoomNeeds` in `src/main.ts`
+     * used to return early on any tab but Rooms, and restoring that gate turns
+     * this red while every assertion above it stays green -- which is the
+     * whole point of measuring it here rather than in the harness.
+     *
+     * The number is the panel's own: `2` unfinished rooms is `shown.unfinished`
+     * asserted at every viewport above, off the same `HudRoomNeedsViewModel`.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    await expect(page.locator('.hud-rooms')).toBeHidden();
+
+    const notReady = page.locator('.ui-stat[data-metric="rooms"] .ui-badge');
+    // Built from the bundled catalogue rather than typed, for the reason the
+    // room line above is: ADR 0011 puts the key on one side of that boundary
+    // and the text on the other.
+    await expect(notReady.locator('.ui-badge__text')).toHaveText(
+      localeText('hud.status.rooms-not-ready').replace('{count}', '2'),
+    );
+    await expect(notReady).toHaveAttribute('data-tone', 'warning');
+    expect(
+      await notReady.evaluate((node) => node.getClientRects().length > 0),
+      'the badge has no box on OVERVIEW, so it says nothing a player can read',
+    ).toBe(true);
+    expect(
+      await page.evaluate(() => document.querySelector('.hud-rooms')?.getClientRects().length ?? -1),
+      'the Rooms panel still has a box on OVERVIEW, so this assertion is not measuring the finding',
+    ).toBe(0);
   });
 
   /**

@@ -3675,10 +3675,19 @@
    `flex-wrap: wrap` is the fix for issue #1006 finding 4, and it was missing
    here rather than decided against. Measured on the assembled page at 900x600
    before this rule: the block's `scrollWidth` was **268px** against a
-   `clientWidth` of **238px**, so 30px of the value hung outside the panel and
-   `.ui-value` inherits `text-overflow: clip` -- the readout was cut off
-   mid-word, which is the failure mode `.hud-rooms__note` above already carries
-   an `overflow: hidden; text-overflow: ellipsis` pair for (#739 finding D5).
+   `clientWidth` of **238px**, and the value itself measured **179.4px** beside
+   an 80.8px label in a 238px box. Nothing here declared `overflow` or
+   `text-overflow`, so both were at their initial values and the sentence
+   spilled out of the panel and was cut mid-word by the ancestor that clips --
+   the screenshot in issue #1006 reads `Walled in on every si`. That is the
+   failure mode `.hud-rooms__note` above already carries an
+   `overflow: hidden; text-overflow: ellipsis` pair for (#739 finding D5).
+
+   **It is not the sealed sentence's fault, which is why the fix is here rather
+   than in the catalogue.** Measured in the same box on `main`: `Open on at
+   least one side` -- the *other* half of this pair, shipped and unchanged --
+   needs 195px and overflowed by 46px, and the widest string that fits beside
+   the label is about 149px. Every sentence this readout can render was clipped.
 
    Wrapping rather than ellipsis, and rather than a shorter sentence, because
    the three are not equivalent. Flex line-breaking uses each item's
@@ -3694,6 +3703,17 @@
    in both cases: `justify-content: space-between` puts a lone item on a wrapped
    line at the *start*, which would leave the value left-aligned under the label
    only when it wrapped, so the block would change alignment as well as height.
+
+   `row-gap: 0` because `gap` is both axes and a wrapped line would otherwise
+   pay for a gutter twice. Measured at 900x600: the block is 14.3px on one line;
+   wrapped it is 27.5px with this rule and **35.5px without it**, and the 8px
+   is a second gutter between a label and its own value where
+   `.hud-rooms__rule-block` -- the panel's own stacked readout, three lines up
+   in the same panel -- has none at all. Both figures are recorded because the
+   cost is real either way: a wrapped readout is one line taller than an
+   unwrapped one, in a panel ADR 0022 gives 7.9px of always-visible budget. What
+   pays for it is that the block is `hidden` entirely until a room has been
+   evaluated, so a player who has designated nothing spends none of it.
    */
 .hud-rooms__enclosure:not([hidden]) {
   display: flex;
@@ -3701,6 +3721,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-2);
+  row-gap: 0;
 }
 
 /* Sealed is not "good" and open is not "bad" -- `room.yard` is authored
