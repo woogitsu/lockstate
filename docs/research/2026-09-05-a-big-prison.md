@@ -740,3 +740,84 @@ tick-to-clock relation depends on the speed control: `{count} waiting · about
 {ticks} ticks of work` is derivable and true; "about 4 days" is not, unless the
 speed is read too.
 
+---
+
+## 10. UNEXPLAINED — the prison claims eight accommodation places it has no beds for, and the obvious explanation is ruled out
+
+**MEASURED, act 1.** 68 bed presses, and:
+
+```
+[act1] furnished: {"tick":30104, …,"rooms":8,"roomCapacity":76,"accommodationCapacity":76, …}
+```
+
+with the room-list projection giving it per room:
+
+```
+"room.cell:1:4"  … "occupancy":{"current":0,"capacity":27,"free":27,…}
+"room.cell:6:11" … "occupancy":{"current":0,"capacity":27,"free":27,…}
+"room.cell:6:18" … "occupancy":{"current":0,"capacity":22,"free":22,…}
+```
+
+**27, 27 and 22 against 24, 24 and 20 beds placed.** The surplus per block —
+`+3, +3, +2` — is exactly each block's toilet count (`[1,9] [2,9] [3,9]`,
+`[6,16] [7,16] [8,16]`, `[6,23] [7,23]`). All 68 prisoners were housed and
+`roomOccupants` reached 68, so the number is not merely cosmetic: it is the
+denominator the status strip divides by and the ceiling `IntakeSystem` houses
+against.
+
+**VERIFIED, read.** `residentCapacity` is supposed to count only sleep surfaces:
+
+```ts
+if (definition.capabilities.includes(SLEEP_SURFACE_CAPABILITY)) {
+  residentCapacity += definition.footprint.width;
+}
+```
+
+`src/simulation/objects/room-capacity.ts:184-186`, with
+`SLEEP_SURFACE_CAPABILITY = 'sleep-surface'` (`:25`). `object.toilet` declares
+`capabilities: ['sanitation']` and a `1×1` footprint
+(`src/content/object-catalog.ts:99`), and `toilet-brick` places exactly that
+(`placesObjectId: 'object.toilet'`,
+`src/simulation/construction/definition.ts:241`).
+
+**MEASURED, act 2 — the control, and it rules the obvious explanation out.** One
+4×4 cell, four bed presses then one toilet press, through the *same*
+`armBuildable` sequence in the same order:
+
+```
+[act2] arming bed-wooden: label before "Place on map", after "Stop placing"
+[act2]   press bed-wooden at (6,6): [{"type":"PlaceObject","definitionId":"bed-wooden","x":6,"y":6}]
+…
+[act2] arming toilet-brick: label before "Stop placing", after "Stop placing"
+[act2]   press toilet-brick at (9,9): [{"type":"PlaceObject","definitionId":"toilet-brick","x":9,"y":9}]
+[act2] counts: {"tick":4850,…,"rooms":1,"roomCapacity":4,"accommodationCapacity":4,…}
+```
+
+**Four beds, one toilet, capacity 4.** So the second `armBuildable` in a run
+*does* change the armed buildable — the arm label stays `Stop placing` and the
+placement still carries `definitionId: "toilet-brick"` — and a toilet does *not*
+add a resident place. Both candidate explanations for act 1's `+8` are dead.
+
+**So this is a measurement without a diagnosis, and it is reported as one.** Two
+things are true together and I cannot yet reconcile them: at four beds the
+number is right, at 68 it is eight too many, and the surplus tracks the toilets.
+What makes it worth reporting anyway is the third measurement beside it — act 1's
+Rooms panel, at day 26:
+
+> NOT READY / 5 of 8 / **Cell at 1, 4 is missing** / **1 × Toilet**
+
+**Block A's toilets are not in block A as far as the requirement check is
+concerned, while three somethings are in it as far as the capacity sum is
+concerned.** A prison that says *"this cell has no toilet"* and *"this cell
+sleeps three more than you built beds for"* about the same room, in the same
+tick, is one bug wearing two faces — but I did not find it, and I will not name
+a cause I have not read.
+
+**What would settle it in ten minutes:** the `hud/room-detail` projection for
+`room.cell:1:4`, which enumerates the room's placed objects. act 2's attempt at
+it was malformed — a bare string where the protocol wants
+`{ kind: 'id', id }` (`src/simulation/protocol/types.ts:386-389`) — and, notably,
+**the worker answered nothing at all rather than refusing**, so a malformed
+projection request is indistinguishable from a hung worker. The probe is in the
+instrument now (act 1, after the room list).
+
