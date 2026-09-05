@@ -1,10 +1,23 @@
 # The empty work block — 2026-09-04
 
-**The verdict in one line: the work block fills, completely, the moment the
-three rooms exist — `Association` falls from every sample in both work blocks to
-none of them — and the reason nobody had seen it is that the tab named for the
-schedule shows one block out of ten, has no control on it at all, and the rooms
-that do the filling are bought blind.**
+**The verdict in one paragraph. The work block fills completely, the moment
+the three rooms exist.** Measured as a paired counterfactual on one tree, at
+eight prisoners, over two whole in-game days: in the prison *without* a
+kitchen, laundry and classroom, `action.free-association` is **54 of 56
+prisoner-samples (96%)** inside the two work blocks and **45.6% of the whole
+day**; in the prison that differs from it in exactly those three rooms it is
+**0 of 48 (0%)** and **3.6% of the day**. Every prisoner works. **And the two
+prisons paid the state exactly the same +6,720**, because there is one income
+line in this game and it counts heads. So the system is not broken and it is
+not missing — the three rooms were built, shipped and correct, and no playtest
+here had ever put them on the ground. What is missing is everything *around*
+them: the tab named for the schedule shows one block out of ten and carries no
+control at all, the eighteen room types are offered by bare name with every
+requirement stated and no sentence about what any of them is *for*, the ten
+work places the player just bought are computed by the kernel and read by
+nothing under `src/ui/`, and the only place on screen where the work is visible
+is four roster rows out of eight prisoners. **A player can build the thing that
+fixes 42% of a prisoner's day and receive no evidence that they did.**
 
 Asked because `docs/research/2026-09-04-the-rooms-nobody-builds.md` §8 measured one whole in-game day in a four-room prison and found **every
 sample inside the two `work / education / free-association` blocks was
@@ -352,6 +365,109 @@ how far it goes.
 
 ---
 
+## 3. Act 3 — the paired counterfactual: the same prison without the three rooms
+
+**MEASURED.** The identical script with `withWorkRooms: false` — same
+rectangles, same walls, same beds, same toilet, same shower room, same 8×8
+yard, same eight admissions, same two guards, same two settling days, same
+fourteen-to-seventeen-sample day scan. **The two prisons differ in exactly the
+kitchen, the laundry and the classroom**, which is the repair the previous
+pass named as its own weakest claim.
+
+### 3.1 The work block, verbatim
+
+```
+[act3] BLOCK WORK/education/association (56 prisoner-samples): ["action.free-association 54 (96%)","action.sleep 2 (4%)"]
+```
+
+Sample by sample:
+
+| tick-of-day | what eight prisoners were doing |
+| --- | --- |
+| 542 | `free-association ×6`, `sleep ×2` |
+| 685 | **`free-association ×8`** |
+| 828 | **`free-association ×8`** |
+| 971 | **`free-association ×8`** |
+| 1370–1720 | the same, through the second block |
+
+The two `action.sleep` samples at tick-of-day 542 are a sleep action begun in
+the `[0, 400)` block and still running: **the regime gates *selection*, not
+*continuation*** — `continuePerforming` tests `elapsed >= action.minDurationTicks`
+and nothing else (`src/simulation/prisoners/action-system.ts:627-628`), so an
+action outruns its block by up to its own minimum duration. The same mechanism
+explains act 3's `free-association ×4` inside the `[1200, 1300)` **`meal`**
+block, which allows no such category at all, and act 4's
+`classroom-education ×2` at tick-of-day 468. **This is not a defect and it is
+not reported as one** — it is a 20-tick reconsideration cadence and a 60-to-120
+tick commitment, both authored — but it means **no day-scan tally can be read
+as "what the block allows"**, and this record's cannot either.
+
+### 3.2 The two tables side by side — the whole answer
+
+| action | **act 3**, no work rooms | **act 4**, with them |
+| --- | --- | --- |
+| `action.free-association` | **62 · 45.6%** | **4 · 3.6%** |
+| `action.sleep` | 31 · 22.8% | 26 · 23.2% |
+| `action.yard-recreation` | 14 · 10.3% | 12 · 10.7% |
+| `action.eat-in-cell` | 11 · 8.1% | 7 · 6.3% |
+| `action.shower` | 9 · 6.6% | 8 · 7.1% |
+| `action.use-toilet` | 9 · 6.6% | 6 · 5.4% |
+| `action.laundry-work` | — | 20 · 17.9% |
+| `action.kitchen-work` | — | 15 · 13.4% |
+| `action.classroom-education` | — | 14 · 12.5% |
+| *prisoner-samples* | *136* | *112* |
+
+And in the two blocks the question is about:
+
+| | **act 3** | **act 4** |
+| --- | --- | --- |
+| `action.free-association` | **54 of 56 · 96%** | **0 of 48 · 0%** |
+| doing something with a need effect | 2 · 4% | **48 · 100%** |
+
+**So the answer to the question as asked is yes, completely.** The day fills up.
+`Association` falls from 45.6% of a prisoner's life to 3.6%, and from 96% of the
+work block to none of it. The three rooms are not decoration and they are not
+unfinished: they are the content that was already built and that no playtest
+here had ever put on the ground.
+
+### 3.3 The two prisons earned the state exactly the same money
+
+**MEASURED, and this is the finding with the most in it.** The treasury delta
+over each act's whole run:
+
+```
+[act3] ticks 16182 -> 23730 (7548 ticks)   treasuryMinorUnits: 16800 -> 23520
+[act4] ticks 28159 -> 35667 (7508 ticks)   treasuryMinorUnits: 15920 -> 22640
+```
+
+**+6,720 in both.** Eight prisoners on kitchen, laundry and classroom duty for
+three in-game days earned the prison **the same, to the minor unit**, as eight
+prisoners standing in their wing doing an action the catalogue says fulfils
+nothing. `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` is 300 and the withholding
+is suspended at 0 (`src/simulation/economy/income.ts:115,401`), so the grant is
+a pure head-count and the work is worth exactly zero to it.
+
+**JUDGEMENT, and it is what a player would feel.** The rooms cost real money —
+act 3's build left 16,960 of the 25,000 grant and act 4's left 16,080, so the
+three work rooms' materials were **880** on top of a prison that already had a
+cell, a shower room and a yard. A player who spends that gets: three more
+entries in the `ROOMS` count, four roster rows that sometimes say "Kitchen
+Duty", and **no change to any other number the game shows them**. Nothing tells
+them their prisoners' hunger, hygiene and boredom are now being served during
+1,000 ticks that were previously spent standing still — because §2.4 and the
+counts table show that improvement reaches no HUD surface at all.
+
+*(880 is what the two runs' `FUNDS` readouts differ by, MEASURED. The catalogue
+arithmetic for the extra order — 2 stoves, 2 prep counters, 2 fridges, 3 washing
+machines, 2 bookshelves and 6 chairs — comes to 1,290 at `item.brick` 40 and
+`item.wood-plank` 65 (`src/content/procurement-catalog.ts:100-101`). **I do not
+know why the two disagree** and did not chase it; the purchase path has a
+just-in-time reservation layer (`src/simulation/economy/just-in-time-materials.ts`)
+that may already have held some of it. The measured figure is the one to trust
+about what left the treasury at that moment.)*
+
+---
+
 ## 4. Proposals
 
 Every one is grounded in a measurement above, and for each the code that would
@@ -515,3 +631,78 @@ height and is unaffected by one eyebrow line.
 **Why it is true**: the labels already exist and already land — §2.3 quotes
 "Kitchen Duty" and "Laundry Duty" off the real screen — and the aggregate is a
 sum over the same projection rows the panel already receives.
+
+---
+
+## 5. What this record did not reach
+
+1. **Act 2 was not re-run at v0.0.475.** Its clearance map was measured by the
+   previous session at v0.0.473 and the layout constants come from it. What
+   *was* re-verified is the only thing that matters: all six rectangles were
+   accepted on the **first** designation attempt in both acts, and every world
+   press passed `document.elementFromPoint` first. One difference is recorded
+   rather than hidden — the sixteen `ArrowRight` presses moved the camera
+   **796px in act 4 and 777px in act 3**, against the **453px** the previous
+   session's comment records for the same sixteen presses. Nothing camera-shaped
+   landed between v0.0.473 and v0.0.475 (`git log b984445f -25` is releases,
+   research records and a rooms-panel layout fix), so this reads as
+   key-repeat timing variance rather than a change; **the instrument is immune
+   to it because it re-runs `calibrate` after the pan and works in tile
+   coordinates.** It is on the other tester's surface, so it is one line here
+   and no more.
+2. **Sampling granularity.** Fourteen samples in act 4 and seventeen in act 3
+   over 2,400 ticks — roughly one every 170 ticks, because the scan samples on
+   wall clock while the kernel runs at 4×. Each work block therefore holds 3
+   samples, not 500. The tally is a **stratified sample of eight prisoners at
+   six moments**, not a tick census. It is three times denser than the pass that
+   set the question (which had 4 prisoners at 4 moments), and the effect it
+   measures — 96% to 0% — is far larger than that granularity can manufacture.
+3. **A common room was never built.** §2.2 attributes act 4's residual 3.6%
+   `Association` to the yard's ceiling of 4 in the `[1000, 1200)` block. That is
+   REASONED from two measurements, not tested: building a common room and
+   re-scanning would settle it, and might drive `Association` to zero outright.
+4. **No prison was run past eight prisoners**, so ADR 0062's contention never
+   properly bit. Act 4's ten work places against eight prisoners is slack. At
+   twelve or sixteen the classroom's ceiling of **2** would be the binding
+   constraint and the block would begin to refill with `Association` — that is
+   the measurement issue #592's "genuine allocation of the same scarce ticks"
+   actually needs, and this record does not have it.
+5. **The Regime tab was played on a four-prisoner prison** (act 1), not on the
+   eight-prisoner ones. The control inventory cannot change with population —
+   the panel builds a fixed structure — but the roster's `4 of 4` there is not
+   the `4 of 8` that makes the window a problem; that came from acts 3 and 4.
+6. **`HIGH_RISK_REGIME` was never exercised.** No prisoner in any act was
+   classified high-risk (`prisonersHighRisk: 0` throughout), so the second
+   timetable row was read and never played. That schedule has **no `work`
+   block at all** (`src/simulation/prisoners/regime.ts:120-127`), which means a
+   high-risk prisoner cannot reach a kitchen — measured by reading, not by
+   playing.
+
+## 6. The weakest claim, and what would change my mind
+
+**The weakest claim is §3.3's "the two prisons earned exactly the same".**
+
+It rests on two treasury readings taken at different absolute ticks in two
+different sessions (16,182→23,730 and 28,159→35,667), differing by 40 ticks of
+run length, and the fact that both deltas came out at **+6,720** is partly
+arithmetic luck: at 300 per prisoner-day and 8 prisoners, any run covering the
+same number of *day boundaries* pays the same, and 7,508 and 7,548 ticks both
+cover 2.8 days. **So the strong reading — "work earns nothing" — is right, but
+the evidence for it is not really the coincidence of the two figures; it is
+`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` being the sole income line, which I
+established by reading and not by playing.** A second run of either act
+straddling one more day boundary would print a different number and the
+coincidence would evaporate without the finding changing at all.
+
+**What would change my mind:** any measured treasury delta that differs between
+a working and an idle prison of the same population over the same day count. I
+would also withdraw the whole §3 comparison if a re-run of act 3 with the three
+rooms present produced anything other than a near-empty `free-association`
+column, since a single paired run is a sample of one prison each.
+
+**The second-weakest is §2.2's attribution of act 4's residual `Association` to
+the yard's ceiling.** Both prisons split `[1000, 1200)` exactly 4 yard / 4
+association, which is a strikingly good fit for a ceiling of 4 derived from
+ADR 0071's `floor(64/16)` — but I never varied the yard's size to see the split
+move, and that is the experiment that would prove it. A 12×12 yard should make
+it 8/0.
