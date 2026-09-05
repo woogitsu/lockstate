@@ -182,8 +182,8 @@ in."*
 by `treasuryMinorUnits < 0`.** There is no state between "solvent" and
 "overdrawn": 25,000 and 40 are the same reading.
 
-**And the other money chip has no tone at all.** `src/ui/hud/projection.ts:1052`,
-`earned-today`: `tone: undefined, badge: undefined, description: undefined`,
+**And the other money chip has no tone at all.** `src/ui/hud/projection.ts:1053-1055`,
+the `earned-today` descriptor opened at `:1035`: `tone: undefined, badge: undefined, description: undefined`,
 with the comment *"'a good day' is a threshold, and nobody has set one."*
 
 **MEASURED, act 1**, crossing the boundary one brick at a time from a positive
@@ -709,3 +709,62 @@ messages, and each `latestCounts` call walks all of them. Act 2 calls it twice
 per dismissal. This is a probe cost and not a game one — every figure it returns
 is correct — but it is why the dismissal loop's wall-clock durations are not
 quoted as a claim about the game anywhere in this record.
+
+---
+
+## What this record does not claim
+
+- **That a wall drag can reach the construction rung at this version.** Act 1's
+  drag half was lost to the calibration error above and the corrected version
+  had not run when this section was written. What is measured is the **Buy**
+  route to `−1,185`; the **construction** rung is `−1,250`
+  (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`,
+  `src/simulation/economy/treasury.ts:397`, equal to the *mature* deliveries
+  rung since #771) and whether a drag actually walks a fresh prison the extra
+  65 past the Buy floor is **ARITHMETIC that has not been played**. It is one
+  short act away and is named here rather than implied.
+- **That thirty guards is a mistake a player would make.** It is a deliberately
+  large over-hire chosen so the descent fits in one act. The Staff panel says
+  `Hire 1 to cover this population` before the first press, so a player who
+  reads it is not led there. What the act shows is the *shape* of the state,
+  not its likelihood.
+- **That the population decay measured in finding 6 is a consequence of being
+  broke.** It is not: `DischargeSystem` releases prisoners whose sentences are
+  served regardless of the treasury. What the record claims is narrower — that
+  it happens *while* a prison is broke, that it cuts the only income line, and
+  that nothing on screen connects the two.
+- **That the alerts list has a fixed cap.** Days 10 and 11 were absent from a
+  list holding nine rows; whether that is a cap, an eviction policy or a
+  `Clear this alert` that fired is **UNKNOWN** here. What was measured is the
+  absence.
+
+---
+
+## The weakest claim here, and what would change my mind
+
+**The weakest claim is finding 4's second half — that the floor sentence "lands
+wrong" on an earning prison.** Both of its clauses are true of the code; what
+this record asserts is that a player reading *"until the prison earns the
+money"* while their prison earns 1,200 a day, and *"a prison housing nobody
+earns nothing"* while their prison houses four, is misled about what to do next.
+That is a **JUDGEMENT** about reading, not a measurement, and it is the kind of
+claim this repository has been wrong about before — `2026-09-04-can-this-prison-fail.md`
+finding 2 was a confident reading of two elements that turned out to be one
+element misnamed.
+
+**What would change my mind:** a player, or the owner, reading that sentence at
+the floor of an earning prison and correctly concluding *"my payroll is bigger
+than my income; cut it"*. If the sentence gets somebody there, the criticism is
+mine and not the string's.
+
+**The second weakest is the recovery arithmetic**, for the opposite reason: it
+is arithmetic over a measured rate rather than a measured completion, and it is
+labelled as such wherever it appears.
+
+**Not weak, and worth saying so:** the descent figures. Every day boundary in
+finding 3 and finding 6 closes to the unit against
+`income − bill`, at ten consecutive boundaries, with the two constants opened
+and read (`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300`,
+`src/simulation/economy/income.ts:115`; the guard's `wageBand.minPerDay` of 80,
+`src/content/staff-role-catalog.ts:150`). If any of that were wrong the sums
+would not close.

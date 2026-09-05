@@ -127,6 +127,32 @@ async function attemptBuy(
   };
 }
 
+
+/**
+ * The last `simulation/status-counts` the worker published, read by scanning
+ * the tee **backwards**.
+ *
+ * **Not `latestCounts`, and the difference is measured.** The harness's
+ * `countsSeries` maps over every message the tee has kept, and the tee keeps
+ * every `simulation/clock-state` — one per publication, tens of thousands of
+ * them by tick 45,000. Act 2 called `latestCounts` twice per dismissal and the
+ * loop slowed until a run of thirty dismissals outlasted the rest of the act;
+ * see "Instrument failures" in the record. Scanning from the end stops at the
+ * first hit and costs the same at tick 45,000 as at tick 100.
+ */
+async function fastCounts(page: Page): Promise<Record<string, number> | undefined> {
+  return page.evaluate(() => {
+    const messages = (window as unknown as { lockstateFromWorker?: unknown[] }).lockstateFromWorker ?? [];
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index] as { kind?: string; payload?: { tick?: number; counts?: Record<string, number> } };
+      if (message.kind === 'simulation/status-counts' && message.payload?.counts !== undefined) {
+        return { tick: message.payload.tick ?? -1, ...message.payload.counts };
+      }
+    }
+    return undefined;
+  });
+}
+
 /** What is actually under a point, before a press is trusted to have landed. */
 async function whatIsUnder(page: Page, x: number, y: number): Promise<string> {
   return page.evaluate(
@@ -611,5 +637,131 @@ test.describe('The money runs out', () => {
     say(act, `END OF ACT 3 counts: ${JSON.stringify(await latestCounts(page))}`);
     say(act, `END OF ACT 3 chips: ${await chips(page)}`);
     say(act, `END OF ACT 3 sentences: ${JSON.stringify(await sentences(page))}`);
+  });
+
+  /**
+   * **act 4 — the climb back, measured on a shallower hole.**
+   *
+   * Act 2 reached the floor and then spent nine more in-game days there, which
+   * put its arrears at 11,870 and made the climb longer than one act. This act
+   * asks the same question against a hole a player could plausibly be in: over
+   * -hire, sink to the floor, stop **two** paydays later, dismiss the whole
+   * roster and measure what the treasury does next — day by day, with the
+   * chip read every time, because what a recovering player sees is half the
+   * question.
+   */
+  test('act 4 — dismiss everybody, and measure the climb', async ({ page }) => {
+    test.setTimeout(1_500_000);
+    const act = 'act4';
+
+    await buildAndPopulate(page, { beds: 4, admits: 4, guards: 0, label: act });
+    say(act, `BUILT: ${JSON.stringify(await fastCounts(page))}`);
+
+    await tab(page, 'security').click();
+    const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
+    if ((await guardRow.count()) > 0) await guardRow.first().click();
+    for (let index = 0; index < 30; index += 1) {
+      await page.locator('.hud-staff__hire').click();
+      await page.waitForTimeout(200);
+    }
+    await page.waitForTimeout(1500);
+    say(act, `HIRED 30: ${JSON.stringify(await fastCounts(page))}`);
+
+    await tab(page, 'build').click();
+    for (;;) {
+      const balance = (await fastCounts(page))?.['treasuryMinorUnits'] ?? 0;
+      const bricks = Math.floor((balance - 300) / 40);
+      if (bricks < 1) break;
+      await attemptBuy(page, 'wall-brick', bricks);
+      const after = (await fastCounts(page))?.['treasuryMinorUnits'] ?? 0;
+      if (after === balance) break;
+    }
+    say(act, `DRAINED: ${JSON.stringify(await fastCounts(page))}`);
+
+    // Sink, and stop as soon as two paydays have gone unpaid.
+    for (let sample = 0; sample < 40; sample += 1) {
+      await page.waitForTimeout(10_000);
+      const counts = await fastCounts(page);
+      say(
+        act,
+        `SINK t${await currentTick(page)}: funds=${counts?.['treasuryMinorUnits']} arrears=${counts?.['unpaidWagesMinorUnits']}` +
+          ` residents=${counts?.['roomOccupants']} staff=${counts?.['staff']} | day ${await page.locator('.hud-clock__day').innerText()}`,
+      );
+      if ((counts?.['unpaidWagesMinorUnits'] ?? 0) > 1_500) break;
+    }
+    const sunk = await fastCounts(page);
+    say(act, `SUNK: ${JSON.stringify(sunk)}`);
+    say(act, `SUNK chip: ${JSON.stringify(await fundsChip(page))}`);
+
+    // ---- dismiss the whole roster, timing every press ----------------------
+    await tab(page, 'security').click();
+    await page.locator('.hud-staff__roster .ui-section__header').first().click();
+    await page.waitForTimeout(600);
+    say(act, `roster opened: ${JSON.stringify(await panelText(page, '.hud-staff__roster'))}`);
+
+    const dismissStarted = Date.now();
+    let presses = 0;
+    let dismissed = 0;
+    for (let attempt = 0; attempt < 120; attempt += 1) {
+      const staffNow = (await fastCounts(page))?.['staff'] ?? 0;
+      if (staffNow === 0) break;
+      const control = page.locator('.hud-staff__roster-row button').first();
+      if ((await control.count()) === 0) {
+        say(act, `no dismiss control left at attempt ${attempt} with staff=${staffNow}`);
+        break;
+      }
+      try {
+        await control.click({ timeout: 10_000 });
+        presses += 1;
+        await page.waitForTimeout(120);
+        await control.click({ timeout: 10_000 });
+        presses += 1;
+      } catch {
+        say(
+          act,
+          `a dismiss press never became actionable at attempt ${attempt}, staff=${staffNow}:` +
+            ` ${JSON.stringify(await panelText(page, '.hud-staff__roster'))}`,
+        );
+        break;
+      }
+      await page.waitForTimeout(1100);
+      const after = (await fastCounts(page))?.['staff'] ?? 0;
+      if (after >= staffNow) {
+        say(act, `a dismissal did not take at attempt ${attempt}: staff stayed ${staffNow}`);
+        break;
+      }
+      dismissed += staffNow - after;
+    }
+    say(
+      act,
+      `DISMISSED ${dismissed} in ${presses} presses over ${Math.round((Date.now() - dismissStarted) / 1000)} wall seconds:` +
+        ` ${JSON.stringify(await fastCounts(page))}`,
+    );
+    say(act, `AFTER DISMISSAL staff panel: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
+    say(act, `AFTER DISMISSAL chip: ${JSON.stringify(await fundsChip(page))}`);
+    say(act, `AFTER DISMISSAL sentences: ${JSON.stringify(await sentences(page))}`);
+
+    // ---- the climb ---------------------------------------------------------
+    const climbFrom = await currentTick(page);
+    for (let sample = 0; sample < 45; sample += 1) {
+      await page.waitForTimeout(10_000);
+      const counts = await fastCounts(page);
+      const chip = await fundsChip(page);
+      say(
+        act,
+        `CLIMB t${await currentTick(page)} (+${(await currentTick(page)) - climbFrom}):` +
+          ` funds=${counts?.['treasuryMinorUnits']} arrears=${counts?.['unpaidWagesMinorUnits']}` +
+          ` accrued=${counts?.['stateIncomeAccruedTodayMinorUnits']} residents=${counts?.['roomOccupants']}` +
+          ` staff=${counts?.['staff']} | day ${await page.locator('.hud-clock__day').innerText()}` +
+          ` | chip ${JSON.stringify(chip['text'])} tone ${JSON.stringify(chip['tone'])}`,
+      );
+      if ((counts?.['treasuryMinorUnits'] ?? -1) > 0) {
+        say(act, `BACK IN CREDIT at tick ${await currentTick(page)}, ${(await currentTick(page)) - climbFrom} ticks after the last dismissal`);
+        break;
+      }
+    }
+    say(act, `END OF ACT 4 counts: ${JSON.stringify(await fastCounts(page))}`);
+    say(act, `END OF ACT 4 chip: ${JSON.stringify(await fundsChip(page))}`);
+    say(act, `END OF ACT 4 sentences: ${JSON.stringify(await sentences(page))}`);
   });
 });
