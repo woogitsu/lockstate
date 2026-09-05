@@ -32,15 +32,57 @@
 
 ## Status
 
-**Proposed, 2026-09-05. Not self-approved.**
+**Accepted by the owner on 2026-09-05, together with option A.**
 
-The question is the owner's to settle. What is proposed below is a
-*requirement* — a sentence saying what the game's main view has to tell a
-player — together with the options that could discharge it and what each one
-costs and forecloses. Nothing here is approved, and the decisions in
-[#1021](https://github.com/woogitsu/lockstate/issues/1021) and
-[#1020](https://github.com/woogitsu/lockstate/issues/1020) collide with this one
-in ways §7 sets out.
+**The paragraph this replaces is kept immediately below rather than
+overwritten**, per `docs/AGENT_WORKFLOW.md` §4, because a reader needs to see
+that this document was drafted as a question and answered as one, and by whom.
+
+> **Proposed, 2026-09-05. Not self-approved.**
+>
+> The question is the owner's to settle. What is proposed below is a
+> *requirement* — a sentence saying what the game's main view has to tell a
+> player — together with the options that could discharge it and what each one
+> costs and forecloses. Nothing here is approved, and the decisions in
+> [#1021](https://github.com/woogitsu/lockstate/issues/1021) and
+> [#1020](https://github.com/woogitsu/lockstate/issues/1020) collide with this
+> one in ways §7 sets out.
+
+**What the owner decided, and by what route — recorded exactly, because the
+route matters to anyone reading this status later.** The decision was put to
+them as four options: accept the requirement and defer the choice of option;
+accept it together with option A; hold until they had read the document; or
+reject the direction. They chose **"Przyjmij razem z wariantem A"** — *"Accept
+together with option A"*.
+
+**That acceptance was given against a summary of this document and of option A,
+not against its full text**, and the option they chose carried that summary in
+these words: *"A to nakładka na kanale delty: bump payloadu, jeden moduł
+renderera, bez zmiany warstwy świata i bez bumpa schematu zapisu. Najdroższy w
+kodzie, najtańszy w grafice, i jedyny, który nie dziedziczy 30-sekundowego
+opóźnienia."* This note exists so that nobody later mistakes the acceptance for
+a reading — the same disclosure ADR 0075 and ADR 0076 carry, for the same
+reason, and it is required by `docs/AGENT_WORKFLOW.md` §3's rule that an
+implementing agent does not approve its own work.
+
+**So both halves are now settled**: the requirement in §4 holds, and **option A
+is the way it is to be discharged**. §5's options B, C and D remain as recorded
+rather than deleted — B and C are the costs that were declined, and D is the
+sequencing note that a furnished cell answers part of the requirement on its
+own, which is still true and still worth doing first.
+
+**What acceptance does not settle**, and what a reader must not infer from it:
+the weakest claim named in §10 is untouched by it. That claim — that a
+30-second-stale condition cue would be worse than none — is the load-bearing
+premise of decision 2 and remains a judgement about play that nobody has played.
+Option A is the option that does not depend on it being right, which is a reason
+the choice is safe, not a reason the claim is now established.
+
+The decisions in [#1021](https://github.com/woogitsu/lockstate/issues/1021) and
+[#1020](https://github.com/woogitsu/lockstate/issues/1020) still collide with
+this one in the ways §7 sets out, and **§7's collision with #1021 is now live
+rather than hypothetical**: option A is chosen, so #1021 must be told before it
+picks its own mark.
 
 Filed against [#1022](https://github.com/woogitsu/lockstate/issues/1022), which
 the owner selected for work along with the other three candidates raised by the
