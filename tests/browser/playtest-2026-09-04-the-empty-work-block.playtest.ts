@@ -150,8 +150,16 @@ async function installCensusChannel(page: Page): Promise<void> {
           reject(new Error('the worker did not answer the roster request'));
         }, 10_000);
         const onMessage = (event: MessageEvent): void => {
-          const message = event.data as { kind?: string; messageId?: string; payload?: unknown };
-          if (message.messageId !== messageId) return;
+          /*
+           * **`replyTo`, not `messageId`** — the second lesson this channel
+           * cost. A reply carries a fresh `crypto.randomUUID()` as its own
+           * `messageId` and names the request it answers in `replyTo`
+           * (`src/simulation/worker/state-machine.ts:1381-1384`), so a
+           * listener matching on `messageId` matches nothing at all and the
+           * request looks like a worker that never answered.
+           */
+          const message = event.data as { kind?: string; replyTo?: string; payload?: unknown };
+          if (message.replyTo !== messageId) return;
           clearTimeout(timer);
           worker.removeEventListener('message', onMessage);
           resolve(message.payload);
@@ -189,9 +197,15 @@ async function census(page: Page, limit = 20): Promise<{ total: number; rows: re
     console.log(`[census] the worker did not answer: ${error instanceof Error ? error.message : String(error)}`);
     return { total: -1, rows: [] };
   }
-  const payload = raw as { view?: { total?: number; rows?: readonly Record<string, unknown>[] }; projectionId?: string; code?: string };
-  if (payload.view === undefined) console.log(`[census] a reply with no view: ${JSON.stringify(payload).slice(0, 400)}`);
-  const view = payload.view;
+  /*
+   * The reply wraps the projection: `payload.view` is a transport envelope and
+   * the read model itself is `payload.view.data`
+   * (`src/simulation/worker/state-machine.ts:1396-1403`, and the client's own
+   * unwrap at `src/ui/simulation-projections.ts:203`).
+   */
+  const payload = raw as { view?: { data?: { total?: number; rows?: readonly Record<string, unknown>[] } }; code?: string };
+  if (payload.view?.data === undefined) console.log(`[census] a reply with no view: ${JSON.stringify(payload).slice(0, 400)}`);
+  const view = payload.view?.data;
   const rows = (view?.rows ?? []).map((row) => {
     const need = row['lowestNeed'] as { needId?: string; permille?: number } | undefined;
     return {
@@ -713,6 +727,28 @@ test.describe('the empty work block', () => {
     );
     console.log(`[act1] the timetable, ${blockRows.length} row(s):`);
     for (const line of blockRows) console.log(`[act1]   ${line}`);
+
+    // Whether the timetable has a box at all, from the DOM rather than from
+    // Playwright's visibility rule — the two answer different questions and a
+    // `boundingBox()` of `null` on its own is not evidence of anything.
+    console.log(
+      `[act1] geometry: ${JSON.stringify(
+        await page.evaluate(() => {
+          const out: Record<string, unknown> = { 'panels named .hud-regime': document.querySelectorAll('.hud-regime').length };
+          for (const selector of ['.hud-regime', '.hud-regime__blocks', '.hud-regime__block-list', '.hud-regime__block-row', '.hud-regime__blocks-header']) {
+            const node = document.querySelector<HTMLElement>(selector);
+            if (node === null) {
+              out[selector] = 'ABSENT';
+              continue;
+            }
+            const box = node.getBoundingClientRect();
+            const style = getComputedStyle(node);
+            out[selector] = `${Math.round(box.x)},${Math.round(box.y)} ${Math.round(box.width)}x${Math.round(box.height)} display=${style.display} visibility=${style.visibility} hidden=${String(node.hidden)}`;
+          }
+          return out;
+        }),
+      )}`,
+    );
 
     // Press each timetable row and see whether anything at all is submitted.
     for (const selector of ['.hud-regime__block-row', '.hud-regime__block-allows', '.hud-regime__block-name', '.hud-regime__blocks-header']) {
