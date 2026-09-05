@@ -1,6 +1,10 @@
 # The money runs out — 2026-09-05
 
-**The verdict in one line: PLACEHOLDER — filled in when act 2 returns.**
+**The verdict in one line: yes, a player can run out — an *earning* prison
+reaches the floor in three day boundaries and it is the third way in this
+repository has now measured — and the descent is well signposted from the
+moment the balance goes negative and completely silent for the whole 25,000
+before that.**
 
 ## Tree, version, and what was and was not touched
 
@@ -62,6 +66,31 @@ Nothing below is **FROM MEMORY**.
   the restored income curves at four housed prisoners. Act 2 uses the same
   four-bed shape deliberately, so its income figures can be read against that
   record's without a conversion.
+
+---
+
+## The answer in one paragraph
+
+**Yes, and it is easy — but only in the half of the range where the game says
+nothing.** The 25,000 grant can be spent to nothing in **one press** of a
+control that prices itself honestly and a chip that does not react at all
+(finding 1), or dragged away a segment at a time by the one gesture in the game
+that never states a price and is never pre-flighted (finding 2). Nothing on
+screen distinguishes 25,000 from 40. Below zero the opposite is true: the
+insolvency ladder is *well* built, three tones and three different true
+sentences at −1, at −1,250 and at −2,500, all changing on the same steps the
+code refuses on (finding 3). An **earning** prison — the case the previous
+record could not reach — takes **three day boundaries** to fall from solvent to
+the floor when its payroll is twice its income, and once there it is a
+different state from the empty prison that has been measured before: it keeps
+earning, the payroll takes every unit of it before the balance can move, and
+the arrears climb by exactly `bill − income` a day, `770 → 11,870` over nine
+boundaries (finding 6). The way out is real and is **dismissal** — three rows
+at a time behind a fold labelled `On the payroll`, two presses each, no refund
+and no severance (finding 7) — which is none of the three remedies ADR 0075
+accepted, because none of those three exists in `src/` (finding 5). And the one
+free lever that restores income at the floor, `Admit`, is never named by any
+sentence about money.
 
 ---
 
@@ -610,6 +639,21 @@ simulation is about to make.
   clauses are the two published figures; the third is the clause the three
   existing overdraft sentences already carry, verified in
   `default-locale-en.ts:254`, `:273` and `:332`.
+
+**One more reason this belongs on the chip rather than in a panel: there is no
+per-day income readout anywhere in the game.** **VERIFIED, read** — grepping
+`src/content/default-locale-en.ts` (the tree's only locale module) for values
+containing *a day*, *per day*, *yesterday* or *last day* returns exactly two,
+and both are wages:
+
+```
+'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages, including today.',
+'hud.security.roster-wage-bill': '{total} a day',
+```
+
+So a player has a per-day figure for what the prison **costs** and none at all
+for what it **earns**; `EARNED TODAY` is a within-day accrual that resets, and
+finding 6 measures what that hides.
 
 **Why this and not a low-balance threshold:** a threshold is a balance decision
 and ADR 0017 decision 5 reserves it. A comparison of the balance against the
