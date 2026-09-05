@@ -581,12 +581,26 @@ test('act 4 — stacking at twelve and at fifty', async ({ page }) => {
   });
   await upscale(page, twelveAnchor, 'act4-twelve-anchor-x4', 4);
 
+  /*
+   * Guarded rather than pressed blind, for the reason `buyOrReport` above is
+   * guarded: a control that disables itself when the press would be refused
+   * (#772) turns `locator.click()` into a wait for the test timeout. Twelve
+   * beds and fifty arrivals is exactly the state where a capacity guard would
+   * bite, and "the control went dead at N" is a better reading than a hang.
+   */
   const admitStarted = Date.now();
+  let admitted = 0;
   for (let index = 0; index < 38; index += 1) {
-    await page.locator('.hud-intake__admit').click();
+    const admit = page.locator('.hud-intake__admit');
+    if (await admit.isDisabled()) {
+      console.log(`the Admit control went dead after ${admitted} further admissions`);
+      break;
+    }
+    await admit.click();
+    admitted += 1;
     await page.waitForTimeout(60);
   }
-  console.log(`38 further admissions took ${Date.now() - admitStarted}ms`);
+  console.log(`${admitted} further admissions took ${Date.now() - admitStarted}ms`);
   await page.waitForTimeout(20_000);
   console.log(`fifty: tick ${await currentTick(page)} counts ${JSON.stringify(await latestCounts(page))}`);
   console.log(`fifty ambient: ${JSON.stringify(await ambient(page))}`);
@@ -705,6 +719,47 @@ test('act 6 — the same box, designated four different ways', async ({ page }) 
     ['room.classroom', 'classroom'],
   ] as const) {
     await designateOnly(page, roomId, label);
+  }
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
+
+/**
+ * Zoom, which no control on the page offers.
+ *
+ * Act 0's DOM sweep for `zoom|camera|centre|center|minimap|fit` over every
+ * `button` and `[role="button"]` found **nothing**, and the Build panel's own
+ * hint names panning only: *"Two fingers, the middle button or the arrow keys
+ * still move the camera."* `WorldScene` nevertheless zooms on the wheel, at
+ * `camera.zoom * (deltaY > 0 ? 0.9 : 1.1)`. So this act asks the question a
+ * player cannot: **does the world stay legible when you can see more of it?**
+ */
+test('act 7 — what the wheel does, and whether a zoomed-out prison is readable', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(900_000);
+  await installTee(page);
+  await openApp(page);
+  const origin = await buildAndPopulate(page, { beds: 4, admits: 4, guards: 2, label: 'act7' });
+  await fastForwardToMax(page);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(8000);
+
+  const centre = centreOf(origin, 15, 15);
+  await shot(page, 'act7-zoom-default');
+  // Out, then further out, then back in past 1:1. Each step is one wheel
+  // notch's 0.9 or 1.1, applied at a point on canvas the HUD does not cover.
+  for (const [label, notches, direction] of [
+    ['out-5', 5, 1],
+    ['out-12', 7, 1],
+    ['in-6', 18, -1],
+  ] as const) {
+    for (let notch = 0; notch < notches; notch += 1) {
+      await page.mouse.move(centre.x, centre.y);
+      await page.mouse.wheel(0, direction * 120);
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(800);
+    console.log(`after ${label}: strip ${JSON.stringify((await ambient(page))['strip']?.slice(0, 90))}`);
+    await shot(page, `act7-zoom-${label}`);
   }
   console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
 });

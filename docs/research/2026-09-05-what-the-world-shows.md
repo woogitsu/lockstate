@@ -106,12 +106,21 @@ Two things a player can read on arrival and act on:
 
 And two absences worth recording because they bound everything below:
 
-- **There is no zoom or camera control anywhere in the DOM.** A sweep of every
-  `button` and `[role="button"]` for `zoom|camera|centre|center|minimap|fit`
-  returned **nothing**. The Build panel's own hint says *"Two fingers, the
-  middle button or the arrow keys still move the camera"* — so the camera pans
-  and there is no evidence in the DOM that it zooms. Every reading in this
-  record is therefore at *the* zoom, not at *a* zoom.
+- **There is no zoom control anywhere in the DOM, and the game zooms.** A sweep
+  of every `button` and `[role="button"]` for
+  `zoom|camera|centre|center|minimap|fit` returned **nothing**, and the only
+  hint the page offers is the Build panel's *"Two fingers, the middle button or
+  the arrow keys still move the camera"* — which names panning and not zoom.
+  `WorldScene` zooms on the wheel at `camera.zoom * (deltaY > 0 ? 0.9 : 1.1)`
+  (`src/rendering/scene/world-scene.ts:511`), on the keyboard at
+  `KEYBOARD_ZOOM_STEP` `1.25` (`:86`), across
+  `ZOOM_BOUNDS = { min: 0.2, max: 3 }` (`:68`) — a fifteen-fold range. **So a
+  player is offered a fifteen-fold zoom and told about none of it**, which
+  against the owner's standing brief of *no hidden mechanics* is the plainest
+  hidden mechanic I found. (Pinch is a third path and it is dead by the scene's
+  own admission: *"two-finger zoom has been dead since the scene was written,
+  silently, because nothing exercised it in a real browser"*, at
+  `src/rendering/scene/world-scene.ts:325`.) Act 7 plays the wheel.
 - **The staff catalogue has exactly one row**, `staff-role.guard`. Five actor
   atlases ship — cook, guard, medic, prisoner, staff — and only two of the five
   populations can appear in a session. See §7.
@@ -179,11 +188,19 @@ that prediction is repeating a fixed defect.
 
 ### One thing that is odd and one thing that is not
 
-- **Two guards were standing inside a cell that has no door.** The room's
-  perimeter is unbroken brick and there are two blue figures on its floor. I did
-  not establish how they got there and I am not calling it a defect; it is
-  recorded because it is the one thing in act 1 that a player would read as
-  wrong.
+- **Two guards were standing inside a cell that has no door — and the reason is
+  the harness, not the game.** `NEW_PRISON_ORIGIN_TILE` is `{ x: 16, y: 16 }`
+  (`src/main.ts:621`), the tile the composition root supplies for staff and for
+  arrivals with nowhere to be, and the 6×6 cell every playtest in this
+  repository builds spans (12,12)–(17,17) — **which contains it.** So the guards
+  did not walk into a sealed room; the room was drawn around the spot they
+  appear at. My own measurement off `act1-full.png` puts them at tile (16,15)
+  and (16,16), which is that tile and its neighbour.
+
+  That is worth more than the oddity it explains: **a screenshot of that cell is
+  not evidence that anybody walked anywhere**, and any future playtest that uses
+  `buildAndPopulate` and reads guard position as movement is reading the spawn
+  tile.
 - **An idle actor never moves a pixel, and that is the art, not a stuck
   animation.** The `idle` clip in every atlas manifest is `fps: 1` with exactly
   **one frame per direction**; only `walk` has eight frames at `fps: 10`. So a
@@ -318,8 +335,86 @@ of the four. What I can say about the other three is that their sheets decode
 
 ## 8. What this adds up to
 
-_Pending — written once every act has run._
+**Six readings, in the order I would act on them.**
+
+1. **The people are the best thing in this game and nobody had seen them.**
+   Two populations, unmistakable at 1:1 with no zoom and no click. This is not a
+   caveat-laden pass; it is the answer to the brief's first question and the
+   answer is yes.
+2. **A room's contents carry no information at all.** Twenty catalogued objects,
+   two flat colours, four silhouettes. Not "hard to tell apart" — there is
+   nothing on screen to tell apart, and the sheets for thirteen of the twenty
+   are already in the repository. The gap is declared in
+   `src/rendering/world/environment-art.ts` and priced there at roughly 1.5 MB
+   per sheet; what was not on record is that it is the single largest gap
+   between what the world view could say and what it says.
+3. **A fifteen-fold zoom exists and the page never mentions it.** Wheel and
+   keyboard, `ZOOM_BOUNDS = { min: 0.2, max: 3 }`, no control, no hint, and the
+   one hint that is there names panning only. Against *no hidden mechanics*
+   this is the plainest one in the world view.
+4. **#944's headline picture is already fixed and a report that repeats it is
+   repeating a fixed defect.** `crowd-spread.ts` fans co-located actors, and
+   four prisoners on one tile are four countable figures.
+5. **`buildAndPopulate`'s canonical 6×6 cell contains the spawn tile**
+   `NEW_PRISON_ORIGIN_TILE` `{ x: 16, y: 16 }`, so guards standing in a sealed
+   room are not evidence that anything walked, and no playtest using that
+   helper can read guard position as movement.
+6. **The minimap says `MINIMAP IS NOT AVAILABLE YET`**, which means the one
+   surface that would let a player see a prison larger than a screen is a
+   placeholder, and the zoom that would substitute for it is the hidden
+   mechanic in item 3.
+
+**What I am deliberately not proposing.** Whether object art should be drawn is
+already decided and scheduled by the module that declines to draw it; that is
+not mine to re-decide, and this record adds only the cost side of it. Whether
+zoom should have a control is a UI decision on a surface another agent owns in
+this session (`src/ui/**`). Nothing under `src/` is touched on this branch.
 
 ## 9. My weakest claim, and what I did not reach
 
-_Pending._
+**Weakest: that a player cannot read what is in a room.** What I measured is
+that eighteen objects draw two colours and four silhouettes, which is a fact
+about pixels. "A player cannot read it" is an inference from that fact. A player
+who has learned the four footprints and remembers what they put where can read
+a good deal — a 1×2 in a cell is a bed because nothing else in a cell is 1×2.
+What would change my mind is watching someone identify objects in a room they
+did not build. What strengthens it is that the game offers no other channel:
+there is no hover label on a placed object anywhere in what I exercised.
+
+**Second weakest: the four wrong objects in act 2 are my instrument.** The count
+argument (fourteen right, four wrong; a systematic failure would give one right
+and seventeen wrong) is sound as far as it goes, and I did not log the arm
+control's text at each step, so I have not *seen* the mechanism. If someone
+re-runs act 2 with that logging and finds the label already reading `Place …`
+when the wrong object went down, the reading flips to the game and it is a
+serious defect. I have made no claim about the panel.
+
+**Not a claim of mine at all:** anything about whether the simulation reserved
+the tiles the straddling dining table is drawn over. I saw pixels crossing a
+wall and said so.
+
+### What I did not reach
+
+- **Any viewport but 1440×900, and touch.** The playtest config is 1440×900 at
+  `devicePixelRatio` 1. `tests/browser/playtest-2026-09-04-touch-only.playtest.ts`
+  owns the touch surface.
+- **Three of the five shipped populations.** Cook, medic and generic staff
+  cannot be hired (§7), so I have no screenshot of them and cannot say whether
+  they are distinguishable from a guard, which is half of the brief's first
+  question.
+- **A prison larger than one screen.** Every act builds one room. What a
+  twenty-room prison reads like, and whether the tint scheme survives twenty
+  rooms adjacent, is unmeasured.
+- **Whether an object is ever hoverable or selectable.** I pressed tiles with
+  build tools only. If there is an inspect gesture, I did not find it and did
+  not look for it.
+- **The gate suites.** This branch adds no `*.spec.ts` and touches no `src/`,
+  so no gate's behaviour changes; I ran the five documentation contracts in
+  `tests/foundation/` and nothing else. Those reported `41 passed`, `3 failed`,
+  and **all three failures are pre-existing and none names this record**: two
+  are `docs/adr/STATUS-QUEUE.md` citations that resolve on disk but on no
+  published ref, and the third is
+  `documentation-commit-citation-contract.test.ts`'s own depth check, which
+  fails because `git rev-parse --is-shallow-repository` is `true` in this
+  container. Verified by re-running the file and grepping its output for this
+  record's filename: zero matches.
