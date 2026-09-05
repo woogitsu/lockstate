@@ -386,8 +386,11 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     // the owner ruled *"Zmierzcie to najpierw"* ("measure it first"), and,
     // shown the four-prisoner measurement, ruled the constant back to `40`
     // **on condition that a fifty-prisoner prison was measured first**. Both
-    // measurements exist -- `docs/research/2026-09-04-what-pressure-there-is.md`
-    // and its `-at-fifty` companion -- so this is that ruling carried out.
+    // measurements exist -- `2026-09-04-what-pressure-there-is.md` and its
+    // `-at-fifty` companion, in `docs/research/`, named without a rooted path
+    // because both branches are unmerged and
+    // `tests/foundation/documentation-links-contract.test.ts` fails on a
+    // dangling link -- so this is that ruling carried out.
     // Unlike the suspension, the restoration was made by choosing a presented
     // option rather than in the owner's own words, so no verbatim quotation of
     // it is available to put here and none is invented.

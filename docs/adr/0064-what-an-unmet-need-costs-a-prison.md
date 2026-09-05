@@ -113,9 +113,19 @@ Decision 2 above reads:
 
 **The `40` in that sentence is `0` while the owner plays**, so the schedule is
 `300, 300, 300, 300, 300, 300, 300` and an unmet need costs a prison nothing.
-`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;`
-(verbatim in `src/simulation/economy/income.ts`), with the ruling and the
-owner's words recorded in that constant's own docblock.
+The line that made it so was
+`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;`, with the
+ruling and the owner's words recorded in that constant's own docblock.
+
+> **That line is no longer in the file, and this paragraph is kept as it stood
+> rather than rewritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+> The owner restored the withheld share on 2026-09-04 — see *"Amendment,
+> 2026-09-04"* below, which carries the current line verbatim. Its attribution
+> was removed from the sentence above for one mechanical reason worth stating:
+> `tests/foundation/adr-quotation-verbatim-contract.test.ts` binds every
+> `(verbatim in …)` quotation to the file it names, and it went red on this
+> sentence the moment the constant moved. That gate is what discovered this
+> paragraph, which is the thing it was built to do.
 
 Everything else decisions 1 to 5 settle is **untouched and still in force**: the
 grant is still paid per occupied place per in-game day holding no state (1); a
@@ -145,6 +155,85 @@ mechanic is switched off rather than removed:
   deleted: `tests/integration/needs-state-grant-loop.test.ts` still prices its
   ten measured days into 20,800 and still prices the two rooms at 3,200, off
   the same measured unmet-need series.
+
+### Amendment, 2026-09-04: the owner restored the withheld share to 40
+
+**This records the repository owner's own ruling, dated. It is not a
+recommendation of this repository's and it was not self-approved** — the same
+terms the 2026-09-03 amendment above was recorded under, and for the same
+reason (`docs/AGENT_WORKFLOW.md` §3). **Nothing in this ADR's `Status` moves
+and no word of decisions 1 to 5 is edited**; the 2026-09-03 amendment is left
+standing in full, because a suspension that ended is part of how this decision
+got to where it is.
+
+Decision 2's schedule is in force as written: one place pays
+`max(0, 300 − 40 × unmetNeeds)`, the schedule is `300, 260, 220, 180, 140, 100,
+60`, and the line that makes it so is
+`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;`
+(verbatim in `src/simulation/economy/income.ts`).
+
+#### The ruling, and the condition it carried
+
+The suspension was *"na razie"* — for now — and the owner attached a
+measurement to lifting it. Asked on 2026-09-04 whether the prison should ever
+be allowed to be in trouble, they ruled:
+
+> Zmierzcie to najpierw
+
+("Measure it first.") Shown the four-prisoner measurement that produced, they
+ruled the constant back to `40` **on condition that a fifty-prisoner prison was
+measured first**. Both measurements now exist —
+`2026-09-04-what-pressure-there-is.md` and
+`2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/`, named
+without a rooted path because both branches are unmerged and
+`tests/foundation/documentation-links-contract.test.ts` fails on a dangling
+link — so this amendment is that ruling carried out and not a proposal.
+
+**Unlike the 2026-09-03 ruling, this one was made by choosing a presented
+option rather than in the owner's own words.** There is therefore no verbatim
+quotation of it to set beside *"usuń na razie kary"* above, and none is
+invented. What is recorded instead is the condition, the two measurements that
+satisfied it, and the fact that the choice was the owner's.
+
+#### What the measurements said, including where they disagree
+
+- At **four** prisoners the restored penalty cuts the daily gain by **71%**:
+  the same prison, five of six needs unmet on every prisoner, is paid 1,200 a
+  day at `0` and 400 a day at `40`. The treasury still rises, at +320 against
+  +1,120.
+- At **fifty** it cuts it by **27.7%** — +14,440 a day becomes +10,440 —
+  because a prison built to the limit of the reachable map settles at **two**
+  unmet needs rather than five, so decision 2's schedule prices a place at 220
+  rather than 100.
+- Break-even, measured one hire at a time rather than divided, moves from
+  **187 → 188** guards to **137 → 138**; headroom over the `ceil(n / 8)` the
+  game asks for falls from **26.7×** to **19.6×**.
+- **The fifty-prisoner figures are the pessimistic end of a range**, and that
+  note says so itself: neither instrument ever builds a door, and #938's fix
+  (`tests/integration/dead-room-no-doorway.test.ts`) measures that a sealed
+  room with no doorway is dead — `hygiene` 254.8/255 with a door, **0**
+  without. The two needs priced at fifty are `hygiene` and `recreation`, which
+  is that signature; a door can only *reduce* the unmet count, so a prison with
+  one earns more than 11,000 a day and breaks even above 137 guards.
+
+#### What this does not settle, and what it contradicts
+
+Open question 1 — *"Should the withheld share be steeper?"* — is **still
+open**, and the prior question the 2026-09-03 amendment put in front of it
+(*whether the share should be anything at all*) is now answered: it should.
+Neither is answered by anything in this repository; both are the owner's.
+
+**One argument this decision rests on is now measured false at fifty
+prisoners**, and it is recorded here rather than quietly dropped. The withheld
+share is per *need* so that the player is paid for each thing they fix, and the
+cheapest such fix was an 8×8 `room.yard`, which requires no object. At four
+prisoners that paid exactly `4 × 40 = 160` a day, measured. At fifty the same
+zoning returned **nothing**: `recreation` read 0 permille and unmet for 50 of
+50, and no prisoner performed `action.yard-recreation` at all. Capacity is
+ruled out as a sufficient cause; reachability is the strongest candidate and is
+untested for `recreation`. **That is a separate finding and is not fixed by
+this amendment** — restoring the rate does not by itself make the incentive
+work at scale.
 
 #### This ADR predicted this ruling, which is the reason to record it here
 
