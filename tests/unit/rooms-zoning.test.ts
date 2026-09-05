@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
+import { defaultRoomContentRegistry, loadRoomCatalog } from '../../src/content/room-catalog';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import {
   MAX_RECORDED_ZONING_REFUSALS,
@@ -139,6 +139,51 @@ describe('zoning a room registers a room instance', () => {
     expect(world.getZoning(tile(6, 6)), 'the tile past the right edge must be untouched').toBe(0);
     expect(world.getZoning(tile(4, 9)), 'the tile past the bottom edge must be untouched').toBe(0);
     expect(world.getZoning(tile(3, 6)), 'the tile before the left edge must be untouched').toBe(0);
+  });
+
+  /**
+   * **The accepted outcome carries the definition's own `nameKey`, not one
+   * derived from its id** -- the word the acknowledgement of a designation
+   * renders (#966 site 2).
+   *
+   * **This case exists because a mutation survived without it.** Replacing
+   * `roomNameKey: definition.nameKey` with `` `${definition.id}.name` `` passed
+   * the whole suite -- 541 tests across `tests/foundation`, this file's
+   * neighbours and the two files that assert the sentence -- because all
+   * eighteen shipped rooms happen to author `<id>.name`. `roomDefinitionSchema`
+   * constrains `nameKey` to an `identifierSchema` and nothing more, so content
+   * authoring `room.foo.title` is legal, resolves under
+   * `tests/unit/content-catalogs.test.ts`'s own contract, and would make the
+   * derived form render a key that does not exist -- a dotted string on the
+   * player's screen, which is the defect `ui-simulation-events.test.ts` guards
+   * its own keys against.
+   *
+   * The catalogue is loaded from an authored entry rather than mutated, so the
+   * key under test is one this file wrote and not one the code produced
+   * (`docs/TESTING.md`).
+   */
+  it('carries the room definition\'s own nameKey on the accepted outcome, whatever it is (#966)', () => {
+    const { registry, errors } = loadRoomCatalog([
+      {
+        schemaVersion: 1,
+        id: 'room.probe',
+        numericId: 200,
+        // Deliberately not `room.probe.name`.
+        nameKey: 'room.probe.heading',
+        category: 'housing',
+        requirements: [{ type: 'minimum-size', minWidth: 2, minHeight: 2, minTiles: 4 }],
+      },
+    ]);
+    expect(errors, 'the probe catalogue must be legal content for this case to mean anything').toEqual([]);
+
+    const world = ownedWorld();
+    const zoning = new RoomZoningService(world, new RoomInstanceRegistry(), registry);
+    const outcome = zoning.zone({ roomCatalogId: 'room.probe', x: 4, y: 6, width: 2, height: 2 }, 10);
+
+    expect(outcome.kind).toBe('zoned');
+    if (outcome.kind !== 'zoned') throw new Error('unreachable');
+    expect(outcome.roomNameKey, 'the authored key, not `${id}.name`').toBe('room.probe.heading');
+    expect(outcome.instance.roomCatalogId, 'and it is the type that was registered').toBe('room.probe');
   });
 
   it('writes the catalog\'s own numeric id, which is what the renderer resolves a tint from', () => {

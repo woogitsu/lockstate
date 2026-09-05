@@ -319,9 +319,43 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * -- which is a smaller thing than "the shared rung" and is worth having
      * measured either way. Both directions are marked rather than overwritten.
      */
-    expect(runtime.events.since(0), 'the two rungs above the wages floor, crossed together before any payday is missed').toEqual([
-      { sequence: 1, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
-      { sequence: 2, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
+    /*
+     * **Both sides of a 2026-09-05 merge conflict are kept here, because each
+     * was right about a different thing and neither alone is.** The filter and
+     * the dropped ordinals are #966 site 2's (an accepted `ZoneRoom` now speaks,
+     * so `sequence: 1` and `2` stopped being facts about the ladder). The tick
+     * is #986's: restoring `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`
+     * to `40` moved the crossing from day 8 to day 7, which is the whole point
+     * of that change and is asserted elsewhere in this file.
+     */
+    /*
+     * **Narrowed to the `economy.*` family on 2026-09-04 (#966 site 2), and the
+     * old line is quoted rather than deleted** (`docs/AGENT_WORKFLOW.md` §4):
+     *
+     * > expect(runtime.events.since(0), '…').toEqual([
+     * >   { sequence: 1, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
+     * >   { sequence: 2, tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
+     * > ]);
+     *
+     * An accepted `ZoneRoom` now says so, and this fixture zones its cells
+     * through the real command -- so the two crossings are no longer the first
+     * two things the session said, and the ordinals `1` and `2` were a fact
+     * about the fixture rather than about the ladder. The claim in the message
+     * is *which* rungs fire and that they fire **together**, and the shared
+     * tick is what carries "together"; the ordinals never did. What is dropped
+     * with them is nothing this case asserted: the filter still fails a ladder
+     * that fires a third `economy.*` event, in the wrong order, or on two
+     * different ticks.
+     */
+    expect(
+      runtime.events
+        .since(0)
+        .filter((event) => event.type.startsWith('economy.'))
+        .map((event) => ({ tick: event.tick, type: event.type })),
+      'the two rungs above the wages floor, crossed together before any payday is missed',
+    ).toEqual([
+      { tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.deliveries-refused' },
+      { tick: DAY_LENGTH_TICKS * 7 - 1, type: 'economy.construction-refused' },
     ]);
 
     // **Day 10 is the first it cannot meet, at 140 of room and 380 owed.**
@@ -408,9 +442,15 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
     // eight events for eight real things that happened, none of them repeated.
     // This list carried four `wages-unpaid` entries, for six events in all,
-    // while the withheld share was suspended between 2026-09-03 and
-    // 2026-09-04; the shape is what is asserted and the shape did not move.
-    expect(runtime.events.since(0).map((event) => event.type)).toEqual([
+    // while the withheld share was suspended between 2026-09-03 and 2026-09-04;
+    // restoring it to `40` (#986) put the other two back.
+    //
+    // **Filtered to the `economy.*` family on 2026-09-04 (#966 site 2)**: an
+    // accepted `ZoneRoom` now says so, and this fixture zones eight cells
+    // through the real command, so the whole log is no longer this case's
+    // subject. The ladder's shape is, and the filter is what keeps this case
+    // about the ladder while the log grows around it.
+    expect(runtime.events.since(0).map((event) => event.type).filter((type) => type.startsWith('economy.'))).toEqual([
       'economy.deliveries-refused',
       'economy.construction-refused',
       'economy.wages-unpaid',

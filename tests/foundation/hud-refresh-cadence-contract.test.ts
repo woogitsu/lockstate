@@ -351,7 +351,17 @@ describe('what refreshes a pulled HUD readout (#718)', () => {
     // Left as an exact figure rather than loosened to a bound, deliberately: a
     // bound would absorb the next such change in silence, and this number
     // moving is exactly the news a reader of this file wants.
-    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(2);
+    //
+    // **And it moved again, 2 -> 4, on 2026-09-04 (#966 site 2), by the same
+    // mechanism the paragraph above records.** An accepted `ZoneRoom` now
+    // records an event, `prisonWithNobodyHoused` presses two of them to build
+    // its cells, and ADR 0084's restore republishes both records -- so the
+    // counts-only predicate accepts two more messages in this window. Both
+    // figures are kept, because the news is that this number tracks *what the
+    // prison has said*, and neither 2 nor 4 is a cadence: the contrast with the
+    // 120 the assertions above measure is what the case is for, and the gap
+    // below is still the whole window.
+    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(4);
     expect(worstGapMs(trace, refreshesWithoutTheClock)).toBeGreaterThanOrEqual(WINDOW_MS - WAKE_MS);
   });
 

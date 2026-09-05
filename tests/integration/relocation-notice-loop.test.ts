@@ -293,8 +293,26 @@ describe('what the player is told when a removal moves somebody (ADR 0076 A(i))'
      * property the old line had and the reason it existed. What is no longer
      * asserted is that the press is mute, which was never this case's point.
      */
+    /*
+     * **And it happened again, to the narrowed line, which is worth recording
+     * as a pattern rather than as an event.** From #945 until #966 site 2 the
+     * assertion below read:
+     *
+     * > expect(runtime.events.since(0).map((event) => event.type), '…').toEqual(['objects.removed-spend-destroyed']);
+     *
+     * An accepted `ZoneRoom` now says so, and this fixture presses two of them
+     * to build the prison at all -- so the whole log again holds something this
+     * case has no opinion about. The response is the one the paragraph above
+     * argues for rather than a wider `toEqual`: the net is narrowed to the two
+     * families that could say anything about the removal or about the resident,
+     * so a producer that announces something about either still fails here, and
+     * a fixture that presses one more button does not.
+     */
     expect(
-      runtime.events.since(0).map((event) => event.type),
+      runtime.events
+        .since(0)
+        .map((event) => event.type)
+        .filter((type) => type.startsWith('objects.') || type.startsWith('prisoners.')),
       'the removal says what it cost, and nothing says anything about the resident it could not move',
     ).toEqual(['objects.removed-spend-destroyed']);
   });
