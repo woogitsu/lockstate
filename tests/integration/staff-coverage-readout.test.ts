@@ -228,7 +228,14 @@ describe('the requirement a player has to act on moves, and the panel is told', 
  * view model carries `required`/`assigned`/`shortage` and nothing about the
  * pool. So no wording on this rung may assert a state of the reserve; the only
  * honest thing it can say is where a responder comes from, which is what
- * *"Only free guards answer incidents."* says.
+ * *"Only free guards answer incidents."* said.
+ *
+ * **Past tense from 2026-09-05, and the reason is the block after the next one
+ * (#989).** That sentence is retired for being one duty short rather than for
+ * being wrong: a contraband sweep is claimed from the same pool, so the rung
+ * now reads *"Incidents and searches need free guards."* Everything this
+ * docblock argues is untouched -- the figures still cannot distinguish the two
+ * prisons, and the sentence still asserts no state of the reserve.
  *
  * **This asserts nothing about balance and must not.** How large the reserve
  * should be is issue #941 option 1 and `AGENTS.md` reserves it to the owner;
@@ -299,6 +306,112 @@ describe('the rung the panel calls covered does not say whether anyone can answe
     // The top of the scale, so the range the sentence declines to quote is the
     // one this build actually has rather than an assumed one.
     expect(runtime.incidentResponseSystem.requiredResponderCount(10)).toBe(5);
+  });
+});
+
+/**
+ * **The same rung, the same pool, the second duty** (issue
+ * [#989](https://github.com/matmaxalez/lockstate/issues/989)).
+ *
+ * The block above establishes that at exactly the posted requirement the
+ * *responder* pool is empty and the panel's figures cannot tell that prison
+ * from one hire later. #989 is that finding on `SearchSystem`: a contraband
+ * sweep is staffed from the same `claimableGuardIds`, and
+ * `SectorSearchDutySystem` will not even submit an order while that pool is
+ * smaller than the search policy's `requiredGuardCount`. So the prison the
+ * panel calls `Covered` searches nothing at all, which is what a playtest
+ * measured over ~9 in-game days on one seed -- 1 guard 0 discoveries, 2 guards
+ * (`2 of 2 · Covered`) 0 discoveries, 3 guards finds.
+ *
+ * ## What is asserted, and what is deliberately not
+ *
+ * Whether a sweep is **ordered**, not whether one **finds** something.
+ * Detection is a draw against a named RNG stream on contraband that twelve
+ * admissions may or may not have brought in, so an assertion about discoveries
+ * would be an assertion about a seed;
+ * `tests/integration/contraband-search-duty.test.ts` is where the finding half
+ * is measured, in a prison built for it. The difference between the two
+ * prisons below is exactly one `HireStaff` command and nothing else.
+ *
+ * Nothing here rules on how big the requirement should be. That is balance and
+ * `AGENTS.md` reserves it to the owner; this file establishes the arithmetic.
+ */
+describe('the rung the panel calls covered does not say whether anyone can search (#989)', () => {
+  /**
+   * `DEFAULT_SECTOR_SEARCH_INTERVAL_TICKS`, and long enough for several of it.
+   *
+   * Written out rather than imported, for `NINTH`'s reason: a bound derived
+   * from the constant under test would hold for any value of it. 600 ticks is
+   * a quarter of an in-game day, so 5,000 ticks is eight opportunities to
+   * order a sweep -- and the case below fails if the prison with a spare guard
+   * takes none of them.
+   */
+  const MEASURED_AT_TICK = 5_000;
+
+  /** Nine prisoners -- two guards' worth, which the first block establishes -- with `hires` guards, run to the same tick. */
+  function prisonWithGuards(hires: number): SimulationRuntime {
+    const runtime = twelveCellPrison();
+    for (let ordinal = 1; ordinal <= NINTH; ordinal += 1) admit(runtime, ordinal);
+    stepTo(runtime, runtime.kernel.tick + 60);
+    for (let ordinal = 1; ordinal <= hires; ordinal += 1) hire(runtime, ordinal);
+    stepTo(runtime, MEASURED_AT_TICK);
+    if (runtime.refusals.count > 0) throw new Error('A command this fixture depends on was refused.');
+    return runtime;
+  }
+
+  it('orders no sweep at exactly the requirement, orders them one hire later, and reads the same either way', () => {
+    const atRequirement = prisonWithGuards(2);
+    const oneHirePast = prisonWithGuards(3);
+
+    // The premise: both prisons are on the covered rung, with the same badge,
+    // the same pair of figures and the same shortage. `assigned` is 2 in both
+    // -- the third guard is never posted, because the sector is not short --
+    // so the panel is not merely similar, it is identical.
+    const covered = {
+      required: 2,
+      assigned: 2,
+      shortage: 0,
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
+      tone: 'success',
+      hireCount: 0,
+    };
+    expect(readout(atRequirement)).toMatchObject(covered);
+    expect(readout(oneHirePast)).toEqual(readout(atRequirement));
+
+    // The pool the two duties compete for, through the function both of them
+    // call rather than a re-derivation of it.
+    expect(claimableGuardIds(atRequirement.securityGuards)).toHaveLength(0);
+
+    /*
+     * **The defect, in the figure the panel cannot show.** No order was ever
+     * submitted -- not queued and cancelled, not queued and stuck: `orderIds`
+     * is the queue plus the active jobs, so an empty one is the whole history
+     * of this prison's searching.
+     */
+    expect(atRequirement.searchSystem.orderIds()).toEqual([]);
+    expect(atRequirement.searchSystem.getMetrics()).toMatchObject({
+      searchesCompleted: 0,
+      searchesQueued: 0,
+      searchesCancelled: 0,
+    });
+
+    // One hire later, the same panel, and the duty runs.
+    expect(oneHirePast.searchSystem.getMetrics().searchesCompleted).toBeGreaterThan(0);
+  });
+
+  it('renders the sentence that says so, as real text from the bundled catalog', () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const runtime = prisonWithGuards(2);
+    const described = describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 });
+
+    expect(readout(runtime).badgeKey).toBe(HUD_MESSAGE_KEY.securityCoverageMet);
+    const sentence = localizer.format(described.hintKey);
+    // Both duties named, in the prison that can do neither. Pinned verbatim in
+    // `tests/unit/ui-simulation-staff-coverage.test.ts`; what this asserts is
+    // that the two words are the ones this prison's own systems are short of.
+    expect(sentence.toLowerCase()).toContain('incidents');
+    expect(sentence.toLowerCase()).toContain('searches');
+    expect(sentence).not.toContain('{');
   });
 });
 

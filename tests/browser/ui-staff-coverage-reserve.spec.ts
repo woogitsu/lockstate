@@ -5,7 +5,8 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
 
 /**
  * **The sentence the covered coverage rung says, on screen and whole**
- * (issue [#941](https://github.com/matmaxalez/lockstate/issues/941)).
+ * (issues [#941](https://github.com/matmaxalez/lockstate/issues/941) and
+ * [#989](https://github.com/matmaxalez/lockstate/issues/989)).
  *
  * ## What was measured, and why a browser is the only layer that can gate it
  *
@@ -18,8 +19,8 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * from guards it has **not** posted. The requirement is not the whole bill, and
  * nothing on the tab said so.
  *
- * `hud.security.coverage-met-hint` now reads *"Only free guards answer
- * incidents."* Which key the rung picks and what that key resolves to are both
+ * `hud.security.coverage-met-hint` now reads *"Incidents and searches need free
+ * guards."* Which key the rung picks and what that key resolves to are both
  * proven headlessly -- `tests/unit/ui-simulation-staff-coverage.test.ts` pins
  * the sentence verbatim and
  * `tests/integration/staff-coverage-readout.test.ts` carries the measurement
@@ -28,17 +29,37 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * composed perfectly and never appended, or appended into a box that cuts it,
  * passes every test in that suite.
  *
+ * ## What #941 wrote here, and why #989 widened it
+ *
+ * **This file was authored on 2026-09-04 around *"Only free guards answer
+ * incidents."*, which was true.** It named one consumer of the free pool and
+ * there are two: `SearchSystem` staffs a contraband sweep from the same
+ * `claimableGuardIds`, and `SectorSearchDutySystem` will not order a sweep at
+ * all while that pool is empty -- so the prison this file paints, at `3 of 3 ·
+ * Covered`, could no more search than respond. Measured at 1, 2 and 3 guards
+ * over ~9 in-game days on one seed: 0 discoveries, 0 discoveries, finds. The
+ * old sentence is quoted rather than deleted for `docs/AGENT_WORKFLOW.md` §4's
+ * reason, and both are what the geometry section below is about.
+ *
  * ## The clamp, which is the whole reason this file exists
  *
  * `hud.css` gives `.hud-staff__note` `display: -webkit-box` with
  * `-webkit-line-clamp: 1` at any viewport 700px tall or shorter, and the
  * coverage hint carries that class with no exemption. Measured on this harness
  * at 900x600 -- the one shipped viewport inside that band -- the hint's box is
- * **238px wide and 13px tall, one line**. The sentence it replaced occupied 39
- * characters of it; this one occupies 34. A second line would be cut with
- * nothing on screen to say so, and *"Only free guards answer"* is not a shorter
- * version of this sentence: the clause the clamp would take is the one naming
- * what a free guard is *for*.
+ * **238px wide and 13.19px tall, one line** (the box follows the 13.2px
+ * line-height; the font resolves to 11px, and the `13px` this paragraph used to
+ * give for both was the line box rather than the type). A second line would be
+ * cut with nothing on screen to say so.
+ *
+ * **That is a budget of 238px and it is what chose the words**, measured on
+ * this harness rather than estimated: *"Only free guards answer incidents."*
+ * renders at 191.7px, *"Incidents and searches need free guards."* at 227.7px,
+ * and the obvious widening of the first -- *"Only free guards search or answer
+ * incidents."* -- at **246.5px**, which the clamp would cut. The other four
+ * shipped viewports resolve `line-clamp: none`, so 900x600 is the only one that
+ * constrains anything, and `expectNotClipped` below is what fails if a later
+ * sentence is authored without re-measuring.
  *
  * The consequence line below it (`.hud-staff__coverage-consequence`, the
  * owner's unguarded-rung wording of 2026-09-03) is the exempted element and is
@@ -192,7 +213,7 @@ async function readHint(page: Page): Promise<HintReading> {
   }, HINT);
 }
 
-test.describe('the covered rung says where a responder comes from (#941)', () => {
+test.describe('the covered rung says what a free guard is for (#941, #989)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(HARNESS_URL);
   });
@@ -209,10 +230,13 @@ test.describe('the covered rung says where a responder comes from (#941)', () =>
       expect(reading.drawn, `the coverage hint has no box at ${where}`).toBe(true);
       expect(reading.tone, `the panel did not pick the covered rung at ${where}`).toBe('success');
 
-      expect(reading.text, `the covered sentence is wrong at ${where}`).toBe('Only free guards answer incidents.');
-      // The assertion the replaced sentence would fail: it read "This prison
-      // has the guards it asks for."
+      expect(reading.text, `the covered sentence is wrong at ${where}`).toBe('Incidents and searches need free guards.');
+      // The assertion the sentence #941 replaced would fail: it read "This
+      // prison has the guards it asks for."
       expect(reading.text, `the panel is asserting a met requirement is enough at ${where}`).not.toContain('asks for');
+      // And the one #941's own sentence would fail: it named incidents alone,
+      // which is the half #989 found (`SearchSystem` claims from the same pool).
+      expect(reading.text, `the sentence names only one of the two duties at ${where}`).toContain('searches');
       expect(reading.text, `an unresolved key reached the screen at ${where}`).not.toContain('hud.');
 
       /*
@@ -258,7 +282,7 @@ test.describe('the covered rung says where a responder comes from (#941)', () =>
     const surplus = await readHint(page);
     expect(surplus.tone, 'a prison past its requirement is not on the covered rung').toBe('success');
     expect(surplus.summary, 'the header pair is not reading its two fields separately').toBe('3 of 2');
-    expect(surplus.text, 'the sentence changed with the figures').toBe('Only free guards answer incidents.');
+    expect(surplus.text, 'the sentence changed with the figures').toBe('Incidents and searches need free guards.');
     expect(reading.badge, 'the badge word moved').toBe('Covered');
     // Where "free" points: the block below, printing the reserve the sentence
     // is about. `1 free` is the prison #941 measured, and it lapsed 7 of 7.
@@ -268,11 +292,12 @@ test.describe('the covered rung says where a responder comes from (#941)', () =>
 
   test('does not push the Staff panel into a scroll at any shipped viewport', async ({ page }) => {
     /*
-     * The sentence is shorter than the one it replaces (34 characters against
-     * 39) and adds no element, so this should be inert -- which is exactly why
-     * it is measured rather than asserted in prose. The coverage block is first
-     * in the panel body and the hire control it prescribes is two blocks down,
-     * so a block that grew a line would push a control below the fold.
+     * The sentence is 40 characters against #941's 34 and the 39 of the one
+     * before that, adds no element, and was measured at 227.7px in a 238px box
+     * -- so this should be inert, which is exactly why it is measured rather
+     * than asserted in prose. The coverage block is first in the panel body and
+     * the hire control it prescribes is two blocks down, so a block that grew a
+     * line would push a control below the fold.
      */
     for (const [width, height] of COVERAGE_VIEWPORTS) {
       await page.setViewportSize({ width, height });

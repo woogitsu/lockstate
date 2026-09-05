@@ -348,6 +348,32 @@ export function formatHeldGuardText(
  * above: it says who is claimed when an incident opens, not that one is coming
  * and not that a claim contains it.
  *
+ * ### The same defect, on a second consumer of the same pool (#989)
+ *
+ * **The paragraph above is kept as it stands and its sentence is superseded**,
+ * because what #989 found is not that #941 was wrong but that it was *one
+ * short*: the free pool has two consumers and the sentence enumerated one.
+ * `SearchSystem.assignQueuedOrders` claims a contraband search from the same
+ * `claimableGuardIds`, and `SectorSearchDutySystem.update` refuses to order a
+ * sweep at all while that pool is smaller than the search policy's
+ * `requiredGuardCount`. So a prison at exactly its posted requirement reads
+ * `Covered` and cannot search either -- measured at 1, 2 and 3 guards over ~9
+ * in-game days on one seed, with `2 of 2 · Covered` finding nothing.
+ *
+ * `hintKey` therefore names both duties now. The wording, every clause opened
+ * to prove it, what it gives up and the clamp it was measured against are in
+ * `hud.security.coverage-met-hint`'s own entry; the arithmetic and the two
+ * prisons that differ by one hire are in
+ * `tests/integration/staff-coverage-readout.test.ts`, and
+ * `tests/foundation/claimable-guard-pool-contract.test.ts` is what goes red if
+ * a *third* consumer of that pool appears and leaves the enumeration stale.
+ *
+ * **What is deliberately not done here, and it is the half of #989's acceptance
+ * this change does not reach.** Making `required` include the reserve its
+ * consumers need would change how many guards a prison is asked for, which is
+ * balance and is the owner's under `AGENTS.md`. Nothing in this file, in
+ * `sector-staffing.ts` or in `default-sector.ts` moves.
+ *
  * ### What it now does say, on the bottom rung only
  *
  * `consequenceKey` is the owner's chosen sentence of 2026-09-03 --
@@ -434,6 +460,12 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
   // that exclusion instead; the locale entry carries the whole argument and the
   // code opened to prove it.
   //
+  // **And #941's replacement was itself one duty short, which is issue #989.**
+  // `SearchSystem` claims a contraband search from that same unposted pool, so
+  // the same prison that lapses every incident also orders no sweep -- the hint
+  // names both duties now. Both wordings are quoted in the locale entry rather
+  // than overwritten, for `docs/AGENT_WORKFLOW.md` §4's reason.
+  //
   // **This comment used to end "It is not reachable from
   // `applyDefaultSecuritySector`, which authors a floor of one", and that is no
   // longer true** (issue #533). The floor is still one, but
@@ -511,8 +543,10 @@ export function describeHireCharge(role: HudStaffRoleViewModel | undefined): Sta
  *
  * That quotation is **what the block said when #639 was measured**, and it is
  * left standing as the measurement rather than updated: the second half of it
- * is retired since issue #941, and `hud.security.coverage-met-hint` now reads
- * *"Only free guards answer incidents."* The badge is unchanged, and so is
+ * is retired since issue #941, which wrote *"Only free guards answer
+ * incidents."* in its place, and issue #989 has since widened that to
+ * *"Incidents and searches need free guards."* -- a second duty drawing on the
+ * same pool, not a second correction. The badge is unchanged, and so is
  * everything this paragraph argues -- a figure on a shut fold is still the
  * mechanism.
  *

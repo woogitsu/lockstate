@@ -49,6 +49,19 @@ import type { SearchSystem } from './search-system';
  * guard hired past that requirement is what makes contraband findable. Nothing
  * here takes a guard off a wall.
  *
+ * **Nothing said that to the player until issue #989, and this paragraph
+ * predicted the measurement that found it out.** The Security panel prints the
+ * *posting* requirement and calls it `Covered`, so a prison at `2 of 2 ·
+ * Covered` read as finished and searched nothing: 1 guard 0 discoveries, 2
+ * guards 0 discoveries, 3 guards finds, over ~9 in-game days on one seed. The
+ * requirement itself is untouched -- how large it should be is balance and the
+ * owner's -- and what changed is the sentence beside it,
+ * `hud.security.coverage-met-hint`, which now names this duty and incident
+ * response as the two things a *free* guard is for. It is the twin of issue
+ * #941, which found the same shape on `IncidentResponseSystem`;
+ * `tests/foundation/claimable-guard-pool-contract.test.ts` is what fails if a
+ * third consumer of that pool appears.
+ *
  * ## Determinism
  *
  * `sectors.all()` is sorted by id; `resolveOccupants` answers in ascending

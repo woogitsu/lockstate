@@ -209,12 +209,35 @@ describe('every sentence the block can render is real text with its placeholders
    * `tests/integration/staff-coverage-readout.test.ts` for the measurement: at
    * exactly the requirement the responder pool is empty, and the panel's
    * figures are identical to a prison one hire past it.
+   *
+   * ## Widened on 2026-09-05 (issue #989), and the sentence it pinned is kept
+   *
+   * **This pinned *"Only free guards answer incidents."*, and that sentence was
+   * true.** What retired it is that the free pool has two consumers and it
+   * named one: `SearchSystem` staffs a contraband sweep from the same
+   * `claimableGuardIds`, so the prison #941 measured could not search either.
+   * The rung now reads *"Incidents and searches need free guards."* -- both
+   * duties, no number, no outcome. The clause-by-clause proof and the clamp it
+   * was measured against are in `hud.security.coverage-met-hint`'s own entry.
+   *
+   * **`not.toContain('only')` is deliberately absent**, and the omission is
+   * worth stating: the replacement drops that word, but a future wording that
+   * carried it would not be wrong, so pinning its absence would be pinning a
+   * preference rather than a truth. The two duty words below are the truth
+   * condition -- the sentence enumerates, and
+   * `tests/foundation/claimable-guard-pool-contract.test.ts` is what fails when
+   * the enumeration goes stale.
    */
-  it('says where a responder comes from, and no longer that the prison is finished hiring', () => {
+  it('says what a free guard is for, and no longer that the prison is finished hiring', () => {
     const met = render({ required: 3, assigned: 3, shortage: 0 });
 
-    expect(met).toBe('Only free guards answer incidents.');
-    // The phrase the replaced sentence turned on. A regression to it fails
+    expect(met).toBe('Incidents and searches need free guards.');
+    // Both duties that draw on the pool, named. The verbatim assertion above
+    // already covers this; these two are what a reviewer reads as the *reason*
+    // the sentence is this long, and they survive a reworded fix.
+    expect(met.toLowerCase()).toContain('incidents');
+    expect(met.toLowerCase()).toContain('searches');
+    // The phrase the sentence #941 replaced turned on. A regression to it fails
     // here even if the assertion above were relaxed one day.
     expect(met).not.toContain('asks for');
     // It promises no outcome: `describeStaffCoverage`'s docblock refuses "a

@@ -1979,8 +1979,76 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * 900x600, the old sentence was one 13px line in a 13px box and this one is
    * shorter, so the clamp cuts neither -- `tests/browser/ui-staff-coverage-reserve.spec.ts`
    * is where that is held at all five shipped viewports rather than argued.
+   *
+   * ## Widened on 2026-09-05, issue #989 -- everything above is kept as it
+   * stood, because it is the sentence that was replaced
+   *
+   * **It read *"Only free guards answer incidents."*, it was true, and it is
+   * still true. What retired it is that it named ONE consumer of the free pool
+   * and there are TWO.** `SearchSystem.assignQueuedOrders`
+   * (`src/simulation/contraband/search-system.ts:287`) staffs a contraband
+   * search from `claimableGuardIds(this.guards)` -- the same call, on the same
+   * roster, as the responder claim the section above opens -- and
+   * `SectorSearchDutySystem.update`
+   * (`src/simulation/contraband/sector-search-duty.ts:126`) will not even
+   * *order* a sweep unless that pool already holds
+   * `policy.requiredGuardCount` (`1` for `'sector'`,
+   * `src/simulation/contraband/default-search-policies.ts:65`). So a prison at
+   * exactly its posted requirement orders no sweep at all, and that system's
+   * own docblock says so in words: *"a prison that hires exactly its posted
+   * requirement never searches, and the first guard hired past that
+   * requirement is what makes contraband findable."* Measured over ~9 in-game
+   * days on one seed: 1 guard 0 discoveries, 2 guards (`2 of 2 · Covered`) 0
+   * discoveries, 3 guards finds.
+   *
+   * ## What makes the replacement true, clause by clause
+   *
+   * - ***"Incidents ... need free guards."*** `claimableResponders` above is
+   *   the only path onto an incident and returns `undefined` when
+   *   `claimableGuardIds` is shorter than `requiredResponderCount`, which is
+   *   `max(1, …)` and therefore never `0`.
+   * - ***"... and searches ..."*** the two call sites in the paragraph above.
+   *   The word is the one this game already puts on screen for it: the Staff
+   *   panel's own held-guards rows label a claim `Contraband Search` and a
+   *   phase `On Search` (`guard-claim` and `deployment-phase` in
+   *   `src/content/simulation-message-keys.ts`), so it is in the player's
+   *   vocabulary before this sentence uses it.
+   * - ***"... free guards."*** unchanged from #941 and proved there: a posted
+   *   guard is `'travelling'` or `'on-post'`, never `'unassigned'`, so it is
+   *   never in the pool; and *guards* rather than *staff* because
+   *   `claimableGuardIds` filters by post-eligible role.
+   * - **Plural, and indefinite.** *"need free guards"* is the generic plural
+   *   and promises no count, which the section above establishes is a truth
+   *   requirement rather than a style: the honest reserve runs from two (a
+   *   threshold-grazing assault) to five (a severity-10 riot) for incidents
+   *   and is one for a sector sweep, so *"need a free guard"* would be false
+   *   for most incidents this build can open.
+   *
+   * **What it gives up is the word *"only"*, and that is a real loss stated
+   * rather than glossed.** #941 argued that *"only"* is the half of its
+   * sentence that corrects the reading, and it was right. The exclusion now
+   * rides on *"free"* instead -- the requirement is stated as one a *free*
+   * guard satisfies, beside an `On duty` block printing `{held} held ·
+   * {unassigned} free` -- which says the same thing forwards and buys the room
+   * the second duty needs. It still promises no outcome: it says what a duty
+   * *draws on*, not that a response contains anything or that a sweep finds
+   * anything.
+   *
+   * **It is 40 characters against that sentence's 34, and the clamp was
+   * measured rather than estimated.** At 900x600, the one shipped viewport
+   * inside `hud.css`'s `-webkit-line-clamp: 1` band, the hint's box is 238px
+   * and this sentence renders at 227.7px in the resolved font (500 11px /
+   * 13.2px system-ui) -- so it fits on the one line, with less room to spare
+   * than its predecessor's 191.7px. The four wider viewports resolve
+   * `line-clamp: none` and are not the constraint. (The paragraph above says
+   * *"one 13px line in a 13px box"*: the box is 13.19px because the
+   * *line-height* is 13.2px; the font is 11px. Corrected here rather than
+   * above, because the sentence it is about is the retired one.)
+   * `tests/browser/ui-staff-coverage-reserve.spec.ts` holds the geometry at
+   * all five viewports and is what goes red if a later widening is authored
+   * without re-measuring.
    */
-  'hud.security.coverage-met-hint': 'Only free guards answer incidents.',
+  'hud.security.coverage-met-hint': 'Incidents and searches need free guards.',
   'hud.security.coverage-short': 'Understaffed',
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',
