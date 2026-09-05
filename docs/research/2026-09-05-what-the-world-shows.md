@@ -494,9 +494,38 @@ are different things, and this measures the second.
 
 **The confound, and act 8 removes it.** Act 5's prison is the doorless cell
 `buildAndPopulate` builds, so it is a prison where nothing legal can happen and
-"nothing moved" has an innocent explanation. Act 8 is the same six frames — 8
-of them, 2.5 s apart — after a wooden door is built into the south wall and the
-Rooms panel reports the room ready.
+"nothing moved" has an innocent explanation. Act 8 is the same measurement —
+eight frames, 2.5 s apart — after a wooden door is built into the south wall
+and the Rooms panel reports the room ready (`NOT READY` block absent,
+`roomCapacity: 4`, `accommodationCapacity: 4`, `roomOccupants: 4`).
+
+### Act 8 — the same answer in a cell that works
+
+Eight frames, ticks **6,914 → 8,792**: 1,878 ticks, about **0.78 of an in-game
+day**, in a *ready* cell with four prisoners who have four beds and a toilet and
+a door, and two guards. Frames:
+`2026-09-05-what-the-world-shows/act8-frame-0.png` through `act8-frame-7.png`.
+
+**Exactly one thing changed in the whole run, and it was not a person.** Frames
+0, 1, 2 and 3 are pixel-identical; frames 4, 5, 6 and 7 are pixel-identical;
+and between 3 and 4 **7,434 pixels of 409,600 (1.81%)** changed, inside a single
+66×113 px box at the south wall of tile (14,17). Looking at the two files: frame
+3 has a translucent tan block sitting in the wall line, and frame 4 has the
+finished steel door. **The door finished being built.** Nobody walked, nobody
+turned, no prisoner went to a bed or a toilet, in either half of the run.
+
+So the confound is removed and the answer does not change: **in a prison that
+works, over three quarters of an in-game day, the world view is a still
+picture.** The one thing it animates is construction.
+
+(That translucent block is the world view's *only* state indicator that I found
+— `appearance.ts` carries `PLANNED_ALPHA` `0.35` and `BUILDING_ALPHA` `0.65`
+(`src/rendering/world/appearance.ts:276` and `:277`) for exactly this. **Which
+phase the block was in, and why it was still drawn after `waitForQueueEmpty`
+reported an empty queue and the Rooms panel reported the room ready, I did not
+establish**, and it is worth someone else's ten minutes: a renderer that shows
+a door unbuilt while the simulation counts it built is a disagreement, and I
+have a screenshot pair and no diagnosis.)
 
 ## 6. Act 6 — the same box, designated four different ways
 
@@ -662,9 +691,11 @@ rather than argued.
    eighteen room types, eleven category tints at 14% alpha over it, and the two
    I measured closest — a Kitchen and a Solitary Cell — are **5.8 RGB units**
    apart (§6).
-8. **Nothing moves.** Six frames over 1,144 ticks: `0` differing pixels of
-   409,600 (§5b). Act 8 re-runs that in a cell with a door, because act 5's
-   prison had nowhere to walk to.
+8. **Nothing moves, in a prison that works.** Act 5: six frames over 1,144
+   ticks, `0` differing pixels of 409,600, in a sealed cell. Act 8, same
+   measurement in a *ready* cell with a door: eight frames over 1,878 ticks and
+   **one** change, which was the door finishing construction (§5b). Nobody
+   walked in either.
 9. **The whole world is a 32×32-tile square** and the only way to see that it
    is is the undocumented zoom (§6b).
 
