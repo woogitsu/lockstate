@@ -18,8 +18,8 @@ find out what happens.*
 
 **`main` moved under this record while it was being played**, from `b984445f`
 (v0.0.475) to `376b48bf` (**v0.0.477**), and among the merges is
-`docs/research/2026-09-04-what-pressure-there-is-at-fifty.md`, which §1a and §10
-below both engage with. **Every measurement here is at v0.0.475**, confirmed
+`2026-09-04-what-pressure-there-is-at-fifty.md` (in this directory on `main`; named without a rooted path because it is not on this branch, and `tests/foundation/documentation-links-contract.test.ts` fails on a dangling one — which is how this was caught), which §1a and §10
+below both engage with. **Every measurement here is at v0.0.475 (`b984445f`)**, confirmed
 from inside the running page at every act.
 
 **LFS.** `git lfs checkout` was run in the worktree before anything, confirmed
@@ -205,7 +205,7 @@ four earlier records derived, so the arrival camera has not moved.
 
 ### 1a. A correction to a record that merged today: the enclosable map is ten times what it says
 
-`docs/research/2026-09-04-what-pressure-there-is-at-fifty.md` §1 reads, of its
+`2026-09-04-what-pressure-there-is-at-fifty.md` §1 reads, of its
 10×10 cell: *"the biggest square the pointer can enclose at 1440×900 and it
 leaves no tile over"*, and its verdict says fifty prisoners *"takes the whole of
 the enclosable map to do it"*.
@@ -404,7 +404,7 @@ read from the code.
 retirement.** That record measured *"seven of 25 Admit presses … and five of
 eight Hire Guard presses … refused before they reached the worker"* at v0.0.451
 with the string *"The simulation has not reported its command sequence yet"*.
-At **v0.0.475**, on the same shared box, **68 for 68 and 10 for 10**, with no
+At **v0.0.475** (`b984445f`), on the same shared box, **68 for 68 and 10 for 10**, with no
 `HUD action failed` line in the page console for either control. `git log
 --oneline -80 origin/main | grep -i press` shows the fix landed as #942 between
 v0.0.451 and v0.0.469 (the brief names it). **A run of presses no longer loses
@@ -525,7 +525,7 @@ contained — and the alerts column says exactly that, for four incidents:
 `2026-09-04-hour-two.md` §2 measured `3 held · 0 free` at 17 residents and
 `2026-09-02-release-an-off-post-guard.md` is a whole record about the pool. **Two
 things are.** First, **the honest hint has landed**: hour-two quoted
-*"This prison has the guards it asks for."* beside `Covered`; v0.0.475 says
+*"This prison has the guards it asks for."* beside `Covered`; v0.0.475 (`b984445f`) says
 *"Only free guards answer incidents."* — #941's fix reached the player, and it
 turns the panel into a readable self-contradiction rather than a lie.
 **Second, and this is the scale part: over-hiring does not buy a reserve.** The
@@ -759,7 +759,7 @@ backwards or stalled.
 days.**
 
 **The brief's premise that 30 was the record is out of date, and the correction
-matters more than the record does.** `docs/research/2026-09-04-what-pressure-there-is-at-fifty.md`
+matters more than the record does.** `2026-09-04-what-pressure-there-is-at-fifty.md`
 housed **fifty** — it merged into `main` while this was being played — so 68 is
 1.4× the largest, not 2.3×. What is unshared is the shape: that prison is *"a
 10×10 cell, 100 tiles, fifty beds and no room for the toilet the game's own
