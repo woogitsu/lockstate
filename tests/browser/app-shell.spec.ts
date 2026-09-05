@@ -5911,6 +5911,32 @@ test.describe('the assembled application', () => {
     ).toBeHidden();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
 
+    /*
+     * **And neither designation raised the events band** -- the owner's ruling
+     * of 2026-09-05 on issue #966 site 2, measured on the assembled page rather
+     * than at the translator.
+     *
+     * An accepted `ZoneRoom` is acknowledged: it puts a row in the alerts list
+     * in the bottom-left corner, which is what a player reads. It does **not**
+     * take `.hud__event`, and this is the assertion that says so where it
+     * matters -- that band is a grid row, it costs the middle row 32px whatever
+     * raised it, and `event-band-dwell.ts` replaces an incumbent rather than
+     * releasing the row, so once raised the cost stands for the session. Issue
+     * #985 is where that clip is measured and owned; nothing here fixes it, and
+     * the loop below passing at 900x600 is this line's consequence rather than
+     * a repair.
+     *
+     * `toBeHidden` and not "does not say `{room} designated`": nothing else in
+     * this fixture can raise the band -- no prisoner is admitted, no incident
+     * producer has anybody to open one about, and the ladder rungs need a
+     * treasury this prison has not spent -- so hidden is the state, and a
+     * weaker assertion would pass on the band showing something else.
+     */
+    await expect(
+      page.locator('.hud__event'),
+      'a designation raised the events band, which the ruling of 2026-09-05 says it must not',
+    ).toBeHidden();
+
     for (const [width, height] of [
       [1280, 800],
       [375, 812],

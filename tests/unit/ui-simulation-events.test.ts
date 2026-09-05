@@ -15,8 +15,7 @@ import {
   hudEventAlertsFromWorkerMessage,
   hudEventNoticeFromWorkerMessage,
 } from '../../src/ui/simulation-events';
-import type { HudAlertViewModel, HudEventNoticeViewModel } from '../../src/ui/hud/view-model';
-import { EMPTY_EVENT_BAND_DWELL_STATE, admitToEventBand } from '../../src/ui/hud/event-band-dwell';
+import type { HudAlertViewModel } from '../../src/ui/hud/view-model';
 import { resolveHudLabelParameters } from '../../src/ui/hud/label-parameters';
 
 /**
@@ -125,6 +124,28 @@ function stopped(): WorkerToMainMessage {
   }) as WorkerToMainMessage;
 }
 
+/**
+ * The one surface every event on this channel reaches, and therefore the one a
+ * sweep over the whole union can be driven from.
+ *
+ * **Introduced on 2026-09-05.** These sweeps used to read
+ * `hudEventNoticeFromWorkerMessage` and throw on `undefined`, which was exact
+ * while every event raised the band. The owner's ruling of that date sends
+ * `rooms.zoned` to the log and not to the band, so reading the band would have
+ * made the sweep skip -- or fail on -- the newest member, and the sentence it
+ * skipped is the one a player reads. Reading the log instead keeps the sweep
+ * total: `eventAlertRow` and `hudEventNoticeFromWorkerMessage` build their
+ * label, parameters and severity from the same table and the same two
+ * functions, so nothing about the sentence goes unchecked by the move, and one
+ * more member is now checked than before.
+ */
+function loggedRow(event: SimulationEvent): HudAlertViewModel {
+  const rows = hudEventAlertsFromWorkerMessage(publication(event), []);
+  const row = rows?.at(-1);
+  if (row === undefined) throw new Error(`${event.type} produced no row in the alerts log`);
+  return row;
+}
+
 describe('what the prison says when nothing went wrong', () => {
   it('gives every event type a sentence a player can actually read', () => {
     const missing: string[] = [];
@@ -138,15 +159,14 @@ describe('what the prison says when nothing went wrong', () => {
     // here, so an event type added to the union and forgotten here fails
     // rather than going unchecked.
     for (const type of SIMULATION_EVENT_TYPES) {
-      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
-      if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
+      const row = loggedRow(SAMPLE[type](1));
       // Through `resolveHudLabelParameters`, which is what `hud.ts` renders
       // with: since ADR 0076's relocation notice a sentence's parameters are
       // not all plain values, and formatting from `labelParameters` alone
       // would leave `{name}` and `{room}` on screen while this test passed.
       const sentence = localizer.format(
-        notice.labelKey,
-        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+        row.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
       );
       expect(sentence, `${type} reaches the player as its own key`).not.toContain('hud.alert.event');
       expect(sentence.trim().length, `${type} says nothing at all`).toBeGreaterThan(0);
@@ -222,13 +242,12 @@ describe('what the prison says when nothing went wrong', () => {
   it('says which type was designated, and claims nothing further (#966)', () => {
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
     const sentenceFor = (roomNameKey: string): string => {
-      const notice = hudEventNoticeFromWorkerMessage(
-        publication({ sequence: 1, tick: 100, type: 'rooms.zoned', roomNameKey }),
-      );
-      if (notice === undefined || notice === 'none') throw new Error(`${roomNameKey} produced no notice`);
+      // Off the alerts row and not the band notice, since 2026-09-05 the band
+      // is not where this sentence goes -- see `loggedRow` above.
+      const row = loggedRow({ sequence: 1, tick: 100, type: 'rooms.zoned', roomNameKey });
       return localizer.format(
-        notice.labelKey,
-        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+        row.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), row),
       );
     };
 
@@ -240,63 +259,128 @@ describe('what the prison says when nothing went wrong', () => {
   });
 
   /**
-   * **The grade, and it is a claim about the band rather than about the tone**
-   * (issue #966 site 2).
+   * **Where each sentence goes, decided per event type** (issue #966 site 2,
+   * and the owner's ruling of 2026-09-05).
    *
-   * `EVENT_PRESENTATION` grading this `'info'` is not a preference: it is what
-   * stops an acknowledgement deleting bad news. `admitToEventBand` promotes on
-   * *strictly* greater severity and **discards** the incumbent when it does, so
-   * a `'warning'` acknowledgement would take the line from an escape-attempt
-   * sentence the player had not finished reading, and the row it displaced
-   * would be gone below 720px where `hud.css` drops the alerts list.
+   * This channel paints two surfaces -- the alerts list, which is the log, and
+   * `.hud__event`, the one line laid out at every viewport -- and until that
+   * ruling every event reached both by construction. The ruling sends the
+   * acknowledgement of a designation to the log **only**, so the routing is now
+   * a decision somebody has to take per member, and this is where it is
+   * checked.
    *
-   * Asserted through the real translator rather than a hand-built notice --
-   * which is what `tests/unit/event-band-dwell.test.ts` uses, correctly, to
-   * prove the *decision* -- so that what is pinned here is this event type's
-   * grade and not the rule it is graded by.
+   * **Exhaustive, and the list of exceptions is written here rather than read
+   * from the code under test.** `LOG_ONLY` is this file's own statement of the
+   * ruling; every other member of `SIMULATION_EVENT_TYPES` must produce a
+   * notice. So a member added to the union and quietly given `'log-only'` fails
+   * here, and so does `rooms.zoned` being put back on the band.
    */
-  it('grades the acknowledgement so it can never take the line from bad news (#966)', () => {
-    const noticeFor = (event: SimulationEvent): HudEventNoticeViewModel => {
-      const notice = hudEventNoticeFromWorkerMessage(publication(event));
-      if (notice === undefined || notice === 'none') throw new Error(`${event.type} produced no notice`);
-      return notice;
-    };
-    const zoned = noticeFor(SAMPLE['rooms.zoned'](1));
-    const escape = noticeFor(SAMPLE['incidents.escape-attempt-opened'](2));
-    const relocated = noticeFor(SAMPLE['prisoners.relocated'](3));
+  it('sends the acknowledgement to the log alone and every other event to both surfaces (#966)', () => {
+    const LOG_ONLY = new Set<SimulationEvent['type']>(['rooms.zoned']);
 
-    expect(zoned.severity, 'the acknowledgement is the least severe thing this channel can say').toBe('info');
+    for (const type of SIMULATION_EVENT_TYPES) {
+      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
+      if (LOG_ONLY.has(type)) {
+        /*
+         * **`undefined`, and `toBeUndefined` is what separates the two wrong
+         * answers.** A notice would put the sentence back on the band, which is
+         * the ruling reversed. `'none'` would be worse than the band ever was:
+         * it means *there is no event*, and `src/main.ts` deletes
+         * `HudViewModel.event` on it -- so designating a room would **empty**
+         * the band and delete an escape-attempt sentence outright, rather than
+         * merely displacing it. `undefined` is *this message says nothing about
+         * the band*, and the field is left exactly as it was. Both wrong
+         * answers fail this one assertion.
+         */
+        expect(notice, `${type} is log-only and must not reach the band`).toBeUndefined();
+      } else {
+        expect(notice, `${type} must still reach the band`).not.toBeUndefined();
+        expect(notice, `${type} must not empty the band`).not.toBe('none');
+      }
+      // Either way it is in the log. The routing decides one surface, never
+      // both, and an event that reached neither would be a silent event --
+      // which is the defect the acknowledgement census (#960, #966) is about.
+      expect(loggedRow(SAMPLE[type](1)).labelKey, `${type} must be in the log whatever the band does`).toBe(
+        `hud.alert.event.${type}`,
+      );
+    }
+  });
 
-    // Bad news on the line, the acknowledgement arriving well inside the floor:
-    // it must not paint, and it waits instead.
-    const showing = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, escape, 0);
-    const arriving = admitToEventBand(showing.state, zoned, 100);
-    expect(arriving.paint, 'the escape sentence keeps the line').toBe(escape);
-    expect(arriving.state.waiting, 'and the acknowledgement waits rather than being dropped').toBe(zoned);
+  /**
+   * **The grade, pinned where the grade still bites: the list's cap** (issue
+   * #966 site 2, the owner's ruling of 2026-09-05).
+   *
+   * **This case replaces one that pinned the grade on the band, and the reason
+   * it is replaced rather than kept is the whole of the ruling.** That case
+   * asserted that a `'warning'` acknowledgement would take the line from
+   * `prisoners.relocated` and `admitToEventBand` would discard it. Every word
+   * of it was a true description of `admitToEventBand` and none of it is a
+   * description of this member any more: an event that never reaches the band
+   * is never offered to that function, so the case would have passed for a
+   * reason that had stopped existing.
+   *
+   * What still reads the grade is `SEVERITY_EVICTION_ORDER` at the cap, and it
+   * is a claim a player can see: **a run of designations must give up its own
+   * confirmations before it gives up a warning.** The unpaid payday goes in
+   * first, so it is the oldest row in the list -- which is what makes the two
+   * grades separable. At `'info'` the designations are evicted and the payday
+   * survives; at `'warning'` they tie with it, the age rule breaks the tie, and
+   * the payday -- the oldest of the band -- is the row that goes.
+   *
+   * **Different room types on purpose.** `simulationEventIdentity` collapses
+   * repeats of one statement into a single counted row, and the payload here is
+   * the room type alone, so eight designations of a cell are one row and could
+   * never reach the cap. A player working through a prison designates a cell,
+   * a yard, a canteen -- that is the run this measures, and it is the only
+   * shape in which an acknowledgement can crowd the list at all.
+   */
+  it('gives up its own confirmations before it gives up a warning (#966)', () => {
+    // Real catalogue keys, and more of them than the cap, so the list is
+    // genuinely over budget rather than exactly at it.
+    const ROOM_NAME_KEYS = [
+      'room.cell.name',
+      'room.yard.name',
+      'room.canteen.name',
+      'room.kitchen.name',
+      'room.holding-cell.name',
+      'room.shower-room.name',
+      'room.laundry.name',
+      'room.infirmary.name',
+      'room.classroom.name',
+      'room.common-room.name',
+      'room.storage-room.name',
+      'room.staff-room.name',
+    ] as const;
+    expect(ROOM_NAME_KEYS.length, 'the run has to overflow the cap for the cap to choose anything').toBeGreaterThan(
+      MAX_EVENT_ALERT_ROWS,
+    );
 
-    /*
-     * **The incumbent a wrong grade would actually destroy, measured rather
-     * than assumed.** Regrading this `'warning'` and re-running the two
-     * assertions above changes nothing: `outranks` is strict, so a `'warning'`
-     * still loses to the escape's `'danger'`. What it changes is this case --
-     * with a `'warning'` grade the acknowledgement takes the line from an
-     * `'info'` incumbent and `admitToEventBand` **discards** it, so
-     * designating a room would delete *"{name} had nowhere to sleep and moved
-     * to {room}."*, a sentence naming a person that ADR 0076 exists to stop
-     * being silent. Both directions were measured on 2026-09-04 and this is
-     * the assertion that pins the property rather than the label: with the
-     * severity assertion above removed, the grade mutation still fails here.
-     */
-    const housed = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, relocated, 0);
-    const overHoused = admitToEventBand(housed.state, zoned, 100);
-    expect(overHoused.paint, 'an acknowledgement never takes the line from another info row').toBe(relocated);
-    expect(overHoused.state.waiting, 'it waits behind it instead').toBe(zoned);
+    let rows: readonly HudAlertViewModel[] = [];
+    rows = hudEventAlertsFromWorkerMessage(publication(SAMPLE['economy.wages-unpaid'](1)), rows) ?? rows;
+    ROOM_NAME_KEYS.forEach((roomNameKey, index) => {
+      rows =
+        hudEventAlertsFromWorkerMessage(
+          publication({ sequence: index + 2, tick: 100 + index, type: 'rooms.zoned', roomNameKey }),
+          rows,
+        ) ?? rows;
+    });
 
-    // And the other direction: bad news arriving over an acknowledgement takes
-    // the line at once, which is what makes the wait above safe.
-    const acknowledged = admitToEventBand(EMPTY_EVENT_BAND_DWELL_STATE, zoned, 0);
-    const interrupted = admitToEventBand(acknowledged.state, escape, 100);
-    expect(interrupted.paint, 'bad news never waits behind an acknowledgement').toBe(escape);
+    expect(rows.length, 'the cap still holds').toBe(MAX_EVENT_ALERT_ROWS);
+
+    // The payday is the oldest row in the list and it is still there. This is
+    // the assertion a `'warning'` acknowledgement fails.
+    const payday = rows.find((row) => row.id === 'event-1');
+    expect(payday, 'the unpaid payday outlives a dozen designations that arrived after it').toBeDefined();
+    expect(payday?.severity, 'and it is there as the warning it is').toBe('warning');
+
+    // And what went are the oldest designations, so the age rule still governs
+    // inside the band the acknowledgement belongs to.
+    const survivors = rows.map((row) => row.id);
+    expect(survivors, 'the oldest designation is the one sacrificed').not.toContain('event-2');
+    expect(survivors.at(-1), 'the newest row is always kept').toBe(`event-${String(ROOM_NAME_KEYS.length + 1)}`);
+    expect(survivors[0], 'and position is preserved: the payday arrived first and is still drawn first').toBe(
+      'event-1',
+    );
   });
 
   it('carries a severity that says whether anything is wrong, which is the whole point of #507', () => {
