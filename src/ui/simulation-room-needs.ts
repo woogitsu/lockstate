@@ -1,5 +1,10 @@
 import type { RoomDetailViewModel, RoomListViewModel } from '../simulation/presentation/room-projection';
-import { ROOM_NEEDS_ROOMS_LIMIT, type HudRoomNeedViewModel, type HudRoomNeedsViewModel } from './hud';
+import {
+  ROOM_NEEDS_ROOMS_LIMIT,
+  type HudRoomAtCapacityViewModel,
+  type HudRoomNeedViewModel,
+  type HudRoomNeedsViewModel,
+} from './hud';
 import {
   SimulationProjectionRequester,
   type ProjectionMessageChannel,
@@ -225,6 +230,73 @@ function missingQuantityOf(
   return missing > 0 ? { missingQuantity: missing } : {};
 }
 
+/**
+ * The room's ceiling that is fully claimed, or nothing (ADR 0028 phase 5).
+ *
+ * **The first one in the row's own order, and no priority is invented.**
+ * `RoomListRowViewModel.concurrentUse` is ascending by capability, which is
+ * `RoomInstance.objectCapabilities`' order, which is state-derived and
+ * canonical (`docs/DETERMINISM.md`) -- so two full ceilings in one room resolve
+ * the same way on every run and on every machine. Ranking them would need a
+ * rule about which use of a room matters more, and there is no such rule
+ * anywhere in this tree to read: the actions that consume these capabilities
+ * carry need weights, not room weights, and inventing one here would be this
+ * layer deciding something the simulation has not.
+ *
+ * `capacity > 0` is not redundant beside `inUse >= capacity`. A capability with
+ * a ceiling of zero is a room that cannot be used for that thing at all -- an
+ * unresolved fixture instance, or a capability the objects no longer supply --
+ * and `0 >= 0` would report it as full, which is the opposite of what it is.
+ * Nobody is standing in it: `claimUse` cannot take a claim against a ceiling of
+ * zero, so `inUse` there is zero too, and "full" would be a sentence about an
+ * empty room.
+ */
+function fullestUseOf(
+  row: RoomListViewModel['rooms']['rows'][number],
+): { readonly capacity: number; readonly inUse: number } | undefined {
+  for (const use of row.concurrentUse) {
+    if (use.capacity > 0 && use.inUse >= use.capacity) return use;
+  }
+  return undefined;
+}
+
+/**
+ * Every room in the list that cannot take another user right now.
+ *
+ * Read off the **list** reply, which `RoomNeedsReader.read` already fetches, so
+ * this costs no extra message however many rooms are full -- unlike `needs`,
+ * which needs one detail projection per room named. That is why this one is
+ * complete over the page and that one is not.
+ *
+ * A row whose `roomNameKey` the catalogue does not define is skipped, for
+ * `roomNeedsFromProjections`' own recorded reason: there is no name for the
+ * line to print and this layer may not invent one. Unreachable with the
+ * shipped catalogues, because `collectRoomInstances` enumerates *by* catalogue
+ * id.
+ *
+ * The order is `rows`' own, which the projection publishes ascending by
+ * instance id. Nothing re-sorts it: `unfinishedRoomIds` sorts because it has a
+ * cheapness gradient to sort on -- the room nearest to finished is the one
+ * worth naming -- and full rooms have no such gradient. Every one of them is
+ * refusing arrivals equally.
+ */
+function atCapacityFrom(list: RoomListViewModel): readonly HudRoomAtCapacityViewModel[] {
+  const full: HudRoomAtCapacityViewModel[] = [];
+  for (const row of list.rooms.rows) {
+    if (row.roomNameKey === undefined) continue;
+    const use = fullestUseOf(row);
+    if (use === undefined) continue;
+    full.push({
+      instanceId: row.instanceId,
+      roomLabelKey: row.roomNameKey,
+      tile: { x: row.anchorTile.x, y: row.anchorTile.y },
+      places: use.capacity,
+      inUse: use.inUse,
+    });
+  }
+  return full;
+}
+
 export function roomNeedsFromProjections(
   list: RoomListViewModel,
   details: readonly RoomDetailViewModel[],
@@ -303,7 +375,7 @@ export function roomNeedsFromProjections(
     }
   }
 
-  return { unfinishedRooms, totalRooms: list.totals.instances, totalNeeds, needs };
+  return { unfinishedRooms, totalRooms: list.totals.instances, totalNeeds, needs, atCapacity: atCapacityFrom(list) };
 }
 
 export class RoomNeedsReader {

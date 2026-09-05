@@ -1139,6 +1139,22 @@ decision about what to build next.
     landed. The other two are changes to what the projection publishes, not to
     what the panel asks for.
 
+    **Two corrections to the paragraph above, 2026-09-05, and it is kept
+    because its list is what the phase is measured against.** First, the list
+    is short by one item: phase 5 also owes the **concurrent-use** figure, which
+    ADR 0028's phase 5 section names in the same breath and which
+    `room-projection.ts` recorded against itself as *"not projected at all
+    yet"*. That one has now landed — `RoomListRowViewModel.concurrentUse`
+    publishes one ceiling per capability with `useOccupancyOf`'s live count
+    against each, and the Rooms panel reads the full rooms out under an "At
+    capacity" header (#997, #1003). Second, *"`RoomOccupancyViewModel` still
+    cannot express"* over-capacity does not follow from the clamping it cites:
+    `current` and `capacity` are both published raw, so `current > capacity` is
+    derivable by any reader, and only `free` and `utilization` clamp. The gap
+    is a **surface**, not a field — which changes who owes it. So of the four
+    items, two have landed (the surface, the concurrent-use figure) and two have
+    not (the room-level verdict, an over-capacity readout).
+
     The per-requirement quantity is now *evaluated* but still not *read out*,
     and the sentence that stood here denied both halves — it read *"The
     per-requirement quantity above is unchanged too: the readout says a cell

@@ -989,6 +989,15 @@ export interface RoomsProbe {
   readonly enclosureLaidOut: boolean;
   /** `data-needs` on the panel: the total the readout was told about, or empty when it has no box. */
   readonly panelNeeds: string;
+  /**
+   * `data-full` on the panel: how many rooms are at a concurrent-use ceiling
+   * (ADR 0028 phase 5).
+   *
+   * A second attribute rather than a second value of `panelNeeds`, because
+   * `hud.css` donates the catalogue's floor on either and a spec has to be able
+   * to tell which subject bought the donation.
+   */
+  readonly panelFull: string;
   readonly armLaidOut: boolean;
   readonly removeLaidOut: boolean;
   readonly confirmLaidOut: boolean;
@@ -1047,6 +1056,18 @@ export interface RoomsProbe {
    * only assertion worth making about a state that is supposed to have no box.
    */
   readonly needsLaidOut: boolean;
+  /**
+   * The block's header eyebrow, which is the only thing that says *which*
+   * subject it is drawing (ADR 0028 phase 5).
+   *
+   * The block has two: rooms the player has not finished building, and rooms
+   * that are finished and cannot take another user. They share the box, the
+   * room line and the item list, so a spec that read only the lines could not
+   * tell a full room from an unfinished one.
+   */
+  readonly needsLabelText: string;
+  /** `data-full` on the block: how many rooms are at a ceiling, when that is the subject. */
+  readonly needsFull: string;
   /** `data-unfinished`: how many rooms the simulation called unfinished, as a number rather than as prose. */
   readonly needsUnfinished: string;
   /** `data-needs`: how many unmet requirements those rooms have between them. */

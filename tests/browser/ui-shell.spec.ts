@@ -4500,6 +4500,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 0,
         totalRooms: 4,
         totalNeeds: 0,
+        atCapacity: [],
         needs: [],
       }),
     );
@@ -4516,6 +4517,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 4,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4559,6 +4561,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 2,
         totalRooms: 4,
         totalNeeds: 5,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4627,6 +4630,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4650,6 +4654,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 1,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           { kind: 'object', instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 }, missingQuantity: 1 },
         ],
@@ -4679,6 +4684,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 3,
         totalNeeds: 1,
+        atCapacity: [],
         needs: [
           {
             kind: 'doorway',
@@ -4711,6 +4717,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 1,
         totalRooms: 3,
         totalNeeds: 2,
+        atCapacity: [],
         needs: [
           { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
           {
@@ -4752,13 +4759,125 @@ test.describe('the Rooms panel', () => {
     // The item lines go with it: they are rebuilt from the model on every paint,
     // so a stale one left behind would be a readout describing a finished room.
     await page.evaluate(() =>
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     const cleared = await probe();
     expect(cleared.needsLaidOut).toBe(false);
     expect(cleared.needsLineText).toBe('');
     expect(cleared.needsItemText).toEqual([]);
     expect(cleared.needsUnfinished).toBe('');
+  });
+
+  test('says when a finished room is full, and says it in the same block (ADR 0028 phase 5)', async ({ page }) => {
+    // The other thing a room can be wrong about, and the one no readout could
+    // say before: it holds every object its definition asks for and it is
+    // refusing arrivals, because the concurrent-use ceiling ADR 0028 derives
+    // from those objects has been reached. Issue #1003 measured it on a shower
+    // room -- two heads is a ceiling of two, whatever the floor area.
+    //
+    // The verdict is `projectRoomList`'s, carried by
+    // `HudRoomNeedsViewModel.atCapacity`; what is proven here is the panel's
+    // half, which is which subject the one block draws and what it then says.
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    const FULL_SHOWER = {
+      instanceId: 'room.shower-room:4:6',
+      roomLabelKey: 'room.shower-room.name',
+      tile: { x: 4, y: 6 },
+      places: 2,
+      inUse: 2,
+    } as const;
+
+    // 1. Every room finished, one of them full. The block that would otherwise
+    // be absent draws its second subject.
+    await page.evaluate(
+      (full) =>
+        window.lockstateUiHarness.reportRoomNeeds({
+          unfinishedRooms: 0,
+          totalRooms: 3,
+          totalNeeds: 0,
+          needs: [],
+          atCapacity: [full],
+        }),
+      FULL_SHOWER,
+    );
+    const full = await probe();
+    expect(full.needsLaidOut, 'a room turning prisoners away must earn the block').toBe(true);
+    expect(full.needsLabelText).toBe('At capacity');
+    expect(full.needsCountText).toBe('1 of 3');
+    expect(full.needsLineText).toBe('Shower Room at 4, 6 is full');
+    expect(full.needsItemText).toEqual(['places in use: 2 of 2']);
+    // Read as data as well as as text, so telling this line from `1 × Bed`
+    // does not depend on the English locale.
+    expect(full.needsItemKinds).toEqual(['at-capacity']);
+    expect(full.needsFull).toBe('1');
+    // The unfinished subject's own figures must be absent rather than zero: a
+    // finished room may not be counted as unfinished anywhere.
+    expect(full.needsUnfinished).toBe('');
+    expect(full.needsTotal).toBe('');
+    // And the catalogue's floor is donated on this subject too, which is what
+    // keeps the block inside the panel's fold.
+    expect(full.panelFull).toBe('1');
+    expect(full.panelNeeds).toBe('');
+
+    // 2. One room unfinished as well. The block goes back to the unfinished
+    // subject, which is the priority `roomNeedsSubjectOf` documents and the
+    // cost it names: the shower room says nothing until the cell is finished.
+    await page.evaluate(
+      (full) =>
+        window.lockstateUiHarness.reportRoomNeeds({
+          unfinishedRooms: 1,
+          totalRooms: 3,
+          totalNeeds: 1,
+          needs: [
+            {
+              kind: 'object',
+              instanceId: 'room.cell:2:2',
+              roomLabelKey: 'room.cell.name',
+              tile: { x: 2, y: 2 },
+              objectLabelKey: 'object.bed.name',
+              missingQuantity: 1,
+            },
+          ],
+          atCapacity: [full],
+        }),
+      FULL_SHOWER,
+    );
+    const both = await probe();
+    expect(both.needsLabelText).toBe('Not ready');
+    expect(both.needsLineText).toBe('Cell at 2, 2 is missing');
+    expect(both.needsItemKinds).toEqual(['object']);
+    expect(both.needsFull, 'the two subjects must not be drawn together').toBe('');
+    expect(both.panelFull).toBe('');
+    expect(both.panelNeeds).toBe('1');
+
+    /*
+     * The layout claim, measured rather than argued: the at-capacity shape is a
+     * header, a room line and **one** item line, so it can never cost the panel
+     * more than the unfinished shape, which reaches three item lines. That is
+     * the whole of why `hud.css`'s donation rule could take a second attribute
+     * without the fold moving, and `roomNeedsSubjectOf` is what keeps the two
+     * from being added together.
+     */
+    expect(full.needsHeight).toBeLessThanOrEqual(both.needsHeight);
+    expect(full.needsHeight, 'the block drew nothing at all, so this comparison is empty').toBeGreaterThan(0);
+
+    // 3. Nothing unfinished and nothing full: the block goes away entirely,
+    // and takes the header it was last drawing with it.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 0,
+        totalRooms: 3,
+        totalNeeds: 0,
+        needs: [],
+        atCapacity: [],
+      }),
+    );
+    const calm = await probe();
+    expect(calm.needsLaidOut).toBe(false);
+    expect(calm.needsItemText).toEqual([]);
+    expect(calm.needsFull).toBe('');
+    expect(calm.panelFull).toBe('');
+    expect(await page.locator('.hud-rooms').innerText()).not.toContain('At capacity');
   });
 
   test('says on the status strip that a room is not ready, on the tab the game opens on (#1006 finding 1)', async ({
@@ -4792,7 +4911,7 @@ test.describe('the Rooms panel', () => {
     await page.evaluate(() =>
       // `totalRooms` matches the strip's own room count in this fixture (61),
       // so the two readouts describe one prison rather than two.
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 61, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 61, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     await expect(badge).toHaveCount(0);
 
@@ -4809,6 +4928,7 @@ test.describe('the Rooms panel', () => {
         needs: [
           { kind: 'doorway', instanceId: 'room.cell:12:4', roomLabelKey: 'room.cell.name', tile: { x: 12, y: 4 } },
         ],
+        atCapacity: [],
       }),
     );
     await expect(badge).toHaveCount(1);
@@ -4943,6 +5063,7 @@ test.describe('the Rooms panel', () => {
         unfinishedRooms: 2,
         totalRooms: 2,
         totalNeeds: 4,
+        atCapacity: [],
         needs: [
           {
             kind: 'object',
@@ -4962,7 +5083,7 @@ test.describe('the Rooms panel', () => {
     // A prison with nothing missing draws no readout, so it must donate
     // nothing either -- the catalogue's row comes back with the last cell.
     await page.evaluate(() =>
-      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [] }),
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 2, totalNeeds: 0, needs: [], atCapacity: [] }),
     );
     expect((await probe()).panelNeeds, 'a finished prison still spends the catalogue floor').toBe('');
   });

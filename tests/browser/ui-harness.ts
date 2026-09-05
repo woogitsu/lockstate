@@ -1965,6 +1965,7 @@ window.lockstateUiHarness = {
         document.querySelector<HTMLElement>('.hud-rooms__enclosure-value')?.textContent?.trim() ?? '',
       enclosureLaidOut: laidOut('.hud-rooms__enclosure'),
       panelNeeds: panel?.dataset['needs'] ?? '',
+      panelFull: panel?.dataset['full'] ?? '',
       // Laid out, not merely present: `paintActions` uses `hidden`, so a control
       // that is not showing must have no box at all and be out of the tab order.
       armLaidOut: laidOut('.hud-rooms__arm'),
@@ -2009,6 +2010,9 @@ window.lockstateUiHarness = {
         return body !== null && body.getClientRects().length > 0;
       })(),
       needsLaidOut: laidOut('.hud-rooms__needs'),
+      needsLabelText:
+        document.querySelector<HTMLElement>('.hud-rooms__needs-label')?.textContent?.trim() ?? '',
+      needsFull: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['full'] ?? '',
       needsUnfinished: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['unfinished'] ?? '',
       needsTotal: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['needs'] ?? '',
       needsCountText:

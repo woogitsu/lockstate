@@ -244,10 +244,18 @@ describe('blocked deploy announcement contract', () => {
       `\`staging-blocked\` in ${DEPLOY} now asks for a hosted runner. \`ubuntu-latest\` has never worked in this repository -- version.yml's header measures run 32727713492 failing after four seconds with no step recorded -- so this job would fail to start rather than report anything, and its message would be lost.`,
     ).not.toContain('ubuntu-latest');
 
+    // The `woogitsu` label was appended on 2026-09-05, when the owner moved
+    // this repository into the `woogitsu` organisation and pointed every
+    // self-hosted job at that organisation's shared WSL2 pool
+    // (`woogitsu-wsl-DOM-NEW-01` through `-04`). It selects the pool; the
+    // assertion above about `ubuntu-latest` is untouched and still holds. The
+    // same string is pinned in tests/foundation/ci-configuration-contract.test.ts,
+    // and both had to move in the same commit -- a substring assertion left on
+    // the old label reports the migration as a defect.
     expect(
       body,
       `\`staging-blocked\` in ${DEPLOY} no longer runs on the self-hosted runner every working job in this repository uses.`,
-    ).toContain('runs-on: [self-hosted, Linux, X64, wsl2]');
+    ).toContain('runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]');
   });
 
   it('cannot be cancelled by a later deploy joining the concurrency group', async () => {

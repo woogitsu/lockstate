@@ -180,7 +180,7 @@ jobs:
     if: >-
       github.event.head_commit.author.name != 'github-actions[bot]'
       && !startsWith(github.event.head_commit.message, 'chore(release): v')
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
     timeout-minutes: 10
     steps:
       - name: Checkout
