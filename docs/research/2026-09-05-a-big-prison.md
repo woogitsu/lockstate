@@ -149,3 +149,69 @@ about 40%, at which a tile is 26 px. That is workable, and the four keypresses
 are not signposted anywhere: `hud.build.arm-hint` names the arrow keys for
 panning and nothing on screen names `-` or `+`.
 
+## 2. With the whole prison on screen, the HUD stands on 122 tiles of it — and a press there submits nothing at all
+
+**MEASURED, act 0c.** Zoomed out four notches so the plot fits, the laid-out HUD
+boxes at 1440×900 are, verbatim:
+
+```
+[act0c] laid-out HUD boxes: ["hud-strip: 0,0 1440x78","hud__refusal: 0,78 1440x32",
+  "hud__corner: 0,406 422x425","hud__rail: 1152,110 288x720","hud__aside: 1152,110 288x180",
+  "save-panel: 1164,176 264x114","hud__side: 1152,299 288x532",
+  "ui-panel hud-build: 1164,311 264x508","hud__tabs: 502,831 435x69"]
+```
+
+and the measured transform is `origin (300.65, 31.20)`, `pitch 26.2256`
+(`zoom 0.40977`, against the arithmetic `1/1.25⁴ = 0.4096` — the instrument
+bisects two column boundaries 30 tiles apart rather than assuming it).
+
+**MEASURED, act 0c**, `document.elementFromPoint` at every one of the 1,024 tile
+centres, with the Overview tab open (`'.'` pressable, `'#'` covered):
+
+```
+00 ################################
+01 ################################
+02 ................................
+…
+14 ................................
+15 ####............................
+…
+29 ####............................
+30 ........################........
+31 ........################........
+```
+
+**122 of 1,024 tile centres cannot be pressed at all** — 64 in the top two rows
+under `.hud-strip`, 60 in a 4×15 block at the lower left under `.hud__corner`,
+and 32 in the bottom two rows under `.hud__tabs`. Every one of them is *drawn*:
+the world is visible under all three.
+
+**Two things this measurement corrects.** `.hud__refusal` is laid out across the
+full width at `0,78 1440x32` and covers row 2's tile centres geometrically — and
+row 2 reads pressable, so that band does not take pointer events. And
+`.hud__rail`, the widest panel on screen, starts at x=1152 while the plot's
+right edge is at x≈1140, so **the rail costs the player no plot at all** at this
+viewport. The two that do cost plot are the strip and the corner.
+
+**REASONED, and it is the reason this record's prison is shaped as it is.** A
+press on a covered point produces no command whatever — act 0b measured exactly
+that and it looked like a broken game rather than a covered button:
+
+```
+  [wall] shower north: 0 command(s)
+  [wall] shower west: 0 command(s)
+  [wall] shower east: 0 command(s)
+  [wall] shower south-west: 1 command(s)
+```
+
+Three of the five wall runs of a room at plot rows 1–3 submitted nothing,
+because their gesture line ran under `.hud-strip`. The two that did submit were
+the two below it. Nothing on screen said so; the refusal band still read
+`"Nothing was removed — there is no object on that tile, and none being built
+there."`, left over from the previous gesture.
+
+**JUDGEMENT.** A player building at the top or lower-left of their own plot,
+zoomed out to see it, will drag a wall and get *nothing* — no wall, no refusal,
+no sound. They will conclude the build tool is broken. The fix a player finds is
+to pan, and nothing tells them to.
+
