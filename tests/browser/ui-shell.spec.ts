@@ -6,6 +6,7 @@ import type {
   HudRegimeViewModel,
   HudViewModel,
 } from '../../src/ui/hud';
+import { EVENT_BAND_DWELL_FLOOR_MS, EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 import { MAX_ROOM_SIDE_TILES } from '../../src/ui/hud/rooms-panel';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
@@ -1148,6 +1149,147 @@ test.describe('HUD shell', () => {
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('false');
     expect(await page.locator('.hud-minimap .ui-section__header').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  /**
+   * **The events band gives its grid row back once nothing has replaced its
+   * sentence ([#985](https://github.com/matmaxalez/lockstate/issues/985)).**
+   *
+   * `.hud__event` is `grid-area: event` on `.hud`, whose rows are
+   * `auto auto auto auto minmax(0, 1fr) auto` -- the fourth is this band's, the
+   * fifth is the middle where the rail lives. `hud.css` gives the band
+   * `display: none` while `[hidden]`, so the row is worth exactly zero until
+   * something raises it and exactly 32px afterwards, and every one of those
+   * pixels comes out of the middle row.
+   *
+   * Until 2026-09-05 nothing ever put them back: `event-band-dwell.ts` replaced
+   * an incumbent and never released one, so a single event cost the rail 32px
+   * for the rest of the session. This is the assertion that it now lets go, and
+   * it is here rather than in a unit test because **`hud.ts` is unreachable from
+   * `pnpm test`** -- `vitest.config.ts` is `environment: 'node'` with no jsdom,
+   * and the timer, the paint and the grid are all DOM. Measured directly: a
+   * mutation of `hud.ts`'s timer callback back to `releaseEventBandFloor`, which
+   * is what it called before this change, passes all nineteen cases in
+   * `tests/unit/event-band-dwell.test.ts` and fails here.
+   *
+   * **What this layer does not measure**, stated so nobody reads more into it:
+   * what the 32px is worth to a *panel*. The harness leaves the rail's aside
+   * slot empty and `.hud__aside:empty { display: none }` then hands the panel
+   * the whole rail, which is the same reason the Build and Rooms panels' fold
+   * measurements live in `app-shell.spec.ts`. The panel arithmetic -- 291px of
+   * body back from 267, the Build panel back inside its own fold -- is asserted
+   * there, on the assembled page, in *"a pending delivery is on the panel with
+   * the fold shut..."*.
+   *
+   * 900x600 because that is the viewport #985 is measured at, and the one where
+   * the 24px this row costs the rail's panel is more than the panel has.
+   */
+  test.describe('the events band lets go of its grid row (#985)', () => {
+    /** Which of `.hud`'s six rows is which, so the assertions read as the grid does. */
+    const EVENT_ROW = 3;
+    const MIDDLE_ROW = 4;
+
+    /** What `src/main.ts` publishes when the worker has recorded an event. */
+    const withEvent = (sequence: number): HudViewModel => ({
+      counts: {
+        prisoners: 0,
+        prisonerCapacity: 0,
+        occupiedPlaces: 0,
+        staff: 0,
+        rooms: 0,
+        prisonersCovered: 0,
+        prisonersUnderstaffed: 0,
+        prisonersUnguarded: 0,
+        prisonersHighRisk: 0,
+        activeIncidents: 0,
+        contrabandFound: 0,
+        treasuryMinorUnits: 0,
+        stateIncomeAccruedTodayMinorUnits: 0,
+      },
+      clock: { day: 1, tickOfDay: 0, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
+      alerts: [],
+      // The longest sentence the band can carry, which is the one
+      // `EVENT_BAND_HOLD_CEILING_MS` is derived from.
+      event: { sequence, labelKey: 'hud.alert.event.economy.construction-refused', severity: 'warning' },
+    });
+
+    /** `.hud`'s rows as numbers, in grid order. */
+    const rows = async (page: Page): Promise<readonly number[]> =>
+      page.evaluate(() => {
+        const hud = document.querySelector('.hud');
+        if (hud === null) throw new Error('the harness mounted no HUD');
+        return getComputedStyle(hud)
+          .gridTemplateRows.split(' ')
+          .map((row) => Math.round(Number.parseFloat(row) * 10) / 10);
+      });
+
+    test('takes 32px of the middle row while it speaks, and hands it back when it stops', async ({ page }) => {
+      await page.setViewportSize({ width: 900, height: 600 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      const band = page.locator('.hud__event');
+
+      // The page really laid out, before a single number below is trusted.
+      const before = await rows(page);
+      expect(before, '`.hud` is not the six-row grid this test is about').toHaveLength(6);
+      expect(before[EVENT_ROW], 'the band already had a row before anything raised it').toBe(0);
+      await expect(band).toBeHidden();
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
+
+      await expect(band, 'the event never reached the band at all').toBeVisible();
+      const raised = await rows(page);
+      expect(raised[EVENT_ROW], 'the band is on screen and costing the grid nothing, which cannot both be true').toBe(
+        32,
+      );
+      expect(
+        (raised[MIDDLE_ROW] ?? 0) + 32,
+        'the 32px did not come out of the middle row, so it came from somewhere this test cannot see',
+      ).toBe(before[MIDDLE_ROW]);
+
+      // The floor first: the band owes this sentence its dwell, so a ceiling
+      // that fired early would be the floor's defect wearing this fix's name.
+      // `EVENT_BAND_DWELL_FLOOR_MS` is read from the module rather than
+      // restated, so lowering the ceiling under the floor fails here as well as
+      // in the unit suite.
+      await page.waitForTimeout(EVENT_BAND_DWELL_FLOOR_MS);
+      await expect(band, 'the band dropped the sentence inside its own dwell floor').toBeVisible();
+
+      // And then it lets go. `toBeHidden` waits, so this is one-directional: a
+      // band still up after twice its ceiling is the defect, and a slow machine
+      // costs wall-clock time rather than a false red.
+      await expect(band, 'the band never let go of its row').toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
+
+      const after = await rows(page);
+      expect(after[EVENT_ROW], 'the band went quiet and kept its row, which is #985 exactly').toBe(0);
+      expect(after, 'the grid did not return to the shape it had before anything happened').toEqual(before);
+    });
+
+    test('does not raise the same sentence again when the view model republishes it', async ({ page }) => {
+      await page.setViewportSize({ width: 900, height: 600 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      const band = page.locator('.hud__event');
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
+      await expect(band).toBeVisible();
+      await expect(band).toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
+
+      // `HudViewModel.event` is sticky in `src/main.ts` -- the field stands on
+      // every message after the one that carried the event -- and the counts
+      // channel republishes up to twice a second. Four republications stand in
+      // for that here; without `EventBandDwellState.retired` the first of them
+      // puts the row straight back.
+      for (const _ of [1, 2, 3, 4]) {
+        await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
+      }
+      await expect(band, 'a republication of the same event raised the band again').toBeHidden();
+      expect((await rows(page))[EVENT_ROW]).toBe(0);
+
+      // A *new* event still speaks, which is what makes the assertion above a
+      // release rather than a band that has stopped working.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(2));
+      await expect(band, 'the band was retired rather than released: a newer event could not raise it').toBeVisible();
+      expect((await rows(page))[EVENT_ROW]).toBe(32);
+    });
   });
 
   /**

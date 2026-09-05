@@ -48,7 +48,7 @@ import { hudAlertDismissLabel, hudAlertRowLabel } from './alert-row-label';
 import {
   EMPTY_EVENT_BAND_DWELL_STATE,
   admitToEventBand,
-  releaseEventBandFloor,
+  advanceEventBand,
   type EventBandDwellDecision,
   type EventBandDwellState,
 } from './event-band-dwell';
@@ -1154,10 +1154,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `data-severity` attribute rather than by swapping class names, so the
    * band's identity in the DOM does not change under a player mid-sentence.
    *
-   * It does **not** auto-dismiss, for the reason the refusal band does not: a
+   * It did **not** auto-dismiss, for the reason the refusal band does not: a
    * message that clears itself on a timer is a race against how fast the
-   * player reads. It is replaced by the next event or emptied when the session
+   * player reads. It was replaced by the next event or emptied when the session
    * ends, and it is in the log either way.
+   *
+   * **That paragraph is past tense as of 2026-09-05 (#985), and it is left
+   * standing rather than rewritten because it is the decision that was
+   * reversed** (`docs/AGENT_WORKFLOW.md` section 4). Its last clause is why it
+   * could be: the sentence *is* in the log, and since ADR 0084's decisions 1 to
+   * 3 that log counts repeats, dates them and survives a reload. What the band
+   * does not say, and never said, is anything about the row it occupies -- and
+   * that row is `grid-area: event` on `.hud`, so a band held for the session
+   * costs the rail 32px and the panel in `.hud__side` 24px of it for the
+   * session too, measured on the assembled page at 900x600. So the band now
+   * lets go after `EVENT_BAND_HOLD_CEILING_MS`, which is derived from the
+   * longest sentence it can carry rather than chosen; that constant's docblock
+   * carries the measurement, the derivation and what the change costs a player
+   * on a phone.
    */
   const eventText = element('span', { className: 'hud-event__text' });
   const eventNotice = element('div', {
@@ -1241,9 +1255,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * a held all-clear would sit in `EventBandDwellState.waiting` until the next
    * event of any kind -- which is the defect running the other way round.
    *
+   * **It now serves a second deadline as well, and deliberately stays one
+   * timer**: the hold ceiling that gives the grid row back (#985). Which of the
+   * two a firing is for is `advanceEventBand`'s decision and not this
+   * function's -- the same division this module already keeps, where
+   * `event-band-dwell.ts` holds the arithmetic and this holds the paint.
+   *
    * Re-armed rather than left running, because every decision carries the wake
    * it needs from the state it produced, and a stale timer would release a
-   * sentence the band has since moved past.
+   * sentence the band has since moved past. That re-arming is also what makes
+   * the ceiling survive a busy channel: the counts publication rebuilds the view
+   * model up to twice a second, each rebuild repaints the same sentence through
+   * `admitToEventBand`'s ordinal guard, and each repaint asks for what is *left*
+   * of the hold rather than restarting it, because `shownAt` does not move.
    */
   function applyEventBandDecision(decision: EventBandDwellDecision): void {
     eventBandDwell = decision.state;
@@ -1255,7 +1279,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     if (decision.wakeInMs === undefined) return;
     eventBandFloorTimer = setTimeout(() => {
       eventBandFloorTimer = undefined;
-      applyEventBandDecision(releaseEventBandFloor(eventBandDwell, hudNowMs()));
+      applyEventBandDecision(advanceEventBand(eventBandDwell, hudNowMs()));
     }, decision.wakeInMs);
   }
 
