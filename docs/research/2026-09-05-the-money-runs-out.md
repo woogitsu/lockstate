@@ -688,6 +688,21 @@ about.
 | 14 | `-2,500` | 1,810 | 160 | `critical` | *(unchanged)* |
 | 15 | `-2,500` | **770** | 160 | `critical` | *(unchanged)* |
 | 16 | **`-2,230`** | **0** | 160 | `danger` | *"Deliveries have stopped…"* |
+| 17 | `-1,190` | 0 | 160 | `warning` | *"**60 left** before deliveries stop…"* |
+| 18 | `-150` | 0 | 160 | `warning` | *"1,100 left before deliveries stop…"* |
+| 19 | **`890`** | 0 | 160 | **none** | *(no badge, no tooltip — the chip goes silent again)* |
+
+```
+[act4] BACK IN CREDIT at tick 43632, 11212 ticks after the last dismissal
+[act4] END OF ACT 4 chip: {"text":"890 | FUNDS","tone":null,"title":null,…}
+```
+
+**So the answer to "can a player recover by playing well" is yes, and the cost
+is measurable: `11,212` ticks — `DAY_LENGTH_TICKS` is 2,400, so a little under
+five in-game days — from the last dismissal to a positive balance**, on a hole
+two paydays deep with fifty-six presses of a control behind a fold. Nothing was
+sold, nothing was borrowed, nothing was granted and nobody was released. The
+prison came back on its own income.
 
 **This is the finding.** The player has just taken the single most decisive
 action the interface offers — sacking twenty-eight people, fifty-six presses —
@@ -720,9 +735,36 @@ carry the same figure, which is the 09-04 record's diagnosis confirmed from the
 other direction: it is the changing amount that defeats coalescing, not the
 absence of the machinery.)
 
+**The ladder is as legible going up as coming down, once the arrears are
+gone.** From day 16 the balance climbs by the full `income − bill` — `−2,230`,
+then `−1,190` with the badge back to `warning` and reading `60 left`, which is
+the room to the *mature* rung of −1,250 (`roomCapacity` is 4, so this prison is
+no longer on the starter rung). Three tones down and three tones back up, all on
+the right thresholds.
+
 **And `unpaidWagesMinorUnits` is on no chip at all.** It is in the counts
 payload (measured, above) and reaches the player only through that once-a-day
 sentence.
+
+### One last thing, read at the moment the prison was solvent again
+
+```
+[act4] END OF ACT 4 counts: {…"treasuryMinorUnits":890,"unpaidWagesMinorUnits":0,…}
+[act4] END OF ACT 4 sentences: {…"band":"Payday went unpaid — your staff are owed 770."}
+```
+
+**The event band is still saying the payday went unpaid, at a balance of 890
+with the arrears at zero.** The band holds the last event it was given and the
+last unpaid payday was five in-game days earlier; nothing has happened on that
+channel since, because *paying the payroll in full fires no event at all* — `PayrollSystem`
+calls `recordUnpaidWages(this.unpaid, tick)` unconditionally
+(`src/simulation/economy/payroll.ts:338`) and that method returns without
+appending anything when the figure is below 1
+(`src/simulation/events/event-log.ts:473`:
+`if (!Number.isSafeInteger(unpaidWagesMinorUnits) || unpaidWagesMinorUnits < 1) return;`). This is the
+same shape as the stale refusal band `2026-09-04-can-this-prison-fail.md`
+finding 6 measured, on a different channel: **the recovery is the one thing in
+this whole sequence that the game never says out loud.**
 
 ---
 
