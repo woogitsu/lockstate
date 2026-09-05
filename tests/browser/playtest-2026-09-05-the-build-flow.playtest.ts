@@ -56,11 +56,11 @@ async function scrollBox(page: import('@playwright/test').Page, selector: string
 /** How many rows of a list are wholly inside the list's own window. */
 async function rowsWhollyVisible(page: import('@playwright/test').Page, listSelector: string, rowSelector: string) {
   return page.evaluate(
-    ([list, row]) => {
-      const box = document.querySelector<HTMLElement>(list);
+    (selectors: { readonly list: string; readonly row: string }) => {
+      const box = document.querySelector<HTMLElement>(selectors.list);
       if (box === null) return { total: 0, whole: 0, rowHeight: 0 };
       const rect = box.getBoundingClientRect();
-      const rows = [...box.querySelectorAll<HTMLElement>(row)].filter((r) => !r.hidden);
+      const rows = [...box.querySelectorAll<HTMLElement>(selectors.row)].filter((r) => !r.hidden);
       let whole = 0;
       for (const r of rows) {
         const rr = r.getBoundingClientRect();
@@ -68,18 +68,18 @@ async function rowsWhollyVisible(page: import('@playwright/test').Page, listSele
       }
       return { total: rows.length, whole, rowHeight: rows[0]?.getBoundingClientRect().height ?? 0 };
     },
-    [listSelector, rowSelector],
+    { list: listSelector, row: rowSelector },
   );
 }
 
 /** Guards every world press: a press on a HUD-covered point submits nothing at all. */
 async function assertCanvasAt(page: import('@playwright/test').Page, x: number, y: number, what: string) {
   const tag = await page.evaluate(
-    ([px, py]) => {
-      const node = document.elementFromPoint(px as number, py as number);
+    (point: { readonly x: number; readonly y: number }) => {
+      const node = document.elementFromPoint(point.x, point.y);
       return node === null ? 'NONE' : `${node.tagName.toLowerCase()}.${node.className.toString().split(' ')[0] ?? ''}`;
     },
-    [x, y],
+    { x, y },
   );
   if (!tag.startsWith('canvas')) throw new Error(`${what}: (${x},${y}) is over ${tag}, not canvas`);
   return tag;
@@ -853,4 +853,59 @@ test('act 9: when the wall appears', async ({ page }) => {
   const afterNudge = await hash();
   log(`[A9] clip before the camera nudge ${afterWait}, after ${afterNudge} — nudge changed it: ${afterWait !== afterNudge}`);
   await page.screenshot({ path: 'test-results/the-build-flow-A9-after-nudge.png', clip });
+});
+
+/**
+ * Act 10 — is there room on a catalogue row for a price?
+ *
+ * Measures what marks the selected row today, what the `Selected` badge takes,
+ * and how much of a 238px row the longest label leaves.
+ */
+test('act 10: what fits on a row', async ({ page }) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await tab(page, 'build').click();
+  await page.waitForTimeout(400);
+
+  const rows = await page.evaluate(() => {
+    const out: Record<string, unknown>[] = [];
+    for (const row of document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')) {
+      const label = row.querySelector<HTMLElement>('.ui-row__label');
+      const badge = row.querySelector<HTMLElement>('[class*=badge]');
+      const icon = row.querySelector<HTMLElement>('svg, [class*=icon]');
+      const r = row.getBoundingClientRect();
+      const lr = label?.getBoundingClientRect();
+      out.push({
+        id: row.dataset['buildable'],
+        selected: row.getAttribute('aria-checked'),
+        background: getComputedStyle(row).backgroundColor,
+        rowWidth: Math.round(r.width),
+        labelText: label?.textContent ?? '',
+        labelWidth: lr === undefined ? 0 : Math.round(lr.width),
+        labelScrollWidth: label?.scrollWidth ?? 0,
+        labelClipped: label === null ? null : label.scrollWidth > Math.ceil(label.getBoundingClientRect().width),
+        badgeText: badge?.textContent ?? null,
+        badgeWidth: badge === null ? 0 : Math.round(badge.getBoundingClientRect().width),
+        iconWidth: icon === null ? 0 : Math.round(icon.getBoundingClientRect().width),
+      });
+    }
+    return out;
+  });
+  for (const row of rows) log(`[A10] ${JSON.stringify(row)}`);
+
+  // The same question for the Rooms catalogue, which the flow also crosses.
+  await tab(page, 'rooms').click();
+  await page.waitForTimeout(300);
+  log(`[A10] rooms list ${JSON.stringify(await scrollBox(page, '.hud-rooms__list'))}`);
+  const roomRows = await rowsWhollyVisible(page, '.hud-rooms__list', '[data-room]');
+  log(`[A10] rooms rows ${JSON.stringify(roomRows)}`);
+  const roomIds = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('.hud-rooms__list [data-room]')].map((r) => r.dataset['room'] ?? '?'),
+  );
+  log(`[A10] ${roomIds.length} room rows: ${JSON.stringify(roomIds)}`);
+
+  // And the save panel, the third instance of the shape.
+  log(`[A10] save panel list ${JSON.stringify(await scrollBox(page, '.save-panel__list'))}`);
 });
