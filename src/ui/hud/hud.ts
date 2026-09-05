@@ -1172,6 +1172,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * longest sentence it can carry rather than chosen; that constant's docblock
    * carries the measurement, the derivation and what the change costs a player
    * on a phone.
+   *
+   * The reversal itself is a ruling rather than an implementation choice, and
+   * it is recorded where rulings are: **"Amendment, 2026-09-05: the band lets
+   * go of its grid row"** in
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).
+   * That amendment also records the owner's separate ruling on the phone cost
+   * -- it stands, and the deferred mobile layout pass is its repair.
    */
   const eventText = element('span', { className: 'hud-event__text' });
   const eventNotice = element('div', {
