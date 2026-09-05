@@ -94,8 +94,14 @@ that matches `*.playtest.ts`. A playtest is evidence, never a gate.
 | act | what it plays | result |
 | --- | --- | --- |
 | 0 | the reachable canvas at zoom 1, the keyboard zoom, and the size of the plot | `1 passed` |
-| 0b | the apparatus proved on one 3×3 room before 176 walls are spent on it | (filled in below) |
-| 1 | eight rooms, three cell blocks, 64 beds, 64 admissions, 10 guards, run past day boundaries | (filled in below) |
+| 0b | the apparatus, proved on one 3×3 room before 173 walls were spent on it | **failed, and the failure is §2**: three of five wall runs of a room at plot rows 1–3 submitted nothing, because their gesture line ran under `.hud-strip` |
+| 0c | where the HUD stands on the plot, tile by tile, and what a press past the plot's edge does | data complete for the Overview tab and the HUD box list (§2); **stopped by hand** before the other four tab maps, which cost ~5 min each and which the box rectangles already determine |
+| 1 | eight rooms, three cell blocks, 68 beds, 68 admissions, 10 guards, then eight day-long sampling rounds | `1 passed (14.8m)` |
+| 2 | one 4×4 cell, four beds and one toilet — the control for §10 | data complete; **failed on its last line**, a malformed `hud/room-detail` request (§10) |
+
+Acts 0b and 2 are reported as failures on purpose rather than deleted: each
+failed on a real property of the application (a HUD-covered gesture; a
+projection request the worker drops in silence), and both are findings.
 
 ---
 
