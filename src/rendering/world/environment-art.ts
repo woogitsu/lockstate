@@ -14,6 +14,41 @@ import type { EnvironmentSpriteId } from '../assets/environment-sprites';
  * The painter asks this module a question and draws what comes back, or draws
  * the coloured block `appearance.ts` describes when the answer is `undefined`.
  *
+ * **THAT SENTENCE IS TRUE OF TWO OF THE THREE TABLES BELOW AND FALSE OF THE
+ * THIRD, measured 2026-09-05 (#1020).** It is kept rather than rewritten
+ * because it is the property this module was designed for and the one the
+ * edges and the floors really have; what follows is where it stops.
+ *
+ * - `EDGE_ART_BY_NUMERIC_ID` -> `edgeArt` is read by the painter:
+ *   `tile-layer.ts:519`, inside `acquireEdgeSprite`.
+ * - `zonedFloorSprite` is read by the painter: `tile-layer.ts:314`.
+ * - **`SPRITE_BY_OBJECT_ID` -> `objectSprite` is read by NOTHING that draws.**
+ *   Its only caller in `src/` is `objectArtCoverage` immediately below it, and
+ *   that function's only caller anywhere is `tests/unit/environment-art.test.ts`.
+ *   The loop that draws objects is `tile-layer.ts:481-498`, and it calls
+ *   `structureAppearance` and `paintSlab` unconditionally -- it never asks this
+ *   module a question at all.
+ *
+ * **So for an object, a row here is necessary and not sufficient, and the
+ * coverage this module reports would be a claim about the screen that the
+ * screen does not honour.** Adding one row to `SPRITE_BY_OBJECT_ID` and
+ * striking the id from `OBJECTS_ON_COLOUR_FALLBACK` left the whole unit suite
+ * green -- 229 files, 3344 tests -- with the object still drawn as a
+ * slate-blue slab. `tests/unit/environment-art.test.ts`'s
+ * `describe('object art reaching the screen')` is the gate that now fails on
+ * exactly that mutation, and it is the reason this paragraph can be checked
+ * rather than believed.
+ *
+ * What the third table is still missing is not a row. It is a painter path,
+ * and writing one is a decision rather than content: an object is drawn today
+ * as a two-faced slab (`paintSlab`, a top face plus a side face rising
+ * `heightTiles`), a sprite is one flat frame, and which of those a bed is has
+ * no answer in any ADR. ADR-0052's "Open question left deliberately
+ * unresolved" is the nearest thing, and it leaves the object sheets to the
+ * owner on cost grounds. ADR-0052's own consequence *"Adding art for a new
+ * object is a row in a data module"* is the same overreach as the sentence
+ * above and is wrong in the same place.
+ *
  * Two properties are enforced rather than intended:
  *
  * - **A row naming art that does not exist fails `tsc`,** because every value
@@ -182,6 +217,14 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
 /**
  * Catalogued object id -> art. Empty in this slice, for the reason
  * `OBJECTS_ON_COLOUR_FALLBACK` gives.
+ *
+ * **And empty is load-bearing rather than merely unfinished, which the reason
+ * above does not say.** `OBJECTS_ON_COLOUR_FALLBACK` gives a download cost;
+ * the module docblock gives the other half. No painter reads `objectSprite`,
+ * so the first row added here buys nothing on screen and costs the truth of
+ * `objectArtCoverage()`. The row is the *last* step of drawing an object, not
+ * the first: the painter path comes before it. `tests/unit/environment-art.test.ts`
+ * fails, naming the object, if the order is reversed.
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {};
 
