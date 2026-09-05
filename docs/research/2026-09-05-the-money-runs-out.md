@@ -1,10 +1,10 @@
 # The money runs out — 2026-09-05
 
-**The verdict in one line: yes, a player can run out — an *earning* prison
-reaches the floor in three day boundaries and it is the third way in this
-repository has now measured — and the descent is well signposted from the
-moment the balance goes negative and completely silent for the whole 25,000
-before that.**
+**The verdict in one line: yes, a player can run out, and yes they can come back
+— an earning prison falls to the floor in three day boundaries and climbs out
+again in under five once the payroll is cut — but the game is silent for the
+whole 25,000 above zero, and silent again for the two days after the player
+fixes it.**
 
 ## Tree, version, and what was and was not touched
 
@@ -92,9 +92,13 @@ the arrears climb by exactly `bill − income` a day, `770 → 11,870` over nine
 boundaries (finding 6). The way out is real and is **dismissal** — three rows
 at a time behind a fold labelled `On the payroll`, two presses each, no refund
 and no severance (finding 7) — which is none of the three remedies ADR 0075
-accepted, because none of those three exists in `src/` (finding 5). And the one
-free lever that restores income at the floor, `Admit`, is never named by any
-sentence about money.
+accepted, because none of those three exists in `src/` (finding 5). **It works:
+twenty-eight guards sacked in fifty-six presses put the prison back in credit
+11,212 ticks later, under five in-game days, on its own income and nothing
+else — and for the first two of those days the funds chip does not change by a
+pixel** (finding 8), because the payroll takes the whole day's income to pay
+down arrears that appear on no chip at all. And the one free lever that restores
+income at the floor, `Admit`, is never named by any sentence about money.
 
 ---
 
@@ -944,6 +948,46 @@ the two halves stay together: the grouping is a formatter question, and the
 coalescing is the one the 09-04 record already diagnosed — *"an amount in the
 text is what defeats it"*, since the riot rows do coalesce (`4×`) and these
 cannot, each carrying a different number.
+
+### P6 — Put the arrears where the player can watch them fall
+
+**What it costs today (finding 8):** the single most decisive action in the
+game — dismissing twenty-eight people — moves nothing on screen for two in-game
+days. The recovery is entirely carried by `unpaidWagesMinorUnits`, which is
+**published in the counts payload and rendered on no chip**; its only appearance
+is the once-a-day alert row `Payday went unpaid — your staff are owed {total}`,
+which says *unpaid* while it is in fact the number going down. And when the
+arrears finally clear, nothing is said at all, because a payday met in full
+appends no event (`src/simulation/events/event-log.ts:473`).
+
+**What the player sees, and where.** The `FUNDS` chip's badge slot again —
+`overdraftBadge`'s `{remaining} left` is already a second number under the
+balance, and this is the same shape.
+
+**When.** While `unpaidWagesMinorUnits > 0`. That is not a threshold either: it
+is the field's own zero, and `PayrollSystem` maintains it
+(`payroll.ts:320`, `this.unpaid = due - paid`).
+
+**Instead of.** `{remaining} left` — the room-to-the-rung figure — **while
+arrears stand**, because at the floor that figure is pinned at `0` and says
+nothing, and arrears are the number that is actually moving. Below the rung with
+no arrears, `{remaining} left` is unchanged.
+
+**Proposed strings, with what makes each true:**
+
+- badge: `{total} owed` — `unpaidWagesMinorUnits`, the same figure the alert row
+  already renders, grouped like every other money value on the strip.
+- tooltip: `Your staff are owed {total}. Every day's income goes to that before
+  anything else.` — the second sentence is `StateIncomeSystem.order = 120`
+  followed by `PayrollSystem.order = 130` drawing to `floorFor('wages')`, which
+  is what finding 8 measures.
+
+**And one event that does not exist yet:** the payday that *is* met. ADR 0049
+made insolvency a state rather than a loss condition, and the events channel
+carries the moment it bit; nothing carries the moment it stopped. A single
+`economy.wages-settled` firing on the first boundary where `due > 0` and
+`this.unpaid` lands at `0` would be the sentence the recovery has never had.
+**This one is a code change and not only copy**, and it is named as such.
 
 ### P5 — Twenty-nine of thirty guards were being paid to do nothing, and the wire already knows it
 
