@@ -72,6 +72,7 @@ LOCKSTATE_BROWSER_TEST_PORT=5330 node node_modules/@playwright/test/cli.js test 
 | 8 | the FUNDS chip from 25,000 downward |
 | 9 | when, in seconds, a finished wall appears |
 | 10 | what fits on a catalogue row |
+| 11 | the two proposals' own risks, measured: a price badge on all 21 rows, and counts in the filter |
 
 A bare `playwright test <file>` finds no config and every navigation fails with
 *"Cannot navigate to invalid URL"*, which reads like a broken app.
@@ -570,12 +571,30 @@ rebuild. **This pass is read-only on `src/`: these are proposals, not changes.**
 placement price as a bare numeral — `Brick wall … 80`, `Bed … 65`, `Dining
 Table … 195` — in the same slot that today carries the word `Selected`.
 
-**Why it costs nothing.** MEASURED, act 10: every row is 238px, the icon is
-16px, an unselected row's label box is **198px**, and the `Selected` badge on
-the selected row takes **67px**, leaving 123px, in which `Brick wall` is
-`labelClipped: false`. **A two- or three-digit badge is strictly narrower than
-the 67px badge already shipping**, so the widest row this design has ever laid
-out is the one it already lays out. No new height, no new plumbing: VERIFIED,
+**Why it costs nothing, and this was measured rather than argued** (act 11).
+A real badge element was cloned onto **all twenty-one rows**, filled with each
+row's true price, at three widths. The result, at 1440×900, 1280×720 **and**
+375×812 alike:
+
+| | value |
+| --- | --- |
+| names clipped by the badge | **0 of 21**, at all three widths |
+| widest buildable name | `Loading Dock Door`, **123px of glyphs** |
+| its label box with the badge beside it | **152px** — **29px spare** |
+| price badge width | **31px** (two digits) / **38px** (three digits) |
+| the `Selected` badge it replaces | **67px** |
+| row height | **44px**, unchanged, at all three widths |
+| `.hud-build__list` box / content | 223/924, 88/924, 144/924 — **identical to before** |
+| `.hud-build` overflow | `clientHeight == scrollHeight` at all three — **none** |
+
+**The price badge is half the width of the badge already shipping**, the
+longest name in the catalogue keeps 29px of room, and no box in the panel moves
+by a pixel. The caveat that survives: 29px is roughly four more characters, so a
+future buildable with a longer name than `Loading Dock Door` would be the first
+to clip — which is a content bound worth pinning in a test, not a reason not to
+do this.
+
+No new height, no new plumbing: VERIFIED,
 read, `unitPriceMinorUnits × quantityPerPlacement` is on
 `HudBuildableViewModel.material` inside the very loop at `build-panel.ts:986`
 that builds the row, and MEASURED it equals what a placement debits (80, 65, 40,
@@ -649,13 +668,27 @@ option list from the rows themselves (`build-panel.ts:443`, and ADR 0035 decisio
 2 turns on that derivation), so it is already iterating exactly the set whose
 size this needs. No new data crosses any boundary.
 
-**The one measured risk, named.** `hud.css`'s own note on `.hud-build__category`
-says the control is `max-width: 50%` and that *"the eyebrow ellipsizes first …
-because the filter's own text **is** its value — a clipped option name would be a
-control that misreports its state"*. Appending four characters to the longest
-option (`Walls and doors (2)`) moves it closer to that clip at the 264px rail
-and at the 375px phone width. **That is the measurement this proposal owes and
-did not take**, and it is the thing that would sink it.
+**The risk this proposal owed, measured** (act 11). `hud.css`'s note on
+`.hud-build__category` says the control is `max-width: 50%` and that *"the
+eyebrow ellipsizes first … because the filter's own text **is** its value — a
+clipped option name would be a control that misreports its state"*. Every
+option's text was appended with its count on the live page and re-measured:
+
+| | 1440×900 | 1280×720 | 375×812 |
+| --- | --- | --- | --- |
+| the select's own value clipped? | **no** | **no** | **no** |
+| closed control reads | `Everything (21)` | `Everything (21)` | `Everything (21)` |
+| select box, before → after | 118 → **119** | 118 → **119** | 118 → **137** |
+| eyebrow box, before → after | 120 → **119** | 120 → **119** | 215 → **196** |
+| header row height | **44px**, unchanged | **44px** | **44px** |
+| `.hud-build__catalogue` box vs content | 275/275 | 140/140 | 196/196 |
+
+**The control never misreports its own state, no height is spent, and the
+eyebrow pays exactly 1px at both desktop widths** — which is the trade
+`hud.css` already describes, at a magnitude that is not a trade. At the phone
+width the eyebrow gives up 19px and its text still fits its box (180px of
+glyphs in 196px). *The one thing not measured is the eyebrow's own ellipsis at
+a narrower rail than 375px*, and that is the residual risk.
 
 **What it buys:** the arrival state stops lying by omission, at zero layout cost
 and without touching ADR 0035 decision 4's default.
@@ -772,9 +805,9 @@ and per `AGENTS.md` it is proposed rather than decided inside a playtest.
 | # | proposal | what it buys, measured | cost |
 | --- | --- | --- | --- |
 | 1 | **C — redraw on completion** | 11.0 s of dead screen removed from every build; the one visual payoff the verb has | one message and one `dirty = true`, in front of an architecture question |
-| 2 | **A — price on the row** | 21 prices, before the press, replacing 1 press that gives the wrong figure whenever two rows share a material | zero pixels; one CSS line copied from `hud.css:2527`; one accessible-name decision |
+| 2 | **A — price on the row** | 21 prices, before the press, replacing 1 press that gives the wrong figure whenever two rows share a material | zero pixels, measured on all 21 rows at three widths; one CSS line copied from `hud.css:2527`; one accessible-name decision |
 | 3 | **D — show the edge first** | 4 wrong presses and 320 prevented in the newcomer walk; #886 | another agent's surface (#892) |
-| 4 | **B — counts in the filter** | the arrival state stops hiding 701px silently | zero layout; one clip risk, unmeasured |
+| 4 | **B — counts in the filter** | the arrival state stops hiding 701px silently | zero layout, measured; 1px of eyebrow at desktop widths |
 | 5 | **E — total the room** | *what will this cost* answered at the one moment it is askable | conditional on the one-requirement property being pinned |
 | 6 | **F — the catalogue's container** | 5 of 21 rows becomes a number somebody has chosen | an ADR reversing three accepted trades |
 
@@ -825,21 +858,30 @@ player learning anything.
 
 ## The weakest claim in this record
 
-**That proposal A's badge is free.** The width arithmetic is measured — 67px for
-`Selected`, 123px of label left beside it, `Brick wall` not clipped — but
-`Brick wall` is one of the shorter labels, and the row this design would have to
-survive is `Loading Dock Door`, which was measured only *without* a badge
-beside it. Act 10 reports `labelScrollWidth: 198` for every unselected row,
-which is the flex box's width and not the text's, so **it does not establish
-that any long label fits in 123px**, and a clipped buildable name is a real cost
-against an unclipped price. What would change my mind: rendering the badge on
-every row at 264px and 375px and reading `labelClipped` per row — one act,
-not run.
-
-**Second weakest: finding 1's thirty seconds as a general figure.** What is
+**Finding 1's eleven seconds as a general figure.** What is
 measured is one run, at one camera position, with the pointer parked off the
 canvas so nothing forced a repaint. A player who pans, zooms or opens a panel
 mid-build gets their wall sooner, and this pass did not measure how often that
 happens in ordinary play. The *mechanism* is not in doubt — the dirty list is
 read and a construction completing is not on it — but the eleven seconds is a
-worst case a player can avoid by accident, not a floor.
+worst case a player can avoid by accident, not a floor. What would change my
+mind: the same act with ordinary camera motion mixed in, reporting how often a
+build finishes inside a window where something else has already forced a
+repaint.
+
+**Second weakest: that a player wants the price on the row at all.** Everything
+about *where* it goes and *what it costs* is measured; that a player would use
+it is JUDGEMENT, resting on the act 5 measurement that the only price available
+today takes one press and is wrong for any row sharing a material with the last
+row looked at, and on the act 4 measurement that a cell costs 1,385 of 25,000
+with no figure named beforehand. What would change my mind: a player who reads
+the catalogue and never looks at the money.
+
+**A note on what act 11 was before it measured anything.** Its first shape
+asked `scrollWidth > clientWidth` of `.ui-row__label` and reported *"0 of 21
+labels clipped"* both with and without the badge. That was not a result:
+`.ui-row__label` is a flex item that fills its line, so the comparison can never
+fire however long the name is. The act now measures the **text** with a `Range`
+over the label's contents, which is what produced the 123px figure above. It is
+recorded because a check that cannot fail is the shape §3 warns about and this
+one looked exactly like a green.

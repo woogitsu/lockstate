@@ -909,3 +909,168 @@ test('act 10: what fits on a row', async ({ page }) => {
   // And the save panel, the third instance of the shape.
   log(`[A10] save panel list ${JSON.stringify(await scrollBox(page, '.save-panel__list'))}`);
 });
+
+/**
+ * Act 11 — does a price badge on every row clip any buildable's name?
+ *
+ * This record's weakest claim is that proposal A's badge is free: the width
+ * arithmetic was taken from `Brick wall`, one of the shorter labels, beside the
+ * 67px `Selected` badge. This act settles it by cloning the real badge element
+ * onto every row, filling it with each row's true price, and reading
+ * `scrollWidth > clientWidth` on every label at three widths.
+ *
+ * It mutates the live DOM rather than `src/` -- this pass is read-only on
+ * `src/`, and a DOM mutation in a playtest measures the layout the proposal
+ * would produce without proposing it into the tree.
+ */
+test('act 11: does a price badge clip a name', async ({ page }) => {
+  await installTee(page);
+  const prices: Record<string, number> = {
+    'wall-brick': 80, 'door-wooden': 65, 'bed-wooden': 65, 'bench-wooden': 130,
+    'bookshelf-wooden': 130, 'chair-wooden': 65, 'desk-wooden': 130,
+    'dining-table-wooden': 195, 'fridge-brick': 40, 'prep-counter-brick': 80,
+    'stove-brick': 80, 'loading-dock-door-wooden': 195, 'utility-panel-brick': 40,
+    'washing-machine-brick': 80, 'waste-bin-brick': 40, 'medical-bed-wooden': 65,
+    'medicine-cabinet-wooden': 65, 'security-console-brick': 80,
+    'shower-head-brick': 40, 'toilet-brick': 40, 'storage-rack-wooden': 65,
+  };
+
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1280, height: 720 },
+    { width: 375, height: 812 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await tab(page, 'build').click();
+    await page.waitForTimeout(400);
+    const label = `${viewport.width}x${viewport.height}`;
+
+    // Baseline: what clips today, with only the one `Selected` badge.
+    const before = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')].map((row) => {
+        const l = row.querySelector<HTMLElement>('.ui-row__label');
+        const range = document.createRange();
+        if (l !== null) range.selectNodeContents(l);
+        return {
+          id: row.dataset['buildable'] ?? '?',
+          labelBox: l === null ? 0 : Math.round(l.getBoundingClientRect().width),
+          textWidth: l === null ? 0 : Math.round(range.getBoundingClientRect().width),
+        };
+      }),
+    );
+    log(`[A11 ${label}] BEFORE: ${before.filter((r) => r.textWidth > r.labelBox).length} of ${before.length} names clipped`);
+    log(`[A11 ${label}] BEFORE widest name: ${JSON.stringify([...before].sort((a, b) => b.textWidth - a.textWidth)[0])}`);
+
+    // Now put a price badge on every row, cloned from the real one so it
+    // carries the real class list, padding and font.
+    const after = await page.evaluate((table: Record<string, number>) => {
+      const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
+      const template = document.querySelector<HTMLElement>('.hud-build__list [data-buildable] [class*=badge]');
+      if (template === null) return { error: 'no badge to clone' } as const;
+      for (const row of rows) {
+        const existing = row.querySelector<HTMLElement>('[class*=badge]');
+        const badge = existing ?? (template.cloneNode(true) as HTMLElement);
+        const span = badge.querySelector<HTMLElement>('span') ?? badge;
+        span.textContent = String(table[row.dataset['buildable'] ?? ''] ?? 0);
+        if (existing === null) row.append(badge);
+      }
+      return {
+        rows: rows.map((row) => {
+          const l = row.querySelector<HTMLElement>('.ui-row__label');
+          const b = row.querySelector<HTMLElement>('[class*=badge]');
+          return {
+            id: row.dataset['buildable'] ?? '?',
+            text: l?.textContent ?? '',
+            clipped: l === null ? null : l.scrollWidth > l.clientWidth,
+            labelBox: l === null ? 0 : Math.round(l.getBoundingClientRect().width),
+            /*
+             * The width of the TEXT, not of the span. `.ui-row__label` is a
+             * flex item that fills the line, so `scrollWidth > clientWidth`
+             * can never fire on it however long the name is -- which is why
+             * the first shape of this act reported "0 of 21 clipped" and had
+             * measured nothing at all. A `Range` over the text node reports
+             * what the glyphs actually take.
+             */
+            textWidth: (() => {
+              if (l === null || l.firstChild === null) return 0;
+              const range = document.createRange();
+              range.selectNodeContents(l);
+              return Math.round(range.getBoundingClientRect().width);
+            })(),
+            badgeBox: b === null ? 0 : Math.round(b.getBoundingClientRect().width),
+            rowHeight: Math.round(row.getBoundingClientRect().height),
+          };
+        }),
+      } as const;
+    }, prices);
+    if ('error' in after) {
+      log(`[A11 ${label}] ${after.error}`);
+      continue;
+    }
+    const clipped = after.rows.filter((r) => r.textWidth > r.labelBox);
+    log(`[A11 ${label}] AFTER: ${clipped.length} of ${after.rows.length} names clipped by the price badge`);
+    const tightest = [...after.rows].sort((a, b) => a.labelBox - a.textWidth - (b.labelBox - b.textWidth))[0];
+    log(`[A11 ${label}] tightest row: ${JSON.stringify(tightest)}`);
+    log(`[A11 ${label}] AFTER row heights: ${JSON.stringify([...new Set(after.rows.map((r) => r.rowHeight))])}`);
+    log(`[A11 ${label}] AFTER badge widths: ${JSON.stringify([...new Set(after.rows.map((r) => r.badgeBox))])}`);
+    for (const row of after.rows) {
+      log(
+        `[A11 ${label}]   ${row.id.padEnd(26)} "${row.text}" text ${row.textWidth}px in a ${row.labelBox}px box` +
+          ` beside a ${row.badgeBox}px badge -> ${row.textWidth > row.labelBox ? 'CLIPPED' : 'fits'}` +
+          ` (${row.labelBox - row.textWidth}px spare)`,
+      );
+    }
+    // The panel must not have grown.
+    log(`[A11 ${label}] list after: ${JSON.stringify(await scrollBox(page, '.hud-build__list'))}`);
+    log(`[A11 ${label}] panel after: ${JSON.stringify(await scrollBox(page, '.hud-build'))}`);
+    await page.screenshot({ path: `test-results/the-build-flow-A11-${label}.png` });
+
+    /*
+     * The same question for proposal B: does appending a count to every
+     * category option clip the control's own value, or push the eyebrow out?
+     * `hud.css`'s note on `.hud-build__category` says the eyebrow ellipsizes
+     * first "because the filter's own text *is* its value -- a clipped option
+     * name would be a control that misreports its state", so the thing to
+     * measure is the SELECT, not the eyebrow.
+     */
+    const counts: Record<string, number> = {
+      '*': 21, structure: 2, furniture: 7, 'food-service': 4, utility: 5,
+      medical: 3, security: 2, sanitation: 3, storage: 1,
+    };
+    const filterBefore = await page.evaluate(() => {
+      const node = document.querySelector<HTMLSelectElement>('.hud-build__category');
+      const eyebrow = document.querySelector<HTMLElement>('.hud-build__catalogue .ui-section__header');
+      if (node === null) return null;
+      return {
+        selectBox: Math.round(node.getBoundingClientRect().width),
+        selectWanted: node.scrollWidth,
+        longestOption: [...node.options].map((o) => o.text).sort((a, b) => b.length - a.length)[0] ?? '',
+        eyebrowBox: eyebrow === null ? 0 : Math.round(eyebrow.getBoundingClientRect().width),
+        eyebrowClipped: eyebrow === null ? null : eyebrow.scrollWidth > eyebrow.clientWidth,
+        headerRowHeight: eyebrow === null ? 0 : Math.round(eyebrow.getBoundingClientRect().height),
+      };
+    });
+    log(`[A11 ${label}] filter BEFORE: ${JSON.stringify(filterBefore)}`);
+    const filterAfter = await page.evaluate((table: Record<string, number>) => {
+      const node = document.querySelector<HTMLSelectElement>('.hud-build__category');
+      const eyebrow = document.querySelector<HTMLElement>('.hud-build__catalogue .ui-section__header');
+      if (node === null) return null;
+      for (const option of [...node.options]) option.text = `${option.text} (${String(table[option.value] ?? 0)})`;
+      const range = document.createRange();
+      if (eyebrow !== null) range.selectNodeContents(eyebrow);
+      return {
+        closedText: node.options[node.selectedIndex]?.text ?? '',
+        selectBox: Math.round(node.getBoundingClientRect().width),
+        selectWanted: node.scrollWidth,
+        selectClipped: node.scrollWidth > node.clientWidth,
+        eyebrowBox: eyebrow === null ? 0 : Math.round(eyebrow.getBoundingClientRect().width),
+        eyebrowTextWidth: eyebrow === null ? 0 : Math.round(range.getBoundingClientRect().width),
+        headerRowHeight: eyebrow === null ? 0 : Math.round(eyebrow.getBoundingClientRect().height),
+      };
+    }, counts);
+    log(`[A11 ${label}] filter AFTER:  ${JSON.stringify(filterAfter)}`);
+    log(`[A11 ${label}] catalogue section after the counts: ${JSON.stringify(await scrollBox(page, '.hud-build__catalogue'))}`);
+  }
+});
