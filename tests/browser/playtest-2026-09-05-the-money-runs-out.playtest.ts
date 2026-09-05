@@ -19,6 +19,15 @@
  * then over-hired into the floor — and then tries to climb out with the only
  * lever a player has.
  *
+ * **Act 4 is act 2's second half, rewritten.** Act 2's dismissal loop stopped
+ * producing output after four dismissals and the run was abandoned; act 4 asks
+ * the same recovery question against a hole two paydays deep instead of nine,
+ * reads the worker through `fastCounts` rather than the harness's
+ * `countsSeries`, and bounds every dismiss press at ten seconds so an
+ * unactionable control is reported instead of waited on. **Act 3 was written
+ * and never run** — it is kept because it is the one question acts 2 and 4 do
+ * not ask, and the record says so rather than implying it was.
+ *
  * **Act 1 is a re-check, not a re-derivation.**
  * `docs/research/2026-08-30-playing-into-the-lock.md` measured the wall route
  * at v0.0.257 (312 segments funded, the 313th refused, **40 left**) and
