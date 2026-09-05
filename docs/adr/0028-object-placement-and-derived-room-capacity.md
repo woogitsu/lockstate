@@ -871,6 +871,38 @@ Depends on the Rooms tab existing. Sequenced last among the surfaces because it
 is a readout: it makes an existing working loop legible rather than making
 anything work.
 
+> **What has landed of it, 2026-09-05, and what has not.** *Ships* above is
+> left exactly as written, because it is the list this phase is measured
+> against and a reader needs to see which items moved.
+>
+> - **The surface, and the verdict on it: landed** (#331, then #529 and #938).
+>   The Rooms panel's "Not ready" block names one room and everything it is
+>   short, a missing doorway included.
+> - **The concurrent-use figure: landed.** `RoomListRowViewModel.concurrentUse`
+>   publishes one ceiling per capability with the live claim count against it,
+>   and `HudRoomNeedsViewModel.atCapacity` carries the full rooms to the panel,
+>   which says so in the same block under an "At capacity" header. It is a
+>   sibling field and not a reinterpretation of the occupancy figure, for the
+>   reason `RoomOccupancyViewModel`'s docblock gives. Issues #997 and #1003 are
+>   what measured the gap: a `room.shower-room` built to its authored two heads
+>   is a ceiling of **two**, and fifty prisoners in which nobody washes was
+>   reachable with every room reading complete.
+> - **The room-level verdict ADR 0023 §4 argues for: not landed.** The panel
+>   still reads `requirementSummary`'s counts; one answer per room is still
+>   owed.
+> - **"Over capacity": not landed, and the reason it was owed has changed.**
+>   This section and `room-projection.ts` both said the projection *could not
+>   say* it. It can: `RoomOccupancyViewModel` publishes `current` and
+>   `capacity` unclamped, so `current > capacity` is derivable by any reader --
+>   only `free` and `utilization` clamp. What is missing is a *surface*, not a
+>   field.
+> - **The yard's ceiling: not landed.** A room whose action names no capability
+>   is bounded by its ground (ADR 0071) and that ceiling is keyed by no
+>   capability, so it has no entry in `concurrentUse`. Publishing it needs a
+>   claim count scoped to capability-less claims, which `useOccupancyOf` does
+>   not offer -- a change in `RoomInstanceRegistry` rather than in a
+>   projection.
+
 ### Phase 6 — concurrent use starts being counted
 
 **Ships:** `ActionSystem` calling `assign`/`release` around a performed action in
