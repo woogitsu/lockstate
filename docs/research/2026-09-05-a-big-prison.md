@@ -94,3 +94,58 @@ finding proves.
   used for claims about what the simulation is doing.
 
 ---
+## 1. The prison has a hard ceiling nobody states: one 32×32 chunk, and a fifth of it is on screen at once
+
+**VERIFIED, read.** A new session owns exactly one chunk, and the write has a
+single call site:
+
+```ts
+world = new SparseWorld(32);
+world.load(initialChunk);
+world.setOwned(initialChunk, true);
+```
+
+`src/simulation/runtime/new-session.ts:431-433`, where `initialChunk` is
+`{ x: chunkCoordinate(0), y: chunkCoordinate(0) }` (`:422-425`). Nothing else in
+`src/` calls `setOwned` — `grep -rn "setOwned" src/` answers that line and one
+comment about it, `src/simulation/prisoners/discharge-system.ts:77`, which says
+so in its own words: *"they do not walk to a gate, because there is no gate:
+`world.setOwned` has one call site at session creation"*. There is no land
+purchase, no chunk acquisition command and no expansion of any kind.
+
+**REASONED.** So the largest prison this game can hold is **1,024 tiles**, and
+that — not `DEFAULT_PRISONER_CAPACITY`'s 5,000 — is the real bound on "as many
+prisoners as the game will take". A bed is `1×2`
+(`src/content/object-catalog.ts:97`), so the arithmetic ceiling is a few hundred
+beds in a prison with no walls, no circulation and no rooms; a prison that is
+actually laid out is far below that. The README's *"several thousand active
+actors"* is a claim about the kernel, and nothing a player can build reaches it.
+
+**MEASURED, act 0.** At the config's 1440×900 and the camera's arrival zoom of
+1, a pointer can reach 194 tile centres:
+
+```
+[act0] zoom 1 origin: tile (0,0) top-left = (-304, -574)
+[act0] zoom 1: 194 tile centres are on canvas, 114 are covered
+[act0] zoom 1 pressable tile box: x 5..26, y 10..22
+[act0] zoom 1 covered, first 12: ["5,9=div.hud-strip","6,9=div.hud-strip", …]
+```
+
+**194 of 1,024 — 18.9% of the plot.** The origin `(-304, -574)` is the same one
+four earlier records derived, so the arrival camera has not moved.
+
+**MEASURED, act 0, the zoom.** Four presses of `Minus` (`camera.zoom.out`,
+`src/input/bindings.ts:34`; `KEYBOARD_ZOOM_STEP` is 1.25,
+`src/rendering/scene/world-scene.ts:86`) put the whole plot on screen:
+
+```
+[act0] zoomed-out x samples: [{"sx":420,"tx":4},{"sx":560,"tx":9},{"sx":700,"tx":15},
+                              {"sx":840,"tx":20},{"sx":980,"tx":25},{"sx":1120,"tx":31}]
+[act0] zoomed-out tile pitch from the read-back = 25.926 px (zoom = 0.4051)
+```
+
+**JUDGEMENT.** A player who wants to see their whole prison has to zoom out to
+about 40%, at which a tile is 26 px. That is workable, and the four keypresses
+are not signposted anywhere: `hud.build.arm-hint` names the arrow keys for
+panning and nothing on screen names `-` or `+`.
+
