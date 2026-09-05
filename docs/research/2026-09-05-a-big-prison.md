@@ -314,3 +314,53 @@ is slower than the crew" is a claim about *this* run and not a law. What is not
 about this box is the serial queue and the 60-ticks-a-wall arithmetic, which are
 read from the code.
 
+## 4. Sixty-eight prisoners: every press landed, and the arithmetic is exact to the minor unit
+
+**MEASURED, act 1.** Sixty-eight admissions and ten hires, one press each:
+
+```
+[act1] 68 Admit press(es) -> 68 AdmitPrisoner command(s) reached the worker, 0 threw
+[act1] after admissions at tick 41160: prisoners=68 inIntake=0 residents=68 capacity=76
+[act1] after 10 Hire press(es): staff=10 wageBill=800 funds=45350
+```
+
+**This is the finding `2026-09-04-hour-two.md` §1 asked for, and it is a
+retirement.** That record measured *"seven of 25 Admit presses … and five of
+eight Hire Guard presses … refused before they reached the worker"* at v0.0.451
+with the string *"The simulation has not reported its command sequence yet"*.
+At **v0.0.475**, on the same shared box, **68 for 68 and 10 for 10**, with no
+`HUD action failed` line in the page console for either control. `git log
+--oneline -80 origin/main | grep -i press` shows the fix landed as #942 between
+v0.0.451 and v0.0.469 (the brief names it). **A run of presses no longer loses
+any, and 68 is 2.7× the run that used to lose seven.**
+
+### 4a. The economy at 68 is exact, and it is also over
+
+**MEASURED, act 1**, three consecutive day boundaries, from the tee:
+
+| report | tick | day | treasury | residents | wage bill |
+| --- | --- | --- | --- | --- | --- |
+| built | 42,548 | 18 | 45,350 | 68 | 800 |
+| round 1 | 44,954 | 19 | **64,950** | 68 | 800 |
+| round 2 | 47,198 | 20 | **84,550** | 68 | 800 |
+
+**+19,600 a day, twice, to the minor unit.** `300 × 68 − 80 × 10 = 20,400 − 800
+= 19,600`. `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300`
+(`src/simulation/economy/income.ts:115`); the guard requirement is
+`ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD)` with that constant at 8
+(`src/simulation/security/sector-staffing.ts:190,147`), so 68 residents ask for
+**9** guards and ten were hired.
+
+**REASONED, and it is the shape change the question asked about.** The two sides
+scale differently: income is `300 × residents` and payroll is
+`80 × ceil(residents/8)`, which is `10 × residents` — **a fixed 30:1 ratio, and
+the gap widens linearly for ever.** A prison that is full pays its whole guard
+force out of 4% of one day's income. The build that made this prison cost
+22,350, which is **1.1 days of its own operating income**; by day 20 the
+treasury holds 84,550 with nothing left to buy — the plot is built out (§1) and
+every room the catalogue offers that this prison wants is already standing.
+
+**JUDGEMENT.** At small scale the money is a tutorial; at 68 it is not a
+mechanic at all. Nothing in this prison can go wrong for want of money, and
+there is nothing money can be spent on that the player has not already bought.
+
