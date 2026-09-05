@@ -1990,10 +1990,15 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * search from `claimableGuardIds(this.guards)` -- the same call, on the same
    * roster, as the responder claim the section above opens -- and
    * `SectorSearchDutySystem.update`
-   * (`src/simulation/contraband/sector-search-duty.ts:126`) will not even
-   * *order* a sweep unless that pool already holds
-   * `policy.requiredGuardCount` (`1` for `'sector'`,
-   * `src/simulation/contraband/default-search-policies.ts:65`). So a prison at
+   * (`src/simulation/contraband/sector-search-duty.ts`) will not even *order*
+   * a sweep unless that pool already holds `policy.requiredGuardCount` (`1`
+   * for `'sector'`, `DEFAULT_SEARCH_POLICY_BY_SCOPE` in
+   * `src/simulation/contraband/default-search-policies.ts`). **Both of those
+   * are cited by symbol and not by line, and the second one is why**: this
+   * paragraph first read `sector-search-duty.ts:126`, and the docblock this
+   * change added to that same file moved the line to `:139` before the commit
+   * was written -- `docs/AGENT_WORKFLOW.md` §4's rot, inside one edit, by the
+   * hand making it. So a prison at
    * exactly its posted requirement orders no sweep at all, and that system's
    * own docblock says so in words: *"a prison that hires exactly its posted
    * requirement never searches, and the first guard hired past that
