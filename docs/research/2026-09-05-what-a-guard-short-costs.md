@@ -481,21 +481,21 @@ for ever and a promoted prisoner comes back to tier 2 and never below it.
 **No.** Nothing on screen connects too few guards to shortened recreation, and
 the gap is narrower and more specific than "the player cannot find out".
 
-`describeStaffCoverage` (`src/ui/hud/staff-panel.ts:427`) returns three rungs,
+`describeStaffCoverage` (`src/ui/hud/staff-panel.ts:438`) returns three rungs,
 and the `consequenceKey` field is populated on exactly one:
 
-- `:431-438` — `unguarded`: badge `Unguarded`, hint `Nobody is on duty. Hire {count} to cover this population.`, **and** `consequenceKey: securityCoverageUnguardedConsequence`.
-- `:440-446` — `understaffed`: badge `Understaffed`, hint `Hire {count} more to cover this population.`, **and no `consequenceKey` at all.**
-- `:453+` — `covered`: hint `Incidents and searches need free guards.`
+- `:442-449` — `unguarded`: badge `Unguarded`, hint `Nobody is on duty. Hire {count} to cover this population.`, **and** `consequenceKey: securityCoverageUnguardedConsequence`.
+- `:451-457` — `understaffed`: badge `Understaffed`, hint `Hire {count} more to cover this population.`, **and no `consequenceKey` at all.**
+- `:459+` — `covered`: hint `Incidents and searches need free guards.`
 
 The field's own docblock says the omission is deliberate — *"the two other
 branches have nothing to say here rather than a nothing to say it with"*
-(`src/ui/hud/staff-panel.ts:411-417`). **§3 is the measurement that makes that a defect rather than a
+(`src/ui/hud/staff-panel.ts:422-429`). **§3 is the measurement that makes that a defect rather than a
 decision:** `understaffed` is the rung that takes the whole population's
 `safety` to 2 permille and costs `n × 40` a day, and `unguarded` is a rung
 reached only by hiring nobody at all.
 
-An exhaustive pass over the 424 authored strings in
+An exhaustive pass over the 425 authored strings in
 `src/content/default-locale-en.ts` finds **exactly two** that connect staffing
 to anything a prisoner experiences:
 
@@ -520,7 +520,7 @@ has five links and four of them are on screen:
 2. **`safety` falling** — the Regime panel roster draws each prisoner's worst need and the inspector all six, each carrying `data-need-unmet` from the same `isNeedUnmetForStateIncome` predicate the money uses (#1003 §4 opens these lines). `Safety` is a named need (`src/content/simulation-message-keys.ts:139`). ✔ as a **symptom**, ✘ as a cause: the sentence that would attribute it exists only on `unguarded`.
 3. **Riot** — `hud.alert.event.incidents.riot-opened`: *"A riot has broken out — {count} prisoners have stopped taking orders."* ✔
 4. **Riot → every participant's record → tier 3** — **nothing.** No alert, no panel, no string. `ClassificationReviewSystem` emits no event (it holds no `SimulationEventLog`), and the review is batched twenty days after the riot the player saw.
-5. **`high-risk` → a shortened day** — Regime panel, and this one is designed for it. The panel draws both groups' timetables and the roster's group badge on one tab, and its own docblock says why: *"the timetable says what general population and high risk may do at this tick, and the roster says who is in each … That reads as cause and effect only if both halves are on screen at once"* (`src/ui/hud/regime-panel.ts:36-44`). ✔
+5. **`high-risk` → a shortened day** — Regime panel, and this one is designed for it. The panel draws both groups' timetables and the roster's group badge on one tab, and its own docblock says why: *"the timetable says what general population and high risk may do at this tick, and the roster says who is in each … That reads as cause and effect only if both halves are on screen at once"* (`src/ui/hud/regime-panel.ts:36-43`). ✔
 
 **So the missing link is the fourth, and the missing magnitude is the second.**
 A player watches a riot, waits twenty in-game days, and finds their whole
