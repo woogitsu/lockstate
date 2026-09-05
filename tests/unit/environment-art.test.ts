@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
@@ -263,6 +263,100 @@ describe('declared fallback', () => {
 
   it('draws both edge values rather than leaving one on colour', () => {
     expect(edgeArtCoverage()).toEqual({ drawn: ['wall', 'door'], onFallback: [] });
+  });
+});
+
+/**
+ * The floor #1020 asks for, and the hole underneath it that it does not close.
+ *
+ * #1020 asks for "a non-regression floor on `objectArtCoverage().drawn.length`"
+ * so that "a later atlas change can[not] silently return an object to the
+ * fallback and every existing test stay green". **Half of that gate was already
+ * here**, and it was verified by mutation rather than read: adding
+ * `'object.bed': 'env.floor.institutional'` to `SPRITE_BY_OBJECT_ID` fails
+ * `describe('declared fallback')`'s first case above with *"expected
+ * [ 'object.bench', ...(18) ] to deeply equal [ 'object.bed', 'object.bench',
+ * ...(18) ]"*, because that case pins `onFallback` against
+ * `OBJECTS_ON_COLOUR_FALLBACK` exactly and `drawn` is its complement. A row
+ * that vanishes is therefore not silent today.
+ *
+ * **What is silent is the row landing in the first place.** Completing the same
+ * mutation the way #1020 prescribes -- add the row, strike `'object.bed'` from
+ * `OBJECTS_ON_COLOUR_FALLBACK` -- was measured on `bd6fa32` (v0.0.499) at
+ * **229 files / 3344 passed, `tsc -b` exit 0**, with the bed still drawn as the
+ * same slate-blue slab as every other object. Nothing observed the difference
+ * because there is nothing to observe: `objectSprite`'s only caller in `src/`
+ * is `objectArtCoverage`, and the loop that draws objects
+ * (`src/rendering/phaser/tile-layer.ts:481-498`) calls `structureAppearance`
+ * and `paintSlab` and never asks this module anything. So the coverage number
+ * the floor would defend can be raised without a pixel changing, which makes
+ * the floor alone a gate on a claim rather than on the screen.
+ *
+ * This file cannot watch a pixel -- `vitest.config.ts` runs `environment:
+ * 'node'` and the module docblock above says a mutation inside the painter is
+ * unobservable here. What it can do is refuse to let the two get out of step,
+ * by reading the Phaser-facing sources for the call that would make the mapping
+ * matter. That is the same kind of check
+ * `tests/unit/rendering-module-boundaries.test.ts` already makes over this
+ * tree, for the same reason: the property is about which module reads which,
+ * and it is cheaper to read the source than to boot a canvas.
+ */
+describe('object art reaching the screen', () => {
+  /**
+   * The directories whose whole job is to drive Phaser -- the only ones that
+   * can put a pixel anywhere. The same two `rendering-module-boundaries.test.ts`
+   * calls `PHASER_FACING`, and for the same reason.
+   */
+  const PAINTER_DIRECTORIES = ['src/rendering/phaser', 'src/rendering/scene'] as const;
+
+  function painterSources(): readonly string[] {
+    const found: string[] = [];
+    for (const directory of PAINTER_DIRECTORIES) {
+      const root = join(import.meta.dirname, '../..', directory);
+      for (const entry of readdirSync(root, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.endsWith('.ts')) found.push(readFileSync(join(root, entry.name), 'utf8'));
+      }
+    }
+    // A directory that has stopped holding sources would make the check below
+    // pass vacuously -- "nothing reads objectSprite" and "there is nothing to
+    // read" are the same answer from a regex and opposite answers from a
+    // reviewer. Thrown rather than asserted because this runs while the suite
+    // is being collected, not inside a test.
+    if (found.length === 0) throw new Error(`No painter sources under ${PAINTER_DIRECTORIES.join(' or ')}; this check would pass vacuously.`);
+    return found;
+  }
+
+  /**
+   * Named rather than inlined so the failure message can say which of the two
+   * halves is missing, and so that wiring the painter up flips this without
+   * anyone editing the assertion.
+   */
+  const painterReadsObjectSprite = painterSources().some((source) => /\bobjectSprite\b/.test(source));
+
+  it('maps an object to artwork only once some painter reads objectSprite', () => {
+    const drawn = [...objectArtCoverage().drawn];
+    expect(
+      drawn.length === 0 || painterReadsObjectSprite,
+      `SPRITE_BY_OBJECT_ID maps ${drawn.join(', ')} to artwork, but nothing under ${PAINTER_DIRECTORIES.join(' or ')} reads objectSprite. ` +
+        'objectArtCoverage() would report those ids as drawn while the painter still fills a coloured slab for them, ' +
+        'which is a claim about the screen the screen does not honour. Add the painter path before the row.',
+    ).toBe(true);
+  });
+
+  /**
+   * The floor itself. **It is inert at zero and that is said rather than
+   * hidden:** `toBeGreaterThanOrEqual(0)` cannot fail. It is here because it
+   * becomes load-bearing on the same commit as the first real row and costs
+   * nothing until then, and because the number is the thing a later change has
+   * to *edit* -- deliberately, in a constant that says not to -- rather than
+   * quietly erode. Raise it with each object that starts being drawn. Never
+   * lower it: an object that stops being drawn is the regression this exists
+   * to name.
+   */
+  const OBJECT_ART_DRAWN_FLOOR = 0;
+
+  it('never draws fewer objects as art than it did before', () => {
+    expect(objectArtCoverage().drawn.length).toBeGreaterThanOrEqual(OBJECT_ART_DRAWN_FLOOR);
   });
 });
 
