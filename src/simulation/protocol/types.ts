@@ -1677,7 +1677,6 @@ export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled-underway',
   'construction.redone',
   'construction.undone',
-  'construction.undone-spend-destroyed',
   'contraband.discovered',
   'economy.construction-refused',
   'economy.deliveries-refused',
@@ -2236,20 +2235,9 @@ const buildOrderCancelledEventSchema = z
   .strict();
 
 /**
- * A build order was cancelled at or past the point of no return, and what it
- * had already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes
- * it true).
- *
- * **The name says `-underway` and the member covers `'completed'` too since
- * [#927](https://github.com/matmaxalez/lockstate/issues/927); the name is kept
- * because it is a persisted discriminant.** `save-schema.ts` validates a save's
- * alerts section against `simulationEventSchema` below, so renaming a type
- * breaks every save that carries one -- and `docs/PERSISTENCE.md` prices what
- * an existing field changing meaning costs. What a player reads is the
- * sentence, which is quantified over *"anything already spent past the point of
- * no return"* and is therefore true of a finished order as well as a started
- * one. `SimulationEventLog.recordBuildOrderCancelled` carries the argument, and
- * the two dead premises the `'completed'` silence had rested on.
+ * A build order was cancelled after the crew had started it, and what it had
+ * already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes it
+ * true).
  *
  * The counterpart of the member above, and the one the owner's *"silence about
  * a loss is the worst option"* is actually about. `ConstructionSystem.cancelOrder`
@@ -2304,42 +2292,6 @@ const constructionRedoneEventSchema = z
   .strict();
 
 /**
- * The build history was walked back one transaction, and some of what it
- * reversed was past the point of no return
- * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
- *
- * The member above's counterpart, and the same relationship
- * `construction.order-cancelled-underway` has to `construction.order-cancelled`
- * on the other channel: one press, two outcomes, two sentences, split on
- * whether anything was destroyed. `ConstructionSystem.undo` cancels every order
- * in the transaction *including a `'completed'` one*, and `cancelOrder`
- * destroys what an `'in-progress'` or `'completed'` order was holding -- so a
- * `Z` on a finished wall takes the wall down and refunds nothing.
- *
- * **Why it took a new member rather than raising the existing
- * `construction.order-cancelled-underway` beside `construction.undone`.** The
- * band shows one sentence: `admitToEventBand` gives an arriving `'warning'` the
- * line immediately over an `'info'` incumbent and **discards the incumbent
- * rather than queueing it** (`src/ui/hud/event-band-dwell.ts`), so two events
- * raised on one tick would have painted *"The order was cancelled…"* alone --
- * naming a control the player did not press, in the singular, over a drag of
- * twelve. Its own issue calls that the weakest claim in the diagnosis and it
- * does not survive the band's arbitration.
- *
- * **Carries no count and no figure**, exactly as the member above does, for the
- * same two rulings: the owner's ruling of 2026-09-01 on #749 declines the
- * transaction-size plumbing, and `cancelOrder` answers `void` so the value
- * destroyed is not reachable from any call site on this channel. What crosses
- * the boundary is one bit -- see `ConstructionUndoSpendOutcome`.
- */
-const constructionUndoneSpendDestroyedEventSchema = z
-  .object({
-    ...simulationEventEnvelopeFields,
-    type: z.literal('construction.undone-spend-destroyed'),
-  })
-  .strict();
-
-/**
  * A delivery that had not landed was cancelled, and this is what came back
  * (#749).
  *
@@ -2384,7 +2336,6 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   buildOrderCancelledEventSchema,
   buildOrderCancelledUnderwayEventSchema,
   constructionUndoneEventSchema,
-  constructionUndoneSpendDestroyedEventSchema,
   constructionRedoneEventSchema,
   deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
