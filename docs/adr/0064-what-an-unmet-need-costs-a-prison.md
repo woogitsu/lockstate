@@ -182,12 +182,13 @@ be allowed to be in trouble, they ruled:
 
 ("Measure it first.") Shown the four-prisoner measurement that produced, they
 ruled the constant back to `40` **on condition that a fifty-prisoner prison was
-measured first**. Both measurements now exist —
-`2026-09-04-what-pressure-there-is.md` and
-`2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/`, named
-without a rooted path because both branches are unmerged and
+measured first**. Both measurements now exist:
+[the four-prisoner one](../research/2026-09-04-what-pressure-there-is.md),
+merged on `main` as PR #971, and the fifty-prisoner one, which is
+`2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/` — named
+without a rooted path because its branch is unmerged and
 `tests/foundation/documentation-links-contract.test.ts` fails on a dangling
-link — so this amendment is that ruling carried out and not a proposal.
+link. So this amendment is that ruling carried out and not a proposal.
 
 **Unlike the 2026-09-03 ruling, this one was made by choosing a presented
 option rather than in the owner's own words.** There is therefore no verbatim

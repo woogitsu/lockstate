@@ -350,10 +350,11 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  *
  * ("Measure it first.") That measurement was made at four prisoners, and shown
  * its numbers the owner ruled the constant back to `40` **on condition that a
- * fifty-prisoner prison was measured first**. Both measurements now exist,
- * as `2026-09-04-what-pressure-there-is.md` and
- * `2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/` --
- * named without a rooted path because both branches are unmerged and
+ * fifty-prisoner prison was measured first**. Both measurements now exist:
+ * [the four-prisoner one](../../../docs/research/2026-09-04-what-pressure-there-is.md),
+ * merged on `main` as PR #971, and the fifty-prisoner one, which is
+ * `2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/` -- named
+ * without a rooted path because its branch is unmerged and
  * `tests/foundation/documentation-links-contract.test.ts` fails on a dangling
  * link. **Unlike the
  * suspension, this ruling was made by choosing a presented option rather than
