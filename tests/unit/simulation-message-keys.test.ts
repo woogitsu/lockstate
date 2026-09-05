@@ -142,12 +142,6 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The only exemption here for a vocabulary that genuinely does reach the player, and the distinction is *how*. This table labels an id a panel renders as a **label** -- a cell reading "Awaiting Materials", a badge reading "High Risk" -- and a refusal is not a label: it is a whole sentence saying what did not happen and why ("The build order failed -- you do not own that land."), which a derived `refusal-reason.build.unowned-land.name` reading "Unowned Land" cannot be and would have nowhere to be rendered. So the id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-alerts.ts` (#261). The completeness this table would give is given there instead, and in two directions: the mapping is a `Record` over the closed union, so a reason added to the protocol fails to compile until it has a key, and `tests/unit/ui-simulation-alerts.test.ts` resolves every one of those keys against the bundled default catalog so none can ship as its own raw dotted text.',
   },
   {
-    sourceFile: 'src/simulation/events/event-log.ts',
-    declaration: 'ConstructionUndoSpendOutcome',
-    reason:
-      'Whether one `Undo` press destroyed what had been spent on any of the orders it reversed (#927), and exempt because it is a *selector between two authored sentences* rather than a fact of its own. `createConstructionCommandHandler` computes it from `ConstructionSystem.undo()`\'s answer and hands it to `recordConstructionUndone`, which switches it onto `construction.undone` or `construction.undone-spend-destroyed`; both of those already resolve to authored HUD sentences through `EVENT_PRESENTATION`, which is where the words a player reads come from and which the `SIMULATION_EVENT_TYPES` entry below argues out. A derived `construction-undo-spend-outcome.spend-destroyed.name` reading "Spend Destroyed" would be a second English word for a fact the sentence already carries, would have nowhere to be rendered, and would drift from it -- the same argument that entry makes, one level further from the player. It never crosses the worker boundary either: what travels is the event type it selected.',
-  },
-  {
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'SIMULATION_EVENT_TYPES',
     reason:

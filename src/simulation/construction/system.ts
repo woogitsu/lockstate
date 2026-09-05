@@ -50,65 +50,6 @@ function isCancellable(state: BuildOrder['state']): boolean {
 }
 
 /**
- * States whose cancellation destroys what was spent on the order, in both
- * currencies -- the point of no return.
- *
- * The two states `cancelOrder` neither releases nor pays for: `'in-progress'`
- * by ruling 20 of 2026-08-31, and `'completed'` by the owner's ruling of
- * 2026-09-01 (*"Taking a finished object away returns nothing. Not its
- * materials, not its money."*, ADR 0076's amendment of that date). The table
- * on `cancelOrder` argues each.
- *
- * **A named predicate rather than the inline `stateAtCancellation ===
- * 'in-progress' || hadGeometry` it replaces, because there are now two readers
- * and they must never disagree.** `cancelOrder` uses it to decide what is
- * destroyed; `undo()` uses it to decide whether the transaction it just
- * reversed destroyed anything, which is what
- * [#927](https://github.com/matmaxalez/lockstate/issues/927) is about. A third
- * state joining this set has to be told to one place, not remembered in two.
- *
- * `SimulationEventLog.recordBuildOrderCancelled` deliberately does **not** read
- * this: that module imports `BuildOrderLifecycleState` for its type only and
- * runs no construction code, and its `switch` over the whole lifecycle is
- * exhaustive on purpose so that a ninth state fails to compile until somebody
- * has decided what the prison says about it. Two spellings of the same fact,
- * one of which the compiler defends -- which is the shape that file argues for.
- */
-function destroysSpendOnCancel(state: BuildOrder['state']): boolean {
-  return state === 'in-progress' || state === 'completed';
-}
-
-/**
- * What one `undo()` press did: whether it reversed anything at all, and -- when
- * it did -- whether any of what it reversed was past the point of no return
- * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
- *
- * ## Why this is not the count the ruling declined
- *
- * The owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749) rules that Undo's
- * sentence *"does not name a count"* and rules explicitly that the
- * transaction-size plumbing is not to be built. `spendDestroyed` is not that
- * plumbing and cannot become it: it is one bit, it says nothing about how many
- * orders moved, and it is `true` for a run of one exactly as for a run of
- * twelve. What it carries is the same distinction the *Cancel* channel has had
- * since that ruling -- money back, or what was spent stays spent -- which the
- * Undo channel could not make and therefore never made.
- *
- * ## Why a union rather than two booleans
- *
- * `spendDestroyed` is meaningless when nothing was reversed, and a flat
- * `{ reversed: boolean; spendDestroyed: boolean }` would let a caller read it
- * anyway. Narrowing on `reversed` is what stops that. It also stops the older
- * hazard: this method answered `boolean`, so `if (system.undo())` was the
- * caller, and an object return would have made that condition true for ever
- * without the compiler saying a word.
- */
-export type ConstructionUndoOutcome =
-  | { readonly reversed: false }
-  | { readonly reversed: true; readonly spendDestroyed: boolean };
-
-/**
  * The other tile an edge order's edge belongs to.
  *
  * `BuildEdge` names only the two slots the world stores, so the tile across a
@@ -583,29 +524,17 @@ export class ConstructionSystem implements SystemRegistration {
 
   /**
    * Reverses the most recent transaction, and answers **whether it reversed
-   * anything and whether what it reversed was past the point of no return**
-   * (#749, #927).
+   * anything** (#749).
    *
    * ## Why the return value exists, and what it is deliberately not
    *
-   * It is not a count. The owner's ruling of 2026-09-01 on
+   * It is `boolean` and not a count. The owner's ruling of 2026-09-01 on
    * [#749](https://github.com/matmaxalez/lockstate/issues/749) gives Undo a
    * success sentence and rules that it *"does not name a count"* -- an undo
    * reverses a whole transaction, so naming one order would be a small lie
    * whenever a run of several was taken back -- and rules explicitly that the
    * transaction-size plumbing is **not** to be built. `redoTransaction.length`
    * is sitting right there and is not returned, on purpose.
-   *
-   * **This method answered a bare `boolean` until
-   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
-   * paragraph above is kept whole because it is still the rule -- what changed
-   * is that one bit was not enough to be honest with.** A `boolean` says only
-   * *something moved*, so the handler could say only *"the last change to the
-   * build queue was undone"* -- over a press that had just destroyed a finished
-   * wall's materials and refunded nothing. `ConstructionUndoOutcome` adds the
-   * one bit that fixes it and no more: `spendDestroyed` is not a size and
-   * cannot grow into one. See that type for why it is not the plumbing the
-   * ruling declined.
    *
    * What *is* needed for that sentence to be honest is the one bit this
    * answers: a press against an empty stack, or against a transaction whose
@@ -615,30 +544,14 @@ export class ConstructionSystem implements SystemRegistration {
    * that `AGENTS.md`'s fourth exclusion is about. `false` is what stops the
    * handler saying it.
    *
-   * Both no-op shapes answer `{ reversed: false }` and the second is the one a
-   * caller would miss: a transaction *was* popped -- so the undo stack really
-   * did shrink -- and yet nothing in the world changed, because `isCancellable`
-   * rejected every order in it. The redo stack is not pushed in that case
-   * either, which is the existing behaviour this return value now reports
-   * rather than changes.
-   *
-   * ## Where `spendDestroyed` is read from, and why it costs nothing
-   *
-   * The state each order is in **before** `cancelOrder` is called, which this
-   * loop already holds in `order` and which `cancelOrder` would otherwise
-   * compute privately and throw away -- the same read, for the same reason, the
-   * `CancelBuildOrder` branch of `createConstructionCommandHandler` makes one
-   * level up. Read after the call every order is `'cancelled'` and the
-   * distinction is gone.
-   *
-   * It is an **or** across the transaction, not a per-order answer: a drag that
-   * mixes three finished walls with nine queued ones destroys what the three
-   * cost and refunds what the nine did, and *"anything already spent past the
-   * point of no return stays spent"* is true of exactly that mixture. A
-   * per-order breakdown would be the count the ruling declined, arrived at from
-   * the other side.
+   * Both no-op shapes answer `false` and the second is the one a caller would
+   * miss: a transaction *was* popped -- so the undo stack really did shrink --
+   * and yet nothing in the world changed, because `isCancellable` rejected
+   * every order in it. The redo stack is not pushed in that case either, which
+   * is the existing behaviour this return value now reports rather than
+   * changes.
    */
-  public undo(): ConstructionUndoOutcome {
+  public undo(): boolean {
     if (this.currentTransaction.length > 0) {
       this.undoStack.push([...this.currentTransaction]);
       this.currentTransaction = [];
@@ -646,10 +559,9 @@ export class ConstructionSystem implements SystemRegistration {
     }
 
     const transaction = this.undoStack.pop();
-    if (!transaction) return { reversed: false }; // Nothing to undo
+    if (!transaction) return false; // Nothing to undo
 
     const redoTransaction: string[] = [];
-    let spendDestroyed = false;
 
     for (const orderId of transaction) {
       const order = this.orders.get(orderId);
@@ -664,16 +576,13 @@ export class ConstructionSystem implements SystemRegistration {
       // write, so undo means the same thing for a finished order as for a
       // pending one.
       if (!isCancellable(order.state)) continue;
-      // Before the call, because `cancelOrder` sets `'cancelled'` on its second
-      // line. This is the whole of #927's plumbing.
-      if (destroysSpendOnCancel(order.state)) spendDestroyed = true;
       this.cancelOrder(orderId);
       redoTransaction.push(orderId);
     }
 
-    if (redoTransaction.length === 0) return { reversed: false };
+    if (redoTransaction.length === 0) return false;
     this.redoStack.push(redoTransaction);
-    return { reversed: true, spendDestroyed };
+    return true;
   }
 
   /**
@@ -793,20 +702,14 @@ export class ConstructionSystem implements SystemRegistration {
    * used to.
    *
    * **With no procurement sink wired, every cancellable state releases exactly
-   * as it did before ruling 20, and `in-progress` and `completed` are the two
-   * exceptions.** A bare `ConstructionSystem` is not a session -- it has no
-   * treasury behind it and cannot pay anybody -- so "money instead of bricks"
-   * has no meaning there and the materials go back, which is what
+   * as it did before ruling 20, and `in-progress` is the one exception.** A
+   * bare `ConstructionSystem` is not a session -- it has no treasury behind it
+   * and cannot pay anybody -- so "money instead of bricks" has no meaning
+   * there and the materials go back, which is what
    * `UNLIMITED_MATERIALS_PROVIDER` and `ContainerMaterialsProvider` have always
-   * done. Neither of those two is conditional on the sink because their rule is
-   * not about money: the materials are consumed by works that are being
-   * un-built, whether or not anybody is keeping accounts.
-   *
-   * **This sentence said `in-progress` was *"the one exception"* and it stopped
-   * being true on 2026-09-01, the day the ruling above moved `completed` into
-   * the same arm; it is corrected rather than deleted because the count is
-   * exactly the kind of claim that rots** (`docs/AGENT_WORKFLOW.md` §4). Found
-   * while reading this method for #927, three days late.
+   * done. `in-progress` is not conditional on the sink because its rule is not
+   * about money: the materials are consumed by the works whether or not
+   * anybody is keeping accounts.
    *
    * **What stops that fallback hiding a lost wiring** is that the sink's one
    * production caller is `createNewSimulationRuntime`, and
@@ -833,16 +736,10 @@ export class ConstructionSystem implements SystemRegistration {
       // refund are computed from it and the emptying is unconditional.
       const allocated = order.materialsAllocated;
       order.materialsAllocated = [];
-      if (destroysSpendOnCancel(stateAtCancellation)) {
+      if (stateAtCancellation === 'in-progress' || hadGeometry) {
         // Ruling 20's "nothing" for `in-progress`, and the owner's ruling of
         // 2026-09-01 for `completed`. Neither released nor paid for: see the
         // table above for why each is the ruling rather than a leak.
-        //
-        // **The condition read `stateAtCancellation === 'in-progress' ||
-        // hadGeometry` until #927 and is now the named `destroysSpendOnCancel`,
-        // which is the same test and not a new one.** `undo()` needs the same
-        // question answered to say what it destroyed, and two inline copies of
-        // a two-state set is how they come to disagree.
         //
         // **`hadGeometry` moved into this arm on 2026-09-01 and the line it
         // left is kept in the table above rather than deleted.** It used to
