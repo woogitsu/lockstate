@@ -78,10 +78,12 @@ function intelligenceTargetKindFor(holderKind: SearchTarget['holderKind']): Inte
 
 /**
  * Issue #27's search/detection loop: fills a queued order from currently-
- * unassigned guards (a real, finite, shared pool -- exactly the
- * "staffing diversion" the architecture notes call for, since every guard
- * this system claims is one `DeploymentSystem` cannot use to fill a sector
- * shortage that same cycle), drives them through the real
+ * unassigned guards **less the guards issue #996 reserves for incident
+ * response** (`claimableSearchGuardIds`) -- a real, finite pool, exactly the
+ * "staffing diversion" the architecture notes call for, since every guard this
+ * system claims is one `DeploymentSystem` cannot use to fill a sector shortage
+ * that same cycle, and the reserve is what stops the diversion reaching the
+ * responder pool -- drives them through the real
  * `NavigationSystem` to each target in turn (no-teleport), dwells for the
  * policy's duration, then runs one deterministic named-RNG detection check
  * per concealed item found at that target.
