@@ -401,11 +401,17 @@ async function drainQueue(
   const started = Date.now();
   const marks: { tick: number; ms: number; total: number; started_: number }[] = [];
   for (;;) {
-    // `view.data`, not `view` — see the roster reader in `report` for the
-    // envelope this keeps catching people out with.
-    const view = await ask<{ view?: { data?: { orders?: { total?: number }; started?: number } } }>(page, 'hud/build-queue', { limit: 1 });
-    const total = view.view?.data?.orders?.total ?? -1;
-    const inFlight = view.view?.data?.started ?? -1;
+    /*
+     * `page.total` is the count, from the envelope rather than from inside the
+     * view — and the raw payload is logged on the first sample so a reader can
+     * see the shape rather than take this line's word for it. Two earlier
+     * spellings of this read (`view.orders.total`, then `view.data.orders.total`)
+     * both answered `-1`.
+     */
+    const reply = await ask<{ page?: { total?: number }; view?: { data?: { orders?: { total?: number }; started?: number } } }>(page, 'hud/build-queue', { limit: 3 });
+    if (marks.length === 0) log(`  [${label}] raw build-queue reply: ${JSON.stringify(reply).slice(0, 1200)}`);
+    const total = reply.page?.total ?? reply.view?.data?.orders?.total ?? -1;
+    const inFlight = reply.view?.data?.started ?? -1;
     const tick = await currentTick(page);
     const panel = (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
     marks.push({ tick, ms: Date.now() - started, total, started_: inFlight });
@@ -767,7 +773,32 @@ test.describe('A big prison — the scale pass', () => {
     log(`[act1] furnished: ${JSON.stringify(furnished)}`);
     await tab(page, 'rooms').click();
     log(`[act1] rooms panel when furnished: ${await panelText(page, '.hud-rooms')}`);
-    log(`[act1] room-list projection: ${JSON.stringify(await ask(page, 'hud/room-list', { limit: 64 }))}`);
+    const roomList = await ask<{ view?: { data?: { rooms?: { rows?: { instanceId?: string; roomCatalogId?: string }[] } } } }>(page, 'hud/room-list', { limit: 64 });
+    log(`[act1] room-list projection: ${JSON.stringify(roomList)}`);
+    /*
+     * Every cell's contents, one at a time. act 1's first run measured
+     * `accommodationCapacity: 76` from 68 bed presses, with the three cells at
+     * 27/27/22 against 24/24/20 beds — a surplus of exactly each block's toilet
+     * count. act 2 built four beds and one toilet in isolation and measured
+     * `roomCapacity: 4`, which rules out "a toilet counts as a bed". So the
+     * surplus is unexplained, and this asks the room itself what it holds.
+     */
+    for (const row of roomList.view?.data?.rooms?.rows ?? []) {
+      if (row.roomCatalogId !== 'room.cell') continue;
+      /*
+       * `target: { kind: 'id', id }` — a discriminated union
+       * (`src/simulation/protocol/types.ts:386-389`), not a bare string. act 2
+       * passed the bare string and the worker answered nothing at all: an
+       * invalid payload is dropped rather than refused, so a malformed request
+       * looks exactly like a hung worker.
+       */
+      try {
+        const detail = await ask(page, 'hud/room-detail', { target: { kind: 'id', id: row.instanceId } });
+        log(`[act1] room-detail ${String(row.instanceId)}: ${JSON.stringify(detail).slice(0, 2500)}`);
+      } catch (error) {
+        log(`[act1] room-detail ${String(row.instanceId)} failed: ${String(error).slice(0, 160)}`);
+      }
+    }
 
     // --- people -----------------------------------------------------------
     await tab(page, 'overview').click();
@@ -1003,7 +1034,11 @@ test.describe('A big prison — the scale pass', () => {
     const rooms = await ask<{ view?: { data?: { rooms?: { rows?: { instanceId?: string }[] } } } }>(page, 'hud/room-list', { limit: 32 });
     const instanceId = rooms.view?.data?.rooms?.rows?.[0]?.instanceId;
     log(`[act2] room-list: ${JSON.stringify(rooms)}`);
-    log(`[act2] room-detail for ${String(instanceId)}: ${JSON.stringify(await ask(page, 'hud/room-detail', { target: instanceId, limit: 64 }))}`);
+    try {
+      log(`[act2] room-detail for ${String(instanceId)}: ${JSON.stringify(await ask(page, 'hud/room-detail', { target: { kind: 'id', id: instanceId } }))}`);
+    } catch (error) {
+      log(`[act2] room-detail failed: ${String(error).slice(0, 200)}`);
+    }
     await tab(page, 'rooms').click();
     log(`[act2] rooms panel: ${await panelText(page, '.hud-rooms')}`);
   });
