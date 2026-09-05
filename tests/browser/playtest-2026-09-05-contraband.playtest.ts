@@ -92,7 +92,7 @@ async function installProjectionProbe(page: Page): Promise<void> {
           const kind = (event.data as { kind?: string })?.kind ?? '';
           if (kind !== 'simulation/projection' && kind !== 'protocol/error') return;
           captured.push(event.data);
-          while (captured.length > 6) captured.shift();
+          while (captured.length > 80) captured.shift();
         });
       }
     }
@@ -125,8 +125,17 @@ async function pullProjection(page: Page, projectionId: string, messageId: strin
     },
     [projectionId, messageId],
   );
-  await page.waitForTimeout(2000);
-  const replies = await page.evaluate(() => (window as unknown as ProbeWindow).__lsProjections ?? []);
+  await page.waitForTimeout(2500);
+  /*
+   * Filtered by `replyTo`, because the HUD is pulling its own routes at the
+   * same time: with the Security tab open the app requests `hud/staff` and
+   * `hud/held-guards` about once a second, and the first run of this file lost
+   * every contraband reply to those inside a six-deep buffer.
+   */
+  const replies = await page.evaluate(
+    (mid) => ((window as unknown as ProbeWindow).__lsProjections ?? []).filter((message) => (message as { replyTo?: string }).replyTo === mid),
+    messageId,
+  );
   return { posted, replies };
 }
 
@@ -262,97 +271,66 @@ test.describe('contraband, played', () => {
   });
 
   test('act 2 — the whole surface a player can see, swept', async ({ page }) => {
-    test.setTimeout(1_200_000);
+    test.setTimeout(1_800_000);
     await installTee(page);
     await installProjectionProbe(page);
     await openApp(page);
 
-    await buildAndPopulate(page, { beds: 8, admits: 8, guards: 3, label: 'contraband-surface' });
-    await runSampling(page, 18_000, 'S');
+    // Three guards at twelve prisoners: two post, one is spare, so sweeps run
+    // and the sweep is what puts anything on the screen to sweep for.
+    await buildAndPopulate(page, { beds: 12, admits: 12, guards: 3, label: 'contraband-surface' });
+    await runSampling(page, 30_000, 'S');
 
     const found = (await events(page)).filter((row) => row.type === 'contraband.discovered');
     console.log(`[contraband] discoveries before the sweep: ${JSON.stringify(found)}`);
 
-    // Every tab, every panel, in full -- looking for anything contraband-shaped.
+    // Every tab, in full -- looking for anything contraband-shaped.
     for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
       await tab(page, id).click();
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(800);
       const text = await panelText(page, '.hud');
       const hits = text
         .split('\n')
-        .map((line, index) => ({ line: line.trim(), index }))
-        .filter((row) => /contraband|search|seiz|confisc|smuggl|intelligen|informant|weapon|drug|phone|currency|tool/i.test(row.line));
-      console.log(`[contraband] tab ${id}: ${text.split('\n').length} lines; contraband-shaped lines = ${JSON.stringify(hits.map((h) => h.line))}`);
+        .map((line) => line.trim())
+        .filter((line) => /contraband|search|seiz|confisc|smuggl|intelligen|informant|weapon|drug|phone|currency|tool/i.test(line));
+      console.log(`[contraband] tab ${id}: ${text.split('\n').length} lines; contraband-shaped lines = ${JSON.stringify(hits)}`);
     }
 
-    // Every control the HUD offers, by accessible name -- so "there is no
-    // Search button" is an enumeration rather than an assertion.
+    // Every control the HUD offers, so "there is no Search button" is an
+    // enumeration rather than an assertion.
     for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
       await tab(page, id).click();
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(600);
       const controls = await page.evaluate(() =>
         [...document.querySelectorAll<HTMLElement>('.hud button, .hud input, .hud select, .hud [role="button"]')]
           .filter((node) => node.getClientRects().length > 0)
-          .map((node) => `${node.tagName.toLowerCase()}:${(node.innerText || node.getAttribute('aria-label') || node.getAttribute('title') || '').replace(/\s+/g, ' ').trim().slice(0, 40)}`),
+          .map((node) => `${node.tagName.toLowerCase()}:${(node.innerText || node.getAttribute('aria-label') || node.getAttribute('title') || '').replace(/\s+/g, ' ').trim().slice(0, 44)}`),
       );
       console.log(`[contraband] tab ${id} controls (${controls.length}): ${JSON.stringify(controls)}`);
     }
 
-    // The Security tab in full -- the tab ADR 0073 Option B would have put a
-    // search control on.
     await tab(page, 'security').click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(600);
     console.log(`[contraband] security tab, whole HUD text:\n${await panelText(page, '.hud')}`);
 
-    // And the orphaned route, from a prison that has found something.
-    console.log(`[contraband] hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.surface.contraband'))}`);
-    console.log(`[contraband] hud/security (for contrast): ${JSON.stringify(await pullProjection(page, 'hud/security', 'probe.surface.security'))}`);
-
-    expect(await currentTick(page)).toBeGreaterThan(17_000);
-  });
-
-  test('act 3 — how long a find stands on screen, and what a player can do with it', async ({ page }) => {
-    test.setTimeout(1_200_000);
-    await installTee(page);
-    await installProjectionProbe(page);
-    await openApp(page);
-
-    await buildAndPopulate(page, { beds: 8, admits: 12, guards: 3, label: 'contraband-alerts' });
-
-    // Sample the alerts list and the events band densely, so the lifetime of a
-    // contraband row is measured in ticks rather than guessed.
-    const started = Date.now();
-    let seen = 0;
-    for (;;) {
-      const tick = await currentTick(page);
-      const found = (await events(page)).filter((row) => row.type === 'contraband.discovered');
-      if (found.length !== seen) {
-        seen = found.length;
-        console.log(`[contraband] DISCOVERY #${seen} at tick ${tick}: ${JSON.stringify(found[seen - 1])}`);
-        console.log(`[contraband]   alerts: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
-        console.log(`[contraband]   band:   ${JSON.stringify(await panelText(page, '.hud__event'))}`);
-        console.log(`[contraband]   chip:   ${JSON.stringify(await contrabandChip(page))}`);
-      }
-      if (tick >= 26_000) break;
-      if (Date.now() - started > 600_000) break;
-      await page.waitForTimeout(6_000);
-    }
-
-    const finalTick = await currentTick(page);
-    console.log(`[contraband] at tick ${finalTick}: chip=${JSON.stringify(await contrabandChip(page))}`);
-    console.log(`[contraband] alerts at the end: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
-    console.log(`[contraband] band at the end: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
-
-    // Is a contraband row dismissible, the way ADR 0084 decision 3 grants?
-    const dismissables = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>('.hud-alerts [data-alert]')].map((row) => ({
+    // The alert rows themselves: what a contraband find leaves behind, and
+    // whether a player can retire it (ADR 0084 decision 3).
+    const alertRows = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-alerts__list [data-alert]')].map((row) => ({
         id: row.dataset['alert'] ?? '',
+        dismissible: row.dataset['alertDismissible'] ?? 'absent',
         text: (row.innerText ?? '').replace(/\s+/g, ' ').trim(),
-        hasDismiss: row.querySelector('button') !== null,
       })),
     );
-    console.log(`[contraband] alert rows: ${JSON.stringify(dismissables)}`);
+    console.log(`[contraband] alert rows: ${JSON.stringify(alertRows)}`);
+    console.log(`[contraband] chip: ${JSON.stringify(await contrabandChip(page))}`);
+    console.log(`[contraband] band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
 
-    expect(finalTick).toBeGreaterThan(0);
+    // The orphaned route, from a prison that has found something -- everything
+    // a contraband panel would have had to draw, published and drawn by nothing.
+    console.log(`[contraband] hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.surface.contraband'))}`);
+    console.log(`[contraband] hud/held-guards: ${JSON.stringify(await pullProjection(page, 'hud/held-guards', 'probe.surface.held'))}`);
+
+    expect(await currentTick(page)).toBeGreaterThan(29_000);
   });
 });
