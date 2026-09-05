@@ -394,3 +394,59 @@ growth of DOM nodes at 2.3× the largest population ever played.**
 quantises it, and 148,000,000 appearing six times running is the quantiser, not
 a measurement of stability. A real heap claim needs a different instrument.
 
+## 6. DEFECT — at 68 prisoners, ten guards leaves **zero** able to answer anything, and the panel says *Covered*
+
+This is the most player-damaging thing in the run.
+
+**MEASURED, act 1**, the Security tab dumped whole at game day 26, 68 residents,
+ten guards hired:
+
+> STAFF / GUARD COVERAGE / **9 of 9** / **Covered** / **Only free guards answer
+> incidents.** / WHO TO HIRE / Guard / Selected / Hire Guard · 80 / … /
+> **ON DUTY** / **10 held · 0 free** / Guard · Sector Post / Release / Guard ·
+> Sector Post / Release / Guard · Sector Post / Release / **and 7 more** / A
+> released guard stays hired and goes back to the pool. / ON THE PAYROLL /
+> 800 a day
+
+**VERIFIED, read**, why `0 free` is fatal rather than cosmetic.
+`hud.security.held-summary` is `'{held} held · {unassigned} free'` and
+`{unassigned}` is `hired − held` over the whole roster
+(`src/content/default-locale-en.ts:1718,1868`, quoting
+`projectHeldGuards`, `src/simulation/presentation/guard-release-projection.ts:213`).
+An incident needs `requiredResponderCount = max(1, ceil(severity * 0.5))`
+responders and *"every incident a session can currently open is severity 3 or
+worse … so its floor is `round(0.65 * 5) = 3` and it asks for **two**"*
+(`src/content/default-locale-en.ts:1876-1884`, quoting `response-system.ts:345`).
+
+**REASONED.** Two free guards are needed and there are none, so nothing can be
+contained — and the alerts column says exactly that, for four incidents:
+
+```
+"A fight has broken out between two prisoners. 4× Day 18",
+"No incident is still open — but the last one ran out of time instead of being
+ contained, and everyone caught in it was hurt. 4× Day 18",
+```
+
+**Four fights, four lapses, one for one**, with a guard force the panel calls
+*Covered* and a payroll of 800 a day.
+
+**What is new here, against the record.** `0 free` is not new — 
+`2026-09-04-hour-two.md` §2 measured `3 held · 0 free` at 17 residents and
+`2026-09-02-release-an-off-post-guard.md` is a whole record about the pool. **Two
+things are.** First, **the honest hint has landed**: hour-two quoted
+*"This prison has the guards it asks for."* beside `Covered`; v0.0.475 says
+*"Only free guards answer incidents."* — #941's fix reached the player, and it
+turns the panel into a readable self-contradiction rather than a lie.
+**Second, and this is the scale part: over-hiring does not buy a reserve.** The
+requirement at 68 residents is `ceil(68/8) = 9`
+(`src/simulation/security/sector-staffing.ts:190,147`), the player hired **ten**,
+and the count of free guards is still **zero**. A player who reads *"Only free
+guards answer incidents"* and reacts the only way the interface allows — hire
+another — gets a tenth held guard, 80 more a day, and no change whatever in what
+happens to an incident.
+
+**JUDGEMENT.** This is the one thing in a large prison a player can neither
+diagnose nor fix from the interface. The panel names the rule (`only free
+guards`), names the state (`0 free`), names a verdict that contradicts both
+(`Covered`), and the only control it offers makes the number worse.
+
