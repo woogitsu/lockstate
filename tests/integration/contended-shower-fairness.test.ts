@@ -251,6 +251,32 @@ function watched(showerHeads: 2 | 8): WatchedRun {
   };
 }
 
+/**
+ * **The three tests that call `watched` carry a 30,000 ms budget, and the one
+ * that does not is left on the global default**
+ * ([#1005](https://github.com/matmaxalez/lockstate/issues/1005)).
+ *
+ * `watched` runs the real kernel to `WATCH_UNTIL`, sampling all `PRISONERS` of
+ * them on every one of those ticks, and two of these tests run it twice. That
+ * is essential work -- there is no assertion inside the loop to remove, and
+ * the comment on the loop says why it may not be sampled coarsely -- so what
+ * needed fixing was the budget rather than the test. Measured on this
+ * container with nothing else running, worst of three full-suite runs:
+ * 1,713 ms for the two-run determinism case, 1,467 ms for the eight-head
+ * comparison and 1,141 ms for the fairness case, against `vitest.config.ts`'s
+ * `testTimeout` of 5,000 ms. A margin of 2.9x is inside what ordinary parallel
+ * load on a four-core box costs, and the failure it produces is
+ * `Error: Test timed out in 5000ms` -- a red that says nothing about the
+ * prison and teaches its reader to discount red.
+ *
+ * 30,000 ms is what the twenty other expensive tests in this suite already
+ * take, `tests/integration/economy-loan-recovery.test.ts` among them, and it
+ * is a budget rather than an absence of one: a kernel that stopped advancing
+ * still fails here, and it fails in half a minute.
+ *
+ * The money test is deliberately not given one. It never calls `watched`; it
+ * stops at `BUILT_BY` and costs 489 ms, so the default is doing its job.
+ */
 describe('twenty-four prisoners and a shower room with two heads', () => {
   it('lets the prisoners scanned last wash, which they never once did while the scan ran in entity-index order', () => {
     const run = watched(2);
@@ -345,7 +371,7 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     for (const [n, ticks] of run.showerTicks.entries()) {
       expect(ticks, `prisoner ${n} never washed`).toBeGreaterThan(0);
     }
-  });
+  }, 30_000);
 
   it('is the ceiling and not the prison: eight heads and the same bill remove the contention entirely', () => {
     const control = watched(8);
@@ -367,7 +393,7 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     expect(Math.max(...control.showerTicks)).toBe(756);
     expect(Math.min(...control.lowestHygiene)).toBe(186.4);
     expect(Math.min(...control.showerTicks)).toBeGreaterThan(Math.max(...watchedTwoHead.showerTicks));
-  });
+  }, 30_000);
 
   it('spends the same money in both prisons, so the difference between them is one ceiling and not one budget', () => {
     /*
@@ -402,5 +428,5 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     expect(second.showerTicksByDay).toEqual(first.showerTicksByDay);
     expect(second.lowestHygiene).toEqual(first.lowestHygiene);
     expect(second.runtime.prisoners.actionSystem.getMetrics()).toEqual(first.runtime.prisoners.actionSystem.getMetrics());
-  });
+  }, 30_000);
 });
