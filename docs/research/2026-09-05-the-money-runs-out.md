@@ -609,6 +609,42 @@ the confirmation step the owner ruled on 2026-09-03).
 
 ---
 
+## 9. VERIFIED, read + MEASURED — the unmet-need withholding is still suspended, and this record's arithmetic is the proof
+
+**VERIFIED, read.** `src/simulation/economy/income.ts:401`:
+`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;` — the
+owner's ruling of 2026-09-03 (*"usuń na razie kary, zobaczymy jak pogram i
+ocenię łatwość"*) is still in force at v0.0.475.
+
+**Issue #890 is therefore stale at this version.** It cites
+`src/simulation/economy/income.ts:347 — export const
+STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;` and measures *"roughly
+two thirds of the grant withheld, every day, for twenty days"*. The constant is
+`0` and the line is `:401`. **The copy half and the wire half of #890 are both
+still open** — no player-facing string in the locale module contains *withheld*
+or *unmet*, and `grep -n "withheld" src/simulation/protocol/types.ts` still
+finds only a comment — but the mechanic it describes does not currently fire at
+all, and anyone reading #890 as a description of today's build would be wrong by
+the whole amount.
+
+**MEASURED, and this record's arithmetic is where the proof is.** Every day
+boundary in findings 3 and 6 closes to the unit on an income of exactly
+`300 × roomOccupants`: `330 + 1,200 − 2,400 = −870` at four residents, and the
+arrears step changing from 1,200 to **1,500** the day `roomOccupants` fell to
+three is `2,400 − 900`. If any share of the grant were being withheld those sums
+would not close.
+
+**REASONED, and named as the weaker half:** these prisons had a cell, four beds
+and a toilet — **no canteen, no shower room and no yard** — and ran fifteen
+in-game days, so hunger, hygiene and recreation were certainly not being served.
+This record did not open the Regime panel's per-need inspector to confirm the
+permille values, because `2026-09-04-what-pressure-there-is.md` already did
+exactly that on the same build shape and read *"five of six needs at permille
+0"* while the state paid 300 apiece. What is **measured** here is the full rate;
+what is **inherited** is which needs were unmet.
+
+---
+
 ## Improvement proposals
 
 Every proposal below is grounded in something measured above, and every string
