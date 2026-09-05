@@ -47,10 +47,13 @@ thousand tiles and not at `DEFAULT_PRISONER_CAPACITY`'s 5,000; at the zoom that
 shows the whole plot, **the HUD stands on 156 of its 1,024 tiles** and a build
 gesture that lands there submits *nothing at all* — the largest obstruction
 being a 422×425 panel reading *"Minimap is not available yet"*. **Room
-contention finally bites, at 34 contenders per place**: all four visible roster
-rows read *Heading to Class* toward a classroom whose `education` ceiling is the
-width of one bookshelf — **two** — while one of them sits at `Hygiene 0%` with
-two shower heads for 68 people, and nothing on any surface names a ceiling.
+contention finally bites, at 34 contenders per place**: asked for all 68 roster
+rows at two ticks a day apart, the projection answers **two** prisoners in the
+classroom — its `education` ceiling is the width of one bookshelf — and
+**sixty-six** on `action.free-association`, which targets their own bunk; the
+shower room washes two of 68 and `hygiene` is the lowest need of sixteen of them
+a day after the prison fills. **Nothing on any surface names a ceiling**, and the
+Rooms panel calls both rooms finished.
 **Ten guards leave zero free**, four incidents lapse one-for-one, and the panel
 says `Covered` next to `0 free` and `Only free guards answer incidents.` One
 apparent defect — eight accommodation places with no beds under them — **did not
@@ -590,7 +593,7 @@ because it is the other tester's surface — the build flow — and it is not
 scale-specific; it is here because at 68 prisoners it is competing for the same
 column as the incidents.)*
 
-## 8. Room contention finally bites, and what the losers do is *walk to the classroom anyway*
+## 8. Room contention finally bites — two of sixty-eight in the classroom, and the other sixty-six go back to their bunks
 
 The brief's central unreached thing: `docs/adr/0062-…` decides who gets a room
 when more prisoners want it than it seats, and **no playtest had ever made that
@@ -626,29 +629,70 @@ inside the rectangle carrying that capability"*
 The previous tester computed that a classroom's ceiling of 2 would bind at
 twelve prisoners; at 68 it binds by a factor of nearly six.
 
-**MEASURED — that it bit.** `Hygiene 0%` on the fourth roster row is a prisoner
-who has not reached a shower head, in a prison whose player built one. ADR 0062
-predicted exactly this shape (*"a shower room at its authored 3×3 minimum with
-two `1×1` shower heads — a derived hygiene ceiling of two against
-twenty-four"*), and its own measurement was a kernel fixture. **This is the
-first time it has been seen through the interface, in a prison built with a
-mouse.**
+**MEASURED — and this is the whole population, not a window.** In act 1's second
+run the `hud/prisoner-roster` projection was asked for all 68 rows (`limit: 500`,
+against the interface's four) at two ticks a day apart. Both answers are the
+same:
 
-**MEASURED — what the losers do.** All four visible prisoners read *Heading to
-Class* simultaneously, in a room that seats **two**. `findAvailableForUse` is
-*"an answer, not a reservation"* — its own docblock says *"two actors selecting
-in the same tick can both be answered this instance and only the first
-`concurrentUseCapacityFor` of them will get in"*
-(`room-instance-registry.ts:968-971`). So the losers of a contended room are not
-told and do not stop: **they walk there and are refused on arrival**, and the
-interface's word for that is `Heading to Class`.
+```
+[report:built]   roster rows 68 of total 68; housed 68;
+                 actions [["action.free-association",66],["action.classroom-education",2]];
+                 phases [["travelling",38],["performing",30]];
+                 lowestNeed [["safety",59],["bladder",6],["hunger",3]]
+[report:round 1] roster rows 68 of total 68; housed 68;
+                 actions [["action.free-association",66],["action.classroom-education",2]];
+                 phases [["performing",57],["idle",11]];
+                 lowestNeed [["safety",32],["hygiene",16],["hunger",15],["bladder",5]]
+```
 
-**JUDGEMENT, and this is the playability half.** A player looking at this roster
-sees four people all doing the same sensible thing. Nothing on any surface says
-that 66 of them will not get in, that the number who can is two, or that the
-number two comes from the *width of one bookshelf*. The one control that would
-fix it — build a second bookshelf — is not suggested anywhere, and the Rooms
-panel calls the classroom finished.
+**Exactly two prisoners are in the classroom. The ceiling is two.** Sixty-six
+are not, at both samples, in a prison whose player built a classroom and whose
+Rooms panel calls it finished. This is the first time ADR 0062's contention has
+been observed across a whole population through the shipped projection rather
+than in a kernel fixture.
+
+**MEASURED — what the losers actually do, which is the half the brief asked
+for.** They are not queuing and they are not stuck: all 66 are on
+`action.free-association`, whose target is `{ kind: 'own-accommodation' }`
+(`src/simulation/prisoners/actions.ts:226`). **The loser of a contended room
+goes back to their own bunk.** That is ADR 0041's fallback working as designed —
+nobody starves of *recreation*, because `free-association` serves it — and it is
+why the prison looks calm while 97% of it is shut out of the one room built for
+education.
+
+**A reading from the first run is corrected here rather than left standing.**
+Run one's four visible roster rows all read `Heading to Class`, and this
+record's first draft read that as *"the losers walk there and are refused on
+arrival"*. The whole-population sample says otherwise: at these two ticks 66 of
+68 never select the classroom at all. Both can be true at different moments —
+the selection gate `findAvailableForUse` is *"an answer, not a reservation"*, and
+*"two actors selecting in the same tick can both be answered this instance and
+only the first `concurrentUseCapacityFor` of them will get in"*
+(`room-instance-registry.ts:968-971`) — but *what I measured* is the fallback,
+not the wasted walk, and the record says the measured thing.
+
+**MEASURED — the hygiene half, and it is the sharper one.** The shower room's
+`shower` ceiling is also **two**, against 68. Run one's roster showed
+`Hygiene 0%`, `Hygiene 20%` and `Hygiene 52%` on three of its four rows, and run
+two's whole-population sample has `hygiene` as the *lowest* need for **16 of 68**
+prisoners one day after the prison filled. ADR 0062 predicted this exact shape
+(*"a shower room at its authored 3×3 minimum with two `1×1` shower heads — a
+derived hygiene ceiling of two against twenty-four"*) and measured it in a
+kernel fixture; at 68 it is 34 to a head.
+
+**One thing the projection would not give me, stated so the table above is not
+over-read.** `PrisonerRosterRowViewModel.lowestNeed.level` is a `BoundedValue`
+(`src/simulation/presentation/prisoner-projection.ts:124-128`), not a number, so
+the instrument's `worst` column read `Infinity` throughout and **no need *level*
+in this section comes from the projection.** The percentages quoted are the
+Regime panel's own, read as text.
+
+**JUDGEMENT, and this is the playability half.** Nothing on any surface says
+that the classroom seats two, that the shower washes two, or that those numbers
+come from the *width of one bookshelf* and *two shower heads*. The Rooms panel
+calls both rooms finished. The one action that would fix either — place a second
+bookshelf, place four more shower heads — is suggested nowhere, and a player who
+looks at the roster sees people quietly going back to their cells.
 
 ## 9. What held, plainly
 
