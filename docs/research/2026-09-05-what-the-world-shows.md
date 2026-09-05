@@ -711,9 +711,10 @@ wall and said so.
   cannot be hired (§7), so I have no screenshot of them and cannot say whether
   they are distinguishable from a guard, which is half of the brief's first
   question.
-- **A prison larger than one screen.** Every act builds one room. What a
-  twenty-room prison reads like, and whether the tint scheme survives twenty
-  rooms adjacent, is unmeasured.
+- **More than one room at a time.** Every act builds exactly one room, so what
+  a twenty-room prison reads like — and whether eleven category tints at 14%
+  survive being adjacent rather than compared across four separate screenshots —
+  is unmeasured, and it is the case that matters most for §6's finding.
 - **Whether an object is ever hoverable or selectable.** I pressed tiles with
   build tools only. If there is an inspect gesture, I did not find it and did
   not look for it.
