@@ -629,6 +629,103 @@ the confirmation step the owner ruled on 2026-09-03).
 
 ---
 
+## 8. MEASURED — a prison can climb out, and for the first two days after the player fixes it the screen shows nothing changing
+
+**Reproduction:** act 4. The same build and the same over-hire as act 2, stopped
+**two** paydays into the floor instead of nine, then the whole roster dismissed
+and the climb read day by day.
+
+The descent reproduced act 2 to the unit — `330 → −870 → −2,070 → −2,500` with
+`arrears 770`, then `1,970` — which is the first thing worth saying about it:
+two independent runs, same figures.
+
+### The dismissal
+
+```
+[act4] roster opened: "ON THE PAYROLL\n2,400 a day\nGuard · On Post\nDismiss\n
+       Guard · Unassigned\nDismiss\nGuard · Unassigned\nDismiss\nand 27 more
+       A dismissed staff member leaves the prison for good, and their wage stops."
+[act4] DISMISSED 28 in 56 presses: {…"staff":2,"staffUnassigned":1,
+       "treasuryMinorUnits":-2500,"dailyWageBillMinorUnits":160,
+       "unpaidWagesMinorUnits":1810,
+       "conditions":["treasury.construction-refused","treasury.deliveries-refused"]}
+```
+
+**Twenty-eight of thirty, two presses each.** The wage bill fell `2,400 → 160`
+and the balance did not move by one minor unit, which is
+`src/simulation/staff/dismissal.ts:113` working as written.
+
+**The last two could not be dismissed by pressing the top control.** At
+`staff: 2` the roster is three rows and the first of them has **no name and a
+`Dismiss` beside it**:
+
+```
+ON THE PAYROLL
+160 a day
+Dismiss              <- this row names nobody
+Guard · On Post
+Dismiss
+Guard · Unassigned
+Dismiss
+```
+
+A press on that first control could not be delivered inside ten seconds and the
+act stopped there. **What is measured is narrow and is stated narrowly:** the
+panel is laid out, a `Dismiss` control is present in it above two named ones,
+and a press aimed at it did not land. **UNKNOWN:** whether it is `disabled`, in
+`assignPooledRows`' settle window (`STAFF_ROSTER_ROW_SETTLE_MS`, `:196`) or
+something else — this act read the text and pressed, and did not read the
+attribute. **JUDGEMENT:** a player would press the row that names somebody, so
+this costs them a wasted press rather than the two guards; but an enabled-looking
+control that names nobody and answers nothing is the shape #220 and #285 are
+about.
+
+### The climb
+
+| in-game day | funds | arrears | wage bill | chip tone | the chip's sentence |
+| --- | --- | --- | --- | --- | --- |
+| 13 (dismissals done) | `-2,500` | 1,810 | 160 | `critical` | *"The treasury is at its floor…"* |
+| 14 | `-2,500` | 1,810 | 160 | `critical` | *(unchanged)* |
+| 15 | `-2,500` | **770** | 160 | `critical` | *(unchanged)* |
+| 16 | **`-2,230`** | **0** | 160 | `danger` | *"Deliveries have stopped…"* |
+
+**This is the finding.** The player has just taken the single most decisive
+action the interface offers — sacking twenty-eight people, fifty-six presses —
+and **for two whole in-game days the money chip is identical**: same figure,
+same red, same sentence, and the sentence still says the way out is for the
+prison to earn money it is already earning.
+
+**VERIFIED, read — why, and it is not a bug.** `StateIncomeSystem.order = 120`
+credits the day's income and `PayrollSystem.order = 130` spends it in the same
+tick (`income.ts:747`, `payroll.ts:225`), and `payable` is
+`Math.max(0, Math.min(due, balance − floorFor('wages')))` (`payroll.ts:319`) —
+so while arrears stand, every unit the prison earns goes to them and the balance
+returns to the floor. The prison is recovering at exactly **`income − bill`**
+a day, `1,200 − 160 = 1,040`, and `1,810 / 1,040` is two boundaries. The
+arithmetic is right; what is missing is any way to see it.
+
+**The only place it *is* visible is a sentence in the alerts list, and it is
+visible by its number going down:**
+
+```
+Payday went unpaid — your staff are owed 2850.  Day 9
+Payday went unpaid — your staff are owed 3250.  2× Day 11
+Payday went unpaid — your staff are owed 2770.  Day 12
+Payday went unpaid — your staff are owed 1810.  Day 13
+```
+
+A row that says *"went unpaid"* is the game's only report of the recovery
+working. (Note the `2×` — **the rows do coalesce**, when two consecutive days
+carry the same figure, which is the 09-04 record's diagnosis confirmed from the
+other direction: it is the changing amount that defeats coalescing, not the
+absence of the machinery.)
+
+**And `unpaidWagesMinorUnits` is on no chip at all.** It is in the counts
+payload (measured, above) and reaches the player only through that once-a-day
+sentence.
+
+---
+
 ## 9. VERIFIED, read + MEASURED — the unmet-need withholding is still suspended, and this record's arithmetic is the proof
 
 **VERIFIED, read.** `src/simulation/economy/income.ts:401`:
