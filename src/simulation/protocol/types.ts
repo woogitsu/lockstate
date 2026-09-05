@@ -885,15 +885,20 @@ export const statusCountsSchema = z
      * that particular 40, and a single percentage cannot say which rung the
      * missing ones are on.
      *
-     * **There are no 40s to attribute today, 2026-09-03.** The owner suspended
-     * the withheld share at `0` while they play and judge difficulty -- the
-     * ruling is in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
-     * docblock -- so no grant is smaller than the headline rate for want of a
-     * guard. The paragraph above is kept as the reason these three counts have
-     * the shape they have, and the shape is unaffected: `SafetyCoverageSystem`
-     * still decides whether `safety` is unmet, the counts still say which rung
-     * the uncovered are on, and a restored rate needs no change to this payload
-     * (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+     * **There were no 40s to attribute between 2026-09-03 and 2026-09-04, and
+     * there are again.** On 2026-09-03 the owner suspended the withheld share
+     * at `0` while they played and judged difficulty, so no grant was smaller
+     * than the headline rate for want of a guard; on 2026-09-04, after the two
+     * measurements they made it conditional on, they restored it to `40`. Both
+     * rulings are in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
+     * docblock and both directions are marked here rather than overwritten
+     * (`docs/AGENT_WORKFLOW.md` §4). The paragraph above is the reason these
+     * three counts have the shape they have, and the shape was unaffected by
+     * either move: `SafetyCoverageSystem` still decides whether `safety` is
+     * unmet, the counts still say which rung the uncovered are on, and neither
+     * the suspension nor the restoration needed a change to this payload --
+     * which the 2026-09-03 note predicted and this line now records as
+     * measured.
      *
      * They sum to the population **standing in a sector**, which in the
      * shipped single-sector topology is every living prisoner on owned land
