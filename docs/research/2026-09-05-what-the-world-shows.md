@@ -339,6 +339,58 @@ pictures differ in furniture as well as in the door, and **the whole-frame
 comparison this act was designed to make is spoiled.** I am reporting the
 comparison that survives it rather than the one I set out to make.
 
+**The re-run.** Act 3b also failed its first attempt outright —
+`runUntilTick`'s default 180 s budget threw `stuck at tick 20031, wanted 24000`
+at load average around 9 with another agent's browser suite alongside — so it
+was given a fifteen-minute budget and a fall-short is now a logged reading
+rather than a thrown act.
+
+### The comparison that survives, and it is the largest finding in this record
+
+Act 1's cell is the **sealed** one — no door, `1 ROOMS  1 not ready`, four
+prisoners inside, at tick 7506, **day 4**. Act 3a's is the **working** one —
+door built, room ready, `1 ROOMS` with no badge, four prisoners, at tick 24,214,
+**day 11**. Both have two guards, both report `roomOccupants: 4`, both report
+`0 INCIDENTS Clear`, and in both the treasury rises the whole way (24,290 and
+28,530). Both crops cover exactly tiles (12,12)–(17,17) at 1:1, and act 1's is
+the inner 384×384 of its padded 512×512 file, so they align tile for tile.
+
+**Differing pixels: 6,061 of 147,456 — 4.11%.** Per tile, out of 4,096 each:
+
+```
+      x12    x13    x14    x15    x16    x17
+y12:  385    798    896    896    14     0
+y13:  0      0      0      0      0      0
+y14:  0      0      0      0      0      0
+y15:  0      0      0      0      0      0
+y16:  0      0      0      0      0      0
+y17:  0      0      3072   0      0      0
+```
+
+**Thirty-two of the thirty-six tiles are pixel-identical.** The 3,072 pixels at
+(14,17) are the door itself. The 2,989 across row y=12 are the four prisoner
+sprites shifting slightly in how they overlap in the same corner tile — not a
+different place, not a different pose family, not a different colour: the same
+four orange figures in the same corner in both pictures. Three regions checked
+separately came back at **exactly zero**: the two guards (36,864 px), a
+four-by-two patch of open floor (32,768 px), and every tile in rows y=13
+through y=16.
+
+So, to the brief's third question — **does the world show state, or only the
+HUD?** A prison whose only cell nobody can enter, and a working prison seven
+in-game days later, are the same picture apart from the door the player built.
+No distress, no need indicator, no posture, no tint, no icon, nothing. Every bit
+of "how is my prison doing" lives in the HUD, and the strip's whole contribution
+is a `1 not ready` badge beside the `ROOMS` chip.
+
+**#944's headline claim was that a working cell and a dead cell screenshot
+byte-identically. Measured without art, that was guaranteed by the art being
+absent. Measured with the art, it is 95.89% true, and the 4.11% is a door.**
+
+The measurement is reproducible from the two committed files: decode both PNGs,
+take the inner 384×384 of `act1-room.png` at offset (64,64), and compare
+against `act3-working.png` pixel by pixel.
+
 ## 5. Act 4 — stacking at twelve and at fifty
 
 _Pending — see §9._
