@@ -78,9 +78,12 @@ Nothing below is **FROM MEMORY**.
 **Yes, and it is easy — but only in the half of the range where the game says
 nothing.** The 25,000 grant can be spent to nothing in **one press** of a
 control that prices itself honestly and a chip that does not react at all
-(finding 1), or dragged away a segment at a time by the one gesture in the game
-that never states a price and is never pre-flighted (finding 2). Nothing on
-screen distinguishes 25,000 from 40. Below zero the opposite is true: the
+(finding 1), or dragged away **1,040 a gesture** — thirteen segments at
+80, four drags and 4,160 gone — by the one gesture in the game that never states
+a price and is never pre-flighted (finding 2). Nothing on screen distinguishes
+25,000 from 40: at a balance of *exactly zero* the funds chip is still a bare
+number with no tone, no badge and no tooltip, and one 40-unit press later it has
+all three. Below zero the opposite is true: the
 insolvency ladder is *well* built, three tones and three different true
 sentences at −1, at −1,250 and at −2,500, all changing on the same steps the
 code refuses on (finding 3). An **earning** prison — the case the previous
@@ -1145,6 +1148,15 @@ game anywhere in this record.**
   established** — refusal, or ADR 0081 parking, or something else. Settling it
   needs a read of the order's own state and of which `SpendClass` the
   just-in-time pass asked under, and this record did neither.
+- **That a prison held at the floor without dismissing is permanently stuck.**
+  That is act 3's question and **act 3 was written and never run.** What acts 2
+  and 4 measure is nine boundaries and two boundaries at the floor with the
+  payroll standing, in both of which the arrears grew and the balance did not
+  move. Whether that continues for ever, or whether `DischargeSystem` eventually
+  empties the prison and turns it into the empty terminal case of
+  `2026-09-04-can-this-prison-fail.md`, is not established here — and act 2's
+  `roomOccupants: 4 → 3` is the only reason to suspect the second.
+
 - **That thirty guards is a mistake a player would make.** It is a deliberately
   large over-hire chosen so the descent fits in one act. The Staff panel says
   `Hire 1 to cover this population` before the first press, so a player who
