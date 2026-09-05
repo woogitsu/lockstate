@@ -92,9 +92,9 @@ path. One of them, *what a sweep costs the response*, is cited by
 being absent from the index that is supposed to name it. **The absence lasted as
 long as it did because nothing checked**, which is now
 `tests/foundation/research-index-contract.test.ts`'s job: it fails when a record
-has no row, when a row names a record that is not there, and when a row sits
-outside the table — the three shapes this paragraph and the one above it
-describe.
+has no row, when a row sits outside the table, when a row names a record that
+is not there, and when a subdirectory of records is neither rowed nor linked to
+— which is every shape this paragraph and the one above it describe.
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
