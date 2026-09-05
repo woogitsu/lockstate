@@ -6,7 +6,6 @@ import {
   armBuildable,
   buildAndPopulate,
   buy,
-  calibrate,
   centreOf,
   currentClock,
   currentTick,
@@ -281,19 +280,52 @@ test('act 1 — evening one, the night, evening two', async ({ page }) => {
 
   /* ---------------- EVENING ONE ---------------- */
 
-  // A real prison: 3 beds, 6 admissions, 2 guards. Three prisoners more than
-  // beds is the "problem brewing" the brief asks for, and it is a problem a
-  // player creates by accident rather than one this instrument invents.
+  // A real prison: 3 beds, 6 admissions, 2 guards. More prisoners than beds is
+  // the "problem brewing" the brief asks for, and it is a problem a player
+  // creates by accident rather than one this instrument invents.
   const origin = await buildAndPopulate(page, { beds: 3, admits: 6, guards: 2, label: 'act1' });
 
+  // Pause, and stay paused for the rest of the evening.
+  //
+  // **Not cosmetic.** `buildAndPopulate` leaves the clock at x4, and the first
+  // run of this act read the panels at tick 9392, saved at 10842 and then
+  // compared the two — so every "difference across the night" was really 1,450
+  // ticks of play between two readings on the *same* evening. Pausing makes the
+  // reading, the save and the restore describe one tick.
+  await page.locator('.hud-strip__transport button').nth(0).click();
+  await page.waitForTimeout(600);
+  console.log(`[act1] STATE paused at ${JSON.stringify(await currentClock(page))}, tick ${await kernelTick(page)}`);
+
+  // --- the camera, moved somewhere the player chose ------------------
+  //
+  // `keyboard.down`/`up` and not `press`: `WorldScene` pans *while the key is
+  // held* (`src/rendering/scene/world-scene.ts:500`, a `window` keydown that
+  // feeds `keyboard.keyDown`), so a `press` — down and up in the same frame —
+  // moves the camera by nothing worth measuring. No canvas click first,
+  // either: the listener is on `window`, and a click at the canvas's top-left
+  // corner lands on the status strip and never becomes actionable.
+  const cameraDefault = await worldHash(page, 'evening-one-camera-default');
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(900);
+  await page.keyboard.up('ArrowRight');
+  await page.keyboard.down('ArrowDown');
+  await page.waitForTimeout(600);
+  await page.keyboard.up('ArrowDown');
+  await page.waitForTimeout(700);
+  const cameraMoved = await worldHash(page, 'evening-one-camera-moved');
+  console.log(`[act1] CAMERA default md5 = ${cameraDefault}, after panning = ${cameraMoved}`);
+
   // --- money spent on an order that is still in flight ---------------
+  // Ordered with the clock stopped, so the delivery cannot land: the panel's
+  // own sentence is *"Arrives while the clock runs"*.
   await tab(page, 'build').click();
   await buy(page, 'wall-brick', 40);
-  console.log(`[act1] HUD deliveries right after the order :: ${await line(page, '.hud-build__deliveries')}`);
+  console.log(`[act1] HUD deliveries with the clock stopped :: ${await line(page, '.hud-build__deliveries')}`);
 
   // --- construction queued and deliberately NOT finished -------------
   // A second block's north and west walls, drawn and left mid-build. This is
-  // the "half-drawn block" a returning player has to find again.
+  // the "half-drawn block" a returning player has to find again. Drawn on a
+  // stopped clock so nothing can build it.
   await armBuildable(page, 'wall-brick');
   const westX = origin.originX + 4 * TILE;
   const eastX = origin.originX + 10 * TILE;
@@ -310,32 +342,43 @@ test('act 1 — evening one, the night, evening two', async ({ page }) => {
   console.log(`[act1] HUD staff panel after the last-moment hire :: ${await line(page, '.hud-staff')}`);
 
   // --- a refusal, which is the last thing the player did --------------
-  // Admitting into a prison with no room left is refused with a real sentence.
-  await tab(page, 'overview').click();
-  await page.locator('.hud-intake__admit').click();
-  await page.waitForTimeout(600);
-  await page.locator('.hud-intake__admit').click();
-  await page.waitForTimeout(900);
+  // Reaching for the Remove tool and clicking bare ground is an ordinary
+  // player mistake, and it puts a real refusal on the band and a real row in
+  // the alerts column. Whether *that* survives the night is half the question.
+  await tab(page, 'build').click();
+  await page.locator('.hud-build__remove').click();
+  const bare = centreOf(origin, 25, 25);
+  const at = await page.evaluate(
+    ({ x, y }) => (document.elementFromPoint(x, y)?.className ?? 'nothing').toString(),
+    bare,
+  );
+  console.log(`[act1] the element under the Remove press is ${JSON.stringify(at)} (must be the canvas)`);
+  await press(page, bare.x, bare.y);
+  await page.locator('.hud-build__remove').click();
+  await page.waitForTimeout(500);
 
   const beforeCounts = await latestCounts(page);
   const beforeTick = await kernelTick(page);
-  const beforeClock = await currentClock(page);
-  console.log(`[act1] STATE evening one :: tick=${beforeTick} clock=${JSON.stringify(beforeClock)} counts=${JSON.stringify(beforeCounts)}`);
+  console.log(`[act1] STATE evening one :: tick=${beforeTick} clock=${JSON.stringify(await currentClock(page))} counts=${JSON.stringify(beforeCounts)}`);
 
   const beforeArrival = await arrivalScreen(page);
   console.log(`[act1] HUD evening one, the screen as left :: ${JSON.stringify(beforeArrival, null, 1)}`);
   const beforeTabs = await everyTab(page, 'act1-evening-one');
-  const beforeWorld = await worldHash(page, 'evening-one-world');
+  const beforeWorld = await worldHash(page, 'evening-one-as-left');
   console.log(`[act1] HUD evening one world md5 = ${beforeWorld}`);
   console.log(`[act1] HUD evening one save panel :: ${JSON.stringify(await savePanel(page))}`);
 
-  // The four questions a returning player has, answered here from the record
-  // so evening two can be scored against them.
+  // The player leaves the Build tab open, because that is what they were doing.
+  await tab(page, 'build').click();
+  await page.waitForTimeout(300);
+  const tabAtSave = await page.locator('.hud').getAttribute('data-active-tab');
+  console.log(`[act1] HUD the tab the player leaves on = ${String(tabAtSave)}`);
+
   console.log('[act1] === WHAT A PLAYER WOULD WANT TO REMEMBER ===');
-  console.log(`[act1] Q1 what was I doing?      :: drawing a second block's north and west walls, then I hired a third guard`);
-  console.log(`[act1] Q2 what did I just order? :: 40 bricks, and ${await line(page, '.hud-build__queue')}`);
-  console.log(`[act1] Q3 what is going wrong?   :: 6+ prisoners against ${beforeCounts?.accommodationCapacity} beds; Admit refused twice`);
-  console.log(`[act1] Q4 what should I do next? :: finish the second block, buy beds for the prisoners with none`);
+  console.log(`[act1] Q1 what was I doing?      :: drawing a second block, north and west walls, west of the first`);
+  console.log(`[act1] Q2 what did I just order? :: 40 bricks; queue reads ${await line(page, '.hud-build__queue')}`);
+  console.log(`[act1] Q3 what is going wrong?   :: prisoners with no bed, and a Remove that was refused`);
+  console.log(`[act1] Q4 what should I do next? :: run the clock so the bricks land and the walls go up`);
 
   // --- save, the way a player leaving for the night does --------------
   await page.getByRole('button', { name: 'Save now' }).click();
@@ -362,9 +405,16 @@ test('act 1 — evening one, the night, evening two', async ({ page }) => {
   console.log(`[act1] STATE evening two, before Load, tick = ${await kernelTick(page)}`);
   console.log(`[act1] HUD evening two world before Load md5 = ${await worldHash(page, 'evening-two-before-load')}`);
 
+  // Does anything anywhere on the cold page say when this prison was last
+  // played, or what state it is in? Counted rather than asserted absent.
+  const coldPage = await page.evaluate(() => (document.body.innerText ?? '').replace(/\n+/g, ' | '));
+  for (const phrase of ['last played', 'welcome back', 'you were', 'left off', 'day ', 'ago', 'continue']) {
+    console.log(`[act1] HUD does the cold page contain "${phrase}"? ${coldPage.toLowerCase().includes(phrase) ? 'YES' : 'no'}`);
+  }
+
   // 2. THE FIRST SCREEN AFTER LOADING. One interaction: press Load.
   await interactions.click(page, '.save-panel__item button:has-text("Load")', 'press Load on the only prison row');
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1800);
 
   const afterArrival = await arrivalScreen(page);
   console.log(`[act1] HUD evening two, the arrival screen :: ${JSON.stringify(afterArrival, null, 1)}`);
@@ -373,7 +423,9 @@ test('act 1 — evening one, the night, evening two', async ({ page }) => {
   console.log(`[act1] STATE evening two after Load :: tick=${afterTick} clock=${JSON.stringify(await currentClock(page))} counts=${JSON.stringify(afterCounts)}`);
   console.log(`[act1] STATE tick delta across the night = ${afterTick - beforeTick}`);
   const afterWorld = await worldHash(page, 'evening-two-after-load');
-  console.log(`[act1] HUD evening two world md5 = ${afterWorld} (evening one was ${beforeWorld}; same = the camera is where it was)`);
+  console.log(
+    `[act1] CAMERA evening two md5 = ${afterWorld}; as left = ${beforeWorld}; panned = ${cameraMoved}; default = ${cameraDefault}`,
+  );
   console.log(`[act1] HUD save panel after Load :: ${JSON.stringify(await savePanel(page))}`);
 
   // 3. THE ARRIVAL SCREEN, LINE BY LINE AGAINST WHAT WAS LEFT.
@@ -392,13 +444,6 @@ test('act 1 — evening one, the night, evening two', async ({ page }) => {
   }
 
   interactions.report();
-
-  // 5. Where is the camera, really? Calibration is a real measurement of the
-  //    screen-to-tile transform, so it says where tile (0,0) sits. It is done
-  //    LAST because it presses the world and would otherwise put refusals of
-  //    its own on the band the reading above depends on.
-  const afterOrigin = await calibrate(page);
-  console.log(`[act1] CAMERA evening one origin = (${origin.originX}, ${origin.originY}); evening two origin = (${afterOrigin.originX}, ${afterOrigin.originY})`);
 
   expect(afterTick).toBeGreaterThan(0);
 });
@@ -613,4 +658,103 @@ test('act 4 — does the Rooms tab list the rooms I own, and does a switch keep 
     return seen.size;
   }, `data:image/png;base64,${frame.toString('base64')}`);
   console.log(`[act4] HUD distinct colours sampled in the world after the switch = ${distinctColours} (1 would be a flat field)`);
+});
+
+/* ================================================================== */
+/* ACT 5 — a queued build, and where the camera is                     */
+/* ================================================================== */
+
+/**
+ * Which tile is under a fixed screen point, read from the world rather than
+ * assumed.
+ *
+ * The Remove tool submits a `RemoveObject` carrying the tile it resolved, so
+ * one press answers the screen-to-tile transform exactly — which is to say,
+ * where the camera is. `calibrate` does the same thing six times per axis to
+ * find the origin; one press is enough to compare two cameras, and it does not
+ * need a free tile to bisect around.
+ *
+ * It removes nothing when the tile is empty; the refusal that follows is the
+ * ordinary *"Nothing was removed"*, which is what every reading here produces.
+ */
+async function tileUnder(page: Page, x: number, y: number, label: string): Promise<string> {
+  await tab(page, 'build').click();
+  const over = await page.evaluate(
+    (point) => (document.elementFromPoint(point.x, point.y)?.tagName ?? 'NOTHING').toString(),
+    { x, y },
+  );
+  await page.locator('.hud-build__remove').click();
+  const commands = await press(page, x, y);
+  await page.locator('.hud-build__remove').click();
+  const removal = commands.find((c) => c['type'] === 'RemoveObject');
+  const answer =
+    removal === undefined
+      ? `no RemoveObject (the point is over ${over})`
+      : `tile ${String(removal['x'])},${String(removal['y'])} (over ${over})`;
+  console.log(`[${label}] CAMERA the point (${x}, ${y}) is ${answer}`);
+  return answer;
+}
+
+test('act 5 — a queued build and a moved camera, across the night', async ({ page }) => {
+  await openApp(page);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.waitForTimeout(600);
+
+  // Bricks, landed, so the wall run below can start and then be stopped
+  // mid-build rather than sitting unfunded.
+  await tab(page, 'build').click();
+  await buy(page, 'wall-brick', 30);
+  await page.locator('.hud-strip__transport button').nth(1).click();
+  await page.waitForTimeout(6000);
+  await page.locator('.hud-strip__transport button').nth(0).click();
+  await page.waitForTimeout(500);
+  console.log(`[act5] HUD deliveries after the clock ran :: ${await line(page, '.hud-build__deliveries')}`);
+
+  const before = await tileUnder(page, 700, 300, 'act5-default-camera');
+
+  // A wall run drawn on a stopped clock: the orders are placed and nothing can
+  // build them, which is exactly "a half-drawn block left overnight".
+  await armBuildable(page, 'wall-brick');
+  await drag(page, { x: 500, y: 250 }, { x: 850, y: 250 });
+  await page.waitForTimeout(600);
+  console.log(`[act5] HUD build queue, clock stopped :: ${await line(page, '.hud-build__queue')}`);
+
+  // And the camera moved somewhere the player chose.
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(1200);
+  await page.keyboard.up('ArrowRight');
+  await page.waitForTimeout(600);
+  const moved = await tileUnder(page, 700, 300, 'act5-moved-camera');
+
+  const leftQueue = await line(page, '.hud-build__queue');
+  const leftTick = await kernelTick(page);
+  console.log(`[act5] STATE as left :: tick=${leftTick} counts=${JSON.stringify(await latestCounts(page))}`);
+  console.log(`[act5] HUD as left, arrival surfaces :: ${JSON.stringify(await arrivalScreen(page), null, 1)}`);
+
+  await page.getByRole('button', { name: 'Save now' }).click();
+  await page.waitForTimeout(1200);
+  console.log(`[act5] HUD after Save now :: ${JSON.stringify(await savePanel(page))}`);
+
+  /* ---- the night ---- */
+  await page.reload();
+  await page.waitForSelector('#game-root canvas');
+  await page.waitForSelector('.hud');
+  await page.waitForSelector('.save-panel');
+  await page.waitForTimeout(1500);
+
+  await page.locator('.save-panel__item button:has-text("Load")').first().click();
+  await page.waitForTimeout(2000);
+
+  console.log(`[act5] STATE after Load :: tick=${await kernelTick(page)} (as left ${leftTick})`);
+  console.log(`[act5] HUD arrival after Load :: ${JSON.stringify(await arrivalScreen(page), null, 1)}`);
+  await tab(page, 'build').click();
+  await page.waitForTimeout(600);
+  const backQueue = await line(page, '.hud-build__queue');
+  console.log(`[act5] HUD build queue as left    :: ${leftQueue}`);
+  console.log(`[act5] HUD build queue on return  :: ${backQueue}`);
+  console.log(`[act5] HUD deliveries on return   :: ${await line(page, '.hud-build__deliveries')}`);
+
+  const after = await tileUnder(page, 700, 300, 'act5-after-load');
+  console.log(`[act5] CAMERA default=${before} | moved=${moved} | after the night=${after}`);
 });
