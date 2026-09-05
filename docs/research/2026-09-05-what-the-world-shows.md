@@ -145,8 +145,13 @@ At 1:1, in a 512×512 crop, with no clicking and no zoom:
 They differ in hue, in value and in silhouette, they are the same scale as each
 other, and nothing about them is ambiguous. The atlases are 8-directional and
 the frames are 256×384 with a foot pivot at (128,352)
-(`public/assets/actors/actor.prisoner.base.atlas-manifests.json`), and the
-figures on screen are lit, shaded and legible at the ~35×55 px they occupy.
+(`public/assets/actors/actor.prisoner.base.atlas-manifests.json`), and each
+sprite is drawn into a **64×96 CSS px** quad — `scale = (tileSizePx *
+footprintTiles) / frame.rect.width` = `64 * 1 / 256` = `0.25`
+(`src/rendering/actors/sprite-placement.ts:73`, with `TILE_SIZE_PX` `64` and
+`ACTOR_FOOTPRINT_TILES` `1` at `src/rendering/tile-metrics.ts:21` and `:31`),
+of which the figure fills rather more than half the width. They are lit and
+shaded and legible at that size.
 **This is the strongest thing in the world view and no previous record could
 see it.**
 
@@ -310,13 +315,39 @@ Screenshot: `2026-09-05-what-the-world-shows/act2-showroom-full.png`, top right.
 
 ## 4. Act 3 — a working cell and a sealed one, side by side
 
-_Pending — see §9._
+Two runs, identical geometry, identical population (four prisoners, two
+guards), both driven to **tick 24,000** and cropped to the same 384×384
+rectangle. One has a wooden door built into the south wall of tile (14,17); the
+other does not. Screenshots: `2026-09-05-what-the-world-shows/act3-working.png`
+and `act3-sealed.png`, with `-full.png` and `-x3.png` beside each.
+
+**A door is drawn with real artwork, and it is the sharpest possible contrast
+with §3.** The working cell's south wall carries a textured steel door with a
+vertical window slot and a handle plate — `EDGE_ART_BY_NUMERIC_ID` maps
+`DOOR_EDGE_NUMERIC_ID` to `env.door.interior.face`/`.cap`
+(`src/rendering/world/environment-art.ts:75`). Eight tiles away in the same
+picture, the bed a prisoner sleeps in is a rectangle of `0x7f8ba0`.
+
+### THE CONFOUND, NAMED FIRST
+
+**The two runs are not the controlled pair they were meant to be.** In the
+sealed run the toilet press placed a **fifth bed** instead of a toilet — the
+same `armBuildable` race act 2 measured — so the sealed cell reads
+`roomCapacity=5, accommodationCapacity=5` against the working cell's `4`, and
+its Rooms panel says it is missing `1 × Toilet` as well as a door. So the
+pictures differ in furniture as well as in the door, and **the whole-frame
+comparison this act was designed to make is spoiled.** I am reporting the
+comparison that survives it rather than the one I set out to make.
 
 ## 5. Act 4 — stacking at twelve and at fifty
 
 _Pending — see §9._
 
 ## 6. Act 6 — the same box, designated four different ways
+
+_Pending — see §9._
+
+## 6b. Act 7 — what the wheel does
 
 _Pending — see §9._
 
