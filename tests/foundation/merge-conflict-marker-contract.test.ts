@@ -33,12 +33,20 @@ import { describe, expect, it } from 'vitest';
  * ## What is scanned, and why that is the boundary
  *
  * Every **tracked** file, enumerated from `git ls-files`, read from the working
- * tree. Not the whole directory tree, for two reasons that are the same reason:
- * a marker under `node_modules/`, `dist/` or `benchmark-results/` cannot reach
- * `main` and is not this repository's file, and a third-party fixture that
- * legitimately contains a conflict — diff and merge libraries ship them — would
- * be a false red on work nobody here did. `tests/foundation/typecheck-coverage-contract.test.ts`
- * already draws its subject the same way and for the same reason.
+ * tree. Not the whole directory tree, and the reason is the subject rather than
+ * the arithmetic: a marker under `node_modules/`, `dist/` or
+ * `benchmark-results/` is not this repository's file and cannot reach `main`,
+ * so a finding there would be a red about work nobody here did.
+ * `tests/foundation/typecheck-coverage-contract.test.ts` already draws its
+ * subject the same way and for the same reason.
+ *
+ * **The false-positive argument for that boundary is the one this repository
+ * would expect and it is not supported here, so it is not made.** A whole-tree
+ * walk was measured rather than imagined: `node_modules/` in this container is
+ * 8,499 files and 508 MB, and it contains **zero** lines beginning with a
+ * marker and zero lines that are exactly seven `=`. What the boundary actually
+ * buys today is the walk staying at 1,413 files instead of ten thousand, and a
+ * gate whose subject does not change when a dependency is added.
  *
  * A tracked file is read as text unless its first 8 KiB contain a NUL byte,
  * which is the heuristic `git` itself uses to call a blob binary. Two
