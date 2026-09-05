@@ -5,7 +5,13 @@ import type { HostRefusalReason } from '../host-refusal';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudClockViewModel, HudCountsViewModel, HudSeverity, HudSpeed } from './view-model';
+import type {
+  HudClockViewModel,
+  HudCountsViewModel,
+  HudRoomNeedsViewModel,
+  HudSeverity,
+  HudSpeed,
+} from './view-model';
 
 /**
  * Pure view-model → display-descriptor mapping.
@@ -340,6 +346,64 @@ function prisonersWithoutBedBadge(counts: HudCountsViewModel): HudMetricBadge | 
    * instance: any badge stating a quantity has it.
    */
   return { tone: 'warning', textKey: HUD_MESSAGE_KEY.prisonersWithoutBed, numberParameters: { count: withoutBed } };
+}
+
+/**
+ * The badge under the `ROOMS` chip: how many of the rooms it counts cannot yet
+ * do the job they were designated for
+ * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+ *
+ * ## Why the strip carries this at all
+ *
+ * Because the warning had exactly one render site and it was behind a tab. A
+ * play-test on 2026-09-05 zoned a cell with no door, sat on OVERVIEW for
+ * **eight game days**, and the two messages it saw in that time were
+ * *"Contraband found: Tool."* and *"Cell designated. Day 2"* -- while
+ * `.hud-rooms` (never laid out on that tab) held `NOT READY 1 of 1` and the
+ * strip read `1 ROOMS` with no qualifier at all. The sentence
+ * `hud.rooms.needs-doorway` is true, immediate and durable, and a player on the
+ * tab the game opens on cannot see it. This badge is the qualifier that says
+ * the panel has something to say; it does not try to be the panel.
+ *
+ * ## Why it is not derived from `counts`
+ *
+ * Every other badge on this strip is, and this one cannot be: whether a room is
+ * ready is `projectRoomList`/`projectRoomDetail`'s verdict, pulled over the
+ * projection channel, and `simulation/status-counts` carries no such figure.
+ * `HudRoomNeedsViewModel` is the answer that already exists, already crosses
+ * the boundary and is already what the Rooms panel prints -- so reading it here
+ * means the badge and the panel state one number from one source. Recomputing
+ * "unfinished" on this side would be the second definition that drifts, which
+ * is the rule `HudRoomNeedViewModel` states for the panel and it does not stop
+ * applying because the reader moved to the strip.
+ *
+ * ## The three states, and why two of them draw nothing
+ *
+ * - **Nothing has asked** (`undefined`) -- no session, or a session that has
+ *   stopped. Absent, because a badge reading `0 not ready` would be a claim
+ *   about a prison nothing is answering for.
+ * - **Every room is ready** (`unfinishedRooms === 0`) -- absent, and this is
+ *   `prisonersWithoutBedBadge`'s rule rather than a second opinion: *"a status
+ *   strip where several things are always amber teaches players to ignore
+ *   amber"*, and the note there already extends it to reassurance. A prison
+ *   whose rooms all work is described by the count above the badge.
+ * - **Something is not ready** -- the count, toned `warning`.
+ *
+ * `warning` and not `danger`: an unfinished room is the ordinary state of a
+ * room a player has just drawn, and the chip's own `tone` is left alone so this
+ * is one signal rather than two for one fact.
+ *
+ * `numberParameters`, not `parameters`, for the reason `prisonersWithoutBedBadge`
+ * records: a badge that states a quantity must group it the way the chip above
+ * it groups its own.
+ */
+function roomsNotReadyBadge(roomNeeds: HudRoomNeedsViewModel | undefined): HudMetricBadge | undefined {
+  if (roomNeeds === undefined || roomNeeds.unfinishedRooms <= 0) return undefined;
+  return {
+    tone: 'warning',
+    textKey: HUD_MESSAGE_KEY.roomsNotReady,
+    numberParameters: { count: roomNeeds.unfinishedRooms },
+  };
 }
 
 /**
@@ -691,8 +755,20 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
  *
  * Order is part of the contract: a HUD whose metrics move between builds is
  * one a player has to re-read every time.
+ *
+ * **`roomNeeds` is the one input that is not a count, and it is optional**
+ * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+ * It is the Rooms panel's own readout, pulled over the projection channel
+ * rather than published on `simulation/status-counts`, so it is absent whenever
+ * nothing has asked -- before a session exists, and after one stops. Optional
+ * rather than defaulted for `roomsNotReadyBadge`'s reason: "nobody asked" and
+ * "every room is ready" are different facts and only the second is a statement
+ * about the prison, so neither may be spelled `0`.
  */
-export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMetricDescriptor[] {
+export function projectStatusMetrics(
+  counts: HudCountsViewModel,
+  roomNeeds?: HudRoomNeedsViewModel,
+): readonly HudMetricDescriptor[] {
   const hasIncidents = counts.activeIncidents > 0;
   const capacity = counts.prisonerCapacity > 0 ? counts.prisonerCapacity : undefined;
 
@@ -853,8 +929,31 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       labelKey: HUD_MESSAGE_KEY.rooms,
       value: counts.rooms,
       capacity: undefined,
+      /**
+       * **The chip's own tone is deliberately left alone** while the badge
+       * beside it carries the warning (#1006 finding 1).
+       *
+       * `prisonersWithoutBedBadge` states the rule this follows in the other
+       * direction: there the chip already had `occupancyTone` as its escalation
+       * channel, so the badge was not painted red as well. Here the chip has no
+       * tone at all and the badge is the only signal, which keeps one fact to
+       * one channel either way -- and keeps the strip from turning amber the
+       * moment a player draws their first rectangle, which is the ordinary
+       * state of a room that has just been designated.
+       */
       tone: undefined,
-      badge: undefined,
+      /**
+       * **How many of the rooms this chip counts are not ready** (#1006
+       * finding 1), or nothing when they all are and nothing when nobody has
+       * asked.
+       *
+       * The chip keeps the raw count -- how many rooms the prison has is what a
+       * player asks it for -- and the badge names the part of it that does not
+       * work yet, which is `prisonersWithoutBedBadge`'s arrangement two chips
+       * over. See `roomsNotReadyBadge` for why the answer comes from the
+       * projection channel rather than from `counts`.
+       */
+      badge: roomsNotReadyBadge(roomNeeds),
       description: undefined,
     },
     {

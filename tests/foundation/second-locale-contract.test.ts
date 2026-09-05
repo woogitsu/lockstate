@@ -167,6 +167,17 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',
   'hud.status.prisoners-without-bed',
+  // `{count} not ready`, the badge under the `ROOMS` chip (#1006 finding 1).
+  // Listed rather than authored with forms, and the reason is the entry
+  // directly above it: `hud.status.prisoners-without-bed` is the same badge on
+  // the same strip, formatted through the same `HudMetricBadge` channel, and
+  // that channel calls `format` rather than `formatPlural` -- so a plural entry
+  // here would be one key in the catalogue whose forms nothing selects between,
+  // which is worse than a flat string that says so. English needs none ("1 not
+  // ready" and "3 not ready" are the same shape); Polish would, and it is the
+  // same debt the entry above already carries, with the same one-line fix once
+  // the badge channel learns to count.
+  'hud.status.rooms-not-ready',
   'save.list.item',
 ] as const;
 

@@ -1157,6 +1157,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * nothing"). `activeTab` is tracked from the `select-tab` intent rather than
    * read back off the HUD, because the HUD's shell state is chrome the HUD owns.
    *
+   * **That paragraph is no longer true of this reader and is kept rather than
+   * rewritten, because it is the rule that was relaxed and why**
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   * Its reasoning is untouched -- a closed panel still asks for nothing -- and
+   * its premise moved: the `ROOMS` chip's badge is drawn off this readout by
+   * `projectStatusMetrics`, and the status strip is laid out on all five tabs,
+   * so there is no tab on which nobody is reading it. `refreshRoomNeeds` below
+   * carries the gate that was removed and what it costs. `activeTab` is still
+   * tracked, and four other readers below still gate on it.
+   *
    * **On a cadence that already exists, not on a timer of its own.** Placed
    * objects change what a room has without changing any count -- a completed bed
    * order takes a cell from "needs a bed" to "needs a toilet" and moves nothing
@@ -1782,8 +1792,34 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       .catch(() => applyPrisonerDetail(undefined));
   };
 
+  /*
+   * **Asked for on every tab, and that changed on 2026-09-05**
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   *
+   * This read `if (roomNeedsReader === undefined || activeTab !== 'rooms')
+   * return;`, and `roomNeedsReader`'s header above still carries the argument
+   * for it in full -- *"a room list is `O(instances)` to build and nobody is
+   * reading it from the Build tab, which is the whole argument for the channel
+   * being a pull"*. That argument is kept rather than deleted because it is
+   * still exactly right about panels, and the premise it rests on is what
+   * stopped being true: **somebody now reads this from every tab.** The `ROOMS`
+   * chip's badge is drawn by `projectStatusMetrics` off this readout, and the
+   * status strip is laid out on all five tabs.
+   *
+   * What that cost, stated rather than implied. `RoomNeedsReader.read` spends
+   * at most `1 + ROOM_NEEDS_ROOMS_LIMIT` messages -- two today -- per drive, and
+   * the drive is the clock heartbeat (255 ms on the harness, ~300 ms in a
+   * browser; see `roomNeedsReader`'s header for both measurements). So a
+   * session that used to spend those two messages on one tab of five now spends
+   * them on all five. It cannot stack: `read()` returns `undefined` while one is
+   * in flight, so a slow worker throttles this rather than queueing behind it.
+   * The alternative -- asking only for the list on the other four tabs -- would
+   * buy back one message of the two and cost a second code path through the
+   * same view-model field, which is the drift `roomNeedsFromProjections` is one
+   * function for.
+   */
   const refreshRoomNeeds = (): void => {
-    if (roomNeedsReader === undefined || activeTab !== 'rooms') return;
+    if (roomNeedsReader === undefined) return;
     void roomNeedsReader
       .read()
       .then((next) => {
@@ -2129,11 +2165,29 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * on nothing is refreshing it. The panel clears its own copy when it is
          * hidden; this clears the view model, or the next publication would put
          * the stale one back.
+         *
+         * **The first sentence and the second direction stopped being true of
+         * the room readout on 2026-09-05** (#1006 finding 1) and both are kept,
+         * because every word of them still describes the four readouts below.
+         * The `ROOMS` chip reads this one on every tab, so no tab stops
+         * refreshing it and there is nothing to take off. The *first* direction
+         * is unchanged and is why the call below is still made here: arriving
+         * on the Rooms tab still asks at once rather than waiting a heartbeat
+         * for the panel's own lines.
          */
         case 'select-tab': {
           activeTab = intent.tab;
-          if (activeTab === 'rooms') refreshRoomNeeds();
-          else applyRoomNeeds(undefined);
+          /*
+           * **Asked for on arrival at every tab now, and never cleared on
+           * leaving** (#1006 finding 1). The paragraph above is the state this
+           * was in until 2026-09-05 and is kept for the reason
+           * `refreshRoomNeeds` keeps its own: leaving the Rooms tab used to
+           * mean nothing was refreshing the readout, so holding it would have
+           * been holding something stale. Nothing stops refreshing it now, so
+           * clearing it here would blank the `ROOMS` badge for one heartbeat on
+           * every tab change and put it straight back.
+           */
+          refreshRoomNeeds();
           // The build queue is the same arrangement one tab over: arriving asks
           // at once rather than waiting up to ~300ms in a browser for the next
           // clock heartbeat (255ms is the harness figure; see

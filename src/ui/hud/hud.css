@@ -3670,9 +3670,34 @@
 }
 
 /* Folded until the simulation has evaluated a room, for the reason and with
-   the `:not([hidden])` guard `.hud-rooms__area` above gives in full. */
+   the `:not([hidden])` guard `.hud-rooms__area` above gives in full.
+
+   `flex-wrap: wrap` is the fix for issue #1006 finding 4, and it was missing
+   here rather than decided against. Measured on the assembled page at 900x600
+   before this rule: the block's `scrollWidth` was **268px** against a
+   `clientWidth` of **238px**, so 30px of the value hung outside the panel and
+   `.ui-value` inherits `text-overflow: clip` -- the readout was cut off
+   mid-word, which is the failure mode `.hud-rooms__note` above already carries
+   an `overflow: hidden; text-overflow: ellipsis` pair for (#739 finding D5).
+
+   Wrapping rather than ellipsis, and rather than a shorter sentence, because
+   the three are not equivalent. Flex line-breaking uses each item's
+   hypothetical main size, so the value moves to its own line **only** when it
+   does not fit beside the label -- a readout that fits costs the panel no
+   height at all, which is the thing ADR 0022's 7.9px budget is protecting, and
+   one that does not is drawn whole instead of truncated. Ellipsis alone would
+   have kept the panel's height and thrown away the end of the sentence; a
+   shorter sentence alone would have left the next locale, or the next wording,
+   clipped exactly as this one was.
+
+   `margin-left: auto` on the value keeps the "label left, figure right" shape
+   in both cases: `justify-content: space-between` puts a lone item on a wrapped
+   line at the *start*, which would leave the value left-aligned under the label
+   only when it wrapped, so the block would change alignment as well as height.
+   */
 .hud-rooms__enclosure:not([hidden]) {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-2);
@@ -3683,7 +3708,12 @@
    answer itself. The value carries the answer as data for a test to read; only
    the note line above is ever coloured, and only when the requirement and the
    answer actually disagree. */
-.hud-rooms__enclosure-value { font-variant-numeric: tabular-nums; }
+.hud-rooms__enclosure-value {
+  font-variant-numeric: tabular-nums;
+  /* Right-aligned whether or not the value wrapped onto its own line -- see the
+     block rule above for why `justify-content` alone cannot do it. */
+  margin-left: auto;
+}
 
 /* ------------------------------------------------------------------ */
 /* The status strip gives the metrics their own row (#634)             */
