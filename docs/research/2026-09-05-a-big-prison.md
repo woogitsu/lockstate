@@ -109,7 +109,7 @@ that matches `*.playtest.ts`. A playtest is evidence, never a gate.
 | 0 | the reachable canvas at zoom 1, the keyboard zoom, and the size of the plot | `1 passed` |
 | 0b | the apparatus, proved on one 3×3 room before 173 walls were spent on it | **failed, and the failure is §2**: three of five wall runs of a room at plot rows 1–3 submitted nothing, because their gesture line ran under `.hud-strip` |
 | 0c | where the HUD stands on the plot, tile by tile, and what a press past the plot's edge does | data complete for the Overview tab and the HUD box list (§2); **stopped by hand** before the other four tab maps, which cost ~5 min each and which the box rectangles already determine |
-| 1 | eight rooms, three cell blocks, 68 beds, 68 admissions, 10 guards, then eight day-long sampling rounds | `1 passed (14.8m)` |
+| 1 | eight rooms, three cell blocks, 68 beds, 68 admissions, 10 guards, then eight day-long sampling rounds | run one `1 passed (14.8m)`; run two, with the readers fixed, `1 passed (17.4m)` |
 | 2 | one 4×4 cell, four beds and one toilet — the control for §10 | data complete; **failed on its last line**, a malformed `hud/room-detail` request (§10) |
 
 Acts 0b and 2 are reported as failures on purpose rather than deleted: each
@@ -469,6 +469,18 @@ growth of DOM nodes at 2.3× the largest population ever played.**
 **`usedJSHeapSize` is not evidence and is reported as not-evidence.** Chrome
 quantises it, and 148,000,000 appearing six times running is the quantiser, not
 a measurement of stability. A real heap claim needs a different instrument.
+
+**MEASURED, act 1's second run — the same shape again, over nine samples and
+seven more day boundaries.** Treasury: `74,410 · 94,010 · 113,610 · 133,210 ·
+152,810 · 152,810 · 172,410 · 192,010 · 211,610` — **+19,600 at every boundary
+crossed, seven times**, with the one repeat being two samples inside the same
+day. `hudNodes`: `1,063 · 1,078 · 1,078 · 1,078 · 1,089 · 1,089 · 1,089 · 1,089
+· 1,115`, and `prisoners`, `roomOccupants`, `rooms`, `roomCapacity`,
+`accommodationCapacity`, `staff` and `dailyWageBill` are byte-identical in all
+nine. **Across both runs that is twelve consecutive day boundaries at exactly
+`300 × 68 − 80 × 10`, and a DOM that moves by 52 nodes over sixteen in-game
+days.** The second run published **916** `simulation/status-counts` messages to
+the first's 819.
 
 ## 6. DEFECT — at 68 prisoners, ten guards leaves **zero** able to answer anything, and the panel says *Covered*
 
