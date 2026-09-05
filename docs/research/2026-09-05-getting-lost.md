@@ -270,3 +270,142 @@ reaches for when they want an overview is the one at which one more careless
 drag costs them the most ground.
 
 ---
+
+## §4 — The way back exists, costs **one** press, and lands on the prison's origin tile to the tile
+
+**#793 is fixed in the code and works.** The issue is still open; §2 of the
+baseline record, which measured the surface decorative, became false on
+2026-09-02 at `8fead7e7`.
+
+**MEASURED**, act 4, 1440×900. Lost by four westward and two northward
+800px drags, so the return is a two-axis problem and not a one-axis one:
+
+```
+[act4] lost at: visible tiles x 54..77, y 29..41; owned-visible=false
+[act4] lost pixels: 113/113 VOID_COLOR
+[act4] minimap sentence WHILE LOST: "MINIMAP\nCollapse\nMINIMAP IS NOT AVAILABLE YET\n..."
+[act4] elementsFromPoint at the minimap centre: [{"tag":"SPAN","cls":"ui-eyebrow hud-minimap__placeholder","pointerEvents":"auto"},{"tag":"DIV","cls":"hud-minimap__surface","pointerEvents":"auto"}]
+[act4] ONE press at the minimap centre -> simulation commands: []
+[act4] after ONE minimap press: visible tiles x 4..27, y 10..22; owned-visible=true
+[act4] after-one-press pixels: 0/113 VOID_COLOR
+[act4] tile now at the middle of the screen: (16,16); NEW_PRISON_ORIGIN_TILE is (16,16)
+```
+
+**One interaction.** From a screen that is 113/113 void to a screen that is
+0/113 void, with the tile at the middle of the viewport being **exactly
+`NEW_PRISON_ORIGIN_TILE`**. The press submits **no simulation command** (`[]`
+through the worker tee), which is correct and is the boundary
+`src/rendering/` is held to (`tests/unit/rendering-module-boundaries.test.ts`).
+
+**It is a map, not a button.** MEASURED, act 4, three more presses at three
+corners of the same surface:
+
+```
+[act4]   minimap top-left     (fx=0.02,fy=0.02) -> centre tile (0,1),   visible x -11..11 y -6..7
+[act4]   minimap top-right    (fx=0.98,fy=0.02) -> centre tile (31,1),  visible x  20..42 y -6..7
+[act4]   minimap bottom-right (fx=0.98,fy=0.98) -> centre tile (31,32), visible x  20..42 y 25..38
+```
+
+Three distinct destinations spanning the owned chunk's own corners. READ,
+`world-scene.ts:1279-1287`: `fx`/`fy` are reparameterised linearly across
+`WorldRenderView.loadedBounds` in tile space and the result is `centerOn`'d.
+That is a real minimap's behaviour with the picture left out.
+
+**And it works from arbitrarily far away.** MEASURED, act 5, from **617 tiles**
+east of home: `one minimap press from absurdly far: visible tiles x 4..27,
+y 10..22 owned-visible=true`. There is no distance at which the way back stops
+working.
+
+### 4.1 — The way back is advertised only to players who have already found it
+
+**This is the finding.** MEASURED, act 4, the same panel three lines apart:
+
+```
+[act4] minimap sentence BEFORE anything:  "... MINIMAP IS NOT AVAILABLE YET ..."
+[act4] minimap sentence WHILE LOST:       "... MINIMAP IS NOT AVAILABLE YET ..."
+[act4] minimap sentence AFTER one press:  "... NO MAP IS DRAWN HERE YET — CLICK TO JUMP THE CAMERA THERE ..."
+```
+
+**READ**, `src/ui/hud/hud.ts:1513-1523`:
+
+```ts
+minimapSurface.addEventListener('click', (event: MouseEvent) => {
+  ...
+  const navigated = options.onMinimapNavigate?.(point) ?? false;
+  if (navigated) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
+});
+```
+
+The sentence `hud.minimap.navigable` — *"No map is drawn here yet — click to
+jump the camera there"* (`src/content/default-locale-en.ts:427`) — is written
+into the DOM **by the click handler**, so it is rendered for the first time
+by the very click it is instructing the player to make. Until then the surface
+says `hud.minimap.placeholder` — *"Minimap is not available yet"*
+(`default-locale-en.ts:391`).
+
+REASONED from those two: **the only sentence on the screen that names the way
+back is unreachable without already having taken it.** And the sentence a lost
+player *does* read tells them, in as many words, that this panel is not
+available. JUDGEMENT, and I hold it strongly: a player who has just panned into
+solid black, reads `MINIMAP IS NOT AVAILABLE YET` on the largest panel on
+screen, and concludes *"the map is not built yet, so there is no map to get me
+home"* has read the screen correctly and reached the wrong conclusion. That
+player will drag.
+
+The wording itself is deliberate and its own comment says why —
+`default-locale-en.ts:392-425` argues at length that refusing to author
+`hud.minimap.navigable` would leave the *false* `placeholder` standing on a
+surface that visibly moves the camera, and marks the wording **owner-pending**.
+That reasoning is sound. What it does not cover is the state measured here: the
+placeholder is still what a player who has never clicked reads, and for that
+player it is exactly the false statement the comment set out to prevent.
+
+---
+
+## §5 — There are no edges. The world stops nowhere, and nothing degrades
+
+**MEASURED**, act 5, 1440×900, zoom 1.
+
+**The boundary of owned land is visible and correct.** One 800px drag east puts
+the frontier mid-screen: `visible tiles x 17..39` with `edge pixels: 30/113
+VOID_COLOR` — tiles 17–31 draw terrain, tiles 32–39 (chunk (1,0), never loaded
+on a fresh prison) draw `VOID_COLOR`. The boundary is a hard vertical edge
+between terrain and void. It is not a wall: the camera crosses it freely.
+
+**Forty-one drags out, still going.**
+
+```
+[act5] after 40 strokes east: visible tiles x 517..539, y 10..23
+[act5] far-out pixels: 113/113 VOID_COLOR; others []
+```
+
+41 strokes × 12.5 tiles = 512.5 tiles, and the visible box moved from x 4..27 to
+x 517..539 — **512.5 tiles, to the tile.** No clamp, no resistance, no
+deceleration, no marker.
+
+**Further still, and nothing breaks.** A synthetic pan carried the camera to
+`visible tiles x 595..617`: **617 tiles east of a 32-tile-wide prison, about
+nineteen chunk-widths from home.** `absurd pixels: 113/113 VOID_COLOR`, the
+status strip still reads `25,000 FUNDS | DAY 1 | Speed 1×` verbatim, and the
+console carries **no errors and no page errors** — only four WebGL messages
+(*"Automatic fallback to software WebGL has been deprecated"*, *"GPU stall due
+to ReadPixels"*), which are properties of this headless container's software
+renderer and of the instrument's own `page.screenshot` calls, not of the game.
+
+**So the answer to "are there edges" is no**, and REASONED from `world-scene.ts`
+having no `setBounds` and no clamp at any of the three scroll write sites
+(§1.2), there is no distance at which one appears. A player can pan into a
+region the game cannot render — that is every region outside chunk (0,0) — and
+**nothing degrades when they do.** The renderer is entirely well-behaved out
+there. It draws nothing, correctly, for ever.
+
+**Instrument note, recorded rather than glossed.** The act's log line calls that
+last gesture *"a synthetic million-pixel pan"*, and it is not one. The handler
+is incremental — it reads `pointer - lastPanScreenPoint` on each move
+(`world-scene.ts:604-606`) — so 200 `mousemove` events all dispatched to the
+*same* point deliver one 5,000px delta and then 199 deltas of zero. The measured
+result agrees exactly: 5,000/64 = 78.1 tiles, and the box moved from 517..539 to
+595..617, which is 78. **The claim this act supports is therefore "617 tiles out
+with no clamp", not "a million pixels out"**, and the larger claim is not made.
+
+---
