@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { procurableMaterial } from '../../src/content/procurement-catalog';
+import { BUILDABLE_REGISTRY } from '../../src/simulation/construction/definition';
 import { STATE_INCOME_UNMET_NEED_LEVEL, isNeedUnmetForStateIncome, stateIncomeForCompletedDay, unmetNeedCount } from '../../src/simulation/economy/income';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES, classificationGroupIdFromIndex } from '../../src/simulation/prisoners/components';
-import { NEED_IDS, NEED_MAX, NEED_SCALE, type NeedId } from '../../src/simulation/prisoners/needs';
+import { NEED_DECAY_PER_TICK, NEED_IDS, NEED_MAX, NEED_SCALE, type NeedId } from '../../src/simulation/prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { TILES_PER_OPEN_GROUND_PLACE } from '../../src/simulation/prisoners/room-instance-registry';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -141,6 +143,71 @@ function yardAtTheDoor(
 
 /** `room.shower-room`'s authored 3x3 minimum and its two authored shower heads: 2 places for `'hygiene'`. */
 const SHOWER = { x: 20, y: 21, width: 3, height: 3 } as const;
+
+/**
+ * **#1003.** The same 3x3 shower room put as close to the cell door as the
+ * geometry allows, and the same room put across the map -- the `hygiene`
+ * counterparts of `yardAtTheDoor` and `YARDS[0]`, and here for the reason
+ * [#997 §1.1] gives: distance moved the yard's answer by the whole of `n x 40`
+ * at four prisoners, so a hygiene sweep that fixed the distance would be
+ * measuring one arbitrary point of a curve it had not looked at.
+ *
+ * `wallRoomPerimeter` puts a room's door in its **south** boundary at its
+ * **left** column, so the walk is from the cell's own step-out tile to that
+ * doorway and back in:
+ *
+ * - `SHOWER_NEAR` at `(9, 21)` occupies columns 9..11, rows 21..23 -- flush
+ *   against the west of `CELL`'s step-out tile `(12, 21)` and clear of it. Its
+ *   doorway is `(9, 24)`: three tiles south and three west, **6 tiles**.
+ * - `SHOWER_FAR` at `(1, 1)` is `YARDS[0]`'s corner, **about 17 tiles**.
+ * - `SHOWER` at `(20, 21)` is act D's, kept unmoved so #1003's rows and
+ *   #997 act D's rows are rows about the same room. It shares `CELL`'s south
+ *   wall at columns 20..22 and its doorway is `(20, 24)`: **about 11 tiles**.
+ *
+ * None of the three overlaps `yardAtTheDoor(CELL, 8)`, which is columns 12..19
+ * of rows 21..28 -- checked by `build`'s `refusals.count === 0`, since
+ * `RoomZoningService.zone` refuses an overlapping rectangle.
+ */
+const SHOWER_NEAR = { x: 9, y: 21, width: 3, height: 3 } as const;
+const SHOWER_FAR = { x: 1, y: 1, width: 3, height: 3 } as const;
+
+/**
+ * **#1003.** Four 3x3 shower rooms in a row along the wall south of `CELL`,
+ * for the arm that asks how many it takes. One tile of clear ground between
+ * each pair, so a shared perimeter cannot make two rectangles one room, and
+ * `SHOWER_ROOMS[0]` is `SHOWER_NEAR` -- so "one shower room" in that arm and
+ * "one shower room" in the population sweep are the same room in the same
+ * place. Doorways at `(9,24)`, `(5,24)`, `(1,24)`, `(24,24)`: 6, 10, 14 and
+ * about 16 tiles from `CELL`'s step-out tile.
+ */
+const SHOWER_ROOMS = [
+  SHOWER_NEAR,
+  { x: 5, y: 21, width: 3, height: 3 },
+  { x: 1, y: 21, width: 3, height: 3 },
+  { x: 24, y: 21, width: 3, height: 3 },
+] as const;
+
+/**
+ * **#1003.** One 5x5 shower room at a fixed place, so that the arm which varies
+ * the number of shower heads varies **only** that.
+ *
+ * `concurrentUseCapacityFor(instance, 'hygiene')` sums the footprint widths of
+ * the `'hygiene'`-capable objects standing in the room
+ * (`room-instance-registry.ts` case 2, `deriveRoomCapacity`), and
+ * `object.shower-head` is 1x1, so `k` heads is `k` places. A room that grew
+ * with its heads would move the walk and the ceiling together and could not
+ * attribute a difference to either -- which is exactly the confound
+ * [#997 §1.1] found in the yard's distance arm.
+ *
+ * Columns 4..8, rows 21..25; doorway `(4, 26)`, about **13 tiles** from
+ * `CELL`'s step-out tile, and that number is the same for 2 heads and for 8.
+ * Heads go along rows 21 and 23, leaving rows 22, 24 and 25 clear to walk.
+ */
+const SHOWER_BIG = { x: 4, y: 21, width: 5, height: 5 } as const;
+const SHOWER_BIG_HEAD_TILES = [
+  { x: 4, y: 21 }, { x: 5, y: 21 }, { x: 6, y: 21 }, { x: 7, y: 21 }, { x: 8, y: 21 },
+  { x: 4, y: 23 }, { x: 5, y: 23 }, { x: 6, y: 23 },
+] as const;
 /** `room.canteen`'s authored 6x6 minimum, two dining tables and four benches: 6 places for `'dining'`. */
 const CANTEEN = { x: 24, y: 21, width: 6, height: 6 } as const;
 
@@ -194,6 +261,42 @@ interface PrisonOptions {
   readonly cellDoor?: boolean;
   readonly showerRoom?: boolean;
   readonly canteen?: boolean;
+  /**
+   * **#1003.** How many 3x3 shower rooms from `SHOWER_ROOMS`, each with the
+   * two authored heads. Mutually exclusive with `showerRoom` and with
+   * `showerHeads`; `showerPlacement` moves the *first* one.
+   */
+  readonly showerRooms?: number;
+  /** **#1003.** Where the single shower room goes. `'act-d'` is `SHOWER`, unmoved, so a row here and an act D row are rows about the same room. */
+  readonly showerPlacement?: 'near' | 'far' | 'act-d';
+  /**
+   * **#1003.** Heads placed in one `SHOWER_BIG`, 2..8. The room's rectangle
+   * does not move and does not grow, so this varies the concurrent-use ceiling
+   * and nothing else.
+   */
+  readonly showerHeads?: number;
+  /**
+   * **#1003.** Bricks purchased, so that every arm of an act buys the same
+   * number whatever it builds.
+   *
+   * It has to be an option rather than a derived quantity: `PurchaseMaterials`
+   * spends from the treasury, `InsolvencyRungSystem` and `PayrollSystem` read
+   * the balance, and an arm that bought 8 bricks against an arm that bought 20
+   * would differ in the treasury as well as in the room. Every act below hands
+   * both its arms the same figure. **8 is what acts A-G bought**, so their
+   * numbers are untouched by this option existing.
+   */
+  readonly bricks?: number;
+  /**
+   * **#1003.** The RNG seed, defaulting to `SEED` so every act A-G row is
+   * byte-for-byte the row it was.
+   *
+   * It exists because [#997 §7] named its own weakest claim as *"one seed"* --
+   * *"A second seed would tell you whether the 80/90/100 tail is stable; it
+   * has not been run"* -- and a shape claim about where hygiene frays is the
+   * same claim about the same kind of tail. Act O runs one.
+   */
+  readonly seed?: number;
 }
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
@@ -212,14 +315,14 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * edges completed `wall-brick` and `door-wooden` orders would have written.
  */
 function build(options: PrisonOptions): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+  const runtime = createNewSimulationRuntime(options.seed ?? SEED);
   const cellDoor = options.cellDoor ?? true;
   const cell = options.wideCell === true ? WIDE_CELL : CELL;
   const beds = options.wideCell === true ? WIDE_BEDS : BEDS;
 
   // 1 plank a bed, 3 a dining table, 2 a bench; 1 brick a toilet and 1 a shower head.
   submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: beds + 14 }));
-  submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 8 }));
+  submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: options.bricks ?? 8 }));
 
   wallRoomPerimeter(runtime.world, cell, cellDoor ? { doors: runtime.navigation.doors } : {});
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...cell }));
@@ -251,6 +354,39 @@ function build(options: PrisonOptions): SimulationRuntime {
     submit(runtime, 'zone-shower', packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...SHOWER }));
     submit(runtime, 'head-1', packCommand({ type: 'PlaceObject', orderId: 'head-1', definitionId: 'shower-head-brick', x: SHOWER.x, y: SHOWER.y }));
     submit(runtime, 'head-2', packCommand({ type: 'PlaceObject', orderId: 'head-2', definitionId: 'shower-head-brick', x: SHOWER.x + 1, y: SHOWER.y }));
+  }
+
+  // **#1003's shower arms.** Deliberately a separate block from `showerRoom`
+  // above rather than a generalisation of it: acts A-G's rows are `showerRoom:
+  // true` and must keep building exactly the room they built.
+  if (options.showerRooms !== undefined && options.showerRooms > 0) {
+    for (let index = 0; index < options.showerRooms; index += 1) {
+      const rect = index === 0
+        ? (options.showerPlacement === 'far' ? SHOWER_FAR : options.showerPlacement === 'act-d' ? SHOWER : SHOWER_NEAR)
+        : SHOWER_ROOMS[index]!;
+      wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
+      submit(runtime, `zone-shower-${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...rect }));
+      // `room.shower-room` authors `{ type: 'object', objectId:
+      // 'object.shower-head', minQuantity: 2 }`, so two is the room's own
+      // minimum and 2 places is the ceiling that minimum buys.
+      for (let head = 0; head < 2; head += 1) {
+        submit(runtime, `head-${String(index)}-${String(head)}`, packCommand({
+          type: 'PlaceObject', orderId: `head-${String(index)}-${String(head)}`,
+          definitionId: 'shower-head-brick', x: rect.x + head, y: rect.y,
+        }));
+      }
+    }
+  }
+
+  if (options.showerHeads !== undefined && options.showerHeads > 0) {
+    wallRoomPerimeter(runtime.world, SHOWER_BIG, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-shower-big', packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...SHOWER_BIG }));
+    for (let head = 0; head < options.showerHeads; head += 1) {
+      const tile = SHOWER_BIG_HEAD_TILES[head]!;
+      submit(runtime, `big-head-${String(head)}`, packCommand({
+        type: 'PlaceObject', orderId: `big-head-${String(head)}`, definitionId: 'shower-head-brick', x: tile.x, y: tile.y,
+      }));
+    }
   }
 
   if (options.canteen === true) {
@@ -322,6 +458,18 @@ interface Measurement {
   /** `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)` for one yard, read off the registry. */
   readonly yardCapacity: number;
   /**
+   * **#1003.** The same pair for `room.shower-room`, read off the same
+   * registry through the same accessor with `'hygiene'` handed to it -- which
+   * is the whole of the difference between the two needs' ceilings: the yard's
+   * comes from `openGroundCapacityOf` and the shower room's from the summed
+   * footprint width of its `'hygiene'` objects.
+   */
+  readonly showerCapacity: number;
+  /** The most prisoners holding a use claim on any one shower room, in any measured tick. */
+  readonly peakShowerUse: number;
+  /** How many `room.shower-room` instances the prison holds. */
+  readonly showerRoomCount: number;
+  /**
    * Per classification group: how many prisoners are in it, and how many of
    * them the state calls short on `recreation`.
    *
@@ -369,6 +517,11 @@ function measure(options: PrisonOptions, days: number): Measurement {
   const yardCapacity = yardIds.length === 0
     ? 0
     : registry.concurrentUseCapacityFor(registry.getById(yardIds[0]!)!, undefined);
+  const showerIds = registry.allByRoomCatalogId('room.shower-room').map((instance) => instance.instanceId);
+  const showerCapacity = showerIds.length === 0
+    ? 0
+    : registry.concurrentUseCapacityFor(registry.getById(showerIds[0]!)!, 'hygiene');
+  let peakShowerUse = 0;
 
   const performingTicks: Record<string, number> = {};
   const travellingTicks: Record<string, number> = {};
@@ -412,6 +565,10 @@ function measure(options: PrisonOptions, days: number): Measurement {
     for (const yardId of yardIds) {
       const occupancy = registry.useOccupancyOf(yardId);
       if (occupancy > peakYardUse) peakYardUse = occupancy;
+    }
+    for (const showerId of showerIds) {
+      const occupancy = registry.useOccupancyOf(showerId, 'hygiene');
+      if (occupancy > peakShowerUse) peakShowerUse = occupancy;
     }
     // The tick the day is settled on: `StateIncomeSystem`'s schedule is
     // `intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1`.
@@ -467,6 +624,9 @@ function measure(options: PrisonOptions, days: number): Measurement {
     idleTicks,
     peakYardUse,
     yardCapacity,
+    showerCapacity,
+    peakShowerUse,
+    showerRoomCount: showerIds.length,
     recreationByGroup: [...byGroup.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([group, row]) => [group, row.total, row.unmet] as const),
     metrics: {
       unmetDemandCycles: metrics.unmetDemandCycles,
@@ -683,5 +843,374 @@ describe('#997 act E -- the ceilings themselves, read off the registry', () => {
     }
     print(`  TILES_PER_OPEN_GROUND_PLACE = ${String(TILES_PER_OPEN_GROUND_PLACE)}; an 8x8 yard is floor(64/16) = ${String(Math.floor(64 / TILES_PER_OPEN_GROUND_PLACE))} places`);
     expect(prisons[0][1].prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(4);
+  });
+});
+
+/*
+ * ============================================================================
+ * Issue #1003 -- the same measurement, for the other member of the class.
+ * ============================================================================
+ *
+ * #997's answer above ends by naming a class rather than a room:
+ *
+ * > **So it is not a defect of the yard. It is a property of the class "need
+ * > served only by a `room-catalog-id` action", whose members today are
+ * > `recreation` and `hygiene`.**
+ *
+ * Acts A-G measured the forgiving member. The acts below measure the other
+ * one, on the same fixture, the same seed and the same twenty days, and check
+ * the class census itself rather than accepting it.
+ *
+ * **Nothing here changes a balance constant.** `TILES_PER_OPEN_GROUND_PLACE`,
+ * `room.shower-room`'s authored `minQuantity: 2`, `NEED_DECAY_PER_TICK`,
+ * `STATE_INCOME_UNMET_NEED_LEVEL`, `minDurationTicks` and the regime windows
+ * are all read and none is written. What varies between two rows of any table
+ * below is what a *player* could vary: how many rooms they zoned, how many
+ * objects they placed in them, and where.
+ */
+
+/**
+ * **#1003.** The day count acts I, J, K and M read their settled figures at.
+ *
+ * **Twenty days is act A's number and it is not enough for `hygiene`**, which
+ * is act N's finding and the reason this constant exists. `recreation` decays
+ * at 0.015 a tick and act A's grant series is flat from day 6; `hygiene` decays
+ * at 0.02 a tick, nobody crosses the threshold before day 4.25, and the
+ * with-shower series is still climbing on day 20 -- act I's near arm reads 14
+ * of 50 short at day 20, 9 at day 40, 7 at day 60, 9 at day 100 and 13 at day
+ * 140. So the day-20 figure is a *transient* and the day-60 figure is the
+ * middle of a band the prison oscillates in. Both are printed wherever they
+ * differ, and the twenty-day column is kept rather than dropped because it is
+ * the column act A's rows can be read against.
+ */
+const SETTLED_DAYS = 60;
+
+/** **#1003.** The populations act I sweeps: the eight #997 named, plus 6, 10 and 20, because the shower's ceiling is half the yard's and the break was expected earlier. */
+const HYGIENE_POPULATIONS = [4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 50] as const;
+
+/**
+ * **#1003.** Bricks bought by every arm of every act below.
+ *
+ * The most any of them places is one toilet plus eight shower heads, and a
+ * head is one brick (`shower-head-brick`, `materialsRequired: [{ itemId:
+ * 'item.brick', quantity: 1 }]`). 20 covers that with margin, and every arm
+ * buys 20 whether it places 1 or 9 -- see `PrisonOptions.bricks` for why the
+ * quantity has to be equal across arms rather than merely sufficient.
+ */
+const HYGIENE_BRICKS = 20;
+
+function hygieneLine(run: Measurement): string {
+  return `showers ${String(run.showerRoomCount)} x ${String(run.showerCapacity)} places, peak use on one ${String(run.peakShowerUse)}` +
+    `; shower perform ${String(run.performingTicks['action.shower'] ?? 0)} travel ${String(run.travellingTicks['action.shower'] ?? 0)}` +
+    ` visits ${String(run.visits['action.shower'] ?? 0)}`;
+}
+
+describe('#1003 act H -- the class census, derived from `DEFAULT_ACTIONS` rather than quoted', () => {
+  it('lists every action by target kind and every need by the target kinds that can serve it', () => {
+    print('');
+    print('=== ACT H: which needs are served only through a `room-catalog-id` target ===');
+    print('  `ActionSystem.claimUseIfNeeded` (`src/simulation/prisoners/action-system.ts`): `if (action.target.kind !== \'room-catalog-id\') return true;`');
+    print('  -- so an action whose target is NOT `room-catalog-id` takes no concurrent-use claim and meets no ceiling.');
+    print('');
+    print('  action                            | target kind        | room               | capability       | needs served');
+    for (const action of DEFAULT_ACTIONS) {
+      const target = action.target;
+      const room = target.kind === 'room-catalog-id' ? target.roomCatalogId : '-';
+      const served = Object.entries(action.needEffectsPerTick)
+        .filter(([, amount]) => (amount ?? 0) > 0)
+        .map(([needId, amount]) => `${needId}+${String(amount)}/tick`);
+      print(
+        `  ${action.id.padEnd(33)} | ${target.kind.padEnd(18)} | ${room.padEnd(18)} | ` +
+        `${(action.requiredObjectCapability ?? '-').padEnd(16)} | ${served.length === 0 ? '(none)' : served.join(', ')}` +
+        `  [minDuration ${String(action.minDurationTicks)}]`,
+      );
+    }
+
+    print('');
+    print('  need       | decay/tick | levels lost per day | providers by target kind');
+    const membersOfTheClass: NeedId[] = [];
+    for (const needId of NEED_IDS) {
+      const providers = DEFAULT_ACTIONS.filter((action) => (action.needEffectsPerTick[needId] ?? 0) > 0);
+      const gated = providers.filter((action) => action.target.kind === 'room-catalog-id');
+      const ungated = providers.filter((action) => action.target.kind !== 'room-catalog-id');
+      if (providers.length > 0 && ungated.length === 0) membersOfTheClass.push(needId);
+      print(
+        `  ${needId.padEnd(10)} | ${String(NEED_DECAY_PER_TICK[needId]).padEnd(10)} | ${String(NEED_DECAY_PER_TICK[needId] * DAY_LENGTH_TICKS).padEnd(19)} | ` +
+        `room-catalog-id: ${gated.length === 0 ? '(none)' : gated.map((action) => action.id).join(', ')}` +
+        `  ||  exempt: ${ungated.length === 0 ? '(NONE -- every provider meets a ceiling)' : ungated.map((action) => `${action.id} (${action.target.kind})`).join(', ')}`,
+      );
+    }
+    print('');
+    print(`  MEMBERS OF THE CLASS (a need with at least one provider, and no provider outside \`room-catalog-id\`): ${JSON.stringify(membersOfTheClass)}`);
+    const needsWithNoProviderAtAll = NEED_IDS.filter((needId) => !DEFAULT_ACTIONS.some((action) => (action.needEffectsPerTick[needId] ?? 0) > 0));
+    print(`  NEEDS NO ACTION SERVES AT ALL (so outside the class for a different reason): ${JSON.stringify(needsWithNoProviderAtAll)}`);
+    print(`  TARGET KINDS PRESENT IN \`DEFAULT_ACTIONS\`: ${JSON.stringify([...new Set(DEFAULT_ACTIONS.map((action) => action.target.kind))].sort())}`);
+
+    // The one assertion this act makes is that it enumerated the whole
+    // catalogue: a need in neither list would mean the partition above lost a
+    // row, which would make the census a claim about some other catalogue.
+    expect(new Set([...membersOfTheClass, ...needsWithNoProviderAtAll, ...NEED_IDS.filter((needId) => DEFAULT_ACTIONS.some((action) => (action.needEffectsPerTick[needId] ?? 0) > 0 && action.target.kind !== 'room-catalog-id'))]).size).toBe(NEED_IDS.length);
+  });
+});
+
+describe('#1003 act I -- hygiene across population, the way act A measured recreation', () => {
+  it('sweeps n = 4..50 with one 3x3 shower room and without, at two shower placements and two durations', () => {
+    for (const days of [DAYS, SETTLED_DAYS]) {
+      for (const placement of ['near', 'far'] as const) {
+        print('');
+        print(`=== ACT I [${placement}, ${String(days)} days]: one 3x3 shower room (2 heads) against none, identical prison, no yard, seed 0x997 ===`);
+        print('  n | hygiene permille min/med/max | unmet hyg | grant no shower | grant + shower | recovered | n x 40 | (n-unmet) x 40 | shower perform | shower travel | peak use');
+        for (const population of HYGIENE_POPULATIONS) {
+          const withShower = measure({ prisoners: population, yards: 0, showerRooms: 1, showerPlacement: placement, bricks: HYGIENE_BRICKS }, days);
+          const without = measure({ prisoners: population, yards: 0, bricks: HYGIENE_BRICKS }, days);
+          expect(withShower.occupiedPlaces, 'every admitted prisoner must be housed').toBe(population);
+          expect(without.occupiedPlaces, 'every admitted prisoner must be housed').toBe(population);
+
+          const hygiene = withShower.needs.hygiene;
+          const recovered = withShower.settledGrant - without.settledGrant;
+          const showerVisits = withShower.visits['action.shower'] ?? 0;
+          print(
+            `${String(population).padStart(3)} | ${String(hygiene.minPermille).padStart(4)}/${String(hygiene.medianPermille).padStart(4)}/${String(hygiene.maxPermille).padStart(4)}` +
+            `             | ${String(hygiene.unmet).padStart(2)} of ${String(population).padStart(2)}  | ` +
+            `${String(without.settledGrant).padStart(15)} | ${String(withShower.settledGrant).padStart(14)} | ${String(recovered).padStart(9)} | ` +
+            `${String(population * 40).padStart(6)} | ${String((population - hygiene.unmet) * 40).padStart(14)} | ` +
+            `${String(withShower.performingTicks['action.shower'] ?? 0).padStart(14)} | ` +
+            `${String(withShower.travellingTicks['action.shower'] ?? 0).padStart(13)} | ${String(withShower.peakShowerUse)} of ${String(withShower.showerCapacity)}`,
+          );
+          print(`      no-shower grant series:   ${JSON.stringify(without.dailyGrant)}`);
+          print(`      with-shower grant series: ${JSON.stringify(withShower.dailyGrant)}`);
+          print(`      with-shower unmet histogram: ${JSON.stringify(withShower.unmetHistogram)}   metrics ${JSON.stringify(withShower.metrics)}`);
+          print(`      no-shower  unmet histogram: ${JSON.stringify(without.unmetHistogram)}   metrics ${JSON.stringify(without.metrics)}`);
+          print('      with a shower room:');
+          for (const needId of NEED_IDS) print(needLine(needId, withShower.needs[needId], withShower.occupiedPlaces));
+          print('      without one:');
+          for (const needId of NEED_IDS) print(needLine(needId, without.needs[needId], without.occupiedPlaces));
+          print(`      with-shower performing ticks: ${JSON.stringify(withShower.performingTicks)}`);
+          print(`      with-shower travelling ticks: ${JSON.stringify(withShower.travellingTicks)}  idle ${String(withShower.idleTicks)}`);
+          print(`      with-shower visits: ${JSON.stringify(withShower.visits)}`);
+          print(
+            `      shower visits ${String(showerVisits)} = ${String(Math.round(showerVisits / days))}/day; ` +
+            `mean visit ${String(Math.round((withShower.performingTicks['action.shower'] ?? 0) / Math.max(1, showerVisits)))} ticks; ` +
+            `one visit per prisoner every ${String((population / Math.max(1, showerVisits / days)).toFixed(2))} days; ` +
+            `${hygieneLine(withShower)}`,
+          );
+        }
+      }
+    }
+  });
+});
+
+describe('#1003 act J -- past fifty, on a cell wide enough to hold them', () => {
+  it('sweeps n = 50, 60, 70, 80, 90, 100 with one 3x3 shower room near the door', () => {
+    print('');
+    print(`=== ACT J: 21x10 cell, a hundred beds, one 3x3 shower room near the door, no yard, ${String(SETTLED_DAYS)} days ===`);
+    print('  NOTE: a different prison from act I (a wider cell, and guards scaled to the population), so its rows compare only with each other.');
+    print('  n | hygiene permille min/med/max | unmet hyg | grant no shower | grant + shower | recovered | n x 40 | (n-unmet) x 40 | shower perform | shower travel');
+    for (const population of [50, 60, 70, 80, 90, 100]) {
+      const guards = Math.max(GUARDS, Math.ceil(population / 8));
+      const withShower = measure({ prisoners: population, yards: 0, showerRooms: 1, showerPlacement: 'near', wideCell: true, guards, bricks: HYGIENE_BRICKS }, SETTLED_DAYS);
+      const without = measure({ prisoners: population, yards: 0, wideCell: true, guards, bricks: HYGIENE_BRICKS }, SETTLED_DAYS);
+      expect(withShower.occupiedPlaces, 'the intake must very nearly fill the cell').toBeGreaterThanOrEqual(population - 3);
+      const hygiene = withShower.needs.hygiene;
+      print(
+        `${String(population).padStart(3)} | ${String(hygiene.minPermille).padStart(4)}/${String(hygiene.medianPermille).padStart(4)}/${String(hygiene.maxPermille).padStart(4)}` +
+        `             | ${String(hygiene.unmet).padStart(2)} of ${String(withShower.occupiedPlaces).padStart(3)} | ` +
+        `${String(without.settledGrant).padStart(15)} | ${String(withShower.settledGrant).padStart(14)} | ${String(withShower.settledGrant - without.settledGrant).padStart(9)} | ` +
+        `${String(population * 40).padStart(6)} | ${String((withShower.occupiedPlaces - hygiene.unmet) * 40).padStart(14)} | ` +
+        `${String(withShower.performingTicks['action.shower'] ?? 0).padStart(14)} | ${String(withShower.travellingTicks['action.shower'] ?? 0).padStart(13)}`,
+      );
+      const showerVisits = withShower.visits['action.shower'] ?? 0;
+      print(`      guards ${String(guards)}; occupied places: with shower ${String(withShower.occupiedPlaces)} of ${String(population)} admitted, without ${String(without.occupiedPlaces)} of ${String(population)}`);
+      print(`      shower visits ${String(showerVisits)} = ${String(Math.round(showerVisits / SETTLED_DAYS))}/day; mean visit ${String(Math.round((withShower.performingTicks['action.shower'] ?? 0) / Math.max(1, showerVisits)))} ticks; one visit per prisoner every ${String((withShower.occupiedPlaces / Math.max(1, showerVisits / SETTLED_DAYS)).toFixed(2))} days`);
+      print(`      ${hygieneLine(withShower)}`);
+      print(`      with-shower unmet histogram: ${JSON.stringify(withShower.unmetHistogram)}   grant series ${JSON.stringify(withShower.dailyGrant)}`);
+      print(`      no-shower  unmet histogram: ${JSON.stringify(without.unmetHistogram)}   grant series ${JSON.stringify(without.dailyGrant)}`);
+      print(`      metrics with ${JSON.stringify(withShower.metrics)}`);
+      for (const needId of NEED_IDS) print(needLine(needId, withShower.needs[needId], withShower.occupiedPlaces));
+    }
+  });
+});
+
+describe('#1003 act K -- how much shower it takes', () => {
+  it('measures more shower rooms and more heads, at n=50 and at n=100', () => {
+    print('');
+    print('=== ACT K: how much shower it takes, at n=50 (11x10 cell) and n=100 (21x10 cell) ===');
+    for (const [label, wide, population] of [['n=50', false, 50], ['n=100', true, 100]] as const) {
+      const guards = Math.max(GUARDS, Math.ceil(population / 8));
+      const base = { prisoners: population, yards: 0, wideCell: wide, guards, bricks: HYGIENE_BRICKS } as const;
+      const baseline = measure(base, SETTLED_DAYS);
+      print(`  --- ${label}, ${String(guards)} guards, no shower room: grant ${String(baseline.settledGrant)} over ${String(baseline.occupiedPlaces)} places, ${needLine('hygiene', baseline.needs.hygiene, baseline.occupiedPlaces).trim()}`);
+      print(`      ${label} REMEDY 1 -- more 3x3 shower rooms, two heads each (the first near the door, the rest along the same wall):`);
+      for (const rooms of [1, 2, 3, 4]) {
+        const run = measure({ ...base, showerRooms: rooms, showerPlacement: 'near' }, SETTLED_DAYS);
+        print(
+          `        ${String(rooms)} room(s) = ${String(rooms * run.showerCapacity)} places: grant ${String(run.settledGrant)} over ${String(run.occupiedPlaces)} places` +
+          `  (+${String(run.settledGrant - baseline.settledGrant)})  shower perform ${String(run.performingTicks['action.shower'] ?? 0)}` +
+          `  travel ${String(run.travellingTicks['action.shower'] ?? 0)}  visits ${String(run.visits['action.shower'] ?? 0)}  peak use on one ${String(run.peakShowerUse)}`,
+        );
+        print(`          ${needLine('hygiene', run.needs.hygiene, run.occupiedPlaces).trim()}   histogram ${JSON.stringify(run.unmetHistogram)}   metrics ${JSON.stringify(run.metrics)}`);
+        print(`          grant series ${JSON.stringify(run.dailyGrant)}`);
+      }
+      print(`      ${label} REMEDY 2 -- one 5x5 shower room at a fixed spot, more heads in it (the rectangle does not move or grow):`);
+      for (const heads of [2, 4, 6, 8]) {
+        const run = measure({ ...base, showerHeads: heads }, SETTLED_DAYS);
+        print(
+          `        ${String(heads)} head(s) = ${String(run.showerCapacity)} places: grant ${String(run.settledGrant)} over ${String(run.occupiedPlaces)} places` +
+          `  (+${String(run.settledGrant - baseline.settledGrant)})  shower perform ${String(run.performingTicks['action.shower'] ?? 0)}` +
+          `  travel ${String(run.travellingTicks['action.shower'] ?? 0)}  visits ${String(run.visits['action.shower'] ?? 0)}  peak use ${String(run.peakShowerUse)} of ${String(run.showerCapacity)}`,
+        );
+        print(`          ${needLine('hygiene', run.needs.hygiene, run.occupiedPlaces).trim()}   histogram ${JSON.stringify(run.unmetHistogram)}   metrics ${JSON.stringify(run.metrics)}`);
+        print(`          grant series ${JSON.stringify(run.dailyGrant)}`);
+      }
+    }
+  });
+});
+
+describe('#1003 act L -- what a shower room costs, against what it earns', () => {
+  it('prices the cheapest repair for hygiene from the buildable registry and the procurement table', () => {
+    print('');
+    print('=== ACT L: the price of the cheapest hygiene repair, read from `BUILDABLE_REGISTRY` and `PROCURABLE_MATERIALS` ===');
+    const price = (itemId: string): number => procurableMaterial(itemId)?.unitPriceMinorUnits ?? 0;
+    const costOf = (buildableId: string): { money: number; work: number; materials: string } => {
+      const definition = BUILDABLE_REGISTRY.get(buildableId)!;
+      let money = 0;
+      for (const requirement of definition.materialsRequired) money += price(requirement.itemId) * requirement.quantity;
+      return {
+        money,
+        work: definition.workRequired,
+        materials: definition.materialsRequired.map((requirement) => `${String(requirement.quantity)} x ${requirement.itemId}`).join(' + '),
+      };
+    };
+    for (const buildableId of ['wall-brick', 'door-wooden', 'shower-head-brick', 'bed-wooden', 'toilet-brick']) {
+      const cost = costOf(buildableId);
+      print(`  ${buildableId.padEnd(18)} ${String(cost.money).padStart(4)} minor units, ${String(cost.work).padStart(3)} work  (${cost.materials})`);
+    }
+    print(`  item prices: item.brick ${String(price('item.brick'))}, item.wood-plank ${String(price('item.wood-plank'))}`);
+
+    // A rectangle's perimeter is 2*(w+h) edge segments -- `wallRoomPerimeter`
+    // writes a north edge for every column of the top row and of the row
+    // below, and a west edge for every row of the left column and of the
+    // column to the right -- and exactly one of them is the doorway.
+    for (const [label, rect, heads] of [
+      ['room.shower-room, authored 3x3 minimum, 2 heads', SHOWER_NEAR, 2],
+      ['room.shower-room, 5x5 with 8 heads', SHOWER_BIG, 8],
+    ] as const) {
+      const segments = 2 * (rect.width + rect.height);
+      const walls = segments - 1;
+      const money = walls * costOf('wall-brick').money + costOf('door-wooden').money + heads * costOf('shower-head-brick').money;
+      const work = walls * costOf('wall-brick').work + costOf('door-wooden').work + heads * costOf('shower-head-brick').work;
+      print(
+        `  ${label}: ${String(segments)} perimeter segments = ${String(walls)} wall-brick + 1 door-wooden, plus ${String(heads)} shower-head-brick` +
+        ` => ${String(money)} minor units and ${String(work)} work`,
+      );
+    }
+    print('  room.yard, authored 8x8 minimum: no `enclosed` requirement, no `object` requirement => 0 minor units and 0 work');
+
+    // The rest of the prison, for scale, on the same arithmetic: `CELL` is
+    // 11x10, so 2*(11+10) = 42 perimeter segments, and it carries fifty beds
+    // and a toilet.
+    const cellSegments = 2 * (CELL.width + CELL.height);
+    const cellMoney = (cellSegments - 1) * costOf('wall-brick').money + costOf('door-wooden').money
+      + BEDS * costOf('bed-wooden').money + costOf('toilet-brick').money;
+    print(`  the cell every act builds, for scale: ${String(cellSegments)} perimeter segments, ${String(BEDS)} beds and a toilet => ${String(cellMoney)} minor units, against a starting treasury of 25000 (TREASURY_STARTING_BALANCE_MINOR_UNITS)`);
+
+    // **The treasury cannot answer this and is printed saying so.**
+    // `PurchaseMaterials` charges the treasury at *purchase*, and
+    // `PlaceObject` consumes stock rather than money -- so two arms that buy
+    // the same materials and place different objects have identical balances,
+    // and the difference is in the stock, not in the money. The price of a
+    // room is the price of the materials it consumes, which is the arithmetic
+    // above.
+    const bare = build({ prisoners: 4, yards: 0, bricks: HYGIENE_BRICKS });
+    const showered = build({ prisoners: 4, yards: 0, showerRooms: 1, showerPlacement: 'near', bricks: HYGIENE_BRICKS });
+    print(`  treasury after building, n=4, ${String(HYGIENE_BRICKS)} bricks bought either way: no shower ${String(bare.treasury.balanceMinorUnits)}, one shower room ${String(showered.treasury.balanceMinorUnits)} -- EQUAL BY CONSTRUCTION: money leaves at PurchaseMaterials and PlaceObject spends stock, so this measures nothing about the room's price.`);
+
+    print('  against the earnings: the state pays 300 a place a day and withholds 40 a place a day per unmet need (`src/simulation/economy/income.ts`),');
+    print('  so one need turned from unmet to served is worth 40 x n a day: 160 at n=4, 2000 at n=50, 4000 at n=100.');
+  });
+});
+
+describe('#1003 act M -- the yard and the shower room side by side, one prison', () => {
+  it('measures bare, yard only, shower only and both, across population', () => {
+    print('');
+    print(`=== ACT M: one prison, four arms, seed 0x997, ${String(SETTLED_DAYS)} days ===`);
+    print('  yard: 8x8 at the cell door (0 tiles). shower room: 3x3 at (9,21), doorway 6 tiles from the cell door. They do not overlap.');
+    print('  n | arm          | grant | recovered vs bare | recreation unmet | hygiene unmet | recreation min/med | hygiene min/med');
+    for (const population of POPULATIONS) {
+      const base = { prisoners: population, bricks: HYGIENE_BRICKS } as const;
+      const bare = measure({ ...base, yards: 0 }, SETTLED_DAYS);
+      const yardOnly = measure({ ...base, yards: 1, yardPlacement: 'at-the-door' }, SETTLED_DAYS);
+      const showerOnly = measure({ ...base, yards: 0, showerRooms: 1, showerPlacement: 'near' }, SETTLED_DAYS);
+      const both = measure({ ...base, yards: 1, yardPlacement: 'at-the-door', showerRooms: 1, showerPlacement: 'near' }, SETTLED_DAYS);
+      for (const [label, run] of [['bare', bare], ['yard only', yardOnly], ['shower only', showerOnly], ['both', both]] as const) {
+        print(
+          `${String(population).padStart(3)} | ${label.padEnd(12)} | ${String(run.settledGrant).padStart(5)} | ${String(run.settledGrant - bare.settledGrant).padStart(17)} | ` +
+          `${String(run.needs.recreation.unmet).padStart(3)} of ${String(population).padStart(2)}       | ${String(run.needs.hygiene.unmet).padStart(3)} of ${String(population).padStart(2)}    | ` +
+          `${String(run.needs.recreation.minPermille).padStart(4)}/${String(run.needs.recreation.medianPermille).padStart(4)}      | ` +
+          `${String(run.needs.hygiene.minPermille).padStart(4)}/${String(run.needs.hygiene.medianPermille).padStart(4)}`,
+        );
+      }
+      print(
+        `      both: yard visits ${String(both.visits['action.yard-recreation'] ?? 0)} (perform ${String(both.performingTicks['action.yard-recreation'] ?? 0)}, travel ${String(both.travellingTicks['action.yard-recreation'] ?? 0)});` +
+        ` shower visits ${String(both.visits['action.shower'] ?? 0)} (perform ${String(both.performingTicks['action.shower'] ?? 0)}, travel ${String(both.travellingTicks['action.shower'] ?? 0)})`,
+      );
+      print(`      both: histogram ${JSON.stringify(both.unmetHistogram)}  metrics ${JSON.stringify(both.metrics)}  grant series ${JSON.stringify(both.dailyGrant)}`);
+      print(`      both: ${hygieneLine(both)}; yard ${String(both.peakYardUse)} of ${String(both.yardCapacity)}`);
+      for (const needId of NEED_IDS) print(needLine(needId, both.needs[needId], both.occupiedPlaces));
+    }
+  });
+});
+
+describe('#1003 act N -- whether twenty days is long enough for hygiene', () => {
+  it('runs n=50 for 20, 40 and 60 days and prints the whole grant series', () => {
+    print('');
+    print('=== ACT N: is the twenty-day readout settled? n=50, one 3x3 shower room, no yard ===');
+    print('  WHY THIS ACT EXISTS. Act A\'s recreation series is flat from day 6 onward, so its day-20 readout is a settled');
+    print('  state. Act I\'s hygiene series is NOT: with a shower room it is still climbing on day 20. `hygiene` decays at');
+    print('  0.02 a tick = 48 levels a day and a prisoner arrives at NEED_MAX = 255, so nobody crosses');
+    print('  STATE_INCOME_UNMET_NEED_LEVEL = 51 until day (255-51)/48 = 4.25 -- and what happens after that is what this act reads.');
+    for (const placement of ['near', 'far'] as const) {
+      for (const days of [20, 40, 60, 100, 140]) {
+        const run = measure({ prisoners: 50, yards: 0, showerRooms: 1, showerPlacement: placement, bricks: HYGIENE_BRICKS }, days);
+        const visits = run.visits['action.shower'] ?? 0;
+        print(
+          `  [${placement}] ${String(days).padStart(2)} days: grant ${String(run.settledGrant)}  hygiene unmet ${String(run.needs.hygiene.unmet)} of ${String(run.occupiedPlaces)}` +
+          `  min/med/max ${String(run.needs.hygiene.minPermille)}/${String(run.needs.hygiene.medianPermille)}/${String(run.needs.hygiene.maxPermille)}` +
+          `  visits ${String(visits)} = ${String(Math.round(visits / days))}/day  perform ${String(run.performingTicks['action.shower'] ?? 0)}` +
+          `  travel ${String(run.travellingTicks['action.shower'] ?? 0)}`,
+        );
+        // **Not a percentage of a ceiling, because it exceeds one.** 2 places x
+        // the 500-tick hygiene window is 1,000 place-ticks a day, and the far
+        // arm books more than that -- so a shower that begins inside the
+        // window keeps performing after the block that allowed it has closed,
+        // and the window is a rate limit on *starts* rather than on ticks.
+        print(`      shower place-ticks a day ${String(Math.round((run.performingTicks['action.shower'] ?? 0) / days))} against ${String(run.showerCapacity * 500)} = ${String(run.showerCapacity)} places x the 500-tick hygiene window`);
+        print(`      histogram ${JSON.stringify(run.unmetHistogram)}   metrics ${JSON.stringify(run.metrics)}`);
+        print(`      grant series ${JSON.stringify(run.dailyGrant)}`);
+      }
+    }
+  });
+});
+
+describe('#1003 act O -- the same sweep on two more seeds', () => {
+  it('re-runs the near-shower arm at n = 16, 24, 32, 40, 50 on three seeds', () => {
+    print('');
+    print(`=== ACT O: act I's near arm on three seeds, ${String(SETTLED_DAYS)} days ===`);
+    print('  Act I reads 0, 0, 1, 13 and 7 short at n = 16, 24, 32, 40 and 50, which is a non-monotone sequence from one');
+    print('  trajectory. This act asks whether the *shape* survives a different one. [#997 §7] named "one seed" as its own');
+    print('  weakest claim for exactly this reason.');
+    print('  n | seed 0x997 unmet/grant | seed 0x1003 unmet/grant | seed 0xbeef unmet/grant');
+    for (const population of [16, 24, 32, 40, 50]) {
+      const cells: string[] = [];
+      for (const seed of [0x997, 0x1003, 0xbeef]) {
+        const run = measure({ prisoners: population, yards: 0, showerRooms: 1, showerPlacement: 'near', bricks: HYGIENE_BRICKS, seed }, SETTLED_DAYS);
+        const bare = measure({ prisoners: population, yards: 0, bricks: HYGIENE_BRICKS, seed }, SETTLED_DAYS);
+        cells.push(
+          `${String(run.needs.hygiene.unmet).padStart(2)} of ${String(population).padStart(2)}, +${String(run.settledGrant - bare.settledGrant).padStart(4)}` +
+          ` (visits ${String(Math.round((run.visits['action.shower'] ?? 0) / SETTLED_DAYS))}/day)`,
+        );
+      }
+      print(`${String(population).padStart(3)} | ${cells.join(' | ')}`);
+    }
   });
 });
