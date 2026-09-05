@@ -497,7 +497,66 @@ Rooms panel reports the room ready.
 
 ## 6. Act 6 — the same box, designated four different ways
 
-_Pending — see §9._
+The same 6×6 brick enclosure, built four times in four fresh prisons and
+designated **Cell** (category `housing`), **Kitchen** (`food`), **Solitary
+Cell** (`security`) and **Classroom** (`education`) — the four widest-apart
+hues in `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:84`):
+`0x4f7fd0`, `0xd0854f`, `0xd05a4f`, `0x9a4fd0`. No objects, no people, so the
+floor is all there is to read. Screenshots:
+`2026-09-05-what-the-world-shows/act6-cell.png`, `act6-kitchen.png`,
+`act6-solitary.png`, `act6-classroom.png`, each with an `-x2`.
+
+**Every room type is drawn on the same floor image.** `zonedFloorSprite`
+(`src/rendering/world/environment-art.ts:104`) returns
+`'env.floor.institutional'` for **any** known zoning id — the function does not
+branch on category at all, and its own docblock says so: *"One floor for every
+category today."* Eleven categories, one floor. The only thing that separates
+them is `zoningTint` washed over it at `ZONING_TINT_ALPHA_OVER_ART` `0.14`
+(`src/rendering/world/appearance.ts:110`), which is deliberately weak, for a
+reason the same docblock gives and which is correct: at `0.28` *"a photographed
+linoleum floor stops reading as a floor and becomes a coloured rectangle
+again"*.
+
+**What 14% buys, measured.** Mean RGB over the same 192×192 patch of clean
+floor in each picture:
+
+```
+cell       (housing,   0x4f7fd0)   mean floor RGB = (109.4, 126.6, 149.4)
+classroom  (education, 0x9a4fd0)   mean floor RGB = (119.5, 120.1, 149.4)
+kitchen    (food,      0xd0854f)   mean floor RGB = (126.8, 127.4, 132.0)
+solitary   (security,  0xd05a4f)   mean floor RGB = (126.8, 121.6, 132.0)
+
+pairwise Euclidean RGB distance
+  cell      vs classroom :  12.0
+  cell      vs kitchen   :  24.7
+  cell      vs solitary  :  25.2
+  classroom vs kitchen   :  20.3
+  classroom vs solitary  :  19.0
+  kitchen   vs solitary  :   5.8
+```
+
+**A Kitchen and a Solitary Cell are 5.8 RGB units apart**, on a speckled
+photographic floor, seen at 64 px a tile. That is not a subtle distinction; it
+is no distinction. The widest pair in the whole game's palette — a Cell against
+a Solitary Cell — is 25.2, which is the difference between "bluish grey" and
+"warm grey" and is readable only with the two side by side. In the pictures the
+Cell is recognisably blue and the other three are all grey.
+
+**And the palette is coarser than the room list before the alpha touches it.**
+Eighteen room types map onto **eleven** categories
+(`src/content/room-catalog.ts:92` onward) and eleven categories map onto one
+floor image, so a Kitchen and a Canteen, a Cell and a Holding Cell, a Solitary
+Cell and a Security Office, a Shower Room and a Laundry, a Yard and a Common
+Room, and all three of Storage Room, Delivery Bay and Garbage Room are each
+**exactly** the same pixels. Eighteen designations, eleven washes, one floor.
+
+So, to the brief's second question — does a room read as the thing it was
+designated? **A room reads unmistakably as a room** (§2: the floor art against
+brown dirt is the world view's second-best trick). **It does not read as which
+room.** A player who designates a Kitchen and comes back an hour later has no
+way to tell it from the Solitary Cell next door, and once it is furnished (§5)
+the floor is under a field of slabs anyway.
+
 
 ## 6b. Act 7 — what the wheel does
 
