@@ -248,8 +248,15 @@ balance:
 Six presses across the whole of the last 200 the prison had, **`aria-disabled`
 `false` at every one of them, including the press that took the balance to
 exactly zero and the press that took it below** — and the shortfall line never
-drew at all. The first press the interface refuses is a long way past the last
-press it should have had an opinion about.
+drew at all.
+
+**That the press below zero is *allowed* is correct and deliberate**: ADR 0017's
+amendment of 2026-09-01 put the refusal at the deliveries rung rather than at
+zero, and `judgeAffordability(40, 0, −1,185)` rightly says yes. **JUDGEMENT**,
+and it is about the silence rather than the permission: the interface has an
+opinion about money for the 1,185 below zero and none at all for the 25,000
+above it, so the first thing it ever says arrives after the event a player would
+have wanted warning of.
 
 **Where the first word finally arrives**, and it is amber rather than red:
 
@@ -278,9 +285,11 @@ player reached in silence.
 **Both halves have moved.** The treasury no longer stops at 40: the ladder runs
 below zero, so the balance a fresh prison can drag or buy itself down to is
 **−1,185** for a Buy press (MEASURED above) and the first sentence arrives at
-the first negative balance rather than at the last positive one. **ARITHMETIC**,
-from the two figures opened above (`unitPriceMinorUnits` 40 × 2 bricks a
-segment, and the −1,185 rung): the wall route now funds
+the first negative balance rather than at the last positive one. **ARITHMETIC**, from three
+figures each opened at its line — `materialsRequired: [{ itemId: 'item.brick',
+quantity: 2 }]` (`src/simulation/construction/definition.ts:89`),
+`unitPriceMinorUnits: 40` (`src/content/procurement-catalog.ts:100`) and the
+−1,185 rung: a segment is 80, and the wall route now funds
 `floor((25,000 + 1,185) / 80) = 327` segments rather than 312.
 
 **What has not moved is the part #641 is actually about**: nothing warns before
@@ -737,10 +746,10 @@ already on screen with the tool armed.
 
 - arm hint suffix: `{total} a segment.` — true from the same two data the Buy
   row already multiplies: the buildable's material list
-  (`src/simulation/construction/definition.ts`) and
-  `procurableMaterial(id).unitPriceMinorUnits`
-  (`src/content/procurement-catalog.ts`), which is exactly what
-  `just-in-time-materials.ts` charges at the press.
+  (`src/simulation/construction/definition.ts:89` for `wall-brick`, two bricks)
+  and `procurableMaterial('item.brick').unitPriceMinorUnits`
+  (`src/content/procurement-catalog.ts:100`, `40`), whose product is the 80 a
+  segment `just-in-time-materials.ts` charges at the press.
 - during a drag: `{count} segments · {total}` — the same product over the
   segment count the drag has produced.
 
