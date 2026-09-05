@@ -44,7 +44,7 @@ found it. What breaks is everything around the simulation. **The plot is one
 32×32 chunk with no way to buy another** (`world.setOwned` has a single call
 site), so "as many prisoners as the game will take" is bounded at about a
 thousand tiles and not at `DEFAULT_PRISONER_CAPACITY`'s 5,000; at the zoom that
-shows the whole plot, **the HUD stands on 122 of its 1,024 tiles** and a build
+shows the whole plot, **the HUD stands on 156 of its 1,024 tiles** and a build
 gesture that lands there submits *nothing at all* — the largest obstruction
 being a 422×425 panel reading *"Minimap is not available yet"*. **Room
 contention finally bites, at 34 contenders per place**: all four visible roster
@@ -195,7 +195,7 @@ leaves no tile over"*, and its verdict says fifty prisoners *"takes the whole of
 the enclosable map to do it"*.
 
 **MEASURED, act 0 and act 1.** That is true **at zoom 1 only**. Four presses of
-`Minus` put 902 of the plot's 1,024 tiles under the pointer (§2), and this
+`Minus` put 868 of the plot's 1,024 tiles under the pointer (§2), and this
 record's prison lays out **eight rooms totalling 363 tiles, 299 of them walled**
 (12×6 + 12×6 + 10×6 cell blocks, a 3×3 shower room, a 5×5 classroom, a 6×6
 canteen, a 5×5 common room and an 8×8 yard) — **three times that "whole map"** —
@@ -208,7 +208,7 @@ about 40%, at which a tile is 26 px. That is workable, and the four keypresses
 are not signposted anywhere: `hud.build.arm-hint` names the arrow keys for
 panning and nothing on screen names `-` or `+`.
 
-## 2. With the whole prison on screen, the HUD stands on 122 tiles of it — and a press there submits nothing at all
+## 2. With the whole prison on screen, the HUD stands on 156 tiles of it — and a press there submits nothing at all
 
 **MEASURED, act 0c.** Zoomed out four notches so the plot fits, the laid-out HUD
 boxes at 1440×900 are, verbatim:
@@ -240,9 +240,10 @@ centres, with the Overview tab open (`'.'` pressable, `'#'` covered):
 31 ........################........
 ```
 
-**122 of 1,024 tile centres cannot be pressed at all** — 64 in the top two rows
-under `.hud-strip`, 60 in a 4×15 block at the lower left under `.hud__corner`,
-and 32 in the bottom two rows under `.hud__tabs`. Every one of them is *drawn*:
+**156 of 1,024 tile centres cannot be pressed at all**, counted row by row off
+the map above: **64** in the top two rows under `.hud-strip`, **60** in a 4×15
+block at the lower left under `.hud__corner`, and **32** in the bottom two rows
+under `.hud__tabs` — 15% of the plot. Every one of them is *drawn*:
 the world is visible under all three.
 
 **Two things this measurement corrects.** `.hud__refusal` is laid out across the
