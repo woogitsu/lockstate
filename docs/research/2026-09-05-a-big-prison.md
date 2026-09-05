@@ -852,3 +852,63 @@ it was malformed — a bare string where the protocol wants
 projection request is indistinguishable from a hung worker. The probe is in the
 instrument now (act 1, after the room list).
 
+---
+
+## What I did not reach
+
+- **Anything like "several thousand active actors".** §1 says why: the plot is
+  1,024 tiles and cannot be extended by a player. 68 is what a laid-out prison
+  with circulation, doors and eight rooms fits on it; a wall-less field of beds
+  would fit more and would not be a prison. **The README's target is not
+  reachable through the interface at all**, and closing that gap is a land
+  mechanic, not a performance one.
+- **Determinism.** No worker message carries a state fingerprint, so a playtest
+  has no channel on which to compare two runs. §9 states this rather than
+  guessing at it.
+- **A clean build-throughput curve.** The instrument's first drain read the
+  Build panel's text and the panel hides its queue block until a projection has
+  arrived (`paintQueue`, `src/ui/hud/build-panel.ts:2311-2313`), so the 180-order
+  drain went unsampled; by the time that was fixed the queue emptied *during*
+  the gestures and there was nothing left to sample (§3a). The serial-crew
+  arithmetic in §3a is read from the code, not measured against a draining
+  queue.
+- **Frame rate and rendering cost.** Every act ran on software WebGL. Nothing
+  here is evidence about what a big prison costs to draw.
+- **The other tester's surface**, deliberately: the build flow end to end and
+  its redesign. Two things that belong to them are noted in one line each — the
+  refusal row that cannot be cleared and outlives the prison (§7), and the
+  Build panel hiding its own queue block immediately after a large order run
+  (§3a's footnote in the instrument).
+- **A second population size.** Everything here is 68 against 0. A curve — 68,
+  136, 272 — would separate "grows with population" from "grows once"; the plot
+  will not hold the second point.
+
+## The weakest claim, and what would change my mind
+
+**The weakest claim is §10's**, and it is weak in a specific way: I measured
+`accommodationCapacity: 76` from 68 bed presses, measured the per-block surplus
+matching the per-block toilet count, built a control that rules out the two
+explanations that fit, and stopped. **I do not know what the eight extra places
+are.** What would change my mind is one reading: the `hud/room-detail`
+projection for `room.cell:1:4`, enumerating that room's placed objects. If it
+lists 27 beds, my count of my own presses is wrong and there is no defect; if it
+lists 24 beds and three toilets, `deriveRoomCapacity` is being fed something
+other than what I read. The probe is in the instrument and the answer is one run
+away.
+
+**The second-weakest is §8's contention claim, and the weakness is the sample.**
+The interface shows four rows of 68, so "all four visible prisoners are heading
+to a two-seat classroom" is four observations, not 68. The ceilings are
+`VERIFIED, read` and the arithmetic (`34 contenders per place`) follows from
+them, but *how many* prisoners are actually refused at the classroom door in a
+given tick is not something I measured — the roster projection that would have
+answered it was read through the wrong level of the reply envelope on the first
+run and returned `rows 0 of total 68`. What would change my mind is the
+distribution of `currentActionId` across all 68 rows at one tick; if most of
+them are performing something else, the classroom is a queue and not a wall.
+
+**A third caveat that is not a weak claim but is a constraint on all of them.**
+This box carried a second tester throughout. Every claim above is in ticks,
+counts, nodes or minor units for that reason, and the one place a real-time
+figure appears — §3a's "the player is slower than the crew" — says so and is not
+load-bearing for anything else.
