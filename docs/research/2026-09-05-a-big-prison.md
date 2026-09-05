@@ -643,12 +643,27 @@ prisoner's `currentActionId` was:
 | round 3 | 62,649 | **`classroom-education` 51**, `sleep` 8, `eat-meal` 7, **`shower` 2** | **travelling 51**, performing 15, idle 2 |
 | round 4 | 64,853 | `sleep` **68** | performing 62, idle 6 |
 | round 5 | 67,020 | `sleep` **68** | performing 67, travelling 1 |
+| round 6 | 69,183 | **`shower` 26**, `sleep` 18, `use-toilet` 16, `common-room-recreation` 5, `yard-recreation` 3 | **travelling 39**, performing 23, idle 6 |
+| round 7 | 71,387 | **`eat-meal` 31**, **`eat-in-cell` 20**, `shower` 12, `use-toilet` 4, `yard-recreation` 1 | **travelling 58**, performing 5, idle 5 |
+| round 8 | 73,592 | `free-association` 40, `use-toilet` 16, `shower` 9, `classroom-education` 2, `eat-meal` 1 | performing 35, travelling 18, idle 15 |
 
-**Round 3 is the finding, and it is exactly the shape ADR 0062 is about.**
-**Fifty-one prisoners are committed to `action.classroom-education` at one tick,
-in a room whose `education` ceiling is two**, and **fifty-one are `travelling`** —
-walking to it. Two are on `action.shower`, which is the shower room's ceiling
-**to the unit**. So the answer to *what do the losers do* is not one answer:
+**Rounds 3, 6 and 7 are the finding, and they are exactly the shape ADR 0062 is
+about.** Three different rooms, three different capabilities, and every one of
+them oversubscribed by an order of magnitude at a single tick:
+
+| round | what they committed to | how many | the room's ceiling for it | ceiling from |
+| --- | --- | --- | --- | --- |
+| 3 | `action.classroom-education` | **51** | **2** | one bookshelf, `2×1` |
+| 6 | `action.shower` | **26** | **2** | two shower heads, `1×1` |
+| 7 | `action.eat-meal` | **31** | **6** | two dining tables, `3×2` |
+
+and the travel column says what that costs in feet: **51, 39 and 58 prisoners
+`travelling` at those same three ticks.** Round 3's two `action.shower`
+performers are the shower ceiling **to the unit**, and round 7's twenty
+`action.eat-in-cell` are ADR 0041's canteen fallback happening in play — the
+first time it has been seen outside a kernel fixture.
+
+So the answer to *what do the losers do* is not one answer:
 
 - **When the block does not offer education** (built, round 1) the population
   sits on `action.free-association`, whose target is
@@ -660,7 +675,17 @@ walking to it. Two are on `action.shower`, which is the shower room's ceiling
   first `concurrentUseCapacityFor` of them will get in"*
   (`src/simulation/prisoners/room-instance-registry.ts:968-971`), so **49 of
   those 51 walks end at a door that will not let them in.**
+- **When it offers hygiene or a meal** (rounds 6–7) the same thing happens to
+  the shower room and the canteen: 26 for two heads, 31 for six dining places,
+  with 20 of the refused diners falling back to `action.eat-in-cell`.
 - **At night** (rounds 4–5) all 68 sleep, and there is nothing to contend for.
+
+**Nothing here is starvation, and the record should not imply it is.** ADR 0062's
+own worst case was *"prisoners 22 and 23 took **zero** showers in 40,000 ticks"*;
+this prison's population takes showers — 26 of them try in one tick and two
+succeed. What the scale changes is the *rate*: the queue for two heads is 34
+deep, so `hygiene` is the lowest need for half the prison at every sample from
+round 1 onwards and never recovers.
 
 **MEASURED — and the cost of it accumulates.** `lowestNeed` across the same 68
 rows, by round:
@@ -673,6 +698,9 @@ rows, by round:
 | round 3 | **28** | 30 | — | bladder 7, recreation 3 |
 | round 4 | **33** | 28 | — | recreation 5, bladder 2 |
 | round 5 | **35** | 26 | — | recreation 3, sleep 2, bladder 2 |
+| round 6 | **31** | 30 | — | sleep 6, bladder 1 |
+| round 7 | **34** | 20 | — | bladder 7, recreation 6, sleep 1 |
+| round 8 | 26 | 5 | — | **bladder 29**, recreation 8 |
 
 **Hygiene becomes the worst need for half the prison and stays there** — 16, 32,
 28, 33, 35 out of 68 — against a shower room that admits **two**. Run one's
