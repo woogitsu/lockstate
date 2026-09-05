@@ -248,8 +248,15 @@ balance:
 Six presses across the whole of the last 200 the prison had, **`aria-disabled`
 `false` at every one of them, including the press that took the balance to
 exactly zero and the press that took it below** — and the shortfall line never
-drew at all. The first press the interface refuses is a long way past the last
-press it should have had an opinion about.
+drew at all.
+
+**That the press below zero is *allowed* is correct and deliberate**: ADR 0017's
+amendment of 2026-09-01 put the refusal at the deliveries rung rather than at
+zero, and `judgeAffordability(40, 0, −1,185)` rightly says yes. **JUDGEMENT**,
+and it is about the silence rather than the permission: the interface has an
+opinion about money for the 1,185 below zero and none at all for the 25,000
+above it, so the first thing it ever says arrives after the event a player would
+have wanted warning of.
 
 **Where the first word finally arrives**, and it is amber rather than red:
 
