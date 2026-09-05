@@ -76,8 +76,8 @@ import type { EnvironmentSpriteId } from '../assets/environment-sprites';
  *   are, and `tests/unit/environment-art.test.ts` fails if the lists and the
  *   registries disagree in either direction -- so cataloguing a new object
  *   without artwork is a red test naming it, not a hole nobody sees. The
- *   guard is `describe('declared fallback')` at `:241`, and the two
- *   directions are `:248` and `:256`.
+ *   guard is `describe('declared fallback')` at `:242`, and the two
+ *   directions are `:249` and `:257`.
  *
  *   This named `environment-art-coverage.test.ts` until 2026-08-28.
  *   That file has never existed -- `git log --diff-filter=A` finds no commit

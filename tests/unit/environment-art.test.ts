@@ -288,7 +288,7 @@ describe('declared fallback', () => {
  * same slate-blue slab as every other object. Nothing observed the difference
  * because there is nothing to observe: `objectSprite`'s only caller in `src/`
  * is `objectArtCoverage`, and the loop that draws objects
- * (`src/rendering/phaser/tile-layer.ts:481-498`) calls `structureAppearance`
+ * (`tile-layer.ts:481-498`, as it stood that day) calls `structureAppearance`
  * and `paintSlab` and never asks this module anything. So the coverage number
  * the floor would defend can be raised without a pixel changing, which makes
  * the floor alone a gate on a claim rather than on the screen.
