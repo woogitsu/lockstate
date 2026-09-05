@@ -73,3 +73,91 @@ that date. This pass re-derived it behaviourally rather than inheriting either
 the issue or the commit.
 
 ---
+
+## §1 — Arrival: what the screen offers, and the complete inventory of it
+
+**MEASURED**, act 1, 1440×900, on a fresh prison with one guard hired so the
+prison is a thing on screen and not only an ownership shade:
+
+```
+[act1] version line: v0.0.475 · 72896dd
+[act1] canvas rect: {"left":0,"top":0,"width":1440,"height":900}
+[act1] visible tile box on arrival: {"left":4,"right":27,"top":10,"bottom":23, ...}
+[act1] owned chunk (tiles 0..31) visible on arrival: true
+[act1] measured screen px per tile on arrival: 64.00 (zoom = 1.000)
+[act1] arrival pixels: 0/131 sampled world points are exactly VOID_COLOR
+```
+
+The camera arrives at zoom 1 showing tiles x 4–27, y 10–23 — **24×14 of the
+32×32 owned chunk**, centred on the prison. Not one sampled world pixel is void.
+This is the picture the rest of the record is measured against.
+
+**Every camera figure in this record is read out of the running game, not
+recomputed.** With the Build panel's `Remove` tool armed, a press submits a
+`RemoveObject` command carrying the tile the game itself resolved under that
+screen point; `probeTile` reads that tile back. `app-shell.spec.ts:4515` states
+in its own words that the assembled page exposes no debug hook for camera
+position, so this is the only honest instrument available, and it has the useful
+property of answering in the game's own screen→tile transform rather than one
+the instrument reimplements.
+
+### 1.1 — The minimap's footprint is a fixed number of CSS pixels, so its share of the screen is a function of the viewport
+
+The brief carries a figure measured in the last twenty-four hours — the minimap
+panel at **17% of the viewport** — without the viewport it was taken at. It is
+a fixed footprint, so the fraction is swept rather than quoted. **MEASURED**,
+act 1, the same live rect at five viewports:
+
+```
+[act1] .hud-minimap panel {"x":12,"y":446.8125,"w":398,"h":372} = 11.42% of the 1440x900 viewport
+[act1]   900x600:   .hud-minimap 398.0x372.0 = 27.42% of the viewport
+[act1]   1280x720:  .hud-minimap 398.0x372.0 = 16.07% of the viewport
+[act1]   1280x800:  .hud-minimap 398.0x372.0 = 14.46% of the viewport
+[act1]   1440x900:  .hud-minimap 398.0x372.0 = 11.42% of the viewport
+[act1]   1920x1080: .hud-minimap 398.0x372.0 = 7.14% of the viewport
+```
+
+**398×372 at every one of the five**, exactly as
+`docs/research/2026-09-02-the-world-view.md` §0 measured. So *"17% of the
+viewport"* is true at about **1280×720** and nowhere else in this range: the
+same panel is **27.42%** on a 900×600 window and **7.14%** on a 1920×1080 one, a
+factor of **3.8 between the smallest and largest viewport this repository
+measures at**. The claim is not wrong; it is a claim about one window size, and
+it should never be quoted without one.
+
+**MEASURED**, act 1: `.hud-minimap` is present at **398×372 at (12,447) on all
+five tabs** — overview, build, rooms, security, regime, byte-identical rect —
+so nothing a player does with the tabs makes it smaller or larger.
+
+### 1.2 — There is no control anywhere on the page that names the camera or the way home
+
+**MEASURED**, act 1: every visible `button`, `[role="button"]` and `a[href]` on
+each of the five tabs, by tag, class, `innerText`, `aria-label` and `title` —
+**19 controls on overview, 44 on build, 40 on rooms, 43 on security, 18 on
+regime.** The full inventory is in the act's log. Not one of them names the
+camera, a position, a direction, or the prison's location. The only controls
+that touch the view at all are `Collapse` (three of them, on the minimap,
+build/rooms/security/regime panel and intake) and `100%` (`Change the interface
+scale`).
+
+**READ**, `src/input/bindings.ts:10-35` — the whole of
+`DEFAULT_KEYBOARD_BINDINGS` for the camera:
+
+```
+KeyW/KeyS/KeyA/KeyD  -> camera.up/down/left/right
+ArrowUp/Down/Left/Right -> the same four
+Equal -> camera.zoom.in     Minus -> camera.zoom.out
+Escape -> build.cancel      (then undo/redo)
+```
+
+**Eight pan keys, two zoom keys, and no key that returns the camera anywhere.**
+There is no `camera.home`, no `camera.centre`, no action id of any such shape in
+`src/input/actions.ts`'s registry that a binding could point at.
+
+**READ**, `src/rendering/scene/world-scene.ts`: `camera.scrollX`/`scrollY` are
+written at `:559` (touch pan), `:604-605` (middle-drag pan) and `:650`
+(continuous keyboard pan), and **none of the three clamps the result.** The
+scene calls `setBounds` nowhere. `ZOOM_BOUNDS` (`:68`) is the only clamp in the
+file. §3 of the baseline record measured this at v0.0.344 and it is unchanged.
+
+---
