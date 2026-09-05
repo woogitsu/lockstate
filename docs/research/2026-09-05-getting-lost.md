@@ -743,8 +743,8 @@ explain to anybody.
 
 **The name is the owner's** under `AGENTS.md`'s fourth exclusion. What it must
 convey is that it moves the *camera* and not the prison: the only control on any
-tab whose text contains the word *prison* is **`New prison`** (MEASURED, act 7,
-all five tabs), which destroys the current session's unsaved play
+tab that is about *the prison* is **`New prison`** (MEASURED, act 7: the same
+filter's only other hits are `Admit a prisoner` and the `OVERVIEW` tab), which destroys the current session's unsaved play
 (`docs/research/2026-09-04-many-prisons.md`), so a recentre control named near
 that phrase is a control a player will be afraid to press.
 
