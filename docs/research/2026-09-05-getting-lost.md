@@ -51,8 +51,14 @@ LOCKSTATE_BROWSER_TEST_PORT=5327 node node_modules/@playwright/test/cli.js test 
 | **3** | both ends of `ZOOM_BOUNDS`, and how far one drag carries at each |
 | **4** | the way back, counted in interactions |
 | **5** | the edges: how far the world goes and whether anything degrades out there |
-| **6** | across a reload and across a prison switch |
-| **7** | the three candidate ways back, measured against each other, and the affordance audit |
+| **6** | across a reload, and what `Load` frames on |
+| **7** | the three candidate ways back measured against each other, and what the surface advertises before the first click |
+| **8** | a prison switch with **no reload in between**, which is the case `framedOnWorld` never resets for |
+
+Screenshots for every act are in `docs/research/2026-09-05-getting-lost/`.
+Each act's own first log line quotes the version strip it read; the commit
+hashes in those lines differ between acts because this record was committed
+between runs, and every one of them is **v0.0.475**.
 
 ---
 
