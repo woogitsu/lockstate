@@ -728,7 +728,8 @@ So the recentre control belongs in the *header*, beside `Collapse`. `PanelOption
 `createPanel` builds `headerChildren` at `:40-59` — an optional
 `readonly actions?: readonly { icon: IconId; label: string; onActivate: () => void }[]`
 pushed into `headerChildren` before the toggle is the whole change to the
-primitive, and it is a primitive four other panels would be able to use.
+primitive — and it is a primitive **six** call sites in `src/ui/` already
+share, so the header-action slot arrives for all of them at once.
 
 **What it does, at each zoom level.** It calls the body of
 `frameCameraOnFirstWorld` (`world-scene.ts:1231-1234`) without the
@@ -804,3 +805,87 @@ collapse of the channel that says what is going wrong in the prison.
 This is a layout change with a measured height budget behind it
 (`hud.css:289-335` is four hundred words on that budget), so it is the largest
 of the five and the one most likely to need an ADR rather than a patch.
+
+---
+
+## What this pass checked and found correct
+
+- **The pan is exact.** MEASURED, act 5: 41 strokes of 800px at zoom 1 moved the
+  visible box by **512.5 tiles**, and 41 × 800 / 64 = 512.5. No drift, no
+  accumulation error, no coalescing.
+- **The zoom clamp is exact at both ends.** MEASURED, act 3: twelve presses each
+  way land on **0.200** and **3.000** against `ZOOM_BOUNDS`'s `{0.2, 3}`.
+- **Keyboard zoom does not drift the camera.** READ, `world-scene.ts:783-793`:
+  `stepZoom` anchors the viewport centre, so `+` then `−` returns exactly —
+  which `KEYBOARD_ZOOM_STEP`'s own docblock (`:74-86`) says is why it is `1.25`
+  and not the wheel's `1.1`/`0.9` pair.
+- **Nothing degrades far from home.** MEASURED, act 5, at 617 tiles out: no
+  console errors, no page errors, the strip verbatim, the tile probe still
+  resolving. The only console output is four WebGL messages from this
+  container's software renderer.
+- **The boundary of owned land renders correctly.** MEASURED, act 5: terrain to
+  tile 31, `VOID_COLOR` from tile 32, a clean vertical edge, exactly as
+  `appearance.ts` describes.
+- **The minimap navigation is presentational.** MEASURED, act 4: a press submits
+  `[]` through the worker tee — no simulation command — which is the boundary
+  `tests/unit/rendering-module-boundaries.test.ts` holds `src/rendering/` to.
+
+## What this pass did not reach
+
+- **Touch.** Every gesture here is a mouse middle-drag or a key. The one-finger
+  touch pan (`world-scene.ts:559`) and the pinch are unmeasured, and a phone
+  player's screen at 375px wide has a different HUD fraction again (§1.1 stops
+  at 900×600).
+- **The minimap's target once the world has grown.** READ,
+  `world-scene.ts:1280-1287`: `navigateToMinimapPoint` maps onto
+  `loadedBounds`, which grows when a build order completes outside the owned
+  chunk (`docs/research/2026-09-02-the-world-view.md` §4 measured that growth).
+  **REASONED, and not measured here: once a player has built east, the middle
+  of the minimap stops being the prison and becomes the middle of the land.**
+  Testing it needs a completed far build, which needs simulation time this pass
+  did not spend. It is the most likely place for §4's clean result to stop
+  holding, and it is the first thing a third pass should run.
+- **A populated prison.** Every act ran on a prison with at most one guard and
+  no rooms. Whether a prison with walls, actors and room tints is easier to
+  spot at zoom 0.2 than the flat terrain measured here is a real question and
+  is not answered.
+- **The continuous keyboard pan's rate.** READ, `world-scene.ts:71`,
+  `PAN_SPEED_WORLD_UNITS_PER_MS = 0.6`, *"about nine tiles a second at zoom 1"* —
+  a claim about wall-clock time, which this record does not make and did not
+  test. How easily a held arrow key overshoots is therefore unmeasured.
+- **`Load` from the parked view of a *second* prison.** §6 measured one reload
+  of one prison. Whether `Load` frames on the prison in a page that already has
+  a scene with `framedOnWorld` true — the §7 path — is not measured, and §7
+  predicts it would not.
+
+## The weakest claim in this record, and what would change my mind
+
+**That "the player will not click the minimap" is the thing that costs them,
+rather than the void itself.**
+
+It is the claim the whole verdict rests on and the only tier-JUDGEMENT link in
+it. What is MEASURED is that the sentence says `MINIMAP IS NOT AVAILABLE YET`
+(act 1, 2, 4, 7, 8), that the cursor over it says `pointer` (act 7), and that
+one press fixes everything (act 4). What is **not** measured is which of those
+two signals a real player acts on. It is entirely possible that a panel titled
+`MINIMAP` sitting where a minimap goes gets clicked by most players within
+seconds regardless of what the text says, in which case the defect is a
+cosmetic one and P1 is a tidy-up rather than the fix.
+
+**What would change my mind:** a session with a person in front of it — the
+2026-09-03 people playtest's method — that gets someone lost and counts how long
+before they press the minimap, and whether they say anything about the sentence.
+Two or three subjects would settle it either way. Failing that, the same
+instrument run against a build with P1 applied, measuring whether the *first*
+press on the surface happens sooner — though that measures a proxy and not the
+player.
+
+**A second, smaller weak claim**, named because it is load-bearing for §8: that
+`ownedLandVisible` is the right test for "the player can see their prison". It
+is a rectangle overlap and §8 shows it turning true while the pixel channel is
+still 113/113 void. Every place this record uses it, the pixel sample is quoted
+beside it for exactly that reason — but the *drag counts* in acts 2, 3 and 7
+are box-test counts, so **every "N drags to get lost" figure here is one drag
+generous to the game**: the screen goes black slightly before the box test says
+the prison has left it (act 2, drag 2: `owned-visible=true` with 105/113 already
+void).
