@@ -742,8 +742,10 @@ the only readout a player has of it is four roster rows all saying
 Answering the brief's five questions in order, so that the things that did *not*
 break are on the record as loudly as the things that did.
 
-**Does the simulation hold?** Yes, over the range played. From `New prison` to
-game day 26 the worker published **819 `simulation/status-counts` messages**;
+**Does the simulation hold?** Yes, over the range played, and it held twice.
+From `New prison` to game day 26 the worker published **819
+`simulation/status-counts` messages** in the first run and **916** in the
+second;
 the last reads `{tick: 61354, prisoners: 68, rooms: 8, roomCapacity: 76,
 accommodationCapacity: 76, roomOccupants: 68, treasury: 202150,
 dailyWageBill: 800, staff: 10}`. The clock never left `{mode: 'running',
@@ -780,8 +782,9 @@ cap of eight, because repeats collapse.
 boundaries running, with a 30:1 income-to-payroll ratio that widens with every
 prisoner (§4a).
 
-**Does contention bite?** Yes, at 34 contenders per place, and nothing tells the
-player (§8).
+**Does contention bite?** Yes — three rooms at once, oversubscribed 25×, 13× and
+5× at single ticks, with 39 to 58 of the 68 walking at those moments and nothing
+on any surface naming a ceiling (§8).
 
 **One thing I could not measure and will not claim: determinism.** No
 `simulation/*` message carries a state fingerprint (`grep -rn
