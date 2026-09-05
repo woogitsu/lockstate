@@ -475,8 +475,16 @@ async function report(page: import('@playwright/test').Page, label: string): Pro
   log(`[report:${label}] strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
   log(`[report:${label}] alerts: ${JSON.stringify((await panelText(page, '.hud-alerts__list')).split('\n'))}`);
   try {
-    const roster = await ask<{ page?: { total?: number; offset?: number }; view?: { rows?: unknown[] } }>(page, 'hud/prisoner-roster', { limit: 500 });
-    const rows = (roster.view?.rows ?? []) as {
+    /*
+     * `view.data.rows`, not `view.rows`. The projection envelope is
+     * `{ projectionId, tick, page, view }` and `view` is a *transport* wrapper
+     * -- `{ transport, schemaId, schemaVersion, data }` -- so the view model is
+     * one level further in. The first run of this act read `view.rows`, got
+     * `undefined`, and reported `roster rows 0 of total 68`: the page total was
+     * right beside it and disagreed, which is what gave it away.
+     */
+    const roster = await ask<{ page?: { total?: number; offset?: number }; view?: { data?: { rows?: unknown[] } } }>(page, 'hud/prisoner-roster', { limit: 500 });
+    const rows = (roster.view?.data?.rows ?? []) as {
       entityId?: unknown;
       currentActionId?: string;
       actionPhase?: string;
@@ -925,5 +933,76 @@ test.describe('A big prison — the scale pass', () => {
       }
       log(`[act0c] === plot reachability with the ${id} tab open ('.' pressable, '#' covered) ===\n${rows.join('\n')}`);
     }
+  });
+
+  /**
+   * act 2 — what is actually in the rooms.
+   *
+   * act 1 measured `accommodationCapacity: 76` from **68** bed presses, and the
+   * room-list projection reported the three cell blocks at `capacity` 27, 27
+   * and 22 against 24, 24 and 20 beds — a surplus of exactly the number of
+   * toilets in each. Two explanations fit and they are very different: either
+   * `deriveRoomCapacity` is crediting residency to something that is not a
+   * sleep surface, or the second `armBuildable` in a run does not change the
+   * armed buildable and eight "toilet" presses laid eight more beds.
+   *
+   * This act builds one small cell, places four beds and one toilet with the
+   * same two `armBuildable` calls in the same order, and asks
+   * `hud/room-detail` what the room contains. Small on purpose: the answer is a
+   * property of two presses, not of a big prison.
+   */
+  test('act 2 — one cell, four beds and a toilet, and what the room says it holds', async ({ page }) => {
+    test.setTimeout(900_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await tab(page, 'build').click();
+    for (let i = 0; i < ZOOM_OUT_NOTCHES; i += 1) {
+      await page.keyboard.press('Minus');
+      await page.waitForTimeout(150);
+    }
+    await page.waitForTimeout(600);
+    const g = await measureGrid(page, [400, 1050], [150, 780]);
+
+    await buy(page, 'wall-brick', 40);
+    await buy(page, 'bed-wooden', 10);
+    await fastForwardToMax(page);
+    await runUntilTick(page, (await currentTick(page)) + 150);
+
+    const plan: Plan = { key: 'one-cell', room: 'room.cell', x0: 6, y0: 6, x1: 9, y1: 9, doorAtX: 8, walls: true };
+    await tab(page, 'build').click();
+    await armBuildable(page, 'wall-brick');
+    log(`[act2] ${await wallsFor(page, g, plan)} wall command(s)`);
+    await armBuildable(page, 'door-wooden');
+    const doorAt = pt(g, plan.doorAtX! + 0.5, plan.y1 + 1);
+    log(`[act2] door: ${(await press(page, doorAt.x, doorAt.y)).length} command(s)`);
+    log(`[act2] drain: ${JSON.stringify(await drainQueue(page, 'shell', 600_000))}`);
+    log(`[act2] designate -> ${await designate(page, g, plan)}`);
+
+    await tab(page, 'build').click();
+    // The arm label is read before AND after each switch, because the label is
+    // what `armBuildable` decides on.
+    for (const [buildable, tiles] of [
+      ['bed-wooden', [[6, 6], [7, 6], [6, 8], [7, 8]]],
+      ['toilet-brick', [[9, 9]]],
+    ] as const) {
+      await page.locator(`.hud-build__list [data-buildable="${buildable}"]`).click();
+      const labelBefore = (await page.locator('.hud-build__arm').innerText()).trim();
+      await armBuildable(page, buildable);
+      const labelAfter = (await page.locator('.hud-build__arm').innerText()).trim();
+      log(`[act2] arming ${buildable}: label before ${JSON.stringify(labelBefore)}, after ${JSON.stringify(labelAfter)}`);
+      for (const [tx, ty] of tiles) {
+        const p = mid(g, tx, ty);
+        const produced = await press(page, p.x, p.y);
+        log(`[act2]   press ${buildable} at (${tx},${ty}): ${JSON.stringify(produced)}`);
+      }
+    }
+    log(`[act2] drain: ${JSON.stringify(await drainQueue(page, 'objects', 600_000))}`);
+    log(`[act2] counts: ${JSON.stringify(await latestCounts(page))}`);
+    const rooms = await ask<{ view?: { data?: { rooms?: { rows?: { instanceId?: string }[] } } } }>(page, 'hud/room-list', { limit: 32 });
+    const instanceId = rooms.view?.data?.rooms?.rows?.[0]?.instanceId;
+    log(`[act2] room-list: ${JSON.stringify(rooms)}`);
+    log(`[act2] room-detail for ${String(instanceId)}: ${JSON.stringify(await ask(page, 'hud/room-detail', { target: instanceId, limit: 64 }))}`);
+    await tab(page, 'rooms').click();
+    log(`[act2] rooms panel: ${await panelText(page, '.hud-rooms')}`);
   });
 });
