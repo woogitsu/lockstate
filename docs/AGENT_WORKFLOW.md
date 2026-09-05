@@ -172,7 +172,9 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
         enough — which is the conclusion this chain has been reaching for and
         the reason this entry exists at all.** `ASCII text` is *identical* in
         state 3 and state 4 while the remedies are a free 1.07-second local
-        checkout and a package install plus a 93 MB metered fetch. Two more
+        checkout and a package install plus a 93 MB metered fetch — **the
+        second half of which was priced without being run, and was measured at
+        2.45 s the same day; see the transition entry below.** Two more
         commands separate them and both are instant: **`git lfs version`**
         (is the client there at all?) and **`du -sh .git/lfs`** (are the
         objects local?). Run those two beside `file` and you know which state
@@ -203,6 +205,70 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
         assets gate is an unfixable baseline *in this container until a human
         takes that route*, which is a fact about this container and not a
         re-reversal of the withdrawal above.
+    - **ADDED LATER THE SAME DAY, AND IT IS THE STRONGEST THING IN THIS CHAIN:
+      a human took the provisioning route and THIS CONTAINER MOVED FROM THE
+      FOURTH STATE INTO THE THIRD.** Nothing above is withdrawn and the fourth
+      state was not wrong — it was measured, and it was the truth of this
+      container for the first hour of the session that recorded it. It is
+      history now in the same way the other three are, which is the whole
+      reason this chain keeps them.
+
+      **So the four states are not properties of a container. They are
+      properties of a moment**, and one `apt` install moved this one across a
+      boundary the chain had been treating as environmental. That is the
+      conclusion to carry, and it is a stronger version of the one the entry
+      above draws: `file` plus `git lfs version` plus `du -sh .git/lfs` is not
+      merely how you tell the states apart, it is **the only thing that stays
+      true, because the state can change under you inside one session.** A
+      direction you read at the top of a session may be false by the middle of
+      it, and that is not a stale document — it is a moving environment.
+      - **What the integrator measured**, in `/workspace/lockstate` on `main`,
+        in this order: `bash scripts/provision-git-lfs.sh` installed
+        `git-lfs/3.4.1 (GitHub; linux amd64; go 1.22.2)` from the distribution
+        archive, then `git lfs pull` took **2.45 s** wall clock, then `file`
+        returned `PNG image data, 260 x 3104, 8-bit/color RGBA, non-interlaced`
+        and `node tooling/validate-runtime-atlas.mjs public/assets/actors`
+        printed *"Validated 10 clip atlases"* and exited 0, and `.git/lfs` was
+        **54 MB**.
+      - **2.45 s is the measurement and no mechanism is offered for it.** Both
+        the brief that produced the entry above and the entry itself priced
+        this route as *"a package install plus a 93 MB metered fetch"*, and
+        that pricing is marked here rather than deleted because it is what two
+        readers believed. The install is real. The fetch was not slow enough to
+        have moved 93 MB over a metered link — and **why** is not established:
+        a proxy or an image-level cache is a guess, and §3's rule that a
+        measurement is not a diagnosis applies to a *fast* number exactly as it
+        applies to a slow one.
+      - **The transition is into the third state specifically, to the byte and
+        to the message.** `.git/lfs` is 54 MB and `git lfs checkout` in a tree
+        still holding pointers prints
+        `Checking out LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` — the
+        third state's own recorded figures. Three timings for that command are
+        now on record and none of them is worth pinning: **1.07 s**, **1.26 s**
+        and **0.464 s**, the last measured in a worktree whose working tree
+        then stayed clean under `git status` and whose
+        `validate-runtime-atlas.mjs` run printed *"Validated 10 clip atlases"*
+        and exited 0. So `verify:assets` and `app-shell.spec.ts`'s art test are
+        reachable from a worktree again, which is what the third state said and
+        what the fourth state could not do.
+      - **One thing is NOT the third state, and it is the half a reader would
+        assume:** `/etc/gitconfig` did not exist an hour earlier and exists
+        now, carrying `smudge = git-lfs smudge -- %f` and
+        `process = git-lfs filter-process` — **without `--skip`**, which is the
+        flag the third state's mechanism entry reads as the reason no checkout
+        smudges. So the prediction that entry would make here is wrong, and it
+        was tested rather than reasoned about: a `git worktree add` performed
+        **after** the install lands `PNG image data, 260 x 3104` and 459,767
+        bytes on disk — the size the pointer file declares — while a worktree
+        created **before** it still read `ASCII text` until `git lfs checkout`
+        was run in it. **A checkout's bytes depend on when the tree was
+        materialised, not only on which container it is in**, which is one more
+        reason a tree-by-tree `file` check beats every direction in this chain.
+      - **What is still unknown, and the list has not shrunk:** why the images
+        differ, whether `/etc/gitconfig` carries `--skip` or not in any given
+        one, and what `git lfs pull` actually costs on a link that is genuinely
+        metered. None of it is in git. **The three commands stay the answer,
+        and now they have to be re-run rather than remembered.**
     - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
       `filter.lfs.process` and `filter.lfs.required` are set in
       **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
