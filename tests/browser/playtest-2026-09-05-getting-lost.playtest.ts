@@ -211,6 +211,39 @@ async function visibleTileBox(page: Page): Promise<{
   return { left: left.tile.x, right: right.tile.x, top: top.tile.y, bottom: bottom.tile.y, probes };
 }
 
+/**
+ * The longest horizontal run of bare canvas at a given screen row.
+ *
+ * **Written after this instrument's first run failed on a hard-coded point.**
+ * `(1200, 300)` at 1440x900 resolves to `HEADER`, not `CANVAS` -- the Build
+ * rail's own panel header -- so the drag it was the start of would have been
+ * delivered to a HUD panel and the camera would not have moved, which reads
+ * exactly like "panning is clamped". The brief's own rule (*prove your presses
+ * land*) applies to drags too, and the durable form of it is to find the free
+ * span rather than to guess a point inside it.
+ */
+async function freeCanvasRun(page: Page, y: number): Promise<{ readonly from: number; readonly to: number }> {
+  const run = await page.evaluate((row) => {
+    const canvas = document.querySelector('canvas');
+    if (canvas === null) return undefined;
+    const rect = canvas.getBoundingClientRect();
+    let best = { from: 0, to: 0 };
+    let start: number | undefined;
+    for (let x = Math.ceil(rect.left) + 1; x < rect.right - 1; x += 4) {
+      const free = document.elementFromPoint(x, row)?.tagName === 'CANVAS';
+      if (free && start === undefined) start = x;
+      if (!free && start !== undefined) {
+        if (x - start > best.to - best.from) best = { from: start, to: x - 4 };
+        start = undefined;
+      }
+    }
+    if (start !== undefined && rect.right - start > best.to - best.from) best = { from: start, to: Math.floor(rect.right) - 2 };
+    return best;
+  }, y);
+  if (run === undefined || run.to - run.from < 100) throw new Error(`no usable free canvas run at y=${String(y)}: ${JSON.stringify(run)}`);
+  return run;
+}
+
 /** Does any tile of the owned chunk fall inside the visible tile box? */
 function ownedLandVisible(box: { left: number; top: number; right: number; bottom: number }): boolean {
   return box.right >= OWNED_TILE_MIN && box.left <= OWNED_TILE_MAX && box.bottom >= OWNED_TILE_MIN && box.top <= OWNED_TILE_MAX;
@@ -229,8 +262,47 @@ function ownedLandVisible(box: { left: number; top: number; right: number; botto
 async function measureTilePx(page: Page, leftX: number, rightX: number, y: number): Promise<number | undefined> {
   const a = await probeTile(page, leftX, y);
   const b = await probeTile(page, rightX, y);
-  if (a === undefined || b === undefined || a.x === b.x) return undefined;
-  return (rightX - leftX) / (b.x - a.x);
+  if (a === undefined || b === undefined || b.x - a.x < 2) return undefined;
+
+  /*
+   * Two *boundaries* rather than two samples.
+   *
+   * A pair of whole-tile readings divided by the pixels between them is wrong
+   * by up to one tile in the count -- at zoom 1 over an 800px baseline it read
+   * 61.54 where the truth is 64, a 4% error, because both endpoints sit at an
+   * unknown fraction into their tile. Bisecting for the exact screen x at
+   * which the tile index first changes removes both fractions: the distance
+   * between two boundaries is a whole number of tiles by construction.
+   */
+  const firstXWithTileAtLeast = async (target: number, lo: number, hi: number): Promise<number | undefined> => {
+    let low = lo;
+    let high = hi;
+    while (high - low > 1) {
+      const mid = Math.floor((low + high) / 2);
+      const tile = await probeTile(page, mid, y);
+      if (tile === undefined) return undefined;
+      if (tile.x >= target) high = mid;
+      else low = mid;
+    }
+    return high;
+  };
+  const firstBoundary = await firstXWithTileAtLeast(a.x + 1, leftX, rightX);
+  const lastBoundary = await firstXWithTileAtLeast(b.x, leftX, rightX);
+  if (firstBoundary === undefined || lastBoundary === undefined || b.x - (a.x + 1) < 1) return undefined;
+  return (lastBoundary - firstBoundary) / (b.x - (a.x + 1));
+}
+
+/** `measureTilePx` across the widest free canvas run at `y`, so no point is behind a panel. */
+async function measuredTilePx(page: Page, y = 300): Promise<number | undefined> {
+  const run = await freeCanvasRun(page, y);
+  return measureTilePx(page, run.from + 20, run.to - 20, y);
+}
+
+/** A 800px-or-as-much-as-fits westward stroke on the widest free canvas run at `y`. */
+async function strokeEndpoints(page: Page, y = 300, distance = 800): Promise<{ readonly from: { x: number; y: number }; readonly to: { x: number; y: number }; readonly distance: number }> {
+  const run = await freeCanvasRun(page, y);
+  const width = Math.min(distance, run.to - run.from - 20);
+  return { from: { x: run.to - 10, y }, to: { x: run.to - 10 - width, y }, distance: width };
 }
 
 // ---- pixels -------------------------------------------------------
@@ -326,16 +398,34 @@ function pixelAt(bitmap: Bitmap, x: number, y: number): { r: number; g: number; 
  * would make "the screen is black" unprovable at any camera position.
  */
 async function sampleWorldPixels(page: Page, shotPath: string): Promise<{
-  readonly total: number; readonly void: number; readonly others: readonly string[];
+  readonly total: number; readonly void: number; readonly others: readonly string[]; readonly nonVoidPoints: readonly string[];
 }> {
   const points = await page.evaluate(() => {
     const canvas = document.querySelector('canvas');
     if (canvas === null) return [] as { x: number; y: number }[];
     const rect = canvas.getBoundingClientRect();
+    /*
+     * Two filters, and the second one was paid for.
+     *
+     * `elementFromPoint` alone is not enough: it *skips* every element with
+     * `pointer-events: none`, and `.hud__refusal` and `.hud__event` are
+     * exactly that (`hud.css`: "`pointer-events` stays `none` (inherited from
+     * `.hud`): the line carries no" -- three times over). They still paint.
+     * Act 2's first run reported a stubborn 18 of 131 samples at one non-void
+     * colour with the owned chunk demonstrably off screen, and every one of
+     * them was on the single screen row y=100, under the amber refusal band
+     * this instrument's own probe presses had raised. So the geometry of the
+     * HUD's own island list is excluded as well as its hit-testing.
+     */
+    const painted = [...document.querySelectorAll('.hud-strip, .hud__corner > *, .hud__aside > *, .hud__side > *, .hud-tabs__inner, .hud__refusal, .hud__event, .save-panel, .display-scale')]
+      .filter((el) => el.getClientRects().length > 0)
+      .map((el) => el.getBoundingClientRect());
     const collected: { x: number; y: number }[] = [];
     for (let y = rect.top + 20; y < rect.bottom - 20; y += 80) {
       for (let x = rect.left + 20; x < rect.right - 20; x += 80) {
-        if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') collected.push({ x, y });
+        if (document.elementFromPoint(x, y)?.tagName !== 'CANVAS') continue;
+        if (painted.some((r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)) continue;
+        collected.push({ x, y });
       }
     }
     return collected;
@@ -344,18 +434,26 @@ async function sampleWorldPixels(page: Page, shotPath: string): Promise<{
   const bitmap = decodePng(buffer);
   let voids = 0;
   const others = new Map<string, number>();
+  const nonVoid: string[] = [];
   for (const point of points) {
     const pixel = pixelAt(bitmap, point.x, point.y);
     if (pixel.r === VOID_RGB.r && pixel.g === VOID_RGB.g && pixel.b === VOID_RGB.b) voids += 1;
     else {
       const key = `${String(pixel.r)},${String(pixel.g)},${String(pixel.b)}`;
       others.set(key, (others.get(key) ?? 0) + 1);
+      nonVoid.push(`(${String(Math.round(point.x))},${String(Math.round(point.y))})=${key}`);
     }
   }
   return {
     total: points.length,
     void: voids,
     others: [...others.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, n]) => `${k} x${String(n)}`),
+    // Where the non-void samples actually are. Added after act 2's first run
+    // reported a stubborn 18 of 131 samples at one exact non-void colour with
+    // the owned chunk demonstrably off screen: a count alone could not say
+    // whether that was world or chrome, and "the screen is black" rests on
+    // the difference.
+    nonVoidPoints: nonVoid.slice(0, 10),
   };
 }
 
@@ -432,6 +530,27 @@ test('act 1: arrival, and the complete inventory of what the screen offers a los
   log('act1', `.hud-minimap__surface ${JSON.stringify(minimapRect.surface)}`);
   log('act1', `minimap panel innerText: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
 
+  // The brief carries a figure measured in the last twenty-four hours -- the
+  // minimap panel at 17% of the viewport -- without the viewport it was taken
+  // at. Its own footprint is fixed in CSS pixels (#775, and
+  // `docs/research/2026-09-02-the-world-view.md` §0 measured 398x372 unchanged
+  // across four viewports), so the *fraction* is a function of the viewport
+  // alone and is swept here rather than quoted.
+  for (const size of [{ width: 900, height: 600 }, { width: 1280, height: 720 }, { width: 1280, height: 800 }, { width: 1440, height: 900 }, { width: 1920, height: 1080 }]) {
+    await page.setViewportSize(size);
+    await page.waitForTimeout(250);
+    const reading = await page.evaluate(() => {
+      const el = document.querySelector('.hud-minimap');
+      if (el === null) return undefined;
+      const r = el.getBoundingClientRect();
+      return { w: r.width, h: r.height, vw: window.innerWidth, vh: window.innerHeight };
+    });
+    if (reading === undefined) { log('act1', `  ${String(size.width)}x${String(size.height)}: .hud-minimap ABSENT`); continue; }
+    log('act1', `  ${String(size.width)}x${String(size.height)}: .hud-minimap ${reading.w.toFixed(1)}x${reading.h.toFixed(1)} = ${(100 * reading.w * reading.h / (reading.vw * reading.vh)).toFixed(2)}% of the viewport`);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(300);
+
   // Every control the player can see, on every tab. The question "is there a
   // way back" is answered by this list or it is not answered at all.
   for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
@@ -454,7 +573,7 @@ test('act 1: arrival, and the complete inventory of what the screen offers a los
   const box = await visibleTileBox(page);
   log('act1', `visible tile box on arrival: ${JSON.stringify(box)}`);
   log('act1', `owned chunk (tiles 0..31) visible on arrival: ${String(box === undefined ? 'unknown' : ownedLandVisible(box))}`);
-  const tilePx = await measureTilePx(page, 500, 1300, 300);
+  const tilePx = await measuredTilePx(page);
   log('act1', `measured screen px per tile on arrival: ${tilePx === undefined ? 'unknown' : tilePx.toFixed(2)} (zoom = ${tilePx === undefined ? '?' : (tilePx / TILE).toFixed(3)})`);
   await disarmProbe(page);
 
@@ -482,11 +601,14 @@ test('act 2: how many drags it takes to lose the prison at zoom 1, and what is o
   await tab(page, 'build').click();
   await armProbe(page);
 
-  const strokeStart = { x: 1200, y: 300 };
-  const strokeEnd = { x: 400, y: 300 };
+  const stroke = await strokeEndpoints(page);
+  const strokeStart = stroke.from;
+  const strokeEnd = stroke.to;
   const sane = await elementsAt(page, strokeStart.x, strokeStart.y);
+  const saneEnd = await elementsAt(page, strokeEnd.x, strokeEnd.y);
   expect(sane[0]?.['tag']).toBe('CANVAS');
-  log('act2', `drag start point resolves to ${JSON.stringify(sane[0])}`);
+  expect(saneEnd[0]?.['tag']).toBe('CANVAS');
+  log('act2', `stroke ${String(stroke.distance)}px westward from ${JSON.stringify(strokeStart)} to ${JSON.stringify(strokeEnd)}; both ends resolve to ${JSON.stringify(sane[0]?.['tag'])}/${JSON.stringify(saneEnd[0]?.['tag'])}`);
 
   const box0 = await visibleTileBox(page);
   log('act2', `drag 0 (arrival): visible tiles ${JSON.stringify(box0)} owned-visible=${String(box0 === undefined ? '?' : ownedLandVisible(box0))}`);
@@ -499,15 +621,15 @@ test('act 2: how many drags it takes to lose the prison at zoom 1, and what is o
     await armProbe(page);
     const box = await visibleTileBox(page);
     const visible = box === undefined ? undefined : ownedLandVisible(box);
-    log('act2', `after drag ${String(drag)} (800px east each): visible tiles x ${String(box?.left)}..${String(box?.right)}, y ${String(box?.top)}..${String(box?.bottom)}; owned-visible=${String(visible)}`);
+    log('act2', `after drag ${String(drag)} (${String(stroke.distance)}px west each): visible tiles x ${String(box?.left)}..${String(box?.right)}, y ${String(box?.top)}..${String(box?.bottom)}; owned-visible=${String(visible)}`);
     await disarmProbe(page);
     const pixels = await sampleWorldPixels(page, `${SHOTS}/act2-drag-${String(drag)}.png`);
-    log('act2', `    pixels: ${String(pixels.void)}/${String(pixels.total)} VOID_COLOR; others ${JSON.stringify(pixels.others)}`);
+    log('act2', `    pixels: ${String(pixels.void)}/${String(pixels.total)} VOID_COLOR; others ${JSON.stringify(pixels.others)}; where: ${JSON.stringify(pixels.nonVoidPoints)}`);
     await armProbe(page);
     if (visible === false && lostAfter < 0) lostAfter = drag;
     if (lostAfter > 0 && drag >= lostAfter + 1) break;
   }
-  log('act2', `THE PRISON LEFT THE SCREEN AFTER ${String(lostAfter)} DRAG(S) of 800px at zoom 1`);
+  log('act2', `THE PRISON LEFT THE SCREEN AFTER ${String(lostAfter)} DRAG(S) of ${String(stroke.distance)}px at zoom 1`);
 
   await disarmProbe(page);
   // What the rest of the screen says while the world is gone.
@@ -563,7 +685,7 @@ test('act 3: both ends of the zoom range, and how far a drag takes you at each',
     await page.waitForTimeout(300);
 
     await armProbe(page);
-    const tilePx = await measureTilePx(page, 500, 1300, 300);
+    const tilePx = await measuredTilePx(page);
     const box = await visibleTileBox(page);
     await disarmProbe(page);
     log('act3', `=== zoomed fully ${end}`);
@@ -580,9 +702,11 @@ test('act 3: both ends of the zoom range, and how far a drag takes you at each',
 
     // How far one 800px drag carries you at this zoom, and how many it takes
     // to lose the prison from here.
+    const stroke = await strokeEndpoints(page);
+    log('act3', `  stroke: ${String(stroke.distance)}px westward from ${JSON.stringify(stroke.from)}`);
     let lostAfter = -1;
-    for (let drag = 1; drag <= 10; drag += 1) {
-      await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+    for (let drag = 1; drag <= 12; drag += 1) {
+      await middleDrag(page, stroke.from, stroke.to);
       await page.waitForTimeout(100);
       await armProbe(page);
       const after = await visibleTileBox(page);
@@ -613,8 +737,12 @@ test('act 4: from lost, what on the screen brings a player back, and in how many
 
   // Get lost: four 800px drags east and two south, so the return is not a
   // single-axis problem.
-  for (let i = 0; i < 4; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
-  for (let i = 0; i < 2; i += 1) await middleDrag(page, { x: 900, y: 700 }, { x: 900, y: 200 });
+  const stroke = await strokeEndpoints(page);
+  const column = { x: Math.round((stroke.from.x + stroke.to.x) / 2), fromY: 760, toY: 160 };
+  log('act4', `westward stroke ${String(stroke.distance)}px from ${JSON.stringify(stroke.from)}; northward stroke on column x=${String(column.x)} from y=${String(column.fromY)} to y=${String(column.toY)}`);
+  log('act4', `  column endpoints resolve to ${JSON.stringify((await elementsAt(page, column.x, column.fromY))[0]?.['tag'])} / ${JSON.stringify((await elementsAt(page, column.x, column.toY))[0]?.['tag'])}`);
+  for (let i = 0; i < 4; i += 1) await middleDrag(page, stroke.from, stroke.to);
+  for (let i = 0; i < 2; i += 1) await middleDrag(page, { x: column.x, y: column.fromY }, { x: column.x, y: column.toY });
   await page.waitForTimeout(200);
 
   await armProbe(page);
@@ -701,7 +829,9 @@ test('act 5: how far the world goes, and whether anything degrades when a player
   // What the edge of the world looks like, up close: the boundary between the
   // one owned chunk and whatever is beyond it. Two drags east puts tile 31's
   // east face near the middle of the screen at zoom 1.
-  await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  const stroke = await strokeEndpoints(page);
+  log('act5', `stroke ${String(stroke.distance)}px westward from ${JSON.stringify(stroke.from)}`);
+  await middleDrag(page, stroke.from, stroke.to);
   await page.waitForTimeout(150);
   await armProbe(page);
   const edgeBox = await visibleTileBox(page);
@@ -714,7 +844,7 @@ test('act 5: how far the world goes, and whether anything degrades when a player
   // Now a long way out. Each stroke is 800px = 12.5 tiles at zoom 1; 40
   // strokes is 500 tiles, about sixteen chunk-widths from home.
   const STROKES = 40;
-  for (let i = 0; i < STROKES; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  for (let i = 0; i < STROKES; i += 1) await middleDrag(page, stroke.from, stroke.to);
   await page.waitForTimeout(300);
   await armProbe(page);
   const farBox = await visibleTileBox(page);
@@ -735,9 +865,9 @@ test('act 5: how far the world goes, and whether anything degrades when a player
     // One press, one move of a million pixels' worth in ten synthetic hops
     // (the handler is incremental -- it reads `pointer - lastPanScreenPoint`
     // each move -- so the hops accumulate).
-    fire('mousedown', 1200, 300, 1, 4);
-    for (let i = 0; i < 200; i += 1) fire('mousemove', 1200 - 5000, 300, 0, 4);
-    fire('mouseup', 1200, 300, 1, 0);
+    fire('mousedown', 1000, 300, 1, 4);
+    for (let i = 0; i < 200; i += 1) fire('mousemove', 1000 - 5000, 300, 0, 4);
+    fire('mouseup', 1000, 300, 1, 0);
   });
   await page.waitForTimeout(400);
   await armProbe(page);
@@ -785,8 +915,11 @@ test('act 6: where the camera is after a reload, and after a prison switch', asy
   // Park the camera somewhere deliberate and *not* lost -- the south-east
   // corner of owned land -- because "does the view come back" is a question
   // about a view a player chose, not only about the void.
-  for (let i = 0; i < 2; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
-  await middleDrag(page, { x: 900, y: 700 }, { x: 900, y: 300 });
+  const stroke = await strokeEndpoints(page);
+  const column = { x: Math.round((stroke.from.x + stroke.to.x) / 2), fromY: 760, toY: 300 };
+  log('act6', `westward stroke ${String(stroke.distance)}px from ${JSON.stringify(stroke.from)}; column x=${String(column.x)}`);
+  for (let i = 0; i < 2; i += 1) await middleDrag(page, stroke.from, stroke.to);
+  await middleDrag(page, { x: column.x, y: column.fromY }, { x: column.x, y: column.toY });
   await page.waitForTimeout(200);
   await armProbe(page);
   const chosen = await visibleTileBox(page);
@@ -817,7 +950,8 @@ test('act 6: where the camera is after a reload, and after a prison switch', asy
 
   // Now the other half: pan into the void and switch prisons *without*
   // reloading, which is the case `framedOnWorld` never resets for.
-  for (let i = 0; i < 5; i += 1) await middleDrag(page, { x: 1200, y: 300 }, { x: 400, y: 300 });
+  const stroke2 = await strokeEndpoints(page);
+  for (let i = 0; i < 5; i += 1) await middleDrag(page, stroke2.from, stroke2.to);
   await page.waitForTimeout(200);
   await armProbe(page);
   const beforeSwitch = await visibleTileBox(page);
