@@ -424,8 +424,16 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'warning',
     surfaces: 'band-and-log',
   },
-  'construction.redone': { labelKey: 'hud.alert.event.construction.redone', severity: 'info', surfaces: 'band-and-log' },
-  'construction.undone': { labelKey: 'hud.alert.event.construction.undone', severity: 'info', surfaces: 'band-and-log' },
+  'construction.redone': {
+    labelKey: 'hud.alert.event.construction.redone',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'construction.undone': {
+    labelKey: 'hud.alert.event.construction.undone',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
   'construction.undone-spend-destroyed': {
     labelKey: 'hud.alert.event.construction.undone-spend-destroyed',
     severity: 'warning',
@@ -451,8 +459,16 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'info',
     surfaces: 'band-and-log',
   },
-  'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning', surfaces: 'band-and-log' },
-  'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info', surfaces: 'band-and-log' },
+  'economy.wages-unpaid': {
+    labelKey: 'hud.alert.event.economy.wages-unpaid',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'incidents.all-clear': {
+    labelKey: 'hud.alert.event.incidents.all-clear',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
   'incidents.all-clear-after-lapse': {
     labelKey: 'hud.alert.event.incidents.all-clear-after-lapse',
     severity: 'warning',
@@ -478,14 +494,26 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'danger',
     surfaces: 'band-and-log',
   },
-  'incidents.riot-opened': { labelKey: 'hud.alert.event.incidents.riot-opened', severity: 'danger', surfaces: 'band-and-log' },
+  'incidents.riot-opened': {
+    labelKey: 'hud.alert.event.incidents.riot-opened',
+    severity: 'danger',
+    surfaces: 'band-and-log',
+  },
   'objects.removed-spend-destroyed': {
     labelKey: 'hud.alert.event.objects.removed-spend-destroyed',
     severity: 'warning',
     surfaces: 'band-and-log',
   },
-  'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info', surfaces: 'band-and-log' },
-  'prisoners.relocated': { labelKey: 'hud.alert.event.prisoners.relocated', severity: 'info', surfaces: 'band-and-log' },
+  'prisoners.discharged': {
+    labelKey: 'hud.alert.event.prisoners.discharged',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'prisoners.relocated': {
+    labelKey: 'hud.alert.event.prisoners.relocated',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
   // The one `'log-only'` member, and the only reason the column exists: the
   // owner's ruling of 2026-09-05. See the section on this member above.
   'rooms.zoned': { labelKey: 'hud.alert.event.rooms.zoned', severity: 'info', surfaces: 'log-only' },
