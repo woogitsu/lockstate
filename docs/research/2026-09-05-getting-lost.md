@@ -491,3 +491,135 @@ then take the player's real next gesture. This is exactly the failure the brief
 warns about, caught by the probe returning `undefined` rather than a number.
 
 ---
+
+## §7 — A new prison started from a lost camera is born on a black screen
+
+**MEASURED**, act 8 — a prison switch with **no reload in between**, which is
+the case `framedOnWorld` never resets for:
+
+```
+[act8] prison 1, arrival: visible tiles x 4..27,  y 10..23
+[act8] prison 1, lost:    visible tiles x 67..89, y 10..23; owned-visible=false
+[act8]   pixels: 113/113 VOID_COLOR
+[act8] prison 2, immediately after New prison: visible tiles x 67..89, y 10..23; owned-visible=false
+[act8]   pixels: 113/113 VOID_COLOR; others []
+[act8]   camera moved by dx=0 dy=0 tiles across the switch
+```
+
+**dx=0, dy=0.** The camera does not move at all. A player who is lost and
+presses `New prison` gets a brand-new prison **and a screen that is 113 out of
+113 sampled points of nothing**, with the minimap still reading `MINIMAP IS NOT
+AVAILABLE YET`.
+
+**READ**, `src/rendering/scene/world-scene.ts:1226-1230`:
+
+```ts
+private frameCameraOnFirstWorld(bounds: ... | undefined): void {
+  if (this.framedOnWorld || bounds === undefined) return;
+  this.framedOnWorld = true;
+  this.cameras.main.centerOn(...);
+}
+```
+
+`framedOnWorld` (`:262`) is a scene field set once and reset nowhere in the
+file. The reload path in §6 gets a framing because a reload builds a new scene;
+a prison switch keeps the scene, so the second prison gets none.
+
+**JUDGEMENT, and this is the worst compound state in this record.** `New prison`
+is the only control on any of the five tabs whose text contains the word
+*prison* (MEASURED, act 7, all five tabs), it is on screen on every tab, and it
+is what a lost player's eye lands on when they are looking for something about
+their prison. Pressing it (a) destroys the current prison's unsaved play with no
+dialog — `docs/research/2026-09-04-many-prisons.md` measured that, 0 dialogs,
+tick 211 → tick 0 — and (b) leaves the player looking at the same black screen,
+now with an *additional* prison somewhere off it.
+
+The way back still works from there. MEASURED, act 8: `one minimap press in
+prison 2: visible tiles x 4..27, y 10..22, owned-visible=true`.
+
+---
+
+## §8 — The three ways back, counted against each other
+
+**MEASURED**, act 7, all from the same lost position (`visible tiles x 54..77,
+y 29..41`, `owned-visible=false`, reached by four westward and two northward
+800px drags), 1440×900, zoom 1:
+
+| way back | interactions | what the player must already know |
+| --- | --- | --- |
+| **C — one press on the minimap surface** | **1** | that a panel reading `MINIMAP IS NOT AVAILABLE YET` is a control |
+| **B — drag it back by hand** | **3** (two eastward, one southward) | **the direction**, which nothing on screen supplies |
+| **A — press `Minus` until the prison reappears** | **5**, and see below | nothing |
+| **(D — reload the page and press `Load`)** | 1 reload + 1 press | that the prison is in the save panel; costs unsaved play (§6) |
+
+```
+[act7] WAY BACK C: 1 press -> centre tile now (16,16); NEW_PRISON_ORIGIN_TILE is (16,16)
+[act7] WAY BACK B: 3 drag(s) total, by someone who already knew which way to go
+[act7] WAY BACK A: 5 presses of Minus put owned land back on screen
+```
+
+**Way back B's number is a lower bound and should be read as one.** It is what
+the return costs someone who already knows the answer. MEASURED, act 2: the
+screen at the far end is 113/113 `VOID_COLOR` and the whole HUD text on all five
+tabs names no direction. JUDGEMENT: a player has eight plausible directions and
+no reason to prefer any of them, so the real cost is 3 drags multiplied by
+however many directions they try first — and each wrong guess makes the next one
+longer.
+
+**Way back A does not do what its number says, and the instrument caught it.**
+
+```
+[act7]   after 5 Minus: zoom 0.328, visible tiles x 31..100 y 17..56, owned-visible=true
+[act7]   pixels after way back A: 113/113 VOID_COLOR
+```
+
+At five presses the visible tile box has **exactly one column of owned land in
+it** — tile x=31, the chunk's east edge — which is `21` screen pixels wide at
+zoom 0.328 and sits at the extreme left of the viewport, and **not one sampled
+world point is anything but void.** `ownedLandVisible` is a rectangle-overlap
+test on the tile box; it turns true the instant a single tile column enters the
+viewport, which is a **lower bound on "the player can see their prison" and not
+the same claim.** The pixel channel is the stronger one and it says black. So
+zoom-out is a way back only if the player keeps pressing past the point the
+geometry says they have arrived — and MEASURED, act 3, at the `ZOOM_BOUNDS`
+floor of 0.2 **centred on the prison**, 88 of 113 sampled points are still void,
+because a 32×32 prison in a 114×65 viewport is 14% of it.
+
+REASONED from A, B and C together: **the cheapest way back by a factor of three
+is also the only one a player has no reason to try**, and the two a player would
+reach for first — drag, or zoom out — are the two that need either information
+the screen withholds or more persistence than the screen rewards.
+
+### 8.1 — What the surface advertises before the first click
+
+**MEASURED**, act 7, on a fresh page before any click had ever landed on the
+surface:
+
+```
+[act7] minimap surface affordance BEFORE any click ever lands: {
+  "sentence":"MINIMAP IS NOT AVAILABLE YET",
+  "cursor":"pointer", "pointerEvents":"auto",
+  "title":null, "ariaLabel":null, "role":null, "tabIndex":-1,
+  "tagName":"DIV", "focusableCount":116, "surfaceIsFocusable":false }
+[act7] a brand-new page, before any click on the surface, still reads: "MINIMAP IS NOT AVAILABLE YET"
+```
+
+**Two channels, and they say opposite things.** The cursor is `pointer` —
+**READ**, `src/ui/hud/hud.css:346-353`, whose own comment says why: *"The same
+affordance every other pressable control in this file already uses... applying
+the existing one to a surface that is now really clickable (issue #793)"*. The
+words say `MINIMAP IS NOT AVAILABLE YET`. A player who hovers gets *press me*
+and a player who reads gets *nothing here*. JUDGEMENT: reading is free and
+hovering over a panel you have concluded is a placeholder is not, so most
+players get the sentence and not the cursor.
+
+**And for a keyboard player there is no way back at all.** `tagName: DIV`,
+`role: null`, `aria-label: null`, `tabIndex: -1`, and the surface matches none of
+the 116 focusable elements on the page. The click handler is on `click`
+(`hud.ts:1513`), which a keyboard cannot reach on a non-focusable `div`. Cross-
+referenced with §1.2's READ of `src/input/bindings.ts` — eight pan keys, two
+zoom keys, no recentre key — **a player who does not use a mouse can get lost
+with the arrow keys and has no gesture of any kind that brings them back**,
+except way back D: reload and `Load`.
+
+---
