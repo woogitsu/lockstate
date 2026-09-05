@@ -190,8 +190,8 @@ because only guards are hireable (§7).
 The four prisoners stand in the room's north-west corner — the room instance's
 `anchorTile`, exactly as `docs/research/2026-09-04-why-they-stack.md`
 established from the worker — but they are **not** drawn at one point. They are
-fanned along a south-east cascade, roughly 9 px per rank in x and 7 in y, so
-four separate figures are visible and countable.
+fanned along a south-east cascade, so four separate figures are visible and
+countable.
 
 That is `src/rendering/actors/crowd-spread.ts`, which landed for #944 §4 and
 whose own docblock states its bound before anything else does: `rank 0` does not
@@ -199,10 +199,12 @@ move, the fan is monotone on both axes, it goes south and east only, and it is
 bounded inside the tile at `CROWD_SPREAD_SPAN_TILES_X` = `0.44` and
 `CROWD_SPREAD_SPAN_TILES_Y` = `0.3` — 28 px by 19 px at `TILE` 64. My
 measurement off `act1-anchor-tile-x8.png`, read at ⅛ scale: feet at (27,21),
-(36,29), (46,36), (61,42), so a 34×21 px total span across three gaps. That is
-the documented fan, working. **So the picture #944 predicted — four people
-drawn as one — is not what the game does today**, and a record that repeats
-that prediction is repeating a fixed defect.
+(36,29), (46,36), (61,42) — a total span of about 34×21 px across three gaps,
+against the 28×19 the constants specify. The few pixels of disagreement are my
+eye on an 8× upscale, not a finding; what the reading establishes is that the
+fan is there, monotone on both axes, and inside one tile. **So what #944
+reported — several actors on a tile drawn as one figure — is not what the game
+does today**, and a record that repeats it is repeating a fixed defect.
 
 ### One thing that is odd and one thing that is not
 
