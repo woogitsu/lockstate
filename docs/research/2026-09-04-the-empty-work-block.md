@@ -468,6 +468,28 @@ is four roster rows out of eight prisoners (§2.3).
 prisoners whose `currentActionId` has `category: 'work' | 'education'` against
 those on `action.free-association`.
 
+**And the capacity the player bought is invisible too.** Compare the two
+prisons' counts at the moment the last room went up:
+
+```
+[act3] every room standing: ... "rooms":3,"roomCapacity":8,"accommodationCapacity":8 ...
+[act4] every room standing: ... "rooms":6,"roomCapacity":8,"accommodationCapacity":8 ...
+```
+
+**Three more rooms, and the only count that moved is `rooms` itself.**
+**VERIFIED, read:** `roomCapacity` sums each instance's `residentCapacity` —
+beds (`src/simulation/presentation/status-strip-projection.ts:766-777`, and
+`:355-363` says so explicitly). The number that *did* change is
+`concurrentUseCapacity`, computed as the sum of each qualifying object's
+`footprint.width` (`src/simulation/objects/room-capacity.ts:177-203`) — a
+2-wide stove is 2 slots, so act 4's kitchen seats 4, its laundry 4 and its
+classroom 2, ten work places for eight prisoners. **A grep of `src/ui/` for
+`concurrentUseCapacity` returns nothing at all**: the figure is computed by the
+kernel, published on the room projection's own note as deliberately not the
+housing number (`src/simulation/presentation/room-projection.ts:224-231`), and
+rendered by no HUD surface. The player bought ten work places and was told
+`ROOMS 6`.
+
 **Why it is true**: both halves are already projected per prisoner —
 `currentActionId` is on `hud/prisoner-roster`'s row (this record's whole census
 channel reads it) and the category is a lookup in `DEFAULT_ACTIONS`. **This is
