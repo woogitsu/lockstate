@@ -424,6 +424,50 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   then read the file at one of those shas. `git fetch --unshallow` is the other
   route and its cost is not known — 374 commits are 22.6 MiB of pack here, and
   nobody has measured the whole history.
+  **A third command belongs on that list and it caught the agent who wrote the
+  two above out within the hour: `git branch -r --contains <sha>` answers
+  "nothing" and means "cannot say".**
+  `tests/foundation/documentation-commit-citation-contract.test.ts`'s third
+  failure lists `docs/adr/STATUS-QUEUE.md`'s citations of `c56e18bd` and
+  `24ef7aec` as commits *"on this disk and on no ref this repository
+  publishes"*, and that test's check is `--contains`. Both are plainly real
+  published history — `git log --oneline -1` on them gives #913's copy fix and
+  #897's merge commit — and `--contains` finds nothing for either because the
+  graft truncates the ancestry walk before it reaches them.
+  **The reason this is one cause and not two is a control, and it is worth
+  running before blaming a ref set:** with 200 remote-tracking branches against
+  origin's 198 heads — essentially all of them — `--contains` still returns 0
+  refs for both, while `829d3c11`, a commit *inside* the visible walk, is
+  contained by 21 and `git merge-base --is-ancestor 829d3c11 origin/main` exits
+  0. Same refs, same command, different answers, and what separates the two
+  cases is only whether the walk can reach.
+  **THAT CORRECTS A CLAIM THIS BULLET'S OWN AUTHOR PUBLISHED, and the wrong
+  figure is named rather than quietly dropped:** a commit message on
+  `docs/re-anchor-status-queue` attributed the third failure to the container
+  knowing *"16 of origin's 196 branches"* and called it *"a different container
+  artifact from the shallow depth"*. Both halves are wrong. `git branch -r`
+  returns **200** in the primary checkout and in every worktree — worktrees
+  share refs, so a per-tree ref set was never possible — and the cause is the
+  graft, the same one. The 16 was measured in this shared clone earlier the
+  same hour and is not reproducible; what it was counting is unknown, and the
+  useful lesson is that it was **reconciled instead of re-measured**, which is
+  how one number became a mechanism.
+  **So the generalisation, which is cheap and now has three instances:
+  `--contains`, `log -S` and `--diff-filter=A` all answer confidently and
+  wrongly when the walk cannot complete, and one command tells you before any
+  of them lies to you:** `git rev-parse --is-shallow-repository`. Run it once
+  at the start of any pass that will reason about history, and treat a `true`
+  as making every containment and every "when did this first appear" answer
+  **undecidable rather than negative**. `.git/shallow` lists the boundary
+  commits and `git log --oneline --max-parents=0` shows where the walk bottoms
+  out.
+  **What this does NOT license:** the three reds are still not a licence to
+  edit the citations they name, and the fix is not
+  `UNPUBLISHED_BY_ORIGIN`. The argument that settles it is that CI's `verify`
+  job runs at `fetch-depth: 0` and is green on the same file content, so the
+  citations resolve where anybody with a full clone reads them; that
+  allowlist's own comment says an entry *"preserves a citation nobody can
+  check"*, and these are checkable.
 - **Two tests sit close enough to their 5s budget that box load pushes them
   over, and neither is a flake to wave through.**
   `tests/foundation/comment-symbol-existence-contract.test.ts` (a
