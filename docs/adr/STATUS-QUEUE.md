@@ -755,7 +755,7 @@ uncomfortable and that is the budget working.
 **COUNTED AGAINST THE ANCHOR THE DRAIN ENDS ON RATHER THAN AGAINST TODAY'S
 `main`, WHICH IS THE RULE THE ANCHOR BEFORE LAST WROTE AFTER GETTING IT
 WRONG.** Draining N pull requests publishes N releases. When this pass was
-dispatched `main` shipped v0.0.492 (`6104f7e6`) and two pull requests were
+dispatched `main` shipped v0.0.492 (`6104f7ef`) and two pull requests were
 open; #1012 merged while it was being written, taking the tree to v0.0.493
 (`c57f5fa8`) and adding one file to its window, which was re-derived rather
 than estimated. What remains is #1013 and this pass's own pull request, two
