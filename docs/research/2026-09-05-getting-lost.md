@@ -475,7 +475,7 @@ HUD action failed {"actionId":"remove-object","error":{"message":
 "No simulation session is running yet, so the order cannot be submitted."}}
 ```
 
-— `src/ui/simulation-commands.ts:214`. **The reload does not resume the prison.**
+— `src/ui/simulation-commands.ts:308` (the stack in the console names `:214`, which is the caller `SimulationCommandSender.submit` after Vite's source map). **The reload does not resume the prison.**
 The player comes back to a page with their prison in a list and a `Load` button
 beside it, and the question *"where is the camera"* has no answer yet because
 there is no world for a camera to be on.
@@ -727,7 +727,7 @@ subscription, no new string.
 **MEASURED**, act 1: `.hud-minimap` is 398×372 on all five tabs and **27.42% of
 a 900×600 viewport** (§1.1). A player short of screen presses `Collapse`.
 **READ**, `src/ui/primitives/panel.ts:72`: `body.hidden = collapsed` — and
-`hud.ts:1556` is `minimapPanel.body.append(minimapSurface, alertsSection.element)`.
+`hud.ts:1555` is `minimapPanel.body.append(minimapSurface, alertsSection.element)`.
 REASONED from those two: **collapsing the minimap removes the only way back from
 the screen, and takes the alerts list with it.** The header does not collapse;
 only the body does.
@@ -805,7 +805,7 @@ five tabs names no position, direction or distance.
 
 ### P5 — Take the alerts out of the minimap panel
 
-**READ**, `hud.ts:1556` and `panel.ts:72` (above): the alerts list is a child of
+**READ**, `hud.ts:1555` and `panel.ts:72` (above): the alerts list is a child of
 the minimap panel's body, so one press of `Collapse` hides both. The two have
 nothing to do with each other — one is a map frame and one is a log — and they
 are joined only because the corner holds one panel. Giving `.hud__corner` two
