@@ -211,7 +211,16 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   });
 
   const update = (viewModel: HudViewModel): void => {
-    for (const descriptor of projectStatusMetrics(viewModel.counts)) {
+    /*
+     * `roomNeeds` beside the counts (#1006 finding 1). It is the only input
+     * here that does not ride `simulation/status-counts`, and it is absent
+     * whenever nothing has asked -- which `projectStatusMetrics` turns into no
+     * badge rather than into a zero. Passed straight through rather than
+     * unpacked, because this file decides nothing about it: which chip carries
+     * it, and whether it earns a badge at all, is `projection.ts`'s answer like
+     * every other descriptor on this strip.
+     */
+    for (const descriptor of projectStatusMetrics(viewModel.counts, viewModel.roomNeeds)) {
       const parts = metrics.get(descriptor.id);
       if (parts === undefined) continue;
 

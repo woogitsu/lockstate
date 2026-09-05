@@ -1298,6 +1298,15 @@ export interface HudRoomAtCapacityViewModel {
  * render the same, because the second is a statement about the prison and the
  * first is a statement about this thread.
  *
+ * **The tab clause is no longer true and is kept for the reason `src/main.ts`
+ * keeps its own copy of it** ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+ * finding 1): this is now read on every tab, because it has a second reader
+ * that is always on screen -- `projectStatusMetrics` draws the `ROOMS` chip's
+ * `not ready` badge from `unfinishedRooms`. **The sentence after it is
+ * untouched and matters more than before**: absent still means nothing has
+ * asked, which is now only true before a session exists and after one stops,
+ * and the badge must draw nothing in that state rather than a zero.
+ *
  * `unfinishedRooms === 0` is the case the readout must stay silent for. A room
  * that is fine earns no line: the block is not drawn at all, which is what
  * keeps this from becoming permanent furniture in a panel whose height budget

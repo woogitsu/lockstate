@@ -45,6 +45,21 @@ export const HUD_MESSAGE_KEY = {
   prisonersWithoutBed: 'hud.status.prisoners-without-bed',
   staff: 'hud.status.staff',
   rooms: 'hud.status.rooms',
+  /**
+   * The badge under the rooms chip: how many of the rooms it counts are not
+   * ready ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+   * finding 1).
+   *
+   * `prisonersWithoutBed`'s arrangement one chip over, and for the reason that
+   * one gives: the chip keeps the raw count a player asks it for, and the badge
+   * names the part of it that is not working yet. What is new here is *where
+   * the answer comes from* -- every other badge on this strip is derived from
+   * `HudCountsViewModel`, and this one is derived from `HudRoomNeedsViewModel`,
+   * which is the Rooms panel's own readout. That is the whole point of it: the
+   * warning existed and had exactly one render site, `.hud-rooms`, which is not
+   * laid out at all while any other tab is showing.
+   */
+  roomsNotReady: 'hud.status.rooms-not-ready',
   incidents: 'hud.status.incidents',
   /**
    * The guard-coverage chip (issue #588).
@@ -1127,8 +1142,10 @@ export const HUD_MESSAGE_KEY = {
    * republishes it unchanged -- so a third state there would keep saying
    * "no way in" after the player built the door, which is the promise
    * `AGENTS.md` reservation 4 is actually about. This block is pulled fresh
-   * off the projection while the Rooms tab is showing, so it corrects itself
-   * the moment the door order completes.
+   * off the projection (on every tab since #1006; it was "while the Rooms tab
+   * is showing" until then, and the correction is why the `ROOMS` chip can
+   * carry a badge off the same readout), so it corrects itself the moment the
+   * door order completes.
    *
    * It takes no placeholder: there is one door to be short of and no count
    * that would make the sentence more actionable. It sits under the same
