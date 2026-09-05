@@ -256,15 +256,28 @@ test.describe('The money runs out', () => {
     say(act, `after ${drags} drags: funds chip = ${JSON.stringify(await fundsChip(page))}`);
 
     // ---- now drain the rest through the priced control, and find its floor -
-    // The Buy control spends under `'deliveries'`. A fresh prison with nothing
-    // furnished is on the starter rung, which is shallower than the mature one.
+    /*
+     * The Buy control spends under `'deliveries'`, and `judgeAffordability`
+     * (`src/ui/affordability.ts`) is the host's pre-flight on it. A fresh
+     * prison with nothing furnished is on the starter rung, which is shallower
+     * than the mature one. This walks the balance down to a small positive
+     * remainder in one press, then crosses zero one brick at a time, because
+     * zero is where `overdraftTone` starts saying anything at all.
+     */
     for (;;) {
       const balance = (await latestCounts(page))?.treasuryMinorUnits ?? 0;
-      const bricks = Math.floor((balance - 200) / 40);
+      const bricks = Math.floor((balance - 60) / 40);
       if (bricks < 1) break;
+      const before = await fundsChip(page);
       const result = await attemptBuy(page, 'wall-brick', bricks);
       const after = (await latestCounts(page))?.treasuryMinorUnits ?? 0;
-      say(act, `BUY ${bricks} bricks: submitted=${result.submitted} funds ${balance} -> ${after} | row ${JSON.stringify(result.total)}`);
+      say(
+        act,
+        `BUY ${bricks} bricks IN ONE PRESS: submitted=${result.submitted} funds ${balance} -> ${after}` +
+          ` | row ${JSON.stringify(result.total)}` +
+          ` | chip before ${JSON.stringify(before['text'])} tone ${JSON.stringify(before['tone'])}` +
+          ` | chip after ${JSON.stringify((await fundsChip(page))['text'])} tone ${JSON.stringify((await fundsChip(page))['tone'])}`,
+      );
       if (after === balance) break;
     }
     /*
@@ -312,6 +325,9 @@ test.describe('The money runs out', () => {
         act,
         `DRAG PAST THE BUY FLOOR (row ${row}): funds ${before} -> ${after}` +
           ` | queue ${JSON.stringify(await panelText(page, '.hud-build__queue'))}` +
+          ` | queue shortfall ${JSON.stringify(await panelText(page, '.hud-build__queue-shortfall'))}` +
+          ` | chip ${JSON.stringify((await fundsChip(page))['text'])} tone ${JSON.stringify((await fundsChip(page))['tone'])}` +
+          ` | band ${JSON.stringify(await panelText(page, '.hud__event'))}` +
           ` | refusal ${JSON.stringify(await panelText(page, '.hud__refusal'))}`,
       );
       if (after === before) break;
