@@ -260,6 +260,34 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   alone. If you see them red, run them alone before concluding anything, and
   report what you saw rather than the word "flake": a label is not a diagnosis.
   What is genuinely worth fixing here is the margin, not the runs.
+  **Both halves of that pair are now false, on different dates, and the bullet
+  is kept rather than deleted because its last sentence was right and was what
+  eventually got acted on.** `comment-symbol-existence-contract.test.ts` stopped
+  being on a 5s budget on 2026-09-03: `51b65da1`, *"four whole-tree contracts
+  outgrew the global timeout, so a finding read as a hang (#872)"*, gave it and
+  three siblings an explicit 60,000 ms. So this bullet was already half wrong
+  the day after it was written, and an agent who read it on 2026-09-05 and went
+  looking for a 5s scan found a 60s one.
+  `prisoners-sentence.test.ts` stopped being on the list on 2026-09-05 (#1005),
+  and *"a bisection over an RNG stream"* was never what it did — it draws
+  60,000 sentences in a loop. The 2.0s that loop cost was not the draws and not
+  the sample size: it was **three `expect` calls per iteration, 180,000 of
+  them**, which is 99% of the test. The sibling test in the same file draws
+  30,000 sentences from the same function with no per-draw assertion and takes
+  **10 ms**. Collecting the violations and asserting once, with every draw and
+  every predicate unchanged, took it to 25 ms.
+  **The transferable part is the diagnosis, not the two names.** Before
+  concluding that a slow test is doing expensive work, price its assertions:
+  an `expect` in a hot loop costs about 11 microseconds whether or not anything
+  is wrong, so a loop with three of them and 60,000 iterations spends two
+  seconds proving nothing. Vitest reports it as *"Test timed out in 5000ms"*,
+  which points at the budget rather than at the loop.
+  **And measure against the budget each test actually has, not against 5,000.**
+  Twenty-odd tests here carry an explicit `it(..., 30_000)`-style argument, and
+  a sweep that ignores those ranks the wrong ones first: the slowest test in the
+  whole `vitest` suite in wall-clock, `prisoners-actor-tier-scale`'s 5,000-actor
+  tier at 3.6s, is at 12% of its budget and needs nothing, while
+  `prisoners-sentence` at 2.0s was at 43% of its and was the one that fell over.
 - **Three browser tests are the contention canaries, and the integrator who
   said otherwise was wrong.** `app-shell.spec.ts` *"every control can actually be
   pressed … (#88)"* (held-guard rows 2 and 3 never laid out), *"a pending delivery
