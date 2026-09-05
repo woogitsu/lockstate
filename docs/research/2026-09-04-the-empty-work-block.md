@@ -192,3 +192,160 @@ displayed anywhere in the game.
 ---
 
 *(§2–§5 follow as the acts complete.)*
+
+---
+
+## 2. Act 4 — the work block with the three rooms: 48 prisoner-samples, zero `Association`
+
+**MEASURED.** Eight prisoners, six rooms (cell, shower room, yard, **kitchen,
+laundry, classroom**), two guards. Built from a new prison, run two whole days
+to settle, then one whole day sampled — fourteen samples, 112 prisoner-samples,
+tick 33,169 to 35,569. **All six rooms were accepted on the first designation
+attempt**, which is the geometry the previous session's act 2 clearance map
+bought:
+
+```
+[act4] room.cell accepted on attempt 1
+[act4] room.classroom accepted on attempt 1
+[act4] room.kitchen accepted on attempt 1
+[act4] room.laundry accepted on attempt 1
+[act4] room.shower-room accepted on attempt 1
+[act4] room.yard accepted on attempt 1
+```
+
+### 2.1 The work block, verbatim
+
+```
+[act4] BLOCK WORK/education/association (48 prisoner-samples): ["action.laundry-work 20 (42%)","action.kitchen-work 15 (31%)","action.classroom-education 10 (21%)","action.yard-recreation 2 (4%)","action.eat-in-cell 1 (2%)"]
+```
+
+**`action.free-association` does not appear at all.** Ninety-four per cent of
+the block is the three room actions; the remaining 6% is two prisoners walking
+to the yard and one eating in their cell — both actions with a real need effect,
+neither of them idling.
+
+Sample by sample, both blocks:
+
+| tick-of-day | what eight prisoners were doing |
+| --- | --- |
+| 651 | `kitchen-work ×3`, `laundry-work ×3`, `laundry-work (travelling) ×2` |
+| 836 | `kitchen-work ×2`, `kitchen-work (travelling) ×2`, `laundry-work ×2`, `classroom-education ×2` |
+| 999 | `laundry-work ×4`, `classroom-education ×2`, `yard-recreation (travelling) ×2` |
+| 1370 | `laundry-work ×4`, `classroom-education ×2`, `laundry-work (travelling) ×1`, `eat-in-cell ×1` |
+| 1534 | `kitchen-work ×4`, `classroom-education (travelling) ×3`, `classroom-education ×1` |
+| 1720 | `laundry-work ×4`, `kitchen-work ×2`, `kitchen-work (travelling) ×2` |
+
+**Eight of eight, at every one of the six samples inside the work blocks, doing
+something.** Compare the four-room prison the question came from: `Association
+×4`, at every sample, at four of four.
+
+### 2.2 The whole day
+
+```
+[act4] WHOLE DAY, prisoner-samples per action (112 in all):
+[act4]   action.sleep                       26  23.2%
+[act4]   action.laundry-work                20  17.9%
+[act4]   action.kitchen-work                15  13.4%
+[act4]   action.classroom-education         14  12.5%
+[act4]   action.yard-recreation             12  10.7%
+[act4]   action.shower                       8   7.1%
+[act4]   action.eat-in-cell                  7   6.3%
+[act4]   action.use-toilet                   6   5.4%
+[act4]   action.free-association             4   3.6%
+```
+
+**`Association` is 3.6% of the day and it is not in a work block.** All four of
+its samples are in one place:
+
+```
+[act4] BLOCK recreation+association (8 prisoner-samples): ["action.yard-recreation 4 (50%)","action.free-association 4 (50%)"]
+```
+
+`[1000, 1200)` allows `recreation` and `free-association` only. The yard's
+`concurrentUse` ceiling is `max(1, floor(width × height / 16))` for a room
+action with no capability — an 8×8 yard is `floor(64/16)` = **4** —
+[ADR 0071](../adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md),
+quoted at `src/simulation/rooms/bounds-recovery.ts:20-28`, which adds *"a yard
+zoned by this build admits 4 prisoners"*. Four prisoners took the yard;
+the other four had no legal second recreation room and associated. **REASONED,
+from those two MEASURED facts:** what is left of `Association` in a
+fully-built prison is the yard's ceiling, not the work block — build a common
+room and it very likely goes to zero, which this record did not test.
+
+### 2.3 The screen says so, in the one place it can
+
+**MEASURED.** The Regime tab's roster during the first work block, verbatim:
+
+```
+"PRISONERS | 4 of 8 | Marta Balogh | Low | Heading to Laundry Duty | Bladder | 91% | Ursula Novak | Low | Heading to Laundry Duty | Bladder | 91% | Alma Dolan | Low | Kitchen Duty | Bladder | 73% | Ines Ivanov | Low | Laundry Duty | Bladder | 93% | and 4 more"
+```
+
+"Kitchen Duty", "Laundry Duty", "Class", "Heading to Laundry Duty" — the labels
+are authored (`src/content/simulation-message-keys.ts:171,176,179,187` —
+`'action.classroom-education': 'Class'`, `'action.free-association':
+'Association'`, `'action.laundry-work': 'Laundry Duty'`,
+`'action.kitchen-work': 'Kitchen Duty'`) and they land.
+The count is honest too: `4 of 8` and `and 4 more`
+(`hud.regime.roster-count`, `hud.regime.roster-more`,
+`src/content/default-locale-en.ts:2005,2009`). **So a player who opens the
+Regime tab during a work block does see kitchen work happening — to four
+prisoners out of eight, in a four-row window with no way to page.**
+
+### 2.4 And it produces nothing — no food, no money, no number that moves
+
+**MEASURED.** From admission to the end of the scanned day, 7,508 ticks with
+eight prisoners working, **three of twenty-one status counts moved and none of
+them is a work product**:
+
+```
+[act4] DELTA admission -> end of the scanned day
+ticks 28159 -> 35667 (7508 ticks)
+  MOVED (3/21): contrabandDiscovered: 0 -> 2 | stateIncomeAccruedTodayMinorUnits: 1760 -> 2068 | treasuryMinorUnits: 15920 -> 22640
+  STILL (18/21): accommodationCapacity, activeIncidents, conditions, dailyWageBillMinorUnits, occupiedPlaces, prisoners, prisonersCovered, prisonersHighRisk, prisonersInIntake, prisonersUnderstaffed, prisonersUnguarded, roomCapacity, roomOccupants, rooms, staff, staffUnassigned, treasuryOverdraftFloorMinorUnits, unpaidWagesMinorUnits
+[act4] events over the whole act: ["contraband.discovered","contraband.discovered"]
+```
+
+The two that moved are the head-count grant and a contraband search. The
+treasury gained **6,720 over 7,508 ticks**, which is `8 prisoners × 300 × 2.8
+days` — the state grant alone, to the unit.
+
+**VERIFIED, read**, and it explains the whole table:
+
+- **There is exactly one income line into the treasury.**
+  `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300`
+  (`src/simulation/economy/income.ts:115`), paid per prisoner per completed
+  day; the only other constant is the withholding
+  `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`, suspended at **0**
+  (`:401`). There is no labour line and no wage credited to a working prisoner.
+- **No item is produced.** `item.food-ration`, `item.clean-linen`,
+  `item.dirty-linen` and `item.waste` are declared in
+  `src/content/item-catalog.ts:27-30` and named in
+  `src/content/default-locale-en.ts:116-119`. A grep of `src/` for each returns
+  **those two lines and nothing else** — no producer, no consumer, no store.
+  (`tests/foundation/unconsumed-content-contract.test.ts` guards *room* ids on
+  exactly this pattern and does not guard item ids, so nothing catches it.)
+- **The kitchen is deliberately not a supplier.** The catalogue says so at
+  `src/simulation/prisoners/actions.ts:322-331`: *"A prisoner on kitchen duty
+  eats a little of what passes through their hands; **nothing is produced,
+  stored or delivered**"*, and *"`room.canteen` does not ask whether anybody
+  cooked."*
+
+**What the work does move is one need each, on the prisoner doing it**:
+`action.kitchen-work` `hunger: 1`/tick, `action.laundry-work` `hygiene: 1`/tick,
+`action.classroom-education` `recreation: 1`/tick
+(`src/simulation/prisoners/actions.ts:346`, `:282` and `:173`). Against
+`NEED_DECAY_PER_TICK` of `hunger 0.05`, `hygiene 0.02`, `recreation 0.015`
+(`src/simulation/prisoners/needs.ts:112-119`), a 120-tick shift is worth **20×,
+50× and 67×** the decay it is racing. That is why the block fills so
+completely, and why every prisoner's worst need in act 4 is `Bladder` — the one
+need no room serves.
+
+**So the honest answer to "does the work produce anything" is: it produces a
+need, on the worker, and nothing else in the prison.** That is not a defect —
+it is [ADR 0061](../adr/0061-what-the-prison-produces-on-its-own.md)'s subject
+and issues [#591](https://github.com/matmaxalez/lockstate/issues/591) and
+[#592](https://github.com/matmaxalez/lockstate/issues/592)'s, and **both of
+those are open proposals with no linked pull request and nothing implemented**
+(read 2026-09-04; #591 "Prison labour: pay for work performed", #592 "Kitchen
+labour feeds the meal block"). The system is not built yet, and this is exactly
+how far it goes.
