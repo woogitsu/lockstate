@@ -4850,6 +4850,17 @@ test.describe('the Rooms panel', () => {
     expect(both.panelFull).toBe('');
     expect(both.panelNeeds).toBe('1');
 
+    /*
+     * The layout claim, measured rather than argued: the at-capacity shape is a
+     * header, a room line and **one** item line, so it can never cost the panel
+     * more than the unfinished shape, which reaches three item lines. That is
+     * the whole of why `hud.css`'s donation rule could take a second attribute
+     * without the fold moving, and `roomNeedsSubjectOf` is what keeps the two
+     * from being added together.
+     */
+    expect(full.needsHeight).toBeLessThanOrEqual(both.needsHeight);
+    expect(full.needsHeight, 'the block drew nothing at all, so this comparison is empty').toBeGreaterThan(0);
+
     // 3. Nothing unfinished and nothing full: the block goes away entirely,
     // and takes the header it was last drawing with it.
     await page.evaluate(() =>
