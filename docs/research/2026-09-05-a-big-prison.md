@@ -52,7 +52,10 @@ rows read *Heading to Class* toward a classroom whose `education` ceiling is the
 width of one bookshelf — **two** — while one of them sits at `Hygiene 0%` with
 two shower heads for 68 people, and nothing on any surface names a ceiling.
 **Ten guards leave zero free**, four incidents lapse one-for-one, and the panel
-says `Covered` next to `0 free` and `Only free guards answer incidents.`
+says `Covered` next to `0 free` and `Only free guards answer incidents.` One
+apparent defect — eight accommodation places with no beds under them — **did not
+survive a second run of the same script** and is withdrawn in §10 rather than
+filed.
 Meanwhile the interface shows **4 of 68** prisoners with no page control, **1 of
 5** unfinished rooms, and **3 of 10** guards; the eight-row alert cap never
 bites because rows collapse, so what a player gets instead is a fight from day
@@ -702,101 +705,64 @@ is not evidence about it either way.
 
 ---
 
-## 10. UNEXPLAINED — the prison claims eight accommodation places it has no beds for
+## 10. WITHDRAWN — the eight accommodation places with no beds do not reproduce, and the second run says so
 
-**MEASURED, act 1.** 68 bed presses, and:
+**This section was written as a defect and is kept as a correction**, because
+the correction is the more useful record.
+
+**MEASURED, act 1, first run.** 68 bed presses, and the worker answered:
 
 ```
 [act1] furnished: {"tick":30104, …,"rooms":8,"roomCapacity":76,"accommodationCapacity":76, …}
-```
-
-with the room-list projection giving it per room:
-
-```
 "room.cell:1:4"  … "occupancy":{"current":0,"capacity":27,"free":27,…}
 "room.cell:6:11" … "occupancy":{"current":0,"capacity":27,"free":27,…}
 "room.cell:6:18" … "occupancy":{"current":0,"capacity":22,"free":22,…}
 ```
 
-**27, 27 and 22 against 24, 24 and 20 beds placed.** The surplus per block —
-`+3, +3, +2` — is exactly each block's toilet count (`[1,9] [2,9] [3,9]`,
-`[6,16] [7,16] [8,16]`, `[6,23] [7,23]`). All 68 prisoners were housed and
-`roomOccupants` reached 68, so the number is not merely cosmetic: it is the
-denominator the status strip divides by and the ceiling `IntakeSystem` houses
-against.
+with the Rooms panel at day 26 reading **`NOT READY / 5 of 8 / Cell at 1, 4 is
+missing / 1 × Toilet`**. Twenty-seven, twenty-seven and twenty-two against 24,
+24 and 20 beds placed; the surplus per block — `+3, +3, +2` — was exactly each
+block's toilet count, and block A's toilets were reported missing.
 
-**VERIFIED, read.** `residentCapacity` is supposed to count only sleep surfaces:
-
-```ts
-if (definition.capabilities.includes(SLEEP_SURFACE_CAPABILITY)) {
-  residentCapacity += definition.footprint.width;
-}
-```
-
-`src/simulation/objects/room-capacity.ts:184-186`, with
-`SLEEP_SURFACE_CAPABILITY = 'sleep-surface'` (`:25`). `object.toilet` declares
-`capabilities: ['sanitation']` and a `1×1` footprint
-(`src/content/object-catalog.ts:99`), and `toilet-brick` places exactly that
-(`placesObjectId: 'object.toilet'`,
-`src/simulation/construction/definition.ts:241`).
-
-**MEASURED, act 2 — the control, and it rules the obvious explanation out.** One
-4×4 cell, four bed presses then one toilet press, through the *same*
-`armBuildable` sequence in the same order:
+**MEASURED, act 1, second run — the same script, the same layout, the same 91
+object commands, and the answer is different:**
 
 ```
-[act2] arming bed-wooden: label before "Place on map", after "Stop placing"
-[act2]   press bed-wooden at (6,6): [{"type":"PlaceObject","definitionId":"bed-wooden","x":6,"y":6}]
-…
-[act2] arming toilet-brick: label before "Stop placing", after "Stop placing"
-[act2]   press toilet-brick at (9,9): [{"type":"PlaceObject","definitionId":"toilet-brick","x":9,"y":9}]
-[act2] counts: {"tick":4850,…,"rooms":1,"roomCapacity":4,"accommodationCapacity":4,…}
+[act1] 91 object command(s), 0 press(es) produced nothing, from tick 22862
+[act1] furnished: {"tick":36133, …,"rooms":8,"roomCapacity":68,"accommodationCapacity":68, …}
 ```
 
-**Four beds, one toilet, capacity 4.** One of the two candidate explanations is
-dead outright: the second `armBuildable` in a run *does* change the armed
-buildable — the arm label stays `Stop placing` and the placement still carries
-`definitionId: "toilet-brick"`.
+and the `hud/room-detail` projection, asked of each cell in turn at tick 42,091,
+enumerates exactly what was built:
 
-**The other half of that control is weaker than it looks, and this record says
-so rather than leaning on it.** `latestCounts` returns the last counts the
-worker *published*, and the worker skips a publication whose payload equals the
-previous one (`statusCountsEqual`, `src/simulation/worker/status-counts.ts`).
-The sample above is stamped `tick 4850` while the toilet order was placed after
-tick 5,000 — so **`capacity 4` may be a reading from before the toilet
-existed**, and act 2 does not actually rule out "a toilet adds a resident
-place".
+| cell | capacity | capabilities | beds satisfying | toilets satisfying | missing |
+| --- | --- | --- | --- | --- | --- |
+| `room.cell:1:4` | **24** | `sanitation`, `sleep-surface` | 24 | 3 | 0 |
+| `room.cell:6:11` | **24** | `sanitation`, `sleep-surface` | 24 | 3 | 0 |
+| `room.cell:6:18` | **20** | `sanitation`, `sleep-surface` | 20 | 2 | 0 |
 
-**A third measurement, from a record that merged today, points the same way.**
-`2026-09-04-what-pressure-there-is-at-fifty.md` built a 10×10 cell with **fifty
-beds and no toilet at all** — its Rooms panel said so — and measured
-`roomCapacity=50 accommodationCapacity=50`: **exact, with no surplus.** So every
-prison measured *without* toilets reports exactly its bed count, and the one
-measured *with* eight toilets reports eight too many. That is suggestive and it
-is not a diagnosis.
+**24 + 24 + 20 = 68, exactly the beds placed, with every toilet present and
+`missingCapability: 0` on all three.** `deriveRoomCapacity` is doing precisely
+what `src/simulation/objects/room-capacity.ts:184-186` says it does, and the
+toilet is not counted as a sleeping place.
 
-**So this is a measurement without a diagnosis, and it is reported as one.** Two
-things are true together and I cannot yet reconcile them: at four beds the
-number is right, at 68 it is eight too many, and the surplus tracks the toilets.
-What makes it worth reporting anyway is the third measurement beside it — act 1's
-Rooms panel, at day 26:
+**So the finding is withdrawn, and what is left is a smaller and different
+thing.** The two runs differ in one respect I can name: the first run's object
+drain short-circuited on the harness's `not laid out` rule (§3a's note) and read
+its counts **9,000 ticks earlier in the build than the second run did**, at
+`tick 30104` against `tick 36133`. That explains why the first run saw a
+half-finished room; it does **not** explain a capacity of 27 where 24 beds had
+been ordered, and I have no reading that does. **What I can say with the
+evidence I have: the shipped numbers are right when the queue is empty, and I
+cannot reproduce the moment at which they were wrong.**
 
-> NOT READY / 5 of 8 / **Cell at 1, 4 is missing** / **1 × Toilet**
-
-**Block A's toilets are not in block A as far as the requirement check is
-concerned, while three somethings are in it as far as the capacity sum is
-concerned.** A prison that says *"this cell has no toilet"* and *"this cell
-sleeps three more than you built beds for"* about the same room, in the same
-tick, is one bug wearing two faces — but I did not find it, and I will not name
-a cause I have not read.
-
-**What would settle it in ten minutes:** the `hud/room-detail` projection for
-`room.cell:1:4`, which enumerates the room's placed objects. act 2's attempt at
-it was malformed — a bare string where the protocol wants
-`{ kind: 'id', id }` (`src/simulation/protocol/types.ts:386-389`) — and, notably,
-**the worker answered nothing at all rather than refusing**, so a malformed
-projection request is indistinguishable from a hung worker. The probe is in the
-instrument now (act 1, after the room list).
+**One thing found on the way is a defect and is not withdrawn.** act 2's first
+attempt at `hud/room-detail` passed a bare instance id where the protocol wants
+`{ kind: 'id', id }` (`src/simulation/protocol/types.ts:386-389`), and **the
+worker answered nothing at all** — no reply, no refusal, no fault. The request
+timed out in the caller after 20 s. A malformed projection request is therefore
+indistinguishable from a hung worker, which is the same shape of silence
+`docs/research/` keeps finding on the player-facing side.
 
 ---
 
@@ -956,16 +922,27 @@ speed is read too.
 
 ## The weakest claim, and what would change my mind
 
-**The weakest claim is §10's**, and it is weak in a specific way: I measured
-`accommodationCapacity: 76` from 68 bed presses, measured the per-block surplus
-matching the per-block toilet count, built a control that rules out the two
-explanations that fit, and stopped. **I do not know what the eight extra places
-are.** What would change my mind is one reading: the `hud/room-detail`
-projection for `room.cell:1:4`, enumerating that room's placed objects. If it
-lists 27 beds, my count of my own presses is wrong and there is no defect; if it
-lists 24 beds and three toilets, `deriveRoomCapacity` is being fed something
-other than what I read. The probe is in the instrument and the answer is one run
-away.
+**§10 was the weakest claim and it has been withdrawn rather than defended.**
+It measured `accommodationCapacity: 76` from 68 bed presses and named the
+surplus; the second run of the identical script measured **68**, and the
+`hud/room-detail` projection enumerated 24 beds and 3 toilets in the room the
+first run said had none. That is the method working, and it is left in the
+record as a section rather than deleted because *"a measurement that only one
+run has ever produced"* is exactly the shape of claim this directory should be
+suspicious of — including when it is mine.
+
+**So the weakest surviving claim is §6's**, and its weakness is the causal step.
+What is MEASURED is `10 held · 0 free` beside `9 of 9 · Covered`, and four
+incidents that *"ran out of time instead of being contained"* on the same day.
+What is REASONED is that the first caused the second — through
+`requiredResponderCount ≥ 2` and a pool of zero. **I never watched an incident
+open and go unanswered while reading the free-guard count at that tick**; I read
+the count at day 26 and the lapses at day 18. What would change my mind is a
+sample of `hud/incidents` and the held-guard count in the same tick, at the tick
+an incident opens: if a guard is released to answer and re-posted between
+samples, the pool is not zero when it matters and §6 is a readout defect rather
+than a response defect. Either way `Covered` beside `0 free` is wrong, but which
+kind of wrong decides what it costs.
 
 **The second-weakest is §8's contention claim, and the weakness is the sample.**
 The interface shows four rows of 68, so "all four visible prisoners are heading
