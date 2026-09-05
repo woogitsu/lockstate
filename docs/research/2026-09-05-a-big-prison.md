@@ -975,6 +975,12 @@ record as a section rather than deleted because *"a measurement that only one
 run has ever produced"* is exactly the shape of claim this directory should be
 suspicious of — including when it is mine.
 
+**§8's sample-size weakness is also gone**, and for the same reason: the second
+run asked for all 68 roster rows rather than the interface's four, and the
+`2 / 66` split reproduced at two ticks a day apart. What is *not* measured there
+is a prisoner being refused at the classroom door — see the correction inside
+§8.
+
 **So the weakest surviving claim is §6's**, and its weakness is the causal step.
 What is MEASURED is `10 held · 0 free` beside `9 of 9 · Covered`, and four
 incidents that *"ran out of time instead of being contained"* on the same day.
@@ -988,16 +994,15 @@ samples, the pool is not zero when it matters and §6 is a readout defect rather
 than a response defect. Either way `Covered` beside `0 free` is wrong, but which
 kind of wrong decides what it costs.
 
-**The second-weakest is §8's contention claim, and the weakness is the sample.**
-The interface shows four rows of 68, so "all four visible prisoners are heading
-to a two-seat classroom" is four observations, not 68. The ceilings are
-`VERIFIED, read` and the arithmetic (`34 contenders per place`) follows from
-them, but *how many* prisoners are actually refused at the classroom door in a
-given tick is not something I measured — the roster projection that would have
-answered it was read through the wrong level of the reply envelope on the first
-run and returned `rows 0 of total 68`. What would change my mind is the
-distribution of `currentActionId` across all 68 rows at one tick; if most of
-them are performing something else, the classroom is a queue and not a wall.
+**The second-weakest is what §8 does *not* say.** The `2 / 66` split is measured
+across all 68 rows at two ticks, so the sample objection is answered — but a
+prisoner being *refused at the classroom door* is not in it. What I measured is
+that 66 are on their fallback, not that any of them tried and failed. **The
+contention rule ADR 0062 decides — who wins when two arrive at once — could be
+firing constantly or never, and this record cannot tell them apart.** What would
+distinguish them is the `unmetDemandCycles` counter ADR 0062's own measurement
+uses; no `simulation/*` message carries it, so it is a kernel-fixture question
+and not a playtest one.
 
 **A third caveat that is not a weak claim but is a constraint on all of them.**
 This box carried a second tester throughout. Every claim above is in ticks,
