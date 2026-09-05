@@ -13,8 +13,12 @@ Played on `agent/playtest-the-money-runs-out`, cut from `origin/main` at
 branch was taken and when the acts below ran (`git fetch origin` then
 `git log --oneline origin/main -1` → `b984445f chore(release): v0.0.475`). The
 running application reported itself in the status strip as
-`Lockstate, PRE-ALPHA build, version 0.0.475, commit 0c053bd`, quoted from act
-2's own output, so the tree under test and the tree named here are the same one.
+`Lockstate, PRE-ALPHA build, version 0.0.475, commit 0c053bd` in act 2 and
+`… commit 3a33df2` in act 4 — same version, and the commit differs only because
+this branch gained *this record's own commits* between the two runs.
+**`src/` is byte-identical to `b984445f` in both**:
+`git diff --stat b984445f..HEAD -- src/` is empty and `git status --short src/`
+is clean.
 
 Viewport **1440×900**. Instrument:
 `tests/browser/playtest-2026-09-05-the-money-runs-out.playtest.ts`.
@@ -744,6 +748,31 @@ the two halves stay together: the grouping is a formatter question, and the
 coalescing is the one the 09-04 record already diagnosed — *"an amount in the
 text is what defeats it"*, since the riot rows do coalesce (`4×`) and these
 cannot, each carrying a different number.
+
+### P5 — Twenty-nine of thirty guards were being paid to do nothing, and the wire already knows it
+
+**MEASURED, act 4.** The `simulation/status-counts` payload for the over-hired
+prison carries, in one message:
+
+```
+"staff":30, "staffUnassigned":29, "dailyWageBillMinorUnits":2400,
+"prisonersCovered":4, "prisonersUnderstaffed":0, "prisonersUnguarded":0,
+"treasuryMinorUnits":19570, "treasuryOverdraftFloorMinorUnits":-2500
+```
+
+The Staff panel says `1 held · 29 free` and `Only free guards answer incidents.`
+— true, and about incidents rather than about money. Nothing anywhere multiplies
+`staffUnassigned` by the wage.
+
+**Proposed string**, for the roster fold's header where `{total} a day` already
+sits: `{total} a day · {count} of them unassigned`. **What makes it true:**
+`staffUnassigned` is published in the same counts payload as
+`dailyWageBillMinorUnits` (measured above, in one message), and
+`describeDailyWageBill` (`src/ui/hud/staff-panel.ts:533`) is already the single
+reader of the bill for that header. No new figure, no new threshold, and no
+claim about what a guard is *worth* — only how many of them are idle, which is
+a count the simulation publishes and the panel already draws in words one block
+higher.
 
 ---
 
