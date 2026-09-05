@@ -76,9 +76,15 @@ export interface EscapedPrisoner {
  * response is too slow or too thin -- "failed/late response produces
  * consistent outcomes rather than hidden success."
  *
- * Guards are claimed from `GuardRoster.unassignedGuardIds()`, the same
- * finite shared pool `DeploymentSystem` and #27's `SearchSystem` draw
- * from, so emergency response is a real staffing diversion. Like search
+ * Guards are claimed from `claimableGuardIds` -- `unassignedGuardIds()`
+ * narrowed to post-eligible roles since ADR 0053 -- out of the same finite
+ * roster `DeploymentSystem` and #27's `SearchSystem` draw from, so emergency
+ * response is a real staffing diversion. **A search draws on a strictly
+ * smaller pool than this one since issue #996** (`claimableSearchGuardIds`,
+ * which withholds `INCIDENT_RESPONSE_GUARD_RESERVE`): a sweep in flight can no
+ * longer be the reason this system has nobody to claim, while this system can
+ * still take the guard a sweep would have been walked by. The asymmetry is the
+ * decision -- a response cannot be deferred and a sweep can. Like search
  * duty, a responding guard sits in the `'on-search'` phase -- neither
  * `DeploymentSystem` nor `PatrolSystem` acts on that phase, so no changes
  * to either were needed here (see `docs/CONTRABAND.md`'s note).
@@ -491,10 +497,11 @@ export class IncidentResponseSystem implements SystemRegistration {
    * cannot fill the response.
    *
    * Split out of `tryDispatch` so that `redispatchInterruptedResponses` claims
-   * responders by exactly the same rule -- ascending entity id, from the same
-   * finite shared pool `DeploymentSystem` and `SearchSystem` draw from. A second
-   * selection rule for the re-dispatch path would be a second thing to keep
-   * deterministic.
+   * responders by exactly the same rule -- ascending entity id, from the whole
+   * post-eligible free pool. `DeploymentSystem` claims out of the same one and
+   * `SearchSystem` out of a subset of it (issue #996), and **nothing narrows
+   * this claim**: the reserve exists for it. A second selection rule for the
+   * re-dispatch path would be a second thing to keep deterministic.
    */
   private claimableResponders(incident: IncidentRecord): readonly EntityId[] | undefined {
     const required = this.requiredResponderCount(incident.severity);

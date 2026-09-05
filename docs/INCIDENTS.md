@@ -257,9 +257,14 @@ matter how understaffed the sector is.
 ## Response: real guards, real routes, real lockdown
 
 `IncidentResponseSystem` claims guards through `claimableGuardIds`
-(`src/simulation/security/post-eligibility.ts`) — the same finite shared pool
+(`src/simulation/security/post-eligibility.ts`) — the same finite roster
 `DeploymentSystem` and #27's `SearchSystem` draw from, so emergency
-response is a genuine staffing diversion. Since
+response is a genuine staffing diversion. **The traffic is one-way since issue
+#996**: a search claims from `claimableSearchGuardIds`, which withholds
+`INCIDENT_RESPONSE_GUARD_RESERVE` guards from it, while a response still claims
+from the whole free pool. A sweep in flight can no longer empty the pool this
+paragraph is about; an incident response can still empty the one a sweep draws
+on, and that is the priority order rather than an oversight. Since
 [ADR 0053](./adr/0053-who-may-stand-a-security-post.md) that pool is the
 *post-eligible* unassigned staff rather than every unassigned staff member: a
 nurse on the roster is not a responder, and a prison holding five of them lets a
