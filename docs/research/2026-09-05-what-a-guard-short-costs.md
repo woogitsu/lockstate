@@ -80,6 +80,11 @@ $ node /workspace/lockstate/node_modules/vitest/vitest.mjs run \
  Test Files  1 passed (1)
       Tests  4 passed | 14 skipped (18)
    Duration  90.72s
+
+# re-run after `git fetch origin main && git merge origin/main` (v0.0.490):
+ Test Files  1 passed (1)
+      Tests  4 passed | 15 skipped (19)
+   Duration  95.6s
 ```
 
 `pnpm <script>` aborts in a worktree with `ERR_PNPM_UNSAFE_MODULES_DIR`
@@ -156,7 +161,7 @@ being `max(1, ceil(100/8)) = 13`:
 
 | guards | rung | safety permille | grant, seed `0x997` / `0x1004` / `0xbeef` | high-risk of ~100 | treasury at day 33 |
 | --- | --- | --- | --- | --- | --- |
-| 14 | `covered` | 1000 | 27,040 / 28,160 / 27,800 | 17 / 12 / 11 | 771,590 / 772,190 / 765,230 |
+| 14 | `covered` | 1000 | 27,800 / 28,200 / 27,120 | 15 / 15 / 14 | 776,310 / 779,630 / 776,790 |
 | **13** | `covered` | 1000 | **28,080 / 27,880 / 28,080** | 14 / 12 / 11 | 765,390 / 769,670 / 769,070 |
 | **12** | `understaffed` | **2** | **22,660 / 23,640 / 23,160** | 19 / 14 / 14 | 689,850 / 697,590 / 697,310 |
 | 10 | `understaffed` | 2 | 23,580 / 24,120 / 23,540 | 13 / 12 / 13 | 688,250 / 694,550 / 696,490 |
@@ -164,6 +169,24 @@ being `max(1, ceil(100/8)) = 13`:
 | 4 | `understaffed` | 2 | 23,140 / 23,060 / 23,100 | **97 / 97 / 97** | 679,190 / 678,710 / 678,950 |
 | 1 | `understaffed` | 2 | 23,180 / 23,220 / 23,220 | **97 / 97 / 97** | 712,550 / 717,630 / 711,310 |
 | 0 | `unguarded` | 0 | 23,180 / 23,260 / 23,020 | **97 / 97 / 97** | 664,030 / 663,910 / 663,910 |
+
+**One row of that table, and only one, moved when `origin/main` was merged
+late in this pass — and which row it is corroborates §3.** The base was
+v0.0.488; `origin/main` at merge time carried
+[#996](https://github.com/matmaxalez/lockstate/issues/996)'s fix (`c42f219`,
+*"a sweep draws on its own pool, so a riot always has somebody to send"*),
+which changes how a **spare** guard is allocated between a contraband sweep
+and an incident response. Re-running every act on the merged tree, **the
+14-guard rows at `n = 100` and the 8-guard rows at `n = 50` changed and every
+other row in this record is byte-identical** — the 13-guard row this section's
+headline rests on included. That is exactly what #996's subject predicts and it
+is worth recording as evidence rather than as housekeeping: **at or below the
+establishment there is no free-guard pool at all**, because
+`DeploymentSystem` has posted every guard and
+`claimableGuardIds(this.guards)` is `GuardRoster.unassignedGuardIds()`
+filtered — so a change to how the free pool is shared cannot reach a prison
+that has no free guard. The figures above the establishment are the merged
+tree's; every figure at or below it is identical on both.
 
 **Every treasury in the table grew, from an opening balance of 25,000**
 (`TREASURY_STARTING_BALANCE_MINOR_UNITS`, `src/simulation/economy/treasury.ts:203`).
@@ -527,6 +550,12 @@ it and are not decisions:
 
 ## 7. The mutations — one red gate and two attributions
 
+**All three were run twice: once on the base branch and once on the merged
+tree.** Every mutated figure quoted below is identical in both, and the three
+mutated files were untouched by the merge (their baseline hashes are byte-for
+-byte the same before and after it), so this section is not a pre-merge
+artefact. `sha256sum -c` passes on all three after the second round.
+
 Baseline hashes recorded before any edit and re-verified after each restore:
 
 ```
@@ -546,6 +575,10 @@ $ node .../vitest.mjs run --config tests/research/vitest.research.config.ts -t '
    Duration  28.80s
 ```
 
+(The `14,880` below is act Q's first row, the one over-establishment row §1
+records as having moved with the merge; the assertion is on every row and the
+first one to fail is simply the first one run.)
+
 Then `src/simulation/economy/income.ts:614`, one term:
 
 ```diff
@@ -556,7 +589,7 @@ Then `src/simulation/economy/income.ts:614`, one term:
 ```
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 AssertionError: the settled grant must be the grant the unmet-need histogram accounts for,
-or the income seam has a term neither of them sees: expected 15000 to be 14960 // Object.is equality
+or the income seam has a term neither of them sees: expected 15000 to be 14880 // Object.is equality
  Test Files  1 failed (1)
       Tests  1 failed | 18 skipped (19)
 ```
