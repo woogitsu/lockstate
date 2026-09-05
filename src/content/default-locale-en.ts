@@ -1060,7 +1060,18 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *   `RemoveObject` branch records this only for
    *   `RemoveObjectOutcome.kind === 'removed'`, the arm that has already dropped
    *   the row from `PlacedObjectRegistry`. The `'order-cancelled'` arm, which
-   *   refunds, records nothing here.
+   *   refunds, does not raise this key.
+   *
+   *   **That clause read *"records nothing here"* until
+   *   [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+   *   correction is to the word rather than to the proof.** It was written
+   *   about *this* key and is still true of it, but the arm it describes
+   *   recorded nothing **anywhere**, and on a band that holds one sentence a
+   *   press that says nothing keeps the last press's -- so this sentence,
+   *   true of its own press, stood over a refund and claimed its money was
+   *   destroyed. That arm now raises `construction.order-cancelled` above,
+   *   which leaves the proof of *this* sentence exactly as it was and takes
+   *   the false reading of it away.
    * - *"the money it cost does not come back"* -- that arm removes the registry
    *   row, re-derives the room's capacity and relocates whoever lost a place. It
    *   holds no treasury and no container reference and writes to neither, which

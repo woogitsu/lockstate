@@ -753,6 +753,47 @@ export function createSessionCommandHandler(
          * routes' successes are answered in this file and a reader looking for
          * the tenth would otherwise conclude it is still silent.
          */
+        /*
+         * **The other success this press can be, and it says the opposite
+         * thing** ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+         *
+         * A `RemoveObject` aimed at a tile whose object is still being built
+         * cancels that order instead, and a cancellation *refunds* -- so the
+         * `'warning'` above is false of it and `ObjectPlacementService.remove`
+         * has always refused to raise it there. What it did instead was say
+         * nothing, and on a band that holds exactly one sentence that is not
+         * neutral: `HudViewModel.event` is replaced by a newer event and by
+         * nothing else, and `refusals.supersede(removeKey)` two lines up
+         * supersedes a *refusal*. With the clock paused, a removal followed by
+         * a cancellation therefore left *"The object was removed -- the money
+         * it cost does not come back."* standing over the press that refunded.
+         *
+         * **`events.recordBuildOrderCancelled`, which is the event
+         * `CancelBuildOrder` already records, and no new sentence.** This press
+         * and that command reach the same `ConstructionSystem.cancelOrder`, so
+         * the same state decides the same truth: the four states before the
+         * crew starts get *"the money it cost is refunded"* and `'in-progress'`
+         * gets *"anything already spent past the point of no return stays
+         * spent"*. #945's brief called this arm *"the channel #932 fixed"* and
+         * it was not -- the route never enters that branch -- which is why the
+         * sibling arm was fixed and this one was left; that correction is
+         * `tests/integration/command-success-notices.test.ts`'s and is what
+         * this line finally acts on.
+         *
+         * **Here and not inside `remove`, which is the opposite of where #945's
+         * notice sits, and the difference is the band-ordering hazard rather
+         * than a change of mind.** That notice had to be raised before
+         * `relocateResidentsLeftWithoutAPlace` so a `'warning'` could not paint
+         * over the relocation's `'info'`; this arm relocates nobody, raises
+         * nothing else, and returns immediately -- so there is no order to get
+         * right, and the sentence belongs with the other command successes this
+         * file answers. It also keeps `ObjectPlacementService` free of a second
+         * notice port: the state travels out on the outcome, which is a fact
+         * about what happened rather than a dependency on the events channel.
+         */
+        if (outcome.kind === 'order-cancelled') {
+          events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
+        }
       }
       return;
     }

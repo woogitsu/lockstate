@@ -284,12 +284,26 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   neither loss row above is: a deliberate press is not "stop trusting what you
  *   are looking at".
  *
- *   **The severity is also why the removal's *other* success stays off this
- *   table.** `remove` answers `'order-cancelled'` for a placement still in
+ *   **The severity is also why the removal's *other* success does not raise
+ *   this row.** `remove` answers `'order-cancelled'` for a placement still in
  *   flight, and that one refunds -- an `'info'` fact wearing a `'warning'`
  *   sentence would be worse than the silence #945 found, because it would scare
  *   a player off a control that costs them nothing. The producer records the
  *   loss event only for `kind === 'removed'`.
+ *
+ *   **That paragraph said "stays off this table" until
+ *   [#988](https://github.com/matmaxalez/lockstate/issues/988), and the words
+ *   are corrected rather than the claim, because the claim was never about the
+ *   table.** The other success has had a row here all along --
+ *   `construction.order-cancelled`, whose own bullet in this list grades it
+ *   `'info'` -- and what it did not have was a *producer*. It said nothing, and on a band that carries
+ *   one sentence a press that says nothing is read as the last press's: with
+ *   the clock paused, this `'warning'` stood over the refund below it. It is
+ *   raised on that row now, by the same
+ *   `SimulationEventLog.recordBuildOrderCancelled` `CancelBuildOrder` uses, so
+ *   the severity argument above lands where it was always aiming -- the refund
+ *   wears `'info'` and the loss wears `'warning'`, and each press wears its
+ *   own.
  * - **`economy.delivery-cancelled` is `'info'`**, and it is the only success
  *   here that names a figure. `ProcurementSystem.cancel` already answers
  *   `refundedMinorUnits`, so `{total}` costs nothing; `ConstructionSystem.cancelOrder`
