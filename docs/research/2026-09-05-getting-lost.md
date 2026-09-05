@@ -418,9 +418,49 @@ lost, at `visible tiles x 29..52, y 17..30`, and the save panel confirmed a save
 existed: `Saved (generation gen-mtnpgxvp-1).` Then the page was reloaded.
 
 ```
+[act6] camera the player parked: visible tiles x 29..52, y 17..30
+[act6] after reload: {"stripText":"... 0 PRISONERS 0 HIGH RISK 0 STAFF 0 COVERAGE Covered
+                       0 ROOMS 0 INCIDENTS Clear 0 CONTRABAND 0 FUNDS","canvasPresent":true}
 [act6] save panel after reload: "... New Prison (1 gen) | Load | Delete | Local saves only — no network required."
+[act6] minimap after reload: "MINIMAP | Collapse | MINIMAP IS NOT AVAILABLE YET | ALERTS | No active alerts"
+[act6] pixels immediately after reload: 145/145 VOID_COLOR; others []
 [act6] camera immediately after reload: UNREADABLE -- no session is running, so a world press submits nothing
 ```
+
+**The screen a player comes back to is black and the numbers on it are all
+zero** — `0 PRISONERS`, `0 STAFF`, `0 ROOMS`, and **`0 FUNDS`** where the same
+strip read `25,000 FUNDS` a moment earlier. 145 of 145 sampled world points are
+`VOID_COLOR`. JUDGEMENT: that is the same picture as being lost, with the
+numbers additionally saying the prison is empty, and the only thing on the page
+that contradicts it is one row in the save panel.
+
+**Then `Load`, which is one press, and the camera comes back on the prison and
+not on the view the player left.**
+
+```
+[act6] save panel offers 1 control(s) reading "Load"
+[act6] save panel after Load: "... | Loaded. | Restored: kernel tick and command queue, RNG stream
+       states, world terrain and ownership, construction orders and undo/redo, ..."
+[act6] camera after Load: visible tiles x 4..27, y 10..23
+[act6]   shift from the parked view: dx=-25 tiles, dy=-7 tiles
+[act6]   centre tile after Load: (16,17); parked centre was (41,24); NEW_PRISON_ORIGIN_TILE is (16,16)
+```
+
+**MEASURED**: the camera lands on **(16,17)** — the middle of the loaded chunk,
+one tile off `NEW_PRISON_ORIGIN_TILE` because a 32-tile span's midpoint is a
+half-tile — and **25 tiles west and 7 tiles north of where the player left it.**
+READ, `world-scene.ts:1226-1235`: this is `frameCameraOnFirstWorld`, firing for
+the first time in this page's life because the reload built a new scene with
+`framedOnWorld` false.
+
+So the answer to *"does the camera come back where it was"* is **no, and that is
+the better of the two behaviours available**: the view is not restored, and what
+replaces it is the prison. `docs/CAMERA.md`'s opening line is the reason — *"The
+renderer owns camera state; it is not prison simulation state and must not be
+written to saves"* — so there is nowhere for a parked view to have been kept.
+REASONED from that plus the `Load` reading: **a page reload followed by one
+press of `Load` is a fourth way back**, and it costs whatever play has happened
+since the last autosave.
 
 The page console carried, on every probe press:
 
