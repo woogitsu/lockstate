@@ -997,15 +997,17 @@ samples, the pool is not zero when it matters and §6 is a readout defect rather
 than a response defect. Either way `Covered` beside `0 free` is wrong, but which
 kind of wrong decides what it costs.
 
-**The second-weakest is what §8 does *not* say.** The `2 / 66` split is measured
-across all 68 rows at two ticks, so the sample objection is answered — but a
-prisoner being *refused at the classroom door* is not in it. What I measured is
-that 66 are on their fallback, not that any of them tried and failed. **The
-contention rule ADR 0062 decides — who wins when two arrive at once — could be
-firing constantly or never, and this record cannot tell them apart.** What would
-distinguish them is the `unmetDemandCycles` counter ADR 0062's own measurement
-uses; no `simulation/*` message carries it, so it is a kernel-fixture question
-and not a playtest one.
+**The second-weakest is what §8 does *not* say.** Its six whole-population
+samples answer the sample-size objection — 51 committed and 51 travelling toward
+a two-place room is not an inference from four rows — but **a prisoner being
+*refused at the door* is still not in it.** What is measured is commitment and
+travel, and that the room's ceiling is two; what is not measured is the moment
+`claimUse` says no. **The contention rule ADR 0062 decides — who wins when two
+arrive at once — could be firing on every one of those 49 arrivals or on none of
+them, and this record cannot tell them apart.** What would distinguish them is
+the `unmetDemandCycles` counter ADR 0062's own measurement uses; no
+`simulation/*` message carries it, so it is a kernel-fixture question and not a
+playtest one.
 
 **A third caveat that is not a weak claim but is a constraint on all of them.**
 This box carried a second tester throughout. Every claim above is in ticks,
