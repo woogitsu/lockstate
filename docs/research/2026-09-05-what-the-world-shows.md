@@ -558,9 +558,46 @@ way to tell it from the Solitary Cell next door, and once it is furnished (§5)
 the floor is under a field of slabs anyway.
 
 
-## 6b. Act 7 — what the wheel does
+## 6b. Act 7 — what the wheel does, and the edge of the world
 
-_Pending — see §9._
+Same four-prisoner prison. Five wheel notches out, seven more, then eighteen
+back in — the wheel's step is `0.9` and `1.1`
+(`src/rendering/scene/world-scene.ts:511`). Screenshots:
+`2026-09-05-what-the-world-shows/act7-zoom-default.png`, `act7-zoom-out-5.png`,
+`act7-zoom-out-12.png`, `act7-zoom-in-6.png`.
+
+**The wheel zooms, smoothly, and nothing on the page acknowledges it.** No
+readout, no chip, no percentage, no reset control; the status strip is byte-for-
+byte the same string before and after twelve notches. The one number the strip
+does carry, `INTERFACE SCALE 100%`, is the HUD's own text scale and does not
+move with the camera — so the page shows a percentage that looks like a zoom
+level and is not one.
+
+**At five notches out (zoom ≈ 0.59) the world is still perfectly readable.**
+Orange prisoners, blue guards, the room's floor against the dirt: everything §2
+says survives. This is a better default for looking at a prison than the
+default is, and no control offers it.
+
+**At twelve notches out (zoom ≈ 0.28) the whole world fits on screen, and it is
+a 32×32-tile square with nothing in it.** Measured off the screenshot by
+scanning for `VOID_COLOR` `0x0b0e12` (`src/rendering/world/appearance.ts:45`):
+the non-void span is **580 px across and 580 px down**, which at 0.2824 is
+2,054 world px — **32.1 tiles each way**. That is not an inference, it is the
+documented shape: *"A new session owns exactly chunk (0,0) of a 32-tile
+world"* (`src/main.ts:603`). Outside it the camera background shows through
+because an unloaded chunk gets no draw calls at all, which
+`src/rendering/world/appearance.ts:37` states — *"`TileLayer.updateChunks` gives an unloaded chunk **no draw calls at all** and lets the camera background show through, so \"the void\" is painted by the background and bounded by wherever loaded chunks stop"*.
+
+So the zoom a player is not told about is also the only way to answer *"how big
+is my prison allowed to get"*, and the answer it gives is a hard-edged square
+of empty dirt with a 6×6 box in the middle of it. At that zoom the four
+prisoners are a five-pixel orange fleck.
+
+**At 1.57× (eighteen notches back in) the sprites hold up.** The atlas frames
+are 256×384 and drawn at 0.25, so there is a great deal of headroom; magnified
+they are crisp rather than soft, and a guard's badge and cap are individually
+readable.
+
 
 
 ## 7. Three of the five shipped populations can never appear
