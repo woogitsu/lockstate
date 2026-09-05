@@ -763,6 +763,23 @@ The effect is a bounded loss window -- three minutes -- that does not depend on
 how many agents are running or on any of them behaving correctly. `wip/` refs
 are scratch: delete them once the branch they shadow has merged.
 
+**The check that catches a lost row is counting the rows you owe, not reading
+the diff.** Added 2026-09-05, twice in one day, on `docs/research/README.md` —
+a table with one append point, which is the structural conflict §2 already
+warns about. What is new is the *resolution*: the correct answer is always
+"keep every row", and a resolver cannot tell by inspection whether they have.
+Both times the merge was wrong in a way the diff looked fine for. Once an agent
+dropped a row while resolving; once one branch had pulled twenty-four drifted
+rows back *into* the table while `main` had extended the drifted region with a
+twenty-fifth, so git saw one side delete a block and the other grow it. **The
+move that settled it in seconds was arithmetic over the two parents**: the
+parents carried 93 and 84 rows, the union of their labels was 94, the resolved
+file had 94, and `comm -23` over the union reported nothing missing. **Do that
+before you read the hunks, not after** — and where a contract counts the same
+thing (`tests/foundation/research-index-contract.test.ts` fails on a record
+with no row and on a row outside the table), run it, because those are exactly
+the two ways such a merge goes wrong silently.
+
 ### Handovers between parallel agents
 
 An agent that finds a defect outside its own surface cannot fix it, and the
