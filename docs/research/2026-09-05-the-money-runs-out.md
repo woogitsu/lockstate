@@ -977,6 +977,31 @@ coalescing is the one the 09-04 record already diagnosed — *"an amount in the
 text is what defeats it"*, since the riot rows do coalesce (`4×`) and these
 cannot, each carrying a different number.
 
+### P5 — Twenty-nine of thirty guards were being paid to do nothing, and the wire already knows it
+
+**MEASURED, act 4.** The `simulation/status-counts` payload for the over-hired
+prison carries, in one message:
+
+```
+"staff":30, "staffUnassigned":29, "dailyWageBillMinorUnits":2400,
+"prisonersCovered":4, "prisonersUnderstaffed":0, "prisonersUnguarded":0,
+"treasuryMinorUnits":19570, "treasuryOverdraftFloorMinorUnits":-2500
+```
+
+The Staff panel says `1 held · 29 free` and `Only free guards answer incidents.`
+— true, and about incidents rather than about money. Nothing anywhere multiplies
+`staffUnassigned` by the wage.
+
+**Proposed string**, for the roster fold's header where `{total} a day` already
+sits: `{total} a day · {count} of them unassigned`. **What makes it true:**
+`staffUnassigned` is published in the same counts payload as
+`dailyWageBillMinorUnits` (measured above, in one message), and
+`describeDailyWageBill` (`src/ui/hud/staff-panel.ts:533`) is already the single
+reader of the bill for that header. No new figure, no new threshold, and no
+claim about what a guard is *worth* — only how many of them are idle, which is
+a count the simulation publishes and the panel already draws in words one block
+higher.
+
 ### P6 — Put the arrears where the player can watch them fall
 
 **What it costs today (finding 8):** the single most decisive action in the
@@ -1016,31 +1041,6 @@ carries the moment it bit; nothing carries the moment it stopped. A single
 `economy.wages-settled` firing on the first boundary where `due > 0` and
 `this.unpaid` lands at `0` would be the sentence the recovery has never had.
 **This one is a code change and not only copy**, and it is named as such.
-
-### P5 — Twenty-nine of thirty guards were being paid to do nothing, and the wire already knows it
-
-**MEASURED, act 4.** The `simulation/status-counts` payload for the over-hired
-prison carries, in one message:
-
-```
-"staff":30, "staffUnassigned":29, "dailyWageBillMinorUnits":2400,
-"prisonersCovered":4, "prisonersUnderstaffed":0, "prisonersUnguarded":0,
-"treasuryMinorUnits":19570, "treasuryOverdraftFloorMinorUnits":-2500
-```
-
-The Staff panel says `1 held · 29 free` and `Only free guards answer incidents.`
-— true, and about incidents rather than about money. Nothing anywhere multiplies
-`staffUnassigned` by the wage.
-
-**Proposed string**, for the roster fold's header where `{total} a day` already
-sits: `{total} a day · {count} of them unassigned`. **What makes it true:**
-`staffUnassigned` is published in the same counts payload as
-`dailyWageBillMinorUnits` (measured above, in one message), and
-`describeDailyWageBill` (`src/ui/hud/staff-panel.ts:533`) is already the single
-reader of the bill for that header. No new figure, no new threshold, and no
-claim about what a guard is *worth* — only how many of them are idle, which is
-a count the simulation publishes and the panel already draws in words one block
-higher.
 
 ---
 
