@@ -413,6 +413,60 @@ describe('the rung the panel calls covered does not say whether anyone can searc
     expect(sentence.toLowerCase()).toContain('searches');
     expect(sentence).not.toContain('{');
   });
+
+  /**
+   * **The two duties share one reserve, and a sweep takes all of it.**
+   *
+   * #989 asked whether there is a *third* consumer of `claimableGuardIds`.
+   * There is not -- `DeploymentSystem` fills the posts, `IncidentResponseSystem`
+   * and the two contraband call sites claim from what is left, and
+   * `tests/foundation/claimable-guard-pool-contract.test.ts` pins that set. What
+   * there is instead is this, which no test in the repository put together
+   * before: the guard #941's sentence points at and the guard a sweep walks are
+   * **the same guard**, and while the sweep has him the responder pool is empty.
+   *
+   * Both halves were already asserted here, one block apart, and neither
+   * implied the other: the block above measures `claimableGuardIds` at exactly
+   * `1` one hire past the requirement, and `requiredResponderCount(3)` at `2`
+   * for the mildest incident this build can open. So requirement+1 is the hire
+   * that makes contraband findable and is **not** the hire that makes an
+   * incident answerable, and for part of every cadence it is neither.
+   *
+   * **This asserts no balance and must not.** Whether the reserve should be
+   * sized for both duties at once -- a second guard, a sweep that yields to an
+   * open incident, or nothing at all -- is exactly the question `AGENTS.md`
+   * reserves to the owner, and `SectorSearchDutySystem`'s own docblock declines
+   * to reserve against the pool for a separate reason (ADR 0053: one staffing
+   * rule, in one place). What is asserted is the arithmetic underneath the
+   * decision.
+   */
+  it('spends the whole reserve on a sweep, in the prison one hire past the requirement', () => {
+    const runtime = prisonWithGuards(3);
+    // The premise, from the block above: one spare guard, and the mildest
+    // incident this build can open asks for two.
+    expect(claimableGuardIds(runtime.securityGuards)).toHaveLength(1);
+    expect(runtime.incidentResponseSystem.requiredResponderCount(3)).toBe(2);
+
+    // Two and a half in-game days of cadence, sampled every tick. `600` is the
+    // sweep interval written out for `NINTH`'s reason, and 6,000 ticks is ten
+    // opportunities.
+    let ticksWithASweep = 0;
+    let ticksWithASweepAndNoResponder = 0;
+    for (let step = 0; step < 6_000; step += 1) {
+      runtime.kernel.step();
+      if (runtime.searchSystem.claimedGuardIds().length === 0) continue;
+      ticksWithASweep += 1;
+      if (claimableGuardIds(runtime.securityGuards).length === 0) ticksWithASweepAndNoResponder += 1;
+    }
+
+    // The prison really does search -- without this the assertion below would
+    // be vacuously true of a prison that never sweeps at all.
+    expect(ticksWithASweep, 'the spare guard is never claimed for a sweep, so this case measures nothing').toBeGreaterThan(0);
+    // And for every one of those ticks the pool a responder comes from is
+    // empty. `toBe` rather than `toBeGreaterThan`: the claim is that a sweep
+    // takes the *whole* reserve, not that it sometimes does.
+    expect(ticksWithASweepAndNoResponder).toBe(ticksWithASweep);
+  });
 });
 
 describe('hiring visibly fixes it, through the same command a player presses', () => {
