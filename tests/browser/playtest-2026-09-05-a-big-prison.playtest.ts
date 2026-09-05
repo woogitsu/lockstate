@@ -131,10 +131,59 @@ async function measureGrid(page: import('@playwright/test').Page, probeXs: reado
   };
 
   const guessPitch = TILE * 0.42;
-  const xLow = await edge('x', probeXs[0], probeYs[0], guessPitch * 1.3);
-  const xHigh = await edge('x', probeXs[1], probeYs[0], guessPitch * 1.3);
-  const yLow = await edge('y', probeYs[0], probeXs[0], guessPitch * 1.3);
-  const yHigh = await edge('y', probeYs[1], probeXs[0], guessPitch * 1.3);
+  /*
+   * The probe points are *found*, not assumed. The first run of this act threw
+   * `no read-back at y=780`, the second `no usable y probe among
+   * [780,740,700,640]`: those presses land on `.ui-panel__body` and produce no
+   * command at all, which is exactly the HUD-covered press the briefs warn
+   * about. A measurement that started from one would be silently wrong rather
+   * than loud, so the transform is measured from the widest pair of points that
+   * `document.elementFromPoint` says are canvas AND that the remove tool
+   * answers for.
+   */
+  const grid: { x: number; y: number }[] = [];
+  for (let y = 120; y <= 820; y += 50) for (let x = 340; x <= 1180; x += 60) grid.push({ x, y });
+  const free: { x: number; y: number }[] = [];
+  for (const c of grid) if ((await topAt(page, c.x, c.y)).startsWith('canvas')) free.push(c);
+  log(`  [grid] ${free.length} of ${grid.length} coarse screen probes are on canvas`);
+  if (free.length < 4) throw new Error('the HUD covers almost everything');
+  // The row with the widest free x-span, and the column with the widest free y-span.
+  const byRow = new Map<number, number[]>();
+  const byColumn = new Map<number, number[]>();
+  for (const c of free) {
+    byRow.set(c.y, [...(byRow.get(c.y) ?? []), c.x]);
+    byColumn.set(c.x, [...(byColumn.get(c.x) ?? []), c.y]);
+  }
+  const widestRow = [...byRow].sort((a, b) => Math.max(...b[1]) - Math.min(...b[1]) - (Math.max(...a[1]) - Math.min(...a[1])))[0]!;
+  const widestColumn = [...byColumn].sort((a, b) => Math.max(...b[1]) - Math.min(...b[1]) - (Math.max(...a[1]) - Math.min(...a[1])))[0]!;
+  const yAnchor = widestRow[0];
+  const xAnchor = Math.min(...widestRow[1]);
+  /*
+   * **A coarse probe saying `canvas` is not enough**, and the run that found
+   * that out threw `no read-back at x=1168.576`: the coarse grid steps 60px, so
+   * it can call a point free and leave the bisection window that starts there
+   * running into the HUD's right rail (`.hud__rail` is `1152,110 288x720` at
+   * 1440x900, act 0c). So the far probe walks inwards until a press *and* the
+   * press one search-window further out both answer with a tile.
+   */
+  const answers = async (axis: 'x' | 'y', at: number, other: number): Promise<boolean> =>
+    (await tileAt(axis === 'x' ? at : other, axis === 'x' ? other : at)) !== undefined &&
+    (await tileAt(axis === 'x' ? at + guessPitch * 1.35 : other, axis === 'x' ? other : at + guessPitch * 1.35)) !== undefined;
+  const walkIn = async (axis: 'x' | 'y', candidates: readonly number[], other: number): Promise<number> => {
+    for (const c of [...candidates].sort((a, b) => b - a)) if (await answers(axis, c, other)) return c;
+    throw new Error(`no ${axis} probe inside the plot among ${JSON.stringify(candidates)}`);
+  };
+  const xLowAt = xAnchor;
+  const xHighAt = await walkIn('x', widestRow[1], yAnchor);
+  const yLowAt = Math.min(...widestColumn[1]);
+  const yHighAt = await walkIn('y', widestColumn[1], xAnchor);
+  log(`  [grid] x probes ${xLowAt}..${xHighAt} at y=${yAnchor}; y probes ${yLowAt}..${yHighAt} at x=${xAnchor}`);
+  void probeXs;
+  void probeYs;
+  const xLow = await edge('x', xLowAt, yAnchor, guessPitch * 1.3);
+  const xHigh = await edge('x', xHighAt, yAnchor, guessPitch * 1.3);
+  const yLow = await edge('y', yLowAt, xLowAt, guessPitch * 1.3);
+  const yHigh = await edge('y', yHighAt, xLowAt, guessPitch * 1.3);
   const pitchX = (xHigh.at - xLow.at) / (xHigh.tile - xLow.tile);
   const pitchY = (yHigh.at - yLow.at) / (yHigh.tile - yLow.tile);
   const pitch = (pitchX + pitchY) / 2;
@@ -266,14 +315,14 @@ const ZOOM_OUT_NOTCHES = 4;
  * prisoner's day has actions for and no playtest has had all of them at once.
  */
 const PLANS: readonly Plan[] = [
-  { key: 'block-A', room: 'room.cell', x0: 1, y0: 1, x1: 12, y1: 6, doorAtX: 6, walls: true },
-  { key: 'block-B', room: 'room.cell', x0: 1, y0: 9, x1: 12, y1: 14, doorAtX: 6, walls: true },
-  { key: 'block-C', room: 'room.cell', x0: 1, y0: 17, x1: 8, y1: 22, doorAtX: 4, walls: true },
-  { key: 'shower', room: 'room.shower-room', x0: 15, y0: 1, x1: 17, y1: 3, doorAtX: 16, walls: true },
-  { key: 'classroom', room: 'room.classroom', x0: 19, y0: 1, x1: 23, y1: 5, doorAtX: 21, walls: true },
-  { key: 'canteen', room: 'room.canteen', x0: 15, y0: 8, x1: 20, y1: 13, doorAtX: 17, walls: true },
-  { key: 'common', room: 'room.common-room', x0: 15, y0: 16, x1: 19, y1: 20, doorAtX: 17, walls: true },
-  { key: 'yard', room: 'room.yard', x0: 13, y0: 22, x1: 22, y1: 29, walls: false },
+  { key: 'block-A', room: 'room.cell', x0: 1, y0: 4, x1: 12, y1: 9, doorAtX: 6, walls: true },
+  { key: 'block-B', room: 'room.cell', x0: 6, y0: 11, x1: 17, y1: 16, doorAtX: 11, walls: true },
+  { key: 'block-C', room: 'room.cell', x0: 6, y0: 18, x1: 15, y1: 23, doorAtX: 11, walls: true },
+  { key: 'shower', room: 'room.shower-room', x0: 20, y0: 4, x1: 22, y1: 6, doorAtX: 21, walls: true },
+  { key: 'classroom', room: 'room.classroom', x0: 24, y0: 4, x1: 28, y1: 8, doorAtX: 26, walls: true },
+  { key: 'canteen', room: 'room.canteen', x0: 20, y0: 11, x1: 25, y1: 16, doorAtX: 22, walls: true },
+  { key: 'yard', room: 'room.yard', x0: 18, y0: 18, x1: 25, y1: 25, walls: false },
+  { key: 'common', room: 'room.common-room', x0: 26, y0: 18, x1: 30, y1: 22, doorAtX: 28, walls: true },
 ];
 
 const bedRow = (y: number, from: number, to: number): [number, number][] => {
@@ -287,29 +336,29 @@ const OBJECTS: readonly { buildable: string; at: readonly [number, number][] }[]
   {
     buildable: 'bed-wooden',
     at: [
-      ...bedRow(1, 1, 12), ...bedRow(4, 1, 12), // block A, 24
-      ...bedRow(9, 1, 12), ...bedRow(12, 1, 12), // block B, 24
-      ...bedRow(17, 1, 8), ...bedRow(20, 1, 8), // block C, 16
+      ...bedRow(4, 1, 12), ...bedRow(7, 1, 12), // block A, 24
+      ...bedRow(11, 6, 17), ...bedRow(14, 6, 17), // block B, 24
+      ...bedRow(18, 6, 15), ...bedRow(21, 6, 15), // block C, 20
     ],
   },
-  { buildable: 'toilet-brick', at: [[1, 6], [2, 6], [3, 6], [1, 14], [2, 14], [3, 14], [1, 22], [2, 22]] },
-  { buildable: 'shower-head-brick', at: [[15, 1], [16, 1]] },
-  { buildable: 'bookshelf-wooden', at: [[19, 1]] },
-  { buildable: 'chair-wooden', at: [[19, 3], [20, 3], [21, 3], [22, 3]] },
-  { buildable: 'dining-table-wooden', at: [[15, 8], [18, 8]] },
-  { buildable: 'bench-wooden', at: [[15, 11], [17, 11], [15, 12], [17, 12], [15, 16], [17, 16]] },
+  { buildable: 'toilet-brick', at: [[1, 9], [2, 9], [3, 9], [6, 16], [7, 16], [8, 16], [6, 23], [7, 23]] },
+  { buildable: 'shower-head-brick', at: [[20, 4], [21, 4]] },
+  { buildable: 'bookshelf-wooden', at: [[24, 4]] },
+  { buildable: 'chair-wooden', at: [[24, 6], [25, 6], [26, 6], [27, 6]] },
+  { buildable: 'dining-table-wooden', at: [[20, 11], [23, 11]] },
+  { buildable: 'bench-wooden', at: [[20, 14], [22, 14], [20, 15], [22, 15], [26, 18], [28, 18]] },
 ];
 
 /**
- * 169 wall segments (176 perimeter minus 7 door gaps) at 2 brick each, 8
- * toilets and 2 shower heads at 1 -- 348 brick. Bought with headroom because a
+ * 173 wall segments (180 perimeter minus 7 door gaps) at 2 brick each, 8
+ * toilets and 2 shower heads at 1 -- 356 brick. Bought with headroom because a
  * shortfall stalls the queue rather than refusing the press.
  */
 const BRICKS = 380;
-/** 64 beds, 7 doors, 1 bookshelf (2), 4 chairs, 2 dining tables (3), 6 benches (2) -- 95 plank. */
+/** 68 beds, 7 doors, 1 bookshelf (2), 4 chairs, 2 dining tables (3), 6 benches (2) -- 99 plank. */
 const PLANKS = 110;
-const ADMISSIONS = 64;
-/** `ceil(64/8) = 8` posted, plus a reserve. */
+const ADMISSIONS = 68;
+/** `ceil(68/8) = 9` posted (`DEFAULT_SECTOR_PRISONERS_PER_GUARD`, `src/simulation/security/sector-staffing.ts:147`), plus a reserve. */
 const GUARDS = 10;
 const RUN_ROUNDS = 8;
 /** About one in-game day, measured at ~2,100 ticks in `2026-09-04-hour-two.md`. */
@@ -371,7 +420,21 @@ async function designate(page: import('@playwright/test').Page, g: Grid, plan: P
     await page.locator('.hud-rooms__arm').click();
     await drag(page, mid(g, plan.x0, plan.y0), mid(g, plan.x1, plan.y1));
     const note = await panelText(page, '.hud-rooms');
-    await page.locator('.hud-rooms__confirm').click();
+    /*
+     * **Guarded, because a hidden Confirm is a finding and not an exception.**
+     * `.hud-rooms__confirm` is `hidden` until the drag has produced a target,
+     * and a drag whose first point lands under the status strip produces none —
+     * so the un-guarded `click()` here spent its whole 20 s action timeout
+     * waiting for a control the panel had deliberately not shown. Reported and
+     * retried.
+     */
+    const confirm = page.locator('.hud-rooms__confirm');
+    if (await confirm.isHidden()) {
+      log(`  [zone] ${plan.key} attempt ${attempt}: Confirm is hidden — the drag produced no target. Panel: ${JSON.stringify(note.split('\n').slice(0, 6))}`);
+      await page.waitForTimeout(1500);
+      continue;
+    }
+    await confirm.click();
     await page.waitForTimeout(900);
     const after = (await latestCounts(page))?.rooms ?? 0;
     if (after > before) return `ok on attempt ${attempt} after ${Date.now() - started}ms, rooms ${before}->${after}`;
@@ -771,5 +834,72 @@ test.describe('A big prison — the scale pass', () => {
     log(`[act0b] counts: ${JSON.stringify(await latestCounts(page))}`);
     log(`[act0b] room-list projection: ${JSON.stringify(await ask(page, 'hud/room-list', { limit: 32 }))}`);
     log(`[act0b] roster projection: ${JSON.stringify(await ask(page, 'hud/prisoner-roster', { limit: 500 }))}`);
+  });
+
+  /**
+   * act 0c — the HUD's footprint on the plot, at the zoom the prison is built
+   * at. A press on a HUD-covered point submits nothing at all, so this decides
+   * where the layout may go before 176 walls are spent finding out.
+   */
+  test('act 0c — where the HUD stands on the plot', async ({ page }) => {
+    test.setTimeout(600_000);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await tab(page, 'build').click();
+    for (let i = 0; i < ZOOM_OUT_NOTCHES; i += 1) {
+      await page.keyboard.press('Minus');
+      await page.waitForTimeout(150);
+    }
+    await page.waitForTimeout(600);
+    const g = await measureGrid(page, [400, 1050], [150, 780]);
+    log(`[act0c] grid ${JSON.stringify(g)}`);
+    const boxes = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud > *, .hud__rail > *, .hud__side > *, .save-panel, .hud-strip, .hud__tabs')]
+        .filter((n) => n.getClientRects().length > 0)
+        .map((n) => {
+          const r = n.getBoundingClientRect();
+          return `${n.className}: ${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.width)}x${Math.round(r.height)}`;
+        }),
+    );
+    log(`[act0c] laid-out HUD boxes: ${JSON.stringify(boxes, null, 0)}`);
+
+    /*
+     * The plot's edge, from the player's side. `world.setOwned` has one call
+     * site and owns chunk (0,0) alone
+     * (`src/simulation/runtime/new-session.ts:433`), so tiles 32 and beyond are
+     * unowned — but the renderer draws them, the pointer reaches them, and this
+     * asks what a press there actually does.
+     */
+    await page.locator('.hud-build__remove').click();
+    for (const tx of [30, 31, 32, 34, 40]) {
+      const p = mid(g, tx, 12);
+      const top = await topAt(page, p.x, p.y);
+      const produced = await press(page, p.x, p.y);
+      log(`[act0c] remove press at tile (${tx},12) screen (${p.x.toFixed(0)},${p.y.toFixed(0)}): top=${top} commands=${JSON.stringify(produced)} band=${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    }
+    await page.locator('.hud-build__remove').click();
+    await armBuildable(page, 'wall-brick');
+    for (const tx of [31, 33]) {
+      const before = (await sentCommands(page)).length;
+      await drag(page, pt(g, tx + 0.5, 12), pt(g, tx + 0.5, 16));
+      const produced = (await sentCommands(page)).slice(before);
+      log(`[act0c] wall run at x=${tx}, y 12..16: ${produced.length} command(s); band=${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    }
+    await tab(page, 'build').click();
+    log(`[act0c] build queue after the two runs: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+      await tab(page, id).click();
+      await page.waitForTimeout(250);
+      const rows: string[] = [];
+      for (let ty = 0; ty < 32; ty += 1) {
+        let row = '';
+        for (let tx = 0; tx < 32; tx += 1) {
+          const p = mid(g, tx, ty);
+          row += (await topAt(page, p.x, p.y)).startsWith('canvas') ? '.' : '#';
+        }
+        rows.push(`${String(ty).padStart(2, '0')} ${row}`);
+      }
+      log(`[act0c] === plot reachability with the ${id} tab open ('.' pressable, '#' covered) ===\n${rows.join('\n')}`);
+    }
   });
 });
