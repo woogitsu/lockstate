@@ -215,3 +215,25 @@ zoomed out to see it, will drag a wall and get *nothing* — no wall, no refusal
 no sound. They will conclude the build tool is broken. The fix a player finds is
 to pan, and nothing tells them to.
 
+### 2a. The largest thing standing on the plot is a panel that says it does not work
+
+**VERIFIED, read.** `.hud__corner` — the 422×425 box that costs the player 60
+tiles of their own plot — holds exactly one thing:
+
+```ts
+const corner = element('div', { className: 'hud__corner', children: [minimapPanel.element] });
+```
+
+`src/ui/hud/hud.ts:1557`. Its surface is a placeholder with no map in it
+(`:1508-1512`, *"minimap **rendering** belongs to the renderer, not to the HUD,
+and does…"*, `:1503`), and the two sentences it can carry are
+`'hud.minimap.placeholder': 'Minimap is not available yet'` and, after a click,
+`'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera
+there'` (`src/content/default-locale-en.ts:391,427`).
+
+**REASONED.** So at the zoom a player needs in order to see a whole prison, the
+single biggest obstruction between them and their plot is the panel that exists
+to help them see it, and it currently says it cannot. It is collapsible —
+`createPanel(… collapsed: isPanelCollapsed(state, 'minimap') …)`,
+`src/ui/hud/hud.ts:1545` — so the escape exists; nothing points at it.
+
