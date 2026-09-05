@@ -87,17 +87,21 @@ question 2: a room's floor tells you it is a room, its tint tells you which
 category of room, and its contents tell you nothing at all.
 
 **And to the third question — state or only the HUD — the answer is only the
-HUD, measured rather than asserted.** A cell nobody can enter at day 4 and a
-working cell at day 11, same tiles, same crop: **6,061 differing pixels of
-147,456, 4.11%**, thirty-two of the thirty-six tiles pixel-identical, and the
-whole difference is the door the player built plus four prisoner sprites
-overlapping slightly differently in the same corner. At fifty prisoners, with a
+HUD, measured rather than asserted, twice.** A cell nobody can enter and a
+working cell, same tiles, same crop, same population, same `roomCapacity`:
+**6,061 differing pixels of 147,456, 4.11%**, thirty-two of the thirty-six
+tiles pixel-identical, and the whole difference is the door the player built
+plus four prisoner sprites overlapping slightly differently in the same corner.
+A second, independent pair — a sealed cell at day 4 against a working one at day
+11 — returns that map digit for digit. At fifty prisoners, with a
 fight in the alerts column and thirty-eight people with nowhere to sleep, the
 world view shows **two orange lumps and one guard** — and the lump holding
 twelve people and the lump holding thirty-eight are the same picture, `0`
 differing pixels of 128,000 over the region that contains it. #944 said a
 working cell and a dead cell screenshot identically; with no art that was
-guaranteed, and with the art it is 95.89% true.
+guaranteed, and with the art it is 95.89% true. **And nothing in it moves:**
+eight frames over 1,878 ticks of a *ready* prison changed once, and the change
+was a door finishing construction.
 
 ---
 
