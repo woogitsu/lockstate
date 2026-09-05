@@ -373,9 +373,15 @@ test.describe('contraband, played', () => {
           seenRowText = searchRow.text;
           console.log(`[contraband] FIRST "Contraband Search" row at tick ${tick}: ${JSON.stringify(rows)}`);
           console.log(`[contraband]   summary line: ${JSON.stringify(await panelText(page, '.hud-staff__held-summary'))}`);
-          console.log(`[contraband]   before Release, hud/contraband: ${JSON.stringify(await pullProjection(page, 'hud/contraband', 'probe.release.before'))}`);
-          // Press Release on that row -- the only control the HUD offers that
-          // touches a search at all.
+          /*
+           * Pressed FIRST, before any probe. The first run of this act pulled
+           * `hud/contraband` before pressing, which cost ~2.5 s -- about 200
+           * ticks at 4x -- and the sweep leg finished inside that window, so
+           * the press was refused with *"Nothing was released -- that guard is
+           * already off duty."* That refusal is the designed `not-held` case
+           * (`src/content/default-locale-en.ts:783-786`), not a defect, but it
+           * measures the instrument rather than the control.
+           */
           await page.locator(`.hud-staff__held-row[data-guard="${searchRow.guard}"] button`).first().click();
           await page.waitForTimeout(2500);
           console.log(`[contraband]   after Release, staff panel: ${(await panelText(page, '.hud-staff')).replace(/\n/g, ' | ')}`);
