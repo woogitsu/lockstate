@@ -77,6 +77,19 @@ pixel. Meanwhile the bed and the toilet **ship**, as 1448×1086 renders, in
 question 2: a room's floor tells you it is a room, its tint tells you which
 category of room, and its contents tell you nothing at all.
 
+**And to the third question — state or only the HUD — the answer is only the
+HUD, measured rather than asserted.** A cell nobody can enter at day 4 and a
+working cell at day 11, same tiles, same crop: **6,061 differing pixels of
+147,456, 4.11%**, thirty-two of the thirty-six tiles pixel-identical, and the
+whole difference is the door the player built plus four prisoner sprites
+overlapping slightly differently in the same corner. At fifty prisoners, with a
+fight in the alerts column and thirty-eight people with nowhere to sleep, the
+world view shows **two orange lumps and one guard** — and the lump holding
+twelve people and the lump holding thirty-eight are the same picture, `0`
+differing pixels of 128,000 over the region that contains it. #944 said a
+working cell and a dead cell screenshot identically; with no art that was
+guaranteed, and with the art it is 95.89% true.
+
 ---
 
 ## 1. Act 0 — arrival, before anything is built
@@ -461,6 +474,26 @@ count. At fifty it costs the population: a fight has broken out, thirty-eight
 people have nowhere to sleep, the prison is understaffed, and the world view's
 entire report on all of that is two orange shapes that look exactly like each
 other.
+
+## 5b. Act 5 — nothing moves, and once with the confound removed
+
+Six crops of the same 512×512 rectangle, 2 s of wall clock apart, at ×4 speed,
+in the standard four-prisoner two-guard prison. Ticks 5,976 → 6,221 → 6,445 →
+6,671 → 6,895 → 7,120: **1,144 ticks, just under half an in-game day.**
+
+**Every one of the five comparisons against frame 0 came back at 0 differing
+pixels of 409,600.** Not "almost identical" — the six files are the same
+picture. Nobody took a step, nobody turned, nothing animated. That is partly
+the art: `idle` in every atlas manifest is `fps: 1` with exactly one frame per
+direction, so a standing figure is a still image by construction and only
+`walk` has frames. But a *still* figure and a figure that never goes anywhere
+are different things, and this measures the second.
+
+**The confound, and act 8 removes it.** Act 5's prison is the doorless cell
+`buildAndPopulate` builds, so it is a prison where nothing legal can happen and
+"nothing moved" has an innocent explanation. Act 8 is the same six frames — 8
+of them, 2.5 s apart — after a wooden door is built into the south wall and the
+Rooms panel reports the room ready.
 
 ## 6. Act 6 — the same box, designated four different ways
 

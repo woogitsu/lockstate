@@ -777,3 +777,43 @@ test('act 7 — what the wheel does, and whether a zoomed-out prison is readable
   }
   console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
 });
+
+/**
+ * Act 5 again, in a cell that has a door.
+ *
+ * **Act 5 measured zero moving pixels over six frames and 1,144 ticks, and it
+ * measured them in the doorless cell `buildAndPopulate` builds.** That is a
+ * prison where nothing legal can happen, so "nothing moved" has an innocent
+ * explanation and the act cannot tell the two apart. This one builds the door
+ * first, waits for the room to be ready, and takes the same six frames.
+ */
+test('act 8 — does anything move once the cell has a door', async ({ page }) => {
+  const console_ = watchConsole(page);
+  test.setTimeout(900_000);
+  await installTee(page);
+  await openApp(page);
+  const origin = await buildAndPopulate(page, { beds: 4, admits: 4, guards: 2, label: 'act8' });
+
+  await tab(page, 'build').click();
+  await armBuildable(page, 'door-wooden');
+  const point = centreOf(origin, 14, 17);
+  console.log(`door order: ${JSON.stringify(await press(page, point.x, point.y + TILE / 2 - 4))}`);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(2000);
+  await tab(page, 'rooms').click();
+  await page.waitForTimeout(300);
+  console.log(`rooms panel: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ').slice(0, 400)}`);
+
+  await fastForwardToMax(page);
+  await tab(page, 'overview').click();
+  await page.waitForTimeout(8000);
+
+  const rect = roomRect(origin, TILE * 2);
+  for (let frame = 0; frame < 8; frame += 1) {
+    console.log(`act8 frame ${frame} at tick ${await currentTick(page)}`);
+    await shotRect(page, `act8-frame-${frame}`, rect);
+    await page.waitForTimeout(2500);
+  }
+  console.log(`counts at the end: ${JSON.stringify(await latestCounts(page))}`);
+  console.log(`\nBROWSER CONSOLE (${console_.length}):\n${console_.map((l) => `  ${l}`).join('\n')}`);
+});
