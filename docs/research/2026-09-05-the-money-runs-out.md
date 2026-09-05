@@ -324,6 +324,56 @@ quantity: 2 }]` (`src/simulation/construction/definition.ts:89`),
 −1,185 rung: a segment is 80, and the wall route now funds
 `floor((25,000 + 1,185) / 80) = 327` segments rather than 312.
 
+### Where the Buy press finally stops, to the unit — and what the drag does there
+
+The single-brick walk was continued all the way down. The last two presses:
+
+```
+[act1] BUY 1 brick at balance -1120: -> -1160 | shortfall "Not enough money — you need 15 more."
+       | chip "-1,160 | FUNDS | 25 left | 25 left before deliveries stop — …"
+[console] HUD action failed {"actionId":"purchase-materials","error":{"name":"HostRefusalError",
+       "message":"The last reported balance of -1160 cannot cover 40."}}
+```
+
+**−1,160 is the last balance a Buy press is accepted from**, `25` short of a
+40-unit brick against the −1,185 rung, and the shortfall line finally appears
+reading `you need 15 more` — `40 − 25`, correct to the unit. That is the whole
+of the interface's opinion about money, and it occupies the last 1,185 of a
+26,185-wide range.
+
+**Then the same wall drag, at that balance:**
+
+```
+[act1] DRAG PAST THE BUY FLOOR (row 11): funds -1160 -> -1160
+       | queue "QUEUED\n65 waiting · 0 being built"
+       | queue shortfall ".hud-build__queue-shortfall: not laid out"
+       | chip "-1,160 | FUNDS | 25 left | …" tone "warning"
+       | band ".hud__event: not laid out"
+       | refusal "Nothing was bought — deliveries are refused until the prison earns the money."
+```
+
+**Thirteen more orders went into the queue, the treasury did not move by one
+minor unit, and no new sentence was produced anywhere.** The refusal band's line
+is the *previous* one: `hud.refusal.purchase-materials-past-floor` is selected on
+`actionId: 'purchase-materials'` (`src/ui/hud/projection.ts:1116-1121`), which is
+the **Buy** control's id, so that sentence belongs to the refused Buy press
+above it and not to the drag. The event band was not laid out; the queue's own
+money line, `hud.build.queue-shortfall` — *"Waiting for {total} to unblock the
+next order."* — was not laid out either, because it draws only on
+`materialsFunding.unfunded` (`src/ui/hud/build-panel.ts:2528-2533`).
+
+**UNKNOWN, and named rather than guessed:** whether those thirteen orders were
+*refused* or *parked* — ADR 0081 decision 2 funds one whole order at a time and
+lets a later one through — was not separated here, and both leave the treasury
+unmoved and the row reading `waiting`. **Also bounding this reading:** act 1
+never pressed a transport control and a new prison arrives paused (act 2's build
+log reads `PAUSED` in the strip before its two Fast forward presses), so
+`0 being built` is the clock, not the money, and nothing is claimed from it.
+
+**What is claimed is the player-facing part, and it is not in doubt:** the same
+gesture that silently spent 1,040 four times over now silently spends nothing,
+and the screen says the same thing after it as before it.
+
 **What has not moved is the part #641 is actually about**: nothing warns before
 the gesture, because the gesture is not pre-flighted at all. **VERIFIED, read** —
 `judgeAffordability` has exactly two callers in `src/`,
@@ -1084,15 +1134,17 @@ game anywhere in this record.**
 
 ## What this record does not claim
 
-- **That a wall drag can reach the construction rung at this version.** Act 1's
-  drag half was lost to the calibration error above and the corrected version
-  had not run when this section was written. What is measured is the **Buy**
-  route to `−1,185`; the **construction** rung is `−1,250`
+- **That a wall drag can reach the construction rung at this version.** The
+  corrected act 1 measured the **Buy** route stopping at `−1,160` against the
+  −1,185 starter rung, and measured a drag at that balance spending nothing —
+  but the **construction** rung is `−1,250`
   (`INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`,
   `src/simulation/economy/treasury.ts:397`, equal to the *mature* deliveries
-  rung since #771) and whether a drag actually walks a fresh prison the extra
-  65 past the Buy floor is **ARITHMETIC that has not been played**. It is one
-  short act away and is named here rather than implied.
+  rung since #771), so a construction-class spend of 80 from −1,160 would land
+  at −1,240 and be affordable under that rung. **Why it did not happen was not
+  established** — refusal, or ADR 0081 parking, or something else. Settling it
+  needs a read of the order's own state and of which `SpendClass` the
+  just-in-time pass asked under, and this record did neither.
 - **That thirty guards is a mistake a player would make.** It is a deliberately
   large over-hire chosen so the descent fits in one act. The Staff panel says
   `Hire 1 to cover this population` before the first press, so a player who
