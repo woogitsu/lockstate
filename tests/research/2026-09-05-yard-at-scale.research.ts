@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { STATE_INCOME_UNMET_NEED_LEVEL, isNeedUnmetForStateIncome, stateIncomeForCompletedDay, unmetNeedCount } from '../../src/simulation/economy/income';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
-import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
+import { ACTION_PHASES, classificationGroupIdFromIndex } from '../../src/simulation/prisoners/components';
 import { NEED_IDS, NEED_MAX, NEED_SCALE, type NeedId } from '../../src/simulation/prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { TILES_PER_OPEN_GROUND_PLACE } from '../../src/simulation/prisoners/room-instance-registry';
@@ -179,6 +179,18 @@ interface PrisonOptions {
   readonly wideCell?: boolean;
   /** Width of the at-the-door yard, in tiles. `8` is `room.yard`'s authored minimum; wider is the player's "zone more ground". */
   readonly yardWidth?: number;
+  /**
+   * Guards hired. Defaults to `GUARDS`, which is what the game asks for at
+   * fifty. Acts that admit more than fifty must raise it: at 7 guards and 100
+   * prisoners `safety` collapses to 2 permille, `ClassificationReviewSystem`
+   * and `ClassificationEarlyWarningSystem` promote the whole population to
+   * `high-risk`, and `HIGH_RISK_REGIME` allows `recreation` for 200 ticks of
+   * the day instead of 600 -- so the yard measurement would be reading a
+   * staffing collapse. Measured: at n=100 with 7 guards the group census was
+   * `[["high-risk",99,56]]` and not one prisoner was left in general
+   * population.
+   */
+  readonly guards?: number;
   readonly cellDoor?: boolean;
   readonly showerRoom?: boolean;
   readonly canteen?: boolean;
@@ -256,7 +268,8 @@ function build(options: PrisonOptions): SimulationRuntime {
 
   stepTo(runtime, ADMIT_AT);
 
-  for (let index = 0; index < GUARDS; index += 1) {
+  const guards = options.guards ?? GUARDS;
+  for (let index = 0; index < guards; index += 1) {
     submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }
   for (let index = 0; index < options.prisoners; index += 1) {
@@ -292,12 +305,32 @@ interface Measurement {
   readonly performingTicks: Readonly<Record<string, number>>;
   /** Travelling ticks per action id, on the same census: the time paid to *reach* the target rather than to use it. */
   readonly travellingTicks: Readonly<Record<string, number>>;
+  /**
+   * How many times a prisoner *entered* `performing` for each action id -- a
+   * visit, as opposed to a tick of one.
+   *
+   * `performingTicks / visits` is the mean length of a visit, and it is the
+   * number that turns a place into a throughput: a place occupied for
+   * `minDurationTicks` serves one prisoner in that time whatever that prisoner
+   * needed.
+   */
+  readonly visits: Readonly<Record<string, number>>;
   /** Ticks in which a prisoner held no action at all. */
   readonly idleTicks: number;
   /** The most prisoners holding a use claim on any one yard, in any measured tick. */
   readonly peakYardUse: number;
   /** `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)` for one yard, read off the registry. */
   readonly yardCapacity: number;
+  /**
+   * Per classification group: how many prisoners are in it, and how many of
+   * them the state calls short on `recreation`.
+   *
+   * `GENERAL_POPULATION_REGIME` allows `recreation` for 600 ticks of the day
+   * and `HIGH_RISK_REGIME` for 200 (`src/simulation/prisoners/regime.ts:104-129`),
+   * so the two groups do not have the same access to the same yard and an
+   * aggregate that mixed them would hide it.
+   */
+  readonly recreationByGroup: readonly (readonly [string, number, number])[];
   readonly metrics: {
     readonly unmetDemandCycles: number;
     readonly routeFailures: number;
@@ -339,6 +372,11 @@ function measure(options: PrisonOptions, days: number): Measurement {
 
   const performingTicks: Record<string, number> = {};
   const travellingTicks: Record<string, number> = {};
+  const visits: Record<string, number> = {};
+  // Previous tick's phase index per slot, so a transition into `performing`
+  // can be counted once rather than every tick of the visit. `-1` is "not
+  // sampled yet".
+  const previousPhase = new Int8Array(options.prisoners).fill(-1);
   const dailyGrant: number[] = [];
   let peakYardUse = 0;
   let idleTicks = 0;
@@ -362,9 +400,14 @@ function measure(options: PrisonOptions, days: number): Measurement {
         idleTicks += 1;
       } else {
         const actionId = DEFAULT_ACTIONS[actionIndex]!.id;
-        if (phase === 'performing') performingTicks[actionId] = (performingTicks[actionId] ?? 0) + 1;
-        else travellingTicks[actionId] = (travellingTicks[actionId] ?? 0) + 1;
+        if (phase === 'performing') {
+          performingTicks[actionId] = (performingTicks[actionId] ?? 0) + 1;
+          if (previousPhase[slot] !== 2) visits[actionId] = (visits[actionId] ?? 0) + 1;
+        } else {
+          travellingTicks[actionId] = (travellingTicks[actionId] ?? 0) + 1;
+        }
       }
+      previousPhase[slot] = runtime.prisoners.currentAction.phase[index]!;
     }
     for (const yardId of yardIds) {
       const occupancy = registry.useOccupancyOf(yardId);
@@ -400,6 +443,16 @@ function measure(options: PrisonOptions, days: number): Measurement {
     unmetHistogram[count] = (unmetHistogram[count] ?? 0) + 1;
   }
 
+  const byGroup = new Map<string, { total: number; unmet: number }>();
+  for (const entityId of occupied) {
+    const index = store.getIndex(entityId);
+    const group = classificationGroupIdFromIndex(runtime.prisoners.records.classificationGroupIndex[index]!);
+    const row = byGroup.get(group) ?? { total: 0, unmet: 0 };
+    row.total += 1;
+    if (isNeedUnmetForStateIncome(runtime.prisoners.needs.get(index, 'recreation'))) row.unmet += 1;
+    byGroup.set(group, row);
+  }
+
   const metrics = runtime.prisoners.actionSystem.getMetrics();
   return {
     options,
@@ -410,9 +463,11 @@ function measure(options: PrisonOptions, days: number): Measurement {
     unmetHistogram,
     performingTicks,
     travellingTicks,
+    visits,
     idleTicks,
     peakYardUse,
     yardCapacity,
+    recreationByGroup: [...byGroup.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([group, row]) => [group, row.total, row.unmet] as const),
     metrics: {
       unmetDemandCycles: metrics.unmetDemandCycles,
       routeFailures: metrics.routeFailures,
@@ -470,6 +525,9 @@ describe('#997 act A -- where the yard incentive breaks, across population', () 
         for (const needId of NEED_IDS) print(needLine(needId, without.needs[needId], without.occupiedPlaces));
         print(`      with-yard performing ticks:  ${JSON.stringify(withYard.performingTicks)}`);
         print(`      with-yard travelling ticks:  ${JSON.stringify(withYard.travellingTicks)}  idle ${String(withYard.idleTicks)}`);
+        print(`      with-yard recreation by classification group [group, housed, unmet]: ${JSON.stringify(withYard.recreationByGroup)}`);
+        print(`      with-yard visits: ${JSON.stringify(withYard.visits)}`);
+        print(`      yard visits ${String(withYard.visits['action.yard-recreation'] ?? 0)} = ${String(Math.round((withYard.visits['action.yard-recreation'] ?? 0) / DAYS))}/day; mean visit ${String(Math.round((withYard.performingTicks['action.yard-recreation'] ?? 0) / Math.max(1, withYard.visits['action.yard-recreation'] ?? 0)))} ticks; one visit per prisoner every ${String((population / Math.max(1, (withYard.visits['action.yard-recreation'] ?? 0) / DAYS)).toFixed(2))} days`);
         print(`      no-yard performing ticks:    ${JSON.stringify(without.performingTicks)}`);
         print(`      no-yard travelling ticks:    ${JSON.stringify(without.travellingTicks)}  idle ${String(without.idleTicks)}`);
       }
@@ -498,11 +556,12 @@ describe('#997 act C -- whether more yard fixes it', () => {
     print('');
     print('=== ACT C: how much yard it takes, at n=50 (11x10 cell) and n=100 (21x10 cell) ===');
     for (const [label, wide, population] of [['n=50', false, 50], ['n=100', true, 100]] as const) {
-      const baseline = measure({ prisoners: population, yards: 0, wideCell: wide }, DAYS);
-      print(`  --- ${label}, no yard: grant ${String(baseline.settledGrant)} over ${String(baseline.occupiedPlaces)} places, ${needLine('recreation', baseline.needs.recreation, baseline.occupiedPlaces).trim()}`);
+      const guards = Math.max(GUARDS, Math.ceil(population / 8));
+      const baseline = measure({ prisoners: population, yards: 0, wideCell: wide, guards }, DAYS);
+      print(`  --- ${label}, ${String(guards)} guards, no yard: grant ${String(baseline.settledGrant)} over ${String(baseline.occupiedPlaces)} places, ${needLine('recreation', baseline.needs.recreation, baseline.occupiedPlaces).trim()}`);
       print(`      ${label} REMEDY 1 -- more 8x8 yards (the first at the door, the rest on the north strip):`);
       for (const yards of [1, 2, 3, 4]) {
-        const run = measure({ prisoners: population, yards, yardPlacement: 'at-the-door', wideCell: wide }, DAYS);
+        const run = measure({ prisoners: population, yards, yardPlacement: 'at-the-door', wideCell: wide, guards }, DAYS);
         print(
           `        ${String(yards)} yard(s) = ${String(yards * run.yardCapacity)} places: grant ${String(run.settledGrant)} over ${String(run.occupiedPlaces)} places` +
           `  (+${String(run.settledGrant - baseline.settledGrant)})  yard perform ${String(run.performingTicks['action.yard-recreation'] ?? 0)}` +
@@ -512,7 +571,7 @@ describe('#997 act C -- whether more yard fixes it', () => {
       }
       print(`      ${label} REMEDY 2 -- one yard at the door, more ground under it:`);
       for (const width of [8, 16, wide ? 24 : 20]) {
-        const run = measure({ prisoners: population, yards: 1, yardPlacement: 'at-the-door', yardWidth: width, wideCell: wide }, DAYS);
+        const run = measure({ prisoners: population, yards: 1, yardPlacement: 'at-the-door', yardWidth: width, wideCell: wide, guards }, DAYS);
         print(
           `        ${String(width)}x8 = ${String(width * 8)} tiles = ${String(run.yardCapacity)} places: grant ${String(run.settledGrant)} over ${String(run.occupiedPlaces)} places` +
           `  (+${String(run.settledGrant - baseline.settledGrant)})  yard perform ${String(run.performingTicks['action.yard-recreation'] ?? 0)}` +
@@ -560,11 +619,15 @@ describe('#997 act G -- past fifty, on a cell wide enough to hold them', () => {
   it('sweeps n = 50, 60, 70, 80, 90, 100 with one at-the-door yard', () => {
     print('');
     print('=== ACT G: 21x10 cell, a hundred beds, one 8x8 yard at the door, ' + String(DAYS) + ' days ===');
-    print('  NOTE: a different prison from acts A-F (a wider cell), so its rows compare only with each other.');
+    print('  NOTE: a different prison from acts A-E (a wider cell, and guards scaled to the population), so its rows compare only with each other.');
     print('  n | recreation permille min/med/max | unmet rec | grant no yard | grant + yard | recovered | n x 40 | yard perform | yard travel');
     for (const population of [50, 60, 70, 80, 90, 100]) {
-      const withYard = measure({ prisoners: population, yards: 1, yardPlacement: 'at-the-door', wideCell: true }, DAYS);
-      const without = measure({ prisoners: population, yards: 0, wideCell: true }, DAYS);
+      // `Math.max(scheduledGuardCount, ceil(n / DEFAULT_SECTOR_PRISONERS_PER_GUARD))`,
+      // which is `resolveOccupancyScaledGuardCount` (`src/simulation/security/sector-staffing.ts:190`)
+      // evaluated by hand: what the game asks for at this population.
+      const guards = Math.max(GUARDS, Math.ceil(population / 8));
+      const withYard = measure({ prisoners: population, yards: 1, yardPlacement: 'at-the-door', wideCell: true, guards }, DAYS);
+      const without = measure({ prisoners: population, yards: 0, wideCell: true, guards }, DAYS);
       // **Not `toBe(population)`, and the difference is a finding rather than a
       // fixture defect.** Above fifty this prison starts losing an occupied
       // place or two over twenty days -- the grant is per occupied place, so
@@ -578,7 +641,11 @@ describe('#997 act G -- past fifty, on a cell wide enough to hold them', () => {
         `${String(without.settledGrant).padStart(13)} | ${String(withYard.settledGrant).padStart(12)} | ${String(withYard.settledGrant - without.settledGrant).padStart(9)} | ` +
         `${String(population * 40).padStart(6)} | ${String(withYard.performingTicks['action.yard-recreation'] ?? 0).padStart(12)} | ${String(withYard.travellingTicks['action.yard-recreation'] ?? 0).padStart(11)}`,
       );
-      print(`      occupied places: with yard ${String(withYard.occupiedPlaces)} of ${String(population)} admitted, without ${String(without.occupiedPlaces)} of ${String(population)}`);
+      print(`      guards ${String(guards)}; occupied places: with yard ${String(withYard.occupiedPlaces)} of ${String(population)} admitted, without ${String(without.occupiedPlaces)} of ${String(population)}`);
+      print(`      recreation by classification group [group, housed, unmet]: ${JSON.stringify(withYard.recreationByGroup)}`);
+      print(`      yard performing/travelling ticks per housed prisoner per day: ${String(Math.round((withYard.performingTicks['action.yard-recreation'] ?? 0) / withYard.occupiedPlaces / DAYS))} / ${String(Math.round((withYard.travellingTicks['action.yard-recreation'] ?? 0) / withYard.occupiedPlaces / DAYS))}`);
+      print(`      yard visits ${String(withYard.visits['action.yard-recreation'] ?? 0)} = ${String(Math.round((withYard.visits['action.yard-recreation'] ?? 0) / DAYS))}/day; mean visit ${String(Math.round((withYard.performingTicks['action.yard-recreation'] ?? 0) / Math.max(1, withYard.visits['action.yard-recreation'] ?? 0)))} ticks; one visit per prisoner every ${String((withYard.occupiedPlaces / Math.max(1, (withYard.visits['action.yard-recreation'] ?? 0) / DAYS)).toFixed(2))} days`);
+      print(`      yard utilisation: ${String(Math.round(((withYard.performingTicks['action.yard-recreation'] ?? 0) / DAYS / (withYard.yardCapacity * 600)) * 100))}% of capacity x the 600-tick recreation window`);
       print(`      with-yard unmet histogram: ${JSON.stringify(withYard.unmetHistogram)}   grant series ${JSON.stringify(withYard.dailyGrant)}`);
       print(`      no-yard  unmet histogram: ${JSON.stringify(without.unmetHistogram)}   grant series ${JSON.stringify(without.dailyGrant)}`);
       for (const needId of NEED_IDS) print(needLine(needId, withYard.needs[needId], withYard.occupiedPlaces));
