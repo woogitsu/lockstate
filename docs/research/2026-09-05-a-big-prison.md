@@ -196,10 +196,12 @@ the enclosable map to do it"*.
 
 **MEASURED, act 0 and act 1.** That is true **at zoom 1 only**. Four presses of
 `Minus` put 902 of the plot's 1,024 tiles under the pointer (§2), and this
-record's prison encloses **eight rooms totalling 291 tiles** — 2.9× that "whole
-map" — with 173 wall segments, on the same 1440×900 viewport. The 100-tile
-ceiling is a property of the arrival zoom, not of the plot. **The real ceiling
-is the one 32×32 chunk**, and it is about ten times larger.
+record's prison lays out **eight rooms totalling 363 tiles, 299 of them walled**
+(12×6 + 12×6 + 10×6 cell blocks, a 3×3 shower room, a 5×5 classroom, a 6×6
+canteen, a 5×5 common room and an 8×8 yard) — **three times that "whole map"** —
+with 173 wall segments, on the same 1440×900 viewport. The 100-tile ceiling is a
+property of the arrival zoom, not of the plot. **The real ceiling is the one
+32×32 chunk**, and it is about ten times larger.
 
 **JUDGEMENT.** A player who wants to see their whole prison has to zoom out to
 about 40%, at which a tile is 26 px. That is workable, and the four keypresses
