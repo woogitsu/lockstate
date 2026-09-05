@@ -897,13 +897,19 @@ test('act 5: how far the world goes, and whether anything degrades when a player
   }
   log('act5', `final console errors/warnings: ${JSON.stringify(consoleLines.slice(-15))}`);
 });
-
 // ------------------------------------------------------------------
-// Act 6 -- does the view survive a reload, and does it survive a prison
-// switch? `framedOnWorld` (`world-scene.ts:262`) is set once per scene and
-// never reset, which predicts two different answers.
+// Act 6 -- does the view survive a reload?
+//
+// **Rewritten after its first run, and the rewrite is the finding.** The
+// original act reloaded and then probed the camera, and the probe returned
+// `undefined` with the page console carrying *"No simulation session is
+// running yet, so the order cannot be submitted"*
+// (`simulation-commands.ts:214`). That is not an instrument fault: a reload
+// does not resume the prison, so there is no camera on a world to read. The
+// act now measures that state first and only then takes the player's real
+// next gesture, which is `Load`.
 // ------------------------------------------------------------------
-test('act 6: where the camera is after a reload, and after a prison switch', async ({ page }) => {
+test('act 6: what a reload does to the prison, and where the camera is once it is back', async ({ page }) => {
   test.setTimeout(300_000);
   await installTee(page);
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -912,12 +918,11 @@ test('act 6: where the camera is after a reload, and after a prison switch', asy
   log('act6', `version line: ${await versionLine(page)}`);
   await tab(page, 'build').click();
 
-  // Park the camera somewhere deliberate and *not* lost -- the south-east
-  // corner of owned land -- because "does the view come back" is a question
-  // about a view a player chose, not only about the void.
+  // Park the camera somewhere deliberate and *not* lost -- east of the prison,
+  // south of it -- because "does the view come back" is a question about a view
+  // a player chose, not only about the void.
   const stroke = await strokeEndpoints(page);
   const column = { x: Math.round((stroke.from.x + stroke.to.x) / 2), fromY: 760, toY: 300 };
-  log('act6', `westward stroke ${String(stroke.distance)}px from ${JSON.stringify(stroke.from)}; column x=${String(column.x)}`);
   for (let i = 0; i < 2; i += 1) await middleDrag(page, stroke.from, stroke.to);
   await middleDrag(page, { x: column.x, y: column.fromY }, { x: column.x, y: column.toY });
   await page.waitForTimeout(200);
@@ -927,55 +932,304 @@ test('act 6: where the camera is after a reload, and after a prison switch', asy
   log('act6', `camera the player parked: visible tiles ${JSON.stringify(chosen)}`);
   await page.screenshot({ path: `${SHOTS}/act6-before-reload.png` });
 
-  // Wait for a save to exist before reloading, the way a player would: the
-  // save panel says what it holds.
   await page.waitForTimeout(2000);
   log('act6', `save panel before reload: ${JSON.stringify((await panelText(page, '.save-panel')).replace(/\n/g, ' | '))}`);
 
   await page.reload();
   await page.waitForSelector('#game-root canvas');
   await page.waitForSelector('.hud');
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
+
+  /*
+   * **Is a prison running at all?** Three independent readings rather than
+   * one, because "the camera did not come back" and "there is nothing to put
+   * a camera on" are different findings and the first run could not tell
+   * them apart.
+   */
+  const resumed = await page.evaluate(() => {
+    const strip = document.querySelector<HTMLElement>('.hud-strip');
+    const canvas = document.querySelector('canvas');
+    return {
+      stripText: (strip?.innerText ?? '').replace(/\s+/g, ' ').slice(0, 200),
+      canvasPresent: canvas !== null,
+    };
+  });
+  log('act6', `after reload: ${JSON.stringify(resumed)}`);
   log('act6', `save panel after reload: ${JSON.stringify((await panelText(page, '.save-panel')).replace(/\n/g, ' | '))}`);
-  log('act6', `clock after reload: ${JSON.stringify((await panelText(page, '.hud-clock')).replace(/\n/g, ' | '))}`);
+  log('act6', `minimap after reload: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+  const reloadPixels = await sampleWorldPixels(page, `${SHOTS}/act6-after-reload.png`);
+  log('act6', `pixels immediately after reload: ${String(reloadPixels.void)}/${String(reloadPixels.total)} VOID_COLOR; others ${JSON.stringify(reloadPixels.others)}`);
   await tab(page, 'build').click();
   await armProbe(page);
   const afterReload = await visibleTileBox(page);
   await disarmProbe(page);
-  log('act6', `camera after reload: visible tiles ${JSON.stringify(afterReload)}`);
-  if (chosen !== undefined && afterReload !== undefined) {
-    log('act6', `  shift: dx=${String(afterReload.left - chosen.left)} tiles, dy=${String(afterReload.top - chosen.top)} tiles`);
-  }
-  await page.screenshot({ path: `${SHOTS}/act6-after-reload.png` });
+  log('act6', `camera immediately after reload: ${afterReload === undefined ? 'UNREADABLE -- no session is running, so a world press submits nothing' : JSON.stringify(afterReload)}`);
 
-  // Now the other half: pan into the void and switch prisons *without*
-  // reloading, which is the case `framedOnWorld` never resets for.
-  const stroke2 = await strokeEndpoints(page);
-  for (let i = 0; i < 5; i += 1) await middleDrag(page, stroke2.from, stroke2.to);
+  /*
+   * The player's actual next gesture. The save panel offers `Load` beside the
+   * saved prison; this is what a player does when the page comes back empty.
+   */
+  const loadButtons = page.locator('.save-panel__button', { hasText: 'Load' });
+  log('act6', `save panel offers ${String(await loadButtons.count())} control(s) reading "Load"`);
+  // The last one is the row's own Load; the first is the file-import Load.
+  await loadButtons.last().click();
+  await page.waitForTimeout(6000);
+  log('act6', `save panel after Load: ${JSON.stringify((await panelText(page, '.save-panel')).replace(/\n/g, ' | '))}`);
+  log('act6', `strip after Load: ${JSON.stringify((await panelText(page, '.hud-strip')).replace(/\n/g, ' | ').slice(0, 260))}`);
+  await tab(page, 'build').click();
+  await armProbe(page);
+  const afterLoad = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act6', `camera after Load: ${JSON.stringify(afterLoad)}`);
+  if (chosen !== undefined && afterLoad !== undefined) {
+    log('act6', `  shift from the parked view: dx=${String(afterLoad.left - chosen.left)} tiles, dy=${String(afterLoad.top - chosen.top)} tiles`);
+    log('act6', `  centre tile after Load: (${String(Math.round((afterLoad.left + afterLoad.right) / 2))},${String(Math.round((afterLoad.top + afterLoad.bottom) / 2))}); parked centre was (${String(Math.round((chosen.left + chosen.right) / 2))},${String(Math.round((chosen.top + chosen.bottom) / 2))}); NEW_PRISON_ORIGIN_TILE is (${String(PRISON_ORIGIN_TILE.x)},${String(PRISON_ORIGIN_TILE.y)})`);
+  }
+  await page.screenshot({ path: `${SHOTS}/act6-after-load.png` });
+});
+
+// ------------------------------------------------------------------
+// Act 8 -- a prison switch with **no reload in between**, which is the case
+// `framedOnWorld` (`world-scene.ts:262`) never resets for: it is set on the
+// first frame a world exists and guards `frameCameraOnFirstWorld` for the
+// life of the scene, so a second prison started in the same page should get
+// no framing at all.
+//
+// Act 6's first run appeared to answer this and did not: its reload had left
+// the page with no session, so `framedOnWorld` was still `false` and the
+// switch measured a *first* framing rather than a second one. This act never
+// reloads.
+// ------------------------------------------------------------------
+test('act 8: a second prison started in the same page, from a camera the player got lost with', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act8', `version line: ${await versionLine(page)}`);
+  await tab(page, 'build').click();
+  await page.waitForTimeout(400);
+
+  await armProbe(page);
+  const start = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act8', `prison 1, arrival: visible tiles ${JSON.stringify(start)}`);
+
+  const stroke = await strokeEndpoints(page);
+  for (let i = 0; i < 5; i += 1) await middleDrag(page, stroke.from, stroke.to);
   await page.waitForTimeout(200);
   await armProbe(page);
-  const beforeSwitch = await visibleTileBox(page);
+  const lost = await visibleTileBox(page);
   await disarmProbe(page);
-  log('act6', `lost before the prison switch: visible tiles ${JSON.stringify(beforeSwitch)} owned-visible=${String(beforeSwitch === undefined ? '?' : ownedLandVisible(beforeSwitch))}`);
+  log('act8', `prison 1, lost: visible tiles ${JSON.stringify(lost)} owned-visible=${String(lost === undefined ? '?' : ownedLandVisible(lost))}`);
+  const lostPixels = await sampleWorldPixels(page, `${SHOTS}/act8-lost-in-prison-1.png`);
+  log('act8', `  pixels: ${String(lostPixels.void)}/${String(lostPixels.total)} VOID_COLOR`);
 
+  // No reload. The player presses New prison from exactly here.
   await page.getByRole('button', { name: 'New prison' }).click();
-  await page.waitForTimeout(3000);
-  log('act6', `clock after New prison: ${JSON.stringify((await panelText(page, '.hud-clock')).replace(/\n/g, ' | '))}`);
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.waitForTimeout(4000);
   await tab(page, 'build').click();
   await armProbe(page);
   const afterSwitch = await visibleTileBox(page);
   await disarmProbe(page);
-  log('act6', `camera after New prison: visible tiles ${JSON.stringify(afterSwitch)} owned-visible=${String(afterSwitch === undefined ? '?' : ownedLandVisible(afterSwitch))}`);
-  const switchPixels = await sampleWorldPixels(page, `${SHOTS}/act6-after-new-prison.png`);
-  log('act6', `after-switch pixels: ${String(switchPixels.void)}/${String(switchPixels.total)} VOID_COLOR; others ${JSON.stringify(switchPixels.others)}`);
-  log('act6', `minimap sentence after the switch: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+  log('act8', `prison 2, immediately after New prison: visible tiles ${JSON.stringify(afterSwitch)} owned-visible=${String(afterSwitch === undefined ? '?' : ownedLandVisible(afterSwitch))}`);
+  const pixels = await sampleWorldPixels(page, `${SHOTS}/act8-after-new-prison.png`);
+  log('act8', `  pixels: ${String(pixels.void)}/${String(pixels.total)} VOID_COLOR; others ${JSON.stringify(pixels.others)}`);
+  log('act8', `  minimap sentence after the switch: ${JSON.stringify(await panelText(page, '.hud-minimap'))}`);
+  if (lost !== undefined && afterSwitch !== undefined) {
+    log('act8', `  camera moved by dx=${String(afterSwitch.left - lost.left)} dy=${String(afterSwitch.top - lost.top)} tiles across the switch`);
+  }
 
-  // And the load path: switch back to the first prison from the save panel's
-  // own list, which is the gesture a player with two prisons actually uses.
-  const rows = await page.evaluate(() =>
-    [...document.querySelectorAll('.save-panel [data-prison-id], .save-panel button')]
-      .filter((el) => el.getClientRects().length > 0)
-      .map((el) => `${el.tagName}.${typeof el.className === 'string' ? el.className : ''}|${(el as HTMLElement).innerText.replace(/\s+/g, ' ').trim()}`),
-  );
-  log('act6', `save panel rows/controls: ${JSON.stringify(rows)}`);
+  // And does the way back still work in the new prison?
+  const surface = await page.evaluate(() => {
+    const el = document.querySelector('.hud-minimap__surface');
+    if (el === null) return undefined;
+    const r = el.getBoundingClientRect();
+    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
+  });
+  if (surface !== undefined) {
+    await press(page, surface.x, surface.y);
+    await page.waitForTimeout(300);
+    await armProbe(page);
+    const home = await visibleTileBox(page);
+    await disarmProbe(page);
+    log('act8', `one minimap press in prison 2: visible tiles ${JSON.stringify(home)} owned-visible=${String(home === undefined ? '?' : ownedLandVisible(home))}`);
+  }
+  await page.screenshot({ path: `${SHOTS}/act8-end.png` });
+});
+
+// ------------------------------------------------------------------
+// Act 7 -- the three candidate ways back, measured against each other, and
+// the affordance audit that decides whether a player ever finds the good one.
+// ------------------------------------------------------------------
+test('act 7: the three ways back, counted, and what the screen advertises before the first click', async ({ page }) => {
+  test.setTimeout(300_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openApp(page);
+  await newPrison(page);
+  log('act7', `version line: ${await versionLine(page)}`);
+  await tab(page, 'build').click();
+
+  /*
+   * **The affordance audit, taken before any click has ever landed on the
+   * surface.** The whole question of this act is not whether a way back
+   * exists -- act 4 measured that it does and that it costs one press -- but
+   * whether the screen a lost player is looking at tells them so. That is a
+   * question about what the surface advertises, and the four things a
+   * pointer-driven player reads are: the sentence in it, the cursor over it,
+   * the tooltip on it, and whether it is announced as a control at all.
+   */
+  const affordance = await page.evaluate(() => {
+    const surface = document.querySelector<HTMLElement>('.hud-minimap__surface');
+    const placeholder = document.querySelector<HTMLElement>('.hud-minimap__placeholder');
+    if (surface === null) return undefined;
+    const style = getComputedStyle(surface);
+    return {
+      sentence: placeholder?.innerText ?? '(no .hud-minimap__placeholder)',
+      cursor: style.cursor,
+      pointerEvents: style.pointerEvents,
+      title: surface.getAttribute('title'),
+      ariaLabel: surface.getAttribute('aria-label'),
+      role: surface.getAttribute('role'),
+      tabIndex: surface.tabIndex,
+      tagName: surface.tagName,
+      // Every focusable node on the page, so "can a keyboard player reach it"
+      // is answered by the same list a Tab key walks.
+      focusableCount: document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').length,
+      surfaceIsFocusable: surface.matches('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    };
+  });
+  log('act7', `minimap surface affordance BEFORE any click ever lands: ${JSON.stringify(affordance)}`);
+
+  // And the same question asked of the whole page: is there any control, on
+  // any tab, whose text or tooltip names the camera, the prison's position,
+  // or going back to it?
+  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    await tab(page, id).click();
+    await page.waitForTimeout(200);
+    const controls = await controlInventory(page);
+    const homeish = controls.filter((c) => /home|cent|recent|return|locate|find|camera|view|jump|prison/i.test(c));
+    log('act7', `${id} tab: ${String(controls.length)} controls, ${String(homeish.length)} whose text/aria/title matches home|cent(re)|return|locate|find|camera|view|jump|prison: ${JSON.stringify(homeish)}`);
+  }
+  await tab(page, 'build').click();
+
+  // ---- get lost, identically to act 4 -----------------------------
+  const getLost = async (): Promise<{ x: number; y: number } | undefined> => {
+    const stroke = await strokeEndpoints(page);
+    const column = { x: Math.round((stroke.from.x + stroke.to.x) / 2), fromY: 760, toY: 160 };
+    for (let i = 0; i < 4; i += 1) await middleDrag(page, stroke.from, stroke.to);
+    for (let i = 0; i < 2; i += 1) await middleDrag(page, { x: column.x, y: column.fromY }, { x: column.x, y: column.toY });
+    await page.waitForTimeout(200);
+    await armProbe(page);
+    const box = await visibleTileBox(page);
+    await disarmProbe(page);
+    if (box === undefined) return undefined;
+    log('act7', `  lost at: visible tiles x ${String(box.left)}..${String(box.right)} y ${String(box.top)}..${String(box.bottom)}; owned-visible=${String(ownedLandVisible(box))}`);
+    return { x: Math.round((box.left + box.right) / 2), y: Math.round((box.top + box.bottom) / 2) };
+  };
+
+  // ---- way back A: zoom out ---------------------------------------
+  //
+  // The only way back that needs no knowledge of *where* the prison is: the
+  // viewport grows about its own centre (`stepZoom`, `world-scene.ts:783`,
+  // which anchors the middle of the viewport and not the cursor), so pressing
+  // `Minus` widens what is on screen symmetrically until the owned land
+  // falls inside it -- or until `ZOOM_BOUNDS.min` stops it.
+  log('act7', '=== way back A: zoom out, one Minus at a time');
+  await getLost();
+  let zoomPresses = -1;
+  for (let i = 1; i <= 12; i += 1) {
+    await page.keyboard.press('Minus');
+    await page.waitForTimeout(120);
+    await armProbe(page);
+    const box = await visibleTileBox(page);
+    const px = await measuredTilePx(page);
+    await disarmProbe(page);
+    if (box === undefined) { log('act7', `  after ${String(i)} Minus: could not read the camera`); continue; }
+    const visible = ownedLandVisible(box);
+    log('act7', `  after ${String(i)} Minus: zoom ${px === undefined ? '?' : (px / TILE).toFixed(3)}, visible tiles x ${String(box.left)}..${String(box.right)} y ${String(box.top)}..${String(box.bottom)}, owned-visible=${String(visible)}`);
+    if (visible && zoomPresses < 0) { zoomPresses = i; break; }
+  }
+  log('act7', `WAY BACK A: ${zoomPresses < 0 ? 'the owned land never came back within 12 presses of Minus' : `${String(zoomPresses)} presses of Minus put owned land back on screen`}`);
+  const zoomedPixels = await sampleWorldPixels(page, `${SHOTS}/act7-after-zooming-out.png`);
+  log('act7', `  pixels after way back A: ${String(zoomedPixels.void)}/${String(zoomedPixels.total)} VOID_COLOR`);
+
+  // ---- way back B: drag it back by hand ---------------------------
+  //
+  // The gesture that got the player lost, run in reverse. **The player does
+  // not know the reverse direction** -- act 2 measured that the screen at the
+  // far end is 113/113 `VOID_COLOR` with no marker of any kind -- so this
+  // number is a *lower bound* on the real cost: it is what it costs someone
+  // who already knows the answer.
+  log('act7', '=== way back B: drag back by hand, knowing the direction');
+  await openApp(page);
+  await newPrison(page);
+  await tab(page, 'build').click();
+  await page.waitForTimeout(400);
+  await getLost();
+  const back = await strokeEndpoints(page);
+  const east = { from: back.to, to: back.from };
+  const columnX = Math.round((back.from.x + back.to.x) / 2);
+  let dragsBack = -1;
+  for (let i = 1; i <= 12; i += 1) {
+    await middleDrag(page, east.from, east.to);
+    // The lost position of `getLost` is two strokes north as well as four
+    // west, so the return is two-axis: one southward stroke for every two
+    // eastward ones, which is the same ratio going out.
+    if (i % 2 === 0) await middleDrag(page, { x: columnX, y: 160 }, { x: columnX, y: 760 });
+    await page.waitForTimeout(100);
+    await armProbe(page);
+    const box = await visibleTileBox(page);
+    await disarmProbe(page);
+    if (box === undefined) { log('act7', `  after ${String(i)} return drags: could not read the camera`); continue; }
+    const visible = ownedLandVisible(box);
+    log('act7', `  after ${String(i)} eastward drag(s) (+${String(Math.floor(i / 2))} southward): visible tiles x ${String(box.left)}..${String(box.right)} y ${String(box.top)}..${String(box.bottom)}, owned-visible=${String(visible)}`);
+    if (visible) { dragsBack = i + Math.floor(i / 2); break; }
+  }
+  log('act7', `WAY BACK B: ${dragsBack < 0 ? 'owned land never came back within 12 eastward drags' : `${String(dragsBack)} drag(s) total, by someone who already knew which way to go`}`);
+
+  // ---- way back C: the minimap, from the same lost position -------
+  log('act7', '=== way back C: one press on the minimap surface');
+  await openApp(page);
+  await newPrison(page);
+  await tab(page, 'build').click();
+  await page.waitForTimeout(400);
+  await getLost();
+  const surface = await page.evaluate(() => {
+    const el = document.querySelector('.hud-minimap__surface');
+    if (el === null) return undefined;
+    const r = el.getBoundingClientRect();
+    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
+  });
+  if (surface === undefined) throw new Error('.hud-minimap__surface is gone -- instrument is stale');
+  const before = await page.evaluate(() => document.querySelector<HTMLElement>('.hud-minimap__placeholder')?.innerText ?? '');
+  await press(page, surface.x, surface.y);
+  await page.waitForTimeout(250);
+  const after = await page.evaluate(() => document.querySelector<HTMLElement>('.hud-minimap__placeholder')?.innerText ?? '');
+  await armProbe(page);
+  const home = await visibleTileBox(page);
+  await disarmProbe(page);
+  log('act7', `  sentence before the press: ${JSON.stringify(before)}`);
+  log('act7', `  sentence after the press:  ${JSON.stringify(after)}`);
+  log('act7', `WAY BACK C: 1 press -> visible tiles ${JSON.stringify(home)} owned-visible=${String(home === undefined ? '?' : ownedLandVisible(home))}`);
+  if (home !== undefined) {
+    log('act7', `  centre tile now (${String(Math.round((home.left + home.right) / 2))},${String(Math.round((home.top + home.bottom) / 2))}); NEW_PRISON_ORIGIN_TILE is (${String(PRISON_ORIGIN_TILE.x)},${String(PRISON_ORIGIN_TILE.y)})`);
+  }
+
+  /*
+   * **The gate, stated as a measurement.** The sentence that advertises way
+   * back C is only ever rendered by the click it advertises
+   * (`hud.ts:1517-1522`: `if (navigated) minimapPlaceholder.textContent =
+   * t(HUD_MESSAGE_KEY.minimapNavigable)`), so a player who has never clicked
+   * the surface has never been told it is clickable. This asks a fresh page
+   * the same question one more time, after everything above, so the claim
+   * rests on a reading and not on the memory of one.
+   */
+  await openApp(page);
+  await newPrison(page);
+  await page.waitForTimeout(500);
+  const freshSentence = await page.evaluate(() => document.querySelector<HTMLElement>('.hud-minimap__placeholder')?.innerText ?? '(absent)');
+  log('act7', `a brand-new page, before any click on the surface, still reads: ${JSON.stringify(freshSentence)}`);
 });
