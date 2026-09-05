@@ -1,8 +1,13 @@
 # 2026-09-05 — the second evening: a player comes back to a prison they have forgotten, and reads the screen
 
 **Played on `agent/playtest-the-second-evening`, cut from `413def1c`
-(v0.0.476), which was still `origin/main` when the branch was taken and still
-`origin/main` when the last act finished.** The application under test reports
+(v0.0.476), which was `origin/main` when the branch was taken and when the last
+act finished.** `origin/main` moved to `376b48bf` (v0.0.477) while this record
+was being written, and **the three commits between them touch no file under
+`src/`** — `git diff --stat 413def1c origin/main -- src/` is empty — so the
+application measured here is the application `origin/main` serves at v0.0.477.
+That branch is merged into this one, and `tests/foundation` is **480/480** with
+this record applied. The application under test reports
 itself on the status strip as `v0.0.476` in every act (MEASURED). The commit
 hash beside it is **this branch's head, not `main`'s** — `a513eef` in act 1 and
 `153d5e0` in acts 2 to 5, because the playtest server serves this worktree and
