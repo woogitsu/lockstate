@@ -297,6 +297,42 @@ passed before the gate existed, and the marker window is deliberately narrow
 because the first version read markers over the whole comment block and a
 hundred-line docblock's unrelated *"there is no ..."* exempted a real defect.
 
+### A conflict marker is invisible to every other gate (#983)
+
+`tests/foundation/merge-conflict-marker-contract.test.ts` reads every **tracked**
+file — enumerated from `git ls-files`, read out of the working tree — and fails
+when a line *begins* with a merge conflict marker.
+
+The reason it is a gate rather than a habit is that nothing else here can see
+one. Measured at `1ad2189a` (v0.0.483) with `<<<<<<< HEAD`, `=======` and
+`>>>>>>> origin/main` committed into `docs/research/README.md` and nothing else
+changed: both `pnpm typecheck` projects exit 0, `tests/foundation` reports
+**483 passed (483)** and `pnpm test` reports **401** files and **4729 passed |
+1 skipped**. `docs/**` is on no TypeScript project's `include`, no test imports
+a Markdown file, and the markers render as literal text inside a table cell, so
+the index goes on looking approximately right in a diff. That index is also the
+file this repository conflicts on constantly — every research note appends at
+the same point — so the residue has a well-worn route in.
+
+It reports three shapes separately. A **complete hunk** is a conflict `git
+merge` wrote and nobody resolved. An **unpaired marker line** is what a
+mis-scoped resolution regex leaves behind, and is the shape #983 is actually
+about — a check that required the pair, as that issue first proposed, would be
+blind to it. A **marker-shaped line the strict patterns cannot read** is the
+second-pattern discipline `tests/foundation/adr-quotation-verbatim-contract.test.ts`
+learned the hard way in #981: a pattern cannot report its own misses.
+
+**What keeps it from shouting at documentation is that a marker must start the
+line.** Prose quotes a marker inline in backticks — this paragraph does — and
+`git` only ever writes one at column zero. A bare `=======` is never a finding
+on its own, because it is a legal setext heading underline; it counts only in a
+file that already carries an open or close line, and that blind spot is named
+in the contract rather than left to be discovered. Measured across all 1390
+tracked text files at that base: **zero** lines begin with seven `<`, `>`, `|`
+or `=`, so the rule costs nothing today. Git LFS pointers are text and are
+scanned; the 23 screenshots under `docs/research/` are skipped by the same
+NUL-byte heuristic `git` uses. The whole walk is 133 ms.
+
 ### The production artefact layer, and the hole it closes
 
 `pnpm test:browser` and `pnpm test:artifact` both drive Chromium and they are
