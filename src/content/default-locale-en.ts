@@ -2299,6 +2299,33 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // which is why the requirement counts as unmet. Substituted where the
   // object's own name would go, so the sentence still ends somewhere.
   'hud.rooms.needs-object-unknown': 'something this build cannot name',
+  /*
+   * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
+   * reservation 4** (issue #938), and every clause of it was proved against
+   * code opened for the purpose rather than reasoned about:
+   *
+   * - *"a door"* -- the projection publishes `access: 'no-way-in'` only from
+   *   `roomPerimeterAccess` (`src/simulation/rooms/enclosure.ts`), which
+   *   answers it only when every edge on the room's perimeter holds geometry
+   *   *and* `DoorRegistry.getByEdge` answers `undefined` for every one of
+   *   them. So there is no door in the wall line, and one is what the room is
+   *   short.
+   * - *"nobody can get in"* -- `src/simulation/navigation/traversal.ts`
+   *   states the rule: *"any non-zero value with no registered door is an
+   *   impassable wall"*, and *"a registered door decides the edge, whatever
+   *   value the edge layer holds ... that is the only reason a doorway is not
+   *   a wall"*. `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts`)
+   *   applies it in both of its passes -- it `continue`s past such an edge
+   *   when flood-filling a region and records no portal for it -- so no route
+   *   this repository can produce crosses that boundary, in either direction.
+   *
+   * What it deliberately does **not** say is that the room is reachable once
+   * a door exists: a doorway can open onto a corridor that is itself sealed,
+   * which is a region question this signal does not answer.
+   * `RoomPerimeterAccess`' own comment records that asymmetry, and it is why
+   * this sentence is only ever shown for `'no-way-in'`.
+   */
+  'hud.rooms.needs-doorway': 'a door — nobody can get in',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

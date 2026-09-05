@@ -1513,6 +1513,22 @@
  * widest state of this row is the arrival one -- arm plus remove plus buy.
  * Measured on the assembled page at all five viewports the browser suite
  * visits; `tests/browser/app-shell.spec.ts` holds the assertions.
+ *
+ * **AMENDED 2026-09-04 (issue #926), and the paragraph above is left as it
+ * stands because it is the claim that was wrong.** Every measurement in it is
+ * real and the declarations below are still the right ones -- but "the label
+ * that shortens under pressure" is an intent this file never implemented.
+ * `min-width: 0` shortens the *box*; nothing shortened the *label*, which is
+ * `white-space: nowrap` in `primitives.css` with no `overflow` above it. So
+ * the third button did fit, and the arm label paid for it by painting 17.8px
+ * outside its own button and 9.8px over `Remove` at every viewport 900px wide
+ * or wider. **The row's overflow was not removed by these two declarations, it
+ * was moved into the label** -- where `BuildProbe.actionsOverflowPx`, which
+ * reads the button's own box, reported -12px throughout.
+ *
+ * What implements the intent is `.ui-action__label`'s wrap in
+ * `primitives.css` (which carries the full measurement) plus the padding rule
+ * below, which is what keeps the wrap free. Nothing here changed.
  */
 .hud-build__actions > .hud-build__arm {
   flex: 1 1 auto;
@@ -1522,6 +1538,59 @@
 .hud-build__actions > .hud-build__remove,
 .hud-build__actions > .hud-build__buy-toggle {
   flex: 0 0 auto;
+}
+
+/*
+ * THE HORIZONTAL ROOM THE WRAPPED ARM LABEL LANDS IN, FOR BOTH ROWS THAT HAVE
+ * ONE (issue #926).
+ *
+ * `.ui-action`'s own padding is `0 var(--space-4)`. In a row that is already
+ * over-subscribed that padding buys nothing: measured on the assembled page
+ * at the rail's 238px of block width, the three controls want
+ * 145.9 + 86.8 + 58.9 plus two 8px gaps -- **307.6px of a 238px row**, a
+ * deficit of 69.6px -- and the arm button, as the only member allowed to
+ * shrink, absorbed all of it and came out 76.4px wide with an 87.9px label.
+ * Halving the padding on the row's members returns 48px of that: the arm
+ * button becomes 108.4px, its label gets 66.4px, and "Place on map" lands on
+ * two 15px lines inside the 44px tap target instead of three.
+ *
+ * **The height is the point, and this rule is load-bearing for it.**
+ * `.hud-build__actions` is `align-items: stretch`, so the row is as tall as
+ * its tallest member and everything below it moves when that grows. Measured
+ * at all five viewports in the arrival, armed and removing states: both rows
+ * are **44px with this rule**. Deleting it while leaving
+ * `primitives.css`'s label rule in place -- measured, as the mutation that
+ * proves this rule is guarded -- takes the arm button to **92px tall at
+ * 1280x720 in the arrival state**, because `min-width: 0` on the label then
+ * lets the span shrink to the 18.4px the padding leaves it and
+ * `overflow-wrap: break-word` breaks the words to fit that. So the label stops
+ * painting outside its button either way, and without this rule it does so by
+ * turning a 44px row into a 92px one.
+ *
+ * (An earlier reading of this said "47px without it". That figure is real but
+ * it belongs to a different tree: it was measured with `white-space: normal`
+ * alone, before `min-width: 0` and `overflow-wrap: break-word` joined it, and
+ * it is kept in `primitives.css`'s block where it is true. Corrected here
+ * rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4.)
+ *
+ * So this rule is not what fixes #926 -- `primitives.css`'s
+ * `.ui-action__label` is -- it is what makes that fix cost the panel's height
+ * budget nothing, which for the most height-constrained surface in the game
+ * (#174, #143, ADR 0022, ADR 0028) is the difference between a fix and a
+ * trade.
+ *
+ * Both rows, in one rule, because they are one pattern: `.hud-rooms__actions`
+ * is where `min-width: 0` above was copied from, and the sweep that found the
+ * Build panel's 17.8px overrun found 6.3px on `.hud-rooms__arm` in the same
+ * pass. A rule that fixed only the row the issue was filed about would leave
+ * the other to be found again.
+ *
+ * The tap target is untouched: `min-height: var(--tap-target)` is vertical,
+ * and every button in both rows still measures 44px tall at every viewport.
+ */
+.hud-build__actions > .ui-action,
+.hud-rooms__actions > .ui-action {
+  padding: 0 var(--space-2);
 }
 
 /*
@@ -3093,6 +3162,53 @@
  * is where it stops moving. 12px is identical to 16px, so 16 is the point at
  * which the donation is sufficient and no further.
  *
+ * **That last sentence is withdrawn, and the paragraph above it is kept rather
+ * than rewritten, because the reason it went stale is the finding (#938).** It
+ * was measured while `.hud-rooms__needs-items` held **one** wrapped row, and in
+ * that state the list still had slack: 12px and 16px came out identical
+ * precisely *because* neither floor was reached, so lowering it further could
+ * not have donated anything. #938 adds a doorway sentence to that row, the row
+ * becomes two, and the list is then sitting exactly on its floor -- measured on
+ * the assembled application at 900x600 in the #331 fixture's own state (two
+ * doorless cells, `room.cell` selected):
+ *
+ *   .hud-rooms > .ui-panel__body   client 291  scroll 293   <- 2px over
+ *   .hud-rooms__catalogue          h  64  min-height  64px  <- on its floor
+ *   .hud-rooms__list               h  16  min-height  16px  <- on its floor
+ *   .hud-rooms__needs-items        h  26.4                  <- two 13.2px rows
+ *
+ * The body's children are catalogue 64 + map 70.2 + needs 70.9 + status 80 =
+ * 285.1, and 285.1 plus the body's own 8px padding-top is the 293 above. So the
+ * donation is now the only thing between this readout and the box, which is the
+ * opposite of what the withdrawn sentence concluded -- and it is `--space-2`
+ * for the same kind of reason `--space-4` was chosen: 8px is what the second
+ * row costs against the 11.2px the list had left, and it leaves the panel body
+ * inside its own content at the one viewport that spends it.
+ *
+ * **Two rows is the deepest the shipped catalogue can reach here, so 8px is
+ * sufficient and not merely enough for one fixture** -- which is what
+ * `.hud-rooms__needs-item[data-kind='doorway']`'s own rule below is for. With
+ * the sentence on a row of its own the object chips compress under it, and at
+ * this panel's width the deepest shipped room short of everything --
+ * `room.kitchen`, `1 x Stove` + `1 x Prep Counter` + `1 x Fridge`, measured as
+ * one row in `ui-shell.spec.ts` case 4 -- is one chip row, exactly as
+ * `room.cell`'s two chips are. A third row would fail loudly on the assertion
+ * above rather than being hidden, which is what `ROOM_NEEDS_NAMED_LIMIT` says a
+ * panel outgrown by content must do.
+ *
+ * **What it costs, stated rather than left to be found.** At 900x600, and only
+ * while a room is unfinished, the catalogue list is an 8px slice of a 44px row
+ * instead of a 16px one; it still scrolls over all eighteen types
+ * (`scrollHeight` 837) and it comes back to its full row the moment the last
+ * room is furnished. Measured after the change: the panel body is 285.1px of
+ * content in a 291px box at 900x600 -- 5.9px of slack, which is under a line, so
+ * the *next* block added to this panel is another measurement and not a free
+ * one. Neither of the other two viewports the readout is measured at spends
+ * anything on this rule: the list is 68px at 1280x800 with and without it. At
+ * 375x812 the list goes from 64.9px to 51.7px, and that is the doorway row's
+ * own cost rather than this rule's -- the wider phone panel used to fit all
+ * three lines in one row.
+ *
  * **It donates nothing where nothing is needed**, which is the whole reason
  * this is a floor and not a height: a flex item shrinks only under pressure,
  * and at 1280x720 and 375x812 there is none. Measured at all three: the fold
@@ -3111,7 +3227,7 @@
  * which is #174 for the fourth time and on the one block #529 exists to make
  * reachable.
  */
-.hud-rooms[data-needs] { --hud-rooms-catalogue-floor: var(--space-4); }
+.hud-rooms[data-needs] { --hud-rooms-catalogue-floor: var(--space-2); }
 
 .hud-rooms > .ui-panel__body > .hud-rooms__catalogue {
   display: flex;
@@ -3258,6 +3374,14 @@
 .hud-rooms__actions > .hud-rooms__cancel {
   flex: 0 0 auto;
 }
+
+/* The members of this row carry `padding: 0 var(--space-2)` rather than
+   `.ui-action`'s own `var(--space-4)`, and the rule is up beside
+   `.hud-build__actions`'s with the measurement that chose it (issue #926):
+   `.hud-rooms__arm`'s label painted 6.3px outside its own button at every
+   viewport 900px wide or wider, for the same three reasons the Build panel's
+   did, and the reclaimed padding is what lets the wrapped label land on two
+   lines inside the 44px tap target instead of growing this row to 47px. */
 
 /* Pinned, exactly as `.hud-build__target` is, so a longer readout cannot move
    the controls under it: the area line goes from "Nothing selected" to
@@ -3475,6 +3599,31 @@
   text-transform: none;
   letter-spacing: 0;
 }
+
+/*
+ * The doorway sentence takes a row of its own (#938).
+ *
+ * **A layout guarantee rather than a preference, and the alternative was
+ * measured.** The box above is a wrapping row so that `1 x Bed` and `1 x Toilet`
+ * share a line -- quantities are short, and that compression is 13px of what
+ * pays for this readout at all. A *sentence* in the same row is a different
+ * thing: at 900x600 `a door -- nobody can get in` is 152.5px of a 238px row, so
+ * it took the first chip up with it and pushed the last chip onto a second row.
+ * Measured in the #331 fixture, both items reporting the same `top` of 413.4
+ * and `1 x Toilet` alone at 426.6 -- which reads as "a door ... 1 x Bed" on one
+ * line and is not the list the box was built to draw.
+ *
+ * `flex-basis: 100%` makes the wrap a property of the *kind* of line instead of
+ * a property of how wide this locale's words happen to be. The sentence is row
+ * one, the chips compress on row two, and the block is **exactly two rows for
+ * every shape the shipped catalogue can produce** -- which is what makes the
+ * catalogue's donation above a sufficient figure rather than a figure that fits
+ * one prison. `ui-shell.spec.ts` asserts both halves through
+ * `RoomsNeedsProbe.needsItemRows`: one row for three object chips, two when a
+ * doorway sentence is among them. `data-kind` is set by `rooms-panel.ts` beside
+ * the sentence, for the reason recorded there.
+ */
+.hud-rooms__needs-item[data-kind='doorway'] { flex-basis: 100%; }
 
 /*
  * What the *selected room type* will need standing in it (#529).

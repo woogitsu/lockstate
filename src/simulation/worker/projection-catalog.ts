@@ -327,6 +327,13 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const view = projectRoomList(runtime.prisoners, pageRequest(request), {
         placedObjects: runtime.placedObjects,
+        // The world's edge layers and the session's own door registry, so a
+        // row can say whether anybody can get into the room (#938). Both come
+        // from the runtime rather than from a copy: `navigation.doors` is the
+        // registry the router, the caches and `doorsSnapshot` all read
+        // (`runtime/new-session.ts` says why there is only one), so the
+        // panel's answer and the walk's answer cannot disagree.
+        perimeter: { edges: runtime.world, doors: runtime.navigation.doors },
       });
       return { view: view as unknown as JsonValue, page: pageOfView(view.rooms) };
     },
@@ -339,6 +346,11 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const detail = projectRoomDetail(runtime.prisoners, idTarget(request), {
         placedObjects: runtime.placedObjects,
+        // The list's reason, and it has to be both: the needs readout asks
+        // for the list and then for one detail per unfinished room, so a
+        // detail that could not answer this would drop the fact between the
+        // two requests.
+        perimeter: { edges: runtime.world, doors: runtime.navigation.doors },
       });
       return detail === undefined ? {} : { view: detail as unknown as JsonValue };
     },

@@ -14,6 +14,7 @@ import { pressArm, toggleRemovalMode } from './tool-arming';
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
+  HudRoomNeedViewModel,
   HudRoomNeedsViewModel,
   HudRoomViewModel,
   HudRoomsViewModel,
@@ -1447,6 +1448,33 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * measured, by deleting it and watching every assertion stay green.
    */
 
+  /**
+   * The sentence for one shortfall.
+   *
+   * Three forms and one rule: every word is a message key resolved through
+   * `t`, and nothing here interpolates text this layer authored (ADR 0011).
+   *
+   * - `kind: 'doorway'` -- the room's walls hold no door, so nothing can get
+   *   in (#938). No placeholder: there is one door to be short of, and the
+   *   locale entry carries the proof of each clause.
+   * - an object with a count -- the shortfall, which is what the player has
+   *   to build, under the object's own name or the stand-in for one the
+   *   catalogue does not define.
+   * - an object with none -- `missingQuantity` is absent exactly when the
+   *   projection was handed nothing to count with, and the sentence then has
+   *   to be the one without a figure in it. Choosing between two keys rather
+   *   than substituting an invented `1` is the whole point: the alternative
+   *   dresses an uncounted answer as a counted one, on the same line, in the
+   *   same words, where nothing distinguishes them.
+   */
+  function needSentence(need: HudRoomNeedViewModel): string {
+    if (need.kind === 'doorway') return t(HUD_MESSAGE_KEY.roomsNeedsDoorway);
+    const object = t(need.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
+    return need.missingQuantity === undefined
+      ? t(HUD_MESSAGE_KEY.roomsNeedsObjectUncounted, { object })
+      : t(HUD_MESSAGE_KEY.roomsNeedsObject, { count: need.missingQuantity, object });
+  }
+
   function paintNeeds(): void {
     /*
      * Two states draw nothing and stay two facts: `undefined` is "nothing has
@@ -1529,27 +1557,17 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     let drawn = 0;
     for (const need of named) {
       if (need.instanceId !== first.instanceId) continue;
-      // The object's own name, or the stand-in for one the catalogue does not
-      // define. A key either way: nothing here interpolates text this layer
-      // authored (ADR 0011).
-      const object = t(need.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
-      /*
-       * The numeral, or deliberately none.
-       *
-       * `missingQuantity` is absent exactly when the projection was handed
-       * nothing to count with, and the sentence then has to be the one without a
-       * figure in it. Choosing between two keys rather than substituting an
-       * invented `1` is the whole point: the alternative dresses an uncounted
-       * answer as a counted one, on the same line, in the same words, where
-       * nothing distinguishes them.
-       */
-      const line = eyebrowText(
-        need.missingQuantity === undefined
-          ? t(HUD_MESSAGE_KEY.roomsNeedsObjectUncounted, { object })
-          : t(HUD_MESSAGE_KEY.roomsNeedsObject, { count: need.missingQuantity, object }),
-        'hud-rooms__needs-item',
-      );
+      const line = eyebrowText(needSentence(need), 'hud-rooms__needs-item');
       line.dataset['room'] = need.instanceId;
+      /*
+       * Which kind of shortfall this line is, as data as well as as text
+       * (#938), for the reason `data-enclosure` and `data-missing` are both
+       * here: a test that had to tell "a door — nobody can get in" from
+       * "1 × Bed" by reading the sentence would be a test of the English
+       * locale, and the defect #938 records is precisely a readout whose two
+       * states could not be told apart.
+       */
+      line.dataset['kind'] = need.kind;
       // The figure as data as well as as text, for the header's reason. Absent
       // rather than `0` when nothing was counted, so a test can tell the two
       // states apart exactly as the view model does.

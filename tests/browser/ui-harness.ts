@@ -30,6 +30,7 @@ import {
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 import type {
+  ActionLabelFitProbe,
   AlertProbe,
   AlertRowProbe,
   BuildLayoutProbe,
@@ -1389,6 +1390,55 @@ window.lockstateUiHarness = {
         const rightmost = buttons.reduce((widest, button) => Math.max(widest, button.getBoundingClientRect().right), 0);
         return buttons.length === 0 ? 0 : Math.round((rightmost - limit) * 10) / 10;
       })(),
+      /*
+       * Label against button, which is the measurement `actionsOverflowPx`
+       * above cannot take (issue #926, and `ActionLabelFitProbe` carries the
+       * argument).
+       *
+       * Rounded to a tenth like every other figure in this probe, and read in
+       * one pass so the button, its label and its neighbour are all measured
+       * against the same layout -- a second `evaluate` could observe a
+       * different one.
+       */
+      actionLabelFits: ((): readonly ActionLabelFitProbe[] => {
+        if (actions === null) return [];
+        const laidOut = [...actions.querySelectorAll<HTMLElement>('.ui-action')].filter(
+          (button) => button.getClientRects().length > 0,
+        );
+        // The class that names the control, rather than its index: an index
+        // renumbers itself the moment the buy toggle leaves the row, and this
+        // probe is read in both states.
+        const nameOf = (button: HTMLElement): string =>
+          [...button.classList].find((name) => name.startsWith('hud-build__')) ?? '';
+        return laidOut.map((button, index) => {
+          const buttonBox = button.getBoundingClientRect();
+          const labelNode = button.querySelector<HTMLElement>('.ui-action__label');
+          const labelBox = labelNode?.getBoundingClientRect() ?? null;
+          const neighbour = laidOut[index + 1] ?? null;
+          const neighbourLeft = neighbour === null ? null : neighbour.getBoundingClientRect().left;
+          const round = (value: number): number => Math.round(value * 10) / 10;
+          return {
+            control: nameOf(button),
+            label: labelNode?.textContent?.trim() ?? '',
+            buttonWidthPx: round(buttonBox.width),
+            buttonHeightPx: round(buttonBox.height),
+            buttonRightPx: round(buttonBox.right),
+            labelWidthPx: labelBox === null ? 0 : round(labelBox.width),
+            labelHeightPx: labelBox === null ? 0 : round(labelBox.height),
+            labelRightPx: labelBox === null ? 0 : round(labelBox.right),
+            labelOverflowPx: labelBox === null ? 0 : round(labelBox.right - buttonBox.right),
+            neighbourLeftPx: neighbourLeft === null ? null : round(neighbourLeft),
+            neighbour: neighbour === null ? null : nameOf(neighbour),
+            neighbourOverlapPx:
+              labelBox === null || neighbourLeft === null ? 0 : round(labelBox.right - neighbourLeft),
+            // `+ 0.5` rather than `>`: both figures are sub-pixel and a
+            // fractional layout would otherwise report every label as wider
+            // than its own box.
+            labelWiderThanBox: labelNode !== null && labelNode.scrollWidth > labelNode.clientWidth + 0.5,
+          };
+        });
+      })(),
+      actionsHeightPx: actions === null ? 0 : Math.round(actions.getBoundingClientRect().height * 10) / 10,
       hint: hint?.textContent?.trim() ?? '',
       coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
       targetReadout: target?.dataset['target'] ?? null,
@@ -1967,10 +2017,20 @@ window.lockstateUiHarness = {
       // and the panel undoes that class's uppercasing, so reading the rendered
       // text would make this assertion depend on a CSS rule it is not about.
       needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
-      /** One entry per object the named room is short, in the order drawn (#529). */
+      /** One entry per thing the named room is short, in the order drawn (#529). */
       needsItemText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
         (item) => item.textContent?.trim() ?? '',
       ),
+      /** The same lines' `data-kind`, so a spec need not read English to tell an object line from a doorway one (#938). */
+      needsItemKinds: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
+        (item) => item.dataset['kind'] ?? '',
+      ),
+      /** Distinct top edges among those lines, so a wrapping row can be measured as rows (#938). */
+      needsItemRows: new Set(
+        [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map((item) =>
+          Math.round(item.getBoundingClientRect().top),
+        ),
+      ).size,
       /**
        * The readout's own height, so a spec can measure what the block costs the
        * panel rather than asserting a line count and hoping.
