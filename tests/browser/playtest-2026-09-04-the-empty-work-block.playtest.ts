@@ -207,13 +207,27 @@ async function census(page: Page, limit = 20): Promise<{ total: number; rows: re
   if (payload.view?.data === undefined) console.log(`[census] a reply with no view: ${JSON.stringify(payload).slice(0, 400)}`);
   const view = payload.view?.data;
   const rows = (view?.rows ?? []).map((row) => {
-    const need = row['lowestNeed'] as { needId?: string; permille?: number } | undefined;
+    /*
+     * **`lowestNeed.level.permille`, not `lowestNeed.permille`** — the third
+     * lesson this channel cost, and unlike the first two it failed silently.
+     * `PrisonerNeedViewModel` is `{ needId, level: BoundedValue,
+     * unmetForStateIncome }`
+     * (`src/simulation/presentation/prisoner-projection.ts:124-128`); the
+     * figure lives one level down in `level`, so a reader asking for
+     * `permille` at the top gets `undefined` and prints a confident **0%** for
+     * every prisoner in the prison. Act 1's census printed `bladder 0%` beside
+     * a HUD reading `Bladder 61%` for the same four people, and the HUD was
+     * the one telling the truth. The action columns — the whole point of the
+     * census — were never affected, which is why act 4's table stands.
+     */
+    const need = row['lowestNeed'] as { needId?: string; level?: { permille?: number } } | undefined;
+    const permille = need?.level?.permille;
     return {
       entityId: Number(row['entityId'] ?? -1),
       action: String(row['currentActionId'] ?? '(none)'),
       phase: String(row['actionPhase'] ?? '?'),
       group: String(row['classificationGroupId'] ?? '?'),
-      lowestNeed: `${need?.needId ?? '?'} ${String(Math.round((need?.permille ?? 0) / 10))}%`,
+      lowestNeed: `${need?.needId ?? '?'} ${permille === undefined ? '(no level field)' : `${String(Math.round(permille / 10))}%`}`,
     };
   });
   return { total: Number(view?.total ?? -1), rows };
