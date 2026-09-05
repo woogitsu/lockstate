@@ -526,8 +526,11 @@ file. The reload path in §6 gets a framing because a reload builds a new scene;
 a prison switch keeps the scene, so the second prison gets none.
 
 **JUDGEMENT, and this is the worst compound state in this record.** `New prison`
-is the only control on any of the five tabs whose text contains the word
-*prison* (MEASURED, act 7, all five tabs), it is on screen on every tab, and it
+is the only control on any of the five tabs that is about *the prison* itself
+(MEASURED, act 7: a filter over every visible control's text, `aria-label` and
+`title` for `home|cent|recent|return|locate|find|camera|view|jump|prison`
+returns, on every tab, `New prison` and the `OVERVIEW` tab, plus `Admit a
+prisoner` on overview — nothing else), it is on screen on every tab, and it
 is what a lost player's eye lands on when they are looking for something about
 their prison. Pressing it (a) destroys the current prison's unsaved play with no
 dialog — `docs/research/2026-09-04-many-prisons.md` measured that, 0 dialogs,
@@ -743,8 +746,9 @@ explain to anybody.
 
 **The name is the owner's** under `AGENTS.md`'s fourth exclusion. What it must
 convey is that it moves the *camera* and not the prison: the only control on any
-tab whose text contains the word *prison* is **`New prison`** (MEASURED, act 7,
-all five tabs), which destroys the current session's unsaved play
+tab that is about *the prison* is **`New prison`** (MEASURED, act 7: the same
+filter's only other hits are `Admit a prisoner` and the `OVERVIEW` tab), which
+destroys the current session's unsaved play
 (`docs/research/2026-09-04-many-prisons.md`), so a recentre control named near
 that phrase is a control a player will be afraid to press.
 
