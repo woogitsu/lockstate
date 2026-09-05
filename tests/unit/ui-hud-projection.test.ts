@@ -238,7 +238,7 @@ function metricWithRoomNeeds(
  * to disagree below for the same reason.
  */
 function roomNeeds(overrides: Partial<HudRoomNeedsViewModel> = {}): HudRoomNeedsViewModel {
-  return { unfinishedRooms: 0, totalRooms: 0, totalNeeds: 0, needs: [], ...overrides };
+  return { unfinishedRooms: 0, totalRooms: 0, totalNeeds: 0, needs: [], atCapacity: [], ...overrides };
 }
 
 describe('status strip: tone and badges', () => {
