@@ -152,6 +152,7 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
       directions rather than overwriting is the whole reason this chain is
       worth reading. What this adds is that its remedy is not available
       everywhere. It does not take it back.
+
       Measured on `main` at `75ecd7c` (v0.0.491), in `/workspace/lockstate` and
       in a fresh `git worktree add` off `origin/main`, side by side:
       - `git lfs version` prints `git: 'lfs' is not a git command.` and exits
