@@ -7618,9 +7618,32 @@ Measured at `05640b6` (v0.0.210):
   room (`src/simulation/objects/room-capacity.ts:176-201`, ADR 0028 decision 2)
   and reads no rectangle; the rule this amendment scopes is the
   *concurrent-use* ceiling, whose three production callers
-  (`src/simulation/prisoners/action-system.ts:820`, `:1067`, `:1082`) all pass a
+  (`src/simulation/prisoners/action-system.ts:1168`, `:1531`, `:1569`) all pass
+  a
   capability and all sit behind a `room-catalog-id` target, so only
   `action.yard-recreation` on `room.yard` can reach it.
+
+  **THOSE THREE NUMBERS READ `:820`, `:1067` AND `:1082` AND ALL THREE WERE
+  WRONG BEFORE THIS WINDOW OPENED — no anchor could have found them, and that
+  is the finding rather than the repair.** `src/simulation/prisoners/action-system.ts`
+  is not in this window, and it is byte-identical at the oldest commit this
+  container's history reaches as it is at `origin/main`, so the numbers have
+  been false throughout every window any recent anchor has looked at: `:820`,
+  `:1067` and `:1082` are all doc-comment prose, and a delta intersection can
+  only ever reach a file some merge happened to touch. **The claim itself is
+  true and was re-derived rather than trusted**, which is why only the
+  coordinates move: exactly three of `RoomInstanceRegistry`'s methods consult
+  `concurrentUseCapacityFor`, and `action-system.ts` calls all three and
+  nothing else — `claimUse` at `:1168`, `hasPlaceForUse` at `:1531` and
+  `findAvailableForUse` at `:1569`. All three pass
+  `action.requiredObjectCapability`; the two that select by catalogue id read
+  `action.target.roomCatalogId` directly, and the third sits behind
+  `if (action.target.kind !== 'room-catalog-id') return true;`
+  (verbatim in `src/simulation/prisoners/action-system.ts`)
+  so "all sit behind a `room-catalog-id` target" holds for the claim as
+  written. **This entry is the demonstration of §6's recommendation 1 that this
+  pass owes rather than argues**: the sentence's three numbers rotted invisibly
+  and its one quotation cannot.
 
   **The three coordinates above name the wrong FILE, and they did so on the day
   they were written — corrected at the `3f8c00b0` anchor, in both directions.**
@@ -7947,10 +7970,25 @@ settled, items 2 and 3 as still owed.
    absence sentence: `grep -rn 'prisoner-detail' src/ui/ src/main.ts` returns
    **seventeen** hits in six files on this tree, and one of them is a reader —
    `src/ui/simulation-prisoner-detail.ts` requests `hud/prisoner-detail` at
-   `:192`, `src/main.ts:1429` constructs the `PrisonerDetailReader` that does
+   `:192`, `src/main.ts:1439` constructs the `PrisonerDetailReader` that does
    it, and `src/ui/hud/regime-panel.ts:738` repaints an inspector from the
    reply (**this read `:730` from `6261cc89` through seven anchors and moved by
-   eight at #993, v0.0.481**). **Dated rather than merely reported**, per that document's rule that a
+   eight at #993, v0.0.481**).
+   **`src/main.ts` read `:1429` at the `829d3c11` anchor and is `:1439` at
+   this one** — correct on that tree and ten lines further down on this one,
+   #1009's play-test wiring having landed above it. So it is a mover of this
+   window and not an inherited error, and the two are separated here by the
+   only check that can: the number was opened at `829d3c11` before it was
+   called stale. The durable form is beside it, and this is the first citation
+   in this file to carry both:
+   `const prisonerDetailReader = client === undefined ? undefined : new PrisonerDetailReader(client);`
+   (verbatim in `src/main.ts`)
+   — which `tests/foundation/adr-quotation-verbatim-contract.test.ts` binds, so
+   the next reader is told when the *code* changes rather than when a line
+   count does. `src/ui/simulation-prisoner-detail.ts:192` and
+   `src/ui/hud/regime-panel.ts:738` were both re-opened at this anchor and both
+   hold, on files this window did not touch, and the grep's own figures still
+   read **seventeen** hits in **six** files. **Dated rather than merely reported**, per that document's rule that a
    pass establish *when* a claim went false: the sentence was written at
    `6261cc89` (the v0.0.417 anchor, #883, 2026-09-03 12:58 UTC), and
    `git grep -c prisoner-detail 6261cc89 -- src/ui src/main.ts` returns nothing
@@ -7972,9 +8010,24 @@ settled, items 2 and 3 as still owed.
 
    **The entry's price is unchanged by the correction, and item 3 below still
    asks the owner exactly what it asked.** Verified rather than assumed:
-   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1840`) carries the
+   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1849`) carries the
    entity id, the name, the standing label, the classification group, the risk
    tier and all six needs — and **no current action**, deliberately.
+
+   **AND THAT NUMBER MOVED AGAIN IN ONE WINDOW: `:1840` at `829d3c11`, `:1849`
+   here.** The previous anchor corrected it from `:1806` to `:1840` and wrote,
+   in the paragraph immediately below, that the durable form is the symbol —
+   and the number it had just repaired was stale nine releases later, moved by
+   #1011's not-ready room work above it. **This is the strongest evidence in
+   this file for §6's recommendation 1 that any anchor has produced**, because
+   it is not a citation nobody had read: it is a citation read, corrected and
+   published one window ago by a pass that named the fix and did not apply it.
+   Applied here instead of restated:
+   `export interface HudPrisonerDetailViewModel {`
+   (verbatim in `src/ui/hud/view-model.ts`)
+   — bound by `tests/foundation/adr-quotation-verbatim-contract.test.ts`, so
+   the next reader learns of a change to the *declaration* and never again of a
+   change to the line count above it.
 
    **This citation read `:1806` from `4c00eaba` until the `413def1c` anchor, and
    the number is corrected rather than overwritten because which kind of citation
@@ -12758,10 +12811,20 @@ one direction.
   `addEventListener` calls are now 44 lines apart with the crash-reporter gate
   between them, and one number cannot name both without eventually naming
   neither**);
-  `src/main.ts:3311` mounts the consent prompt (**this read `:2945-2950`, which
+  `src/main.ts:3365` mounts the consent prompt (**this read `:3311` at
+  `829d3c11` — correct on that tree, 54 lines short on this one, #1009's
+  play-test wiring having landed above it. This is the citation with the
+  longest re-anchoring history in the file, the whole run of them is written
+  out below, and it is now cited by quotation as well as by number so the run
+  can stop:**
+  `createTelemetryConsentPrompt({`
+  (verbatim in `src/main.ts`)
+  **— the link immediately before this one was a repair of a number that had
+  already been false when it was certified**, which is the difference this
+  quotation removes: it read `:2945-2950`, which
   was ALREADY FALSE at `413def1c`, where `createTelemetryConsentPrompt({` stood
-  at `:3302` — the previous anchor certified this file as read and this number
-  with it; before that it read `:2494-2499`;
+  at `:3302` — the anchor before last certified this file as read and that
+  number with it; before that it read `:2494-2499`;
   #468's save-import work moved it twelve lines and it was re-anchored to
   `:2506-2511` at `c00b641`, then held through `07add3e`, then #500's
   `generateMasterSeed` function — inserted above it for the determinism reason
@@ -14207,11 +14270,20 @@ Three properties it was built to have, stated here because a `toEqual([])`
 gate that lacks them reads exactly like compliance:
 
 - **Non-vacuous.** It asserts floors — more than 300 corpus files walked
-  (`tests/foundation/adr-status-reference-contract.test.ts:427`) and more than 15
-  status claims actually parsed and compared (`:431`; 33 on the tree that landed
+  (`tests/foundation/adr-status-reference-contract.test.ts:434`) and more than 15
+  status claims actually parsed and compared (`:438`; 33 on the tree that landed
   it), plus more than 20 ADRs found on disk (`:405`) — so a scanner that read
   nothing, or a claim pattern that stopped matching prose, fails instead of
-  passing quietly. All three floors re-read at this commit. Its positive control
+  passing quietly. All three floors re-read at this commit.
+  **Two of the three numbers read `:427` and `:431` and were wrong on the tree
+  the `829d3c11` anchor was taken against as well as on this one** — `:434` and
+  `:438` at both, so wrong by seven both times, while `:405` was right at both.
+  `tests/foundation/adr-status-reference-contract.test.ts` is in no recent
+  window, which is exactly why nothing found this: the delta method reaches a
+  file because some merge touched it, and a file no merge touches keeps
+  whatever it already had. The floors themselves are unchanged — `300`, `15`
+  and `20` — so only the coordinates were false, which is the failure mode a
+  quotation removes and a number invites. Its positive control
   runs the checker against text whose verdict is known, in both directions.
 - **It bites.** Proved by reintroducing `"ADR 0017 is still Proposed"` into
   `src/ui/hud/messages.ts` and watching it fail with that file and that
