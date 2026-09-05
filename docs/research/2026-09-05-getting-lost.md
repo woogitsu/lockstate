@@ -623,3 +623,184 @@ with the arrow keys and has no gesture of any kind that brings them back**,
 except way back D: reload and `Load`.
 
 ---
+
+## §9 — The two open issues, verified rather than inherited
+
+### #794 — *"A player can pan into solid black and there is nothing telling them the way back"*
+
+**Still true in its first half and no longer true in its second, and the record
+should say which.**
+
+- *"Panning has no clamp"* — **still true.** READ, §1.2: three scroll write
+  sites, no clamp, no `setBounds`. MEASURED, act 5: **617 tiles** out with no
+  resistance of any kind.
+- *"a solid black screen, with the HUD still reading normally"* — **still
+  true, and now measured to the pixel.** MEASURED, act 2: 113/113 sampled world
+  points exactly `VOID_COLOR` after **three** 800px drags.
+- *"nothing on it indicating which direction their prison is"* — **still
+  true.** MEASURED, act 2, the whole `.hud` text on all five tabs; MEASURED,
+  act 1 and act 7, the 19/44/40/20/18 visible controls per tab.
+- *"No 'return to prison' control exists anywhere in `src/ui` or
+  `src/rendering`"* — **false since 2026-09-02.** One exists, it costs one
+  press, and it lands on `NEW_PRISON_ORIGIN_TILE` exactly (§4). It is the
+  minimap, and it is labelled as unavailable.
+
+So #794's three shapes (clamp the pan / add a control / show something at the
+edge) are now a choice between the **second done-but-unlabelled** and the third.
+This record's P1 and P4 are those two.
+
+### #793 — *"The minimap accepts clicks and does nothing with them"*
+
+**Fixed in the code and verified working here.** `8fead7e7` (2026-09-02) added
+`navigateToMinimapPoint` and wired it. MEASURED, act 4: one press moves the
+camera to (16,16); three corner presses land on three distinct tiles spanning
+the owned chunk; MEASURED, act 5: it still works from 617 tiles out; MEASURED,
+act 8: it works in a second prison started in the same page. The issue is open
+and, as written, its defect is gone.
+
+**What survives it is smaller and sharper**: the issue's own closing question was
+*"is the minimap supposed to navigate?"*, the answer landed as *yes*, and the
+sentence on the surface was not brought along (§4.1). The issue's footprint
+figure also needs the caveat §1.1 measures — *"14.5% of the canvas"* is a
+1280×800 figure for a panel whose share runs from **7.14% to 27.42%** across the
+five viewports this repository measures at.
+
+---
+
+## Improvement proposals
+
+Five, ordered by the ratio of what they fix to what they cost. Each names the
+file and line that would render it, and — per the brief's limit — where a
+proposal is a *string*, the mechanism that would make that string true of the
+code is named too. **Nothing here is implemented; this branch is read-only on
+`src/`.**
+
+### P1 — Show the sentence that is already written, before the click instead of after it
+
+**Cost: one conditional. Fixes the single most damaging thing in this record.**
+
+Today (`src/ui/hud/hud.ts:1508`):
+
+```ts
+const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
+```
+
+and (`:1517-1522`) the click handler swaps in `HUD_MESSAGE_KEY.minimapNavigable`
+*after* a navigation succeeds. So the true sentence exists, is translated, is
+owner-pending on wording only, and is shown to nobody who needs it (§4.1).
+
+**Why it cannot simply be flipped, and what makes it true.** *"No map is drawn
+here yet — click to jump the camera there"* is true exactly when a click would
+navigate, which is `WorldScene.navigateToMinimapPoint`'s own precondition:
+`lastLoadedBounds !== undefined` (`world-scene.ts:1280-1281`). Before a prison
+exists — and on a `Worker`-less page, `NO_SIMULATION_FEED` — it is false, which
+is the case the current code is careful about. **MEASURED**, act 6: that state
+is reachable in ordinary play, because a reload lands the player on exactly it.
+
+So the shape is a *predicate*, not a flip. `hud.ts:820` already declares
+
+```ts
+readonly onMinimapNavigate?: (point: { readonly fx: number; readonly fy: number }) => boolean;
+```
+
+and `src/main.ts:2106` supplies it from a `worldScene` already in scope. A
+sibling `readonly canMinimapNavigate?: () => boolean`, supplied there as
+`() => worldScene.hasLoadedWorld()`, reads the **same cached field** the scene
+already keeps for this exact reason — `lastLoadedBounds`'s own docblock
+(`world-scene.ts:263-271`) says it exists because *"a minimap click can arrive
+between two `update()`s"*. The HUD then renders `minimapNavigable` when it
+returns true and `minimapPlaceholder` when it does not, and the sentence on
+screen is true of the code at the moment it is on screen. No new state, no new
+subscription, no new string.
+
+### P2 — Put the way back in the panel header, where collapsing cannot take it
+
+**MEASURED**, act 1: `.hud-minimap` is 398×372 on all five tabs and **27.42% of
+a 900×600 viewport** (§1.1). A player short of screen presses `Collapse`.
+**READ**, `src/ui/primitives/panel.ts:72`: `body.hidden = collapsed` — and
+`hud.ts:1556` is `minimapPanel.body.append(minimapSurface, alertsSection.element)`.
+REASONED from those two: **collapsing the minimap removes the only way back from
+the screen, and takes the alerts list with it.** The header does not collapse;
+only the body does.
+
+So the recentre control belongs in the *header*, beside `Collapse`. `PanelOptions`
+(`panel.ts:21-26`) carries `title`, `icon`, `collapse`, `className`, and
+`createPanel` builds `headerChildren` at `:40-59` — an optional
+`readonly actions?: readonly { icon: IconId; label: string; onActivate: () => void }[]`
+pushed into `headerChildren` before the toggle is the whole change to the
+primitive, and it is a primitive four other panels would be able to use.
+
+**What it does, at each zoom level.** It calls the body of
+`frameCameraOnFirstWorld` (`world-scene.ts:1231-1234`) without the
+`framedOnWorld` guard — `centerOn` on the middle of `loadedBounds` — so it
+writes **scroll only and never zoom**. MEASURED consequences, from act 3's two
+measured ends: at zoom 3 the player lands on tile (16,16) seeing 8×5 tiles; at
+zoom 1, 24×14; at zoom 0.2, 114×65 with the whole 32×32 chunk inside it. That is
+the right division of labour — the button answers *where*, the zoom keys answer
+*how close* — and it means the control has no zoom-dependent behaviour to
+explain to anybody.
+
+**The name is the owner's** under `AGENTS.md`'s fourth exclusion. What it must
+convey is that it moves the *camera* and not the prison: the only control on any
+tab whose text contains the word *prison* is **`New prison`** (MEASURED, act 7,
+all five tabs), which destroys the current session's unsaved play
+(`docs/research/2026-09-04-many-prisons.md`), so a recentre control named near
+that phrase is a control a player will be afraid to press.
+
+### P3 — A key, which costs no pixels at all
+
+Every piece of this route exists and is exercised:
+
+- `ACTION_REGISTRY` (`src/input/actions.ts:33-50`) already holds six camera
+  actions, two of them `behavior: 'discrete'`.
+- `DEFAULT_KEYBOARD_BINDINGS` (`src/input/bindings.ts:10-35`) already binds
+  eight pan keys and two zoom keys.
+- `WorldScene.handleActionEvents` (`world-scene.ts:733-745`) already switches on
+  `camera.zoom.in` and `camera.zoom.out` and calls a private method for each.
+
+A seventh action, one binding on `Home`, and one `case` calling the same
+`recentreOnWorld` P2 needs. `KeyboardBinding` has no modifier vocabulary
+(`bindings.ts:44-52` says so and says why) and `Home` needs none.
+`tests/foundation/unconsumed-action-contract.test.ts` pins that every action
+switched on there is `discrete`, so the new action is guarded on arrival.
+
+**This is the cheapest of the five and it is not sufficient alone**: MEASURED,
+act 7, the surface exposes `tabIndex: -1`, `role: null`, `aria-label: null`, and
+is not matched by any focusable selector — so a keyboard-only player has **no**
+way back today, and a key is the only proposal here that gives them one. It is
+also the proposal a player is least likely to discover, which is why it is third
+and not first.
+
+### P4 — Say which way home is, on the world, only when home is off screen
+
+This is #794's option 3, with both of its inputs named and neither of them new.
+The scene holds `lastLoadedBounds` (`world-scene.ts:272`, refreshed every
+`update()`) and Phaser's own `camera.worldView`, which `docs/CAMERA.md` pins as
+equal to `visibleWorldBounds`. When the first is entirely outside the second —
+which is exactly the `owned-visible=false` this record measures — draw a chevron
+at the viewport edge on the bearing from the view's centre to the bounds' centre.
+
+Presentational only, so inside `AGENTS.md` boundary 1: it reads a cached copy of
+a value already read for rendering and writes only to an overlay, which is the
+same standing `navigateToMinimapPoint` already has
+(`world-scene.ts:1273-1275`).
+
+**Why a marker and not a number.** A distance in tiles is a true claim and a
+useless one — MEASURED, act 5, a player can be **617 tiles** out, and *"617
+tiles east"* does not tell a hand how long to drag. A chevron is a direction, and
+direction is the thing the screen currently withholds: MEASURED, act 2, 113 of
+113 sampled world points at drag 3 are one colour, and the whole HUD text on all
+five tabs names no position, direction or distance.
+
+### P5 — Take the alerts out of the minimap panel
+
+**READ**, `hud.ts:1556` and `panel.ts:72` (above): the alerts list is a child of
+the minimap panel's body, so one press of `Collapse` hides both. The two have
+nothing to do with each other — one is a map frame and one is a log — and they
+are joined only because the corner holds one panel. Giving `.hud__corner` two
+panels separates the collapse of a 224×224 square that draws nothing from the
+collapse of the channel that says what is going wrong in the prison.
+
+This is a layout change with a measured height budget behind it
+(`hud.css:289-335` is four hundred words on that budget), so it is the largest
+of the five and the one most likely to need an ADR rather than a patch.
