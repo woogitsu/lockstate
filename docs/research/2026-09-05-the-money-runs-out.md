@@ -466,6 +466,17 @@ Both return nothing. And loans, from the module that implements them —
 and `grep -rn "loanTerms" src/` finds the field's declaration (`:411`), that
 line, and nothing that sets it.
 
+**The one refund route that does exist is a *cancellation*, and it only works
+before the lorry arrives.** `hud.build.delivery` renders each in-flight order as
+`{count} × {material} · {total} back` with a `Cancel` beside it
+(`src/content/default-locale-en.ts:1543-1544`), and cancelling says
+`The delivery was cancelled — {total} back.` (`:1028`). MEASURED, act 1: after
+the 620-brick purchase and two Fast-forward presses,
+`.hud-build__deliveries` read `not laid out` — the bricks had already landed, and
+a delivered brick has no control at all. `2026-09-04-is-there-a-way-back.md` §4
+found the same thing from the other side, calling the in-flight case *"an
+exemplary way back"* and its own sweep for a stock sell-back finding nothing.
+
 So the ADR that answers *"is there a way out"* answers it with three mechanisms,
 and a player at this version has none of them. **The way out that does exist is
 the one act 2 measures: dismissal** — which is not any of ADR 0075's three, and
@@ -683,8 +694,9 @@ and in the alert."* This proposal obeys that ruling rather than reopening it.
 **When.** When `dailyWageBillMinorUnits > treasuryMinorUnits` — that is, when
 what tomorrow's payday will ask for is more than what the treasury holds. It is
 **not a new threshold**: both operands are published fields on the same
-`HudCountsViewModel` the chip is already drawn from (`view-model.ts:377`,
-`:389`, `:411`), and `PayrollSystem.update` bills exactly
+`HudCountsViewModel` the chip is already drawn from —
+`treasuryMinorUnits` at `src/ui/hud/view-model.ts:353` and
+`dailyWageBillMinorUnits` at `:411` — and `PayrollSystem.update` bills exactly
 `unpaid + dailyWageBillMinorUnits()` at each boundary
 (`src/simulation/economy/payroll.ts:263`), so the comparison is the one the
 simulation is about to make.
