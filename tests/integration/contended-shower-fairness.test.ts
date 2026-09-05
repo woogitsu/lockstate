@@ -269,10 +269,11 @@ function watched(showerHeads: 2 | 8): WatchedRun {
  * `Error: Test timed out in 5000ms` -- a red that says nothing about the
  * prison and teaches its reader to discount red.
  *
- * 30,000 ms is what the twenty other expensive tests in this suite already
- * take, `tests/integration/economy-loan-recovery.test.ts` among them, and it
- * is a budget rather than an absence of one: a kernel that stopped advancing
- * still fails here, and it fails in half a minute.
+ * 30,000 ms is the figure this suite already gives a test that runs the kernel
+ * -- `tests/integration/economy-loan-recovery.test.ts` and
+ * `tests/unit/prisoners-actor-tier-scale.test.ts` both take it -- and it is a
+ * budget rather than an absence of one: a kernel that stopped advancing still
+ * fails here, and it fails in half a minute.
  *
  * The money test is deliberately not given one. It never calls `watched`; it
  * stops at `BUILT_BY` and costs 489 ms, so the default is doing its job.
