@@ -422,3 +422,290 @@ alone, 2,495 lines) and contains **no** occurrence of *game over*, *you lose*,
 *defeat*, *bankrupt*, *shut down* or *closed down* in any case. ADR 0049's
 *"insolvency is a state, not a loss condition"* is kept to the letter: there is
 no sentence anywhere that could tell a player they have lost.
+
+---
+
+## 6. MEASURED — at the floor the prison keeps earning, the income all goes to arrears, and the population quietly falls
+
+This is the half of the state that the empty prison of
+`2026-09-04-can-this-prison-fail.md` could not show, and it is a different
+condition wearing the same chip.
+
+**VERIFIED, read** — the two systems that move money at a day boundary run in
+the same tick and in this order: `StateIncomeSystem.order = 120`
+(`src/simulation/economy/income.ts:747`), `PayrollSystem.order = 130`
+(`src/simulation/economy/payroll.ts:225`), both on
+`{ intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }`. Income
+is credited, then the payroll spends what it can down to `floorFor('wages')`,
+which is the treasury floor itself (`payroll.ts:319`; `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages`
+is `Number.NEGATIVE_INFINITY`, clamped to the floor —
+`src/simulation/economy/treasury.ts:427-432`).
+
+**So at the floor the day's income exists and is spent on wages before the
+player can see it.** MEASURED, act 2, eleven consecutive samples:
+
+```
+day 10  funds=-2500 arrears=  770  bill=2400 residents=4
+day 11  funds=-2500 arrears= 1970  bill=2400 residents=4
+day 12  funds=-2500 arrears= 3170  bill=2400 residents=4
+day 13  funds=-2500 arrears= 4370  bill=2400 residents=4
+day 14  funds=-2500 arrears= 5570  bill=2400 residents=4
+day 15  funds=-2500 arrears= 6770  bill=2400 residents=4
+day 16  funds=-2500 arrears= 7970  bill=2400 residents=4
+day 17  funds=-2500 arrears= 9170  bill=2400 residents=4
+day 18  funds=-2500 arrears=10370  bill=2400 residents=3
+day 19  funds=-2500 arrears=11870  bill=2400 residents=3
+```
+
+**The balance never moves and the arrears grow by exactly `bill − income` every
+day** — `2,400 − 1,200 = 1,200` for eight boundaries, then **1,500** once the
+population fell.
+
+### The population fell, and nothing said so
+
+`roomOccupants` goes `4 → 3` at day 18. **VERIFIED, read** — that is
+`DischargeSystem` (`src/simulation/prisoners/discharge-system.ts`), whose alert
+sentence is `'{count} released — their sentences are served.'`
+(`src/content/default-locale-en.ts:890`). It is a normal, intended event.
+
+**What it does to a broke prison is not visible anywhere.** The prison's only
+income line fell by 25%, permanently, and the two chips that could have said so
+cannot: `PRISONERS` went `4 → 3`, which is a headcount and not money, and
+`EARNED TODAY` is a *within-day accrual that is always rising* — at the sample
+where the drop first showed it read `475`, on its way to 900 instead of 1,200,
+and a player has no previous day's total on screen to compare it against.
+
+**ARITHMETIC**, and it is the shape of the trap: at the floor the prison cannot
+build a bed, so it cannot replace a resident with a new one — except that
+**admission is free**. `grep -rn "\.spend(" src/simulation` returns exactly
+three call sites — `procurement.ts:284`, `payroll.ts:319`, `hiring.ts:217` —
+and `AdmitPrisoner` is not among them, which the Intake panel states in its own
+words at the floor:
+
+> A prison needs a cell before it can admit anyone. **It does not need a free
+> bed:** an arrival with none waits until a bed is free.
+
+So **the one lever that restores income at the floor costs nothing and is on a
+different tab from every sentence about money**, and the event that makes it
+necessary — a discharge — is announced as good news.
+
+### What the screen says while all this happens
+
+The event band, verbatim, at the floor:
+
+> Payday went unpaid — your staff are owed **11870**.
+
+**The arrears figure is still the only money on screen without digit grouping**,
+in the same frame as `-2,500 | FUNDS` and `Not enough money — you need **1,330**
+more.` on the Staff panel. That is finding 6 of
+`2026-09-04-can-this-prison-fail.md`, **re-measured and still live at
+v0.0.475**.
+
+**And still one row per day, none coalesced.** The alerts list at the floor,
+verbatim, is seven separate rows:
+
+```
+Payday went unpaid — your staff are owed 4370.  Day 12 · Warning · Clear this alert
+Payday went unpaid — your staff are owed 5570.  Day 13 · Warning · Clear this alert
+Payday went unpaid — your staff are owed 6770.  Day 14 · Warning · Clear this alert
+Payday went unpaid — your staff are owed 7970.  Day 15 · Warning · Clear this alert
+Payday went unpaid — your staff are owed 9170.  Day 16 · Warning · Clear this alert
+Payday went unpaid — your staff are owed 10370. Day 17 · Warning · Clear this alert
+Payday went unpaid — your staff are owed 11870. Day 18 · Warning · Clear this alert
+```
+
+Days 10 and 11 — the first two unpaid paydays, the ones a player most needed to
+see — are **no longer in the list**: the only other rows are a riot from day 5
+and the calibration refusal. The list keeps the least informative copies of one
+repeating fact and drops the moment it started.
+
+---
+
+## 7. MEASURED — the way back exists, it is three rows at a time behind a fold called "On the payroll", and issue #912 is fixed
+
+`2026-09-04-can-this-prison-fail.md` finding 2 reported that *"sixty guards on
+the payroll, and not one of them can be dismissed"*. **That finding was wrong,
+and the repository already knows why**: `src/ui/hud/staff-panel.ts:203-218`
+records that the roster list and the *held* list shared one class name, so the
+probe read the held block — correctly empty in a prison with no posts — and
+concluded the control could never be reached. The classes were split
+(`ROSTER_LIST_CLASS = 'hud-staff__held-list hud-staff__roster-list'`) and the
+fold was made to scroll itself into view on opening (`:1448`), against a
+five-viewport measurement quoted in that same docblock.
+
+**MEASURED at v0.0.475, at the floor, with thirty guards on the payroll:**
+
+```
+[act2] roster section present: 1
+[act2] roster header text before opening: "ON THE PAYROLL\n2,400 a day"
+[act2] roster opened: "ON THE PAYROLL\n2,400 a day\nGuard · On Post\nDismiss\nGuard ·
+       Unassigned\nDismiss\nGuard · Unassigned\nDismiss\nand 27 moreA dismissed staff
+       member leaves the prison for good, and their wage stops."
+[act2] roster rows: [{"text":"Guard · On Post | Dismiss","visible":true,"bottom":661},
+                     {"text":"Guard · Unassigned | Dismiss","visible":true,"bottom":713},
+                     {"text":"Guard · Unassigned | Dismiss","visible":true,"bottom":765}]
+[act2] dismissal 0: confirmation said "Dismiss Guard · On Post? Their wage stops and
+       they do not come back." | staff 30 -> 29 | funds -2500
+```
+
+**Three rows visible, all three enabled, `and 27 more`, and the dismissal takes.**
+The confirmation names the person. The balance does not move, which is
+`src/simulation/staff/dismissal.ts:113` — *"Money: neither refund nor severance,
+and that is deliberate"* — working as written.
+
+**What it costs the player, measured rather than assumed.** The fold is
+collapsed on arrival (`staff-panel.ts:1435`, `collapsed: true`), the list holds
+`STAFF_ROSTER_ROW_LIMIT = 3` (`:165`), and a dismissal is **two presses on the
+same control** with a settle window between them
+(`STAFF_ROSTER_ROW_SETTLE_MS = 1_000`, `:196`, and `hud/dismiss-arming.ts` for
+the confirmation step the owner ruled on 2026-09-03).
+
+---
+
+## Improvement proposals
+
+Every proposal below is grounded in something measured above, and every string
+is accompanied by the code that would make it true — `AGENTS.md`'s release of
+2026-09-04 gives us the choice of words and not the promise. **None of these
+sets a number**: balance is the owner's, and each proposal is a *readout* or a
+*comparison of two figures the wire already carries*, never a new threshold
+constant.
+
+### P1 — The funds chip should be able to speak while the balance is positive
+
+**What it costs today (finding 2):** `overdraftTone` returns `undefined` for
+every `treasuryMinorUnits >= 0`, so 25,000 and 40 are drawn identically and the
+first word about money arrives at −1. A player can spend 99.2% of the grant in
+one press and be told nothing.
+
+**What the player sees, and where.** The badge slot and the tooltip the chip
+already has — `overdraftBadge` and `overdraftDescription`, one function each,
+both already wired through `createStatChip`'s `trailing` and `description`
+nodes. Nothing new is added to the row, which matters: the +133px measurement
+recorded at `src/content/default-locale-en.ts:191-197` pushed the FUNDS chip off
+the visible edge at 1280×800 the last time a long badge was tried, and the
+owner's ruling of 2026-09-01 settled it as *"the chip keeps the short wording …
+the name of the threshold is said elsewhere … in the hover tooltip on the chip,
+and in the alert."* This proposal obeys that ruling rather than reopening it.
+
+**When.** When `dailyWageBillMinorUnits > treasuryMinorUnits` — that is, when
+what tomorrow's payday will ask for is more than what the treasury holds. It is
+**not a new threshold**: both operands are published fields on the same
+`HudCountsViewModel` the chip is already drawn from (`view-model.ts:377`,
+`:389`, `:411`), and `PayrollSystem.update` bills exactly
+`unpaid + dailyWageBillMinorUnits()` at each boundary
+(`src/simulation/economy/payroll.ts:263`), so the comparison is the one the
+simulation is about to make.
+
+**Instead of.** Nothing — the chip is silent here today.
+
+**Proposed strings, with what makes each true:**
+
+- badge: `won't cover tomorrow` — true when the condition above holds, because
+  the payroll's `due` at the next boundary is at least
+  `dailyWageBillMinorUnits` and `Treasury.spend` cannot take the balance below
+  `floorFor('wages')`.
+- tooltip: `Tomorrow's wages are {bill}. The treasury holds {balance}. The state
+  pays at the end of each day, for prisoners who have a bed.` — the first two
+  clauses are the two published figures; the third is the clause the three
+  existing overdraft sentences already carry, verified in
+  `default-locale-en.ts:254`, `:273` and `:332`.
+
+**Why this and not a low-balance threshold:** a threshold is a balance decision
+and ADR 0017 decision 5 reserves it. A comparison of the balance against the
+prison's own committed outgoings is not a number anybody has to choose, and it
+moves correctly on its own when the owner changes wages, income or the grant.
+
+### P2 — The drag should price itself, because it is the only spend that never says anything
+
+**What it costs today (findings 1 and 2):** the Build catalogue prices nothing;
+the arm hint describes the gesture and not the money; the only price is
+`Buy 2 × Brick · 80`, per raw material, behind a shut fold; and `PlaceBuildOrder`
+is the one money-spending intent `judgeAffordability` is not called for
+(`src/main.ts:2766` and `:2988` are its only two callers).
+
+**What the player sees, and where.** The Build panel's own arm hint — the
+element that today reads *"Click a tile edge to place a wall. Drag along it to
+lay a run…"* — gains the segment price while the tool is armed; and
+`.hud-build__coordinates`, which already tracks the pointer, gains the running
+total of the run in progress.
+
+**When.** Whenever a buildable is armed, and continuously during a drag.
+
+**Instead of.** Nothing is displaced; both are additions to elements that are
+already on screen with the tool armed.
+
+**Proposed strings, with what makes each true:**
+
+- arm hint suffix: `{total} a segment.` — true from the same two data the Buy
+  row already multiplies: the buildable's material list
+  (`src/simulation/construction/definition.ts`) and
+  `procurableMaterial(id).unitPriceMinorUnits`
+  (`src/content/procurement-catalog.ts`), which is exactly what
+  `just-in-time-materials.ts` charges at the press.
+- during a drag: `{count} segments · {total}` — the same product over the
+  segment count the drag has produced.
+
+**This is not the reserve floor #641 lists as its option 3, and deliberately
+not**: a reserve floor is new economic policy and the owner's. This is option
+2 — *"show the total cost of a drag while it is being dragged, so 312 walls is
+a number the player saw"* — which is a readout.
+
+### P3 — Say that a discharge just cut the prison's income
+
+**What it costs today (finding 6):** `roomOccupants` fell `4 → 3` at the floor
+and the arrears rate went from 1,200 to 1,500 a day. The only sentence for the
+event is `'{count} released — their sentences are served.'`
+(`default-locale-en.ts:890`), which reads as good news, and the only free lever
+that answers it — Admit — is on a different tab and is never suggested.
+
+**What the player sees, and where.** The same alert row, with a second clause.
+
+**When.** On the same event, unchanged.
+
+**Instead of.** `{count} released — their sentences are served.`
+
+**Proposed string:** `{count} released — their sentences are served. Their beds
+are free and the state stops paying for them.` Both added clauses are **VERIFIED,
+read**: `releasePrisoner` frees the residency place
+(`src/simulation/prisoners/discharge-system.ts:184`), and
+`stateIncomeForOccupiedPlaces` folds over
+`residentIdsWithExistingPlace()` (`src/simulation/economy/income.ts:548-556`),
+so a released resident stops being counted at the next boundary.
+
+### P4 — Group the arrears figure, and coalesce the row
+
+**What it costs today (finding 6):** `Payday went unpaid — your staff are owed
+11870.` beside `-2,500 | FUNDS` and `you need 1,330 more`, and seven separate
+rows for one repeating fact, with the first two — the ones that would have told
+the player when it started — already scrolled out of the list.
+
+This is finding 6 of `2026-09-04-can-this-prison-fail.md`, **re-measured and
+still live**. It is a defect rather than a proposal and is listed here only so
+the two halves stay together: the grouping is a formatter question, and the
+coalescing is the one the 09-04 record already diagnosed — *"an amount in the
+text is what defeats it"*, since the riot rows do coalesce (`4×`) and these
+cannot, each carrying a different number.
+
+---
+
+## Instrument failures, reported rather than hidden
+
+**1. Act 1's first run lost eight of its nine drags to a tile index that was not
+on screen, and reported `0 command(s)` for each.** `calibrate` answered
+`tile (0,0) top-left = (-304, -574)`, so the row-4 edge line the act aimed at
+was 318 pixels above the top of the window; `document.elementFromPoint` returned
+`nothing` at every start point. Nothing was wrong with the game. The act now
+derives its tile range from the screen box the world occupies and checks every
+drag start before trusting it — which is the brief's *"prove your presses land"*
+rule met the second time rather than the first. **The finding this cost is
+stated as pending in "What this record does not claim".**
+
+**2. `countsSeries` gets slower the longer a session runs, and act 2 is the
+first playtest long enough to feel it.** The harness's tee keeps every
+non-delta worker message, and `countsSeries` maps over the whole array on every
+call; by tick 45,000 that array holds tens of thousands of `simulation/clock-state`
+messages, and each `latestCounts` call walks all of them. Act 2 calls it twice
+per dismissal. This is a probe cost and not a game one — every figure it returns
+is correct — but it is why the dismissal loop's wall-clock durations are not
+quoted as a claim about the game anywhere in this record.

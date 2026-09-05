@@ -472,12 +472,36 @@ test.describe('The money runs out', () => {
         say(act, `dismiss control ${attempt} is not visible; staff=${staffNow}`);
         break;
       }
-      await first.click();
+      /*
+       * **Bounded, because an unbounded `click()` cost this act a run.** The
+       * config sets no `actionTimeout`, so Playwright's default is to wait for
+       * ever; a roster row that goes unactionable therefore hangs the whole
+       * test with no line in the log, which reads as a stalled game rather
+       * than as a stalled probe. Ten seconds is far longer than
+       * `STAFF_ROSTER_ROW_SETTLE_MS` (1,000) and short enough that the state
+       * of the row gets *reported* instead of waited on.
+       */
+      try {
+        await first.click({ timeout: 10_000 });
+      } catch {
+        say(
+          act,
+          `ARMING PRESS ${attempt} never became actionable after 10s:` +
+            ` ${JSON.stringify(await panelText(page, '.hud-staff__roster'))}` +
+            ` | staff=${staffNow}`,
+        );
+        break;
+      }
       presses += 1;
       await page.waitForTimeout(150);
       const confirmation = await panelText(page, '.hud-staff__dismiss-confirm');
       const beforeStaff = (await latestCounts(page))?.staff ?? 0;
-      await first.click();
+      try {
+        await first.click({ timeout: 10_000 });
+      } catch {
+        say(act, `CONFIRM PRESS ${attempt} never became actionable after 10s; confirmation read ${JSON.stringify(confirmation)}`);
+        break;
+      }
       presses += 1;
       await page.waitForTimeout(1200);
       const afterStaff = (await latestCounts(page))?.staff ?? 0;
