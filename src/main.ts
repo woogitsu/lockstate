@@ -1936,6 +1936,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // screen. The list is the log; this is the notice, and it goes to a band
     // laid out at every viewport with no section to open -- which the alerts
     // list is not, at any viewport (#220).
+    //
+    // **"The same event" stopped being true of every event on 2026-09-05.**
+    // `EVENT_PRESENTATION.surfaces` in `src/ui/simulation-events.ts` now lets a
+    // member reach the log and not the band, and `rooms.zoned` -- the
+    // acknowledgement of a designation -- is the one that does, by the owner's
+    // ruling. This translator answers `undefined` for it, which is the same
+    // answer it gives for a restored record and means the same thing here: the
+    // field below is left exactly as it was, so a sentence the player is still
+    // reading keeps the line.
     const event = hudEventNoticeFromWorkerMessage(message);
     const nextAlerts = eventAlerts ?? alerts;
     if (
