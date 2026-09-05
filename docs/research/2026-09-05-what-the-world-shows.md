@@ -45,6 +45,15 @@ LOCKSTATE_BROWSER_TEST_PORT=5323 ./node_modules/.bin/playwright test \
   --grep "act 1"
 ```
 
+**Fifty-seven files are committed under
+`docs/research/2026-09-05-what-the-world-shows/`** and they are the evidence, not
+illustration. `act0-*` is the empty world; `act1-*` the first populated prison;
+`act2-*` the showroom; `act3-working*`/`act3-sealed*` the controlled pair;
+`act4-twelve*`/`act4-fifty*` the crowds; `act5-frame-0..5` and
+`act8-frame-0..7` the motion runs; `act6-*` the four room types; `act7-zoom-*`
+the wheel. A `-full` suffix is the whole 1440×900 page, no suffix is the crop
+at 1:1, and `-xN` is that crop magnified N times.
+
 Every crop below is a rectangle of the **page** in CSS pixels at the config's
 1440×900 viewport with `devicePixelRatio` 1, so a file named `…-room.png` is
 exactly the pixels a player's eye receives. Files with an `-xN` suffix are the
@@ -724,6 +733,12 @@ re-runs act 2 with that logging and finds the label already reading `Place …`
 when the wrong object went down, the reading flips to the game and it is a
 serious defect. I have made no claim about the panel.
 
+**Third: I do not know why the door was still drawn as a construction block
+after the queue said empty.** Act 8's frames 3 and 4 are the evidence and I have
+no diagnosis; the two candidate readings — a render phase that lags the
+simulation, or the queue readout emptying before the order does — are both
+plausible from where I stand and I did not separate them.
+
 **Not a claim of mine at all:** anything about whether the simulation reserved
 the tiles the straddling dining table is drawn over. I saw pixels crossing a
 wall and said so.
@@ -748,7 +763,12 @@ wall and said so.
   is unmeasured, and it is the case that matters most for §6's finding.
 - **Whether an object is ever hoverable or selectable.** I pressed tiles with
   build tools only. If there is an inspect gesture, I did not find it and did
-  not look for it.
+  not look for it. This is load-bearing for §3's weakest claim: an object with a
+  hover label would be readable despite the slab.
+- **Anything at all above four prisoners in a prison that works.** Acts 4's
+  crowds were in a cell with no door, so the twelve and the fifty were not
+  doing anything they could have been doing. Whether a working prison of fifty
+  looks different is unmeasured.
 - **The gate suites.** This branch adds no `*.spec.ts` and touches no `src/`,
   so no gate's behaviour changes; I ran the five documentation contracts in
   `tests/foundation/` and nothing else. Those reported `41 passed`, `3 failed`,
