@@ -364,3 +364,33 @@ every room the catalogue offers that this prison wants is already standing.
 mechanic at all. Nothing in this prison can go wrong for want of money, and
 there is nothing money can be spent on that the player has not already bought.
 
+## 5. Nothing grew without bound, and the ledger is exact five times running
+
+**MEASURED, act 1**, six reports spanning game days 18 to 24 at 68 residents,
+sampled about one in-game day apart (a day is 2,400 ticks):
+
+| report | tick | treasury | Δ | hudNodes | `usedJSHeapSize` |
+| --- | --- | --- | --- | --- | --- |
+| built | 42,548 | 45,350 | — | 1,063 | 148,000,000 |
+| round 1 | 44,954 | 64,950 | +19,600 | 1,078 | 148,000,000 |
+| round 2 | 47,198 | 84,550 | +19,600 | 1,102 | 148,000,000 |
+| round 3 | 49,402 | 104,150 | +19,600 | 1,102 | 148,000,000 |
+| round 4 | 51,604 | 123,750 | +19,600 | 1,102 | 148,000,000 |
+| round 5 | 53,807 | 143,350 | +19,600 | 1,102 | 148,000,000 |
+
+**`prisoners`, `roomOccupants`, `rooms`, `roomCapacity`,
+`accommodationCapacity`, `staff` and `dailyWageBill` are byte-identical in all
+six.** Nothing drifted, nothing stalled, nothing stopped being published.
+
+**The node count answers the brief's question directly.** `2026-09-04-hour-two.md`
+measured `hudNodes` 1,063 → 1,088 over seventeen in-game days at ≤30 residents.
+At **68** the arrival page is **1,023**, the built prison **1,063**, and the
+figure settles at **1,102 and stays there for four consecutive days**. The shape
+does not change with population: it is a step when new blocks appear on screen
+(alert rows, roster rows, the incident badge) and then flat. **No unbounded
+growth of DOM nodes at 2.3× the largest population ever played.**
+
+**`usedJSHeapSize` is not evidence and is reported as not-evidence.** Chrome
+quantises it, and 148,000,000 appearing six times running is the quantiser, not
+a measurement of stability. A real heap claim needs a different instrument.
+
