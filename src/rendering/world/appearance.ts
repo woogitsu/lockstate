@@ -7,6 +7,7 @@ import {
   type BuildableCategory,
 } from '../../simulation/construction/definition';
 import { DEFAULT_TERRAIN_DEFINITIONS } from '../../simulation/world/terrain';
+import { catalogueObjectId } from './structures';
 
 /**
  * How the world *looks*, kept as data keyed by the same stable identifiers the
@@ -196,16 +197,14 @@ const CATEGORY_FALLBACK: Readonly<Record<BuildableCategory, StructureAppearance>
 export function structureAppearance(definitionId: string): StructureAppearance {
   const explicit = STRUCTURE_APPEARANCE[definitionId];
   const buildable = BUILDABLE_REGISTRY.get(definitionId);
-  // Two ways a buildable id reaches an object definition, tried in this order.
-  // The first is the id *being* one, which is what this function was written
-  // for. The second is the buildable **naming** one through `placesObjectId`
-  // (ADR 0028 phase 1), which is how a real placement works: `bed-wooden`
-  // places `object.bed`, and without this line a finished bed would draw 1x1
-  // where the simulation reserved 1x2 -- the renderer disagreeing with the tile
-  // index about the same object.
-  const catalogued =
-    defaultObjectRegistry.getById(definitionId) ??
-    (buildable?.placesObjectId === undefined ? undefined : defaultObjectRegistry.getById(buildable.placesObjectId));
+  // The two ways a buildable id reaches an object definition are
+  // `catalogueObjectId`'s subject, and the reason they were lifted out of here
+  // is written there: without the `placesObjectId` branch a finished bed would
+  // draw 1x1 where the simulation reserved 1x2 -- the renderer disagreeing
+  // with the tile index about the same object -- and `tile-layer.ts` now has
+  // to reach the same object id to look its artwork up.
+  const objectId = catalogueObjectId(definitionId);
+  const catalogued = objectId === undefined ? undefined : defaultObjectRegistry.getById(objectId);
   const base = explicit ?? CATEGORY_FALLBACK[buildable?.category ?? 'object'];
 
   if (catalogued === undefined) return base;

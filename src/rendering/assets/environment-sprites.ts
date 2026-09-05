@@ -24,6 +24,16 @@ import type { SourceArtRect } from './source-art-catalog';
  * a tiled floor shows a one-pixel seam of whatever is behind it -- observed,
  * before the inset was applied.
  *
+ * **The shrink is a rule for a frame that TILES, and the first frame that does
+ * not tile does not follow it (`env.object.bed`, 2026-09-05).** The paragraph
+ * above is kept rather than rewritten because it is still the whole method for
+ * the four surface frames, and because the reason it stops is the interesting
+ * part: an object is cut to be seen whole, so its outermost pixels are its own
+ * silhouette -- a bed's head and foot rails -- and shrinking to `alpha >= 240`
+ * removes them. An object frame is therefore the component's *bounding box*,
+ * padded outwards with transparent sheet until the crop's aspect matches the
+ * footprint it will be drawn into. Each such rectangle says so on itself.
+ *
  * ## What is deliberately not here
  *
  * Only the sprites the renderer maps to something the simulation can produce
@@ -46,6 +56,7 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.wall.interior.cap',
   'env.door.interior.face',
   'env.door.interior.cap',
+  'env.object.bed',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -134,6 +145,48 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 28 },
     quarterTurns: 1,
     note: 'Head of the same door frame, turned to run north-south. Drawn on north-south door edges.',
+  },
+  /**
+   * The one *top-down* bed on the sheet, and the first frame here that is a
+   * whole object rather than a slice of a surface.
+   *
+   * The sheet holds eight renders in two rows of four: three-quarter views, a
+   * side elevation, a head-on view, and -- second row of the upper block --
+   * one bed photographed from directly above, made, with the pillow to the
+   * west. That last one is the only view this projection can use, because
+   * `tile-layer.ts` draws the world from directly above and slightly in front
+   * and an object sprite is a flat frame with no elevation of its own.
+   *
+   * **Measured with the alpha scan this file's header describes, but with its
+   * *shrink* step deliberately omitted, and that is a real divergence rather
+   * than an oversight.** The shrink exists so a *tiling* frame carries no
+   * antialiased rim to smear into a seam; on a discrete object it would eat
+   * the bed's own frame -- the tubular head and foot rails are the outermost
+   * pixels and are exactly the ones a shrink to `alpha >= 240` discards. What
+   * is used instead is the 8-connected component's bounding box: 428x197 at
+   * (757, 305), which is the whole bed and nothing else (79,571 opaque pixels
+   * inside the rect, and the same figure for the component alone).
+   *
+   * **Then padded outwards with transparent sheet to 460x230 at (740, 288),
+   * which is exactly 2:1.** `object.bed`'s footprint is 1x2 tiles, so the
+   * frame is drawn into a 1x2 rectangle; cutting the tight 428x197 box would
+   * have resampled 2.172:1 into 2:1 and stretched the bed 8% along its length.
+   * Padding is free -- the sheet is transparent between renders, and the
+   * nearest other component is more than 6px outside this rectangle on every
+   * side, so the crop carries no fragment of a neighbour and its own border
+   * rows and columns are fully transparent.
+   *
+   * The turn is the same mechanism the wall caps use and is needed for the
+   * same reason: the bed is authored lying east-west and stands north-south.
+   * `environment-textures.ts` turns clockwise, so the pillow ends up at the
+   * bed's northern end.
+   */
+  'env.object.bed': {
+    assetId: 'furniture.cell.bed.single.variants',
+    sourceRectPx: { x: 740, y: 288, width: 460, height: 230 },
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 1,
+    note: 'Single bed seen from directly above, made, pillow to the north once turned. Drawn on object.bed.',
   },
 };
 

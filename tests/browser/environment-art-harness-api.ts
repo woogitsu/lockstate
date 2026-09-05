@@ -48,6 +48,17 @@ export interface HarnessWorldFixture {
   /** A tile carrying both a finished `wall-brick` build order and the wall it wrote. */
   readonly builtWallTileX: number;
   readonly builtWallTileY: number;
+  /**
+   * North-west tile of a finished `bed-wooden` order, standing on bare owned
+   * ground outside the zoned room.
+   *
+   * Outside the room on purpose: a bed drawn over floor art would be two art
+   * frames stacked, and the spec's comparison is between the bed and what the
+   * painter draws in its place, so the only thing that may change under the
+   * probe is the bed itself.
+   */
+  readonly bedTileX: number;
+  readonly bedTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

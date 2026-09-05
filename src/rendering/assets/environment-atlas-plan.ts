@@ -36,6 +36,14 @@ export const ENVIRONMENT_ATLAS_GUTTER_PX = 2;
  * Fixed atlas width. Every declared frame is at most 128px on its long axis, so
  * a 512px shelf holds three per row and the packer never has to grow sideways;
  * only the height is computed.
+ *
+ * **The "long axis" half of that stopped being true on 2026-09-05 and the
+ * conclusion did not, which is why the sentence is marked rather than
+ * replaced.** `env.object.bed` is 128x256: an object frame is drawn into its
+ * whole footprint, and `object.bed`'s is 1x2 tiles. What the packer actually
+ * needs is that no frame is wider than this atlas, and that is what it checks
+ * and throws on. A tall frame only makes its shelf taller, and the height is
+ * computed rather than fixed, so nothing here has to grow sideways for it.
  */
 export const ENVIRONMENT_ATLAS_WIDTH_PX = 512;
 
