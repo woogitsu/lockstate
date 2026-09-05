@@ -107,27 +107,6 @@ outward-facing or unrevertable, which is the whole reason:
    variables that would configure a destination are deploy configuration. Until
    those land the endpoint refuses every batch, which is why merging the entry
    point changes no behaviour on `lockstate.io`.
-
-   **HALF OF THAT IS NO LONGER OWED, AND THE PARAGRAPH ABOVE IS KEPT RATHER
-   THAN REWRITTEN BECAUSE IT IS THE STATE THIS DOCUMENT DESCRIBED FOR A DAY.**
-   The migration landed on 2026-09-04 in
-   `supabase/migrations/20260904090000_create_telemetry_events.sql`, authorised
-   by the owner as four objects plus retention: the `telemetry_ingest` role
-   (`:152`), the `telemetry_events` table (`:203`),
-   `record_telemetry_events(p_events jsonb)` (`:568`) and the retention pair
-   (`telemetry_retention_runs` at `:759`, `enforce_telemetry_retention()` at
-   `:951`). **Item 2 was not thereby released** — a further migration is still
-   the owner's, and this one was authorised individually.
-
-   **The conclusion still holds and now holds for a different reason, which is
-   why a reader must not stop at the premise.** The endpoint still refuses every
-   batch, but because `LOCKSTATE_TELEMETRY_INGEST_PATH` is unbound — the Worker
-   reads it at `src/worker/telemetry-ingest-route.ts:12`, and that binding is
-   deploy configuration, item 3, untouched. **So an agent who checks the
-   sentence above, finds the migration present, and infers the endpoint is live
-   would be wrong.** Retention additionally needs `pg_cron` enabled from the
-   Supabase panel and the scheduled call made there; until that happens
-   `enforce_telemetry_retention()` is a function nothing invokes.
 2. **`supabase/migrations/`.** An applied migration is history. Propose new
    migration content in an ADR or an issue instead. Rollback is not automated.
 3. **Deploy configuration** — `public/_headers`, `.github/workflows/deploy.yml`,
