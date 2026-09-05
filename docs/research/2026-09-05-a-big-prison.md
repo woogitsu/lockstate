@@ -893,9 +893,11 @@ of nothing else.
 
 ### P2. A room should say how many people it can serve at once — ADR 0028 phase 5's owed readout, now with a played cost
 
-**Grounded in §8.** Sixty-eight prisoners walked to a classroom that seats two,
-because the ceiling for `education` is the summed footprint width of one
-bookshelf.
+**Grounded in §8.** At one tick **51** prisoners were committed to a classroom
+that seats **two**; at another **26** to a shower room that washes **two**; at
+another **31** to a canteen that seats **six** — and 39 to 58 of the 68 were
+`travelling` at those moments. Each ceiling is the summed footprint width of
+one kind of object: a bookshelf, two shower heads, two dining tables.
 
 **This is not a new idea and the repository says so itself.** The room
 projection's own docblock: *"The concurrent-use figure is **not projected at all
@@ -912,6 +914,12 @@ capability the room carries: `Classroom at 24, 4 — 2 can study here at once`.
 It is true because `concurrentUseCapacityFor` is the number `claimUse` gates on
 (`room-instance-registry.ts:99-105`), and it is the number that turns "the
 classroom is finished" into "the classroom is finished and too small".
+
+**And the one that would have saved this prison**, in the same block, only when
+the room is oversubscribed and derived from numbers the projection already
+carries — the ceiling above, and the population from `hud/prisoner-population`:
+`2 can study here at once, and this prison holds 68.` Nothing in that sentence
+is a prediction; both halves are counts.
 
 ### P3. `Covered` must not be the word when no guard is free
 
