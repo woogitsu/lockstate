@@ -159,10 +159,13 @@ press:
 
 That reproduces `docs/research/2026-09-04-does-a-prison-come-back.md` at a newer
 version and adds nothing to it. **What this pass is about is the other column of
-that reading.** Between the cold page and the arrival screen, exactly one block
-of prose changed, and it is the save panel's detail line: **74 words and 534
-characters** (**DERIVED**, counted over the quoted string) naming eleven restored
-save *scopes* and two caches. It is the longest run of prose this pass saw on any
+that reading.** The largest thing that arrives between the cold page and the
+arrival screen is the save panel's detail line: **74 words and 534 characters**
+(**DERIVED**, counted over the quoted string) naming eleven restored save
+*scopes* and two caches. Two other sentences arrive with it and both are about
+the prison — the Intake panel's `3 waiting with no bed to sleep in` and its
+`IN INTAKE / 3 of 6 / 3 at Cell Assignment` — and between them they are shorter
+than a fifth of it. It is the longest run of prose this pass saw on any
 screen of this game, and it is the first thing that appears when a player comes
 back. It names `RNG stream states`, `entity id liveness`, `navigation
 caches and in-flight path requests`. It does not name the day, the prison, the
@@ -238,9 +241,10 @@ not an inference from pixels. The same screen point, three times:
 ```
 
 The camera was panned 14 tiles east with the arrow keys, saved there, and came
-back at the arrival position. **DERIVED**: 14 tiles at 64 px is 896 px, which is
-more than half the 1440 px viewport — a player who had walked the camera over to
-the block they were building comes back looking at the other end of the prison.
+back at the arrival position. **DERIVED**: 14 tiles at `TILE = 64` px is 896 px,
+which is 62% of the 1440 px viewport. **JUDGEMENT**: a player who had walked the
+camera over to the block they were building comes back looking at somewhere
+else, with nothing on screen saying the view moved.
 
 Act 1 saw the same thing less precisely and is worth quoting because it shows
 what a screenshot alone can and cannot settle: three md5s of the world crop, at
@@ -486,7 +490,7 @@ was saved:
 | *What is the state of my prison?* — day, population, money, staff, rooms | **Yes, immediately.** The strip carries `DAY 3`, `6 PRISONERS`, `3 with no bed`, `3 STAFF`, `1 ROOMS`, `21,335 FUNDS` before any press | **0** |
 | *What did I just order?* | **Yes**, on the Build tab: `ON THE WAY / 1 bought · 1,600 back if cancelled / 40 × Brick · 1,600 back` | **2** (Load, then Build) |
 | *What is going wrong?* | **Partly.** `3 with no bed` is on the strip at 0 presses and the Intake panel repeats it; the Cell's missing door needs the Rooms tab | **0** for the beds, **2** for the door |
-| *What was I doing?* | **No.** Nothing anywhere records an action. The Build tab's `Brick wall / Selected` is the panel's arrival selection, not a memory — it reads the same on a prison nobody has touched | **∞** |
+| *What was I doing?* | **No.** Nothing anywhere records an action. The Build tab's `Brick wall / Selected` is the panel's arrival selection and not a memory: `let selectedId = model.buildables[0]?.definitionId;` (**VERIFIED**, `src/ui/hud/build-panel.ts:838`), and `Brick wall` is the first row of the rendered catalogue in every act | **∞** |
 | *What should I do next?* | **No.** No surface proposes anything; `continue`, `next` and `left off` are absent from the page | **∞** |
 | *Which prison is this, and when was I last here?* | **No.** `New Prison (3 gen)`, no timestamp anywhere | **∞** |
 
