@@ -2,11 +2,17 @@ import { describe, expect, it } from 'vitest';
 
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction/definition';
-import { STATE_INCOME_UNMET_NEED_LEVEL, isNeedUnmetForStateIncome, stateIncomeForCompletedDay, unmetNeedCount } from '../../src/simulation/economy/income';
+import { STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS, STATE_INCOME_UNMET_NEED_LEVEL, STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS, isNeedUnmetForStateIncome, stateIncomeForCompletedDay, unmetNeedCount } from '../../src/simulation/economy/income';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES, classificationGroupIdFromIndex } from '../../src/simulation/prisoners/components';
-import { NEED_DECAY_PER_TICK, NEED_IDS, NEED_MAX, NEED_SCALE, type NeedId } from '../../src/simulation/prisoners/needs';
-import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
+import { CLASSIFICATION_REVIEW_INTERVAL_TICKS, MAX_CLEAN_CONDUCT_CREDIT, MAX_FINDINGS_TERM } from '../../src/simulation/prisoners/classification';
+import { buildDisciplinaryIndex, CLEAN_DISCIPLINARY_RECORD, DISCIPLINARY_POINTS_BY_INCIDENT_TYPE, LAPSED_INCIDENT_SURCHARGE_POINTS } from '../../src/simulation/prisoners/disciplinary-record';
+import { resolveSectorCoverageState } from '../../src/simulation/security/coverage-state';
+import { DEFAULT_SECURITY_SECTOR_ID, DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT } from '../../src/simulation/security/default-sector';
+import { DEFAULT_SECTOR_PRISONERS_PER_GUARD, resolveOccupancyScaledGuardCount } from '../../src/simulation/security/sector-staffing';
+import { staffDailyWageMinorUnits } from '../../src/simulation/economy/wages';
+import { NEED_DECAY_PER_TICK, NEED_IDS, NEED_MAX, NEED_SCALE, SAFETY_COVERAGE_PROVISION_MULTIPLIER, SAFETY_COVERAGE_PROVISION_PER_TICK, type NeedId } from '../../src/simulation/prisoners/needs';
+import { ACTION_CATEGORIES, DAY_LENGTH_TICKS, GENERAL_POPULATION_REGIME, HIGH_RISK_REGIME, type ActionCategory } from '../../src/simulation/prisoners/regime';
 import { TILES_PER_OPEN_GROUND_PLACE } from '../../src/simulation/prisoners/room-instance-registry';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -297,11 +303,58 @@ interface PrisonOptions {
    * same claim about the same kind of tail. Act O runs one.
    */
   readonly seed?: number;
+  /**
+   * **#1004.** Guards hired *after* the intake, as `[atTick, count]` pairs.
+   *
+   * The `guards` option above sets the establishment a prison opens with;
+   * this is the player who notices and hires. It exists because #1004 asks
+   * whether the promotion to `high-risk` is **reversible when staffing
+   * returns**, and that question cannot be asked by a second static run: two
+   * static runs differ in their whole history, and a promotion that never
+   * happened is not a promotion that was undone.
+   *
+   * The command is `HireStaff`, the same one `build` uses -- queued rather
+   * than submitted-and-stepped (`queue` below), so applying it costs the
+   * measurement loop no tick and the per-tick census stays aligned with
+   * `runtime.kernel.tick`.
+   */
+  readonly hireGuardsAt?: readonly (readonly [number, number])[];
+  /**
+   * **#1004.** Guards dismissed after the intake, as `[atTick, count]`.
+   *
+   * The other direction #1004 names -- *"start either from a correctly-staffed
+   * prison and take guards away, or from a shortage"*.
+   * `StaffDismissalService.dismiss` takes an `EntityId` and
+   * `GuardRoster.allGuardIds()` supplies them, so this needs no command:
+   * dismissal is a service call (`src/simulation/staff/dismissal.ts:315`), not
+   * a queued order.
+   *
+   * Guards are taken from the **end** of `allGuardIds()`, so a dismissal of
+   * `k` leaves the same first `establishment - k` guards a run that opened
+   * with `establishment - k` would have hired. That is what makes a dismissed
+   * row and a statically-short row comparable.
+   */
+  readonly dismissGuardsAt?: readonly (readonly [number, number])[];
 }
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
   runtime.kernel.step();
+}
+
+/**
+ * **#1004.** `submit` without the `step`.
+ *
+ * `Kernel.submitCommand` only queues (`src/simulation/kernel/kernel.ts:120`);
+ * `step` drains at the head of the next tick it runs
+ * (`src/simulation/kernel/kernel.ts:190`, step 1, before any system). So a
+ * command queued from inside `measure`'s per-tick loop takes effect at the
+ * following tick and the loop's own `stepTo` remains the only thing that
+ * advances the clock -- which is why the mid-run staffing changes below cannot
+ * shift the census by a tick the way `submit` would.
+ */
+function queue(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
+  runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
 }
 
 function stepTo(runtime: SimulationRuntime, tick: number): void {
@@ -479,6 +532,53 @@ interface Measurement {
    * aggregate that mixed them would hide it.
    */
   readonly recreationByGroup: readonly (readonly [string, number, number])[];
+  /**
+   * **#1004.** The sector requirement, the guards actually assigned to it, and
+   * the rung that pair puts the whole prison on, at the readout tick.
+   *
+   * Read through `DeploymentSystem.getCoverageReport(tick)`
+   * (`src/simulation/security/deployment-system.ts:86`) and
+   * `resolveSectorCoverageState`
+   * (`src/simulation/security/coverage-state.ts:68`) -- the same two functions
+   * `SafetyCoverageSystem.walk` reads
+   * (`src/simulation/prisoners/safety-coverage-system.ts`), so this is the rung
+   * the prison was actually provisioned at and not a second derivation of it.
+   */
+  readonly coverage: readonly (readonly [string, number, number, number, string])[];
+  /** **#1004.** `SafetyCoverageSystem.getCensus()` at the readout: how many prisoners stood on each rung at the last ten-tick walk. */
+  readonly coverageCensus: Readonly<Record<string, number>>;
+  /** **#1004.** `GuardRoster.allGuardIds().length` at the readout -- what a mid-run hire or dismissal actually did. */
+  readonly guardsOnRoster: number;
+  /** **#1004.** How many housed prisoners sit at each `riskTier` 0..3. Tier 3 is the only one `classificationGroupIdForTier` maps to `'high-risk'` (`src/simulation/prisoners/classification.ts:59`). */
+  readonly riskTierHistogram: readonly number[];
+  /**
+   * **#1004.** How many housed prisoners carry each `DisciplinaryRecord.points`
+   * total, from `buildDisciplinaryIndex` over the session's own
+   * `IncidentLog`/`ConfiscationLedger`
+   * (`src/simulation/prisoners/disciplinary-record.ts:173`).
+   *
+   * This is the input `reviewClassification` actually reads. It is here
+   * because #1004's stated chain -- *"fewer guards, lower `safety`, promotion
+   * to `high-risk`"* -- has no term for `safety` anywhere in
+   * `reviewClassification`, whose four factors are sentence, intake history,
+   * findings and clean conduct. If a shortage promotes anybody it does it
+   * through this column, and the column says so.
+   */
+  readonly disciplinaryPoints: readonly (readonly [number, number])[];
+  /** **#1004.** Over `IncidentLog.all()`: `[type/state, count, mean participants, injured, escaped]`. Mean participants is the column that separates an assault from a riot. */
+  readonly incidentCensus: readonly (readonly [string, number, number, number, number])[];
+  /** **#1004.** The treasury balance at the readout tick, in minor units. */
+  readonly treasuryMinorUnits: number;
+  /**
+   * **#1004.** One row per measured day boundary:
+   * `[day, medianSafetyPermille, unmetSafety, requiredGuards, assignedGuards, rung, generalPopulation, highRisk]`.
+   *
+   * A per-day series and not an end-state, because both of #1004's questions
+   * are about *when*: the tick a shortage crosses the promotion threshold, and
+   * whether a later tick takes it back. An end-state readout cannot tell a
+   * prison that was never promoted from one that was promoted and recovered.
+   */
+  readonly daily: readonly (readonly [number, number, number, number, number, string, number, number])[];
   readonly metrics: {
     readonly unmetDemandCycles: number;
     readonly routeFailures: number;
@@ -534,11 +634,45 @@ function measure(options: PrisonOptions, days: number): Measurement {
   let peakYardUse = 0;
   let idleTicks = 0;
 
+  // **#1004.** The per-day series, and the mid-run staffing changes it exists
+  // to make readable. `hires`/`dismissals` are consumed in tick order, and
+  // both are indexed by their own cursor rather than filtered per tick, so the
+  // per-tick loop pays one integer comparison and not a scan.
+  const daily: (readonly [number, number, number, number, number, string, number, number])[] = [];
+  const hires = [...(options.hireGuardsAt ?? [])].sort(([left], [right]) => left - right);
+  const dismissals = [...(options.dismissGuardsAt ?? [])].sort(([left], [right]) => left - right);
+  let hireCursor = 0;
+  let dismissCursor = 0;
+  let staffingChanges = 0;
+
   const until = ADMIT_AT + DAY_LENGTH_TICKS * days;
   // The readout tick is a day boundary by construction; see `ADMIT_AT`.
   expect(until % DAY_LENGTH_TICKS, 'the readout must be taken on the tick the day is settled on').toBe(DAY_LENGTH_TICKS - 1);
   for (let tick = runtime.kernel.tick + 1; tick <= until; tick += 1) {
     stepTo(runtime, tick);
+    while (hireCursor < hires.length && hires[hireCursor]![0] <= tick) {
+      const [, count] = hires[hireCursor]!;
+      for (let index = 0; index < count; index += 1) {
+        queue(runtime, `late-hire-${String(staffingChanges)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
+        staffingChanges += 1;
+      }
+      hireCursor += 1;
+    }
+    while (dismissCursor < dismissals.length && dismissals[dismissCursor]![0] <= tick) {
+      const [, count] = dismissals[dismissCursor]!;
+      // From the end of the roster, so the survivors are the same guards a
+      // prison that opened this short would have hired. `dismiss` returns an
+      // outcome; a refusal would silently make this a measurement of a
+      // differently-staffed prison, so it is asserted rather than dropped.
+      const ids = [...runtime.securityGuards.allGuardIds()];
+      for (let index = 0; index < count && ids.length > 0; index += 1) {
+        const victim = ids.pop()!;
+        const outcome = runtime.staffDismissal.dismiss(victim, tick);
+        expect(outcome.kind, 'a dismissal the fixture asked for must actually happen').toBe('dismissed');
+        staffingChanges += 1;
+      }
+      dismissCursor += 1;
+    }
     for (let slot = 0; slot < options.prisoners; slot += 1) {
       const id = store.getIdByIndex(slot);
       if (id === undefined) continue;
@@ -572,7 +706,35 @@ function measure(options: PrisonOptions, days: number): Measurement {
     }
     // The tick the day is settled on: `StateIncomeSystem`'s schedule is
     // `intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1`.
-    if (tick % DAY_LENGTH_TICKS === DAY_LENGTH_TICKS - 1) dailyGrant.push(stateIncomeForCompletedDay(runtime.prisoners));
+    if (tick % DAY_LENGTH_TICKS === DAY_LENGTH_TICKS - 1) {
+      dailyGrant.push(stateIncomeForCompletedDay(runtime.prisoners));
+      // **#1004.** Once a day, not once a tick: `getCoverageReport` walks every
+      // guard for every sector and `residentIdsWithExistingPlace` walks the
+      // population, so this is `O(n)` per 2,400 ticks rather than per tick.
+      const residents = registry.residentIdsWithExistingPlace();
+      const safetyLevels: number[] = [];
+      let unmetSafety = 0;
+      let general = 0;
+      let highRisk = 0;
+      for (const entityId of residents) {
+        const index = store.getIndex(entityId);
+        safetyLevels.push(permille(runtime.prisoners.needs.levels.safety[index]!));
+        if (isNeedUnmetForStateIncome(runtime.prisoners.needs.get(index, 'safety'))) unmetSafety += 1;
+        if (classificationGroupIdFromIndex(runtime.prisoners.records.classificationGroupIndex[index]!) === 'high-risk') highRisk += 1;
+        else general += 1;
+      }
+      const prisonSector = runtime.deploymentSystem.getCoverageReport(tick).find((entry) => entry.sectorId === DEFAULT_SECURITY_SECTOR_ID);
+      daily.push([
+        Math.floor(tick / DAY_LENGTH_TICKS),
+        median(safetyLevels),
+        unmetSafety,
+        prisonSector?.required ?? 0,
+        prisonSector?.assigned ?? 0,
+        prisonSector === undefined ? 'no-sector' : resolveSectorCoverageState(prisonSector),
+        general,
+        highRisk,
+      ] as const);
+    }
   }
 
   const occupied = registry.residentIdsWithExistingPlace();
@@ -610,9 +772,56 @@ function measure(options: PrisonOptions, days: number): Measurement {
     byGroup.set(group, row);
   }
 
+  // **#1004's readouts.** Every one of them reads a production accessor at the
+  // readout tick; none re-derives a rule.
+  const riskTierHistogram = [0, 0, 0, 0];
+  for (const entityId of occupied) {
+    const tier = runtime.prisoners.records.riskTier[store.getIndex(entityId)]!;
+    riskTierHistogram[tier] = (riskTierHistogram[tier] ?? 0) + 1;
+  }
+
+  const disciplinaryIndex = buildDisciplinaryIndex({
+    incidents: () => runtime.incidents.all(),
+    confiscations: () => runtime.confiscations.all(),
+  });
+  const pointsCounts = new Map<number, number>();
+  for (const entityId of occupied) {
+    const points = (disciplinaryIndex.get(entityId) ?? CLEAN_DISCIPLINARY_RECORD).points;
+    pointsCounts.set(points, (pointsCounts.get(points) ?? 0) + 1);
+  }
+
+  // `IncidentOutcome` is an object (`src/simulation/incidents/incident.ts:54`),
+  // so `escaped` is named rather than interpolated -- a template literal over
+  // the record printed `[object Object]` for one run and said nothing about
+  // whether anybody actually got out. The mean participant count is carried
+  // because it is what separates the two promotion mechanisms: an assault
+  // names the pair the trigger scored worst, a riot names *the sector's
+  // occupants*, so a riot writes a finding onto every prisoner in the prison
+  // at once.
+  const incidentCounts = new Map<string, { count: number; participants: number; injured: number; escaped: number }>();
+  for (const record of runtime.incidents.all()) {
+    const key = `${record.type}/${record.state}`;
+    const row = incidentCounts.get(key) ?? { count: 0, participants: 0, injured: 0, escaped: 0 };
+    row.count += 1;
+    row.participants += record.participantIds.length;
+    row.injured += record.outcome?.injuredEntityIds.length ?? 0;
+    row.escaped += record.outcome?.escaped === true ? 1 : 0;
+    incidentCounts.set(key, row);
+  }
+
+  const coverageReport = runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick - 1);
+
   const metrics = runtime.prisoners.actionSystem.getMetrics();
   return {
     options,
+    coverage: coverageReport.map((entry) => [entry.sectorId, entry.required, entry.assigned, entry.shortage, resolveSectorCoverageState(entry)] as const),
+    coverageCensus: runtime.safetyCoverage.getCensus(),
+    guardsOnRoster: runtime.securityGuards.allGuardIds().length,
+    riskTierHistogram,
+    disciplinaryPoints: [...pointsCounts.entries()].sort(([left], [right]) => left - right),
+    incidentCensus: [...incidentCounts.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([key, row]) => [key, row.count, Math.round(row.participants / row.count), row.injured, row.escaped] as const),
+    treasuryMinorUnits: runtime.treasury.balanceMinorUnits,
+    daily,
     occupiedPlaces: occupied.length,
     dailyGrant,
     settledGrant: dailyGrant[dailyGrant.length - 1] ?? 0,
@@ -1211,6 +1420,249 @@ describe('#1003 act O -- the same sweep on two more seeds', () => {
         );
       }
       print(`${String(population).padStart(3)} | ${cells.join(' | ')}`);
+    }
+  });
+});
+
+// ===========================================================================
+// #1004 -- the guard-shortage -> classification -> recreation loop
+// ===========================================================================
+
+/**
+ * **Long enough for the authoritative classification review to have run**, and
+ * that is the whole of why #1004's acts do not use `DAYS`.
+ *
+ * `ClassificationReviewSystem` is the only system that may write
+ * `'high-risk'`, and its schedule is
+ * `{ intervalTicks: CLASSIFICATION_REVIEW_INTERVAL_TICKS, phaseTicks: intervalTicks - 1 }`
+ * -- so it runs at ticks 23,999, 47,999, 71,999, ... A prisoner admitted at
+ * `ADMIT_AT` (9,599) is not reviewable at 23,999, because
+ * `classifiedAtTick + CLASSIFICATION_REVIEW_INTERVAL_TICKS` is 33,599; the
+ * first review that can touch this intake is **47,999**, which is
+ * `ADMIT_AT + 16 * DAY_LENGTH_TICKS`. Twenty days (`DAYS`) reaches tick 57,599
+ * and therefore passes exactly one review.
+ *
+ * Thirty days reaches 81,599 and passes **two** (47,999 and 71,999), which is
+ * the minimum that can show a promotion *and* a demotion: `reviewClassification`
+ * grants `MAX_CLEAN_CONDUCT_CREDIT` at one point per
+ * `CLEAN_CONDUCT_CREDIT_PERIOD_TICKS` clean, so a prisoner cannot come back
+ * down in the same review that put them up.
+ */
+const SHORTAGE_DAYS = 30;
+
+/** Three seeds, because [#1003 §7] named "one seed" as its own weakest claim and a threshold is the same kind of claim. */
+const SHORTAGE_SEEDS = [SEED, 0x1004, 0xbeef] as const;
+
+const GUARD_LEVELS_50 = [8, 7, 6, 4, 2, 1, 0] as const;
+
+/**
+ * What the game asks of a prison holding `n`, and **not** a function of how
+ * many guards this fixture hired.
+ *
+ * `DeploymentSystem.requiredGuardCountFor`
+ * (`src/simulation/security/deployment-system.ts:100`) reads the *schedule*
+ * `applyDefaultSecuritySector` derived from
+ * `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT`
+ * (`src/simulation/security/default-sector.ts:113`, which is **1**) and hands
+ * it to `resolveOccupancyScaledGuardCount`. So the requirement is
+ * `max(1, ceil(n / 8))` and the floor of 1 only ever binds below eight
+ * prisoners.
+ *
+ * The mistake worth naming, because this function had it for one run: passing
+ * `GUARDS` (7) as the scheduled count. That reads "the establishment is at
+ * least what this fixture hired", which is true of nothing in the game -- it
+ * happens to give the same answer at n=50 (7 either way) and a different one
+ * at every n below 50. Every printed row is checked against the run's own
+ * `coverage` column, which is the report the simulation actually served.
+ */
+function establishmentFor(population: number): number {
+  return resolveOccupancyScaledGuardCount(DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT, population, true);
+}
+
+function dailyLine(row: readonly [number, number, number, number, number, string, number, number]): string {
+  const [day, safety, unmetSafety, required, assigned, rung, general, highRisk] = row;
+  return `day ${String(day).padStart(3)}  safety median ${String(safety).padStart(4)} permille, unmet for ${String(unmetSafety).padStart(3)}` +
+    `  guards ${String(assigned).padStart(2)}/${String(required).padStart(2)} = ${rung.padEnd(12)}` +
+    `  general-population ${String(general).padStart(3)}  high-risk ${String(highRisk).padStart(3)}`;
+}
+
+/**
+ * **The one genuinely load-bearing assertion #1004's acts add.**
+ *
+ * `stateIncomeForCompletedDay` walks the occupied places and sums
+ * `stateIncomeForPrisonerDay` (`src/simulation/economy/income.ts`); this
+ * recomputes the same total from the *histogram* -- a different walk over a
+ * different accessor (`unmetNeedCount` per resident, bucketed) -- and requires
+ * the two to agree to the minor unit. It is not a fixture supplying both sides
+ * of a comparison: neither side is computed by the other, and only the two
+ * authored constants are shared.
+ *
+ * [#1003 §method] found `recovered = (n - unmet) x 40` held to the unit in
+ * every row and named a break in it as a finding about the income seam. This
+ * makes that check a condition of every #1004 row rather than an observation
+ * about some of them, so a shortage that moved the grant by a route the
+ * histogram cannot see would fail here instead of being quoted.
+ */
+function expectGrantReconciles(run: Measurement): void {
+  let unmetTotal = 0;
+  for (const [count, prisoners] of run.unmetHistogram.entries()) unmetTotal += count * prisoners;
+  const fromHistogram = run.occupiedPlaces * STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS
+    - unmetTotal * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS;
+  expect(
+    run.settledGrant,
+    'the settled grant must be the grant the unmet-need histogram accounts for, or the income seam has a term neither of them sees',
+  ).toBe(fromHistogram);
+}
+
+function shortageRow(run: Measurement, population: number): string {
+  const highRisk = run.recreationByGroup.find(([group]) => group === 'high-risk');
+  return `guards ${String(run.guardsOnRoster).padStart(2)}  coverage ${JSON.stringify(run.coverage)}` +
+    `  safety ${String(run.needs.safety.minPermille)}/${String(run.needs.safety.medianPermille)}/${String(run.needs.safety.maxPermille)} permille` +
+    ` unmet ${String(run.needs.safety.unmet)} of ${String(run.occupiedPlaces)}` +
+    `  tiers ${JSON.stringify(run.riskTierHistogram)}  high-risk ${String(highRisk?.[1] ?? 0)}` +
+    `  grant ${String(run.settledGrant)} of ${String(population * STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS)}` +
+    `  treasury ${String(run.treasuryMinorUnits)}`;
+}
+
+describe('#1004 act P -- the arithmetic of the loop, before a tick is run', () => {
+  it('prices one guard against what a guard short costs, from the production constants', () => {
+    print('');
+    print('=== ACT P: what the constants already say, with nothing simulated ===');
+    const wage = staffDailyWageMinorUnits('staff-role.guard');
+    print(`  one guard: ${String(wage ?? 0)} a day to keep (staffDailyWageMinorUnits, src/simulation/economy/wages.ts), and the same again once to hire (staffHireCostMinorUnits delegates to it)`);
+    print(`  DEFAULT_SECTOR_PRISONERS_PER_GUARD = ${String(DEFAULT_SECTOR_PRISONERS_PER_GUARD)}`);
+    print(`  STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = ${String(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS)}, withheld per unmet need ${String(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS)}`);
+    print(`  safety provision per tick, by rung: ${JSON.stringify(SAFETY_COVERAGE_PROVISION_MULTIPLIER)} x ${String(SAFETY_COVERAGE_PROVISION_PER_TICK)}; decay ${String(NEED_DECAY_PER_TICK.safety)}`);
+    print('');
+    print('  net safety per tick and time from NEED_MAX to STATE_INCOME_UNMET_NEED_LEVEL, per rung:');
+    for (const rung of ['covered', 'understaffed', 'unguarded'] as const) {
+      const net = SAFETY_COVERAGE_PROVISION_PER_TICK * SAFETY_COVERAGE_PROVISION_MULTIPLIER[rung] - NEED_DECAY_PER_TICK.safety;
+      const ticks = net >= 0 ? Number.POSITIVE_INFINITY : (NEED_MAX - STATE_INCOME_UNMET_NEED_LEVEL) / -net;
+      print(`    ${rung.padEnd(13)} net ${net.toFixed(3)}/tick  ->  ${Number.isFinite(ticks) ? `${String(Math.round(ticks))} ticks = ${(ticks / DAY_LENGTH_TICKS).toFixed(1)} days` : 'never falls to unmet'}`);
+    }
+    print('');
+    print('  the establishment the game asks for, and what the marginal guard is worth on the income line:');
+    print('   n | establishment | last guard flips the whole prison | safety alone | safety + recreation | one guard costs');
+    for (const population of [4, 8, 12, 16, 24, 32, 40, 50, 60, 70, 80, 90, 100]) {
+      const establishment = establishmentFor(population);
+      print(
+        `${String(population).padStart(4)} | ${String(establishment).padStart(13)} | ` +
+        `${String(population).padStart(33)} | ${String(population * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS).padStart(12)} | ` +
+        `${String(population * 2 * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS).padStart(19)} | ${String(wage ?? 0).padStart(15)}`,
+      );
+    }
+    print('');
+    print('  the promotion path, from the four factors reviewClassification actually reads:');
+    print(`    MAX_FINDINGS_TERM ${String(MAX_FINDINGS_TERM)}, MAX_CLEAN_CONDUCT_CREDIT ${String(MAX_CLEAN_CONDUCT_CREDIT)}, review interval ${String(CLASSIFICATION_REVIEW_INTERVAL_TICKS)} ticks = ${String(CLASSIFICATION_REVIEW_INTERVAL_TICKS / DAY_LENGTH_TICKS)} days`);
+    print(`    disciplinary points by incident type ${JSON.stringify(DISCIPLINARY_POINTS_BY_INCIDENT_TYPE)}, lapsed surcharge ${String(LAPSED_INCIDENT_SURCHARGE_POINTS)}`);
+    print(`    this fixture's admission: sentenceLengthTicks ${String(ADMISSION.sentenceLengthTicks)}, priorIncidents ${String(ADMISSION.priorIncidents)}`);
+  });
+});
+
+describe('#1004 act Q -- where the threshold is, sweeping the establishment down to nothing', () => {
+  it('sweeps guards from over-establishment to zero at n=50, on three seeds', () => {
+    print('');
+    print(`=== ACT Q: n=50, one at-the-door yard and one shower room, guards swept, ${String(SHORTAGE_DAYS)} days ===`);
+    print(`  establishment for 50 is ${String(establishmentFor(50))}`);
+    for (const seed of SHORTAGE_SEEDS) {
+      print(`  --- seed 0x${seed.toString(16)} ---`);
+      for (const guards of GUARD_LEVELS_50) {
+        const run = measure({ prisoners: 50, yards: 1, yardPlacement: 'at-the-door', showerRoom: true, canteen: true, guards, seed }, SHORTAGE_DAYS);
+        expectGrantReconciles(run);
+        print(`    ${shortageRow(run, 50)}`);
+        print(`      needs: ${NEED_IDS.map((needId) => `${needId} ${String(run.needs[needId].unmet)}`).join(' ')}   unmet histogram ${JSON.stringify(run.unmetHistogram)}`);
+        print(`      grant series ${JSON.stringify(run.dailyGrant)}`);
+        print(`      recreation by group ${JSON.stringify(run.recreationByGroup)}  disciplinary points ${JSON.stringify(run.disciplinaryPoints)}`);
+        print(`      incidents ${JSON.stringify(run.incidentCensus)}   coverage census ${JSON.stringify(run.coverageCensus)}`);
+        print(`      yard perform ${String(run.performingTicks['action.yard-recreation'] ?? 0)}  shower perform ${String(run.performingTicks['action.shower'] ?? 0)}`);
+        for (const row of run.daily) print(`        ${dailyLine(row)}`);
+      }
+    }
+  });
+});
+
+describe('#1004 act R -- the same sweep at a hundred, which is where the issue saw it', () => {
+  it('sweeps guards at n=100 on the wide cell, on three seeds', () => {
+    print('');
+    print(`=== ACT R: n=100, 21x10 cell, one at-the-door yard and one shower room, ${String(SHORTAGE_DAYS)} days ===`);
+    print(`  establishment for 100 is ${String(establishmentFor(100))}`);
+    for (const seed of SHORTAGE_SEEDS) {
+      print(`  --- seed 0x${seed.toString(16)} ---`);
+      for (const guards of [14, 13, 12, 10, 7, 4, 1, 0]) {
+        const run = measure({ prisoners: 100, yards: 1, yardPlacement: 'at-the-door', wideCell: true, showerRoom: true, canteen: true, guards, seed }, SHORTAGE_DAYS);
+        expectGrantReconciles(run);
+        print(`    ${shortageRow(run, 100)}`);
+        print(`      needs: ${NEED_IDS.map((needId) => `${needId} ${String(run.needs[needId].unmet)}`).join(' ')}   unmet histogram ${JSON.stringify(run.unmetHistogram)}`);
+        print(`      grant series ${JSON.stringify(run.dailyGrant)}`);
+        print(`      recreation by group ${JSON.stringify(run.recreationByGroup)}  disciplinary points ${JSON.stringify(run.disciplinaryPoints)}`);
+        print(`      incidents ${JSON.stringify(run.incidentCensus)}   coverage census ${JSON.stringify(run.coverageCensus)}`);
+        print(`      yard perform ${String(run.performingTicks['action.yard-recreation'] ?? 0)}  shower perform ${String(run.performingTicks['action.shower'] ?? 0)}`);
+        for (const row of run.daily) print(`        ${dailyLine(row)}`);
+      }
+    }
+  });
+});
+
+describe('#1004 act S -- whether staffing coming back takes the promotion back', () => {
+  it('runs a short prison past the promotion review, then staffs it, and reads the next two reviews', () => {
+    print('');
+    print('=== ACT S: n=50, short then staffed mid-run; and n=50 staffed then short ===');
+    print(`  reviews land at ticks 23999, 47999, 71999, 95999, 119999; the intake is at ${String(ADMIT_AT)} so the first review that can touch it is 47999`);
+    const days = 50;
+    const establishment = establishmentFor(50);
+    const base = { prisoners: 50, yards: 1, yardPlacement: 'at-the-door', showerRoom: true, canteen: true } as const;
+    const arms = [
+      ['never short (control)', { ...base, guards: establishment }],
+      ['short throughout (control)', { ...base, guards: 1 }],
+      ['short, staffed at tick 50000 (just after the first review)', { ...base, guards: 1, hireGuardsAt: [[50_000, establishment - 1]] as const }],
+      ['short, staffed at tick 30000 (before it)', { ...base, guards: 1, hireGuardsAt: [[30_000, establishment - 1]] as const }],
+      ['staffed, stripped to 1 at tick 20000', { ...base, guards: establishment, dismissGuardsAt: [[20_000, establishment - 1]] as const }],
+    ] as const;
+    for (const [label, options] of arms) {
+      const run = measure(options, days);
+      expectGrantReconciles(run);
+      print(`  --- ${label} ---`);
+      print(`    ${shortageRow(run, 50)}`);
+      print(`    incidents ${JSON.stringify(run.incidentCensus)}   disciplinary points ${JSON.stringify(run.disciplinaryPoints)}`);
+      print(`    grant series ${JSON.stringify(run.dailyGrant)}`);
+      for (const row of run.daily) print(`      ${dailyLine(row)}`);
+    }
+  });
+});
+
+describe('#1004 act T -- what the two regimes actually differ by, derived from the schedules', () => {
+  it('sums the ticks a day each category is allowed under each classification group', () => {
+    print('');
+    print('=== ACT T: GENERAL_POPULATION_REGIME against HIGH_RISK_REGIME, category by category ===');
+    print('  Derived from `blocks` by summing `endTickOfDay - startTickOfDay`, not quoted -- #1004 quotes three');
+    print('  recreation windows and stops there, and the recreation column is not the only one that moves.');
+    const windows = new Map<ActionCategory, [number, number]>();
+    for (const category of ACTION_CATEGORIES) windows.set(category, [0, 0]);
+    for (const [column, schedule] of [[0, GENERAL_POPULATION_REGIME], [1, HIGH_RISK_REGIME]] as const) {
+      for (const block of schedule.blocks) {
+        for (const category of block.allowedCategories) {
+          const row = windows.get(category)!;
+          row[column] += block.endTickOfDay - block.startTickOfDay;
+        }
+      }
+    }
+    print(`  day length ${String(DAY_LENGTH_TICKS)} ticks`);
+    print('  category           | general-population | high-risk | high-risk as a share');
+    for (const category of ACTION_CATEGORIES) {
+      const [general, high] = windows.get(category)!;
+      const share = general === 0 ? (high === 0 ? '--' : 'from nothing') : `${((high / general) * 100).toFixed(0)}%`;
+      print(`  ${category.padEnd(18)} | ${String(general).padStart(18)} | ${String(high).padStart(9)} | ${share.padStart(20)}`);
+    }
+    print('');
+    print('  which needs each category can serve, from DEFAULT_ACTIONS -- so the table above can be read as needs:');
+    const byCategory = new Map<string, Set<string>>();
+    for (const action of DEFAULT_ACTIONS) {
+      const set = byCategory.get(action.category) ?? new Set<string>();
+      for (const needId of Object.keys(action.needEffectsPerTick)) set.add(needId);
+      byCategory.set(action.category, set);
+    }
+    for (const category of ACTION_CATEGORIES) {
+      print(`    ${category.padEnd(18)} serves ${JSON.stringify([...(byCategory.get(category) ?? new Set<string>())].sort())}`);
     }
   });
 });
