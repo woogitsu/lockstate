@@ -743,8 +743,161 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `829d3c11` (**v0.0.484**) by the delta method this
-header describes, from the v0.0.476 anchor kept below. **EIGHT of the ten
+Re-anchored at `main` @ `c57f5fa8` (**v0.0.493**) by the delta method this
+header describes, from the v0.0.484 anchor kept below. **NINE of the ten
+releases the budget allows — INSIDE it by one, and the SECOND CONSECUTIVE
+anchor taken with its own gate green**, counted on the tree this commit is
+written against: `package.json` ships 0.0.493 at `c57f5fa8` and the anchor
+being replaced named v0.0.484. `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+**10** and this pass did not consider moving it; the arithmetic below is
+uncomfortable and that is the budget working.
+
+**COUNTED AGAINST THE ANCHOR THE DRAIN ENDS ON RATHER THAN AGAINST TODAY'S
+`main`, WHICH IS THE RULE THE ANCHOR BEFORE LAST WROTE AFTER GETTING IT
+WRONG.** Draining N pull requests publishes N releases. When this pass was
+dispatched `main` shipped v0.0.492 (`6104f7e6`) and two pull requests were
+open; #1012 merged while it was being written, taking the tree to v0.0.493
+(`c57f5fa8`) and adding one file to its window, which was re-derived rather
+than estimated. What remains is #1013 and this pass's own pull request, two
+more releases, so **by the time the drain ends this anchor is two behind and
+eight clear of the limit.** The forecast is stated because the v0.0.476 anchor
+began the practice and the pass that checked it found the mechanism right and
+the magnitude short by five; **the anchor between them stated none**, so this
+is the second forecast in the sequence rather than the second in a row, and a
+future pass should read it as bounding the overrun from below only — merges
+opened after it are invisible to it by construction, exactly as that check
+established.
+
+**THE SEQUENCE NOW READS five, five, nine, five, six, five, six, five, eight,
+FOURTEEN, ELEVEN, EIGHT, NINE.** The arithmetic and not the adjective: the last
+two entries are inside the budget and the two before them were outside it, by
+four and then by one. The previous anchor was inside it by two and called that
+*"one observation and not yet a habit"*; **this one is inside it by one, so the
+margin narrowed while the record improved**, and that judgement is not upgraded
+here. What both kept passes have in common is not a property of the file: it is
+that somebody dispatched a re-anchor *into* a drain rather than after one,
+which is a practice and can lapse.
+
+**The window, and the member set.** `829d3c11..c57f5fa8`, **85 files**, across
+**nine** implementing merges — `3e4fbbad`/#1012 (where the shower runs out,
+#1003, 3 files), `b6e98769`/#1011 (a not-ready room is visible from every tab,
+#1006, 13 files), `77d7aaa6`/#1010 (two tests near their time budget, #1005,
+3 files), `1480896c`/#1009 (the no-door play-test, #1006, **39 files, the
+widest single change in this window**), `5acd153b`/#1007 (a sweep draws on its
+own pool, #996, 20 files), `206f3503`/#1002 (a committed conflict marker cannot
+reach `main`, #983, 2 files), `14d7244e`/#1001 (the yard incentive does not
+break with population, #997, 4 files) and `c9714a5f`/#1000 (the two documents
+every agent reads first, 4 files) — plus `940e1653`/#999, the previous anchor's
+own pass, which edited only this file and so contributes nothing to the
+intersection either way. Release bumps v0.0.485 through v0.0.493 at `c57f5fa8`.
+**The member list reconciles exactly rather than approximately**: the union of
+all nine merges' file lists is **84**, and the one file in
+`git diff --name-only 829d3c11..c57f5fa8` that no merge touches is
+`package.json`, which the release workflow bumped nine times. 84 + 1 = 85, with
+nothing unaccounted for in either direction.
+
+**The intersection is ten again, and seventy-five files needed no reading.** Of
+the 85, the ones cited by a **live** section — §1, §2, §3's outstanding entry,
+§4, §5, §6 and the closing method note, with the dated
+`## 3. What the anchor pass of …` records and the kept anchor accounts in this
+header excluded, because a record of a past commit cannot rot — are
+`docs/adr/STATUS-QUEUE.md` itself (not in its own dependency set),
+`docs/AGENT_WORKFLOW.md`, `docs/research/README.md`,
+`src/content/default-locale-en.ts`, `src/main.ts`, `src/ui/hud/hud.css`,
+`src/ui/hud/messages.ts`, `src/ui/hud/projection.ts`,
+`src/ui/hud/staff-panel.ts` and `src/ui/hud/view-model.ts`.
+
+**THREE MOVERS, AND TWO CITATIONS THAT WERE WRONG BEFORE THIS WINDOW OPENED AND
+WERE FOUND BY LOOKING WHERE THE METHOD CANNOT.** The second half is the
+finding, and it is the first time an anchor in this sequence has gone after the
+blind spot its predecessor named rather than recording that it exists.
+
+The three that moved inside this window, each verified correct at `829d3c11`
+before being called a mover:
+
+- `src/main.ts` — the `PrisonerDetailReader` construction in §2's ADR 0093
+  entry **read `:1429` and is `:1439`**, ten lines down, #1009's play-test
+  wiring above it; and the telemetry consent prompt's mount in §5 **read
+  `:3311` and is `:3365`**, fifty-four down, the same cause.
+- `src/ui/hud/view-model.ts` — `HudPrisonerDetailViewModel` in §2 **read
+  `:1840` and is `:1849`**, moved nine by #1011. **This is the one to read
+  twice**: `:1840` is the number the *previous* anchor set, having corrected it
+  from `:1806` and having written in the very next paragraph that the durable
+  form is the symbol. A citation read, repaired and published one window ago
+  was stale nine releases later. Nothing in this sequence makes the case for
+  §6's recommendation 1 as sharply, because this is not a number nobody had
+  looked at.
+
+The two that this window did **not** move, because they were already wrong when
+it opened — and neither file is in it:
+
+- §2's ADR 0071 entry gave the concurrent-use ceiling's three production
+  callers as `src/simulation/prisoners/action-system.ts:820`, `:1067` and
+  `:1082`. **All three are doc-comment prose**, and that file is byte-identical
+  at the oldest commit this container's history reaches and at `c57f5fa8`, so
+  the numbers were false through every window any recent anchor examined. The
+  claim is true and was re-derived rather than trusted: exactly three
+  `RoomInstanceRegistry` methods consult `concurrentUseCapacityFor`, this file
+  calls all three and nothing else, and they are `claimUse` `:1168`,
+  `hasPlaceForUse` `:1531` and `findAvailableForUse` `:1569`.
+- §6's non-vacuity floors for `adr-status-reference-contract.test.ts` were
+  cited at `:427` and `:431`; they are `:434` and `:438`, and were `:434` and
+  `:438` at `829d3c11` too. **Wrong by seven then and wrong by seven now**,
+  while `:405` in the same sentence was right at both ends. The floors
+  themselves — 300, 15, 20 — never moved.
+
+**HOW THE BLIND SPOT WAS SEARCHED, STATED SO THE NEXT PASS CAN REPEAT IT
+RATHER THAN RE-INVENT IT.** The previous anchor said its method *"will [not]
+find the same shape in the 34 files this window did not touch"* and left it
+there. This pass enumerated that population instead of estimating it: **41
+files outside the window carry 75 live line-numbered citations**, and the
+population that can rot is much smaller than 75, because **64 of them sit in a
+paragraph that names a commit** — a number attached to a sha is a record and
+cannot go stale, which is the trap the previous pass fell into with seven
+`hud.ts` citations and climbed out of. That leaves **eleven** genuinely live
+citations outside the window; all eleven were opened; **nine hold** and the two
+above do not. So the blind spot was not sampled, it was *closed for this
+anchor* — and the cost was a scan, not a re-reading of the corpus.
+
+**What that says about the method, and it is a correction to the previous
+pass's conclusion rather than an echo of it.** That pass wrote that the honest
+answer is not "read every file every time", and it is right; but it treated the
+outside-window population as unbounded when it is bounded and small. The test
+that shrinks it is mechanical — **does a sha appear in the same paragraph?** —
+and it reduced 75 candidates to 11 in one pass over the file. **A future anchor
+should run that scan every time**, because it costs one script and it is the
+only part of this method that reaches what the delta cannot.
+
+**Recommendation 1 is applied in this commit rather than recorded for a
+thirteenth time**, and what it needed turned out not to be a new mechanism:
+`tests/foundation/adr-quotation-verbatim-contract.test.ts` already scans the
+whole of `docs/` except `docs/research/`, so this file has been inside item 2's
+gate all along and was carrying **five** attributions in fifteen thousand
+lines. Four of the five citations this pass corrected now carry a quotation
+with a `(verbatim in …)` attribution beside the number, which the gate binds;
+mutating one was watched failing before this was written. The remaining cost is
+stated in §6 and it is a rewrite, not a build.
+
+**The four counting sites all read current and the count was re-derived.**
+**Nine** entries in §2, matching §2's heading, this header's own paragraph and
+§5's live preamble; **forty** `Proposed` in the three sites that carry that
+number, against a tree holding **40 `Proposed` and 49 `Accepted` across 89
+documents with a status** — derived by replicating `statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` rather than by a grep
+written for the occasion, and a first attempt with a hand-written parser
+returned 38/43 over 81 documents and was discarded for that reason.
+`Next free number: 0097` here, restated from `docs/adr/README.md` and agreeing
+with it. **Fifth consecutive reading with all four already current, and
+reported as weak for the fifth time**: 89 ADR files at both ends of the window,
+so no ADR arrived and none left, and the mechanism that splits the four sites
+was not exercised. The one `docs/adr/` change besides this file is ADR 0073's
+own amendment — the sweep measurement #996 produced — and it is cited from the
+live sections by number only, so it moved no coordinate.
+
+**The v0.0.484 account is kept below this line rather than overwritten, as
+every account in this stack is.**
+
+**EIGHT of the ten
 releases the budget allows — INSIDE it, and the first anchor in this sequence
 taken with its own gate GREEN since `07add3e`**, counted on the tree this commit
 is written against: `package.json` ships 0.0.484 at `829d3c11` and the anchor
@@ -3053,6 +3206,28 @@ anchor: it was dispatched at six of ten against a rule written in capitals two
 anchors ago, one release late, and the honest reading is that a rule two
 passes have missed by two and then by one is being approached rather than
 kept.
+
+**The anchor before this one, kept — v0.0.484.** It read: *"Re-anchored at `main` @
+`829d3c11` (**v0.0.484**) by the delta method this header describes, from the
+v0.0.476 anchor kept below. EIGHT of the ten releases the budget allows —
+INSIDE it, and the first anchor in this sequence taken with its own gate GREEN
+since `07add3e`."* **It is the pass that named this method's blind spot in
+terms**: it found two `src/main.ts` citations that were false on the very tree
+the anchor before it had certified as read, and wrote that the delta
+intersection *"finds what moved INSIDE the window and is structurally blind to
+what was already broken before it"*, estimating the same shape in the 34 files
+its window did not touch. **The estimate was the right diagnosis and the wrong
+size.** The pass above enumerated that population — 41 files, 75 live
+line-numbered citations, of which 64 are governed by a sha and cannot rot —
+and closed it at eleven readings, two of which were wrong.
+
+**One of its own readings did not survive one window, and it is recorded above
+rather than here.** `src/ui/hud/view-model.ts:1840` is the number this anchor
+set, correcting `:1806` and writing in the next paragraph that the durable form
+is the symbol; it was stale nine releases later. **That is not a failure of
+care either** — it is what a line number is, and it is the reason the pass
+above stopped restating §6's recommendation 1 and started applying it.
+
 
 **The anchor before this one, kept — v0.0.476.** It read: *"Re-anchored at `main` @
 `413def1c` (**v0.0.476**) by the delta method this header describes, from the
@@ -9659,7 +9834,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `829d3c11`, and at `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty anchors it names.**
+absences were re-verified at `c57f5fa8`, and at `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty anchors it names.**
 
 **THE ABSENCES HOLD AND THE GREP THAT ESTABLISHED THEM NO LONGER DOES, AND BOTH
 HALVES ARE KEPT.** This paragraph read, from `26434e8e` through `4c00eaba`:
@@ -11217,6 +11392,129 @@ derived by replicating `statusStatement` from
 written for the occasion. Fourth consecutive reading with all four already
 current, and reported as weak for the fourth time.
 
+
+## 3. What the anchor pass of 2026-09-05 evening did to the blind spot its predecessor named: nine merges, three movers, and two citations no delta pass could ever have reached
+
+**NINE at `c57f5fa8` (v0.0.493), inside the budget by one, and the second
+consecutive anchor taken with its own gate green.** `Next free number: 0097`
+here, restated from `docs/adr/README.md` rather than recomputed, and the index
+and this file agree on it. **89 ADR files at both ends of the window**, so no
+ADR arrived and none left, and the agreement is reported as weak for the fifth
+consecutive time: the mechanism that splits the four counting sites was not
+exercised. The one `docs/adr/` change besides this file is ADR 0073's own
+amendment, cited from the live sections by number and never by coordinate.
+
+**The window, the member set and the intersection are stated in the header
+above** and are not repeated: 85 files, nine implementing merges including the
+previous anchor's own, a union of 84 reconciling against the window's 85 with
+`package.json` as the single difference, and ten files reached by a live
+citation. What this section records is what the reading found.
+
+**THE POPULATION OUTSIDE THE WINDOW WAS ENUMERATED RATHER THAN ESTIMATED, AND
+IT IS SMALL.** The previous pass closed by saying that nothing in this method
+*"will find the same shape in the 34 files this window did not touch"* and
+stopped there. Counted here instead: **41 files outside the window carry 75
+live line-numbered citations** — and **64 of those 75 sit in a paragraph that
+names a commit**, which makes them records rather than claims, because a number
+attached to a sha cannot go stale. That is the same test the previous pass
+worked out the hard way when seven `src/ui/hud/hud.ts` citations looked like
+movers and were dates. Applied as a filter instead of as a rescue, it leaves
+**eleven** live citations outside the window. All eleven were opened. **Nine
+hold; two do not, and both were false before this window opened.**
+
+**The nine that hold**, each on a file no recent window touched, so each
+establishes that the file was left alone and nothing stronger:
+`src/simulation/objects/room-capacity.ts:176-201` (the `residentCapacity`
+summation, still opening at `:176` and still closing at `:201`),
+`src/simulation/prisoners/release.ts:216` (`entityStore.destroy(entityId);`),
+`tests/unit/entity-generation-wrap.test.ts:124` (`const stale = store.spawn();`),
+`src/services/challenges/verification.ts:136`
+(`export async function verifyChallengeSubmission(`),
+`tests/foundation/adr-status-reference-contract.test.ts:147-150` (the `EXEMPT`
+predicate), `docs/research/2026-08-25-economy-rate.md:443` and `:630` (§6's
+deliberately-left research record, unchanged as the rule requires), and the two
+`docs/adr/README.md` coordinates in §5, which are quoted inside sentences
+recording what a superseded clause *said* and are therefore not live claims at
+all.
+
+**The two that do not, and why no anchor could have found them.**
+
+- **§2's ADR 0071 entry gave the concurrent-use ceiling's three production
+  callers as `src/simulation/prisoners/action-system.ts:820`, `:1067` and
+  `:1082`.** All three are doc-comment prose. `git show` on the oldest commit
+  this container's history reaches puts the same bytes at those lines as
+  `c57f5fa8` does, so the file has not moved in any window a recent anchor
+  examined and the numbers have been false throughout. **The claim is true**:
+  exactly three of `RoomInstanceRegistry`'s methods consult
+  `concurrentUseCapacityFor` — `findAvailableForUse`, `hasPlaceForUse` and
+  `claimUse` — `action-system.ts` calls all three and nothing else, all three
+  pass `action.requiredObjectCapability`, and the one that resolves by instance
+  id sits behind the target check the entry now quotes. Corrected to `:1168`,
+  `:1531` and `:1569`, with a quotation beside them.
+- **§6's non-vacuity floors for `adr-status-reference-contract.test.ts` were
+  cited at `:427` and `:431`.** They are `:434` and `:438`, and they were
+  `:434` and `:438` at `829d3c11` as well — wrong by seven at both ends, while
+  `:405` in the same sentence was right at both. The floors themselves, 300, 15
+  and 20, never moved. **This is the shape the previous pass found in
+  `src/main.ts` and could only find because three merges happened to touch that
+  file**; here it was found on purpose, on a file nothing has touched.
+
+**Three movers, all created by this window, each verified correct at
+`829d3c11` before being called a mover.** `src/main.ts` gave up two — the
+`PrisonerDetailReader` construction `:1429` → `:1439` and the telemetry consent
+prompt's mount `:3311` → `:3365`, both moved by #1009's play-test wiring above
+them — and `src/ui/hud/view-model.ts` gave up one, `HudPrisonerDetailViewModel`
+`:1840` → `:1849`, moved nine by #1011.
+
+**The `:1840` reading is the one worth naming, and it is a harder case than its
+predecessor.** The previous anchor's `:614` finding was a number that had
+survived eight anchors untouched and moved at the ninth; the argument it drew
+was that *untouched* is not *durable*. **This one is stronger: `:1840` is a
+number the previous anchor itself set**, having corrected it from `:1806` and
+having written, in the paragraph immediately below the correction, that *"the
+durable form is the symbol and not the number"*. So the failure here is not
+inattention and not age — a citation was read, repaired, published, and was
+stale nine releases later. **A recommendation restated by the pass that could
+have applied it is the whole of what recommendation 1's twelve recordings
+amount to**, and this pass stopped adding to that count.
+
+**WHAT WAS DONE ABOUT IT, AND THE COST IT TURNED OUT NOT TO HAVE.** §6's item 2
+asks for *"a test [that] can extract each quoted sentence from this document
+and require it to appear verbatim in the file named"*. **That test exists and
+this file is already inside it**:
+`tests/foundation/adr-quotation-verbatim-contract.test.ts` scans every markdown
+file under `docs/` except `docs/research/`, binds any backtick span followed by
+a `(verbatim in …)` attribution, and this file was carrying **five** such
+attributions across fifteen thousand lines. Item 2 is therefore not unbuilt; it
+is **unused**. Four of the citations corrected in this pass now carry a
+quotation with an attribution beside the number, and the gate was watched
+biting on one of them before that was written rather than assumed. What remains
+of item 2 is a rewrite of the citations in §§2-6, which is work and not
+engineering, and it can be paid one entry at a time by whichever pass touches
+an entry — which is how these four were paid.
+
+**Two inherited readings, re-read and labelled as inherited.** ADR 0013's §5
+and §6 absences and `tests/unit/ui-hud-messages.test.ts:270-276` both hold at
+`c57f5fa8`. `git diff --name-only 829d3c11..c57f5fa8 -- supabase/` returns
+nothing and the test file is in no merge of this window, so both readings
+establish that the files were left alone and nothing stronger — the eighth
+consecutive unmoved reading for the second of them. The `docs/research/README.md`
+citation in §3's outstanding entry is the one reading of this kind that rests on
+more: that file **is** in this window, gaining rows from #1001 and #1012, and
+its cited rule at `:9` is above the single append point and unchanged.
+
+**The four counting sites all read current and the count was re-derived.** Nine
+entries in §2, matching §2's heading, this header's own paragraph and §5's live
+preamble; **forty** `Proposed` against a tree holding **40 `Proposed` and 49
+`Accepted` across 89 documents with a status**, derived by replicating
+`statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` rather than by a grep
+written for the occasion. **A hand-written parser was tried first and was
+wrong**, returning 38 `Proposed` and 43 `Accepted` over 81 documents because it
+looked only for a `## Status` heading and missed the `- Status:` bullet form
+that eight ADRs use. It is recorded because the wrong number was plausible, the
+right one agrees with the previous anchor, and a count re-derived by a fresh
+script is exactly where this file has been wrong before.
 
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
@@ -15177,7 +15475,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `829d3c11` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **seventh** consecutive unmoved reading, and the seventh taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then FIVE unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `c57f5fa8` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **eighth** consecutive unmoved reading, and the eighth taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then FIVE unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
