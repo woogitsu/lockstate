@@ -237,3 +237,80 @@ to help them see it, and it currently says it cannot. It is collapsible —
 `createPanel(… collapsed: isPanelCollapsed(state, 'minimap') …)`,
 `src/ui/hud/hud.ts:1545` — so the escape exists; nothing points at it.
 
+## 3. Building at scale: 173 wall segments, and the queue that draws one order at a time
+
+**MEASURED, act 1.** The prison as built: **8 rooms — 3 cell blocks
+(`room.cell`), a shower room, a classroom, a canteen, a common room and a
+yard — 173 wall segments, 7 doors, 68 beds, 8 toilets and 13 other objects.**
+Every wall run landed and none was lost:
+
+```
+[act1] 142 planned gesture points checked; 0 land on the HUD
+  [wall] block-A north: 12 command(s)
+  [wall] block-A west: 6 command(s)
+  [wall] block-A east: 6 command(s)
+  [wall] block-A south-west: 5 command(s)
+  [wall] block-A south-east: 6 command(s)
+  …
+[act1] 173 wall command(s) submitted, from tick 487 to 12012
+  [door] block-A at (6,9) south: 1 command(s), top=canvas
+  … (7 doors, 1 command each)
+```
+
+**The arithmetic is exact.** `block-A` is 12×6, so its perimeter is
+`2×(12+6) = 36` segments; one is left out for the door, and the five runs sum to
+**35**. Over all seven walled rooms the plan is 180 perimeter segments minus 7
+door gaps, and the run submitted **173**, to the command.
+
+**MEASURED — money, to the minor unit.** `380 × 40 + 110 × 65 = 22,350`, and:
+
+```
+[act1] after buying 380 brick and 110 plank: funds=2650
+```
+
+25,000 − 22,350 = 2,650. The prices are `item.brick` 40 and `item.wood-plank`
+65 (`src/content/procurement-catalog.ts:100-101`), the recipes 2 brick a wall
+and 1 plank a bed (`src/simulation/construction/definition.ts:89,180`).
+
+### 3a. The single crew is real, and at this size the player is slower than it is
+
+**VERIFIED, read.** `ConstructionSystem` runs `{ intervalTicks: 10 }`
+(`src/simulation/construction/system.ts:269`), advances the one in-progress
+order by `order.progress += 10` (`:1419`), and takes exactly one order at a
+time: `if (crewBusy) break; crewBusy = true;` (`:1412-1413`), with
+`MOCK_CREW_WORKER_ID` documented as *"one id, one order in progress at a
+time"* (`:251-252`). A wall is `workRequired: 50` (`:88`), a bed and a door 30
+(`:179,141`).
+
+**REASONED.** So a wall costs 5 construction ticks of work plus one to be
+assigned — about 60 kernel ticks — and **173 walls is roughly 10,400 ticks of
+serial queue, which is more than four in-game days** (a day is 2,400 ticks;
+`src/simulation/economy/income.ts:622` — *"first on tick 2,399, after 2,400
+ticks have been served"*).
+
+**MEASURED, and this is the surprise.** It did not cost the player any waiting
+at all, because **drawing the walls took longer than building them**. The 27
+drag gestures spanned ticks 487 → 12,012 with the clock at 4×, and by the time
+the last door was placed the queue was already empty: every one of the eight
+designations was accepted **on its first attempt**.
+
+```
+[act1] designate block-A (room.cell) -> ok on attempt 1 after 13191ms, rooms 0->1
+[act1] designate block-B (room.cell) -> ok on attempt 1 after 13531ms, rooms 1->2
+…
+[act1] designate common (room.common-room) -> ok on attempt 1 after 9144ms, rooms 7->8
+[act1] after zoning: rooms=8 accommodationCapacity=0 roomCapacity=0
+```
+
+That is worth stating against the record: `buildAndPopulate` carries a retry
+loop *because* the enclosure verdict is read off a world view a snapshot
+replaces (`2026-08-29-playtest-ordering-and-the-second-room.md` §7), and at
+this scale **it never fired once in eight rooms**. The retry is a small-prison
+symptom: a 6×6 room's walls finish while the player is still holding the mouse.
+
+**Caveat, stated plainly.** The gesture pacing is the instrument's (each `drag`
+carries fixed settle waits) on a box shared with a second tester, so "the player
+is slower than the crew" is a claim about *this* run and not a law. What is not
+about this box is the serial queue and the 60-ticks-a-wall arithmetic, which are
+read from the code.
+

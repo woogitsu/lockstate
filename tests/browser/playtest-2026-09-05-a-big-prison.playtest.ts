@@ -375,35 +375,51 @@ const TICKS_PER_ROUND = 2_200;
  * that behaves with 176 orders in it is the thing no playtest has had enough
  * orders to see.
  */
+/**
+ * Waits for the build queue to empty, reading the **projection** rather than
+ * the panel — and the reason is a finding.
+ *
+ * This started as the harness's `waitForQueueEmpty`, which polls
+ * `.hud-build__queue`'s text and treats `not laid out` as empty. At this scale
+ * that is false: `paintQueue` sets `queueSection.element.hidden = shown ===
+ * undefined` where `shown` requires a queue view model to have *arrived*
+ * (`src/ui/hud/build-panel.ts:2311-2313`), so immediately after 180 orders are
+ * submitted the block is hidden because nothing has answered yet — not because
+ * nothing is queued. The first run of act 1 read that as "drained" and walked
+ * straight past 180 outstanding orders. The count comes from
+ * `hud/build-queue`'s `orders.total` now, and the panel's sentence is logged
+ * beside it so the gap between the two channels is on the record instead of
+ * inside the instrument.
+ */
 async function drainQueue(
   page: import('@playwright/test').Page,
   label: string,
   timeoutMs: number,
-): Promise<{ startTick: number; endTick: number; samples: number; ticksPerSample: string }> {
+): Promise<{ startTick: number; endTick: number; samples: number; series: string }> {
   await tab(page, 'build').click();
   const startTick = await currentTick(page);
   const started = Date.now();
-  const marks: { tick: number; ms: number; text: string }[] = [];
+  const marks: { tick: number; ms: number; total: number; started_: number }[] = [];
   for (;;) {
-    const text = (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
+    const view = await ask<{ view?: { orders?: { total?: number }; started?: number } }>(page, 'hud/build-queue', { limit: 1 });
+    const total = view.view?.orders?.total ?? -1;
+    const inFlight = view.view?.started ?? -1;
     const tick = await currentTick(page);
-    marks.push({ tick, ms: Date.now() - started, text });
-    if (marks.length % 6 === 1 || /(?<![0-9])0 waiting . 0 being built/.test(text)) {
-      log(`  [${label}] tick ${tick} (+${tick - startTick}) page ${Math.round((Date.now() - started) / 1000)}s: ${text}`);
+    const panel = (await panelText(page, '.hud-build__queue')).replace(/\n/g, ' ');
+    marks.push({ tick, ms: Date.now() - started, total, started_: inFlight });
+    if (marks.length % 5 === 1 || total === 0) {
+      log(`  [${label}] tick ${tick} (+${tick - startTick}): projection says ${total} queued, ${inFlight} started | panel says ${JSON.stringify(panel)}`);
     }
-    if (/(?<![0-9])0 waiting . 0 being built/.test(text) || text.includes('not laid out') || text.includes('ABSENT')) break;
+    if (total === 0) break;
     if (Date.now() - started > timeoutMs) {
-      log(`  [${label}] TIMED OUT with: ${text}`);
+      log(`  [${label}] TIMED OUT at ${total} still queued`);
       break;
     }
     await page.waitForTimeout(4000);
   }
   const endTick = await currentTick(page);
-  const rates = marks
-    .slice(1)
-    .map((m, i) => ((m.tick - marks[i]!.tick) / ((m.ms - marks[i]!.ms) / 1000)).toFixed(1))
-    .join(',');
-  return { startTick, endTick, samples: marks.length, ticksPerSample: rates };
+  const series = marks.map((m) => `${m.tick}:${m.total}`).join(' ');
+  return { startTick, endTick, samples: marks.length, series };
 }
 
 /** Zones one plan, retrying the way `buildAndPopulate` does and for the same reason. */
@@ -640,24 +656,32 @@ test.describe('A big prison — the scale pass', () => {
     await page.waitForTimeout(600);
     const g = await measureGrid(page, [400, 1050], [150, 780]);
 
-    // Which of the 32x32 plot a pointer can actually reach, at this zoom.
-    const covered: string[] = [];
-    let onCanvas = 0;
-    for (let ty = 0; ty < 32; ty += 1) {
-      for (let tx = 0; tx < 32; tx += 1) {
-        const p = mid(g, tx, ty);
-        const top = await topAt(page, p.x, p.y);
-        if (top.startsWith('canvas')) onCanvas += 1;
-        else covered.push(`${tx},${ty}=${top}`);
-      }
+    /*
+     * Only the points this layout will actually press, rather than all 1,024:
+     * act 0c walks the whole plot per tab and this act has 173 walls to spend
+     * its budget on. A covered point here is a gesture that submits nothing at
+     * all, which is the failure three withdrawn findings in this repository
+     * were made of.
+     */
+    const wanted: { label: string; x: number; y: number }[] = [];
+    for (const plan of PLANS) {
+      wanted.push({ label: `${plan.key} nw`, ...mid(g, plan.x0, plan.y0) });
+      wanted.push({ label: `${plan.key} se`, ...mid(g, plan.x1, plan.y1) });
+      if (!plan.walls) continue;
+      wanted.push({ label: `${plan.key} north edge`, ...pt(g, plan.x0 + 0.5, plan.y0) });
+      wanted.push({ label: `${plan.key} south edge`, ...pt(g, plan.x1 + 0.5, plan.y1 + 1) });
+      wanted.push({ label: `${plan.key} west edge`, ...pt(g, plan.x0, plan.y0 + 0.5) });
+      wanted.push({ label: `${plan.key} east edge`, ...pt(g, plan.x1 + 1, plan.y1 + 0.5) });
+      if (plan.doorAtX !== undefined) wanted.push({ label: `${plan.key} door`, ...pt(g, plan.doorAtX + 0.5, plan.y1 + 1) });
     }
-    log(`[act1] at zoom ${(g.pitch / TILE).toFixed(4)}: ${onCanvas} of 1024 plot tiles are pressable, ${covered.length} are not`);
-    log(`[act1] not pressable (first 20): ${JSON.stringify(covered.slice(0, 20))}`);
-    const inPlan = covered.filter((entry) => {
-      const [tx, ty] = entry.split('=')[0]!.split(',').map(Number) as [number, number];
-      return PLANS.some((plan) => tx >= plan.x0 - 1 && tx <= plan.x1 + 1 && ty >= plan.y0 - 1 && ty <= plan.y1 + 1);
-    });
-    log(`[act1] planned tiles that are NOT pressable: ${inPlan.length} ${JSON.stringify(inPlan.slice(0, 10))}`);
+    for (const group of OBJECTS) for (const [tx, ty] of group.at) wanted.push({ label: `${group.buildable} ${tx},${ty}`, ...mid(g, tx, ty) });
+    const blocked: string[] = [];
+    for (const w of wanted) {
+      const top = await topAt(page, w.x, w.y);
+      if (!top.startsWith('canvas')) blocked.push(`${w.label} (${w.x.toFixed(0)},${w.y.toFixed(0)}) -> ${top}`);
+    }
+    log(`[act1] ${wanted.length} planned gesture points checked; ${blocked.length} land on the HUD`);
+    if (blocked.length > 0) log(`[act1] BLOCKED: ${JSON.stringify(blocked)}`);
 
     // --- materials --------------------------------------------------------
     await buy(page, 'wall-brick', BRICKS);
