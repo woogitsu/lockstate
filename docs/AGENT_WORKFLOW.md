@@ -106,6 +106,36 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
       there, and exited 1 in the primary checkout with *"actor.staff.base.idle.png
       is a Git LFS pointer, not image data"* and a line like it for every atlas.
       `app-shell.spec.ts`'s art test therefore has its bytes in a worktree.
+    - **A THIRD STATE, measured 2026-09-05: NEITHER tree has the art, and the
+      `git lfs checkout` that fixes it is FREE.** `file` returns `ASCII text` in
+      a fresh worktree **and** in `/workspace/lockstate`; `git lfs ls-files`
+      names 62 paths and all 62 are pointers in both. So the two bullets above
+      have now each been the truth of one container and the falsehood of
+      another, which is the whole argument for running the `file` check instead
+      of reading either of them.
+      - **The remedy costs one second and no bandwidth**, which is the part
+        neither the bullets nor the session-start hook say and the part that
+        matters: `git lfs checkout` in the tree you are working in printed
+        `Checking out LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` in
+        **1.07s**. `0 B/s` is not a rounding artefact — **the objects are
+        already in `.git/lfs` (54 MB) and nothing is fetched.** Immediately
+        after it, `node tooling/validate-runtime-atlas.mjs public/assets/actors`
+        printed *"Validated 10 clip atlases"* and **exited 0**.
+      - **The session-start hook says the opposite about the cost**, and it is
+        the sentence to disbelieve: *"To get the real bytes: bash
+        scripts/provision-git-lfs.sh && git lfs pull (metered bandwidth -- that
+        is why this hook leaves it to you)."* `git lfs pull` would fetch;
+        `git lfs checkout` materialises what is already local. **Neither the
+        provisioning script nor the network is needed.** So `verify:assets` and
+        `app-shell.spec.ts`'s art test are one second away in any tree, and the
+        standing advice that they are an unfixable baseline in this container is
+        withdrawn.
+      - **The mechanism, which the bullet below quotes the keys of and not the
+        values of — and that is exactly how it got the direction wrong.**
+        `/etc/gitconfig` sets `smudge = git-lfs smudge --skip -- %f` and
+        `process = git-lfs filter-process --skip`. **`--skip` means no checkout
+        in this container smudges anything, `git worktree add` included.** Read
+        the values, not the key names.
     - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
       `filter.lfs.process` and `filter.lfs.required` are set in
       **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
@@ -115,8 +145,10 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
       (verbatim in `scripts/provision-git-lfs.sh`). So a checkout in this container runs
       the smudge filter, `git worktree add` included, and gets real bytes. The
       primary checkout's working tree was materialised without that and nothing
-      has re-smudged it since — which is an observation about one container's
-      filesystem, not a diagnosis, and §3's rule about state this repository
+      has re-smudged it since — **and that half is false as of 2026-09-05: the
+      filters carry `--skip`, so no checkout in this container smudges and the
+      bytes come from `git lfs checkout` or not at all** — which is an
+      observation about one container's filesystem, not a diagnosis, and §3's rule about state this repository
       cannot read back applies: `/etc/gitconfig` is not in git, so the next
       image can move this in either direction. **That is exactly why the durable
       advice is the `file` check and not a direction.**
