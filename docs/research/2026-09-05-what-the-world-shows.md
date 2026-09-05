@@ -617,7 +617,17 @@ of the four. What I can say about the other three is that their sheets decode
 
 ## 8. What this adds up to
 
-**Six readings, in the order I would act on them.**
+**Nine readings, in the order I would act on them.** The state finding is
+first because it is the one the brief asked for and the one that was measured
+rather than argued.
+
+0. **A working prison and a sealed one are the same picture apart from the door
+   the player built** — 4.11% of pixels, thirty-two of thirty-six tiles
+   identical (§4) — and at fifty prisoners, with a fight in the alerts column
+   and thirty-eight people with nowhere to sleep, the world view's whole report
+   is two orange lumps that are pixel-identical to each other over the region
+   that holds them (§5). **The world view carries no state. All of it is in the
+   HUD.**
 
 1. **The people are the best thing in this game and nobody had seen them.**
    Two populations, unmistakable at 1:1 with no zoom and no click. This is not a
