@@ -226,6 +226,33 @@ and `:2697`. Meanwhile `src/ui/hud/build-panel.ts:753` and `:1579` say
 about the size of its own catalogue, in two files, in the direction that makes
 a deliberate layout decision unreadable.
 
+### 6.1 Both misses are inside a working gate's declared blind spots
+
+`tests/foundation/comment-symbol-existence-contract.test.ts` exists for exactly
+this class — *"A comment that names a symbol must name one that exists"* — and it
+is green. **Neither miss is a bug in that test.** Its docblock declares both
+boundaries that let these through:
+
+- it reads comments **under `src/` and `tests/`**, so `STARTING_ORIGIN_TILE` —
+  a three-segment screaming constant in a backticked token, precisely the shape
+  the gate matches — survives only because it is in `docs/`;
+- it deliberately excludes **two-segment** constants, because they collide with
+  prose acronyms and admitting them would need the allowlist the file is built
+  to avoid. `BUILDABLE_REGISTRY` is two segments.
+
+So the cheap half of the fix is real and mechanical: extend the same extractor
+to `docs/**/*.md` and miss 1 closes outright. Miss 2 is the harder half and the
+gate's own reasoning against it still stands; a narrower admission rule is
+proposed in the issue body rather than decided here.
+
+**And the second miss is why finding D1 exists.** The argument for
+`--hud-build-catalogue-floor` being two rows (`src/ui/tokens.css:415`) rests on
+the Build list being two rows tall and therefore donating no height. At
+twenty-one rows the premise is inverted — the Build list is the one that scrolls
+at every viewport. D1 is not an oversight. It is a decision taken correctly
+against a fact that has since changed by a factor of ten, and five comments
+still assert the old one.
+
 **Worse than either: `BUILDABLE_REGISTRY` is not a symbol.** It has **six**
 occurrences in `src/` and every one is inside a comment. Like
 `STARTING_ORIGIN_TILE`, it names something that does not exist — and unlike it,
