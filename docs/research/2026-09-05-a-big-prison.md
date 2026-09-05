@@ -178,7 +178,7 @@ actors"* is a claim about the kernel, and nothing a player can build reaches it.
 four earlier records derived, so the arrival camera has not moved.
 
 **MEASURED, act 0, the zoom.** Four presses of `Minus` (`camera.zoom.out`,
-`src/input/bindings.ts:34`; `KEYBOARD_ZOOM_STEP` is 1.25,
+`src/input/bindings.ts:35`; `KEYBOARD_ZOOM_STEP` is 1.25,
 `src/rendering/scene/world-scene.ts:86`) put the whole plot on screen:
 
 ```
@@ -471,11 +471,14 @@ ten guards hired:
 `hud.security.held-summary` is `'{held} held · {unassigned} free'` and
 `{unassigned}` is `hired − held` over the whole roster
 (`src/content/default-locale-en.ts:1718,1868`, quoting
-`projectHeldGuards`, `src/simulation/presentation/guard-release-projection.ts:213`).
-An incident needs `requiredResponderCount = max(1, ceil(severity * 0.5))`
-responders and *"every incident a session can currently open is severity 3 or
-worse … so its floor is `round(0.65 * 5) = 3` and it asks for **two**"*
-(`src/content/default-locale-en.ts:1876-1884`, quoting `response-system.ts:345`).
+`projectHeldGuards`, `src/simulation/presentation/guard-release-projection.ts:216`).
+An incident needs `requiredResponderCount`, which is
+`Math.max(1, Math.ceil(severity * this.policy.respondersPerSeverityPoint))`
+(`src/simulation/incidents/response-system.ts:345-347`), and the locale file's
+own note on this panel puts a number on it: *"`requiredResponderCount` is
+`max(1, ceil(severity * 0.5))` … every incident a session can currently open is
+severity 3 or worse … so its floor is `round(0.65 * 5) = 3` and it asks for
+**two**"* (`src/content/default-locale-en.ts:1880-1884`).
 
 **REASONED.** Two free guards are needed and there are none, so nothing can be
 contained — and the alerts column says exactly that, for four incidents:
@@ -595,7 +598,7 @@ and the regime block that put them there:
 **VERIFIED, read — the ceilings this prison actually has.**
 `concurrentUseCapacityFor` gates on *"the summed footprint width of the objects
 inside the rectangle carrying that capability"*
-(`src/simulation/prisoners/room-instance-registry.ts:98-104`), derived by
+(`src/simulation/prisoners/room-instance-registry.ts:99-105`), derived by
 `deriveRoomCapacity` as `byCapability.set(capability, … + definition.footprint.width)`
 (`src/simulation/objects/room-capacity.ts:187-189`). For this prison:
 
@@ -623,7 +626,7 @@ Class* simultaneously, in a room that seats **two**. `findAvailableForUse` is
 *"an answer, not a reservation"* — its own docblock says *"two actors selecting
 in the same tick can both be answered this instance and only the first
 `concurrentUseCapacityFor` of them will get in"*
-(`room-instance-registry.ts:986-999`). So the losers of a contended room are not
+(`room-instance-registry.ts:968-971`). So the losers of a contended room are not
 told and do not stop: **they walk there and are refused on arrival**, and the
 interface's word for that is `Heading to Class`.
 
@@ -841,7 +844,7 @@ room"* (`:231-234`). The data is on the instance already
 **What the player would see**, in the Rooms panel's detail block, one line per
 capability the room carries: `Classroom at 24, 4 — 2 can study here at once`.
 It is true because `concurrentUseCapacityFor` is the number `claimUse` gates on
-(`room-instance-registry.ts:98-104`), and it is the number that turns "the
+(`room-instance-registry.ts:99-105`), and it is the number that turns "the
 classroom is finished" into "the classroom is finished and too small".
 
 ### P3. `Covered` must not be the word when no guard is free
@@ -859,9 +862,11 @@ that is neither**: the requirement is met *and* `unassigned === 0`.
 The words: **`No one spare`**, with the hint **`Every guard is on a post — an
 incident needs a free one.`** Both are true of the code that would render them:
 `unassigned` is `hired − held`
-(`src/simulation/presentation/guard-release-projection.ts:213`), and an incident
-needs `max(1, ceil(severity × 0.5)) ≥ 2` free responders
-(`response-system.ts:345`, quoted at `default-locale-en.ts:1876-1884`). It
+(`unassigned: entityIds.length - rows.length`,
+`src/simulation/presentation/guard-release-projection.ts:216`), and an incident
+needs at least two free responders
+(`src/simulation/incidents/response-system.ts:345-347`, with the arithmetic
+spelled out at `src/content/default-locale-en.ts:1880-1884`). It
 replaces a verdict that is presently the opposite of the truth beside it.
 
 ### P4. Collapse the minimap while it has no map
@@ -885,8 +890,8 @@ already there reads:
 It names three ways to *move* the camera and none to zoom it — while
 `{ code: 'Minus', action: 'camera.zoom.out' }` and `{ code: 'Equal', action:
 'camera.zoom.in' }` are bound in contexts `['world', 'construction']`
-(`src/input/bindings.ts:33-34`) and handled at
-`src/rendering/scene/world-scene.ts:737-738`, so they work *while a tool is
+(`src/input/bindings.ts:34-35`) and handled at
+`src/rendering/scene/world-scene.ts:737-742`, so they work *while a tool is
 armed*. Adding `— and the - and = keys zoom out and in.` would be true of that
 binding today.
 
