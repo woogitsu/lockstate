@@ -215,15 +215,26 @@ and foot rails.
 **Where a model overhangs its declared footprint the frame grows uniformly**, so
 the aspect never moves and nothing is clipped, and `frameTiles` plus
 `overhangsFootprint` in the sidecar say so per asset. Nine of the 23 do, and
-they are the ones you would expect: the two doors and the two walls, whose
+eight are the ones you would expect: the two doors and the two walls, whose
 frames and copings are deeper than the quarter-tile edge they are declared as;
 `fixture.ceiling_light.panel.variants`, whose housing is 1.4 units across a
 1-tile footprint; `perimeter.watchtower.variants`, whose roof is 2.35 across
-two tiles; `security.camera.wall.variants` and
+two tiles; and `security.camera.wall.variants` and
 `security.checkpoint.turnstile.variants`, whose lens and arms swing outside
-theirs; and `furniture.cell.table_stool`, whose stools reach just past its two
-tiles. The one object `SPRITE_BY_OBJECT_ID` draws today,
-`furniture.cell.bed.single.variants`, does not.
+theirs.
+
+The ninth is worth naming because the flag is doing real work there and the
+overhang is small enough to have gone unnoticed: `fixture.cell.toilet_sink`
+declares `(1, 1)` and its basin disc reaches 0.52 of a tile from the origin, so
+it hangs 0.02 over its own tile edge and the frame is 1.1648 tiles square
+rather than the 1.12 the margin alone would give. Nothing is clipped and the
+aspect is still exactly 1:1; the effect is that the fixture is drawn at 96% of
+the size a frame sized from the footprint alone would give it. It is recorded
+rather than corrected, because 0.02 of a tile is not worth re-rendering the set
+for and a reader who sees the flag should be able to find out what tripped it.
+
+`furniture.cell.bed.single.variants`, the one object `SPRITE_BY_OBJECT_ID` draws
+today, does not overhang.
 
 **One vertical flip is owed, and it is done on the encoded PNG.** A camera above
 the ground cannot put north at the top of the image and east on the right at the
