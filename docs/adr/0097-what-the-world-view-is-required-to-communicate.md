@@ -142,27 +142,27 @@ constructor for one of them enumerates them in a single line:
 (verbatim in `src/rendering/world/world-view.ts`)
 
 `TileSample` is declared immediately above it at
-`src/rendering/world/world-view.ts:35-45`, and `WorldRenderView.readTile`
+`src/rendering/world/world-view.ts:36-46`, and `WorldRenderView.readTile`
 (`:161-181`) fills exactly those six from the decoded chunk layers. There is no
 seventh field, and no room-instance identity: `zoning` is the room *catalog*
 numeric id, so two adjacent cells are indistinguishable to the painter.
 
 Everything the tile layer draws from those six is in one method,
-`TileLayer.paintChunk` (`src/rendering/phaser/tile-layer.ts:279-397`), and it
+`TileLayer.paintChunk` (`src/rendering/phaser/tile-layer.ts:298-416`), and it
 paints from three inputs and no more:
 
 1. **The floor sprite**, chosen per tile at
-   `src/rendering/phaser/tile-layer.ts:314`, from a function whose body is five
+   `src/rendering/phaser/tile-layer.ts:333`, from a function whose body is five
    lines and whose last line is a literal:
 
    `return 'env.floor.institutional';`
    (verbatim in `src/rendering/world/environment-art.ts`)
 
-   `zonedFloorSprite` (`src/rendering/world/environment-art.ts:104-110`) branches
+   `zonedFloorSprite` (`src/rendering/world/environment-art.ts:156-161`) branches
    on nothing except whether the zoning id names a known room. Its own docblock
-   says so at `:100-102` — *"One floor for every category today."*
+   says so at `:152-154` — *"One floor for every category today."*
 
-2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:339-344`, at one
+2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:358-363`, at one
    of two alphas depending only on whether art is under it:
 
    `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;`
@@ -173,14 +173,14 @@ paints from three inputs and no more:
    `return ZONING_TINT_BY_CATEGORY[room.category];`
    (verbatim in `src/rendering/world/appearance.ts`)
 
-   `ZONING_TINT_BY_CATEGORY` is at `src/rendering/world/appearance.ts:84-96`.
+   `ZONING_TINT_BY_CATEGORY` is at `src/rendering/world/appearance.ts:85-97`.
 
 3. **The edge art**, `EDGE_ART_BY_NUMERIC_ID`
-   (`src/rendering/world/environment-art.ts:73-76`), two rows: a wall and a
+   (`src/rendering/world/environment-art.ts:125-128`), two rows: a wall and a
    door, each a face and a cap.
 
 Nothing else in that method reads anything that could vary with how a room is
-doing. Ownership shading (`:348-350`) and the owned-land outline (`:357-366`)
+doing. Ownership shading (`:368-370`) and the owned-land outline (`:374-386`)
 are the only other state on the tile, and both are about *land*, not about
 rooms.
 
@@ -191,7 +191,7 @@ that changed a value the painter reads.
 
 ### 3. The one state indicator the world view does have, and its scope
 
-VERIFIED, read. `alphaFor` (`src/rendering/phaser/tile-layer.ts:556-564`) draws
+VERIFIED, read. `alphaFor` (`src/rendering/phaser/tile-layer.ts:622-631`) draws
 an unfinished build order translucent, from two constants:
 
 `export const PLANNED_ALPHA = 0.35;` `export const BUILDING_ALPHA = 0.65;`
@@ -350,7 +350,17 @@ Two other agents are working the same pixels right now.
 **#1020 — the first real object sprite.** `SPRITE_BY_OBJECT_ID` is empty today
 (`src/rendering/world/environment-art.ts:186`) and `objectArtCoverage()`
 (`:203-210`) already splits the catalogue into `drawn` and `onFallback`, so the
-first row is one line and an atlas entry. **That work delivers a large part of
+first row is one line and an atlas entry.
+
+**THAT SENTENCE STOPPED BEING TRUE THE SAME DAY, AND IT IS KEPT RATHER THAN
+REWRITTEN BECAUSE WHAT FALSIFIED IT IS THE THING IT PREDICTED.** #1028 landed
+at `01fef637` (v0.0.503): `SPRITE_BY_OBJECT_ID` now holds one row, `'object.bed'`
+(`src/rendering/world/environment-art.ts:260-262`), `objectSprite` is read by
+the painter inside `acquireObjectSprite` before it falls back to `paintSlab`,
+and `objectArtCoverage()` is at `:280-287`. The estimate the clause carries —
+one row plus an atlas entry — is what that merge actually cost, so option D's
+"let #1020's first object sprites land and re-measure" is now a measurement
+that can be taken rather than a wait. **That work delivers a large part of
 "does it work" for free, and this document should not price an option as if it
 did not exist**: a cell drawn with a recognisable bed and toilet, against a cell
 drawn as a bare rectangle, communicates *requirement satisfaction* — which is
@@ -376,7 +386,7 @@ working" want that same mark. #1021's cheapest direction — key the tint by roo
 id, 18 rows instead of 11 — consumes the hue budget entirely. Any option here
 that modulates the tint's hue, value or alpha to say "ready" is spending the
 same budget a second time, on top of a wash the code's own comment
-(`src/rendering/world/appearance.ts:100-109`) already argued down from 0.28
+(`src/rendering/world/appearance.ts:101-110`) already argued down from 0.28
 because at full strength *"a photographed linoleum floor stops reading as a
 floor and becomes a coloured rectangle again"*. Whichever of the two lands first
 constrains the other, and neither issue can see that from where it stands.
@@ -441,7 +451,7 @@ What is left, and what this document recommends be priced first: a mark at the
 room's *boundary* rather than over its floor — the room rectangle is on the
 instance (`src/simulation/prisoners/room-instance-registry.ts:75-82`) and the
 painter already draws a boundary of exactly this kind for owned land, edge by
-edge, at `src/rendering/phaser/tile-layer.ts:357-366`. A boundary uses a
+edge, at `src/rendering/phaser/tile-layer.ts:374-386`. A boundary uses a
 different visual channel from a floor wash, so identity and condition stop
 competing.
 
@@ -500,14 +510,14 @@ machinery" actually reduces to, and because someone will propose it.
 `zonedFloorSprite`.
 
 **Cost, and this is the order-of-magnitude step.**
-- **Art, measured against the code's own figure.** `environment-art.ts:141`
+- **Art, measured against the code's own figure.** `environment-art.ts:202`
   records that *"each additional sheet is a whole ~1.5 MB download"*. A
   ready/not-ready pair for one floor is one extra sheet; a pair per category is
   eleven; and if #1021 takes its option 3 (split the floor sheets for identity)
   the two multiply — identity × condition, up to 36 sheets, tens of megabytes on
   first load. ARITHMETIC from that one constant, not measured.
 - **It rides the wrong channel and cannot be moved off it.** The floor sprite is
-  chosen inside the chunk paint (`src/rendering/phaser/tile-layer.ts:313`) and
+  chosen inside the chunk paint (`src/rendering/phaser/tile-layer.ts:333`) and
   cached per chunk until the revision moves, so it is the 30-second net by
   construction. Making it live means repainting chunks on the delta cadence,
   which is precisely the cost ADR 0040 slice 1 removed.
@@ -587,7 +597,7 @@ and the two issues would each be reasonable and jointly unaffordable.
 
 **Option A forecloses part of #1021 too, and this is the collision the brief
 asked to be named.** Both issues aim at the same 14%-alpha wash over the same
-floor. `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:84`) is
+floor. `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:85`) is
 load-bearing for both decisions. Decision 3 above resolves the collision *in
 this document's favour* by moving condition to the boundary and leaving the
 tint to identity — but that is a recommendation, not a settled split, and if
