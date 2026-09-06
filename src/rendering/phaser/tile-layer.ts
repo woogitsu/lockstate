@@ -20,10 +20,10 @@ import {
   zoningTint,
   type StructureAppearance,
 } from '../world/appearance';
-import { edgeArt, zonedFloorSprite } from '../world/environment-art';
+import { edgeArt, objectSprite, zonedFloorSprite } from '../world/environment-art';
 import { buildRowIndex, type RowContent } from '../world/row-index';
 import { slabFaces, type Rect } from '../world/structure-geometry';
-import { isDrawnAsWorldEdge, type StructurePhase } from '../world/structures';
+import { catalogueObjectId, isDrawnAsWorldEdge, type StructurePhase } from '../world/structures';
 import { mergeFloorRects, mergeTopEdgeRuns } from '../world/tile-art-runs';
 import { createTileSample, type WorldRenderView } from '../world/world-view';
 import type { EnvironmentTextureSet } from './environment-textures';
@@ -66,6 +66,14 @@ import type { EnvironmentTextureSet } from './environment-textures';
  * one per tile -- and `mergeTopEdgeRuns` collapses a row's north wall into one
  * sprite per unbroken run. A sprite-per-tile rewrite would have put a thousand
  * objects in a chunk and thrown the cache away; this keeps both.
+ *
+ * **A catalogued object with artwork is the one thing here counted per *thing*
+ * rather than per run,** and it is bounded by a different quantity: there is
+ * one sprite per structure the row index holds, and the row index holds build
+ * orders, of which a prison has as many as the player placed. Nothing merges
+ * two beds, because two beds standing side by side are two beds -- the merging
+ * above exists for surfaces whose repeats are indistinguishable, which is the
+ * property a piece of furniture does not have.
  *
  * With no art loaded, every path below falls through to the coloured blocks the
  * layer has always drawn. That is not a degraded mode bolted on: it is the
@@ -214,6 +222,15 @@ export class TileLayer {
    * one of these is fractional: `EDGE_WALL_THICKNESS_TILES` is 0.22 of a
    * 64-pixel tile, which is 14.08. Rounding here, and deriving the scale from
    * the rounded number, is what keeps the two paths identical.
+   *
+   * **`alpha` is applied on every path, including the ones that always pass 1,
+   * and that is not defensiveness.** These sprites are pooled: a planned
+   * object's ghost at `PLANNED_ALPHA` goes back into `spritePool` still
+   * carrying it, and the next caller to take it might be a floor. Setting it
+   * only where it is not 1 would make a room's floor draw at 40% opacity
+   * depending on what the player had queued and how the camera happened to
+   * pan, which is a defect that would reproduce rarely and look like anything
+   * but its cause.
    */
   private acquireSprite(
     depth: number,
@@ -221,6 +238,7 @@ export class TileLayer {
     spriteId: EnvironmentSpriteId,
     repeatXPx: number | undefined,
     repeatYPx: number | undefined,
+    alpha = 1,
   ): Phaser.GameObjects.TileSprite | undefined {
     const art = this.art;
     if (art === undefined) return undefined;
@@ -241,6 +259,7 @@ export class TileLayer {
     }
     sprite.setTileScale((repeatXPx ?? width) / size.width, (repeatYPx ?? height) / size.height);
     sprite.setDepth(depth);
+    sprite.setAlpha(alpha);
     return sprite;
   }
 
@@ -487,16 +506,64 @@ export class TileLayer {
       // orders, no edge values -- still gets its walls.
       if (isDrawnAsWorldEdge(structure) && edgeTileXs.has(structure.tileX)) continue;
       const appearance = structureAppearance(structure.definitionId);
-      this.paintSlab(
-        graphics,
-        structure.tileX * TILE_SIZE_PX,
-        structure.tileY * TILE_SIZE_PX,
-        appearance.footprintTiles.width * TILE_SIZE_PX,
-        appearance.footprintTiles.height * TILE_SIZE_PX,
-        appearance,
-        alphaFor(structure.phase),
-      );
+      const alpha = alphaFor(structure.phase);
+      const footprint: Rect = {
+        x: structure.tileX * TILE_SIZE_PX,
+        y: structure.tileY * TILE_SIZE_PX,
+        width: appearance.footprintTiles.width * TILE_SIZE_PX,
+        height: appearance.footprintTiles.height * TILE_SIZE_PX,
+      };
+      const sprite = this.acquireObjectSprite(depth, structure.definitionId, footprint, alpha);
+      if (sprite !== undefined) {
+        visual.sprites.push(sprite);
+        continue;
+      }
+      this.paintSlab(graphics, footprint.x, footprint.y, footprint.width, footprint.height, appearance, alpha);
     }
+  }
+
+  /**
+   * The sprite for one built or planned object, or `undefined` when this
+   * structure has no artwork or no art is loaded -- in which case the caller
+   * paints the coloured slab instead.
+   *
+   * ### Why this covers the footprint and not the slab's `bounds`
+   *
+   * `acquireEdgeSprite` hands `slabFaces(...).bounds` to its sprite so that a
+   * wall's art and the coloured wall it replaces are the same size, and this
+   * deliberately does something else: it covers exactly the tiles the
+   * simulation reserved. The difference is the slab's fake height. A slab
+   * fakes elevation by lifting its top face north by `heightTiles` and filling
+   * the gap with a side face, and `bounds` is the union of the two -- so for
+   * `object.bed` it is 2.4 tiles tall for a 1x2 object. The object sheets are
+   * photographs taken from directly above; there is no elevation in them to
+   * line up with that lift, and a frame stretched over `bounds` would put a
+   * fifth of the bed on the tile to its north, over whatever is standing
+   * there. This is the question `environment-art.ts` recorded as having no
+   * answer in any ADR -- *"an object is drawn today as a two-faced slab, a
+   * sprite is one flat frame, and which of those a bed is has no answer"* --
+   * and the answer is that a top-down object sprite is flat and occupies its
+   * footprint, because that is the rectangle the player was told it takes.
+   *
+   * ### Why the frame fills rather than repeats
+   *
+   * Both repeat arguments are `undefined`, which `acquireSprite` reads as
+   * "fill this extent exactly once". A floor and a wall repeat because they
+   * are surfaces of indefinite extent cut to a run; an object is one thing of
+   * a known size, and repeating it would draw two half beds.
+   */
+  private acquireObjectSprite(
+    depth: number,
+    definitionId: string,
+    footprint: Rect,
+    alpha: number,
+  ): Phaser.GameObjects.TileSprite | undefined {
+    if (this.art === undefined) return undefined;
+    const objectId = catalogueObjectId(definitionId);
+    if (objectId === undefined) return undefined;
+    const spriteId = objectSprite(objectId);
+    if (spriteId === undefined) return undefined;
+    return this.acquireSprite(depth, footprint, spriteId, undefined, undefined, alpha);
   }
 
   /**

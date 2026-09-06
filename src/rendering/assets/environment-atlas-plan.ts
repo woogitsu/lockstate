@@ -36,6 +36,14 @@ export const ENVIRONMENT_ATLAS_GUTTER_PX = 2;
  * Fixed atlas width. Every declared frame is at most 128px on its long axis, so
  * a 512px shelf holds three per row and the packer never has to grow sideways;
  * only the height is computed.
+ *
+ * **The "long axis" half of that stopped being true on 2026-09-05 and the
+ * conclusion did not, which is why the sentence is marked rather than
+ * replaced.** `env.object.bed` is 128x256: an object frame is drawn into its
+ * whole footprint, and `object.bed`'s is 1x2 tiles. What the packer actually
+ * needs is that no frame is wider than this atlas, and that is what it checks
+ * and throws on. A tall frame only makes its shelf taller, and the height is
+ * computed rather than fixed, so nothing here has to grow sideways for it.
  */
 export const ENVIRONMENT_ATLAS_WIDTH_PX = 512;
 
@@ -87,8 +95,8 @@ function rectFitsInside(rect: SourceArtRect, size: { readonly width: number; rea
  * hold, or a rectangle that runs off the edge of its sheet -- and a renderer
  * that quietly dropped one would draw a prison with a hole in it and no
  * message. `tests/unit/environment-art.test.ts` drives both, in
- * `describe('environment atlas plan')` at `:128`, whose `:172` is *"refuses a
- * rectangle that runs off its sheet, naming the sprite"* and whose `:181` is
+ * `describe('environment atlas plan')` at `:129`, whose `:173` is *"refuses a
+ * rectangle that runs off its sheet, naming the sprite"* and whose `:182` is
  * *"refuses a sprite naming a sheet the catalog does not hold"*.
  *
  * This named `environment-atlas-plan.test.ts` until 2026-08-28. No such file

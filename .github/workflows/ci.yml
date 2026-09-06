@@ -485,15 +485,22 @@ jobs:
       # `createImageBitmap`. Measured on this branch before the second filter
       # existed.
       #
-      # The three names are the sheets `src/rendering/assets/environment-sprites.ts`
+      # The names are the sheets `src/rendering/assets/environment-sprites.ts`
       # cuts from, and **that file is the source of truth** -- a sprite added
-      # there naming a fourth sheet has to be added here too. The globs match on
+      # there naming a further sheet has to be added here too. The globs match on
       # the stable prefix rather than the content hash, so re-rendered art keeps
       # working. Deliberately not the whole directory: that is ~36 MB against
-      # ~4.4 MB for these three, on metered LFS bandwidth.
+      # ~5.7 MB for these four, on metered LFS bandwidth.
       #
-      # The guard below is what turns a forgotten fourth sheet into a message
-      # that says so, instead of into seven decode errors.
+      # **This said "the three" and "~4.4 MB" until 2026-09-05 (#1020), when
+      # `furniture.cell.bed.single.variants` became the fourth**: the first
+      # catalogued object drawn as art rather than as a coloured block. The
+      # sentence about a forgotten sheet is the one that predicted this edit,
+      # and it is worth noting that it was written before there was a fourth
+      # and held exactly.
+      #
+      # The guard below is what turns a forgotten sheet into a message that says
+      # so, instead of into seven decode errors.
       - name: Fetch runtime art from Git LFS
         env:
           LFS_TOKEN: ${{ github.token }}
@@ -506,7 +513,7 @@ jobs:
           git config --local 'http.https://github.com/.extraheader' \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
           git lfs pull --include="public/assets/actors"
-          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png"
+          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png,public/game-content/source-art/furniture.cell.bed.single.variants.*.png"
 
       # Every sheet the extraction manifest names must have materialised. The
       # manifest is TypeScript and this is bash, so the asset ids are read out

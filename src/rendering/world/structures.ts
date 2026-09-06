@@ -1,3 +1,4 @@
+import { defaultObjectRegistry } from '../../content/object-catalog';
 import { BUILDABLE_REGISTRY, occupiesTileEdge } from '../../simulation/construction/definition';
 import type { ConstructionSnapshot } from '../../simulation/construction/system';
 
@@ -64,6 +65,28 @@ export function isDrawnAsWorldEdge(structure: RenderStructure): boolean {
   if (structure.phase !== 'built') return false;
   const definition = BUILDABLE_REGISTRY.get(structure.definitionId);
   return definition !== undefined && occupiesTileEdge(definition);
+}
+
+/**
+ * Which catalogued object a build order's definition id stands for, or
+ * `undefined` when it stands for none.
+ *
+ * Two ways a buildable id reaches an object definition, tried in this order:
+ * the id *being* one, and the buildable **naming** one through
+ * `placesObjectId` (ADR 0028 phase 1). `bed-wooden` is the second --
+ * a build order carries `bed-wooden`, and `object.bed` is what the object
+ * catalog, the tile index and `environment-art.ts` are all keyed by.
+ *
+ * **Extracted from `structureAppearance`, which had this resolution inline and
+ * is now its first caller rather than its only one.** The painter needs the
+ * same answer for a different question -- `appearance.ts` asks it for a
+ * footprint, `tile-layer.ts` asks it for artwork -- and two copies of a
+ * two-branch lookup is exactly how a bed ends up drawn at the right size with
+ * the wrong picture, or at the wrong size with the right one.
+ */
+export function catalogueObjectId(definitionId: string): string | undefined {
+  if (defaultObjectRegistry.getById(definitionId) !== undefined) return definitionId;
+  return BUILDABLE_REGISTRY.get(definitionId)?.placesObjectId;
 }
 
 /**

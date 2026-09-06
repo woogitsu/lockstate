@@ -33,6 +33,7 @@ import {
   edgeArt,
   edgeArtCoverage,
   objectArtCoverage,
+  objectSprite,
   terrainArtCoverage,
   zonedFloorSprite,
 } from '../../src/rendering/world/environment-art';
@@ -287,7 +288,7 @@ describe('declared fallback', () => {
  * same slate-blue slab as every other object. Nothing observed the difference
  * because there is nothing to observe: `objectSprite`'s only caller in `src/`
  * is `objectArtCoverage`, and the loop that draws objects
- * (`src/rendering/phaser/tile-layer.ts:481-498`) calls `structureAppearance`
+ * (`tile-layer.ts:481-498`, as it stood that day) calls `structureAppearance`
  * and `paintSlab` and never asks this module anything. So the coverage number
  * the floor would defend can be raised without a pixel changing, which makes
  * the floor alone a gate on a claim rather than on the screen.
@@ -300,6 +301,32 @@ describe('declared fallback', () => {
  * `tests/unit/rendering-module-boundaries.test.ts` already makes over this
  * tree, for the same reason: the property is about which module reads which,
  * and it is cheaper to read the source than to boot a canvas.
+ *
+ * ## What changed later on 2026-09-05, and what this block is for now
+ *
+ * **The painter path landed, so the everything above describes a state that no
+ * longer exists** -- it is kept because it is the measurement that decided the
+ * order of two commits, and because the source-reading check below only makes
+ * sense if a reader can see what it was built to catch. `tile-layer.ts`'s
+ * structure loop now calls `acquireObjectSprite`, which reads `objectSprite`,
+ * so the first case below can no longer fail the way it was designed to. Its
+ * author named that as the weakest claim in the change that added it: *"the
+ * gate's detector is a regex, so it proves a reference, not a draw call"*.
+ *
+ * **The draw call is now proved where a draw call can be proved: in a browser.**
+ * `tests/browser/environment-art.spec.ts` places a finished `bed-wooden` order
+ * in the harness prison, reads the pixel at the middle of the bed, removes the
+ * artwork, reads the same pixel again, and requires the two to differ -- the
+ * same instrument the floor art and the door already answer to. That test is
+ * the replacement for the claim this describe used to carry alone.
+ *
+ * **The source-reading case is kept anyway, and its job has reversed.** It used
+ * to say "do not add a row before the painter reads this module"; what it says
+ * now is "do not delete the painter path while rows remain", which is the same
+ * assertion pointing the other way and costs nothing to keep. It is *not* the
+ * evidence that an object is drawn. The two cases below it are, in the two
+ * halves this environment can reach: the mapping resolves to a declared sprite
+ * shaped like the footprint the simulation reserved, and the count never falls.
  */
 describe('object art reaching the screen', () => {
   /**
@@ -333,7 +360,7 @@ describe('object art reaching the screen', () => {
    */
   const painterReadsObjectSprite = painterSources().some((source) => /\bobjectSprite\b/.test(source));
 
-  it('maps an object to artwork only once some painter reads objectSprite', () => {
+  it('keeps a painter reading objectSprite for as long as any object is mapped', () => {
     const drawn = [...objectArtCoverage().drawn];
     expect(
       drawn.length === 0 || painterReadsObjectSprite,
@@ -344,16 +371,89 @@ describe('object art reaching the screen', () => {
   });
 
   /**
-   * The floor itself. **It is inert at zero and that is said rather than
-   * hidden:** `toBeGreaterThanOrEqual(0)` cannot fail. It is here because it
-   * becomes load-bearing on the same commit as the first real row and costs
-   * nothing until then, and because the number is the thing a later change has
-   * to *edit* -- deliberately, in a constant that says not to -- rather than
-   * quietly erode. Raise it with each object that starts being drawn. Never
-   * lower it: an object that stops being drawn is the regression this exists
-   * to name.
+   * The half of "is it really drawn" that this environment *can* settle.
+   *
+   * A row here names a sprite id, and `tsc` proves that id is declared -- but
+   * not that its rectangle is the right shape for the object it is mapped to.
+   * That gap is a real one and it is the one the painter path opened: an
+   * object frame fills its footprint exactly once (`acquireObjectSprite`), so a
+   * frame whose proportions disagree with the footprint is drawn *stretched*,
+   * and nothing else in the repository would say so. A 1x2 bed cut from a
+   * square crop is a bed squashed to two-thirds of its length, on every screen,
+   * silently.
+   *
+   * **Two ratios, because there are two places an object can be stretched and
+   * they are independent.** The crop is resampled into `runtimeSizePx` when it
+   * is packed, and the packed frame is then drawn into the footprint -- so a
+   * rectangle measured tightly round the bed (428x197, 2.172:1) resampled into
+   * a 2:1 frame is stretched at *pack* time and would leave the second ratio
+   * perfect, and a correct crop packed into a frame the footprint does not
+   * match is stretched at *draw* time and would leave the first perfect. Both
+   * are checked, both pre-turn where the source is measured and post-turn
+   * where it is drawn.
+   *
+   * This applies to objects only, and deliberately: `env.wall.interior.cap` is
+   * a 290x30 coping band resampled to 128x28, which is a distortion of more
+   * than a factor of two and is the whole point of that frame. A surface is
+   * cut to be repeated; an object is cut to be looked at.
+   *
+   * Three percent, because that is the tolerance `acquireSprite`'s docblock
+   * already argues for on the tiling path and there is no reason for an object
+   * to be looser. `env.object.bed` is exact on both: a 460x230 crop into a
+   * 256x128 frame, turned to 128x256, drawn into a 1x2 footprint.
    */
-  const OBJECT_ART_DRAWN_FLOOR = 0;
+  const MAX_ASPECT_DRIFT = 0.03;
+
+  const driftBetween = (
+    left: { readonly width: number; readonly height: number },
+    right: { readonly width: number; readonly height: number },
+  ): number => {
+    const target = right.width / right.height;
+    return Math.abs(left.width / left.height - target) / target;
+  };
+
+  it('gives every mapped object a frame shaped like the footprint the simulation reserved', () => {
+    const drawn = objectArtCoverage().drawn;
+    expect(drawn.length, 'no object is mapped, so this case would pass vacuously').toBeGreaterThan(0);
+
+    for (const objectId of drawn) {
+      const definition = defaultObjectRegistry.getById(objectId);
+      expect(definition, `${objectId} is reported as drawn but the object catalog does not hold it`).toBeDefined();
+
+      const spriteId = objectSprite(objectId);
+      expect(spriteId, `${objectId} is reported as drawn with no sprite id`).toBeDefined();
+      expect(
+        (ENVIRONMENT_SPRITE_IDS as readonly string[]).includes(spriteId!),
+        `${objectId} is mapped to "${spriteId}", which the manifest does not declare`,
+      ).toBe(true);
+
+      const sprite = ENVIRONMENT_SPRITES[spriteId!];
+      const crop = sprite.sourceRectPx;
+      expect(
+        driftBetween(crop, sprite.runtimeSizePx),
+        `${objectId} reads a ${crop.width}x${crop.height} crop and packs it into ` +
+          `${sprite.runtimeSizePx.width}x${sprite.runtimeSizePx.height}, so the art is stretched when it is cut. ` +
+          'Pad the crop outwards with transparent sheet rather than resampling it into a different shape.',
+      ).toBeLessThanOrEqual(MAX_ASPECT_DRIFT);
+
+      const frame = environmentFrameSize(sprite);
+      const footprint = definition!.footprint;
+      expect(
+        driftBetween(frame, footprint),
+        `${objectId} is drawn from a ${frame.width}x${frame.height} frame into a ` +
+          `${footprint.width}x${footprint.height}-tile footprint, so the art is stretched when it is drawn. ` +
+          'Give the frame the footprint\'s proportions.',
+      ).toBeLessThanOrEqual(MAX_ASPECT_DRIFT);
+    }
+  });
+
+  /**
+   * The floor itself. **It was inert at zero and said so; it is load-bearing
+   * from `object.bed` onwards.** Raise it with each object that starts being
+   * drawn. Never lower it: an object that stops being drawn is the regression
+   * this exists to name.
+   */
+  const OBJECT_ART_DRAWN_FLOOR = 1;
 
   it('never draws fewer objects as art than it did before', () => {
     expect(objectArtCoverage().drawn.length).toBeGreaterThanOrEqual(OBJECT_ART_DRAWN_FLOOR);

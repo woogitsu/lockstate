@@ -62,6 +62,9 @@ const FIXTURE: HarnessWorldFixture = {
   westWallTileY: 3,
   builtWallTileX: 2,
   builtWallTileY: 2,
+  // 1x2 tiles of bare owned ground east of the room, clear of every wall.
+  bedTileX: 6,
+  bedTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -112,6 +115,23 @@ function buildFrame(): RenderFrame {
       definitionId: 'wall-brick',
       tileX: FIXTURE.builtWallTileX,
       tileY: FIXTURE.builtWallTileY,
+      phase: 'built',
+    },
+    /*
+     * One finished bed, as a build order and nothing else, because that is the
+     * only way an object reaches the renderer: `structuresFromConstruction`
+     * projects the construction snapshot and the world's tile layers carry no
+     * furniture at all. `bed-wooden` rather than `object.bed` for the same
+     * reason -- an order carries the *buildable* id, and `catalogueObjectId`
+     * is the step that turns it into the catalogued object the artwork is
+     * keyed by. A fixture that named `object.bed` here would test a path no
+     * player can produce.
+     */
+    {
+      id: 'finished-bed',
+      definitionId: 'bed-wooden',
+      tileX: FIXTURE.bedTileX,
+      tileY: FIXTURE.bedTileY,
       phase: 'built',
     },
   ];

@@ -1,7 +1,10 @@
 import { expect, test, type Page } from './network-changed-fixture';
+import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
 import { EDGE_WALL_THICKNESS_TILES, edgeAppearance } from '../../src/rendering/world/appearance';
+import { objectSprite } from '../../src/rendering/world/environment-art';
+import { catalogueObjectId } from '../../src/rendering/world/structures';
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
 import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harness-api';
 
@@ -22,6 +25,13 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
  *    reads the rendered frame, removes the artwork by hand, reads the same
  *    pixel again, and requires the two to differ. A suite that only proved the
  *    sprites were *created* would stay green if they drew nothing.
+ *
+ * The third of those is why the two object cases below are here rather than in
+ * the Node suite. #1020 asked for one catalogued object drawn as art, and the
+ * pass before this one established that the Node suite cannot tell a mapping
+ * row from a drawn bed: it settled for reading `src/rendering/phaser` for the
+ * string `objectSprite`, and said so -- *"the gate's detector is a regex, so it
+ * proves a reference, not a draw call"*. This is the draw call.
  *
  * Everything that can be decided without pixels -- which sheet, which
  * rectangle, which frame, how they pack, what happens when a sprite is missing
@@ -193,6 +203,109 @@ test.describe('the environment artwork', () => {
     expect(
       channelDistance(withArt, withoutArt),
       `the zoned tile looked the same with art (${withArt.join(',')}) and without it (${withoutArt.join(',')})`,
+    ).toBeGreaterThan(20);
+  });
+
+  /*
+   * The first catalogued object drawn as artwork (#1020), from the two sides
+   * this file can see it from: the sprite the painter made, and the pixel it
+   * put on the screen.
+   *
+   * Neither is reachable from `tests/unit/environment-art.test.ts`. What is
+   * decided there is the mapping and the rectangle; what is decided here is
+   * that `paintRow` reached for the mapping at all rather than filling a
+   * coloured slab, which is exactly the step that did not exist until this
+   * change and that a regex over the painter's source could only guess at.
+   */
+  test('draws a finished bed from the atlas, over exactly the tiles the simulation reserved', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const tile = fixture.tileSizePx;
+
+    /*
+     * Derived from the content registries rather than written down, so this
+     * asserts the renderer agrees with the simulation about the bed rather
+     * than agreeing with a number typed twice. `bed-wooden` is the buildable a
+     * build order carries; `object.bed` is what the catalog and the artwork
+     * are keyed by, and `catalogueObjectId` is the step between them.
+     */
+    const objectId = catalogueObjectId('bed-wooden');
+    expect(objectId, 'bed-wooden no longer places a catalogued object').toBe('object.bed');
+    const spriteId = objectSprite(objectId!);
+    expect(spriteId, 'object.bed is no longer mapped to artwork').toBeDefined();
+    const footprint = defaultObjectRegistry.getById(objectId!)?.footprint;
+    expect(footprint, 'object.bed is not in the object catalog').toBeDefined();
+
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const beds = sprites.filter((sprite) => sprite.frameName === spriteId);
+    expect(beds.length, 'the finished bed order should be drawn as exactly one sprite').toBe(1);
+
+    const bed = beds[0]!;
+    expect([bed.x, bed.y], 'the bed sprite is not on the tile the order named').toEqual([
+      fixture.bedTileX * tile,
+      fixture.bedTileY * tile,
+    ]);
+    // The footprint the simulation reserved, and not the slab's `bounds`: an
+    // object sprite is flat, so it does not carry the coloured block's fake
+    // height. `acquireObjectSprite` argues that at length.
+    expect([bed.width, bed.height], 'the bed sprite does not cover its footprint').toEqual([
+      footprint!.width * tile,
+      footprint!.height * tile,
+    ]);
+
+    // Filled once on both axes rather than repeated. A bed that tiled would be
+    // two half beds, and `tileScale` is the only place that distinction lives.
+    const frame = await page.evaluate(
+      (name) => window.lockstateEnvironmentArtHarness!.atlasFrame(name),
+      spriteId!,
+    );
+    expect(frame, 'the bed frame is not in the packed atlas').toBeTruthy();
+    expect(frame!.width * bed.tileScaleX, 'the bed frame should fill its footprint once across').toBeCloseTo(bed.width, 3);
+    expect(frame!.height * bed.tileScaleY, 'the bed frame should fill its footprint once down').toBeCloseTo(bed.height, 3);
+  });
+
+  test('puts the bed art on the screen, and the coloured block back when it is taken away', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const tile = fixture.tileSizePx;
+
+    /*
+     * Inside the bed's own footprint and off both tile boundaries: three
+     * quarters of a tile down the northern of the two tiles it stands on. That
+     * point is under the mattress with the artwork loaded and under the slab's
+     * raised top face without it, so both readings are of the thing being
+     * compared rather than of the ground beside it.
+     */
+    const worldX = (fixture.bedTileX + 0.5) * tile;
+    const worldY = (fixture.bedTileY + 0.75) * tile;
+
+    const read = async (): Promise<HarnessPixel> =>
+      page.evaluate(async (point) => {
+        const harness = window.lockstateEnvironmentArtHarness!;
+        await harness.centreCameraOn(point.x, point.y);
+        return harness.centrePixel();
+      }, { x: worldX, y: worldY });
+
+    const withArt = await read();
+    expect(withArt[3], 'the renderer produced a transparent frame').toBeGreaterThan(200);
+
+    await page.evaluate(() => window.lockstateEnvironmentArtHarness!.removeArt());
+    expect(
+      await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites().length),
+      'removing the artwork should leave no tiling sprites behind',
+    ).toBe(0);
+    const withoutArt = await read();
+
+    /*
+     * The whole claim of this change, in one comparison: the bed a player is
+     * looking at is a different colour because a photograph of a bed is drawn
+     * on it, and taking the artwork away brings the coloured block back. Until
+     * the painter path landed, both readings were the same slate-blue slab --
+     * a row in `SPRITE_BY_OBJECT_ID` changed `objectArtCoverage()` and nothing
+     * else, which is the defect this test would have named.
+     */
+    expect(
+      channelDistance(withArt, withoutArt),
+      `the bed looked the same with art (${withArt.join(',')}) and without it (${withoutArt.join(',')}), ` +
+        'so object.bed is not being drawn from the atlas',
     ).toBeGreaterThan(20);
   });
 

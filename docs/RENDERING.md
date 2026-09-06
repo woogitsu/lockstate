@@ -69,7 +69,7 @@ two caches and one pool, all keyed by things that rarely change:
 | Layer | Unit of work | Repainted when |
 | --- | --- | --- |
 | Ground (terrain, ownership, zoning, grid) | one `Graphics` per **chunk**, plus one pooled `TileSprite` per merged rectangle of floor art in it | the chunk scrolls into view, or the world revision changes |
-| Walls, doors, objects | one `Graphics` per **world row that has something on it**, plus one pooled `TileSprite` per run of wall art on it | that row scrolls into view, or the world revision changes |
+| Walls, doors, objects | one `Graphics` per **world row that has something on it**, plus one pooled `TileSprite` per run of wall art on it **and one per object drawn as art** | that row scrolls into view, or the world revision changes |
 | Actors | one pooled `Image` per **visible** actor | every frame, in place |
 
 Consequences worth stating plainly:
@@ -404,6 +404,33 @@ it is on.
   medicine cabinet or security console — and the thirteen that do have one are
   left on colour deliberately, because each additional sheet is a ~1.5 MiB
   download. ADR-0052 records that as its open question.
+
+  **One of those thirteen is no longer on colour, and the paragraph above is
+  kept because the download argument it makes is still the reason the other
+  twelve are (#1020, 2026-09-05).** `object.bed` is drawn from
+  `furniture.cell.bed.single.variants` — the one view on that sheet taken from
+  directly above — and it is the first object of any kind drawn as art rather
+  than as a shaded slab. What had to be built first was not the mapping row but
+  a **painter path**: `objectSprite` had no reader that draws, so until this
+  change a row in `src/rendering/world/environment-art.ts` moved a coverage
+  number and not a pixel. `TileLayer.paintRow` now asks for an object's sprite
+  and falls back to `paintSlab` when there is none, exactly as it already did
+  for edges.
+
+  An object sprite covers the **footprint the simulation reserved** and not the
+  slab's bounds. The slab fakes height by lifting its top face north; the object
+  sheets are photographs from directly above with no elevation in them, so a
+  frame stretched over the bounds would hang a fifth of the bed over the tile to
+  its north. That trade is argued where it is implemented, in
+  `TileLayer.acquireObjectSprite`.
+
+  So a second object is now a rectangle in
+  `src/rendering/assets/environment-sprites.ts`, a row in
+  `src/rendering/world/environment-art.ts`, a line struck from the fallback
+  list, and its sheet added to the LFS filter in `.github/workflows/ci.yml` —
+  no renderer change. `tests/browser/environment-art.spec.ts` is what proves the
+  bed reaches the screen: it reads the pixel at the middle of a finished bed,
+  removes the artwork, and requires the colour to change.
 
 - **Build input.** The scene owns one non-camera gesture: while the HUD's build
   tool is armed, a press on the world reports the tile edge it landed nearest

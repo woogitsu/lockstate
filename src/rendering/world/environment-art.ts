@@ -19,13 +19,13 @@ import type { EnvironmentSpriteId } from '../assets/environment-sprites';
  * because it is the property this module was designed for and the one the
  * edges and the floors really have; what follows is where it stops.
  *
- * - `EDGE_ART_BY_NUMERIC_ID` -> `edgeArt` is read by the painter:
- *   `tile-layer.ts:519`, inside `acquireEdgeSprite`.
- * - `zonedFloorSprite` is read by the painter: `tile-layer.ts:314`.
+ * - `EDGE_ART_BY_NUMERIC_ID` -> `edgeArt` is read by the painter, inside
+ *   `acquireEdgeSprite`.
+ * - `zonedFloorSprite` is read by the painter, inside `paintChunk`.
  * - **`SPRITE_BY_OBJECT_ID` -> `objectSprite` is read by NOTHING that draws.**
  *   Its only caller in `src/` is `objectArtCoverage` immediately below it, and
  *   that function's only caller anywhere is `tests/unit/environment-art.test.ts`.
- *   The loop that draws objects is `tile-layer.ts:481-498`, and it calls
+ *   The loop that draws objects is in `paintRow`, and it calls
  *   `structureAppearance` and `paintSlab` unconditionally -- it never asks this
  *   module a question at all.
  *
@@ -34,20 +34,37 @@ import type { EnvironmentSpriteId } from '../assets/environment-sprites';
  * screen does not honour.** Adding one row to `SPRITE_BY_OBJECT_ID` and
  * striking the id from `OBJECTS_ON_COLOUR_FALLBACK` left the whole unit suite
  * green -- 229 files, 3344 tests -- with the object still drawn as a
- * slate-blue slab. `tests/unit/environment-art.test.ts`'s
- * `describe('object art reaching the screen')` is the gate that now fails on
- * exactly that mutation, and it is the reason this paragraph can be checked
- * rather than believed.
+ * slate-blue slab.
  *
- * What the third table is still missing is not a row. It is a painter path,
- * and writing one is a decision rather than content: an object is drawn today
- * as a two-faced slab (`paintSlab`, a top face plus a side face rising
- * `heightTiles`), a sprite is one flat frame, and which of those a bed is has
- * no answer in any ADR. ADR-0052's "Open question left deliberately
- * unresolved" is the nearest thing, and it leaves the object sheets to the
- * owner on cost grounds. ADR-0052's own consequence *"Adding art for a new
- * object is a row in a data module"* is the same overreach as the sentence
- * above and is wrong in the same place.
+ * **THAT WAS THE STATE FOR ONE DAY AND IS NO LONGER THE STATE, AS OF LATER ON
+ * 2026-09-05 (#1020, the pass after the one above).** The three bullets are
+ * kept exactly as they were measured, because the whole argument of this
+ * docblock is that a claim about the painter is checkable and someone checked
+ * it; what changed is the third bullet's answer, and marking the direction is
+ * worth more than a clean paragraph. **`objectSprite` is now read by the
+ * painter too, inside `acquireObjectSprite`, which `paintRow`'s structure loop
+ * calls before it falls back to `paintSlab`.** The sentence at the top of this
+ * docblock is therefore true of all three tables for the first time, and
+ * adding art for a *second* object really is one row here plus its rectangle
+ * in `environment-sprites.ts`.
+ *
+ * What the third table was missing was not a row: it was a painter path, and
+ * writing one was a decision rather than content -- an object is drawn without
+ * art as a two-faced slab (`paintSlab`, a top face plus a side face rising
+ * `heightTiles`), a sprite is one flat frame, and which of those a bed is had
+ * no answer in any ADR. **It is decided now, in the painter, where the
+ * consequence is:** `acquireObjectSprite`'s docblock says an object sprite is
+ * flat and covers exactly the footprint the simulation reserved, and says what
+ * lifting it over the slab's `bounds` would have done to the tile north of it.
+ * ADR-0052's "Open question left deliberately unresolved" is untouched by that
+ * -- it is about which sheets are worth their download, which is still the
+ * owner's, and is why one object is mapped here and not thirteen.
+ *
+ * **ADR-0052's own consequence *"Adding art for a new object is a row in a data
+ * module"* was wrong in the same place as the sentence above, and is now true
+ * -- but the ADR still is not this module's to edit** (`docs/AGENT_WORKFLOW.md`
+ * §3: an implementing agent does not edit an ADR). It went to the integrator
+ * with this change rather than being quietly corrected here.
  *
  * Two properties are enforced rather than intended:
  *
@@ -59,8 +76,8 @@ import type { EnvironmentSpriteId } from '../assets/environment-sprites';
  *   are, and `tests/unit/environment-art.test.ts` fails if the lists and the
  *   registries disagree in either direction -- so cataloguing a new object
  *   without artwork is a red test naming it, not a hole nobody sees. The
- *   guard is `describe('declared fallback')` at `:241`, and the two
- *   directions are `:248` and `:256`.
+ *   guard is `describe('declared fallback')` at `:242`, and the two
+ *   directions are `:249` and `:257`.
  *
  *   This named `environment-art-coverage.test.ts` until 2026-08-28.
  *   That file has never existed -- `git log --diff-filter=A` finds no commit
@@ -164,7 +181,16 @@ export interface ArtCoverage {
 export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt', 'grass', 'gravel', 'rock', 'water'];
 
 /**
- * Every catalogued object is on the colour fallback in this slice.
+ * Every catalogued object **except `object.bed`** is on the colour fallback.
+ *
+ * The paragraph below was written when the list was all twenty and it is kept,
+ * because everything it says about the other nineteen still holds and the
+ * download argument is the reason there are nineteen rather than seven. What
+ * changed on 2026-09-05 is only that the first sheet was worth paying for:
+ * `furniture.cell.bed.single.variants` is 1,341,733 bytes, and a bed is the
+ * object a cell is *for* -- `src/content/room-catalog.ts` makes `object.bed`
+ * one of the two things a cell requires, so it is the object a player looks at
+ * first and the one whose coloured block was least informative.
  *
  * Seven of the twenty have no sheet at all -- there is no stove, fridge,
  * bookshelf, washing machine, medical bed, medicine cabinet or security console
@@ -179,7 +205,6 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * declared next slice, not an oversight.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
-  'object.bed',
   'object.bench',
   'object.bookshelf',
   'object.chair',
@@ -215,18 +240,26 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
 }
 
 /**
- * Catalogued object id -> art. Empty in this slice, for the reason
- * `OBJECTS_ON_COLOUR_FALLBACK` gives.
+ * Catalogued object id -> art.
  *
- * **And empty is load-bearing rather than merely unfinished, which the reason
- * above does not say.** `OBJECTS_ON_COLOUR_FALLBACK` gives a download cost;
- * the module docblock gives the other half. No painter reads `objectSprite`,
- * so the first row added here buys nothing on screen and costs the truth of
- * `objectArtCoverage()`. The row is the *last* step of drawing an object, not
- * the first: the painter path comes before it. `tests/unit/environment-art.test.ts`
- * fails, naming the object, if the order is reversed.
+ * **This was empty, and its comment said empty was load-bearing: no painter
+ * read `objectSprite`, so a row here bought nothing on screen and cost the
+ * truth of `objectArtCoverage()`.** That is why the row order mattered, and it
+ * is no longer the state -- the painter path landed first, exactly as that
+ * comment demanded, and this is the row it was waiting for. The old wording is
+ * summarised rather than kept in full because the module docblock above holds
+ * the measurement it was made of.
+ *
+ * One row, not thirteen. Each additional sheet is a whole ~1.3 MiB download
+ * (`OBJECTS_ON_COLOUR_FALLBACK`), and how many of those a first load should
+ * carry is ADR-0052's open question and the owner's to answer. What this row
+ * settles is the *mechanism*, which was the thing in doubt: a second object is
+ * now this line plus a rectangle in `environment-sprites.ts`, and it changes
+ * no painter.
  */
-const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {};
+const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
+  'object.bed': 'env.object.bed',
+};
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */
 export function objectSprite(objectId: string): EnvironmentSpriteId | undefined {
