@@ -189,12 +189,18 @@ The alerts channel is two bands and one list, all fed by pure translator
 functions outside `src/ui/hud/` (`AGENTS.md` boundary 1 — the HUD may not
 import `src/simulation/**`):
 
-- **`.hud__refusal`** (`src/ui/hud/hud.ts:978-985`) — the most recent refusal,
+- **`.hud__refusal`** (`src/ui/hud/hud.ts:1163-1170`) — the most recent refusal,
   always laid out, never dismissed by a player gesture
   (`docs/HUD_PROJECTIONS.md` gap 34).
-- **`.hud__event`** (`src/ui/hud/hud.ts:1040-1067`) — the most recent
-  `simulation/event`, replaced unconditionally by whatever arrives next
-  (`applyEventNotice`, `hud.ts:1062-1067`, quoted below).
+- **`.hud__event`** (`src/ui/hud/hud.ts:1265-1272`) — the most recent
+  `simulation/event`. **Re-anchored 2026-09-06: "replaced unconditionally by
+  whatever arrives next" is the pre-amendment behavior this section describes
+  before the 2026-09-05 Amendment below reversed it** — `applyEventNotice`
+  is no longer the ~26-line function this row quotes; it is a two-line
+  delegate to a dwell/hold-ceiling state machine (`hud.ts:1333-1335`,
+  `event-band-dwell.ts`) that the Amendment's §1 already marks and explains.
+  This row is left as the historical record the Amendment points back to
+  rather than rewritten a second time.
 - **The alerts list** (`HudViewModel.alerts`, a flat `HudAlertViewModel[]`) —
   fed by three independent producers that share it without knowing about one
   another: `hudAlertsFromWorkerMessage` for refusals and protocol faults
@@ -333,8 +339,8 @@ codebase has decided that a stale notice is preferable to none.
 
 **Measured** (issue #700, this brief): a terminal outcome on `.hud__event`
 stands only until the next event of any kind, about **6.3 s at ×1 and 1.6 s at
-×4** in the largest prison driven for this pass. `applyEventNotice`
-(`src/ui/hud/hud.ts:1062-1067`) is unconditional:
+×4** in the largest prison driven for this pass. `applyEventNotice` was
+unconditional, at the coordinate and in the shape this finding is about:
 
 ```ts
 function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
@@ -344,7 +350,13 @@ function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
 }
 ```
 
-and the comment immediately above it (`hud.ts:1053-1061`) says there is
+**Re-anchored 2026-09-06: this is Finding 4's own diagnosis, kept as the
+historical record of the defect the 2026-09-05 Amendment below fixed — the
+function this fenced block quotes no longer exists in this shape**
+(`applyEventNotice` is now the two-line delegate at `hud.ts:1333-1335`; the
+dwell/hold-ceiling arbitration this finding says is missing is
+`event-band-dwell.ts`'s subject). The comment that used to stand immediately
+above it (previously `hud.ts:1053-1061`) said there was
 deliberately no arbitration to add one to: *"No arbitration and no source
 tracking, unlike `applySimulationRefusal` below: this band has exactly one
 producer, so whatever it replaces is always an older event rather than a
@@ -566,7 +578,9 @@ way the list's cap already does (`SEVERITY_EVICTION_ORDER`,
 `simulation-events.ts:344-348`) — and whichever answer is chosen slows down
 *every* other event's arrival on the one band a player watches without
 opening anything, which is the property #507 and #220 built that band to
-have in the first place (`hud.ts:987-1019`). This is squarely the
+have in the first place (`hud.ts:1172-1262`, re-anchored and now the larger
+docblock the 2026-09-05 Amendment grew around the same rationale). This is
+squarely the
 "playability" territory the standing mandate would otherwise leave to an
 agent's judgement, and this draft still declines it, on the brief's own
 instruction that this decision be put to the owner alongside the other three
