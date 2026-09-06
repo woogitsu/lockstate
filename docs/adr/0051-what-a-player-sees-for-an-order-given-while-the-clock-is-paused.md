@@ -120,7 +120,7 @@ Read on `317f487` (v0.0.124). Every line below was opened.
    `structuresFromConstruction` maps the `approved` state — which
    `ConstructionSystem.submitOrder` writes synchronously, inside the command
    handler (`src/simulation/construction/system.ts:337-338`) — to the
-   `planned` phase, i.e. a ghost (`src/rendering/world/structures.ts:24-39`).
+   `planned` phase, i.e. a ghost (`src/rendering/world/structures.ts:26-42`).
    Nothing reaches it while paused.
 7. **Six panel readouts ride the counts cadence**, so they refresh only when a
    `simulation/status-counts` arrives (`src/main.ts:1437-1443`): room needs,
@@ -129,7 +129,22 @@ Read on `317f487` (v0.0.124). Every line below was opened.
 
 ### What a player can do, and what each gesture produces while paused
 
-`HudIntent` has eighteen members (`src/ui/hud/hud.ts:270-…`). Four are chrome
+`HudIntent` has eighteen members (`src/ui/hud/hud.ts:322-668`, re-anchored —
+the same span [ADR 0039](./0039-a-keyboard-route-to-room-zoning.md) cites).
+**Re-anchored 2026-09-06: the union is 21 members today, three more than this
+paragraph counts, and was already 21 before this window opened — the same
+finding ADR 0039 records and marks in place rather than here a second time.**
+The three not sorted into a category below are `select-prisoner` (a fourth
+chrome member: it sets local selection state and never calls `submit`,
+`main.ts:2289-2293`), `dismiss-staff` (a fourteenth command-submitter,
+gated through `requireSimulation` like the thirteen below,
+`main.ts:2531-2533`) and `dismiss-alert` (submits too, but deliberately
+*without* `requireSimulation` — its own comment states why: the row leaving
+the list is not a command outcome, so a paused or session-less thread still
+performs it locally, `main.ts:2561-2570`). None of the three changes this
+section's conclusion about the thirteen below; they are named because a
+paragraph that sorts every member should say what it does not yet sort.
+Four are chrome
 the HUD owns and never reach the simulation — `select-tab`, `toggle-panel`,
 `arm-build-tool`, `arm-room-tool`. One is the clock itself (`set-clock`).
 **Thirteen submit a command**: `place-build-order`, `place-object`,
