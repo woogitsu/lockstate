@@ -3295,6 +3295,55 @@ test.describe('the Rooms panel', () => {
     await expectLaidOut(page, '.hud-rooms__list [data-room]', "the panel's room rows");
   });
 
+  /**
+   * The swatch (#1021). Two prior passes (ADR 0098/#1032, #1038's playtest)
+   * had found `HudRoomViewModel.tint` computed and read by nothing at all --
+   * the catalogue row and the tile `WorldScene` paints could disagree and no
+   * assertion anywhere would notice, because there was no reader to be wrong.
+   *
+   * `ROOMS_MODEL` in `ui-harness.ts` carries three distinct tints copied from
+   * the real category table (`0x4f7fd0`, `0xd0854f`, `0x76d04f`), converted
+   * here to the `rgb()` string form `getComputedStyle` reports, so a swatch
+   * painted from the wrong field or a stale copy would show as the wrong
+   * triple rather than passing by coincidence.
+   *
+   * The second half is #1038's own constraint: colour may only ever be the
+   * *extra* channel on a row that already names itself. `aria-hidden` is
+   * asserted directly rather than inferred, and the row's own text is checked
+   * unchanged -- a swatch that had, say, swallowed the label into itself
+   * would fail here even though the colours above would still be right.
+   */
+  test('paints each catalogue row with its own tint, decoration beside the name rather than instead of it (#1021)', async ({
+    page,
+  }) => {
+    const rows = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud-rooms__rows [data-room]')].map((row) => {
+        const swatch = row.querySelector<HTMLElement>('.hud-rooms__row-swatch');
+        const label = row.querySelector<HTMLElement>('.ui-row__label');
+        return {
+          room: row.dataset['room'] ?? null,
+          swatchColor: swatch === null ? null : getComputedStyle(swatch).backgroundColor,
+          swatchAriaHidden: swatch?.getAttribute('aria-hidden') ?? null,
+          // The label specifically, not the row's whole `textContent`: the
+          // default-selected row also carries a "Selected" badge (a second,
+          // later child), and this assertion is about the *name*, not about
+          // which row happens to be chosen when the tab opens.
+          labelText: label?.textContent ?? null,
+        };
+      }),
+    );
+
+    expect(rows).toEqual([
+      { room: 'room.cell', swatchColor: 'rgb(79, 127, 208)', swatchAriaHidden: 'true', labelText: 'Cell' },
+      { room: 'room.canteen', swatchColor: 'rgb(208, 133, 79)', swatchAriaHidden: 'true', labelText: 'Canteen' },
+      { room: 'room.yard', swatchColor: 'rgb(118, 208, 79)', swatchAriaHidden: 'true', labelText: 'Yard' },
+    ]);
+
+    // Every row's swatch is laid out -- not `display: none`, not a 0x0 box --
+    // the same guarantee `expectLaidOut` gives the row itself two lines above.
+    await expectLaidOut(page, '.hud-rooms__row-swatch', 'the catalogue swatch');
+  });
+
   test('follows the selection, so the rule shown is the rule of the room picked', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.clickRoomType('room.yard'));
 

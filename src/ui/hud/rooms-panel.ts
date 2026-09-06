@@ -626,6 +626,19 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   const rowOrder: string[] = model.rooms.map((room) => room.roomId);
 
+  /*
+   * `HudRoomViewModel.tint` (#1021, ADR 0098 option A) as a CSS colour.
+   *
+   * The value is a Phaser-style 24-bit `0xRRGGBB` number -- the same one
+   * `WorldScene` tints a zoned room's tiles with -- so this is arithmetic, not
+   * a second colour table: `zoningTint` in `src/rendering/world/appearance.ts`
+   * is the one place a room's hue is chosen, `src/main.ts`'s `roomCatalogue()`
+   * reads it onto every row's `tint` field, and this converts the same number
+   * to the string form CSS wants. Nothing here could drift from the map,
+   * because nothing here decides a colour.
+   */
+  const tintToCssColor = (tint: number): string => `#${(tint & 0xffffff).toString(16).padStart(6, '0')}`;
+
   const paintCatalogue = (): void => {
     const selectedIndex = selectedId === undefined ? undefined : rowOrder.indexOf(selectedId);
     const tabStop = rovingTabStop(
@@ -671,6 +684,37 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     // press reaches. No second path -- the same rule #411's second acceptance
     // criterion puts on the rectangle applies to the choice of room.
     row.element.setAttribute('role', 'radio');
+
+    /*
+     * The swatch (#1021): the one thing this row was missing that the map
+     * already had. Two passes had confirmed `HudRoomViewModel.tint` was
+     * computed and read by nothing, so the catalogue and the map could name
+     * the same room in two different colours and no test would notice; this
+     * is that reader.
+     *
+     * `aria-hidden` and no text of its own -- it is decoration *beside* an
+     * accessible name the row already has (`t(room.labelKey)`, on the label
+     * span this is inserted next to), never instead of one. #1038 measured
+     * that this palette cannot carry identity on its own at any spacing --
+     * the worst pair of the 18 catalogue hues is 5.30 delivered units apart
+     * against a per-pixel sigma of 15.54 -- so a colour-blind player, or any
+     * player, gets exactly what they had before: the name. What the swatch
+     * adds is for the player who *can* resolve hue: the same accent they will
+     * see painted on the tile the moment they designate it, so the two no
+     * longer have to be taken on faith.
+     *
+     * Inserted before the label rather than appended, so reading order stays
+     * icon, swatch, name -- a trailing badge or the roving-focus selection
+     * marker still lands after the name, unmoved.
+     */
+    const swatch = element('span', {
+      className: 'hud-rooms__row-swatch',
+      attributes: { 'aria-hidden': 'true' },
+    });
+    swatch.style.backgroundColor = tintToCssColor(room.tint);
+    const labelElement = row.element.querySelector('.ui-row__label');
+    row.element.insertBefore(swatch, labelElement);
+
     rows.set(room.roomId, row);
     catalogueRows.append(row.element);
   }
