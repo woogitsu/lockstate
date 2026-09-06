@@ -29,10 +29,16 @@
  *    `tests/contract/art-pipeline-contract.test.ts` already uses for the
  *    owner sheets. Neither branch is vacuous; between them every checkout
  *    state is actually checked rather than silently skipped.
- * 3. **The geometry invariants ADR 0100 named**: `frameAspectDriftFromFootprint`
- *    is (very close to) zero, and the declared `frameTiles` never falls
- *    short of `footprintTiles` on either axis -- a frame is padding *outward*
- *    from the footprint, never a crop tighter than it.
+ * 3. **The geometry invariants ADR 0100 named**: the declared pixel size
+ *    reproduces the footprint's aspect *exactly* -- checked as an integer
+ *    identity via `exactPixelAspectMatchesFootprint`, not by trusting the
+ *    renderer's own self-reported `frameAspectDriftFromFootprint` (that field
+ *    is still sanity-checked near zero, but a bug that mis-*computed* the
+ *    drift while still writing a near-zero number would have passed a
+ *    trust-the-field check and does not pass this one) -- and the declared
+ *    `frameTiles` never falls short of `footprintTiles` on either axis, i.e.
+ *    a frame pads *outward* from the footprint and never crops tighter than
+ *    it.
  *
  * **What it deliberately does not do: re-invoke Blender.** `docs/ART_PIPELINE.md`
  * records that EEVEE needs an EGL library even in `--background` and runs at
@@ -62,10 +68,80 @@ const RENDERED_DIR = path.join(repositoryRoot, 'assets/rendered/environment');
 
 const PNG_SIGNATURE = '89504e470d0a1a0a';
 const LFS_POINTER_PREFIX = 'version https://git-lfs.github.com/spec/v1';
-/** `frameAspectDriftFromFootprint` is measured as an exact ratio comparison by the renderer itself
- * (`docs/ART_PIPELINE.md`: "the recorded drift is `0` for all 23 models"), so this tolerance exists
- * only for floating-point round-trip through JSON, not to admit real drift. */
+/** `frameAspectDriftFromFootprint`'s self-reported value is sanity-checked against this tolerance,
+ * for float round-trip through JSON only. The number that actually decides pass/fail is
+ * `exactPixelAspectMatchesFootprint` below, which never trusts the self-report. */
 const DRIFT_EPSILON = 1e-9;
+
+/**
+ * `render-environment-objects.py` declares every footprint an exact multiple of
+ * 1/20 of a tile ("Every declared footprint is an exact multiple of 1/20 of a
+ * tile (0.2, 0.25, 0.3, 0.4 and whole tiles)"), and derives its pixel
+ * resolution from that fraction reduced to lowest integer terms -- see its
+ * `_pixel_size`. So the claim "the pixel aspect equals the footprint aspect
+ * exactly" is checkable as an integer identity, not a float comparison: scale
+ * both footprint components by 20, and cross-multiply against the declared
+ * pixel size. That is what this function does.
+ *
+ * This is deliberately independent of `frameAspectDriftFromFootprint`, the
+ * field the renderer itself writes. Before this function existed, Check 3
+ * only asserted that self-reported number was near zero -- which would stay
+ * green even if the renderer's *own* drift computation were wrong, as long as
+ * it kept writing near-zero. Recomputing from the primitive fields
+ * (`footprintTiles`, the declared pixel size) closes that: a bug in the
+ * renderer that produced a real aspect mismatch while still writing
+ * `frameAspectDriftFromFootprint: 0` would be caught here, because this
+ * function never reads that field at all.
+ *
+ * Exported (not module-private) so `tests/contract/rendered-art-pipeline-contract.test.ts`
+ * can run the *same* function against every one of the 23 sidecar entries --
+ * not only the currently-published subset this file's own `validateRenderedArtCatalog`
+ * iterates -- and so its correctness is established once rather than
+ * re-derived twice from the same reasoning in two files.
+ *
+ * @param {{ width: number, height: number }} footprintTiles
+ * @param {{ width: number, height: number }} pixelSize
+ * @returns {{ ok: true } | { ok: false, reason: string }}
+ */
+export function exactPixelAspectMatchesFootprint(footprintTiles, pixelSize) {
+  const DENOMINATOR = 20n;
+  const scale = (value) => {
+    const scaled = value * 20;
+    const rounded = Math.round(scaled);
+    // Not merely close: the contract is that this division is exact, so a
+    // footprint of, say, 0.23 tiles (not a multiple of 1/20) is itself a
+    // violation of the precondition the pixel-size derivation depends on.
+    if (Math.abs(rounded - scaled) > 1e-9) {
+      return undefined;
+    }
+    return BigInt(rounded);
+  };
+  const footprintNumeratorX = scale(footprintTiles.width);
+  const footprintNumeratorY = scale(footprintTiles.height);
+  if (footprintNumeratorX === undefined || footprintNumeratorY === undefined) {
+    return {
+      ok: false,
+      reason: `footprintTiles ${footprintTiles.width}x${footprintTiles.height} is not an exact multiple of 1/20 of a tile`,
+    };
+  }
+  if (!Number.isInteger(pixelSize.width) || !Number.isInteger(pixelSize.height) || pixelSize.width <= 0 || pixelSize.height <= 0) {
+    return { ok: false, reason: `pixel size ${pixelSize.width}x${pixelSize.height} is not a pair of positive integers` };
+  }
+  // footprintNumeratorX / footprintNumeratorY == pixelSize.width / pixelSize.height
+  // iff their cross products agree -- an exact integer identity with no
+  // rounding at any step, unlike comparing the two divisions as floats.
+  const lhs = footprintNumeratorX * BigInt(pixelSize.height);
+  const rhs = footprintNumeratorY * BigInt(pixelSize.width);
+  if (lhs !== rhs) {
+    return {
+      ok: false,
+      reason:
+        `pixel size ${pixelSize.width}x${pixelSize.height} does not exactly reproduce the footprint aspect ` +
+        `${footprintTiles.width}x${footprintTiles.height} (cross-multiplied against a denominator of ${DENOMINATOR}: ${lhs} != ${rhs})`,
+    };
+  }
+  return { ok: true };
+}
 
 /**
  * Either hashes real bytes, or -- for a Git LFS pointer -- reads the sha256 it
@@ -179,9 +255,22 @@ export async function validateRenderedArtCatalog(options = {}) {
     }
 
     // Check 3: the geometry invariants ADR 0100 named.
+    //
+    // The self-reported field is a sanity check, not the proof: it only
+    // catches the renderer disagreeing with *itself* between the sidecar and
+    // the published catalog (both copied from the same run, so this should
+    // never fire) or a JSON round-trip losing precision.
     const drift = entry.frameAspectDriftFromFootprint;
     if (typeof drift !== 'number' || Math.abs(drift) > DRIFT_EPSILON) {
       report(`"${entry.assetId}": frameAspectDriftFromFootprint is ${drift}, not (approximately) zero`);
+    }
+    // The actual proof: recompute the aspect identity from the primitive
+    // fields, independent of anything the renderer claims about its own drift.
+    if (entry.dimensionsPx !== undefined && entry.footprintTiles !== undefined) {
+      const exact = exactPixelAspectMatchesFootprint(entry.footprintTiles, entry.dimensionsPx);
+      if (!exact.ok) {
+        report(`"${entry.assetId}": ${exact.reason}`);
+      }
     }
     const frame = entry.frameTiles;
     const footprint = entry.footprintTiles;

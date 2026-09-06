@@ -277,6 +277,55 @@ that fed them regenerates to an identical `scene-fingerprint.py` document across
 runs as well (`a242a490…`), so neither half of the chain reintroduced the
 order-instability issue #64 fixed.
 
+**That measurement had no gate behind it, and now it does.**
+`render-environment-objects.py`'s own docblock used to say so of itself:
+"NOTHING CHECKS THAT AUTOMATICALLY... Writing that gate is owed work." The two
+digests above were reproduced by hand, twice, by two people and two decoders;
+`tooling/verify-environment-render-determinism.mjs` is the executable form of
+the same comparison -- run this script N times (default 2) and diff the
+SHA-256 of every PNG and of the sidecar -- and
+`tests/determinism/environment-render-determinism.test.ts` wires its fast,
+single-collection form into `pnpm test`, with the same `it.skipIf(!canRunLive)`
+idiom `tests/determinism/art-pipeline-determinism.test.ts` already uses for the
+character pipeline: SKIPPED, visibly, wherever Blender is absent or is not the
+pinned 5.2.x -- never silently passed -- and actually exercised wherever it is
+present.
+
+**It needs Blender, and CI does not have it.** `.github/workflows/ci.yml` was
+read, not assumed, on 2026-09-06: none of its three jobs (`verify`, `assets`,
+`browser`) installs Blender anywhere. So this gate cannot be, and does not
+claim to be, a required CI check -- it runs in this container, or on any other
+machine with the pinned Blender installed, exactly as
+`tooling/verify-pipeline-determinism.mjs` already does for the character
+pipeline. Making it CI-enforced would mean installing Blender 5.2.1 on the
+self-hosted runner and adding a job for it to `ci.yml`; that file is reserved
+to the owner (`AGENTS.md` reservation 3), so that is a decision for the owner,
+recorded here rather than made silently.
+
+Measured directly, in the container this gate was built in, with Blender 5.2.1
+installed at `/opt/blender/blender` (deliberately not on `PATH`, matched by
+`--blender`/`$LOCKSTATE_BLENDER` rather than assumed): two independent runs of
+`door.interior.variants` -- the smallest, fastest frame in the catalogue --
+agree byte-for-byte at `baa834a5d1cb68ee…`, matching the hash already committed
+in `environment-objects.render.json`. Reinstating `tEXt` in
+`_flip_and_rewrite_png`'s passthrough set (the chunk kind carrying Blender's
+own `Date`/`RenderTime`/absolute `.blend` path, described above under
+"Determinism") makes the same two runs disagree on both the PNG and the
+sidecar, through this gate, and the gate reports it as such rather than
+passing. Reverting the mutation restores the match. That is the regression
+class this gate exists to catch, demonstrated rather than assumed.
+
+**What a green run proves, and what it still does not.** It proves the
+renderer is reproducible on the Blender version actually running, right now.
+It does not, by itself, prove the *committed* renders under
+`assets/rendered/environment/` would reproduce today -- `--only` lets a caller
+ask it to re-render specific ids and compare, but the default run renders into
+a fresh scratch directory and compares runs against each other, not against
+the committed bytes. Nor does it say anything about a Blender version other
+than the pinned one: `pipeline_common.require_blender_version()` refuses to
+run under any other, and this gate never sets
+`LOCKSTATE_ALLOW_BLENDER_MISMATCH` to get past that refusal.
+
 `assets/rendered/evidence/` holds three pictures, because a claim that art looks
 better needs one: `bed-vs-owner-sheet.png` puts the rendered bed beside the
 owner sheet's declared `env.object.bed` crop -- (740, 288, 460x230), resampled
@@ -335,12 +384,32 @@ actually be checked without Blender: that the published catalog's declared
 sha256 agrees with `environment-objects.render.json`'s own, that the committed
 render and the published copy both hash (or, in a pointer-only checkout,
 declare an LFS `oid`) to that same value, and that
-`frameAspectDriftFromFootprint` is zero and `frameTiles` never falls short of
-`footprintTiles`. It does not, and cannot, re-invoke Blender to prove today's
-render would reproduce those bytes again -- that claim rests on the two
-independent-run comparison recorded above under "Reproducibility", which
-needs the pinned Blender version and an EGL-capable container this gate does
-not require.
+`frameTiles` never falls short of `footprintTiles`. It does not, and cannot,
+re-invoke Blender to prove today's render would reproduce those bytes again --
+that claim rests on the independent-run comparison described above under
+"Reproducibility" (both the by-hand measurement and
+`tooling/verify-environment-render-determinism.mjs`, which needs the pinned
+Blender version and an EGL-capable container this gate does not require).
+
+**The aspect invariant is recomputed, not trusted from the renderer's own
+field.** Until this line, "`frameAspectDriftFromFootprint` is zero" was
+checked by reading that field and asserting it stayed near zero -- which
+stays green even if the renderer's *own* computation of that number were
+wrong, as long as it kept writing a small one. `exactPixelAspectMatchesFootprint`
+(exported from this same file) instead scales `footprintTiles` to an integer
+numerator -- exact, because every declared footprint is a multiple of 1/20 of
+a tile -- and cross-multiplies it against the declared pixel size as `BigInt`,
+an integer identity with no rounding at any step. It never reads
+`frameAspectDriftFromFootprint` at all.
+`tests/contract/rendered-art-pipeline-contract.test.ts` imports the same
+function and runs it against all 23 entries in `environment-objects.render.json`
+-- not only the currently-published subset this validator iterates -- so the
+"recorded drift is `0` for all 23 models" claim above is checked in full, on
+every `pnpm test`, with no Blender and no image bytes: plain committed JSON is
+enough. Demonstrated by mutation: incrementing a committed `sizePx.width` by
+one pixel (both here and against the published catalog's `dimensionsPx`) makes
+both the tool and the test fail, naming the exact cross-multiplication that
+disagrees; reverting the mutation restores both to green.
 
 ## Intake status
 
