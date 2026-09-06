@@ -399,10 +399,16 @@ from.
 always-visible pixel budget on a local merge of #282 and #283 and found
 **12.2px at 900×600 and 38.2px at 1280×720**, against a `--tap-target` of 44px
 (`src/ui/tokens.css:150`) — so no always-visible control fits at either. This
-tree carries a smaller number pointing the same way: `src/ui/hud/hud.css:786-789`
-records the Build panel's short-viewport fix closing a 67.7px shortfall at
-900×600 with **3.8px to spare** in the catalogue's donatable slack. That 3.8px
-is residual slack after a fix, not the always-visible budget, and it is quoted
+tree carries a smaller number pointing the same way: `src/ui/hud/hud.css:2770-2815`
+(re-anchored 2026-09-06 -- `:786-789` was already an unrelated rule,
+`[data-action-failed]`'s outline, before this window opened) records the Build
+panel's short-viewport fix closing a 67.7px shortfall at
+900×600. **Re-anchored further: the figure has since been refined past
+"3.8px to spare" to exactly 0 -- "the panel arrives at 338.1px of content in a
+338.1px slot with nothing scrolled anywhere" -- because a fourth declaration
+was added to recover 4.1px the catalogue's own floor had miscounted
+(`hud.css:2799-2809`).** The residual slack, whichever figure,
+is not the always-visible budget, and it is quoted
 here only because it is the figure this tree states about that viewport; ADR
 0022's 12.2px is the budget figure and was measured on a branch merge rather
 than on `main`. Both say the same thing about a room-status panel: there is no
