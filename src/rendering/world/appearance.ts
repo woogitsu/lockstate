@@ -314,3 +314,89 @@ export const UNOWNED_SHADE_ALPHA = 0.45;
 /** Build orders that exist but are not finished yet. */
 export const PLANNED_ALPHA = 0.35;
 export const BUILDING_ALPHA = 0.65;
+
+/**
+ * How a room's name is written on its floor.
+ *
+ * The owner's ruling of 2026-09-06 was *"Nazwa tekstem na mapie"* -- the name,
+ * as text on the map -- and these are the numbers that make it readable. They
+ * are here rather than in the drawing layer for the reason every other constant
+ * in this file is: `src/rendering/phaser/` is the tier the Node test
+ * environment cannot reach, so a value a test needs to agree with has to live
+ * below it (`tests/unit/rendering-module-boundaries.test.ts` keeps Phaser out of
+ * this tier).
+ *
+ * ### Why a *screen* size and not a world size
+ *
+ * `ROOM_LABEL_FONT_SIZE_PX` is a size in **screen** pixels, held constant across
+ * the whole of `ZOOM_BOUNDS` (0.2 to 3.0) by scaling the drawn object by the
+ * reciprocal of the camera zoom. A name sized in world units would be 2.8 px
+ * tall at zoom 0.2 and 42 px tall at zoom 3.0 -- illegible at one end and
+ * shouting at the other -- and the only size that is legible at every zoom is
+ * one that does not change with zoom. What changes with zoom instead is
+ * *whether the name fits inside the room*, which `roomLabelFits` answers and
+ * `RoomLabelLayer` acts on.
+ *
+ * 13 px is the smallest size measured legible in Chromium for this stack at a
+ * device pixel ratio of 1, and the pairing with the outline below is what keeps
+ * it legible over both the pale institutional floor and the dark unowned shade.
+ */
+export const ROOM_LABEL_FONT_SIZE_PX = 13;
+
+/**
+ * The font a room's name is written in.
+ *
+ * A system stack and no web font, deliberately: the label is drawn into a
+ * canvas texture the first frame a room is on screen, and a web font that has
+ * not arrived yet would rasterise the name in the fallback and keep that
+ * texture. `docs/RENDERING.md`'s rule that art failing to load still leaves a
+ * legible world applies to text as much as to floors.
+ */
+export const ROOM_LABEL_FONT_FAMILY =
+  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+/** Near-white, for contrast against every floor and tint in this file. */
+export const ROOM_LABEL_COLOR = '#f2f5f8';
+
+/**
+ * A dark outline around every glyph, and it is not decoration.
+ *
+ * The floor a name is written on is not one colour: it is terrain, or
+ * institutional floor art, under a category tint at 0.14 or 0.28 alpha, and
+ * possibly under the unowned shade as well. A light glyph with no outline
+ * disappears against the pale end of that range. Two pixels of dark stroke
+ * makes the name independent of what is beneath it, which is what lets the
+ * tint keep carrying category (ADR 0098 decision 2) without competing.
+ */
+export const ROOM_LABEL_OUTLINE_COLOR = '#0b0e12';
+export const ROOM_LABEL_OUTLINE_WIDTH_PX = 2;
+
+/**
+ * Clear space required on each side of the name, in screen pixels.
+ *
+ * Without it a name that fits its room to the pixel reads as touching the
+ * walls, and at low zoom two neighbouring rooms' names end up a hair apart.
+ */
+export const ROOM_LABEL_MARGIN_PX = 4;
+
+/**
+ * Whether a name may be written at all: does it fit the space the room gives
+ * it, at this zoom?
+ *
+ * **This is the decision that makes the whole feature honest at 0.2 zoom.** The
+ * name is a constant number of screen pixels wide; the room is
+ * `spanTiles * TILE_SIZE_PX * zoom` screen pixels wide, which at zoom 0.2 is
+ * 12.8 px per tile. So a name is drawn where the room can hold it and is
+ * omitted where it cannot, rather than being shrunk into illegibility or spilled
+ * across its neighbours. ADR 0098 decision 4 states the requirement this
+ * satisfies: the map owes a legible room type *"at the zoom they are building
+ * at"*, and explicitly does not owe *"a distinct look at every zoom"*.
+ *
+ * Pure arithmetic over three measured numbers, so the threshold is a unit test
+ * rather than a screenshot.
+ */
+export function roomLabelFits(textWidthPx: number, spanTiles: number, tileSizePx: number, zoom: number): boolean {
+  if (!Number.isFinite(textWidthPx) || !Number.isFinite(spanTiles) || !Number.isFinite(zoom)) return false;
+  if (textWidthPx <= 0 || spanTiles <= 0 || zoom <= 0) return false;
+  return textWidthPx + 2 * ROOM_LABEL_MARGIN_PX <= spanTiles * tileSizePx * zoom;
+}
