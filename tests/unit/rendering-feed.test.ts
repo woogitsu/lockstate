@@ -781,6 +781,97 @@ describe('the render delta channel feeds the actors', () => {
     expect(errors.at(-1)?.message).toMatch(/must be 40 bytes, got 32/);
   });
 
+  /*
+   * ADR 0099's sixth `dirty` mark, both halves of it.
+   *
+   * `docs/adr/0099-how-the-renderer-learns-the-world-changed.md`'s
+   * consequences ask for exactly these two cases and say which one matters
+   * more: *"a delta whose marker moved provokes exactly one request, and a
+   * delta whose marker did not provokes none. The second half is the one worth
+   * watching go red -- a marker read unconditionally would put a snapshot
+   * request on every delta, which is 10 Hz and worse than the bug."*
+   */
+  it('asks for a snapshot when a delta says the drawn world changed', () => {
+    const { client, feed } = feedWithWorld();
+    const requestsBefore = client.sent.length;
+
+    // Two deltas at the same marker establish the baseline and prove it is
+    // being read: the second is where an unconditional read would fire.
+    client.emit(delta(4, [RECORD], { worldRevision: 7 }));
+    feed.readFrame(0.2);
+    client.emit(delta(5, [RECORD], { worldRevision: 7 }));
+    feed.readFrame(0.3);
+    expect(client.sent).toHaveLength(requestsBefore);
+
+    // Something was built.
+    client.emit(delta(6, [RECORD], { worldRevision: 8 }));
+    feed.readFrame(0.4);
+    expect(client.sent).toHaveLength(requestsBefore + 1);
+    expect(client.sent.at(-1)?.kind).toBe('simulation/request-snapshot');
+
+    // And the answer to it is applied even though `pump` single-flights: the
+    // world the request fetched is what makes the notification worth sending.
+    client.emit(snapshotReply(client.lastRequestId, 6));
+    expect(feed.readFrame(0.5).revision).toBe(2);
+  });
+
+  it('asks for nothing across a hundred deltas whose marker never moved', () => {
+    /*
+     * The half worth watching go red. A hundred deltas is ten seconds of the
+     * worker's 100 ms ceiling, and an unconditional `dirty` would send a
+     * hundred `captureSessionSnapshot`s in that time -- each one also a
+     * `jsonValueSchema` walk on this thread and, through the frame revision, a
+     * whole `TileLayer` rebuild on the thread that draws. The literal is the
+     * claim.
+     */
+    const { client, feed } = feedWithWorld();
+    const requestsBefore = client.sent.length;
+
+    for (let tick = 4; tick < 104; tick += 1) {
+      client.emit(delta(tick, [{ ...RECORD, subX: tick * SUB }], { worldRevision: 12 }));
+      feed.readFrame(tick / 60);
+    }
+
+    expect(client.sent).toHaveLength(requestsBefore);
+    // Non-vacuous: a hundred deltas really were applied.
+    expect(feed.readFrame(2).actors[0]!.tileX).toBe(103);
+  });
+
+  it('treats the first marker of a session as a baseline rather than as a change', () => {
+    /*
+     * The judgement in this mechanism that ADR 0099 does not force, so it is
+     * pinned rather than left to the implementation: a session's opening
+     * request has already gone out on `simulation/ready`, and asking again on
+     * the first delta would ask for a world nothing has touched. It is also
+     * what keeps the pinned floor of *two requests over thirty running
+     * seconds* above -- a third would be this.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 1));
+    expect(client.sent).toHaveLength(1);
+
+    // A marker this feed has never seen before, and a large one: the counter
+    // starts at zero in a new world, so anything non-zero here is a world that
+    // has already been written to before the first delta went out.
+    client.emit(delta(4, [RECORD], { worldRevision: 4_294_967_295 }));
+    feed.readFrame(0.2);
+    expect(client.sent).toHaveLength(1);
+
+    // And a second session's marker is compared against nothing either: the
+    // counter restarts at zero, so `0` after `4,294,967,295` is not a change
+    // by 4 billion, it is a different simulation.
+    client.emit(ready('running'));
+    feed.readFrame(0.3);
+    const afterSecondReady = client.sent.length;
+    client.emit(delta(1, [RECORD], { worldRevision: 0 }));
+    feed.readFrame(0.4);
+    expect(client.sent).toHaveLength(afterSecondReady);
+  });
+
   it('moves a walking actor between publications, from where it was published', () => {
     /*
      * **The other half of #414's "actors teleport", and the half that is this
