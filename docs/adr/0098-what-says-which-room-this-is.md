@@ -295,7 +295,7 @@ finding openable:
 
 4. **The Rooms panel names an instance in exactly two conditional blocks, and a
    healthy room is in neither.** `RoomListRowViewModel` carries `roomNameKey` and
-   `anchorTile` per instance (`src/simulation/presentation/room-projection.ts:322-389`),
+   `anchorTile` per instance (`src/simulation/presentation/room-projection.ts:408-475`),
    and `src/ui/simulation-room-needs.ts` spends them on two sentences:
    `'hud.rooms.needs-room': '{room} at {x}, {y} is missing',`
    `'hud.rooms.at-capacity-room': '{room} at {x}, {y} is full',`
@@ -343,7 +343,9 @@ this issue in advance, and this document is the other side of it:
 > option and both marks get worse."*
 
 and it put condition at the room's boundary instead, naming the code that
-already draws one — `src/rendering/phaser/tile-layer.ts:374-386`, the owned-land
+already draws one — `src/rendering/phaser/tile-layer.ts:373-385` (re-anchored;
+`:374-386` was already the tile-grid block below it, not this one, before this
+window opened), the owned-land
 outline, **which still stands at those lines on `02490b6e`** and is the
 `if (!world.isTileOwned(tileX, tileY - 1)) graphics.lineBetween(left, top + inset, right, top + inset);`
 (verbatim in `src/rendering/phaser/tile-layer.ts`) block and its three siblings.

@@ -236,8 +236,8 @@ column that decides whether a readout can go stale at all.
 | 6 | `hud/held-guards` | `simulation-held-guards.ts:148` | security | `GuardReleaseService.claimOf` per guard | yes — a system ends its own claim | none; a released guard stays assigned, so `staffUnassigned` does not move |
 | 7 | `hud/staff` (roster window) | `simulation-staff-roster.ts:143` | security | `assignment.deploymentPhase`, post tiles, patrol | yes — a guard walking to post changes phase | none |
 | 8 | `hud/staff` (`limit: 0`, totals) | `simulation-staff-coverage.ts:124` | security | `required`/`assigned`/`shortage` summed over sectors | yes — `DeploymentSystem` runs every 10 ticks | `prisonersCovered`/`Understaffed`/`Unguarded` move **only** when the census changes |
-| 9 | `hud/room-list` | `simulation-room-needs.ts:308` | rooms | room instances × `runtime.placedObjects` | yes — an object completes on a tick | none for a toilet, a shower or a bench |
-| 10 | `hud/room-detail` | `simulation-room-needs.ts:332` | rooms | same, per room | yes | same |
+| 9 | `hud/room-list` | `simulation-room-needs.ts:434` | rooms | room instances × `runtime.placedObjects` | yes — an object completes on a tick | none for a toilet, a shower or a bench |
+| 10 | `hud/room-detail` | `simulation-room-needs.ts:470` | rooms | same, per room | yes | same |
 | — | `hud/prisoner-detail`, `hud/security`, `hud/contraband`, `hud/incidents`, `hud/incident-detail`, `world/render-snapshot` | none | — | — | — | no `simulation/request-projection` reader; `tests/foundation/projection-reachability-contract.test.ts` carries each one's reason. `world/render-snapshot` is the one worth a second look: the world *is* on screen, but `SimulationSnapshotFeed` reaches it through `simulation/request-snapshot` (`:383`) rather than through this channel, which is why it has a cadence of its own — see §7 |
 
 **The answer to "there may be others" is: there is no instance. There is only

@@ -364,14 +364,25 @@ without the schema moving:
 | save schema `treasury.balanceMinorUnits` | `z.number().int().safe()`; already signed, already proven both ways by `tests/migrations/save-v5-negative-balance.test.ts` |
 | determinism fingerprint | reads no economy surface at all (`#697`); the save checksum is the surface that sees money |
 
-**One divergence rather than a break, and it is the interface's:**
-`src/main.ts:2428` and `:2607` pre-check `total > viewModel.counts.treasuryMinorUnits`
-before submitting a purchase or a hire. Those comparisons are against a floor of
-zero, so with a floor open the interface would refuse presses the simulation
-would accept. It is not reachable from `pnpm test` — `vitest.config.ts` sets
-`environment: 'node'` and `main.ts` touches `document` — so it is named here
-rather than pinned, and the fix is a pure function the way `orderPrisonsForDisplay`
-was.
+**One divergence rather than a break, and it is the interface's — as of this
+document's own drafting; re-anchored 2026-09-06, and the divergence is
+closed.** `src/main.ts:2428` and `:2607` (drafting-time coordinates; the
+same pre-checks live at `main.ts:2845` and `:3067` today) pre-checked
+`total > viewModel.counts.treasuryMinorUnits`
+before submitting a purchase or a hire. Those comparisons were against a floor of
+zero, so with a floor open the interface would have refused presses the simulation
+would accept. **That comparison no longer exists in `main.ts` at all** —
+`main.ts`'s own comment at `:2799-2806` narrates its own history: moved out to
+`judgeAffordability` (`src/ui/affordability.ts`) as "#703 ruling A", the exact
+extraction this row goes on to recommend, now floor-aware via
+`pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, …)` at both call
+sites. It is still not reachable from `pnpm test` — `vitest.config.ts` sets
+`environment: 'node'` and `main.ts` touches `document` — so correctness of the
+extraction rests on review and the browser suite, exactly as this row already
+argued it would have to; the fix is a pure function the way `orderPrisonsForDisplay`
+was, and it already is one. Left in place and marked per
+`docs/AGENT_WORKFLOW.md` §4 rather than rewritten, because what closed this
+divergence is independent of this document's own Status.
 
 ### (e) No `SAVE_SCHEMA_VERSION` bump is required, in either reading
 

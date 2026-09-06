@@ -205,7 +205,7 @@ mechanism behind ADR 0045's out-of-bounds ordering argument.
 
 Six definitions, including `grass` (`src/simulation/world/terrain.ts:22`) and
 `concrete` (`:40`), each with a renderer row
-(`src/rendering/world/appearance.ts:60`, `:62`). **Nothing in `src/` writes
+(`src/rendering/world/appearance.ts:66`, `:68`). **Nothing in `src/` writes
 terrain**: `grep -rn "setTerrain\|fillTerrain" --include=*.ts src/` returns only
 the definitions in `sparse-world.ts` themselves. `getTerrainNumericId` returns
 `0` for an absent plane (`src/simulation/world/sparse-world.ts:385`), and `0` is
