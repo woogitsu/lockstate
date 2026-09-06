@@ -68,6 +68,15 @@ const FIXTURE: HarnessWorldFixture = {
   // One tile of bare owned ground, clear of the bed and of every wall.
   toiletTileX: 8,
   toiletTileY: 4,
+  // 2x1 tiles of bare owned ground, clear of the bed, the toilet and every
+  // wall. #1020's second and third rendered-art rows.
+  benchTileX: 10,
+  benchTileY: 4,
+  deskTileX: 13,
+  deskTileY: 4,
+  // One tile of bare owned ground, clear of everything above.
+  storageRackTileX: 16,
+  storageRackTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -149,6 +158,37 @@ function buildFrame(): RenderFrame {
       definitionId: 'toilet-brick',
       tileX: FIXTURE.toiletTileX,
       tileY: FIXTURE.toiletTileY,
+      phase: 'built',
+    },
+    /*
+     * The second and third objects wired from ADR 0100's second publishing
+     * lane (#1020): a bench and a desk, each 2x1, both rendered rather than
+     * cut from an owner sheet.
+     */
+    {
+      id: 'finished-bench',
+      definitionId: 'bench-wooden',
+      tileX: FIXTURE.benchTileX,
+      tileY: FIXTURE.benchTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-desk',
+      definitionId: 'desk-wooden',
+      tileX: FIXTURE.deskTileX,
+      tileY: FIXTURE.deskTileY,
+      phase: 'built',
+    },
+    /*
+     * The fourth: a storage rack, 1x1, the one judgement call in this batch
+     * (`environment-sprites.ts`'s `env.object.storage-rack` docblock says
+     * why: the render is a locker, not a literal rack).
+     */
+    {
+      id: 'finished-storage-rack',
+      definitionId: 'storage-rack-wooden',
+      tileX: FIXTURE.storageRackTileX,
+      tileY: FIXTURE.storageRackTileY,
       phase: 'built',
     },
   ];
