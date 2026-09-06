@@ -738,10 +738,16 @@ reserves prices with the rest of #29), so it is named and not taken.
   penalty than the pre-B behaviour ever had, and it is the owner's ruling
   knowingly.
 - **A player-facing sentence becomes false.**
-  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:630`) promises
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:1496`, re-anchored)
+  promised
   *"One still being built is cancelled and its materials come back"*. Under
   ruling 20 the materials do not come back; money does, and only before the crew
-  starts. Replacement copy is **not written here** — `AGENTS.md`'s fourth
+  starts. **Re-anchored 2026-09-06: replacement copy has since been written —
+  the key now reads "cancelled and refunds its money — but nothing comes back
+  once the crew has started it. A finished one is not refunded," and
+  `default-locale-en.ts:1464-1487` carries the owner's own account of the two
+  days the sentence was false and the ruling 20 quotes that fixed it.**
+  Replacement copy was **not written here** — `AGENTS.md`'s fourth
   exclusion reserves it — and the string is reported to the owner with the
   branch.
 - **`docs/OPERATIONS.md`'s justification for the `release` seam narrows.** It
@@ -1090,7 +1096,7 @@ because a list of test names in an ADR rots on the first rename.
   rather than argued as a justification -- the reason for the ruling is the
   inversion, not the exploit.
 - **A player-facing sentence gets *more* true, and none gets less.**
-  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:697`) already
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:1496`) already
   reads *"a finished one is not refunded"*, which this makes true of every route
   rather than of one. The half of that string ruling 20 falsified --
   *"One still being built is cancelled and its materials come back"* -- is
