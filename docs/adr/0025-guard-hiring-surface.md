@@ -87,7 +87,7 @@ panel are never laid out together, so the budget is not a constraint on this
 surface at any value.
 
 **Correction, 2026-08-30: the last clause of that sentence is false, and the
-class it belongs to is what to take from this.** `src/ui/primitives/icon.ts:68`
+class it belongs to is what to take from this.** `src/ui/primitives/icon.ts:79`
 holds
 
 ```ts
@@ -182,7 +182,7 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`src/ui/hud/hud.ts:270`) and `src/main.ts` turns it into
+emits a `HudIntent` (`src/ui/hud/hud.ts:322`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
 route and are the pattern this follows —
 `case 'place-build-order'` and `case 'purchase-materials'` in `src/main.ts`.
