@@ -35,7 +35,75 @@
 
 ## Status
 
-**Proposed, 2026-09-06. Not self-approved.**
+**Accepted by the owner on 2026-09-06 — all four decisions, against a summary
+rather than against this document's 855 lines.**
+
+The two rulings recorded below settled a *channel* and a *table*, and said so
+themselves: *"They do not accept this document's decisions 1 to 4."* This is
+that acceptance, taken separately and later the same day. Asked what should
+happen to decisions 1 to 4, the owner chose:
+
+    Zaakceptuj wszystkie cztery
+
+("Accept all four.")
+
+**THE DISCLOSURE, WHICH IS THE PART A LATER READER NEEDS.** The ruling was
+given against a summary written by the integrator, in Polish, reproduced here
+verbatim so that nobody mistakes a ruling for a reading — the same disclosure
+ADR 0075, 0076, 0097, 0099 and 0100 carry, for the same reason. What was put to
+the owner was this and no more:
+
+> **Decyzja 1 — mapa ma odróżniać *typy* pokoi, nie kategorie.** Siedem z
+> osiemnastu typów rysowało się identycznie jak inny typ; gracz postawiony
+> przed dwoma pomieszczeniami jedzeniowymi nie miał *żadnej* powierzchni, która
+> mówi, które jest które. Wyraźnie **nie** dotyczy egzemplarzy — dwie sąsiednie
+> cele mogą wyglądać tak samo, bo warstwa kafli dostaje id katalogu i zero
+> tożsamości egzemplarza.
+>
+> **Decyzja 2 — kanał tintu należy do tożsamości, obramowanie do stanu.** To
+> podział z zaakceptowanego ADR 0097. Trzy powody, z czego drugi jest
+> zmierzony: cały sufit tintu to 35,7 jednostek efektywnych, a podłoga pod nim
+> ma własny rozrzut 25,4 — kanał tak cienki nie uniesie dwóch faktów naraz.
+> Trzeci: stan zmienia się w trakcie gry, tożsamość nie, a wszystko rysowane
+> przez `TileLayer` dziedziczy 30-sekundowy limit migawki geometrii.
+>
+> **Decyzja 3 — klucz po id jest konieczny i niewystarczający.** Zamyka siedem
+> kolizji, ale nie usuwa nieczytelności: najgorsza para dziś 4,06 jednostki, po
+> równym rozstawieniu 18 barw 6,02 — wobec szumu podłogi rzędu 15,5. Stąd
+> wniosek, że tożsamość potrzebuje **drugiego kanału** — i to jest dokładnie
+> to, co dowiozła nazwa na mapie. Rozstawienie barw, którego ta decyzja żąda,
+> zrobił już #1047.
+>
+> **Decyzja 4 — co *nie* jest wymagane.** Czytelność na każdym zoomie (przy 0.2
+> kafel ma 12,75 piksela), tożsamość egzemplarza, i cokolwiek o stanie pokoju —
+> to ostatnie należy do ADR 0097.
+>
+> **Wniosek uczciwy:** akceptacja 1–4 nie zmienia dziś ani jednej linijki kodu.
+> Ratyfikuje wymaganie, z którego wynikło to, co już działa, i zamyka pytanie,
+> czy wolno realizować resztę.
+
+The option the owner selected carried its own consequence statement, and it is
+reproduced too because it is part of what was agreed:
+
+> Status idzie na Accepted. Nie zmienia dziś żadnej linijki kodu — ratyfikuje
+> wymaganie, z którego wynikły opcje A i F, które już dowiozłeś. Zysk: następny
+> czytelnik wie, że mapa ma odróżniać typy, że tint należy do tożsamości, a
+> obramowanie do stanu — i że nie wolno brać drugiego kęsa z tych samych
+> pikseli.
+
+**WHAT THIS ACCEPTANCE CHANGES IN THE TREE: NOTHING, TODAY.** Options A and F
+are already merged (#1047, #1044), and decision 3's demand that the hues be
+respaced while the table is open was discharged by #1047's eighteen rows at 20°.
+What it changes is what a later agent may do: decisions 1 to 4 are now the
+requirement this repository holds itself to, and decision 4's boundary — no
+distinct look at every zoom, no room *instance* identity, nothing about how a
+room is *doing* — is now binding rather than proposed. **It does not touch
+ADR 0097, which stays Accepted**, and it takes no second bite at 0097's pixels.
+
+> **Superseded 2026-09-06 by the paragraphs above; kept rather than overwritten,
+> per `docs/AGENT_WORKFLOW.md` §4, because a reader should see that this
+> document was drafted as a question and refused to answer itself.** It read:
+> **Proposed, 2026-09-06. Not self-approved.**
 
 > **TWO RULINGS BY THE OWNER, 2026-09-06, AND THE FIRST IS NOT ONE OF THE FIVE
 > OPTIONS BELOW.** The paragraphs of this section are kept as drafted rather
@@ -374,7 +442,18 @@ It did, twice, in the day after it was accepted:
 
 ## Decision
 
-Proposed, not approved. Four parts.
+**All four parts were ACCEPTED by the owner on 2026-09-06** — see the Status
+section, which records the ruling in the owner's own words and discloses that it
+was taken against a summary rather than against the full text.
+
+**The per-part `Proposed` markers below are left exactly as drafted**
+(`docs/AGENT_WORKFLOW.md` §4: mark both directions, never overwrite). They
+record what each part claimed for itself *before* the ruling, which is worth
+more to a later reader than a clean document; the Status section above is what
+is current.
+
+> **Superseded 2026-09-06 by the paragraphs above.** It read:
+> Proposed, not approved. Four parts.
 
 ### 1. The map is required to distinguish room *types*, not room categories
 
