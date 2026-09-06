@@ -370,6 +370,50 @@ function objectFootprintOf(definitionId: string): { readonly width: number; read
   return { width: definition.footprint.width, height: definition.footprint.height };
 }
 
+/**
+ * The page's one localizer.
+ *
+ * Module scope rather than local to `mountInterface`, because two consumers now
+ * need the *same instance*: the HUD and the save panel.
+ *
+ * **Three consumers, and the third is why this sits above the world scene
+ * rather than beside `mountInterface` where it used to.** A room's name is
+ * written on the map (the owner's ruling of 2026-09-06), and the scene is
+ * handed a function that formats it -- so `WorldSceneOptions.roomName` closes
+ * over this const. Phaser's `DOMContentLoaded` helper calls back
+ * *synchronously* when `document.readyState` is already `interactive`, which is
+ * exactly what a deferred module script sees, so `new Phaser.Game(...)` boots
+ * inside its own constructor. The scene's `update` still waits for a frame, so
+ * the old ordering happened to work -- and "happened to" is a temporal
+ * dead-zone throw one Phaser release away. Declaring it before the scene makes
+ * the ordering a property of this file instead. `SavePanel` used to
+ * default to a localizer of its own over the same catalog -- equivalent while
+ * `en` is the only locale, and not equivalent the moment a second ships, when a
+ * panel holding its own default-locale localizer would keep rendering English
+ * while the rest of the interface changed language. Issue #208 recorded that as
+ * a seam with a known end; this is the end.
+ */
+/*
+ * `defaultMessageCatalogEn`, not a catalog built here from content alone.
+ *
+ * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
+ * the game always has text offline." This localizer was not complete. It was
+ * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
+ * trusted-services layer contributes twelve more strings of its own
+ * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
+ * product names, save-slot counts, entitlement notices, challenge results and
+ * the telemetry consent prompt). None of them was in the running page's
+ * localizer, so any of them would have rendered as its own key.
+ *
+ * `defaultMessageCatalogEn` is content merged under those service strings, and
+ * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
+ * every declared key against -- so the gate was proving completeness of a
+ * catalog the application did not use. `src/services/entitlements/products.ts`
+ * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
+ * resolves, and before this line it would have painted the raw key.
+ */
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
 // `window.localStorage` itself, in a class field initializer, so a browser that
@@ -412,6 +456,33 @@ const worldScene = new WorldScene({
   // without disarming -- and one colour for every object rather than a table:
   // `PLANNED_OBJECT_TINT` says what it is and why it is not the room's.
   ...(objectTool === undefined ? {} : { objectTool, objectTint: (): number => PLANNED_OBJECT_TINT }),
+  /*
+   * The word written across a room's floor (the owner's ruling of 2026-09-06:
+   * *"Nazwa tekstem na mapie"*).
+   *
+   * Composed here and nowhere else, because this is the one place that holds
+   * both halves: `defaultRoomContentRegistry` says which room type a zoning
+   * numeric id is, and `localizer` says what that type is called in the
+   * player's language. The renderer is handed the finished text -- exactly the
+   * arrangement `roomTint` above documents for a colour, and for the stronger
+   * reason: a renderer that resolved `nameKey` itself would be a second
+   * localization site, and the second one is always the one that keeps
+   * rendering English after a locale change.
+   *
+   * **No string is authored here.** `nameKey` is the catalogue's own
+   * (`src/content/room-catalog.ts`), its text is
+   * `src/content/default-locale-en.ts`'s, and
+   * `tests/foundation/localization-key-completeness.test.ts` already resolves
+   * every declared key against the same merged catalogue this localizer holds.
+   * `undefined` for an id no catalogued room claims -- so an unnamed room is
+   * drawn with no name rather than with a word invented for it, which is the
+   * half of `AGENTS.md` reservation 4 that its 2026-09-04 release did not touch.
+   */
+  roomName: (zoningNumericId: number): string | undefined => {
+    const definition = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+    if (definition === undefined) return undefined;
+    return localizer.format(definition.nameKey);
+  },
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -1064,38 +1135,6 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
   }
   return commands;
 }
-
-/**
- * The page's one localizer.
- *
- * Module scope rather than local to `mountInterface`, because two consumers now
- * need the *same instance*: the HUD and the save panel. `SavePanel` used to
- * default to a localizer of its own over the same catalog -- equivalent while
- * `en` is the only locale, and not equivalent the moment a second ships, when a
- * panel holding its own default-locale localizer would keep rendering English
- * while the rest of the interface changed language. Issue #208 recorded that as
- * a seam with a known end; this is the end.
- */
-/*
- * `defaultMessageCatalogEn`, not a catalog built here from content alone.
- *
- * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
- * the game always has text offline." This localizer was not complete. It was
- * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
- * trusted-services layer contributes twelve more strings of its own
- * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
- * product names, save-slot counts, entitlement notices, challenge results and
- * the telemetry consent prompt). None of them was in the running page's
- * localizer, so any of them would have rendered as its own key.
- *
- * `defaultMessageCatalogEn` is content merged under those service strings, and
- * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
- * every declared key against -- so the gate was proving completeness of a
- * catalog the application did not use. `src/services/entitlements/products.ts`
- * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
- * resolves, and before this line it would have painted the raw key.
- */
-const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
 /**
  * Without a worker there is no simulation and no session, so there is

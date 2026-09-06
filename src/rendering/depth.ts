@@ -82,6 +82,22 @@ export const FLOOR_DEPTH = -1_000_000_000;
 export const FLOOR_ART_DEPTH = FLOOR_DEPTH - 1;
 
 /**
+ * A room's name, written on its floor.
+ *
+ * Above the ground `Graphics` -- which is the floor colour, the category tint,
+ * the unowned shade and the grid -- and still a billion units below the
+ * row-sorted band, so nothing with height can be hidden by a word. That
+ * ordering is ADR 0098 option C's *"drawn over the floor and under the
+ * objects"*: a bed a player has placed covers the name, because the bed is the
+ * thing they are looking at and the name is what tells them where they are.
+ *
+ * `FLOOR_DEPTH + 1` rather than a constant of its own, so the relationship is
+ * the declaration: there is no value the ground could take that would put it
+ * over the label.
+ */
+export const ROOM_LABEL_DEPTH = FLOOR_DEPTH + 1;
+
+/**
  * Depth for something whose base sits at `anchorWorldY`.
  *
  * Pure and total: given the same anchor and layer it always returns the same
