@@ -12081,16 +12081,31 @@ live claim. Nothing here needed a coordinate moved.
 ASSUMING NON-OVERLAP.** `adr/how-the-renderer-learns-geometry-changed` is cut
 from `a2b3632b` (v0.0.507, inside this window) and carries ADR 0099, not yet
 merged. Its sole edit to this file is one hunk inside the v0.0.503 anchor's
-own dated record above — correcting *"Next free number: 0099"* and the
-*"nine-anchor streak … neither extended nor broken"* sentence to account for
-ADR 0098 and ADR 0099 both landing `Proposed` with no §2 row. This pass edits
-neither sentence and states no streak figure of its own: the header above
-reports 41 `Proposed` / 50 `Accepted` / next-free 0099, which is what
-`docs/adr/README.md` states on `main` today (ADR 0099 is not on this tree),
-and PR #1043's correction is about the tree ADR 0099 lands on, not this one.
-The two accounts describe two different trees and neither needed to change
-for the other to be true; merging PR #1043 after this pass costs it nothing
-but rebasing past this section's own line numbers.
+own dated record above — correcting the next-free-number sentence there
+(then reading 0099) and the *"nine-anchor streak … neither extended nor
+broken"* sentence, to account for ADR 0098 and ADR 0099 both landing
+`Proposed` with no §2 row. This pass edits neither sentence and states no
+streak figure of its own: the header above reported 41 `Proposed` / 50
+`Accepted` and a next-free figure of 0099, which is what `docs/adr/README.md`
+stated on `main` at this pass's own anchor (`0b8af9f8`, v0.0.511; ADR 0099 was
+not on that tree), and PR #1043's correction is about the tree ADR 0099 lands
+on, not this one. The two accounts describe two different trees and neither
+needed to change for the other to be true; merging PR #1043 after this pass
+costs it nothing but rebasing past this section's own line numbers.
+
+**SUPERSEDED IN PART, 2026-09-06 — the figure this pass reported has since
+moved, not the claim it made about its own anchor.** A third branch neither
+this paragraph nor PR #1043 anticipated found the same held number PR #1043
+carries and took the number after it instead of colliding:
+[ADR 0100](./0100-whether-a-rendered-object-sprite-can-be-published-art.md),
+cut from `93c11bf8` (v0.0.517), found `0099-how-the-renderer-learns-the-world-changed.md`
+already committed on `adr/how-the-renderer-learns-geometry-changed` with no
+pull request — over a 216-head sweep its own Status section records — and
+took **0100** rather than the held 0099. `docs/adr/README.md`'s Next free
+number: 0101 as of that branch landing its own row, which supersedes only the
+figure two paragraphs up, not its claim about what `main` stated at
+`0b8af9f8`: that claim is still true of that commit, and PR #1043 still has
+not merged.
 
 **THE OUTSIDE-WINDOW SCAN WAS NOT RE-RUN FROM SCRATCH.** The previous anchor's
 script enumerated eight genuinely-live citations outside its own window; this
