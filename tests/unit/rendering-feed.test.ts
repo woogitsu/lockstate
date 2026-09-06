@@ -614,11 +614,19 @@ describe('the render delta channel feeds the actors', () => {
       readonly layoutVersion?: number;
       readonly schemaId?: string;
       readonly schemaVersion?: number;
+      /**
+       * ADR 0099's fifth header word. Defaults to `0` and therefore never
+       * moves across two calls, so every case in this describe block that is
+       * about the actors keeps the wire trace it had before the word existed:
+       * a marker that stood still is a delta the feed does not fetch on.
+       */
+      readonly worldRevision?: number;
     } = {},
   ): WorkerToMainMessage {
     const data = writeRenderActorsPayload({
-      layoutVersion: overrides.layoutVersion ?? 2,
+      layoutVersion: overrides.layoutVersion ?? 3,
       flags: overrides.flags ?? 1,
+      worldRevision: overrides.worldRevision ?? 0,
       records,
       removed: [],
     });
@@ -631,7 +639,7 @@ describe('the render delta channel feeds the actors', () => {
         tick,
         delta: {
           schemaId: overrides.schemaId ?? 'lockstate.render-actors',
-          schemaVersion: overrides.schemaVersion ?? 2,
+          schemaVersion: overrides.schemaVersion ?? 3,
           transport: 'array-buffer',
           contentType: 'application/x-lockstate-render-actors',
           byteLength: data.byteLength,
@@ -743,8 +751,8 @@ describe('the render delta channel feeds the actors', () => {
   it('keeps the actors it has when a payload is one it cannot read', () => {
     const cases: readonly [string, WorkerToMainMessage, RegExp][] = [
       ['a schema id from another read model', delta(6, [RECORD], { schemaId: 'lockstate.something-else' }), /understands "lockstate.render-actors"/],
-      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 3 }), /v3/],
-      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 3 }), /layout 3/],
+      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 4 }), /v4/],
+      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 4 }), /layout 4/],
       ['a changed-only message, which this receiver cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
     ];
 
@@ -763,12 +771,14 @@ describe('the render delta channel feeds the actors', () => {
   it('reports a body whose length contradicts its own header rather than drawing a phantom', () => {
     const { client, feed, errors } = feedWithWorld();
     const truncated = delta(6, [RECORD]) as { payload: { delta: { data: ArrayBuffer; byteLength: number } } };
-    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 28);
-    truncated.payload.delta.byteLength = 28;
+    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 32);
+    truncated.payload.delta.byteLength = 32;
 
     client.emit(truncated as unknown as WorkerToMainMessage);
     expect(feed.readFrame(0.3).actors).toEqual([]);
-    expect(errors.at(-1)?.message).toMatch(/must be 36 bytes, got 28/);
+    // Forty since ADR 0099's fifth header word: a five-word header and one
+    // twenty-byte record.
+    expect(errors.at(-1)?.message).toMatch(/must be 40 bytes, got 32/);
   });
 
   it('moves a walking actor between publications, from where it was published', () => {

@@ -30,6 +30,7 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * | `u32[1]` | flags; bit 0 set = keyframe (the record list is the complete live set) |
  * | `u32[2]` | `recordCount` |
  * | `u32[3]` | `removedCount` |
+ * | `u32[4]` | the drawn world's marker (ADR 0099) |
  * | then `recordCount` x 5 words | `u32` entity id, `u32` packed fields, `i32` x, `i32` y, `i16` velocity x + `i16` velocity y |
  * | then `removedCount` x 1 word | `u32` entity id no longer live |
  *
@@ -78,6 +79,23 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * > states still stands for anything the simulation does *not* say -- see
  * > `actors-from-delta.ts` for what the receiver still declines to invent.
  *
+ * ### What layout 2 did not carry, and why layout 3 does
+ *
+ * A statement that the *world* changed.
+ * [ADR 0099](../../../docs/adr/0099-how-the-renderer-learns-the-world-changed.md)
+ * measured a finished door drawn as an unbuilt ghost for 22-28 seconds
+ * (issue #1037), because every one of `SimulationSnapshotFeed`'s `dirty` marks
+ * is a fact about a message the main thread already has and a build order
+ * completing is a fact about the simulation. `u32[4]` is that fact, in the
+ * only form this payload is allowed to carry it: **a notification, not a
+ * channel.** It is a monotone marker with no meaning beyond inequality with
+ * the last one seen -- no tile, no chunk, no order id, no phase -- so the
+ * receiver can do exactly one thing with it, which is ask for the snapshot it
+ * already knows how to ask for. That is what keeps
+ * `tests/integration/completed-edge-structures-arrive-with-their-edge.test.ts`
+ * true by construction: a notification cannot split what a single capture
+ * joins.
+ *
  * Still not carried: an animation clip, an animation phase, or any statement
  * about which artwork draws a population. Those are renderer decisions
  * (ADR 0014) and the payload names a population *ordinal*.
@@ -97,7 +115,7 @@ export const RENDER_ACTORS_SCHEMA_ID = 'lockstate.render-actors';
  * than in the envelope, so adding a motion vector and a facing ordinal to the
  * record is a bump here and no protocol change at all.
  */
-export const RENDER_ACTORS_SCHEMA_VERSION = 2;
+export const RENDER_ACTORS_SCHEMA_VERSION = 3;
 
 /** The payload's `contentType`. Names the bytes, so a wrong body is refused rather than misread. */
 export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors';
@@ -106,19 +124,46 @@ export const RENDER_ACTORS_CONTENT_TYPE = 'application/x-lockstate-render-actors
  * `u32[0]`. Redundant with `RENDER_ACTORS_SCHEMA_VERSION` on purpose: a reader
  * that has the buffer and not the envelope can still tell what it is holding.
  *
- * **1 until ADR 0059, 2 since.** Layout 1 carried a whole-tile `i32` position
- * and nothing else, because the simulation had no motion to publish; layout 2
- * carries a sub-tile position, a velocity and a heading, because it does. ADR
- * 0003 decision 5 puts the read model's version inside the payload for exactly
- * this, so the bump costs no protocol change and no envelope change.
+ * **1 until ADR 0059, 2 until ADR 0099, 3 since.** Layout 1 carried a
+ * whole-tile `i32` position and nothing else, because the simulation had no
+ * motion to publish; layout 2 carries a sub-tile position, a velocity and a
+ * heading, because it does; layout 3 adds the fifth header word ADR 0099
+ * decision 2 puts the drawn world's marker in. ADR 0003 decision 5 puts the
+ * read model's version inside the payload for exactly this, so each bump costs
+ * no protocol change and no envelope change.
+ *
+ * **It moves in lockstep with `RENDER_ACTORS_SCHEMA_VERSION`**, which is what
+ * layout 1 -> 2 did and what the constant above says it is for: the two
+ * numbers answer the same question from either side of the envelope, and a
+ * reader that trusted one while the other stood still would be trusting the
+ * half it happened to have.
  */
-export const RENDER_ACTORS_LAYOUT_VERSION = 2;
+export const RENDER_ACTORS_LAYOUT_VERSION = 3;
 
 /** `u32[1]` bit 0: the record list is the complete live set rather than the actors that changed. */
 export const RENDER_ACTORS_KEYFRAME_FLAG = 1;
 
 /** Words before the first record. */
-export const RENDER_ACTORS_HEADER_WORDS = 4;
+export const RENDER_ACTORS_HEADER_WORDS = 5;
+
+/**
+ * `u32[4]`. The drawn world's marker: ADR 0099 decision 3's monotone counter,
+ * meaning *"the drawn world is not what it was"* and meaning nothing else.
+ *
+ * The receiver compares it with the last one it saw and, on any inequality,
+ * asks for a session snapshot through the request it already sends. It must
+ * not be read as a tick, a count of anything, or a statement about *what*
+ * changed: decision 3 bounds it to inequality precisely so that no partial
+ * refresh can be built on it, because a partial refresh would let the renderer
+ * hold a world assembled from more than one capture.
+ *
+ * Written as a `u32`, so it wraps. At the 100 ms publication ceiling a marker
+ * that moved on every single publication would take 2**32 increments -- 13.6
+ * years of wall clock -- to compare equal again, which is ADR 0099's open
+ * question 2 answered in the direction the document expected: one word, and
+ * monotone within any session anybody plays.
+ */
+export const RENDER_ACTORS_WORLD_REVISION_WORD = 4;
 
 /** Words per record: entity id, packed fields, x, y, and the two packed velocity halves. */
 export const RENDER_ACTORS_RECORD_WORDS = 5;
@@ -237,6 +282,14 @@ export interface RenderActorsPayload {
   readonly layoutVersion: number;
   readonly keyframe: boolean;
   readonly recordCount: number;
+  /**
+   * The drawn world's marker at the moment this keyframe was written
+   * (`RENDER_ACTORS_WORLD_REVISION_WORD`).
+   *
+   * Compare it with the last one seen. Anything else read into it is a
+   * reading ADR 0099 decision 3 forbids.
+   */
+  readonly worldRevision: number;
   readonly entityIds: Uint32Array;
   readonly packedFields: Uint32Array;
   /** Position in sub-tile units: `tile * RENDER_ACTORS_SUBTILE_UNITS + offset`. */
@@ -272,10 +325,27 @@ export class RenderActorsKeyframeWriter {
   private readonly view: DataView;
   private written = 0;
 
-  public constructor(public readonly recordCount: number) {
+  /**
+   * `worldRevision` is required rather than defaulted, and that is the same
+   * refusal `RenderGuardSource.locomotion` makes one file over: a default of
+   * zero would publish *"the world has never changed"* on every keyframe, the
+   * receiver would take the sixth `dirty` mark away without a word, and the
+   * defect ADR 0099 exists to close would come back looking like a
+   * thirty-second poll working as designed. A caller with nothing to report
+   * has to say `0` in its own hand.
+   */
+  public constructor(
+    public readonly recordCount: number,
+    worldRevision: number,
+  ) {
     if (!Number.isInteger(recordCount) || recordCount < 0) {
       throw new Error(
         `A render-actors keyframe needs a non-negative integer record count, got ${String(recordCount)}.`,
+      );
+    }
+    if (!Number.isInteger(worldRevision) || worldRevision < 0) {
+      throw new Error(
+        `A render-actors keyframe needs a non-negative integer world revision, got ${String(worldRevision)}.`,
       );
     }
     this.view = new DataView(new ArrayBuffer(renderActorsByteLength(recordCount, 0)));
@@ -285,6 +355,11 @@ export class RenderActorsKeyframeWriter {
     // A keyframe is the complete live set, so nothing needs removing: an id
     // absent from the record list is an id the receiver drops.
     this.view.setUint32(3 * RENDER_ACTORS_WORD_BYTES, 0, true);
+    // `>>> 0` rather than a range check: the marker is a `u32` that wraps by
+    // design (see `RENDER_ACTORS_WORLD_REVISION_WORD`), and `setUint32` would
+    // wrap it anyway -- doing it here means the value written is the value
+    // this line names.
+    this.view.setUint32(RENDER_ACTORS_WORLD_REVISION_WORD * RENDER_ACTORS_WORD_BYTES, worldRevision >>> 0, true);
   }
 
   public writeRecord(
@@ -354,6 +429,7 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
   const flags = view.getUint32(RENDER_ACTORS_WORD_BYTES, true);
   const recordCount = view.getUint32(2 * RENDER_ACTORS_WORD_BYTES, true);
   const removedCount = view.getUint32(3 * RENDER_ACTORS_WORD_BYTES, true);
+  const worldRevision = view.getUint32(RENDER_ACTORS_WORLD_REVISION_WORD * RENDER_ACTORS_WORD_BYTES, true);
 
   const expected = renderActorsByteLength(recordCount, removedCount);
   if (buffer.byteLength !== expected) {
@@ -389,6 +465,7 @@ export function decodeRenderActorsPayload(buffer: ArrayBuffer): RenderActorsPayl
     layoutVersion,
     keyframe: (flags & RENDER_ACTORS_KEYFRAME_FLAG) === RENDER_ACTORS_KEYFRAME_FLAG,
     recordCount,
+    worldRevision,
     entityIds,
     packedFields,
     subX,
