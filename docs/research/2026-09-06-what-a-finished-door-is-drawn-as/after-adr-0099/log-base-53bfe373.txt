@@ -1,0 +1,26 @@
+calibration: tile (0,0) top-left = (-304, -574)
+door tile (15,13); centre probe {"x":688,"y":290}; north probe {"x":688,"y":264}
+this tile's own bare floor at the centre probe: [106,87,68]
+VERIFIED placed: definitionId=door-wooden at (15,13) edge=north
+clock started at page t=26751.8ms, tick 5
+the Build panel stopped listing the order at t+7626ms — queue reads: .hud-build__queue: not laid out
+the render feed's own snapshot first reported the door "completed" at t+30131ms, tick 606
+---
+THE WINDOW A PLAYER SEES: 22505ms between the Build panel saying the queue is empty and the renderer holding a world in which the door is built
+---
+deltas seen: 0; the drawn world's marker moved on 0 of them
+snapshots on the wire: 21, of which 19 were the render feed's
+---
+the screen, after the window closed: centre=[106,87,68] slabAlpha=0.00 north=[125,119,116]
+the tile centre carries no construction slab: the door is on screen as its edge, which is what the timing above claimed
+last render-feed snapshot tick that reported the door completed: 606
+---
+console lines other than Phaser's banner: 8
+  debug: [vite] connecting...
+  debug: [vite] connected.
+  log: %cPhaser v4.2.1 (WebGL | Web Audio)%c https://phaser.io/v4021 color: #ffffff; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAARBJREFUeNpi/P//P0OHsPB/BiCoePuWkYFEwALSXJElzMBgLwE2CNkQxgWr/yMr/p8QimlBu5DQ//+8vBBco/ofzAe6imH+qv/53/6jYJAYSA4ZoxoANYTPKhiuCQZwGcJU+e4dqpMmvsDq14krV2MPAxDha2CMKvoXoiE/PBQUDgQD8j82UFae9B9bOIC8B9UD9gIjjIMN7Ns6lWHn4XMoYu62RgxO3tkMjIyMII2MYAOAtmFVhA+ADHf2ycGMRhANjUq8YO+WKWCvgAORIV8CkpDCrzIwsLIymC1qAtuAD4Bsh3sBmqAY3qcGwL2AC4DCpKtzHlgzOLWihwEuzTCN0GhDJHeYC4gByBphACDAAH2dDIxdjr+VAAAAAElFTkSuQmCC"), linear-gradient(to bottom, #000814, #001d3d, #003566); background-repeat: no-repeat; background-position: 4px center, 0 0; padding: 2px 6px 2px 24px; background: transparent
+  warning: [GroupMarkerNotSet(crbug.com/242999)!:A07020008C2A0000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+  warning: [.WebGL-0x108400117400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warning: [.WebGL-0x108400117400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warning: [.WebGL-0x108400117400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+  warning: [.WebGL-0x108400117400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)

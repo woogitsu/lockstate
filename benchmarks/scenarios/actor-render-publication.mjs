@@ -194,7 +194,10 @@ async function runPublication(seed, population) {
   }
 
   const walkersInTransit = locomotion.walkingCount;
-  const buffer = modules.encodeRenderActorsKeyframe(source, ticksPerWallSecond);
+  // ADR 0099's marker, held at zero: this scenario builds nothing, so the
+  // drawn world genuinely has not changed, and the encoder requires the
+  // argument rather than defaulting it so that the absence is stated.
+  const buffer = modules.encodeRenderActorsKeyframe(source, ticksPerWallSecond, 0);
   const payload = modules.decodeRenderActorsPayload(buffer);
   const actors = modules.actorsFromDelta(payload);
 

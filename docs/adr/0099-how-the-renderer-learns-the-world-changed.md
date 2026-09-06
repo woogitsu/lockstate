@@ -347,11 +347,31 @@ actors, and a renderer module that draws one mark per room rectangle"*, priced
 in that document as *"a payload version bump plus a writer in
 `src/simulation/worker/render-actors-keyframe.ts`"*.
 
-**The channel: yes, and it is already paid for.** `lockstate.render-actors` has
-a four-word header — `export const RENDER_ACTORS_HEADER_WORDS = 4;` (verbatim in
-`src/simulation/protocol/render-actors-payload.ts`) — and its own docblock states
-the version rule: adding to the layout *"is a bump here and no protocol change
-at all"*. Option A already commits to that bump. A fifth header word costs four
+**The channel: yes, and it is already paid for.** `lockstate.render-actors`
+had a **four**-word header when this was written — `RENDER_ACTORS_HEADER_WORDS`
+was `4` — and its own docblock states the version rule: adding to the layout
+*"is a bump here and no protocol change at all"*. Option A already commits to
+that bump.
+
+> **Amended on landing, 2026-09-06, and the sentence above is kept in the past
+> tense rather than corrected in place** (`docs/AGENT_WORKFLOW.md` §4): this
+> decision is what stopped it being true. The constant now reads
+> `export const RENDER_ACTORS_HEADER_WORDS = 5;` (verbatim in
+> `src/simulation/protocol/render-actors-payload.ts`), the layout and schema
+> versions are both `3`, and the fifth word is
+> `RENDER_ACTORS_WORLD_REVISION_WORD`. The quotation had to move because
+> `tests/foundation/adr-quotation-verbatim-contract.test.ts` holds every
+> `verbatim in` claim in this repository to the file it names, and it went red
+> on this line the moment the constant changed — which is the gate doing its
+> job on the one document that could not have been written any other way.
+>
+> Nothing else in this document is amended, and **the `Status` line is
+> untouched**: what landed is the mechanism §5 recommends, on the channel
+> decision 2 names, with the marker decision 3 bounds. Measured after landing,
+> against the 22–28 s this document was written about: **−238 ms**, negative
+> because the renderer now learns before the Build panel's next heartbeat.
+> `docs/research/2026-09-06-what-a-finished-door-is-drawn-as.md` §10 carries
+> both runs. A fifth header word costs four
 bytes per publication, 40 bytes a second at the 100 ms ceiling, one line in the
 writer and one in the reader. If the two land in one bump it is one version
 change instead of two; if they land apart, two layout bumps still cost no

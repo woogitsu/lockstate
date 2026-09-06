@@ -229,10 +229,11 @@ describe('the worker publishes a render delta', () => {
     expect(delta!.payload.delta.transport).toBe('array-buffer');
     expect(delta!.payload.delta.schemaId).toBe('lockstate.render-actors');
     // 2 since ADR 0059 added a sub-tile position, a velocity and a heading to
-    // the record; the envelope, the transport and the content type are
-    // untouched by that, which is the point of versioning the read model
+    // the record, 3 since ADR 0099 added the drawn world's marker as a fifth
+    // header word; the envelope, the transport and the content type are
+    // untouched by both, which is the point of versioning the read model
     // inside the payload (ADR 0003 decision 5).
-    expect(delta!.payload.delta.schemaVersion).toBe(2);
+    expect(delta!.payload.delta.schemaVersion).toBe(3);
     if (delta!.payload.delta.transport !== 'array-buffer') throw new Error('unreachable');
     expect(delta!.payload.delta.contentType).toBe('application/x-lockstate-render-actors');
     expect(delta!.payload.delta.byteLength).toBe(delta!.payload.delta.data.byteLength);

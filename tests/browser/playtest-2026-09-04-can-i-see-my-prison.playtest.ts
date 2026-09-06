@@ -70,7 +70,8 @@ const SHOTS = '/tmp/claude-0/-workspace-lockstate/317b5b29-acc0-5270-82e4-ccecba
  */
 async function installActorTee(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const HEADER_WORDS = 4;
+    // Five since ADR 0099 put the drawn world's marker in `u32[4]`.
+    const HEADER_WORDS = 5;
     const RECORD_WORDS = 5;
     const WORD = 4;
     const SUBTILE = 256;

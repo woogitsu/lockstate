@@ -766,3 +766,76 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown).ok).toBe(true);
   });
 });
+
+/**
+ * ADR 0099 decision 3's second bullet: **every build-order transition into
+ * `in-progress` or `completed` moves the drawn world's marker**, and neither
+ * of those is a chunk-layer write.
+ *
+ * This is the source the marker exists for. `structuresFromConstruction`
+ * collapses eight lifecycle states onto three drawn phases, so an order
+ * changes a pixel exactly twice over its life, and until issue #1037 nothing
+ * told the renderer about either: the command that created the order was
+ * accepted hundreds of ticks earlier, so none of `SimulationSnapshotFeed`'s
+ * five original `dirty` marks fires at the moment a crew starts or finishes.
+ */
+describe("a build order's drawn phase moves the world's marker (ADR 0099)", () => {
+  function orderedWall(world: SparseWorld): { kernel: Kernel; construction: ConstructionSystem } {
+    const construction = new ConstructionSystem(world);
+    const kernel = new Kernel();
+    kernel.registerSystem(construction);
+    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
+    kernel.submitCommand(
+      'cmd-0',
+      0,
+      0,
+      packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-0', definitionId: 'wall-brick', x: 4, y: 6, edge: 'north' }),
+    );
+    return { kernel, construction };
+  }
+
+  it('moves once when the crew starts, at a tick that writes no chunk layer', () => {
+    const world = loadedWorld();
+    const { kernel, construction } = orderedWall(world);
+
+    // Step to the first tick on which the order is `in-progress`, recording
+    // the marker on the tick before it.
+    let markerBefore = world.drawnWorldRevision;
+    let geometryBefore = world.getChunk(CHUNK_0)?.geometryRevision ?? -1;
+    for (let step = 0; step < 900; step += 1) {
+      if (construction.getOrder('wall-0')?.state === 'in-progress') break;
+      markerBefore = world.drawnWorldRevision;
+      geometryBefore = world.getChunk(CHUNK_0)?.geometryRevision ?? -1;
+      kernel.step();
+    }
+    expect(construction.getOrder('wall-0')?.state, 'the walk must reach a build in progress').toBe('in-progress');
+
+    expect(world.drawnWorldRevision).toBe(markerBefore + 1);
+    // The whole argument for a counter of its own rather than a sum over the
+    // chunk revisions: nothing was written to the world on this tick, so a
+    // derived marker would have said the drawn world was unchanged while the
+    // tile went from a `planned` ghost to a `building` one.
+    expect(world.getChunk(CHUNK_0)?.geometryRevision).toBe(geometryBefore);
+  });
+
+  it('moves again when the order completes', () => {
+    const world = loadedWorld();
+    const { kernel, construction } = orderedWall(world);
+
+    let markerBefore = world.drawnWorldRevision;
+    for (let step = 0; step < 900; step += 1) {
+      if (construction.getOrder('wall-0')?.state === 'completed') break;
+      markerBefore = world.drawnWorldRevision;
+      kernel.step();
+    }
+    expect(construction.getOrder('wall-0')?.state).toBe('completed');
+
+    // Twice on this tick: `finalizeConstruction` writes the edge, which moves
+    // it through `markChanged`, and the state change moves it in its own
+    // right. Counting one change twice costs nothing -- the marker means "not
+    // what it was" -- and the state bump is what would still fire for a
+    // buildable whose finalisation wrote no layer at all.
+    expect(world.drawnWorldRevision).toBe(markerBefore + 2);
+    expect(world.getTopEdge(tile(4, 6))).toBe(WALL_EDGE_NUMERIC_ID);
+  });
+});
