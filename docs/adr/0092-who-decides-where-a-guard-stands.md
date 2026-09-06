@@ -213,7 +213,7 @@ The one field is `SecuritySectorDefinition.patrolRoute`, and **nothing under
 exactly one writer, `deriveDefaultSecuritySectorPostTile`, which computes the
 middle of the first owned chunk (`src/simulation/security/default-sector.ts:194-201`)
 — (16,16) for a new session, which is the same tile `HireStaff` sends every
-guard to (`src/main.ts:618`, `src/main.ts:2829-2830`). So deployment travel has
+guard to (`src/main.ts:621`, `src/main.ts:3084-3085`, re-anchored). So deployment travel has
 no distance and a patrol leg has no route, and
 [ADR 0088](./0088-does-a-guard-walk-to-its-post.md)'s accepted mechanism has
 nothing to act on.
