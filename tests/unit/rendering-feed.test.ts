@@ -837,6 +837,62 @@ describe('the render delta channel feeds the actors', () => {
     expect(feed.readFrame(2).actors[0]!.tileX).toBe(103);
   });
 
+  it('costs one redundant request for a command that moved the marker, and not two', () => {
+    /*
+     * The cost ADR 0099 does not mention, pinned so it cannot quietly grow.
+     *
+     * A command that changes geometry sets `dirty` twice on its own -- at its
+     * acceptance, and again at the tick it was scheduled for -- and the second
+     * of those already fetches a world carrying the write. The write also
+     * moved the marker, so the next delta fetches once more for a change this
+     * feed has already drawn. Three requests where two would do, and the third
+     * is the safe direction to be wrong in; removing it would need the marker
+     * on the snapshot *reply*, which is a protocol change ADR 0099 declines.
+     *
+     * The literal is the claim: **one** extra, and every further delta at the
+     * same marker is free.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 1));
+    client.emit(delta(2, [RECORD], { worldRevision: 5 }));
+    feed.readFrame(0.1);
+    expect(client.sent).toHaveLength(1);
+
+    // A zoning command: accepted, then reached.
+    client.emit({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'ack',
+      replyTo: 'cmd-1',
+      kind: 'simulation/command-result',
+      payload: { status: 'queued', commandId: 'cmd-1', sequence: 0, scheduledForTick: 20 },
+    } as unknown as WorkerToMainMessage);
+    feed.readFrame(0.2);
+    client.emit(snapshotReply(client.lastRequestId, 10));
+    client.emit(clockState(20, 'running'));
+    feed.readFrame(0.3);
+    client.emit(snapshotReply(client.lastRequestId, 20));
+    expect(client.sent).toHaveLength(3);
+
+    // The write that command made moved the marker, and this feed has not seen
+    // the new value yet, so the next delta asks a third time for a world it is
+    // already holding.
+    client.emit(delta(21, [RECORD], { worldRevision: 6 }));
+    feed.readFrame(0.4);
+    expect(client.sent).toHaveLength(4);
+    client.emit(snapshotReply(client.lastRequestId, 21));
+
+    // And exactly one: every further delta at the same marker is free.
+    for (let tick = 22; tick < 40; tick += 1) {
+      client.emit(delta(tick, [RECORD], { worldRevision: 6 }));
+      feed.readFrame(0.4 + tick / 100);
+    }
+    expect(client.sent).toHaveLength(4);
+  });
+
   it('treats the first marker of a session as a baseline rather than as a change', () => {
     /*
      * The judgement in this mechanism that ADR 0099 does not force, so it is

@@ -197,6 +197,31 @@ export class SimulationSnapshotFeed implements RenderFeed {
    * Cleared with a session for the reason `lastDeltaTick` is: the counter
    * starts at zero in a new or restored world, so a marker carried across a
    * session boundary would compare a number against a different simulation's.
+   *
+   * ### One redundant request per geometry-changing command, and why it stays
+   *
+   * ADR 0099 does not mention this and it is worth stating. A *command* that
+   * changes geometry -- zoning a room, buying land -- already sets `dirty`
+   * twice, at its acceptance and at the tick it was scheduled for, and the
+   * second of those fetches a world that already carries the write. But the
+   * write also moved the marker, and this field is still holding the value
+   * from before it, so the next delta fetches once more for a change the feed
+   * has already drawn.
+   *
+   * **Measured, not reasoned:** over a full run of
+   * `tests/browser/playtest-1037-when-the-renderer-learns.playtest.ts` the
+   * feed's snapshot count goes from 19 to 20 -- one request, for one command
+   * -- so the cost is bounded by how many geometry-changing commands a player
+   * presses and not by any clock.
+   *
+   * Removing it would need the snapshot *reply* to carry the marker so that
+   * `apply` could update this field, and that is a field on
+   * `simulation/snapshot`'s payload: a protocol change, which ADR 0099
+   * decision 2 explicitly declines ("no protocol version, no envelope
+   * change"). A redundant fetch of a world that is already correct is the
+   * safe direction to be wrong in, so it is documented rather than traded for
+   * a wider change. `tests/unit/rendering-feed.test.ts` pins the count so it
+   * cannot quietly become two.
    */
   private lastWorldRevision: number | undefined;
   /**

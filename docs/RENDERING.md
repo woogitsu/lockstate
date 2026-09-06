@@ -190,7 +190,14 @@ consistency poll at the end of the interval — and
 `tests/unit/rendering-feed.test.ts` pins that figure against the traffic a
 running worker actually puts on the boundary. A prison *being built* costs one
 more per **drawn phase change**, which is two per order and not one, because
-that is what the fifth mark reports.
+that is what the fifth mark reports — plus **one redundant request per
+geometry-changing command**, which ADR 0099 does not mention: zoning a room
+writes a chunk layer during the tick the feed is already fetching for, so the
+next delta asks again for a world it is already holding. Measured at 19 → 20
+feed snapshots over a full playtest run, bounded by how many such commands a
+player presses; `simulation-snapshot-feed.ts` says why it is not removed (it
+would need the marker on the snapshot *reply*, which is the protocol change
+ADR 0099 declines) and `tests/unit/rendering-feed.test.ts` pins it at one.
 
 > **The fifth of those marks arrived last, and the list above had five members
 > and not six until it did.** Every one of the original five is a fact about a
