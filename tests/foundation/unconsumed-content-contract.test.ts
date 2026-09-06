@@ -156,7 +156,15 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // is the room whose authored 2x2 minimum makes a rectangle `room.cell`
   // refuses legal -- which is how that test proves the minimum comes from
   // content rather than from a constant the service holds.
-  'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
+  // `room.garbage-room` left this list on ADR 0098 option A: `zoningTint`
+  // (`src/rendering/world/appearance.ts`) is now keyed by room id rather than
+  // by category, so its table carries every catalogued room's id as a literal
+  // key, this one included. Its entry is removed rather than reworded, which
+  // is what the stale-entry gate below asks for. Its read was: *"Declared with
+  // no reader anywhere; no build order, job, need or regime action names it."*
+  // Still true of build orders, jobs, needs and regime actions -- what changed
+  // is that the renderer now names the id to resolve its tint, which this
+  // gate counts as a reader regardless of what kind.
   // `room.kitchen` left this list at #532, and by the wide route rather than
   // the narrow one: `action.kitchen-work` names it in
   // `src/simulation/prisoners/actions.ts`, so both measures move. Its entry is
@@ -194,8 +202,12 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // why a wrong reason is as much a defect here as a missing entry -- the next
   // reader would have deleted that line on the strength of the admission path
   // alone.
-  'room.staff-room': 'Declared with no reader anywhere.',
-  'room.utility-room': 'Declared with no reader anywhere.',
+  // `room.staff-room` and `room.utility-room` left this list on the same ADR
+  // 0098 change and for the same reason immediately above: both are keys in
+  // `ZONING_TINT_BY_ROOM_ID` now, so both gained a `src/` reader in the same
+  // commit. Their reads were: *"Declared with no reader anywhere."* Both
+  // entries are removed rather than reworded, which is what the stale-entry
+  // gate below asks for.
 
   // Objects. All but one of these is required by some room definition, so
   // the catalogs agree; nothing places, builds or reads the object.
@@ -540,7 +552,22 @@ describe('every unconsumed content id is accounted for', () => {
       // **This is the first time in this file's history that both columns have
       // moved for the same change**, and it is the shape #141 asked for: a room
       // a player could zone and furnish to no effect now does something.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 3, unconsumedBySrcOnly: 27 });
+      //
+      // 0 and 20, from 3 and 27: ADR 0098 option A keys `zoningTint`
+      // (`src/rendering/world/appearance.ts`) by the room's own catalogue id
+      // rather than by category, so `ZONING_TINT_BY_ROOM_ID` names all eighteen
+      // room ids as literal keys -- the first time any `src/` file outside the
+      // catalog itself has named every room at once. `unconsumedBySrcAndTests`
+      // falls by exactly the three rooms that had no reader anywhere before
+      // this: `room.garbage-room`, `room.staff-room` and `room.utility-room`,
+      // whose entries are removed above rather than reworded, which is what
+      // this file's stale-entry gate asks for. `unconsumedBySrcOnly` falls by
+      // seven -- those three, plus four rooms that already had a *test*
+      // consumer but no `src/` one (so they held no entry to delete here):
+      // `room.holding-cell`, `room.infirmary`, `room.reception` and
+      // `room.security-office`. Every other room already had a `src/` reader
+      // before this change, which is why the fall is seven and not eighteen.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 0, unconsumedBySrcOnly: 20 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {
@@ -604,3 +631,4 @@ describe('every unconsumed content id is accounted for', () => {
     expect(stale, 'these ids now have a consumer: remove their entries').toEqual([]);
   });
 });
+

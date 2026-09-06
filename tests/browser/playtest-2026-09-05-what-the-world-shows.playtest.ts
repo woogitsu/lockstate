@@ -721,11 +721,15 @@ test('act 6 — the same box, designated four different ways', async ({ page }) 
   await openApp(page);
   for (const [roomId, label] of [
     /*
-     * Four different `ZONING_TINT_BY_CATEGORY` hues, chosen from
-     * `src/rendering/world/appearance.ts` rather than at random: housing is
-     * `0x4f7fd0`, food `0xd0854f`, security `0xd05a4f` and education
-     * `0x9a4fd0`. If a player cannot tell these four apart on screen, no pair
-     * of room types in the game is distinguishable.
+     * Four different hues, chosen from what was then
+     * `ZONING_TINT_BY_CATEGORY` in `src/rendering/world/appearance.ts` rather
+     * than at random: housing was `0x4f7fd0`, food `0xd0854f`, security
+     * `0xd05a4f` and education `0x9a4fd0`. That table no longer exists --
+     * ADR 0098 option A replaced it with `ZONING_TINT_BY_ROOM_ID`, so these
+     * four room types now carry different (also distinct) hues -- and the
+     * record is kept because the question this act asks is unchanged: if a
+     * player cannot tell these four apart on screen, no pair of room types in
+     * the game is distinguishable.
      */
     ['room.cell', 'cell'],
     ['room.kitchen', 'kitchen'],

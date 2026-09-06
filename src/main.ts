@@ -972,11 +972,12 @@ function roomCatalogue(): HudRoomsViewModel {
     rooms.push({
       roomId: definition.id,
       labelKey: definition.nameKey,
-      // The category's tint is defined for every catalogued room, so the
-      // fallback is unreachable; `zoningTint` answers `undefined` only for an
-      // unzoned tile or an id no room claims, and this loop is over the rooms
-      // themselves. `0` rather than a colour picked here, so an unreachable
-      // branch cannot quietly invent a legend entry.
+      // The room's own tint is defined for every catalogued room (ADR 0098
+      // option A keys the table by id), so the fallback is unreachable;
+      // `zoningTint` answers `undefined` only for an unzoned tile or an id no
+      // room claims, and this loop is over the rooms themselves. `0` rather
+      // than a colour picked here, so an unreachable branch cannot quietly
+      // invent a legend entry.
       tint: zoningTint(definition.numericId) ?? 0,
       // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
       // is on, so a room that authors no minimum has to have no property at
