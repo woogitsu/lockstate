@@ -14,10 +14,16 @@ import {
   ENVIRONMENT_SPRITES,
   ENVIRONMENT_SPRITE_IDS,
   environmentFrameSize,
+  environmentRenderedArtIds,
   environmentSourceAssetIds,
   type EnvironmentSpriteDefinition,
   type EnvironmentSpriteId,
 } from '../../src/rendering/assets/environment-sprites';
+import {
+  RENDERED_ART_BASE_PATH,
+  RenderedArtCatalog,
+  renderedArtCatalogSchema,
+} from '../../src/rendering/assets/rendered-art-catalog';
 import {
   SOURCE_ART_BASE_PATH,
   SourceArtCatalog,
@@ -61,6 +67,16 @@ const catalogPath = join(import.meta.dirname, '../../public/game-content/source-
 const committedCatalog = sourceArtCatalogSchema.parse(JSON.parse(readFileSync(catalogPath, 'utf8')));
 const catalog = SourceArtCatalog.fromParsed(SOURCE_ART_BASE_PATH, committedCatalog);
 
+/**
+ * The second catalog ADR 0100 added, read the same way and for the same
+ * reason: a claim about "this rectangle is inside that sheet" should be a
+ * claim about the shipped, committed art rather than about a fixture typed
+ * twice, and that is equally true of "this frame is the render's own size".
+ */
+const renderedCatalogPath = join(import.meta.dirname, '../../public/game-content/rendered-art.v1.json');
+const committedRenderedCatalog = renderedArtCatalogSchema.parse(JSON.parse(readFileSync(renderedCatalogPath, 'utf8')));
+const renderedCatalog = RenderedArtCatalog.fromParsed(RENDERED_ART_BASE_PATH, committedRenderedCatalog);
+
 describe('source-art catalog', () => {
   it('parses the committed catalog the generator writes', () => {
     expect(committedCatalog.entries.length).toBeGreaterThan(0);
@@ -100,6 +116,7 @@ describe('environment extraction manifest', () => {
   it('reads only rectangles that lie inside the sheet they come from', () => {
     for (const spriteId of ENVIRONMENT_SPRITE_IDS) {
       const definition = ENVIRONMENT_SPRITES[spriteId];
+      if (definition.kind !== 'source-art') continue;
       const sheet = catalog.dimensions(definition.assetId);
       const rect = definition.sourceRectPx;
       expect(rect.x + rect.width, `${spriteId} runs off the east edge of ${definition.assetId}`).toBeLessThanOrEqual(sheet.width);
@@ -107,8 +124,15 @@ describe('environment extraction manifest', () => {
     }
   });
 
+  it('names only rendered-art ids the committed catalog holds', () => {
+    for (const assetId of environmentRenderedArtIds()) {
+      expect(renderedCatalog.has(assetId), `no rendered-art catalog entry for "${assetId}"`).toBe(true);
+    }
+  });
+
   it('turns a frame size with its quarter-turn', () => {
     const upright: EnvironmentSpriteDefinition = {
+      kind: 'source-art',
       assetId: 'floor.linoleum.institutional',
       sourceRectPx: { x: 0, y: 0, width: 10, height: 20 },
       runtimeSizePx: { width: 30, height: 40 },
@@ -127,14 +151,18 @@ describe('environment extraction manifest', () => {
 });
 
 describe('environment atlas plan', () => {
-  const plan = planEnvironmentAtlas(catalog);
+  const plan = planEnvironmentAtlas(catalog, ENVIRONMENT_SPRITES, renderedCatalog);
 
   it('places every declared sprite', () => {
     expect(plan.frames.map((frame) => frame.spriteId).sort()).toEqual([...ENVIRONMENT_SPRITE_IDS].sort());
   });
 
   it('is identical on every run, so a packed rectangle is a fact about the packer', () => {
-    expect(planEnvironmentAtlas(catalog)).toEqual(plan);
+    expect(planEnvironmentAtlas(catalog, ENVIRONMENT_SPRITES, renderedCatalog)).toEqual(plan);
+  });
+
+  it('refuses a rendered-art sprite when no rendered-art catalog is supplied', () => {
+    expect(() => planEnvironmentAtlas(catalog)).toThrow(/rendered-art asset "fixture\.cell\.toilet_sink"/);
   });
 
   it('keeps every frame, and its gutter, inside the atlas', () => {
@@ -165,8 +193,17 @@ describe('environment atlas plan', () => {
     }
   });
 
-  it('names one sheet per distinct source asset, with a key that changes when the art does', () => {
-    expect(plan.sheets.map((sheet) => sheet.assetId)).toEqual([...environmentSourceAssetIds()]);
+  it('names one sheet per distinct asset across both catalogs, with a key that changes when the art does', () => {
+    // Both catalogs' declared ids should appear, sorted by `sheetKey` rather
+    // than by the raw id -- `environmentSourceAssetIds()` and
+    // `environmentRenderedArtIds()` on their own would collide if the two
+    // catalogs ever shared a raw id (they do, for `fixture.cell.toilet_sink`,
+    // just not on the same sprite), which is exactly why `sheetKey` and not
+    // `assetId` is the plan's own uniqueness guarantee.
+    expect([...plan.sheets.map((sheet) => sheet.assetId)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(
+      [...environmentSourceAssetIds(), ...environmentRenderedArtIds()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    );
+    expect(new Set(plan.sheets.map((sheet) => sheet.sheetKey)).size).toBe(plan.sheets.length);
     for (const sheet of plan.sheets) expect(plan.textureKey).toContain(sheet.imageUrl);
   });
 
@@ -428,7 +465,12 @@ describe('object art reaching the screen', () => {
       ).toBe(true);
 
       const sprite = ENVIRONMENT_SPRITES[spriteId!];
-      const crop = sprite.sourceRectPx;
+      // A source-art sprite reviews its own crop rectangle; a rendered-art
+      // sprite has none to review -- the whole render is the crop, at the
+      // size the rendered-art catalog itself declares for that entry
+      // (`planEnvironmentAtlas` derives the identical rectangle at plan-build
+      // time rather than one being written in `environment-sprites.ts`).
+      const crop = sprite.kind === 'source-art' ? sprite.sourceRectPx : renderedCatalog.dimensions(sprite.renderedArtId);
       expect(
         driftBetween(crop, sprite.runtimeSizePx),
         `${objectId} reads a ${crop.width}x${crop.height} crop and packs it into ` +

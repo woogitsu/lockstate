@@ -59,6 +59,15 @@ export interface HarnessWorldFixture {
    */
   readonly bedTileX: number;
   readonly bedTileY: number;
+  /**
+   * North-west (and only) tile of a finished `toilet-brick` order, standing on
+   * bare owned ground outside the zoned room, on the same footing as
+   * `bedTileX`/`bedTileY` and for the same reason: art drawn over floor art
+   * would be two frames stacked, and this is the first object from ADR 0100's
+   * second publishing lane, not the owner-sheet lane the bed uses.
+   */
+  readonly toiletTileX: number;
+  readonly toiletTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

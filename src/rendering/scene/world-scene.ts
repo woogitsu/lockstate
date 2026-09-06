@@ -10,6 +10,7 @@ import {
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
 import { planEnvironmentAtlas } from '../assets/environment-atlas-plan';
+import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
 import { SourceArtCatalog } from '../assets/source-art-catalog';
 import { type CameraState, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
 import {
@@ -101,6 +102,16 @@ export interface WorldSceneOptions {
    * playable world.
    */
   readonly loadSourceArtCatalog?: () => Promise<SourceArtCatalog>;
+  /**
+   * The generated rendered-art catalog (ADR 0100), a second and independent
+   * batch from the one above: `/game-content/rendered-art.v1.json` names
+   * Blender-rendered object frames rather than owner-sheet crops. Injectable
+   * for the same reason, and failing independently for the same reason --
+   * `loadEnvironmentArt` awaits both before publishing either, so a failure in
+   * either leaves the coloured-block world this scene already draws before
+   * any art arrives.
+   */
+  readonly loadRenderedArtCatalog?: () => Promise<RenderedArtCatalog>;
   readonly onError?: (error: Error) => void;
   /**
    * Where a build gesture goes. Absent, the world is view-only and every
@@ -225,6 +236,7 @@ export class WorldScene extends Phaser.Scene {
   private feed: RenderFeed;
   private readonly loadAtlasLibrary: () => Promise<AtlasLibrary>;
   private readonly loadSourceArtCatalog: () => Promise<SourceArtCatalog>;
+  private readonly loadRenderedArtCatalog: () => Promise<RenderedArtCatalog>;
   private readonly onError: (error: Error) => void;
 
   /**
@@ -322,6 +334,7 @@ export class WorldScene extends Phaser.Scene {
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.loadSourceArtCatalog = options.loadSourceArtCatalog ?? (() => SourceArtCatalog.load());
+    this.loadRenderedArtCatalog = options.loadRenderedArtCatalog ?? (() => RenderedArtCatalog.load());
     this.onError =
       options.onError ??
       ((error) => {
@@ -1365,8 +1378,14 @@ export class WorldScene extends Phaser.Scene {
    */
   private async loadEnvironmentArt(): Promise<void> {
     try {
-      const catalog = await this.loadSourceArtCatalog();
-      const art = await loadEnvironmentAtlas(this, planEnvironmentAtlas(catalog));
+      // Both catalogs in parallel: two independent downloads
+      // (`loadRenderedArtCatalog`'s own docstring says why), and both are
+      // awaited before either is used -- one `catch` covers both fetches and
+      // the plan/pack that follows, so a rendered-art failure leaves the
+      // coloured-block world exactly as a source-art failure already did,
+      // rather than publishing a partial atlas.
+      const [sourceArt, renderedArt] = await Promise.all([this.loadSourceArtCatalog(), this.loadRenderedArtCatalog()]);
+      const art = await loadEnvironmentAtlas(this, planEnvironmentAtlas(sourceArt, undefined, renderedArt));
       // The scene may have shut down while the batch was in flight.
       if (this.tiles === undefined) return;
       this.tiles.setEnvironmentArt(art);

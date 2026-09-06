@@ -6,6 +6,7 @@ import {
   type EnvironmentSpriteId,
   type EnvironmentSpriteQuarterTurns,
 } from './environment-sprites';
+import type { RenderedArtCatalog } from './rendered-art-catalog';
 import type { SourceArtCatalog, SourceArtRect } from './source-art-catalog';
 
 /**
@@ -49,7 +50,16 @@ export const ENVIRONMENT_ATLAS_WIDTH_PX = 512;
 
 export interface EnvironmentAtlasFrame {
   readonly spriteId: EnvironmentSpriteId;
+  /**
+   * The definition's own id: a `source-art.v1.json` id for a `kind:
+   * 'source-art'` sprite, a `rendered-art.v1.json` id for a `kind:
+   * 'rendered-art'` one. The two id spaces are not guaranteed disjoint (see
+   * `environment-sprites.ts`'s module docblock) -- use `sheetKey`, not this,
+   * for anything that must not collide across catalogs.
+   */
   readonly assetId: string;
+  /** Namespaced by which catalog `assetId` resolves against, so two catalogs sharing a raw id never collide as one sheet. */
+  readonly sheetKey: string;
   /** Sheet the crop comes from, as the catalog names it. No filename is spelled here. */
   readonly imageUrl: string;
   readonly sourceRectPx: SourceArtRect;
@@ -62,6 +72,7 @@ export interface EnvironmentAtlasFrame {
 
 export interface EnvironmentAtlasSheet {
   readonly assetId: string;
+  readonly sheetKey: string;
   readonly imageUrl: string;
 }
 
@@ -106,10 +117,24 @@ function rectFitsInside(rect: SourceArtRect, size: { readonly width: number; rea
  * was corrected. The dead name is recorded as a bare filename rather than a
  * rooted path on purpose; `tests/foundation/documentation-links-contract.test.ts`
  * says why.
+ *
+ * **Reads from a second catalog since 2026-09-06 (ADR 0100).** A `kind:
+ * 'rendered-art'` sprite resolves `renderedArtId` against `renderedArt`
+ * rather than `sourceArt`, and its `sourceRectPx` is not written in
+ * `environment-sprites.ts` at all -- it is the render's own whole frame,
+ * `{0, 0, dimensionsPx.width, dimensionsPx.height}`, read from that catalog
+ * entry rather than reviewed by eye, because a render has no crop to choose:
+ * the whole frame is the object. `renderedArt` is optional only so that a
+ * caller with nothing but source-art sprites (there were none, once, and
+ * could be again) is not forced to thread an unused catalog through; naming a
+ * `rendered-art` sprite with no `renderedArt` catalog supplied throws, the
+ * same "fail rather than draw a hole" rule the two checks below already
+ * follow.
  */
 export function planEnvironmentAtlas(
-  catalog: SourceArtCatalog,
+  sourceArt: SourceArtCatalog,
   sprites: Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>> = ENVIRONMENT_SPRITES,
+  renderedArt?: RenderedArtCatalog,
 ): EnvironmentAtlasPlan {
   const gutter = ENVIRONMENT_ATLAS_GUTTER_PX;
   const width = ENVIRONMENT_ATLAS_WIDTH_PX;
@@ -126,18 +151,44 @@ export function planEnvironmentAtlas(
   // the order a record happened to enumerate in.
   for (const spriteId of [...ENVIRONMENT_SPRITE_IDS].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
     const definition = sprites[spriteId];
-    const entry = catalog.entry(definition.assetId);
-    if (entry === undefined) {
-      throw new Error(`Environment sprite "${spriteId}" names source-art asset "${definition.assetId}", which the catalog does not hold.`);
-    }
-    if (!rectFitsInside(definition.sourceRectPx, entry.dimensionsPx)) {
-      const { x, y, width: w, height: h } = definition.sourceRectPx;
-      throw new RangeError(
-        `Environment sprite "${spriteId}" reads ${w}x${h} at (${x}, ${y}) from "${definition.assetId}", which is only ${entry.dimensionsPx.width}x${entry.dimensionsPx.height}.`,
-      );
+
+    let assetId: string;
+    let sourceRectPx: SourceArtRect;
+    let imageUrl: string;
+
+    if (definition.kind === 'source-art') {
+      assetId = definition.assetId;
+      const entry = sourceArt.entry(assetId);
+      if (entry === undefined) {
+        throw new Error(`Environment sprite "${spriteId}" names source-art asset "${assetId}", which the catalog does not hold.`);
+      }
+      if (!rectFitsInside(definition.sourceRectPx, entry.dimensionsPx)) {
+        const { x, y, width: w, height: h } = definition.sourceRectPx;
+        throw new RangeError(
+          `Environment sprite "${spriteId}" reads ${w}x${h} at (${x}, ${y}) from "${assetId}", which is only ${entry.dimensionsPx.width}x${entry.dimensionsPx.height}.`,
+        );
+      }
+      sourceRectPx = definition.sourceRectPx;
+      imageUrl = sourceArt.imageUrl(assetId);
+    } else {
+      assetId = definition.renderedArtId;
+      if (renderedArt === undefined) {
+        throw new Error(`Environment sprite "${spriteId}" names rendered-art asset "${assetId}", but no rendered-art catalog was supplied.`);
+      }
+      const entry = renderedArt.entry(assetId);
+      if (entry === undefined) {
+        throw new Error(`Environment sprite "${spriteId}" names rendered-art asset "${assetId}", which the catalog does not hold.`);
+      }
+      // The whole frame, always: a render has no crop to choose, and
+      // `frameAspectDriftFromFootprint: 0` (checked by
+      // `tooling/validate-rendered-art-catalog.mjs`) is what makes taking it
+      // whole correct rather than merely convenient.
+      sourceRectPx = { x: 0, y: 0, width: entry.dimensionsPx.width, height: entry.dimensionsPx.height };
+      imageUrl = renderedArt.imageUrl(assetId);
     }
 
-    sheets.set(definition.assetId, { assetId: definition.assetId, imageUrl: catalog.imageUrl(definition.assetId) });
+    const sheetKey = `${definition.kind}:${assetId}`;
+    sheets.set(sheetKey, { assetId, sheetKey, imageUrl });
 
     const size = environmentFrameSize(definition);
     if (size.width + gutter * 2 > width) {
@@ -151,9 +202,10 @@ export function planEnvironmentAtlas(
 
     frames.push({
       spriteId,
-      assetId: definition.assetId,
-      imageUrl: catalog.imageUrl(definition.assetId),
-      sourceRectPx: definition.sourceRectPx,
+      assetId,
+      sheetKey,
+      imageUrl,
+      sourceRectPx,
       resizeToPx: definition.runtimeSizePx,
       quarterTurns: definition.quarterTurns,
       atlasRectPx: { x: shelfX, y: shelfY, width: size.width, height: size.height },
@@ -164,7 +216,10 @@ export function planEnvironmentAtlas(
   }
 
   const usedHeight = shelfY + shelfHeight + gutter;
-  const sheetList = [...sheets.values()].sort((a, b) => (a.assetId < b.assetId ? -1 : a.assetId > b.assetId ? 1 : 0));
+  // Sorted by `sheetKey` rather than `assetId`: the two catalogs' id spaces
+  // are not guaranteed disjoint (`environment-sprites.ts`'s module docblock),
+  // and `sheetKey` is the field guaranteed unique across both.
+  const sheetList = [...sheets.values()].sort((a, b) => (a.sheetKey < b.sheetKey ? -1 : a.sheetKey > b.sheetKey ? 1 : 0));
 
   return {
     textureKey: `lockstate.environment-atlas:${sheetList.map((sheet) => sheet.imageUrl).join('|')}`,

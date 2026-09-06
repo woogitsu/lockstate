@@ -65,6 +65,9 @@ const FIXTURE: HarnessWorldFixture = {
   // 1x2 tiles of bare owned ground east of the room, clear of every wall.
   bedTileX: 6,
   bedTileY: 4,
+  // One tile of bare owned ground, clear of the bed and of every wall.
+  toiletTileX: 8,
+  toiletTileY: 4,
 };
 
 function memoryStore(): KeyValueStore {
@@ -132,6 +135,20 @@ function buildFrame(): RenderFrame {
       definitionId: 'bed-wooden',
       tileX: FIXTURE.bedTileX,
       tileY: FIXTURE.bedTileY,
+      phase: 'built',
+    },
+    /*
+     * One finished toilet, the first object drawn from ADR 0100's second
+     * publishing lane rather than from an owner sheet -- `toilet-brick` is
+     * the buildable a build order carries, `object.toilet` is what the
+     * catalog and `SPRITE_BY_OBJECT_ID` are keyed by, and `catalogueObjectId`
+     * is the same step that turns one into the other for the bed above.
+     */
+    {
+      id: 'finished-toilet',
+      definitionId: 'toilet-brick',
+      tileX: FIXTURE.toiletTileX,
+      tileY: FIXTURE.toiletTileY,
       phase: 'built',
     },
   ];

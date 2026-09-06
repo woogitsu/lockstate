@@ -2,7 +2,7 @@ import { expect, test, type Page } from './network-changed-fixture';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
-import { EDGE_WALL_THICKNESS_TILES, edgeAppearance } from '../../src/rendering/world/appearance';
+import { EDGE_WALL_THICKNESS_TILES, PLANNED_OBJECT_TINT, edgeAppearance } from '../../src/rendering/world/appearance';
 import { objectSprite } from '../../src/rendering/world/environment-art';
 import { catalogueObjectId } from '../../src/rendering/world/structures';
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
@@ -306,6 +306,116 @@ test.describe('the environment artwork', () => {
       channelDistance(withArt, withoutArt),
       `the bed looked the same with art (${withArt.join(',')}) and without it (${withoutArt.join(',')}), ` +
         'so object.bed is not being drawn from the atlas',
+    ).toBeGreaterThan(20);
+  });
+
+  /**
+   * `PLANNED_OBJECT_TINT` decoded to RGB, so the test below can name the exact
+   * colour a coloured-block fallback would have drawn rather than only "some
+   * other colour". `channelDistance(..., 20)` alone -- the probe every other
+   * test in this file uses -- proves art was drawn and the fallback was not,
+   * but not specifically *which* fallback it was not: issue #1028's own
+   * author named "differs from the slab" as too weak a claim once a second
+   * publishing lane made "the row exists but nothing reads it" a real failure
+   * mode again. Comparing against this exact triple closes that gap.
+   */
+  const FALLBACK_OBJECT_RGB: HarnessPixel = [
+    (PLANNED_OBJECT_TINT >> 16) & 0xff,
+    (PLANNED_OBJECT_TINT >> 8) & 0xff,
+    PLANNED_OBJECT_TINT & 0xff,
+    255,
+  ];
+
+  /*
+   * The first object drawn from ADR 0100's second publishing lane -- a
+   * Blender render rather than an owner-sheet crop -- proved on screen the
+   * same two ways the bed above already is: the sprite the painter made, and
+   * the pixel it put on the screen. `object.toilet`'s only owner-supplied
+   * view is a combined toilet+sink column no crop fits into its 1x1
+   * footprint (ADR 0100 §Context), which is the whole reason this lane
+   * exists rather than a fourteenth `env.object.*` row cut from a sheet.
+   */
+  test('draws a finished toilet from the atlas, over exactly the tile the simulation reserved', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const tile = fixture.tileSizePx;
+
+    const objectId = catalogueObjectId('toilet-brick');
+    expect(objectId, 'toilet-brick no longer places a catalogued object').toBe('object.toilet');
+    const spriteId = objectSprite(objectId!);
+    expect(spriteId, 'object.toilet is no longer mapped to artwork').toBeDefined();
+    const footprint = defaultObjectRegistry.getById(objectId!)?.footprint;
+    expect(footprint, 'object.toilet is not in the object catalog').toBeDefined();
+
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const toilets = sprites.filter((sprite) => sprite.frameName === spriteId);
+    expect(toilets.length, 'the finished toilet order should be drawn as exactly one sprite').toBe(1);
+
+    const toilet = toilets[0]!;
+    expect([toilet.x, toilet.y], 'the toilet sprite is not on the tile the order named').toEqual([
+      fixture.toiletTileX * tile,
+      fixture.toiletTileY * tile,
+    ]);
+    expect([toilet.width, toilet.height], 'the toilet sprite does not cover its footprint').toEqual([
+      footprint!.width * tile,
+      footprint!.height * tile,
+    ]);
+
+    const frame = await page.evaluate(
+      (name) => window.lockstateEnvironmentArtHarness!.atlasFrame(name),
+      spriteId!,
+    );
+    expect(frame, 'the toilet frame is not in the packed atlas').toBeTruthy();
+    expect(frame!.width * toilet.tileScaleX, 'the toilet frame should fill its footprint once across').toBeCloseTo(toilet.width, 3);
+    expect(frame!.height * toilet.tileScaleY, 'the toilet frame should fill its footprint once down').toBeCloseTo(toilet.height, 3);
+  });
+
+  test('puts the toilet art on the screen, not the fallback slab colour, and the slab back when it is taken away', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const tile = fixture.tileSizePx;
+
+    // Dead centre of the toilet's own 1x1 tile.
+    const worldX = (fixture.toiletTileX + 0.5) * tile;
+    const worldY = (fixture.toiletTileY + 0.5) * tile;
+
+    const read = async (): Promise<HarnessPixel> =>
+      page.evaluate(async (point) => {
+        const harness = window.lockstateEnvironmentArtHarness!;
+        await harness.centreCameraOn(point.x, point.y);
+        return harness.centrePixel();
+      }, { x: worldX, y: worldY });
+
+    const withArt = await read();
+    expect(withArt[3], 'the renderer produced a transparent frame').toBeGreaterThan(200);
+
+    // The claim #1028's own author said a bare "differs from the slab" probe
+    // could not make: not just "some other colour", but specifically not
+    // `CATEGORY_FALLBACK.object.topFill` (127,139,160), the exact slab a
+    // coverage bug once let a dead mapping row claim was already drawn.
+    expect(
+      channelDistance(withArt, FALLBACK_OBJECT_RGB),
+      `the toilet tile reads as the fallback slab colour (${FALLBACK_OBJECT_RGB.join(',')}) with art loaded (${withArt.join(',')}), ` +
+        'so object.toilet is drawing the coloured block rather than its render',
+    ).toBeGreaterThan(20);
+
+    await page.evaluate(() => window.lockstateEnvironmentArtHarness!.removeArt());
+    expect(
+      await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites().length),
+      'removing the artwork should leave no tiling sprites behind',
+    ).toBe(0);
+    const withoutArt = await read();
+
+    // And the reverse claim, on the same tile: with the artwork gone, the
+    // painter falls back to exactly that slab colour, matching `docs/RENDERING.md`'s
+    // "art that fails to load leaves a playable, legible tile world".
+    expect(
+      channelDistance(withoutArt, FALLBACK_OBJECT_RGB),
+      `without the artwork, the toilet tile (${withoutArt.join(',')}) does not read as the declared object fallback colour (${FALLBACK_OBJECT_RGB.join(',')})`,
+    ).toBeLessThanOrEqual(8);
+
+    expect(
+      channelDistance(withArt, withoutArt),
+      `the toilet looked the same with art (${withArt.join(',')}) and without it (${withoutArt.join(',')}), ` +
+        'so object.toilet is not being drawn from the atlas',
     ).toBeGreaterThan(20);
   });
 
