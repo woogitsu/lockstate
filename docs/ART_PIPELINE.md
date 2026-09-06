@@ -169,6 +169,137 @@ writes. `tests/contract/art-pipeline-contract.test.ts` is what catches a
 catalog that disagrees with the bytes it names, in either kind of checkout
 (issue #141).
 
+## Environment objects
+
+The character half of this pipeline renders eight directions of an animated
+actor. The environment half renders one still frame of a static object, and
+until 2026-09-06 it did not exist: `tooling/blender/create-environment-catalog.py`
+built all 23 environment models and nothing rendered them. That is why the 23
+sheets under `public/game-content/source-art/` are owner-supplied PNGs from
+2026-08-22 rather than output of this repository's own catalogue, and why
+`fixture.cell.toilet_sink` ships as a 1:2.5 combined column while the catalogue
+declares its footprint `(1, 1)`.
+
+`tooling/blender/render-environment-objects.py` is that renderer.
+
+```bash
+/opt/blender/blender -b assets/source/blender/environment.mvp.catalog.blend \
+    --factory-startup --python tooling/blender/render-environment-objects.py -- \
+    --output assets/rendered/environment
+```
+
+It renders each collection **orthographically, straight down**, on transparent
+film, to one PNG per object plus `environment-objects.render.json`. Orthographic
+because `tile-layer.ts` draws an object frame flat into the rectangle its
+footprint reserves: a perspective render would put a vanishing point inside a
+sprite drawn next to a copy of itself.
+
+**A frame carries its object's declared footprint aspect exactly.**
+`tests/unit/environment-art.test.ts` checks two ratios within 3% -- the source
+crop against the packed frame, and the packed frame against the footprint -- and
+both are satisfied by construction here rather than measured afterwards. Every
+declared footprint is an exact multiple of 1/20 of a tile, so the pixel size is
+taken from the footprint reduced to lowest integer terms and `res_x / res_y`
+equals `footprint_w / footprint_h` with no rounding. The recorded drift is `0`
+for all 23 models. A consumer reading one of these PNGs whole therefore needs
+`quarterTurns: 0`; the quarter-turn `env.object.bed` carries exists because the
+*owner's sheet* holds the bed lying east-west, not because a bed needs turning.
+
+**The frame is the footprint plus a stated transparent margin**, 6% on each
+side, not a tight crop. Issue #1028 measured why: the alpha scan in
+`src/rendering/assets/environment-sprites.ts` shrinks a rectangle inwards while
+its rim is not fully opaque, which is right for a *tiling* frame and wrong for a
+discrete object, whose outermost pixels are its own silhouette -- a bed's head
+and foot rails.
+
+**Where a model overhangs its declared footprint the frame grows uniformly**, so
+the aspect never moves and nothing is clipped, and `frameTiles` plus
+`overhangsFootprint` in the sidecar say so per asset. Nine of the 23 do, and
+eight are the ones you would expect: the two doors and the two walls, whose
+frames and copings are deeper than the quarter-tile edge they are declared as;
+`fixture.ceiling_light.panel.variants`, whose housing is 1.4 units across a
+1-tile footprint; `perimeter.watchtower.variants`, whose roof is 2.35 across
+two tiles; and `security.camera.wall.variants` and
+`security.checkpoint.turnstile.variants`, whose lens and arms swing outside
+theirs.
+
+The ninth is worth naming because the flag is doing real work there and the
+overhang is small enough to have gone unnoticed: `fixture.cell.toilet_sink`
+declares `(1, 1)` and its basin disc reaches 0.52 of a tile from the origin, so
+it hangs 0.02 over its own tile edge and the frame is 1.1648 tiles square
+rather than the 1.12 the margin alone would give. Nothing is clipped and the
+aspect is still exactly 1:1; the effect is that the fixture is drawn at 96% of
+the size a frame sized from the footprint alone would give it. It is recorded
+rather than corrected, because 0.02 of a tile is not worth re-rendering the set
+for and a reader who sees the flag should be able to find out what tripped it.
+
+`furniture.cell.bed.single.variants`, the one object `SPRITE_BY_OBJECT_ID` draws
+today, does not overhang.
+
+**One vertical flip is owed, and it is done on the encoded PNG.** A camera above
+the ground cannot put north at the top of the image and east on the right at the
+same time: with view direction `-Z` and image-right `+X`, image-up is
+necessarily `+Y`, and `+Y` is south (see "Character directions" above). The only
+rotation that puts north up also puts west on the right. Blender 5.2 has no
+scene compositor `node_tree` and its `CompositorNodeFlip` no longer carries an
+`axis` property, so the renderer reverses the row order of the PNG it just wrote
+and re-emits it with filter type 0 -- an exact reordering of the same 8-bit
+samples, not a re-render.
+
+**These outputs are byte-reproducible, which the character frames are not.**
+That rewrite carries only `IHDR`, the colour-space chunks and `IDAT`, so the
+`Date`, `RenderTime` and absolute `.blend` path `tEXt` chunks Blender embeds --
+the reason "Reproducibility" below refuses to hash intermediate frames -- are
+gone before the file lands. `--verify-determinism` is therefore not needed:
+running the script twice and comparing digests is sufficient, and both the file
+digest and the raw-pixel digest are recorded per asset in the sidecar.
+
+**What it does not do.** It renders discrete objects. A *tiling* surface --
+floor, wall face, wall cap -- needs a zero-margin frame whose edges meet their
+own repeat exactly, and a 6% transparent margin is precisely wrong for that. The
+four surface frames in `environment-sprites.ts` remain cut from the owner
+sheets, and nothing here changes them.
+
+**Where the output is, and what it measures.** `assets/rendered/environment/`
+holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the
+same kind of `.gitattributes` rule as the sheets beside them. Measured on
+2026-09-06 with two independent runs of the renderer executing *concurrently*
+against the same `.blend`:
+
+| | run A | run B |
+| --- | --- | --- |
+| digest over all 23 files | `b4e70814…` | `b4e70814…` ✓ |
+| digest over all 23 decoded pixel buffers | `d136db43…` | `d136db43…` ✓ |
+| sidecar manifest | identical | identical ✓ |
+
+`frameAspectDriftFromFootprint` is `0` for every one of the 23. The catalogue
+that fed them regenerates to an identical `scene-fingerprint.py` document across
+runs as well (`a242a490…`), so neither half of the chain reintroduced the
+order-instability issue #64 fixed.
+
+`assets/rendered/evidence/` holds three pictures, because a claim that art looks
+better needs one: `bed-vs-owner-sheet.png` puts the rendered bed beside the
+owner sheet's declared `env.object.bed` crop -- (740, 288, 460x230), resampled
+and quarter-turned exactly as `environment-textures.ts` would -- at 3x and at
+the 128x256 the game actually draws; `geometry-before-after.png` pairs six
+objects across the 2026-09-06 remodel; `all-23-objects.png` is the whole set.
+
+**The honest reading of that first picture: the owner's sheet wins at 3x and the
+render wins at 1x.** The sheet carries fabric weave, creases in the pillow and a
+folded blanket with a real fold in it, and this pipeline cannot produce any of
+that -- there are no textures anywhere in it, only flat materials under two
+suns. At the size the game draws an object those details are gone to
+downsampling, and what survives is contrast between parts, which the render has
+more of: a blue blanket against a grey sheet reads at 64px where dark grey
+against cream does not. So the render is not better *art*; it is better *sprite*
+at this scale, and it is the only option at all for an object whose sheet holds
+no usable view -- which is `fixture.cell.toilet_sink`, and is why this exists.
+
+**Blender needs an EGL library even in `--background`.** On a container without
+one, every render fails with `Couldn't open libEGL.so.1` before writing
+anything; `libegl1` and `libegl-mesa0` are enough, and EEVEE then runs on
+llvmpipe at roughly 50 seconds for a 256x512 frame.
+
 ## Intake status
 
 The owner-generated PNG sheets remain source reference/intake material. They are
