@@ -6,8 +6,11 @@
  * The pass that built this harness had its budget cut before it could write
  * one; what it did instead is drive this same harness by hand in Chromium at
  * 1280x720 and record the numbers in its commit message, which is evidence and
- * not a gate. The next pass writes `tests/browser/room-label.spec.ts` against
- * this interface, unchanged.
+ * not a gate. The next pass writes the browser spec against this interface,
+ * unchanged. Its path is deliberately not cited here: a rooted path to a file
+ * that does not exist yet is exactly what
+ * `tests/foundation/documentation-links-contract.test.ts` fails on, and it
+ * failed on this very docblock before this sentence replaced it.
  *
  * Every value crossing `page.evaluate` must be structured-clone-safe, so this
  * exposes plain numbers and strings rather than Phaser objects.
