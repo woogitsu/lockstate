@@ -87,7 +87,7 @@ resolves the room and then throws the room away:
 `return ZONING_TINT_BY_CATEGORY[room.category];`
 (verbatim in `src/rendering/world/appearance.ts`)
 
-`ZONING_TINT_BY_CATEGORY` is at `src/rendering/world/appearance.ts:86`, and it
+`ZONING_TINT_BY_CATEGORY` is at `src/rendering/world/appearance.ts:85`, and it
 is keyed by `RoomCategory` rather than by room id. The floor underneath cannot
 make up the difference, because there is one floor:
 
