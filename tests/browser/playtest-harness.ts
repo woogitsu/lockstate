@@ -759,8 +759,38 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
     await expect(page.locator('.hud-rooms')).toBeVisible({ timeout: ARM_TIMEOUT_MS });
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
-    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-    await page.locator('.hud-rooms__arm').click();
+    /*
+     * The same shape as `armBuildable`, one panel along, and for the same
+     * reason (#1017, question 5). `rooms-panel.ts` carries `data-selected` on
+     * the row and `data-armed` on `.hud-rooms__arm`, so both halves are
+     * checkable rather than inferred.
+     *
+     * **And the arm press is conditional now, where it was unconditional.**
+     * `.hud-rooms__arm` is a toggle: pressing it on an already-armed tool
+     * *disarms* it, after which the drag below produces nothing and the
+     * confirm reads `Designate 0 x 0` -- which looks exactly like a rectangle
+     * the world refused, and was read as one on 2026-09-04
+     * (`docs/research/2026-09-04-the-misplay.md` section 3b, withdrawn there).
+     * What kept it working here is `standDownAfterConfirm`, which stands the
+     * tool down on every confirm, so each pass round this loop happened to
+     * start disarmed. That is a fact about the panel, not about this loop, and
+     * the retry count is this function's headline measurement -- so it reads
+     * the state instead of relying on it.
+     */
+    const roomRow = page.locator('.hud-rooms__list [data-room="room.cell"]');
+    await roomRow.click();
+    await expect(roomRow, 'the Rooms panel never redrew with room.cell selected').toHaveAttribute(
+      'data-selected',
+      'true',
+      { timeout: ARM_TIMEOUT_MS },
+    );
+    const roomArm = page.locator('.hud-rooms__arm');
+    if ((await roomArm.getAttribute('data-armed')) !== 'true') await roomArm.click();
+    await expect(roomArm, 'the Rooms panel arm control never reported itself armed').toHaveAttribute(
+      'data-armed',
+      'true',
+      { timeout: ARM_TIMEOUT_MS },
+    );
     await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
     const note = await panelText(page, '.hud-rooms');
     await page.locator('.hud-rooms__confirm').click();

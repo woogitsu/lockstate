@@ -41,7 +41,12 @@
  * fix closes it under a delay far larger than any this suite would meet by
  * accident.
  */
-import { expect, test, type Browser, type Page } from '@playwright/test';
+// From the fixture, not from `@playwright/test`: the `test` object it exports
+// carries the listeners that record a `net::ERR_NETWORK_CHANGED` abort, which
+// is what lets `run-suite.ts` tell a host-level abort apart from a real red.
+// `tests/foundation/browser-network-changed-retry-contract.test.ts` enforces
+// it, and caught this file importing directly.
+import { expect, test, type Browser, type Page } from './network-changed-fixture';
 import { armBuildable, installTee, openApp, press, sentCommands, tab } from './playtest-harness';
 
 /** Clicks pass straight through: the page behaves exactly as it ships. */
@@ -228,7 +233,10 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
     await setDelay(page, DELAY_MS);
     await armBuildable(page, 'bed-wooden');
 
-    const commands = await uncheckedPress(page, WORLD.x, WORLD.y);
+    // The harness's own `press`, not the unchecked one: this is also where the
+    // placement check has to *not* fire, and a check that only ever appears in
+    // its own failure test is a check nothing has shown to be usable.
+    const commands = await press(page, WORLD.x, WORLD.y);
     expect(placed(commands)).toEqual(['PlaceObject bed-wooden']);
   });
 
