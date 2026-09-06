@@ -134,9 +134,9 @@ below are what still differs.
 
 | # | Producer | What it knows | What it can say | Answering |
 | --- | --- | --- | --- | --- |
-| A1 | `src/main.ts:2419` — `purchase-materials` pre-flight, via `judgeAffordability` (`src/ui/affordability.ts:167-189`) | the charge, the last published balance (≤500 ms old), the `'deliveries'` rung floor (`affordability.ts:152`) | `hud.refusal.purchase-materials-past-floor`, or the generic `hud.refusal.purchase-materials` | **your press failed** |
-| A2 | `src/main.ts:2655` — `hire-staff` pre-flight, same function | as A1, at the `'hiring'` rung, which shares the `'deliveries'` threshold | `hud.refusal.hire-staff-past-floor` / `hud.refusal.hire-staff` | **your press failed** |
-| A3 | `src/ui/hud/hud.ts:1192-1209` — `reportError`, the catch-all for **every** gated command that throws (no session, a rejected submit, a worker fault) | the `actionId` and, since ruling 18, a `HostRefusalReason` | one of twelve authored keys, chosen by `refusalMessageKey` (`src/ui/hud/projection.ts:881-919`); `undefined` for a chrome intent | **your press failed** |
+| A1 | `src/main.ts:2845` — `purchase-materials` pre-flight, via `judgeAffordability` (`src/ui/affordability.ts:167-189`) | the charge, the last published balance (≤500 ms old), the `'deliveries'` rung floor (`affordability.ts:152`) | `hud.refusal.purchase-materials-past-floor`, or the generic `hud.refusal.purchase-materials` | **your press failed** |
+| A2 | `src/main.ts:3067` — `hire-staff` pre-flight, same function | as A1, at the `'hiring'` rung, which shares the `'deliveries'` threshold | `hud.refusal.hire-staff-past-floor` / `hud.refusal.hire-staff` | **your press failed** |
+| A3 | `src/ui/hud/hud.ts:1476-1491` — `reportError`, the catch-all for **every** gated command that throws (no session, a rejected submit, a worker fault) | the `actionId` and, since ruling 18, a `HostRefusalReason` | one of twelve authored keys, chosen by `refusalMessageKey` (`src/ui/hud/projection.ts:1215-1264`); `undefined` for a chrome intent | **your press failed** |
 
 All three reach **the band only**. None of them reaches `HudViewModel.alerts`,
 and none of them increments any count: `hudAlertsFromWorkerMessage`
@@ -318,13 +318,17 @@ own floor, which is −2,500 (`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`);
 (`src/simulation/protocol/types.ts:1262-1270`). There is one money reason per
 command namespace, so **the wire cannot name which rung refused**: probe D
 asserts that a press-route refusal and a scheduled-construction-route refusal
-record byte-identical `reason` values. The shipped sentence for both is
-*"Nothing was bought — that would go past what the state will carry."*
-(`src/content/default-locale-en.ts:469`), and *what the state will carry* is
-−2,500 — so it is false for the whole 1,250-wide band a delivery is refused
-in and the whole 500-wide band construction is halted in.
+record byte-identical `reason` values. The shipped sentence for both was
+*"Nothing was bought — that would go past what the state will carry."*;
+**re-anchored 2026-09-06: ruling 23 has since replaced it with
+*"Nothing was bought — deliveries are refused until the prison earns the
+money"* (`src/content/default-locale-en.ts:858`, key
+`hud.alert.refusal.purchase.insufficient-funds`)**, the same clause the host
+side already carries — so the specific old sentence this row quotes no longer
+ships; the argument that follows (the wire cannot name which rung refused) is
+unaffected, because both wordings are one enum member wide.
 
-`default-locale-en.ts:414-426` already records this, in the owner's own frame,
+`default-locale-en.ts:707-724` already records this, in the owner's own frame,
 and correctly declines to fix it because the replacement is copy. What that
 entry does **not** say, and what this ADR adds, is *why the channel cannot
 carry the distinction*: the rung is a property of the prison's balance
@@ -336,12 +340,12 @@ reported on carries one enum member per press.
 Ruling 23 made A1/A2 and B4/B6's money sentences identical. Everything else
 about them still differs, in one file:
 
-- `hud.ts:1220-1223` — a **host** refusal clears the moment the same
+- `hud.ts:1504-1507` — a **host** refusal clears the moment the same
   `actionId` later succeeds.
-- `hud.ts:1244-1259` — a **simulation** refusal is cleared only by a newer
+- `hud.ts:1543-1559` — a **simulation** refusal is cleared only by a newer
   refusal, by `supersede`, or by the session ending. A later success of the
   same control does not touch it.
-- `hud.ts:1144-1146` — three module-level variables (`refusalSource`,
+- `hud.ts:1428-1430` — three module-level variables (`refusalSource`,
   `refusedAction`, `simulationRefusalSequence`) exist for no other purpose
   than keeping the two producers from clearing each other.
 - The host's never reaches the list; the simulation's does.
@@ -537,7 +541,7 @@ Adopting this decision alone changes no behaviour and makes three sentences in
 
 **And the condition kind does not take the refusal band.** The band holds one
 sentence and a condition would evict a refusal the player has not read — the
-eviction `view-model.ts:1357-1370` refused when it gave discharge notices a
+eviction `view-model.ts:1565-1576` refused when it gave discharge notices a
 third band rather than the refusal line. Whether conditions eventually earn a
 band of their own is ADR 0085's corner-width question and is deliberately not
 answered here.
