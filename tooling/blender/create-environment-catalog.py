@@ -58,7 +58,7 @@ PALETTE = {
     "concrete": ((0.22, 0.23, 0.24, 1), 0.85), "steel": ((0.09, 0.12, 0.15, 1), 0.45),
     "blue": ((0.025, 0.09, 0.24, 1), 0.55), "green": ((0.12, 0.2, 0.14, 1), 0.7),
     "wood": ((0.28, 0.12, 0.035, 1), 0.6), "light": ((0.9, 0.92, 0.82, 1), 0.75),
-    "porcelain": ((0.78, 0.8, 0.81, 1), 0.25), "linen": ((0.62, 0.6, 0.55, 1), 0.88),
+    "porcelain": ((0.78, 0.8, 0.81, 1), 0.25), "linen": ((0.46, 0.45, 0.41, 1), 0.88),
     "blanket": ((0.1, 0.17, 0.24, 1), 0.92), "shade": ((0.035, 0.04, 0.045, 1), 0.9),
 }
 
@@ -177,8 +177,9 @@ def furniture(collection, root, asset_id):
             box(collection, root, "Blotter", (-0.16, -0.04, 0.976), (0.86, 0.46, 0.012), "shade", 0)
             box(collection, root, "Tray", (0.58, -0.06, 1.0), (0.4, 0.3, 0.06), "steel", 0.02)
     else:
-        box(collection, root, "Chair seat", (0, 0, 0.46), (0.5, 0.5, 0.08), "blue", 0.04)
-        box(collection, root, "Chair back", (0, 0.23, 0.72), (0.5, 0.08, 0.44), "blue", 0.04)
+        box(collection, root, "Chair seat", (0, 0, 0.46), (0.5, 0.46, 0.08), "blue", 0.04)
+        box(collection, root, "Back gap", (0, 0.185, 0.51), (0.54, 0.04, 0.06), "shade", 0)
+        box(collection, root, "Chair back", (0, 0.235, 0.72), (0.54, 0.07, 0.44), "blue", 0.04)
         for x in (-0.2, 0.2):
             for y in (-0.2, 0.2):
                 cylinder(collection, root, f"Chair leg.{x}.{y}", (x, y, 0.21), 0.025, 0.42, "steel", 8)
@@ -255,7 +256,8 @@ def architectural(collection, root, asset_id):
         # south, and the two joined by a visible spine.
         box(collection, root, "Cistern", (0, -0.33, 0.31), (0.62, 0.28, 0.62), "porcelain", 0.04)
         cylinder(collection, root, "Basin", (0, -0.33, 0.6), 0.19, 0.06, "porcelain")
-        cylinder(collection, root, "Basin well", (0, -0.33, 0.625), 0.15, 0.03, "shade")
+        cylinder(collection, root, "Basin well", (0, -0.33, 0.625), 0.13, 0.03, "steel")
+        cylinder(collection, root, "Drain", (0, -0.33, 0.641), 0.045, 0.02, "shade", 8)
         box(collection, root, "Tap", (0, -0.45, 0.68), (0.07, 0.1, 0.1), "steel", 0.02)
         box(collection, root, "Spine", (0, -0.11, 0.46), (0.12, 0.2, 0.12), "porcelain", 0.03)
         cylinder(collection, root, "Bowl", (0, 0.12, 0.21), 0.25, 0.42, "porcelain")
