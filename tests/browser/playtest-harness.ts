@@ -61,19 +61,23 @@ export interface TeeWindow {
  * `armBuildable` is that **not every caller arms through `armBuildable`**.
  * Counted rather than estimated: twenty `*.playtest.ts` files in this
  * directory address `.hud-build__list [data-buildable="..."]` themselves, and
- * **six of them carry a private copy of the exact three lines #1017 is about**
- * -- click the row, read `.hud-build__arm`'s `innerText`, branch on
- * `startsWith('place')`. A `WeakMap` keyed on what `armBuildable` was asked
- * for would see none of those.
+ * **seven carry a private copy of the lines #1017 is about** -- read the arm
+ * control's `innerText`, branch on `startsWith('place')` -- across thirteen
+ * sites. `playtest-2026-09-04-the-misplay`'s `armRooms` is the sharpest of
+ * them: it does this to the *Rooms* panel and its docblock says why, in these
+ * words, *"`armBuildable` in the shared harness reads the label for the same
+ * reason; this is that rule one panel over"*. A `WeakMap` keyed on what
+ * `armBuildable` was asked for would see none of the seven.
  *
  * A capture-phase listener on `window` sees all of them: `armBuildable`'s
  * click, a playtest's own click, and the `click` a keyboard `Enter` or a touch
  * tap on the row synthesises. So `press` and `drag` below check every
  * placement that goes through them against what was actually asked for,
- * whoever asked -- which covers four of those six without a line of theirs
- * changing. (`playtest-2026-09-01-money` and `playtest-2026-09-04-touch-only`
- * press with their own mouse code and are not reached; they are the other
- * agent's file to touch, not this one's.)
+ * whoever asked -- which covers **five of those seven** without a line of
+ * theirs changing. `playtest-2026-09-01-money` and
+ * `playtest-2026-09-04-touch-only` drive the world with their own pointer code
+ * and are not reached; they belong to whoever is in those files next, and are
+ * named here so that agent does not have to re-derive the list.
  *
  * **It records the click, not the panel's reaction to it**, and that is the
  * whole point. `selectedId` inside `build-panel.ts` and the `definitionId` on
