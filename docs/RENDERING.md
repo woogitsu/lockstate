@@ -69,7 +69,7 @@ two caches and one pool, all keyed by things that rarely change:
 | Layer | Unit of work | Repainted when |
 | --- | --- | --- |
 | Ground (terrain, ownership, zoning, grid) | one `Graphics` per **chunk**, plus one pooled `TileSprite` per merged rectangle of floor art in it | the chunk scrolls into view, or the world revision changes |
-| Walls, doors, objects | one `Graphics` per **world row that has something on it**, plus one pooled `TileSprite` per run of wall art on it | that row scrolls into view, or the world revision changes |
+| Walls, doors, objects | one `Graphics` per **world row that has something on it**, plus one pooled `TileSprite` per run of wall art on it **and one per object drawn as art** | that row scrolls into view, or the world revision changes |
 | Actors | one pooled `Image` per **visible** actor | every frame, in place |
 
 Consequences worth stating plainly:
