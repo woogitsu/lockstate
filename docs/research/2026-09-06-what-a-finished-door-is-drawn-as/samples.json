@@ -1,0 +1,206 @@
+[
+  {
+    "ms": 272,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": "QUEUED | 1 waiting · 0 being built",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 4612,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 8667,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 13014,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 17278,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 21368,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 25845,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 5,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 30393,
+    "centre": [
+      106,
+      87,
+      68
+    ],
+    "centreAlpha": 0,
+    "north": [
+      125,
+      119,
+      116
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 607,
+    "snapshotState": "completed"
+  },
+  {
+    "ms": 0,
+    "centre": [
+      112,
+      90,
+      63
+    ],
+    "centreAlpha": 0.35042735042735046,
+    "north": [
+      130,
+      105,
+      72
+    ],
+    "queue": "QUEUED | 1 waiting · 0 being built",
+    "snapshotTick": 764,
+    "snapshotState": "materials-pending"
+  },
+  {
+    "ms": 4958,
+    "centre": [
+      118,
+      93,
+      60
+    ],
+    "centreAlpha": 0.6495726495726496,
+    "north": [
+      151,
+      120,
+      75
+    ],
+    "queue": "QUEUED | 1 waiting · 1 being built",
+    "snapshotTick": 781,
+    "snapshotState": "in-progress"
+  },
+  {
+    "ms": 9635,
+    "centre": [
+      118,
+      93,
+      60
+    ],
+    "centreAlpha": 0.6495726495726496,
+    "north": [
+      151,
+      120,
+      75
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 802,
+    "snapshotState": "in-progress"
+  },
+  {
+    "ms": 14160,
+    "centre": [
+      106,
+      87,
+      68
+    ],
+    "centreAlpha": 0,
+    "north": [
+      125,
+      119,
+      116
+    ],
+    "queue": ".hud-build__queue: not laid out",
+    "snapshotTick": 821,
+    "snapshotState": "completed"
+  }
+]
