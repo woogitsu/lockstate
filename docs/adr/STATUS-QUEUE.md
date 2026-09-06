@@ -12142,11 +12142,31 @@ trees and neither needed to change for the other to be true.
 > record above, where it is history and exempt. **Second, this paragraph said
 > ADR 0098 and ADR 0099 would both land `Proposed`.** ADR 0098 did. ADR 0099
 > was accepted by the owner on the day it was drafted, so the live figures on
-> this tree are 41 `Proposed`, 51 `Accepted`, and **Next free number: 0100**
-> — the number forecast, the column not. That restatement is the live one
-> this file carries, and it is stated here rather than left implicit because
-> the gate requires exactly one and requires it to agree with the index. Kept and marked rather than rewritten
+> this tree are 41 `Proposed` and 51 `Accepted`, and the index's next-free
+> line moved to the number after ADR 0099's — the number forecast, the
+> column not. The figure itself is stated once, live, in the paragraph
+> below, because ADR 0100 landing in the same drain moved it again and a
+> file with two live restatements is the defect this gate exists for. Kept and marked rather than rewritten
 > (`docs/AGENT_WORKFLOW.md` §4).
+
+**A THIRD BRANCH MOVED THE FIGURE AGAIN, IN THE SAME DRAIN, AND THIS IS THE
+ONE LIVE RESTATEMENT THIS FILE CARRIES.**
+[ADR 0100](./0100-whether-a-rendered-object-sprite-can-be-published-art.md) was
+cut from `93c11bf8` (v0.0.517), swept 216 remote heads, found
+`0099-how-the-renderer-learns-the-world-changed.md` already committed on
+`adr/how-the-renderer-learns-geometry-changed` with no pull request, and took
+**0100** rather than colliding with the held number. Both rows are on disk now,
+ADR 0099's by merge and ADR 0100's by this branch, so **Next free number: 0101**
+— which `docs/adr/README.md` states, and which
+`tests/foundation/adr-numbering-contract.test.ts` derives as one past the
+highest number on disk.
+
+**What that branch predicted and what actually happened differ in the reason
+rather than the number** (`docs/AGENT_WORKFLOW.md` §4): it recorded the line as
+moving *over a HELD 0099*, true when written, and 0099 merged the same day. So
+0101 is reached by two ordinary steps rather than by stepping over anything, and
+that record is the last time a sweep in this file had to reason about a number
+it could not see on disk.
 
 **THE OUTSIDE-WINDOW SCAN WAS NOT RE-RUN FROM SCRATCH.** The previous anchor's
 script enumerated eight genuinely-live citations outside its own window; this

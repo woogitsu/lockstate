@@ -27,6 +27,16 @@ player-facing string is ours; the requirement that the sentence be TRUE is not.
 Quote every string you author verbatim in the commit message and in the pull
 request body, beside the code that proves it true.
 
+**A THIRD RELEASE LANDED ON 2026-09-06, AND IT IS THE FIRST INSIDE
+RESERVATION 3.** The owner authorised ONE change in `.github/workflows/ci.yml`
+— extending the `browser` job's LFS include filter and its decode assertion to
+the path ADR 0100 defines — in their own words and dated, in that section.
+Nothing else in that file moved: not a second job, not `deploy.yml`, not
+`wrangler.jsonc`, not `public/_headers`, and neither dashboard. It was released
+because the decode step fails closed on any sprite published outside
+`public/game-content/source-art/`, which put the fix for object art inside a
+reserved file.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04
