@@ -72,14 +72,26 @@ document landed** and the second half had never been established at all.
 This paragraph read *"Fifteen of the seventeen `HudIntent` kinds had a keyboard
 producer"* until it was corrected. The union declares **eighteen** members and
 declared eighteen at `9a43f3e`, the commit that landed this document:
-`src/ui/hud/hud.ts:270-540`, opening at `export type HudIntent =` and closing at
-the `};` before the comment that introduces `HudUnavailableNotice` (`:554`) —
+`src/ui/hud/hud.ts:322-668` (re-anchored 2026-09-06), opening at `export type HudIntent =` and closing at
+its last member, before the comment that introduces `HudUnavailableNotice` (`:670`) —
 `select-tab`, `set-clock`, `toggle-panel`, `place-build-order`, `place-object`,
 `remove-object`, `purchase-materials`, `admit-prisoner`, `hire-staff`,
 `arm-build-tool`, `undo`, `redo`, `cancel-build-order`,
 `cancel-material-purchase`, `release-guard`, `zone-room`, `unzone-room`,
 `arm-room-tool`. They are written out rather than summed on purpose; the
 boundary and the list are what a hand count skips.
+
+**Re-anchored 2026-09-06, and stale a second time, in the same direction as
+before: the union is 21 members today, not eighteen, and was already 21 at
+this window's own start (`c57f5fa8`) — this is not this window's drift.**
+`select-prisoner`, `dismiss-staff` and `dismiss-alert` are the three this
+paragraph's list does not name, each grep-counted directly in the current
+span (`readonly kind:` occurs 21 times in `hud.ts:322-668`, confirmed against
+`c57f5fa8` too so the number is not this pass's arithmetic on a diff). Per
+this corpus's own rule (`docs/AGENT_WORKFLOW.md` §4, "a correction is no more
+durable than the claim it corrected"), the count above is marked rather than
+silently bumped to twenty-one, because a paragraph that keeps drifting past
+its own correction is the pattern worth recording, not just the number.
 
 **Four figures for this one union were in the repository simultaneously when
 that sentence was written, and three of them were prose.**
@@ -126,7 +138,11 @@ natively focusable control, or a key binding.
   `createActionButton` like the rest. What had no keyboard producer was the
   **rectangle it confirms**. At `cf723b3` the panel's `pending` had exactly one
   writer that set it to anything other than `undefined`, `setPendingArea`
-  (`src/ui/hud/rooms-panel.ts:820`); its only caller anywhere in `src/` was
+  (`src/ui/hud/rooms-panel.ts:820`, verified still correct **at `cf723b3`**,
+  the commit this paragraph is dated to — `setPendingArea` has since moved to
+  `rooms-panel.ts:1997` and its call site to `hud.ts:1917`, but this sentence
+  is explicitly historical and was never a claim about current `main`); its
+  only caller anywhere in `src/` at that commit was
   `src/ui/hud/hud.ts:1305`, fed from `worldRooms.attachGestures`, i.e.
   `WorldScene.commitArea`, which is reached only from `finishPointer` on
   `'pointerup'` (`src/rendering/scene/world-scene.ts:449`). So the player could
