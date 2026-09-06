@@ -2,7 +2,53 @@
 
 ## Status
 
-**Proposed, 2026-09-06. Not self-approved.**
+**Accepted by the owner on 2026-09-06, together with the second publishing lane
+and with the `ci.yml` change either design requires.**
+
+> The line below is kept rather than overwritten, per `docs/AGENT_WORKFLOW.md`
+> §4, because this document was drafted as a question and a reader should see
+> that it was answered as one.
+>
+> **Proposed, 2026-09-06. Not self-approved.**
+
+The decision was put to the owner as four choices — accept the second lane and
+authorise the workflow change; publish the renders into the existing
+`source-art.v1.json` catalogue instead; do not publish renders at all; or hold
+until they had read the document — and they chose:
+
+    Przyjmij drugą ścieżkę i odblokuj ci.yml
+
+("Accept the second lane and unblock `ci.yml`.")
+
+**THE ACCEPTANCE WAS GIVEN AGAINST A SUMMARY OF THE THREE WALLS AND THE FOUR
+OPTIONS, NOT AGAINST THIS DOCUMENT'S FULL TEXT**, and the option carrying it
+said this much and no more:
+
+    Rendery dostają własny generator, własny katalog i własny walidator,
+    wymiarowane pod ich rzeczywiste rozmiary per obiekt (256x256, 256x512),
+    zamiast napinać rurkę zrobioną pod Twoje arkusze 1448x1086. Tym samym
+    autoryzujesz JEDNĄ zmianę w `.github/workflows/ci.yml`: rozszerzenie filtra
+    LFS i asercji dekodowania o nową ścieżkę. To odblokowuje każdy obiekt,
+    którego Twoje arkusze nie pokrywają — a toaleta jest pierwszym z siedmiu,
+    dla których w batchu nie ma żadnego użytecznego widoku.
+
+That disclosure is the same one ADR 0075, 0076, 0097, 0098 and 0099 carry, for
+the same reason: so that nobody later mistakes an acceptance for a reading.
+
+**WHAT THE ACCEPTANCE RELEASES, AND IT IS NARROW.** `AGENTS.md` reservation 3
+keeps deploy configuration and `.github/workflows/` the owner's. This
+acceptance releases **one** change inside it: extending the `browser` job's
+`git lfs pull --include=` filter and its decode assertion to cover the new
+lane's published path. It does not release a second workflow, a second job, or
+any other edit to that file, and the release is recorded in `AGENTS.md` beside
+the two that came before it.
+
+**WHAT ACCEPTANCE DOES NOT SETTLE.** The lane's shape below is accepted; the
+question of whether a rendered sprite is ever the *right* art for an object a
+human could draw better is not, and this document does not claim it. #1041
+measured that the owner's bed sheet is better art than the bed render at large
+zoom, and that finding stands: this lane exists for the objects whose shipped
+sheets hold no usable view at all, of which the toilet is the first of seven.
 
 **The number was checked against in-flight work, not just against disk.**
 `docs/adr/README.md`'s own "Next free number" line said 0099 at `origin/main`'s
