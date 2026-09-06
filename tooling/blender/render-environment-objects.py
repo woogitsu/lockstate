@@ -83,16 +83,59 @@ rewrites each rendered PNG before it lands (see `_flip_and_rewrite_png`), which
 it has to do anyway, and that rewrite carries only `IHDR`, the colour-space
 chunks and `IDAT`. So these outputs are byte-stable as well as pixel-stable.
 
-**NOTHING CHECKS THAT AUTOMATICALLY, AND THIS SENTENCE USED TO CLAIM OTHERWISE.**
-It said both properties "are checked with `--verify-determinism`"; that flag has
-never existed -- `cli_arguments()` below defines `--output`, `--only` and
-`--pixels-per-tile` and nothing else -- and `tooling/verify-pipeline-determinism.mjs`,
-which `tests/determinism/art-pipeline-determinism.test.ts` runs, does not mention
-this script or its output directory at all. Both properties were established by
-running this script twice by hand and comparing 23 file hashes and 23 decoded
-pixel buffers, twice, by two people; they hold, and they hold with no gate behind
-them. Writing that gate is owed work, and it is owed before this pipeline is
-trusted for art nobody has looked at.
+**THIS PARAGRAPH USED TO SAY NOTHING CHECKED THAT AUTOMATICALLY, AND IT NO
+LONGER DOES -- KEPT RATHER THAN DELETED BECAUSE IT IS THE HISTORY OF WHY THE
+GATE BELOW EXISTS.** Before it, this docstring claimed both properties "are
+checked with `--verify-determinism`"; that flag never existed --
+`cli_arguments()` below defines `--output`, `--only` and `--pixels-per-tile`
+and nothing else. Before *that* correction (`cb005408`), the properties were
+established only by running this script twice by hand and comparing 23 file
+hashes and 23 decoded pixel buffers, twice, by two people, with no executable
+gate behind them at all.
+
+**The gate now exists: `tooling/verify-environment-render-determinism.mjs`.**
+It runs this script N times (default 2) into separate scratch directories and
+compares the SHA-256 of every rendered PNG and of `environment-objects.render.json`
+across the runs -- the same shape as `tooling/verify-pipeline-determinism.mjs`,
+which does the equivalent job for the character pipeline, but a separate
+script rather than a mode of that one because the two pipelines share no steps
+below `pipeline_common.py`. Its own docblock is the fuller account, including
+what a green run does and does not prove.
+
+**It needs Blender, and CI does not have it.** `.github/workflows/ci.yml` was
+read rather than assumed on 2026-09-06: none of its three jobs (`verify`,
+`assets`, `browser`) installs Blender. So this gate is not, and cannot
+honestly claim to be, a CI-enforced one; it runs wherever Blender does --
+this container, or a human's machine.
+`tests/determinism/environment-render-determinism.test.ts` wires its fast,
+single-collection form into `pnpm test` with the same `it.skipIf(!canRunLive)`
+idiom `tests/determinism/art-pipeline-determinism.test.ts` already uses for
+the character pipeline's own live check: SKIPPED, visibly, wherever Blender is
+absent or is not the pinned 5.2.x, and actually exercised wherever it is
+present. Measured in the container this gate was built in, with Blender 5.2.1
+installed at `/opt/blender/blender`: two independent runs of
+`door.interior.variants` (the smallest, fastest frame in the catalogue) agree
+byte-for-byte, matching the committed sidecar's own recorded hash
+(`baa834a5d1cb68ee…`); reinstating `tEXt` in `_flip_and_rewrite_png`'s
+passthrough set below -- which puts Blender's own `Date`/`RenderTime`/absolute
+path stamps back into the final file -- makes the same two runs disagree on
+both the PNG and the sidecar. Neither of those two properties was previously
+checked by anything that executes.
+
+**What is still not covered, stated rather than implied.** The gate proves the
+*renderer* reproduces on the Blender actually present; it does not re-render
+all 23 and compare against the committed bytes in `assets/rendered/environment/`
+by default (`--only` lets a caller ask it to), and it proves nothing about a
+Blender version other than the pinned one.
+`tooling/validate-rendered-art-catalog.mjs` and
+`tests/contract/rendered-art-pipeline-contract.test.ts` are the separate,
+Blender-free gates for the geometry invariants (frame never narrower than
+footprint, and -- independently recomputed from `footprintTiles` and the
+declared pixel size as an exact integer identity, not trusted from this
+script's own `frameAspectDriftFromFootprint` field -- the aspect matching the
+footprint exactly) and for the published-catalog hash cross-reference; see
+`docs/ART_PIPELINE.md` ("Environment objects", "Reproducibility") for the full
+account of what each gate does and does not prove.
 
 ## Why the rewrite exists at all
 

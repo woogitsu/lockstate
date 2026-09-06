@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { exactPixelAspectMatchesFootprint } from '../../tooling/validate-rendered-art-catalog.mjs';
 
 const root = resolve(import.meta.dirname, '..', '..');
 
@@ -88,5 +89,73 @@ describe('rendered-art pipeline contract', () => {
     }
 
     expect(pointerOnly + hashedBytes).toBe(catalog.entries.length);
+  });
+});
+
+/**
+ * `frameAspectDriftFromFootprint == 0.0 "by construction"` is the second claim
+ * PR #1041's renderer made, and `docs/ART_PIPELINE.md` ("Reproducibility")
+ * records it holding for all 23 models -- but until this test, nothing
+ * checked that *claim itself*, only that the field the renderer writes stays
+ * near zero (`tooling/validate-rendered-art-catalog.mjs`'s old Check 3, and
+ * only for the currently-published subset of the 23).
+ *
+ * This recomputes the aspect identity from the sidecar's own primitive
+ * fields -- `footprintTiles` and `sizePx` -- for every one of the 23 entries,
+ * using `exactPixelAspectMatchesFootprint`, which never reads
+ * `frameAspectDriftFromFootprint` at all. It runs with no Blender, no image
+ * bytes and no LFS content: `environment-objects.render.json` is plain
+ * committed JSON, so this is part of `pnpm test` and therefore of every CI
+ * `verify` run, unlike the render-determinism gate
+ * (`tests/determinism/environment-render-determinism.test.ts`), which needs
+ * Blender and is not.
+ *
+ * What this does NOT prove: that the sidecar's `sizePx` is what Blender would
+ * render *today* -- only that the numbers already committed are internally
+ * consistent with each other. Whether Blender reproduces them is the
+ * determinism gate's job, not this one's.
+ */
+describe('environment render aspect invariant (recomputed, not trusted)', () => {
+  it('exactly reproduces the footprint aspect, for every one of the 23 rendered entries', async () => {
+    const sidecarPath = resolve(root, 'assets/rendered/environment/environment-objects.render.json');
+    const sidecar = JSON.parse(await readFile(sidecarPath, 'utf8')) as {
+      entries: Array<{ assetId: string; footprintTiles: { width: number; height: number }; sizePx: { width: number; height: number } }>;
+    };
+    expect(sidecar.entries.length).toBe(23);
+
+    const failures: string[] = [];
+    for (const entry of sidecar.entries) {
+      const result = exactPixelAspectMatchesFootprint(entry.footprintTiles, entry.sizePx);
+      if (!result.ok) failures.push(`${entry.assetId}: ${result.reason}`);
+    }
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+
+  it('is a real check and not a tautology: a mismatched pixel size is rejected', () => {
+    // A fixture the code under test does not compute -- 3 wide by 1 tall is
+    // not 256x256, and no float tolerance should paper over that.
+    const result = exactPixelAspectMatchesFootprint({ width: 3, height: 1 }, { width: 256, height: 256 });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/does not exactly reproduce the footprint aspect/);
+  });
+
+  it('accepts an exact match with no float tolerance smuggled in', () => {
+    // 1.4 tiles by 1 tile, reduced: 7:5. 358x256 is not 7:5 (7*256=1792,
+    // 5*358=1790) -- close enough that a naive `Math.abs(ratio - ratio) < 1e-2`
+    // check would wrongly accept it. This must still be rejected.
+    expect(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 358, height: 256 }).ok).toBe(false);
+    expect(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 358, height: 255.71428571 }).ok).toBe(false);
+    expect(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 1792, height: 1280 }).ok).toBe(true);
+  });
+
+  it('rejects a footprint that is not an exact multiple of 1/20 of a tile', () => {
+    // The renderer's own precondition (`_pixel_size`'s docstring: "every
+    // declared footprint is an exact multiple of 1/20 of a tile"). A
+    // footprint that violates it makes the renderer's own pixel-size
+    // derivation meaningless, so this must be reported rather than silently
+    // rounded through.
+    const result = exactPixelAspectMatchesFootprint({ width: 1.001, height: 1 }, { width: 256, height: 256 });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/not an exact multiple of 1\/20/);
   });
 });
