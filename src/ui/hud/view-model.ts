@@ -1062,6 +1062,18 @@ export interface HudRoomViewModel {
    * A number, not a class name: the tint lives in
    * `src/rendering/world/appearance.ts` and is keyed on the room's *category*,
    * so a stylesheet copy of it would be a second table to drift.
+   *
+   * **Read by `rooms-panel.ts`'s `.hud-rooms__row-swatch` since #1021.** Two
+   * earlier passes (#1032/ADR 0098, #1038's playtest) had found this field
+   * computed and read by nothing -- the doc comment above described an intent
+   * `main.ts` and this type both carried out and no third place consumed, so
+   * the row and the map could name the same room in two different colours and
+   * nothing would notice. It is decoration on a row that already has an
+   * accessible name (`labelKey`), never a replacement for one: #1038 measured
+   * that this palette cannot carry identity alone at any spacing the 18-hue
+   * table can afford (worst pair 5.30 delivered units against a per-pixel
+   * sigma of 15.54), so a colour-blind player reads exactly the same row a
+   * sighted one does, and the swatch is the extra rather than the message.
    */
   readonly tint: number;
   /** Absent when the definition authors no minimum, which is content's statement and not a default. */

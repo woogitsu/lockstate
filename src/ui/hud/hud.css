@@ -3389,6 +3389,43 @@
 }
 
 /*
+ * The catalogue swatch (#1021): the colour `WorldScene` paints a zoned room's
+ * tiles in, read onto its own catalogue row so the two cannot disagree.
+ *
+ * Sized off `--icon-size-sm` rather than a number of its own, because that is
+ * the row's other leading glyph and the two are meant to read as one unit --
+ * an icon that says "this is a room type" and a chip that says "this hue" --
+ * not as a glyph plus an unrelated decoration. `flex: 0 0 auto` for the same
+ * reason every other fixed-size child of `.ui-row` has it: the label is the
+ * one flex item allowed to give up width to an ellipsis, and everything
+ * beside it holds its size.
+ *
+ * A hairline `border`, not the ring `ui-design-tokens.test.ts` refuses this
+ * whole tree a `box-shadow` for: *"Separation comes from a 1px hairline and a
+ * background step, and from nothing else."* Several of the eighteen
+ * catalogue hues (ADR 0098 option A) sit only degrees from this panel's own
+ * surface, so every swatch gets the same hairline regardless of its own
+ * colour rather than only the ones that would otherwise vanish into it.
+ * `box-sizing: border-box` keeps the border inside the sized box instead of
+ * growing it -- this tree resets `box-sizing` nowhere (see the comment on
+ * `.ui-panel__body` above), so a plain `border` here would otherwise add 2px
+ * to the row's fixed-size children.
+ *
+ * Deliberately not a token colour: the fill is an inline `background-color`
+ * set from `HudRoomViewModel.tint`, a 24-bit number this file cannot see and
+ * must not duplicate as a second table (`view-model.ts`'s own doc comment on
+ * `tint` says why).
+ */
+.hud-rooms__row-swatch {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  inline-size: var(--icon-size-sm);
+  block-size: var(--icon-size-sm);
+  border: var(--hairline) solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+}
+
+/*
  * The typed route to a rectangle, inside the one box that can pay for it
  * (#411).
  *
