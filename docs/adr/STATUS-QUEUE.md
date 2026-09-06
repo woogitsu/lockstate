@@ -743,8 +743,18 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `0b8af9f8` (**v0.0.511**) by the delta method this
-header describes, from the v0.0.503 anchor kept below. **EIGHT of the ten
+Re-anchored at `main` @ `4cc8a12f` (**v0.0.521**) by the delta method this
+header describes, from the v0.0.511 anchor kept below. **TEN of the ten
+releases the budget allows — spent to the unit, run because the next
+`chore(release)` would have turned this gate red with no CI run anywhere to
+report it**, which is how v0.0.495 was discovered. `package.json` ships 0.0.521
+at `4cc8a12f` and the anchor being replaced named v0.0.511.
+`ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at **10**.
+
+> **The v0.0.511 anchor's own opening, kept rather than overwritten**
+> (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `0b8af9f8`
+> (**v0.0.511**) by the delta method this header describes, from the v0.0.503
+> anchor kept below."* **EIGHT of the ten
 releases the budget allows — inside it by two**, counted on the tree this
 commit is written against: `package.json` ships 0.0.511 at `0b8af9f8` and the
 anchor being replaced named v0.0.503. `ANCHOR_STALENESS_BUDGET_RELEASES` is
@@ -10139,7 +10149,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `0b8af9f8` — `git diff --name-only 4e489701..0b8af9f8 -- supabase/` returns nothing, the directory still holds **24** migrations, and every row of the table above resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`) — and at `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
+absences were re-verified at `4cc8a12f` — `git diff --name-only 0b8af9f8..4cc8a12f -- supabase/` returns nothing, the directory still holds **24** migrations, and every row of the table above resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`, each opened individually on `20260823100000_bound_free_tier_capacity.sql` rather than inferred from the command returning nothing) — and at `0b8af9f8`, `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
 
 **THE ABSENCES HOLD AND THE GREP THAT ESTABLISHED THEM NO LONGER DOES, AND BOTH
 HALVES ARE KEPT.** This paragraph read, from `26434e8e` through `4c00eaba`:
@@ -12076,6 +12086,107 @@ span's text at the two ends of the window, which flags every citation sitting in
 a past-tense record exactly as loudly as a live one. Nothing in this pass
 establishes how many of the 51 are really wrong, and the honest bound is that it
 is somewhere between a handful and all of them.
+
+## 3. What the anchor pass of 2026-09-06 evening opened with the budget spent to the unit for the second time in one day: ten merges, seven coordinates moved, and a citation that cannot be re-aimed by its own text
+
+Taken at `4cc8a12f` (v0.0.521), from `0b8af9f8` (v0.0.511). **Ten of ten
+releases** — the gate passes at exactly the limit and the next
+`chore(release)` would have turned it red with no CI run anywhere to report it,
+which is how v0.0.495 was found. The budget is unmoved at **10**.
+
+**THE WINDOW RECONCILES TO THE FILE.** Ten pull-request merges landed:
+#1036, #1040, #1041, #1042, #1043, #1044, #1045, #1046, #1047 and #1048.
+Their per-merge file lists sum to **66**; five files are touched by more than
+one merge, so the union is **60**; plus `package.json`, bumped ten times by the
+ten `chore(release)` commits that are not merges, gives **61**, which is
+exactly `git diff --name-only 0b8af9f8..4cc8a12f`. Nothing is unaccounted for
+in either direction — the union contains no path the window's own diff lacks,
+and the diff contains no path but `package.json` that no merge touched.
+
+**Every sha verified individually** with `git cat-file -e <sha>^{commit}`:
+`4cc8a12f`, `0b8af9f8`, and the ten merge commits `21339f30`, `d93882eb`,
+`bce4de89`, `73fb06d8`, `a12bb364`, `a40e2fcf`, `85216327`, `b7f2e646`,
+`fd84e0a6`, `785a8aa7`. That check exists because a re-anchor once shipped a
+false sha by mistyping one character.
+
+**THE DELTA READ, DONE MECHANICALLY RATHER THAN BY EYE.** Every `file:line`
+citation in this file's live sections naming a file the window touched was
+extracted, and each one's cited line was read at both anchors and compared as
+text. Twenty-three distinct live spans, of which **sixteen held** — the same
+text at the same number — and **seven moved**:
+
+| citation | was | now |
+| --- | --- | --- |
+| `src/rendering/world/environment-art.ts:186` | 186 | **187** |
+| `src/main.ts:2945-2950` | 2945 | **2985** |
+| `src/main.ts:1429` | 1429 | **1469** |
+| `src/main.ts:3138` | 3138 | **3178** |
+| `src/main.ts:1439` | 1439 | **1479** |
+| `src/main.ts:3381` | 3381 | **3421** |
+| `src/main.ts:2762` | 2762 | see below |
+
+Each was re-aimed by **searching the new tree for the old line's text**, never
+by adding the window's line delta — the direction a previous pass got wrong and
+had to revert. Six of the seven resolve to exactly one line. `src/main.ts` moved
+by forty lines throughout, from #1044's room-name wiring and #1047's tint
+table.
+
+**THE SEVENTH IS THE FINDING, AND IT IS ABOUT WHAT A COORDINATE CAN CARRY.**
+`src/main.ts:2762` cannot be re-aimed by its own text, because its text is
+`*` — a blank continuation line inside a docblock — which matches **twenty-six
+lines** of the current file. A citation whose content is not distinctive is one
+this method cannot repair; it is re-aimed instead by the symbol its own
+paragraph names, `case 'purchase-materials': {`, at `:2758` before and
+**`:2798`** now. The paragraph citing it already argued the general case —
+*"re-derived by symbol here"* — and this is the first time the argument has
+been forced rather than made: a `file:line` into a comment body is strictly
+weaker than one into a statement, because only the statement can be found
+again.
+
+**Both live `verified at` chains re-verified at this anchor rather than
+carried forward.** `supabase/`'s two absences: `git diff --name-only
+0b8af9f8..4cc8a12f -- supabase/` returns nothing, the directory still holds
+**24** migrations, and all six coordinates were opened individually on
+`20260823100000_bound_free_tier_capacity.sql` rather than inferred from the
+command returning nothing — `:73` is still `as $$ select 4194304 $$;`. And
+`ui-hud-messages.test.ts:270-276` is unmoved for the **eleventh** consecutive
+anchor, on a file this window did not touch, which establishes that the file
+was left alone and nothing more.
+
+**A false alarm of the integrator's own, recorded because it is the same shape
+as three published errors this session.** Checking that `$$ select 4194304 $$`
+span, I read the telemetry migration instead of the one the paragraph names,
+found nothing, and was one step from publishing that the claim had been false
+since the previous anchor. It is not: the paragraph names
+`20260823100000_bound_free_tier_capacity.sql` in the sentence immediately
+above the coordinates, and the SQL is at `:73` exactly as claimed. **The
+measurement was real and the file was wrong** — which is the error class the
+handover already records twice today.
+
+**§2 is unmoved at nine entries.** No merge in this window edited §2, and none
+of the ten added a row: ADR 0099 and ADR 0100 both arrived and were both
+**Accepted the same day they were drafted**, which is new — every outstanding
+ADR since 0056 and 0059 arrived `Proposed` with no §2 row, and the streak this
+chain has counted eleven times is not extended by either of them because
+neither is outstanding.
+
+**The four counting sites, re-derived rather than restated.** `grep -cE
+'^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **41** against **51**
+`Accepted`, for **92** documents carrying a status; the index carries 93
+numbered rows, 92 linked plus the unlinked file-less `0018`. **Next free
+number: 0101**, which is one past 0100 on disk and what `docs/adr/README.md`
+states.
+
+**Two anchors in one day is the thing to notice, not the numbers.** This file
+was re-anchored at `0b8af9f8` (v0.0.511) this morning and again here at
+`4cc8a12f` (v0.0.521), because ten releases landed between them — and the two
+anchors together sit inside a day in which `main` took **nineteen** merged pull
+requests, counted with `git log --merges --since` rather than from memory:
+#1028, #1029, #1030, #1032, #1033, #1034, #1035, #1036, #1038, #1039, #1040,
+#1041, #1042, #1043, #1044, #1045, #1046, #1047 and #1048. The budget is a bound on unreviewed drift and it held; what
+it did not do is warn anybody early, because nothing measures the *rate*. If a
+session ever lands ten merges again, the gate will be at the limit again with
+the same absence of notice.
 
 ## 3. What the anchor pass of 2026-09-06 opened with the budget two clear of the limit: eight merges, one span re-opened and held, and a branch this pass composes with rather than edits
 
@@ -16165,7 +16276,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `0b8af9f8` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **tenth** consecutive unmoved reading, and the tenth taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and at `4e489701`, `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then SIX unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `4cc8a12f` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **eleventh** consecutive unmoved reading, and the eleventh taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and at `0b8af9f8`, `4e489701`, `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then SIX unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
