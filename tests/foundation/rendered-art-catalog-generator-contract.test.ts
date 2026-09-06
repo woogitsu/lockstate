@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { environmentRenderedArtIds } from '../../src/rendering/assets/environment-sprites';
 import { LFS_POINTER_PREFIX, assertSourceInputsAreImages } from '../../tooling/source-art-lfs-guard.mjs';
-import { PUBLISHED_ASSET_IDS } from '../../tooling/build-rendered-art-catalog.mjs';
 
 /**
  * `tooling/build-rendered-art-catalog.mjs`'s equivalent of
@@ -60,15 +59,39 @@ describe('the rendered-art catalog generator', () => {
     expect(artPipeline, 'and the command an operator actually types').toContain('pnpm content:rendered-art');
   });
 
-  it('publishes exactly the ids environment-sprites.ts declares as rendered-art, in either direction', () => {
-    // `PUBLISHED_ASSET_IDS` is data in a plain .mjs script, kept in sync with
-    // `environment-sprites.ts`'s declared `kind: 'rendered-art'` entries by
-    // this assertion rather than by import -- the same split
-    // `build-source-art-catalog.mjs` has from its own intake manifest, for
-    // the same reason: a tooling script cannot import TypeScript.
+  it('publishes exactly the ids environment-sprites.ts declares as rendered-art, in either direction', async () => {
+    /*
+     * `PUBLISHED_ASSET_IDS` is data in a plain .mjs script, kept in sync with
+     * `environment-sprites.ts`'s declared `kind: 'rendered-art'` entries by
+     * this assertion rather than by import -- the same split
+     * `build-source-art-catalog.mjs` has from its own intake manifest, for
+     * the same reason: a tooling script cannot import TypeScript.
+     *
+     * READ AS TEXT RATHER THAN IMPORTED, AND THAT IS NOT A STYLE CHOICE.
+     * The first version of this test imported the constant, which executes
+     * the generator: its guard and its writes are at module top level, on
+     * purpose, because "a check that runs after the damage is done is not a
+     * guard". Importing it therefore ran the guard, and the `verify` job
+     * deliberately checks out LFS as pointers (ADR 0014, "Verification"), so
+     * the guard did exactly what it exists to do and `main` went red with
+     *
+     *     Refusing to run: 1 of 1 inputs under assets/source/generated/ are
+     *     git-lfs pointer files, not images (fixture.cell.toilet_sink.png).
+     *
+     * `tests/foundation/art-catalog-generator-contract.test.ts` had already
+     * settled the shape: it names its own generator as a path string and
+     * never imports it. This follows that precedent instead of inventing a
+     * second one, and it means this file has no LFS requirement at all.
+     */
+    const generatorSource = await readFile(path.join(repositoryRoot, GENERATOR), 'utf8');
+    const declaration = /export const PUBLISHED_ASSET_IDS = \[([^\]]*)\]/u.exec(generatorSource);
+    expect(declaration, `${GENERATOR} must declare PUBLISHED_ASSET_IDS as a literal array this gate can read`).not.toBeNull();
+    const published = [...(declaration?.[1] ?? '').matchAll(/'([^']+)'/gu)].map((match) => match[1]);
+    expect(published, `${GENERATOR} declares an empty published list, so this gate would compare nothing`).not.toEqual([]);
+
     const declared = environmentRenderedArtIds();
     expect(
-      [...PUBLISHED_ASSET_IDS].sort(),
+      [...published].sort(),
       'the generator publishes an id no sprite declares, which is exactly the "art nothing draws costs bytes" trap this lane exists to avoid',
     ).toEqual([...declared].sort());
   });
