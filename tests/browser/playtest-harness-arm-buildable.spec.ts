@@ -22,16 +22,17 @@
  * ## How the race is reproduced, given that it only appears under load
  *
  * `installCatalogueDelay` swallows the click on a catalogue row in the capture
- * phase and replays it a fixed number of milliseconds later. That is not a
- * simulation of load, it is the same *state*: Playwright's `click()` resolves
- * when the input event has been dispatched, not when the application has
- * finished reacting, so a page under contention and a page holding the event
- * back deliberately are indistinguishable from the harness's side. The delay
- * makes the window wide enough to observe every time instead of four times in
- * eighteen.
+ * phase and lets it through later. That is not a simulation of load, it is the
+ * same *state*: Playwright's `click()` resolves when the input event has been
+ * dispatched, not when the application has finished reacting, so a page under
+ * contention and a page holding the event back deliberately are
+ * indistinguishable from the harness's side. Holding it makes the window
+ * certain rather than four-in-eighteen.
  *
- * `-1` never replays at all, which is the other end of the same axis: a click
- * whose handler never runs. That is what the loud-failure test uses.
+ * Three modes, and which one a test uses is itself an argument -- see `HELD`,
+ * `LOST` and `DELAY_MS` below. The short of it: a test that must observe the
+ * race holds the click and releases it by hand, because a test for a race must
+ * not contain one; a test of the fix, which *waits*, can use a clock.
  *
  * **What this file cannot show, said rather than implied:** it does not
  * establish the frequency in the field. The issue's four-of-eighteen is
@@ -43,6 +44,36 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { armBuildable, installTee, openApp, press, sentCommands, tab } from './playtest-harness';
 
+/** Clicks pass straight through: the page behaves exactly as it ships. */
+const PASSED = 0;
+
+/**
+ * The redraw is held back until the test releases it -- **and it is a hold
+ * rather than a long `setTimeout` because a fixed delay made this file's own
+ * first test flaky, measured.** With the replay scheduled 1,200 ms out, the
+ * assertion is really "the press happened less than 1,200 ms after the click",
+ * and on a loaded container two CDP round trips ate that budget: the run that
+ * caught it read a stale `wall-brick` off the panel and then placed
+ * `PlaceObject bed-wooden`, because the replay landed between the two. A test
+ * for a race that is itself a race is not evidence.
+ *
+ * Holding removes the clock from the reproduction entirely. The click is still
+ * a real click that really does reach the panel -- the tests that use this
+ * release it afterwards and assert the selection then moves, which is what
+ * separates "late" from "lost".
+ */
+const HELD = -2;
+
+/** The click never reaches the panel at all: the limit case, for the loud-failure test. */
+const LOST = -1;
+
+/**
+ * A finite, released-by-the-clock delay, used only where the helper under test
+ * *waits*. Nothing there depends on how long the wait takes, so a slow machine
+ * makes the test slower and never wrong.
+ */
+const DELAY_MS = 1_200;
+
 /**
  * The deliberately contended Build panel.
  *
@@ -53,8 +84,29 @@ import { armBuildable, installTee, openApp, press, sentCommands, tab } from './p
  * `press` catching a wrong placement rather than joining in the confusion.
  */
 async function installCatalogueDelay(page: Page): Promise<void> {
-  await page.addInitScript(() => {
+  /*
+   * `HELD` is passed in rather than closed over, and that is not style. The
+   * function below is serialised and re-evaluated inside the page, where this
+   * module's bindings do not exist -- an earlier draft referenced `HELD`
+   * directly and threw `ReferenceError` *after* `stopImmediatePropagation`,
+   * so every held click was silently lost instead of held and the test read
+   * exactly the symptom it was written to reproduce. A fault injector that
+   * fails in the shape of the fault is the worst thing in this file.
+   */
+  await page.addInitScript((heldMode: number) => {
     (window as unknown as { __catalogueDelayMs: number }).__catalogueDelayMs = 0;
+    const held: HTMLElement[] = [];
+    // Replaying a held click has to get past this listener, or nothing would
+    // ever redraw and the "late" in "redraws late" would be a fiction.
+    const replay = (row: HTMLElement): void => {
+      row.dataset['delayedReplay'] = 'true';
+      row.click();
+    };
+    (window as unknown as { __releaseCatalogueClicks: () => number }).__releaseCatalogueClicks = () => {
+      const pending = held.splice(0);
+      for (const row of pending) replay(row);
+      return pending.length;
+    };
     document.addEventListener(
       'click',
       (event) => {
@@ -64,28 +116,28 @@ async function installCatalogueDelay(page: Page): Promise<void> {
         if (!(target instanceof Element)) return;
         const row = target.closest('.hud-build__list [data-buildable]') as HTMLElement | null;
         if (row === null) return;
-        // The replayed click has to get through, or nothing would ever redraw.
         if (row.dataset['delayedReplay'] === 'true') {
           delete row.dataset['delayedReplay'];
           return;
         }
         event.stopImmediatePropagation();
         event.preventDefault();
-        if (delay < 0) return;
-        setTimeout(() => {
-          row.dataset['delayedReplay'] = 'true';
-          row.click();
-        }, delay);
+        if (delay === heldMode) held.push(row);
+        else if (delay > 0) setTimeout(() => replay(row), delay);
       },
       true,
     );
-  });
+  }, HELD);
 }
 
 const setDelay = (page: Page, ms: number): Promise<void> =>
   page.evaluate((value) => {
     (window as unknown as { __catalogueDelayMs: number }).__catalogueDelayMs = value;
   }, ms);
+
+/** Lets every held catalogue click through at once, and answers how many there were. */
+const releaseCatalogueClicks = (page: Page): Promise<number> =>
+  page.evaluate(() => (window as unknown as { __releaseCatalogueClicks: () => number }).__releaseCatalogueClicks());
 
 /**
  * `armBuildable` exactly as it stood before this change, kept so the failure
@@ -113,9 +165,6 @@ const placed = (commands: readonly Record<string, unknown>[]): readonly string[]
   commands
     .filter((command) => command['type'] === 'PlaceObject' || command['type'] === 'PlaceBuildOrder')
     .map((command) => `${String(command['type'])} ${String(command['definitionId'])}`);
-
-/** How far the redraw is held back. Comfortably above any accidental contention, well under the ten-second wait. */
-const DELAY_MS = 1_200;
 
 /** A point on canvas at 1440x900, for the reason `calibrate`'s docblock gives about its own probe. */
 const WORLD = { x: 700, y: 300 };
@@ -147,12 +196,12 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
   });
 
   test.beforeEach(async () => {
-    await setDelay(page, 0);
+    await setDelay(page, PASSED);
     await armBuildable(page, 'wall-brick');
   });
 
   test('the helper this replaces armed the previous buildable, and said nothing', async () => {
-    await setDelay(page, DELAY_MS);
+    await setDelay(page, HELD);
     const labelItRead = await armBuildableAsItWas(page, 'bed-wooden');
     const selectedRow = await page
       .locator('.hud-build__list [data-buildable][data-selected="true"]')
@@ -163,11 +212,16 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
         ` the panel still had ${JSON.stringify(selectedRow)} selected; the press placed ${JSON.stringify(placed(commands))}`,
     );
 
-    // The whole defect in three assertions: it read a stale label, it returned
+    // The whole defect in three readings: it read a stale label, it returned
     // happily, and a wall went into the world where a bed was asked for.
     expect(labelItRead).toBe('stop placing');
     expect(selectedRow).toBe('wall-brick');
     expect(placed(commands)).toEqual(['PlaceBuildOrder wall-brick']);
+
+    // And the click was real and merely late, which is the difference between
+    // this reproduction and one that simply broke the page.
+    expect(await releaseCatalogueClicks(page)).toBe(1);
+    await expect(page.locator('.hud-build__list [data-buildable="bed-wooden"]')).toHaveAttribute('data-selected', 'true');
   });
 
   test('the helper waits for the panel to redraw, and arms what it asked for', async () => {
@@ -179,7 +233,7 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
   });
 
   test('the helper throws when the panel never redraws at all', async () => {
-    await setDelay(page, -1);
+    await setDelay(page, LOST);
     const failure = await armBuildable(page, 'bed-wooden', 3_000).then(
       () => undefined,
       (error: Error) => error.message,
@@ -191,7 +245,7 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
   });
 
   test('press refuses a placement that is not what the panel was last asked for', async () => {
-    await setDelay(page, DELAY_MS);
+    await setDelay(page, HELD);
     await armBuildableAsItWas(page, 'bed-wooden');
 
     const failure = await press(page, WORLD.x, WORLD.y).then(
@@ -204,5 +258,6 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
     // the `definitionId` on the command the world tool produced.
     expect(failure).toContain('placed ["PlaceBuildOrder wall-brick"]');
     expect(failure).toContain('but the Build panel was last asked for "bed-wooden"');
+    await releaseCatalogueClicks(page);
   });
 });

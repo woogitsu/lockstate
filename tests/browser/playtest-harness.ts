@@ -59,13 +59,21 @@ export interface TeeWindow {
  * This is the harness's answer to issue #1017's third requirement, and the
  * reason it lives in the page rather than in a `WeakMap<Page, string>` beside
  * `armBuildable` is that **not every caller arms through `armBuildable`**.
- * Eleven `*.playtest.ts` files in this directory click
- * `.hud-build__list [data-buildable="..."]` themselves, several of them with a
- * private copy of the exact three lines #1017 is about. A capture-phase
- * listener on `window` sees all of them -- `armBuildable`'s click, a
- * playtest's own click, and the `click` a keyboard `Enter` on the row
- * synthesises -- so `press` and `drag` below can check every placement in this
- * directory against what was actually asked for, whoever asked.
+ * Counted rather than estimated: twenty `*.playtest.ts` files in this
+ * directory address `.hud-build__list [data-buildable="..."]` themselves, and
+ * **six of them carry a private copy of the exact three lines #1017 is about**
+ * -- click the row, read `.hud-build__arm`'s `innerText`, branch on
+ * `startsWith('place')`. A `WeakMap` keyed on what `armBuildable` was asked
+ * for would see none of those.
+ *
+ * A capture-phase listener on `window` sees all of them: `armBuildable`'s
+ * click, a playtest's own click, and the `click` a keyboard `Enter` or a touch
+ * tap on the row synthesises. So `press` and `drag` below check every
+ * placement that goes through them against what was actually asked for,
+ * whoever asked -- which covers four of those six without a line of theirs
+ * changing. (`playtest-2026-09-01-money` and `playtest-2026-09-04-touch-only`
+ * press with their own mouse code and are not reached; they are the other
+ * agent's file to touch, not this one's.)
  *
  * **It records the click, not the panel's reaction to it**, and that is the
  * whole point. `selectedId` inside `build-panel.ts` and the `definitionId` on
