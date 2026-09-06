@@ -11900,9 +11900,13 @@ written for the occasion, and `docs/adr/README.md` agrees row for row: 40
 with all four sites already current and the first of the six that is not weak.**
 The five before it each reported the agreement against a window that added no
 ADR, so the mechanism that splits the four sites was never exercised; this
-window added one. `Next free number: 0098` here, restated from
+window added one. `Next free number: 0099` here, restated from
 `docs/adr/README.md` rather than recomputed, and the index and this file agree
-on it — the number #1025 moved when it reserved 0097.
+on it. **It read `0098` when this pass was taken and moved with the index on
+2026-09-06, when ADR 0098's row reserved that number**; the value is restated
+rather than recomputed, so this is the index moving and not a second opinion
+about it. The number #1025 moved when it reserved 0097; #1021's ADR moved it
+again.
 
 **AND THE ADR IT ADDED CHANGED NO COUNT, FOR A REASON THAT IS ITSELF A FIRST.**
 ADR 0097 arrived **`Accepted`**, ruled on by the owner on the day it landed,
