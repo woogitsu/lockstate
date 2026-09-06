@@ -98,8 +98,19 @@ export const FLOOR_ART_DEPTH = FLOOR_DEPTH - 1;
  * is a constant 13 screen pixels tall whatever the zoom, so at zoom 1 it hides
  * 16 of a 64-pixel tile's height and at zoom 3 it hides 16 of 192. An object is
  * identifiable around it; a word is not identifiable through it. ADR 0098's
- * option C is a costing of an option, not a decision -- that document is
- * Proposed, not Accepted -- so nothing approved is contradicted here.
+ * option C is a costing of an option, not a decision, so nothing approved is
+ * contradicted here.
+ *
+ * **THE CLAUSE THAT USED TO CARRY THAT ARGUMENT WENT FALSE ON 2026-09-06 AND
+ * IS KEPT HERE RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md` section 4). It
+ * read: *"that document is Proposed, not Accepted"*. ADR 0098's decisions 1 to
+ * 4 were accepted by the owner that evening. **The conclusion is unchanged and
+ * now rests on a different premise, which is exactly why the old one is worth
+ * seeing**: what is accepted are 0098's four DECISIONS, and its option C is
+ * not among them -- an option list is a costing, and accepting a requirement
+ * does not accept every way of discharging it. 0098 decision 4 is in fact the
+ * clause that protects this reversal: the map owes no distinct look at every
+ * zoom, and a name that reads "een" at zoom 3.0 is the case it had in mind.
  *
  * `-FLOOR_DEPTH - 1` rather than a bare literal, because the two bounds are one
  * bound and writing it this way makes that the declaration: the ground sits as
