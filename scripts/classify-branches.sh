@@ -58,7 +58,7 @@
 
 set -euo pipefail
 
-REPO="${GITHUB_REPOSITORY:-matmaxalez/lockstate}"
+REPO="${GITHUB_REPOSITORY:-woogitsu/lockstate}"
 WIP_KEEP_HOURS=72
 
 while [ $# -gt 0 ]; do

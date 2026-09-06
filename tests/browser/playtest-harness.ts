@@ -50,6 +50,55 @@ export const TILE = 64;
 export interface TeeWindow {
   lockstateSentToWorker?: unknown[];
   lockstateFromWorker?: unknown[];
+  lockstateBuildIntent?: BuildIntentRecord;
+}
+
+/**
+ * What the *page* last saw asked of the Build panel, recorded at event time.
+ *
+ * This is the harness's answer to issue #1017's third requirement, and the
+ * reason it lives in the page rather than in a `WeakMap<Page, string>` beside
+ * `armBuildable` is that **not every caller arms through `armBuildable`**.
+ * Counted rather than estimated: twenty `*.playtest.ts` files in this
+ * directory address `.hud-build__list [data-buildable="..."]` themselves, and
+ * **seven carry a private copy of the lines #1017 is about** -- read the arm
+ * control's `innerText`, branch on `startsWith('place')` -- across thirteen
+ * sites. `playtest-2026-09-04-the-misplay`'s `armRooms` is the sharpest of
+ * them: it does this to the *Rooms* panel and its docblock says why, in these
+ * words, *"`armBuildable` in the shared harness reads the label for the same
+ * reason; this is that rule one panel over"*. A `WeakMap` keyed on what
+ * `armBuildable` was asked for would see none of the seven.
+ *
+ * A capture-phase listener on `window` sees all of them: `armBuildable`'s
+ * click, a playtest's own click, and the `click` a keyboard `Enter` or a touch
+ * tap on the row synthesises. So `press` and `drag` below check every
+ * placement that goes through them against what was actually asked for,
+ * whoever asked -- which covers **five of those seven** without a line of
+ * theirs changing. `playtest-2026-09-01-money` and
+ * `playtest-2026-09-04-touch-only` drive the world with their own pointer code
+ * and are not reached; they belong to whoever is in those files next, and are
+ * named here so that agent does not have to re-derive the list.
+ *
+ * **It records the click, not the panel's reaction to it**, and that is the
+ * whole point. `selectedId` inside `build-panel.ts` and the `definitionId` on
+ * the command are the same value read twice, so comparing those two proves
+ * nothing; comparing the *event* against the command is what catches a click
+ * whose handler never ran.
+ */
+export interface BuildIntentRecord {
+  /**
+   * The `data-buildable` of the last catalogue row clicked, or `undefined`
+   * before any was and once removal was toggled.
+   *
+   * Present-and-`undefined` rather than absent (`exactOptionalPropertyTypes`
+   * is on): the record is one object mutated in the page, so the key exists
+   * from the first frame and only its value moves.
+   */
+  buildableId: string | undefined;
+  /** Whether `.hud-build__remove` was the last of the two to be pressed. */
+  removing: boolean;
+  /** `Date.now()` at that click, so a caller can tell "never clicked" from "clicked long ago". */
+  at: number;
 }
 
 export interface SubmittedCommand {
@@ -83,6 +132,56 @@ export async function installTee(page: Page): Promise<void> {
     (window as unknown as { Worker: typeof Worker }).Worker = TeeWorker as unknown as typeof Worker;
     (window as unknown as TeeWindow).lockstateSentToWorker = sent;
     (window as unknown as TeeWindow).lockstateFromWorker = received;
+
+    /*
+     * The Build panel intent recorder (#1017). See `BuildIntentRecord`.
+     *
+     * On `window` and in the **capture** phase, which is the earliest point in
+     * the propagation path: it therefore observes a click even when something
+     * further down stops the event before the panel's own handler runs, and
+     * that is exactly the state this recorder exists to make visible.
+     *
+     * Removal clears `buildableId` rather than setting a flag the checks
+     * consult, because `.hud-build__remove` *toggles*: a second press turns
+     * removal off again and the panel goes back to placing the row that is
+     * still selected, which this listener cannot see. Clearing is the
+     * conservative direction -- the checks below skip rather than accuse when
+     * they do not know what was asked.
+     */
+    const intent: { buildableId: string | undefined; removing: boolean; at: number } = {
+      buildableId: undefined,
+      removing: false,
+      at: 0,
+    };
+    window.addEventListener(
+      'click',
+      (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const row = target.closest('.hud-build__list [data-buildable]');
+        if (row !== null) {
+          intent.buildableId = row.getAttribute('data-buildable') ?? undefined;
+          intent.removing = false;
+          intent.at = Date.now();
+          return;
+        }
+        if (target.closest('.hud-build__remove') !== null) {
+          intent.buildableId = undefined;
+          intent.removing = true;
+          intent.at = Date.now();
+        }
+      },
+      true,
+    );
+    (window as unknown as TeeWindow).lockstateBuildIntent = intent;
+  });
+}
+
+/** What the page last saw asked of the Build panel. `undefined` before `installTee` has run. */
+export async function buildIntent(page: Page): Promise<BuildIntentRecord | undefined> {
+  return page.evaluate(() => {
+    const record = (window as unknown as TeeWindow).lockstateBuildIntent;
+    return record === undefined ? undefined : { ...record };
   });
 }
 
@@ -204,22 +303,109 @@ export async function panelText(page: Page, selector: string): Promise<string> {
   }, selector);
 }
 
+/**
+ * Every command in `commands` that puts a *named* buildable into the world.
+ *
+ * Both producers carry the id and neither is optional at this point:
+ * `PlaceObject` at `src/main.ts:2647` and `PlaceBuildOrder` at
+ * `src/main.ts:2597` are both handed `intent.definitionId`.
+ */
+export function placements(
+  commands: readonly Record<string, unknown>[],
+): readonly { readonly type: string; readonly definitionId: string }[] {
+  return commands
+    .filter((command) => command['type'] === 'PlaceObject' || command['type'] === 'PlaceBuildOrder')
+    .map((command) => ({
+      type: String(command['type']),
+      definitionId: command['definitionId'] === undefined ? '<absent>' : String(command['definitionId']),
+    }));
+}
+
+/**
+ * Throws when a gesture placed something other than the buildable the page was
+ * last asked for. **This is the durable half of issue #1017** and it is the
+ * harness's job rather than each playtest's: every mouse gesture in this
+ * directory goes through `press` or `drag`, so every playtest inherits it
+ * without a line changing at its call site.
+ *
+ * ### What it compares, and why those two
+ *
+ * The left-hand side is `BuildIntentRecord.buildableId` -- the `data-buildable`
+ * of the catalogue row the *browser* last dispatched a click at, recorded in
+ * the capture phase before any application handler could run. The right-hand
+ * side is the `definitionId` the world tool actually put on the command. A
+ * click whose handler never ran leaves those two disagreeing, which is exactly
+ * the state #1017 describes and exactly the state nothing could observe
+ * before.
+ *
+ * ### The three things it deliberately does not do
+ *
+ * - **It does not complain about a gesture that produced no placement.** A
+ *   press is also how `calibrate` bisects (`RemoveObject`), how a room is
+ *   drawn (`DesignateRoom`) and how a playtest checks that a press on the HUD
+ *   reaches nothing at all. Silence there is a legitimate result; a *wrong*
+ *   object never is.
+ * - **It does not complain when it does not know what was asked** -- before any
+ *   catalogue row has been clicked, or after `.hud-build__remove` was pressed.
+ *   See `BuildIntentRecord`.
+ * - **It does not check the tile.** Where a command landed is the playtest's
+ *   question; *what* it placed is the harness's, because the harness is what
+ *   armed it.
+ */
+async function assertPlacedWhatWasAsked(
+  page: Page,
+  commands: readonly Record<string, unknown>[],
+  gesture: string,
+): Promise<void> {
+  const placed = placements(commands);
+  if (placed.length === 0) return;
+  const intent = await buildIntent(page);
+  const asked = intent?.buildableId;
+  if (asked === undefined) return;
+  const wrong = placed.filter((placement) => placement.definitionId !== asked);
+  if (wrong.length === 0) return;
+  throw new Error(
+    `${gesture} placed ${JSON.stringify(wrong.map((placement) => `${placement.type} ${placement.definitionId}`))}` +
+      ` but the Build panel was last asked for ${JSON.stringify(asked)}.` +
+      ' The catalogue click did not reach the panel before the tool was armed (issue #1017).',
+  );
+}
+
 export async function press(page: Page, x: number, y: number): Promise<readonly Record<string, unknown>[]> {
   const before = (await sentCommands(page)).length;
   await page.mouse.move(x, y);
   await page.mouse.down({ button: 'left' });
   await page.mouse.up({ button: 'left' });
   await page.waitForTimeout(100);
-  return (await sentCommands(page)).slice(before);
+  const produced = (await sentCommands(page)).slice(before);
+  await assertPlacedWhatWasAsked(page, produced, `a press at ${x},${y}`);
+  return produced;
 }
 
-export async function drag(page: Page, a: { x: number; y: number }, b: { x: number; y: number }): Promise<void> {
+/**
+ * Returns what it produced, where it used to return nothing.
+ *
+ * The commands were already being sampled around every interesting call site
+ * -- `buildAndPopulate`'s wall runs read `sentCommands` before and after this
+ * function to log what each run emitted -- so handing them back removes a
+ * duplicated pair of round trips rather than adding one. It is also what lets
+ * the placement check above cover a dragged wall run and not only a press.
+ */
+export async function drag(
+  page: Page,
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): Promise<readonly Record<string, unknown>[]> {
+  const before = (await sentCommands(page)).length;
   await page.mouse.move(a.x, a.y);
   await page.mouse.down({ button: 'left' });
   await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 8 });
   await page.mouse.move(b.x, b.y, { steps: 8 });
   await page.mouse.up({ button: 'left' });
   await page.waitForTimeout(150);
+  const produced = (await sentCommands(page)).slice(before);
+  await assertPlacedWhatWasAsked(page, produced, `a drag from ${a.x},${a.y} to ${b.x},${b.y}`);
+  return produced;
 }
 
 /**
@@ -292,9 +478,27 @@ export async function calibrate(
    * holding the pointer with `wall-brick` selected -- the panel's arrival
    * selection -- and the next bare `press` in a walk would have laid a wall
    * nobody asked for. Nothing caught it because every caller here reaches the
-   * world through `armBuildable`, which reads the arm label before it clicks;
-   * the label was honest, so the guard did the right thing for the wrong
-   * reason. It now needs to do nothing.
+   * world through `armBuildable`.
+   *
+   * **The sentence that stood here until #1017 finished that thought with
+   * "which reads the arm label before it clicks; the label was honest, so the
+   * guard did the right thing for the wrong reason", and its premise was
+   * false.** It is quoted rather than deleted because it is the load-bearing
+   * half: an assumption about `armBuildable` that had been written down as a
+   * premise of *this* paragraph's reasoning, and was relied on nowhere else in
+   * this file only because nowhere else in this file wrote its reasoning down.
+   * `armBuildable` read that label with no wait at all, so under load it was
+   * the *previous* buildable's label -- the guard was reading a stale string
+   * and agreeing with it. What made the old conclusion survive anyway is
+   * narrower than the sentence claimed: the label is *eventually* honest, and
+   * a helper reading it before the panel had redrawn was reading a string that
+   * had not become honest yet.
+   *
+   * `armBuildable` no longer reads the label at all, so the paragraph's
+   * conclusion now rests on something checkable: it waits for the panel's own
+   * `data-selected` marker on the row it clicked and refuses to return until
+   * `.hud-build__arm` reports `data-armed="true"`. It still needs to do
+   * nothing here, and now for the right reason.
    */
   await page.locator('.hud-build__remove').click();
   return { originX, originY };
@@ -305,19 +509,133 @@ export const centreOf = (o: { originX: number; originY: number }, tx: number, ty
   y: o.originY + ty * TILE + TILE / 2,
 });
 
-export async function armBuildable(page: Page, id: string): Promise<void> {
-  await page.locator(`.hud-build__list [data-buildable="${id}"]`).click();
-  const label = (await page.locator('.hud-build__arm').innerText()).trim().toLowerCase();
-  if (label.startsWith('place') || label.startsWith('draw')) await page.locator('.hud-build__arm').click();
+/**
+ * How long `armBuildable` will wait for the Build panel to redraw under the
+ * buildable it was asked for. Ten seconds is `playwright.config.ts`'s own
+ * `expect.timeout`; a panel that has not answered a click in ten seconds is a
+ * finding, not a slow machine.
+ */
+export const ARM_TIMEOUT_MS = 10_000;
+
+/**
+ * Selects a buildable in the Build catalogue and leaves the world tool armed
+ * with it -- **or throws.** Issue #1017.
+ *
+ * ### What was wrong with the three lines this replaces
+ *
+ * They clicked the catalogue row and then read `.hud-build__arm`'s `innerText`
+ * immediately, with nothing between the two. Playwright's `click()` resolves
+ * when the input event has been dispatched, not when the application has
+ * finished reacting to it, so under load the label read back was still the
+ * *previous* buildable's -- and both of its branches then did the wrong thing
+ * quietly. Reading "Stop placing" from the previous arming, it skipped the arm
+ * click and left the old tool holding the pointer; reading "Place on map"
+ * before the selection had moved, it armed the old selection. Either way the
+ * next press put an object in the world that the playtest had not asked for,
+ * **and nothing failed.** One act measured four of eighteen presses placing
+ * the wrong object; another placed a bed where it had asked for a toilet.
+ *
+ * ### What it waits on instead, and why a stale DOM cannot satisfy it
+ *
+ * The panel's own record of which row is chosen:
+ * `.hud-build__list [data-buildable="<id>"][data-selected="true"]`, set by
+ * `paintCatalogue` in `src/ui/hud/build-panel.ts` in the same handler that
+ * moves `selectedId`. The catalogue is a single-select `radiogroup`, so before
+ * the click that attribute is `"true"` on a *different* row and `"false"` on
+ * this one -- the pre-click DOM cannot satisfy the wait, which is the property
+ * the label never had. `toHaveCount(1)` on the whole group is the other half:
+ * it forbids the intermediate state in which two rows both claim to be
+ * selected.
+ *
+ * **The one case where the wait is vacuous is stated rather than hidden:**
+ * arming the buildable that was *already* selected. The condition then holds
+ * before the click as well as after it. That case places the object the caller
+ * asked for either way, so it costs nothing here -- and `press` and `drag`
+ * check the command that comes out regardless of what this function believed.
+ *
+ * ### And it is loud
+ *
+ * Three assertions, each of which ends the run rather than returning: the row
+ * became the selected one, it is the only selected one, and `.hud-build__arm`
+ * reports `data-armed="true"` when this returns. `data-armed` rather than the
+ * label because it is the machine carrier `paintArmed` maintains beside
+ * `aria-pressed`, it is not a translated string, and `"Stop placing"` /
+ * `"Place on map"` is a distinction two locales are free to erase. A helper
+ * that arms the wrong object and throws is enormously better than one that
+ * arms the wrong object and returns.
+ */
+export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEOUT_MS): Promise<void> {
+  const row = page.locator(`.hud-build__list [data-buildable="${id}"]`);
+  await row.click();
+
+  await expect(row, `the Build panel never redrew with ${JSON.stringify(id)} selected`).toHaveAttribute(
+    'data-selected',
+    'true',
+    { timeout: timeoutMs },
+  );
+  await expect(
+    page.locator('.hud-build__list [data-buildable][data-selected="true"]'),
+    `more than one catalogue row claimed to be selected while arming ${JSON.stringify(id)}`,
+  ).toHaveCount(1, { timeout: timeoutMs });
+
+  // Arming *to place* is what `data-armed` means; a tool armed to remove reads
+  // `false` here, which is the state `calibrate` leaves behind and the state
+  // this has to click out of. See `paintArmed`.
+  const arm = page.locator('.hud-build__arm');
+  if ((await arm.getAttribute('data-armed')) !== 'true') await arm.click();
+  await expect(arm, `the arm control never reported itself armed for ${JSON.stringify(id)}`).toHaveAttribute(
+    'data-armed',
+    'true',
+    { timeout: timeoutMs },
+  );
+
+  // Read a second time, after the arming: a redraw that arrived late enough to
+  // land between the two waits would move the selection out from under the
+  // tool that was just armed, and this is the only place that can see it.
+  await expect(row, `arming ${JSON.stringify(id)} left a different catalogue row selected`).toHaveAttribute(
+    'data-selected',
+    'true',
+    { timeout: timeoutMs },
+  );
 }
 
-export async function buy(page: Page, buildableId: string, quantity: number): Promise<void> {
-  await page.locator(`.hud-build__list [data-buildable="${buildableId}"]`).click();
+/**
+ * Buys `quantity` of the material the given buildable is made of.
+ *
+ * **It has the same race `armBuildable` had, and #1017's fifth question is what
+ * found it.** The buy row is repainted from the selection (`paintBuy` follows
+ * `paintCatalogue` in the row's own activation handler), so reading whether it
+ * is hidden, and then filling a quantity into it, immediately after the
+ * catalogue click reads and fills the *previous* buildable's row. The cost is
+ * quieter than the arming one and it is real: sixty bricks bought as sixty of
+ * whatever was selected before, at that material's price, and the wall run
+ * that follows then waits on a delivery that was never ordered.
+ *
+ * So it waits on the same marker for the same reason, before it reads
+ * anything. Everything after that is unchanged.
+ *
+ * **It does not throw when no purchase is submitted, and that is deliberate.**
+ * A refused purchase -- the treasury cannot cover it -- is a legitimate
+ * outcome that several playtests here provoke on purpose, and the commands are
+ * returned so a caller that cares can say so itself. What was silent was
+ * *which* material, not whether one was bought.
+ */
+export async function buy(page: Page, buildableId: string, quantity: number): Promise<readonly Record<string, unknown>[]> {
+  const row = page.locator(`.hud-build__list [data-buildable="${buildableId}"]`);
+  await row.click();
+  await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
+    'data-selected',
+    'true',
+    { timeout: ARM_TIMEOUT_MS },
+  );
+
+  const before = (await sentCommands(page)).length;
   const buyRow = page.locator('.hud-build__buy');
   if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
   await page.locator('.hud-build__buy .ui-number__input').fill(String(quantity));
   await page.locator('.hud-build__buy-submit').click();
   await page.waitForTimeout(200);
+  return (await sentCommands(page)).slice(before);
 }
 
 /**
@@ -417,9 +735,10 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
     { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
     { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
   ]) {
-    const before = (await sentCommands(page)).length;
-    await drag(page, run.a, run.b);
-    const produced = (await sentCommands(page)).slice(before);
+    // `drag` samples the command stream itself since #1017 -- it has to, to
+    // check that a run laid the buildable it was armed with -- so this reads
+    // what it hands back instead of taking the same two samples again.
+    const produced = await drag(page, run.a, run.b);
     log(`wall run ${run.name}: ${produced.length} command(s) -> ${JSON.stringify(produced.map((c) => `${String(c['x'])},${String(c['y'])} ${String(c['edge'])}`))}`);
   }
   log(`queue right after the wall runs (tick ${await currentTick(page)}): ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
@@ -437,10 +756,45 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
   for (;;) {
     attempts += 1;
     await tab(page, 'rooms').click();
+    // The same class of read #1017 is about, one panel along: `data-collapsed`
+    // is only meaningful once the tab switch has actually swapped the panels,
+    // and a stale `"false"` here skips the toggle and leaves every locator
+    // below aimed at a folded panel.
+    await expect(page.locator('.hud-rooms')).toBeVisible({ timeout: ARM_TIMEOUT_MS });
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
-    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
-    await page.locator('.hud-rooms__arm').click();
+    /*
+     * The same shape as `armBuildable`, one panel along, and for the same
+     * reason (#1017, question 5). `rooms-panel.ts` carries `data-selected` on
+     * the row and `data-armed` on `.hud-rooms__arm`, so both halves are
+     * checkable rather than inferred.
+     *
+     * **And the arm press is conditional now, where it was unconditional.**
+     * `.hud-rooms__arm` is a toggle: pressing it on an already-armed tool
+     * *disarms* it, after which the drag below produces nothing and the
+     * confirm reads `Designate 0 x 0` -- which looks exactly like a rectangle
+     * the world refused, and was read as one on 2026-09-04
+     * (`docs/research/2026-09-04-the-misplay.md` section 3b, withdrawn there).
+     * What kept it working here is `standDownAfterConfirm`, which stands the
+     * tool down on every confirm, so each pass round this loop happened to
+     * start disarmed. That is a fact about the panel, not about this loop, and
+     * the retry count is this function's headline measurement -- so it reads
+     * the state instead of relying on it.
+     */
+    const roomRow = page.locator('.hud-rooms__list [data-room="room.cell"]');
+    await roomRow.click();
+    await expect(roomRow, 'the Rooms panel never redrew with room.cell selected').toHaveAttribute(
+      'data-selected',
+      'true',
+      { timeout: ARM_TIMEOUT_MS },
+    );
+    const roomArm = page.locator('.hud-rooms__arm');
+    if ((await roomArm.getAttribute('data-armed')) !== 'true') await roomArm.click();
+    await expect(roomArm, 'the Rooms panel arm control never reported itself armed').toHaveAttribute(
+      'data-armed',
+      'true',
+      { timeout: ARM_TIMEOUT_MS },
+    );
     await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
     const note = await panelText(page, '.hud-rooms');
     await page.locator('.hud-rooms__confirm').click();
