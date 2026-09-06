@@ -333,7 +333,7 @@ the designation on the map agree without the player having to learn a legend."*
 
 **Nothing reads it.** `grep -rn '\.tint\b' src/ tests/` over the whole tree at
 `052531ae` returns no hit outside this play-test's own comment. The catalogue row
-is built at `src/ui/hud/rooms-panel.ts:645-647` as
+is built at `src/ui/hud/rooms-panel.ts:646-649` as
 `createListRow({ icon: 'rooms', label: t(room.labelKey), … })` — one literal icon
 id for all eighteen rows — and `ListRowOptions`
 (`src/ui/primitives/list-row.ts:16-39`) has **no colour field of any kind** to
