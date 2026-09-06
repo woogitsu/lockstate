@@ -83,8 +83,19 @@ correctness rather than on cost.
 It does not settle §9's weakest claim, which is named there and stands: the
 `TileLayer` rebuild cost is the leg the cost table does not reach, and it is the
 number that would have to move for option 4 to become attractive again. Nor does
-it move any other document's `Status` line: ADR 0097 stays Accepted and ADR 0098
-stays Proposed.
+it move any other document's `Status` line, ADR 0097's or ADR 0098's.
+
+> **The clause that named those two statuses went stale on 2026-09-06, and it
+> is DESCRIBED here rather than quoted** (`docs/AGENT_WORKFLOW.md` §4 asks that
+> both directions be marked; `adr-status-reference-contract` reads a restated
+> status as a live claim by position, not by quotation marks, so a verbatim
+> quotation of a stale status turns the gate red — the same resolution #1043
+> reached from the other side). It named ADR 0097 as accepted and ADR 0098 as
+> not yet decided. ADR 0098's decisions 1 to 4 were accepted by the owner later
+> the same evening, in a ruling of their own. **The sentence's actual claim is
+> untouched by that**: this document's acceptance moved no other document's
+> status line, and still has not. What moved 0098 was 0098's own ruling. The
+> stale half was the snapshot, not the argument.
 
 The question is the owner's to settle, and `docs/AGENT_WORKFLOW.md` §3's rule —
 *"Propose an ADR rather than deciding architecture inside implementation code,
@@ -96,8 +107,14 @@ world has changed, on which channel, and how soon.
 [ADR 0097](./0097-what-the-world-view-is-required-to-communicate.md) is
 Accepted, together with its option A, and this document is written against that
 accepted decision rather than against the draft;
-[ADR 0098](./0098-what-says-which-room-this-is.md) is Proposed and §7 below
-says what it would owe this one and what it would not. Where this document
+[ADR 0098](./0098-what-says-which-room-this-is.md) — undecided when this was
+drafted, and **accepted by the owner on 2026-09-06, after this document was**;
+the clause here originally named it as still open, and is described rather than
+quoted for the reason the note above gives — is what §7 below prices, and §7
+says what it would owe this one and what it would not. **Its acceptance does not change what
+§7 concludes**: §7 answers about 0098's *channel*, and what the owner accepted
+in 0098 are its four decisions, which name a requirement rather than a
+transport. Where this document
 disagrees with either, it says so as a consequence to be priced, not as an
 amendment.
 
