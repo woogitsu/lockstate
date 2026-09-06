@@ -828,8 +828,28 @@ double-counting — gives **41 `Proposed`, 50 `Accepted`, 91 documents with a
 status**. `docs/adr/README.md` agrees row for row
 (`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns 41 against 50
 `Accepted`), and carries 91 linked rows plus the unlinked, file-less `0018` row
-for **92** numbered rows. **Next free number: 0099**, unmoved since `6a661607`
-and restated here rather than recomputed.
+for **92** numbered rows. At `0b8af9f8` the index's next-free line read
+0099, unmoved since `6a661607` and restated rather than recomputed; on the
+tree this branch produces it is **Next free number: 0100**, because ADR 0099
+lands here. See the correction below.
+
+> **Corrected on this branch, 2026-09-06, and it is the correction the
+> composing note above predicted — with one column wrong.** ADR 0099 landing
+> moves every figure in the paragraph above, and that note forecast
+> `42 / 50 / 0100` on the assumption that 0099 would arrive `Proposed`, like
+> every outstanding ADR since 0056 and 0059. **The owner accepted it the same
+> day.** Re-derived on the tree this branch produces, with the same two greps
+> rather than taken from the forecast — which is exactly why the wrong column
+> was caught — the live figures are **41 `Proposed`, 51 `Accepted`, 92
+> documents with a status**, 92 linked rows plus the unlinked, file-less
+> `0018` row for **93** numbered rows, and **Next free number: 0100**, which
+> `docs/adr/README.md` on this branch already states.
+>
+> The paragraph and its forecast are both kept above rather than rewritten
+> (`docs/AGENT_WORKFLOW.md` §4): a forecast that named the right number for
+> the wrong reason is worth more to a later reader than a silently corrected
+> one, and this is the second time in two days that an ADR's *status* — not
+> its number — is what a counting sentence got wrong.
 
 **The outside-window population was checked directly rather than re-scanned
 from scratch.** The previous anchor's eight genuinely-live outside-window
@@ -12099,16 +12119,34 @@ live claim. Nothing here needed a coordinate moved.
 ASSUMING NON-OVERLAP.** `adr/how-the-renderer-learns-geometry-changed` is cut
 from `a2b3632b` (v0.0.507, inside this window) and carries ADR 0099, not yet
 merged. Its sole edit to this file is one hunk inside the v0.0.503 anchor's
-own dated record above — correcting *"Next free number: 0099"* and the
+own dated record above — correcting that record's next-free line and its
 *"nine-anchor streak … neither extended nor broken"* sentence to account for
-ADR 0098 and ADR 0099 both landing `Proposed` with no §2 row. This pass edits
-neither sentence and states no streak figure of its own: the header above
-reports 41 `Proposed` / 50 `Accepted` / next-free 0099, which is what
-`docs/adr/README.md` states on `main` today (ADR 0099 is not on this tree),
-and PR #1043's correction is about the tree ADR 0099 lands on, not this one.
-The two accounts describe two different trees and neither needed to change
-for the other to be true; merging PR #1043 after this pass costs it nothing
-but rebasing past this section's own line numbers.
+ADR 0098 and ADR 0099 both landing with no §2 row. This pass edits neither
+sentence and states no streak figure of its own: the header above reports
+41 `Proposed` / 50 `Accepted` and the next-free line as it stood at
+`0b8af9f8`, which is what `docs/adr/README.md` stated on `main` at that
+commit (ADR 0099 was not on that tree), and PR #1043's correction is about the
+tree ADR 0099 lands on, not that one. The two accounts describe two different
+trees and neither needed to change for the other to be true.
+
+> **Amended on PR #1043's branch, 2026-09-06, which is the tree this paragraph
+> was written to anticipate.** Two things in it needed correcting once the
+> merge actually happened, and both are the kind a forecast gets wrong rather
+> than a coordinate. **First, the numbers quoted here stopped being live and
+> started contradicting the index**: `adr-status-queue-anchor-contract`
+> classifies a next-free restatement as live by position, not by value, so the
+> figure this paragraph quoted from the older tree read as a live claim of
+> 0099 against an index that now says 0100 — a red gate, caught by running the
+> gates after the merge rather than before it. The literal phrasing is
+> therefore replaced by a description; the number itself lives in the dated
+> record above, where it is history and exempt. **Second, this paragraph said
+> ADR 0098 and ADR 0099 would both land `Proposed`.** ADR 0098 did. ADR 0099
+> was accepted by the owner on the day it was drafted, so the live figures on
+> this tree are 41 `Proposed`, 51 `Accepted`, and **Next free number: 0100**
+> — the number forecast, the column not. That restatement is the live one
+> this file carries, and it is stated here rather than left implicit because
+> the gate requires exactly one and requires it to agree with the index. Kept and marked rather than rewritten
+> (`docs/AGENT_WORKFLOW.md` §4).
 
 **THE OUTSIDE-WINDOW SCAN WAS NOT RE-RUN FROM SCRATCH.** The previous anchor's
 script enumerated eight genuinely-live citations outside its own window; this
