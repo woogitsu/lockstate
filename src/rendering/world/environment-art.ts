@@ -194,15 +194,20 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  *
  * Seven of the twenty have no sheet at all -- there is no stove, fridge,
  * bookshelf, washing machine, medical bed, medicine cabinet or security console
- * anywhere in the batch. The other thirteen do have plausible sheets
- * (`furniture.cell.bed.single.variants`, `fixture.cell.toilet_sink`,
- * `furniture.cell.locker.variants`, `furniture.cell.table_stool`,
- * `furniture.corridor.bench.variants`, `furniture.office.desk.employee.variants`,
- * `furniture.visitor.chair.variants`, `storage.container.variants` and the
- * rest) and are left on colour deliberately: each additional sheet is a whole
- * ~1.5 MB download, and furniture is drawn from build orders through a
- * different path from the tile layers this change touches. Objects are the
- * declared next slice, not an oversight.
+ * anywhere in the batch. Of the other thirteen, twelve are left on colour
+ * deliberately: each additional sheet is a whole ~1.5 MB download, and
+ * furniture is drawn from build orders through a different path from the tile
+ * layers this change touches. Objects are the declared next slice, not an
+ * oversight.
+ *
+ * **`object.toilet` left this list on 2026-09-06 (ADR 0100), and not by
+ * gaining an owner-sheet row.** Its only shipped view,
+ * `fixture.cell.toilet_sink`, is a combined toilet+sink column no crop fits
+ * into the 1x1 tile the catalogue declares -- the paragraph above is kept
+ * because it is still true of the other twelve, and because it is the reason
+ * this one needed a second publishing lane rather than a thirteenth row of
+ * the same kind `object.bed` got. `SPRITE_BY_OBJECT_ID` below maps it to
+ * `env.object.toilet`, a Blender render rather than a sheet crop.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bench',
@@ -220,7 +225,6 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.sink',
   'object.storage-rack',
   'object.stove',
-  'object.toilet',
   'object.utility-panel',
   'object.washing-machine',
   'object.waste-bin',
@@ -250,15 +254,23 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
  * summarised rather than kept in full because the module docblock above holds
  * the measurement it was made of.
  *
- * One row, not thirteen. Each additional sheet is a whole ~1.3 MiB download
- * (`OBJECTS_ON_COLOUR_FALLBACK`), and how many of those a first load should
- * carry is ADR-0052's open question and the owner's to answer. What this row
- * settles is the *mechanism*, which was the thing in doubt: a second object is
- * now this line plus a rectangle in `environment-sprites.ts`, and it changes
- * no painter.
+ * One row, not thirteen. Each additional owner sheet is a whole ~1.3 MiB
+ * download (`OBJECTS_ON_COLOUR_FALLBACK`), and how many of those a first load
+ * should carry is ADR-0052's open question and the owner's to answer. What
+ * this row settles is the *mechanism*, which was the thing in doubt: a second
+ * object is now this line plus a rectangle in `environment-sprites.ts`, and it
+ * changes no painter.
+ *
+ * **`object.toilet` is the third row and the first from ADR 0100's second
+ * publishing lane** -- 11.27 KiB, a Blender render rather than a crop of an
+ * owner sheet, because the owner sheet has no crop this footprint fits
+ * (`OBJECTS_ON_COLOUR_FALLBACK`'s comment says why). The mechanism this row
+ * exercises is still exactly the one above: this line plus a sprite
+ * definition, and `acquireObjectSprite` in `tile-layer.ts` is unchanged.
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
+  'object.toilet': 'env.object.toilet',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

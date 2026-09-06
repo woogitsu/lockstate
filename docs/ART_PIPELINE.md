@@ -300,6 +300,48 @@ one, every render fails with `Couldn't open libEGL.so.1` before writing
 anything; `libegl1` and `libegl-mesa0` are enough, and EEVEE then runs on
 llvmpipe at roughly 50 seconds for a 256x512 frame.
 
+### Publishing a render (ADR 0100)
+
+A render committed under `assets/rendered/environment/` is not runtime art
+until it is published, and it is published by a second, narrow generator
+rather than by widening the one above: `tooling/build-rendered-art-catalog.mjs`
+(run as `pnpm content:rendered-art`) reads `environment-objects.render.json`,
+content-hashes each published render, and writes
+`public/game-content/rendered-art.v1.json` -- a sibling of `source-art.v1.json`,
+not a branch inside it, because every entry here carries its *own*
+`dimensionsPx`, `footprintTiles` and `frameTiles` rather than the fixed
+1448x1086 every owner sheet shares.
+
+It publishes only the render ids `src/rendering/assets/environment-sprites.ts`
+actually declares (its `kind: 'rendered-art'` entries) -- not all 23 -- the
+same "a declared sprite costs its download, so declaring art nothing draws
+costs bytes for nothing" rule the owner-sheet extraction manifest already
+follows. `object.toilet` is the first: `fixture.cell.toilet_sink`, 11.27 KiB.
+
+**Published into `public/game-content/source-art/`, the owner sheets'
+own directory, not a new one.** `public/_headers`' `/game-content/source-art/*`
+rule is directory-wide and content-hash-keyed, so reusing the directory needs
+no header change -- ADR 0100 §Decision names this explicitly. Because
+`fixture.cell.toilet_sink` already names a *different*, already-published file
+there (the owner's unused combined toilet+sink sheet), the published filename
+carries a `rendered.` prefix the owner sheets' never will:
+`source-art/rendered.fixture.cell.toilet_sink.<hash>.png`. The catalog's
+`assetId` field is the unprefixed logical id (matching the render sidecar);
+only the published *filename* is disambiguated.
+
+**`tooling/validate-rendered-art-catalog.mjs`** (wired into `pnpm verify:assets`
+beside the actor-atlas validator) is this lane's gate, sized to what can
+actually be checked without Blender: that the published catalog's declared
+sha256 agrees with `environment-objects.render.json`'s own, that the committed
+render and the published copy both hash (or, in a pointer-only checkout,
+declare an LFS `oid`) to that same value, and that
+`frameAspectDriftFromFootprint` is zero and `frameTiles` never falls short of
+`footprintTiles`. It does not, and cannot, re-invoke Blender to prove today's
+render would reproduce those bytes again -- that claim rests on the two
+independent-run comparison recorded above under "Reproducibility", which
+needs the pinned Blender version and an EGL-capable container this gate does
+not require.
+
 ## Intake status
 
 The owner-generated PNG sheets remain source reference/intake material. They are
