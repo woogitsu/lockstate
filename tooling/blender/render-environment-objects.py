@@ -81,8 +81,18 @@ naive byte comparison useless: Blender writes `Date`, `RenderTime` and the
 absolute source `.blend` path into every PNG as `tEXt` chunks. This script
 rewrites each rendered PNG before it lands (see `_flip_and_rewrite_png`), which
 it has to do anyway, and that rewrite carries only `IHDR`, the colour-space
-chunks and `IDAT`. So these outputs are byte-stable as well as pixel-stable,
-and both are checked with `--verify-determinism`.
+chunks and `IDAT`. So these outputs are byte-stable as well as pixel-stable.
+
+**NOTHING CHECKS THAT AUTOMATICALLY, AND THIS SENTENCE USED TO CLAIM OTHERWISE.**
+It said both properties "are checked with `--verify-determinism`"; that flag has
+never existed -- `cli_arguments()` below defines `--output`, `--only` and
+`--pixels-per-tile` and nothing else -- and `tooling/verify-pipeline-determinism.mjs`,
+which `tests/determinism/art-pipeline-determinism.test.ts` runs, does not mention
+this script or its output directory at all. Both properties were established by
+running this script twice by hand and comparing 23 file hashes and 23 decoded
+pixel buffers, twice, by two people; they hold, and they hold with no gate behind
+them. Writing that gate is owed work, and it is owed before this pipeline is
+trusted for art nobody has looked at.
 
 ## Why the rewrite exists at all
 
