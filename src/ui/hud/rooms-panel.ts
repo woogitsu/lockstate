@@ -469,6 +469,25 @@ export function roomNeedsSubjectOf(needs: HudRoomNeedsViewModel | undefined): 'n
  */
 export const MAX_ROOM_SIDE_TILES = 64;
 
+/**
+ * `HudRoomViewModel.tint` (#1021, ADR 0098 option A) as a CSS colour.
+ *
+ * The value is a Phaser-style 24-bit `0xRRGGBB` number -- the same one
+ * `WorldScene` tints a zoned room's tiles with -- so this is arithmetic, not a
+ * second colour table: `zoningTint` in `src/rendering/world/appearance.ts` is
+ * the one place a room's hue is chosen, `src/main.ts`'s `roomCatalogue()`
+ * reads it onto every row's `tint` field, and this converts the same number
+ * to the string form CSS wants. Nothing here could drift from the map,
+ * because nothing here decides a colour.
+ *
+ * Exported and module-scoped rather than a closure inside `createRoomsPanel`,
+ * so the conversion has a headless test of its own
+ * (`tests/unit/ui-hud-rooms-panel.test.ts`) rather than only the browser spec
+ * that exercises it end to end -- `vitest.config.ts` runs with no DOM, but a
+ * pure arithmetic function does not need one.
+ */
+export const tintToCssColor = (tint: number): string => `#${(tint & 0xffffff).toString(16).padStart(6, '0')}`;
+
 function requirementLabelKey(requirement: HudRoomEnclosureRequirement): LocalizationKey {
   switch (requirement) {
     case 'enclosed':
@@ -625,19 +644,6 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * carrier of which room type is chosen. The badge stays as the visual one.
    */
   const rowOrder: string[] = model.rooms.map((room) => room.roomId);
-
-  /*
-   * `HudRoomViewModel.tint` (#1021, ADR 0098 option A) as a CSS colour.
-   *
-   * The value is a Phaser-style 24-bit `0xRRGGBB` number -- the same one
-   * `WorldScene` tints a zoned room's tiles with -- so this is arithmetic, not
-   * a second colour table: `zoningTint` in `src/rendering/world/appearance.ts`
-   * is the one place a room's hue is chosen, `src/main.ts`'s `roomCatalogue()`
-   * reads it onto every row's `tint` field, and this converts the same number
-   * to the string form CSS wants. Nothing here could drift from the map,
-   * because nothing here decides a colour.
-   */
-  const tintToCssColor = (tint: number): string => `#${(tint & 0xffffff).toString(16).padStart(6, '0')}`;
 
   const paintCatalogue = (): void => {
     const selectedIndex = selectedId === undefined ? undefined : rowOrder.indexOf(selectedId);
