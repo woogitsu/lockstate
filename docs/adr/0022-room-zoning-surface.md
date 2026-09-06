@@ -254,12 +254,29 @@ zone should be undoable at all is left open in §*What this does not settle*.
 **An accepted zone is visible with no renderer work at all.** The zoning plane
 is already projected, decoded and painted per tile with a per-category tint:
 `src/simulation/presentation/world-projection.ts:16,44` carries `zoning` in the
-chunk projection → `src/rendering/world/world-view.ts:116` decodes the RLE and
-`:179` reads it per tile → `src/rendering/phaser/tile-layer.ts:189-197` fills the
-tile with `zoningTint` (`src/rendering/world/appearance.ts:96`) at
-`ZONING_TINT_ALPHA` (`:93`). This is true of all three alternatives and is not
+chunk projection → `src/rendering/world/world-view.ts:117` decodes the RLE and
+`:180` reads it per tile → `src/rendering/phaser/tile-layer.ts:358-366` fills the
+tile with `zoningTint` (`src/rendering/world/appearance.ts:114`) at
+`ZONING_TINT_ALPHA` (`:99`). This is true of all three alternatives and is not
 an argument for any one of them; it is recorded because it is the largest piece
 of work that does *not* have to be done.
+
+**Five of those six anchors were re-aimed on 2026-09-05, and the split between
+them is worth more than the new numbers.** The chain read `world-view.ts:116`,
+`:179`, `tile-layer.ts:189-197`, `appearance.ts:96` and `:93`. **Every one of
+the five was already wrong at `c57f5fa8`**, the previous status-queue anchor,
+so no window found them and no delta pass could have:
+`tile-layer.ts:189-197` was the graphics-pool `acquire` helper there and had
+nothing to do with zoning; the two `world-view.ts` numbers were each one short,
+landing on the `leftEdge` line above the `zoning` one; `zoningTint` stood at
+`appearance.ts:113` against the `:96` cited, and `ZONING_TINT_ALPHA` at `:98`
+against `:93`. #1028's object-painter work then moved the last two by one
+apiece, which is the whole of what this window did to a sentence that had been
+carrying five false coordinates before it opened. Only
+`world-projection.ts:16,44` held. The claim the sentence makes — that an
+accepted zone is painted per tile with a per-category tint with no renderer
+work — was re-derived and is true; it was the coordinates that had rotted, in
+the direction this corpus records over and over.
 
 **A rectangle drag is a second gesture, not an edit to the wall drag**, and
 this is the honest cost of the decision. The build picking layer is edge-typed
