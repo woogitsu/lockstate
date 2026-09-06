@@ -1,5 +1,5 @@
 import { defaultObjectRegistry } from '../../content/object-catalog';
-import { defaultRoomContentRegistry, type RoomCategory } from '../../content/room-catalog';
+import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import {
   BUILDABLE_REGISTRY,
   DOOR_EDGE_NUMERIC_ID,
@@ -81,19 +81,59 @@ export function terrainAppearance(numericId: number): TerrainAppearance {
   return TERRAIN_APPEARANCE[id] ?? UNKNOWN_TERRAIN_APPEARANCE;
 }
 
-/** Tint applied over a zoned tile, keyed by the room's own category. */
-const ZONING_TINT_BY_CATEGORY: Readonly<Record<RoomCategory, number>> = {
-  housing: 0x4f7fd0,
-  security: 0xd05a4f,
-  operations: 0xd0a24f,
-  food: 0xd0854f,
-  hygiene: 0x4fc0d0,
-  recreation: 0x76d04f,
-  education: 0x9a4fd0,
-  medical: 0xd04f9a,
-  administration: 0x8f97a3,
-  logistics: 0xc9d04f,
-  utility: 0x4fd0a2,
+/**
+ * Tint applied over a zoned tile, keyed by the room's own catalogue id
+ * (ADR 0098, option A) -- one row per room *type*, not per category.
+ *
+ * Before this table, `zoningTint` resolved the room and then discarded it in
+ * favour of `room.category`, so eighteen room types collapsed onto eleven
+ * tints and seven pairs (Kitchen/Canteen among them) were pixel-identical on
+ * the map. Keying by id removes that collision: every row below is distinct,
+ * and `tests/unit/appearance-zoning-tint.test.ts` fails if two ever match
+ * again.
+ *
+ * **This forecloses the category as a thing the map shows.** Eighteen
+ * independent hues throw away the fact that, say, Kitchen and Canteen are
+ * both `food` -- a player can no longer see that family relationship in the
+ * tint the way the old (collapsed) table incidentally showed it. ADR 0098
+ * names this cost and takes it anyway: closing the seven collisions is worth
+ * more than the family grouping, and option B (hue-per-category,
+ * value-per-member) is the option that would have kept both, at the same
+ * price, if a later pass wants it.
+ *
+ * **The hues are respaced, not just re-keyed.** The eleven categories they
+ * replace shared one discriminating dimension (hue) and spent it unevenly --
+ * `operations` and `food` sat 14 degrees apart on a wheel whose mean gap is
+ * 36 degrees, which is why Reception and Kitchen were the tightest pair on
+ * screen (4.06 effective units) even before any collision. These eighteen
+ * hues are spaced evenly at 20 degrees, holding the palette's own saturation
+ * and value (`s = 0.62, v = 0.82`), which is the spacing ADR 0098 Context §2
+ * and decision 3 recommend. That raises the worst pair from 4.06 to **6.02**
+ * effective units (`room.classroom` vs `room.infirmary`, and `room.common-room`
+ * vs `room.classroom`, tied) -- better, but still far under the 25.4-unit
+ * pixel-to-pixel spread of the floor art it is painted on. This closes a
+ * keying defect; it does not make room type legible on its own. The name
+ * drawn on the map is what does that (see the room-labels renderer module).
+ */
+const ZONING_TINT_BY_ROOM_ID: Readonly<Record<string, number>> = {
+  'room.cell': 0xd14f4f,
+  'room.holding-cell': 0xd17b4f,
+  'room.solitary-cell': 0xd1a64f,
+  'room.reception': 0xd1d14f,
+  'room.kitchen': 0xa6d14f,
+  'room.canteen': 0x7bd14f,
+  'room.shower-room': 0x4fd14f,
+  'room.laundry': 0x4fd17b,
+  'room.yard': 0x4fd1a6,
+  'room.common-room': 0x4fd1d1,
+  'room.classroom': 0x4fa6d1,
+  'room.infirmary': 0x4f7bd1,
+  'room.security-office': 0x4f4fd1,
+  'room.staff-room': 0x7b4fd1,
+  'room.storage-room': 0xa64fd1,
+  'room.delivery-bay': 0xd14fd1,
+  'room.garbage-room': 0xd14fa6,
+  'room.utility-room': 0xd14f7b,
 };
 
 export const ZONING_TINT_ALPHA = 0.28;
@@ -105,8 +145,8 @@ export const ZONING_TINT_ALPHA = 0.28;
  * the wash is strong enough that a photographed linoleum floor stops reading as
  * a floor and becomes a coloured rectangle again, which would have thrown away
  * the whole point of drawing it. It is not removed, because the tint is what
- * says *which* room this is -- `zoningTint` is keyed by the room's category --
- * and that is gameplay information, not decoration.
+ * says *which* room this is -- `zoningTint` is keyed by the room's own catalogue
+ * id -- and that is gameplay information, not decoration.
  */
 export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
 
@@ -115,7 +155,7 @@ export function zoningTint(zoningNumericId: number): number | undefined {
   if (zoningNumericId === 0) return undefined;
   const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
   if (room === undefined) return undefined;
-  return ZONING_TINT_BY_CATEGORY[room.category];
+  return ZONING_TINT_BY_ROOM_ID[room.id];
 }
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */

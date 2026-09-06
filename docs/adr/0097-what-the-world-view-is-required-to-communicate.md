@@ -168,12 +168,20 @@ paints from three inputs and no more:
    `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;`
    (verbatim in `src/rendering/phaser/tile-layer.ts`)
 
-   and resolved through a table keyed by the room's **category**:
+   and resolved, at the time this was written, through a table keyed by the
+   room's **category**:
 
-   `return ZONING_TINT_BY_CATEGORY[room.category];`
-   (verbatim in `src/rendering/world/appearance.ts`)
+       return ZONING_TINT_BY_CATEGORY[room.category];
 
-   `ZONING_TINT_BY_CATEGORY` is at `src/rendering/world/appearance.ts:85-97`.
+   (that line stood in `src/rendering/world/appearance.ts` on the commit this
+   document was cut from; it does not any more.) **Superseded, 2026-09-06:**
+   [ADR 0098](./0098-what-says-which-room-this-is.md) option A, chosen by the
+   owner the same day, keys that table by the room's own catalogue id instead
+   -- `ZONING_TINT_BY_ROOM_ID[room.id]` (verbatim in
+   `src/rendering/world/appearance.ts`) -- for the reason ADR 0098 Context §2
+   and decision 3 give. Nothing about *this* document's decision 3 (condition
+   goes to the boundary, identity stays on the tint) moves: which table the
+   tint reads is beneath the allocation this ADR made, not a change to it.
 
 3. **The edge art**, `EDGE_ART_BY_NUMERIC_ID`
    (`src/rendering/world/environment-art.ts:125-128`), two rows: a wall and a

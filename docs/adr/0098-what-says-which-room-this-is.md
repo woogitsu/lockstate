@@ -128,14 +128,27 @@ amendment.
 
 ### 1. What #1021 established, and the one number in it that is wrong
 
-VERIFIED, read. The mechanism is exactly as the issue states it. `zoningTint`
-resolves the room and then throws the room away:
+VERIFIED, read, of the code as it stood when this was written. The mechanism
+was exactly as the issue stated it. `zoningTint` resolved the room and then
+threw the room away:
 
-`return ZONING_TINT_BY_CATEGORY[room.category];`
-(verbatim in `src/rendering/world/appearance.ts`)
+    return ZONING_TINT_BY_CATEGORY[room.category];
 
-`ZONING_TINT_BY_CATEGORY` is at `src/rendering/world/appearance.ts:85`, and it
-is keyed by `RoomCategory` rather than by room id. The floor underneath cannot
+(that line stood in `src/rendering/world/appearance.ts` on `02490b6e`, the
+commit this document was cut from; it does not any more, which is the point).
+
+**Implemented, 2026-09-06, same day as the ruling.** Option A landed:
+`zoningTint` now resolves `ZONING_TINT_BY_ROOM_ID[room.id]`
+(verbatim in `src/rendering/world/appearance.ts`), and the paragraph above is
+kept in the past tense rather than deleted, per `docs/AGENT_WORKFLOW.md` §4 --
+a reader should be able to see what the code *was* doing when this document
+was written, not just what it does now. The two sentences immediately below,
+about `ZONING_TINT_BY_CATEGORY`'s line number and its keying, describe that
+same past state and are unindented prose rather than a quotation for the same
+reason: nothing here still claims to be verbatim.
+
+`ZONING_TINT_BY_CATEGORY` was at `src/rendering/world/appearance.ts:85`, keyed
+by `RoomCategory` rather than by room id. The floor underneath could not
 make up the difference, because there is one floor:
 
 `return 'env.floor.institutional';`
