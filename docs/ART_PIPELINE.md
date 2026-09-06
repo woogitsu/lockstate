@@ -249,6 +249,41 @@ own repeat exactly, and a 6% transparent margin is precisely wrong for that. The
 four surface frames in `environment-sprites.ts` remain cut from the owner
 sheets, and nothing here changes them.
 
+**Where the output is, and what it measures.** `assets/rendered/environment/`
+holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the
+same kind of `.gitattributes` rule as the sheets beside them. Measured on
+2026-09-06 with two independent runs of the renderer executing *concurrently*
+against the same `.blend`:
+
+| | run A | run B |
+| --- | --- | --- |
+| digest over all 23 files | `b4e70814…` | `b4e70814…` ✓ |
+| digest over all 23 decoded pixel buffers | `d136db43…` | `d136db43…` ✓ |
+| sidecar manifest | identical | identical ✓ |
+
+`frameAspectDriftFromFootprint` is `0` for every one of the 23. The catalogue
+that fed them regenerates to an identical `scene-fingerprint.py` document across
+runs as well (`a242a490…`), so neither half of the chain reintroduced the
+order-instability issue #64 fixed.
+
+`assets/rendered/evidence/` holds three pictures, because a claim that art looks
+better needs one: `bed-vs-owner-sheet.png` puts the rendered bed beside the
+owner sheet's declared `env.object.bed` crop -- (740, 288, 460x230), resampled
+and quarter-turned exactly as `environment-textures.ts` would -- at 3x and at
+the 128x256 the game actually draws; `geometry-before-after.png` pairs six
+objects across the 2026-09-06 remodel; `all-23-objects.png` is the whole set.
+
+**The honest reading of that first picture: the owner's sheet wins at 3x and the
+render wins at 1x.** The sheet carries fabric weave, creases in the pillow and a
+folded blanket with a real fold in it, and this pipeline cannot produce any of
+that -- there are no textures anywhere in it, only flat materials under two
+suns. At the size the game draws an object those details are gone to
+downsampling, and what survives is contrast between parts, which the render has
+more of: a blue blanket against a grey sheet reads at 64px where dark grey
+against cream does not. So the render is not better *art*; it is better *sprite*
+at this scale, and it is the only option at all for an object whose sheet holds
+no usable view -- which is `fixture.cell.toilet_sink`, and is why this exists.
+
 **Blender needs an EGL library even in `--background`.** On a container without
 one, every render fails with `Couldn't open libEGL.so.1` before writing
 anything; `libegl1` and `libegl-mesa0` are enough, and EEVEE then runs on
