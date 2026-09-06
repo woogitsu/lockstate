@@ -133,6 +133,41 @@ outward-facing or unrevertable, which is the whole reason:
 3. **Deploy configuration** — `public/_headers`, `.github/workflows/deploy.yml`,
    the Cloudflare or Supabase dashboards. Nothing in this repository can read
    back what those dashboards hold, so a change there cannot be verified here.
+
+   **NARROWLY RELEASED ON 2026-09-06, FOR ONE CHANGE IN ONE FILE.** Asked how
+   to unblock object art, the owner answered:
+
+   > Przyjmij drugą ścieżkę i odblokuj ci.yml
+
+   ("Accept the second lane and unblock `ci.yml`.") The option carrying that
+   answer named exactly what it authorised, and the release is that and nothing
+   wider:
+
+   > Tym samym autoryzujesz JEDNĄ zmianę w `.github/workflows/ci.yml`:
+   > rozszerzenie filtra LFS i asercji dekodowania o nową ścieżkę.
+
+   ("You are thereby authorising ONE change in `.github/workflows/ci.yml`:
+   extending the LFS filter and the decode assertion to the new path.")
+
+   **What the release covers, exactly.** The `browser` job's
+   `git lfs pull --include=` filter and the `Assert the environment sheets
+   decoded` step that follows it, extended to cover the published path ADR 0100
+   defines. Nothing else in that file: not a second job, not a second workflow,
+   not `deploy.yml`, and not the runner selectors, which were authorised
+   separately on 2026-09-05.
+
+   **Why it had to be released before any agent could draw an object.** The
+   decode step derives its ids from `src/rendering/assets/environment-sprites.ts`
+   by grep and then requires each to exist under
+   `public/game-content/source-art/`, failing closed with an error whose own
+   text says `add '<id>' to the --include filter above`. So a sprite published
+   anywhere else fails seven browser specs, and the fix was inside a reserved
+   file — which made this a decision the owner had to take rather than a patch
+   an agent could write. ADR 0100 records the reading in full.
+
+   **`public/_headers`, `wrangler.jsonc`, `deploy.yml` and both dashboards are
+   untouched by this**, and the sentence above about dashboards not being
+   readable from here still holds for all of them.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.

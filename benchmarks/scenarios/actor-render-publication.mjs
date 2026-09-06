@@ -194,7 +194,10 @@ async function runPublication(seed, population) {
   }
 
   const walkersInTransit = locomotion.walkingCount;
-  const buffer = modules.encodeRenderActorsKeyframe(source, ticksPerWallSecond);
+  // ADR 0099's marker, held at zero: this scenario builds nothing, so the
+  // drawn world genuinely has not changed, and the encoder requires the
+  // argument rather than defaulting it so that the absence is stated.
+  const buffer = modules.encodeRenderActorsKeyframe(source, ticksPerWallSecond, 0);
   const payload = modules.decodeRenderActorsPayload(buffer);
   const actors = modules.actorsFromDelta(payload);
 
@@ -304,11 +307,38 @@ const SMOKE_BOUNDS = Object.freeze({
   getIdByIndexCalls: { equals: 500 },
   locomotionReadCalls: { equals: 500 },
   locomotionReadCallsPerLiveActor: { equals: 1 },
-  payloadByteLength: { equals: 10_016 },
-  payloadBytesPerActor: { max: 20.032 },
+  /*
+   * MOVED BY FOUR BYTES ON 2026-09-06, AND THE FOUR IS THE WHOLE POINT.
+   * ADR 0099, accepted by the owner that day, adds a fifth header word to
+   * `lockstate.render-actors` so the renderer learns that the world's geometry
+   * changed -- one `Uint32`, four bytes per publication, priced in the document
+   * as exactly that. `RENDER_ACTORS_HEADER_WORDS` went 4 to 5 and this bound
+   * went 10,016 to 10,020: 500 records at 20 bytes plus a header that is now
+   * twenty bytes rather than sixteen.
+   *
+   * The bound is `equals` rather than `max` deliberately, so a payload that
+   * grows for a reason nobody wrote down fails here. It did exactly that: this
+   * scenario is the gate that caught the change, because `benchmarks/` sits
+   * outside `tsconfig.include` and neither `pnpm typecheck` nor `pnpm test`
+   * reads it (#602). `main` went red on the merge that landed the header word,
+   * with every other gate green.
+   *
+   * `payloadBytesPerActor` moves with it because it is this number divided by
+   * the population: 10,020 / 500 = 20.04 exactly.
+   */
+  payloadByteLength: { equals: 10_020 },
+  payloadBytesPerActor: { max: 20.04 },
   decodedRecordCount: { equals: 500 },
   decodedRemovedCount: { equals: 0 },
-  decodedLayoutVersion: { equals: 2 },
+  /*
+   * 2 -> 3 with the same change: ADR 0099's fifth header word is a layout
+   * change, so `RENDER_ACTORS_LAYOUT_VERSION` is now 3
+   * (`src/simulation/protocol/render-actors-payload.ts`, read rather than
+   * assumed). A reader who sees only the byte count move might think the
+   * header grew without the version saying so, which is the failure this
+   * pair of bounds exists to make impossible.
+   */
+  decodedLayoutVersion: { equals: 3 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 500 },
 });
@@ -331,11 +361,12 @@ const FULL_BOUNDS = Object.freeze({
   getIdByIndexCalls: { equals: 5_000 },
   locomotionReadCalls: { equals: 5_000 },
   locomotionReadCallsPerLiveActor: { equals: 1 },
-  payloadByteLength: { equals: 100_016 },
-  payloadBytesPerActor: { max: 20.0032 },
+  /* Same four bytes as the smoke profile above; 100,020 / 5,000 = 20.004. */
+  payloadByteLength: { equals: 100_020 },
+  payloadBytesPerActor: { max: 20.004 },
   decodedRecordCount: { equals: 5_000 },
   decodedRemovedCount: { equals: 0 },
-  decodedLayoutVersion: { equals: 2 },
+  decodedLayoutVersion: { equals: 3 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 5_000 },
 });

@@ -1,0 +1,402 @@
+{
+  "startedAt": 26880,
+  "deltas": [
+    {
+      "t": 26738.20000000298,
+      "tick": 1,
+      "worldRevision": 1
+    },
+    {
+      "t": 26836.60000000149,
+      "tick": 3,
+      "worldRevision": 1
+    },
+    {
+      "t": 26932.40000000596,
+      "tick": 5,
+      "worldRevision": 1
+    },
+    {
+      "t": 27063.90000000596,
+      "tick": 7,
+      "worldRevision": 1
+    },
+    {
+      "t": 27123.10000000149,
+      "tick": 9,
+      "worldRevision": 1
+    },
+    {
+      "t": 27229.10000000149,
+      "tick": 11,
+      "worldRevision": 1
+    },
+    {
+      "t": 27327.5,
+      "tick": 13,
+      "worldRevision": 1
+    },
+    {
+      "t": 27429.10000000149,
+      "tick": 15,
+      "worldRevision": 1
+    },
+    {
+      "t": 27535.40000000596,
+      "tick": 18,
+      "worldRevision": 1
+    },
+    {
+      "t": 27639.80000000447,
+      "tick": 20,
+      "worldRevision": 1
+    },
+    {
+      "t": 27790.5,
+      "tick": 22,
+      "worldRevision": 1
+    },
+    {
+      "t": 27884.90000000596,
+      "tick": 24,
+      "worldRevision": 1
+    },
+    {
+      "t": 27992.40000000596,
+      "tick": 26,
+      "worldRevision": 1
+    },
+    {
+      "t": 28086.20000000298,
+      "tick": 28,
+      "worldRevision": 1
+    },
+    {
+      "t": 28183.40000000596,
+      "tick": 30,
+      "worldRevision": 1
+    },
+    {
+      "t": 28289.80000000447,
+      "tick": 32,
+      "worldRevision": 1
+    },
+    {
+      "t": 28382.20000000298,
+      "tick": 34,
+      "worldRevision": 1
+    },
+    {
+      "t": 28485.5,
+      "tick": 36,
+      "worldRevision": 1
+    },
+    {
+      "t": 28627.60000000149,
+      "tick": 39,
+      "worldRevision": 1
+    },
+    {
+      "t": 28731.60000000149,
+      "tick": 41,
+      "worldRevision": 1
+    },
+    {
+      "t": 28837.40000000596,
+      "tick": 43,
+      "worldRevision": 1
+    },
+    {
+      "t": 28898.20000000298,
+      "tick": 45,
+      "worldRevision": 1
+    },
+    {
+      "t": 29001.80000000447,
+      "tick": 47,
+      "worldRevision": 1
+    },
+    {
+      "t": 29107,
+      "tick": 49,
+      "worldRevision": 1
+    },
+    {
+      "t": 29262.10000000149,
+      "tick": 51,
+      "worldRevision": 1
+    },
+    {
+      "t": 29363.30000000447,
+      "tick": 53,
+      "worldRevision": 1
+    },
+    {
+      "t": 29464.80000000447,
+      "tick": 55,
+      "worldRevision": 1
+    },
+    {
+      "t": 29579,
+      "tick": 57,
+      "worldRevision": 1
+    },
+    {
+      "t": 29633.20000000298,
+      "tick": 60,
+      "worldRevision": 1
+    },
+    {
+      "t": 29780.10000000149,
+      "tick": 62,
+      "worldRevision": 1
+    },
+    {
+      "t": 29882.90000000596,
+      "tick": 64,
+      "worldRevision": 1
+    },
+    {
+      "t": 29989.70000000298,
+      "tick": 66,
+      "worldRevision": 1
+    },
+    {
+      "t": 30091.90000000596,
+      "tick": 68,
+      "worldRevision": 1
+    },
+    {
+      "t": 30188.60000000149,
+      "tick": 70,
+      "worldRevision": 1
+    },
+    {
+      "t": 30286.70000000298,
+      "tick": 72,
+      "worldRevision": 1
+    },
+    {
+      "t": 30389.60000000149,
+      "tick": 74,
+      "worldRevision": 1
+    },
+    {
+      "t": 30483.30000000447,
+      "tick": 76,
+      "worldRevision": 1
+    },
+    {
+      "t": 30584,
+      "tick": 78,
+      "worldRevision": 1
+    },
+    {
+      "t": 30724.80000000447,
+      "tick": 81,
+      "worldRevision": 1
+    },
+    {
+      "t": 30829.10000000149,
+      "tick": 83,
+      "worldRevision": 1
+    },
+    {
+      "t": 30923,
+      "tick": 85,
+      "worldRevision": 1
+    },
+    {
+      "t": 31025.70000000298,
+      "tick": 87,
+      "worldRevision": 1
+    },
+    {
+      "t": 31128.20000000298,
+      "tick": 89,
+      "worldRevision": 1
+    },
+    {
+      "t": 31228.30000000447,
+      "tick": 91,
+      "worldRevision": 1
+    },
+    {
+      "t": 31337.30000000447,
+      "tick": 93,
+      "worldRevision": 1
+    },
+    {
+      "t": 31434.60000000149,
+      "tick": 95,
+      "worldRevision": 1
+    },
+    {
+      "t": 31535.80000000447,
+      "tick": 97,
+      "worldRevision": 1
+    },
+    {
+      "t": 31627.10000000149,
+      "tick": 99,
+      "worldRevision": 1
+    },
+    {
+      "t": 31775.80000000447,
+      "tick": 102,
+      "worldRevision": 1
+    },
+    {
+      "t": 31881.60000000149,
+      "tick": 104,
+      "worldRevision": 1
+    },
+    {
+      "t": 31993.90000000596,
+      "tick": 106,
+      "worldRevision": 1
+    },
+    {
+      "t": 32099.20000000298,
+      "tick": 108,
+      "worldRevision": 1
+    },
+    {
+      "t": 32197,
+      "tick": 110,
+      "worldRevision": 1
+    },
+    {
+      "t": 32306.5,
+      "tick": 112,
+      "worldRevision": 1
+    },
+    {
+      "t": 32403.90000000596,
+      "tick": 114,
+      "worldRevision": 1
+    },
+    {
+      "t": 32497.5,
+      "tick": 116,
+      "worldRevision": 1
+    },
+    {
+      "t": 32594.10000000149,
+      "tick": 118,
+      "worldRevision": 1
+    },
+    {
+      "t": 32684.10000000149,
+      "tick": 120,
+      "worldRevision": 1
+    },
+    {
+      "t": 32824.5,
+      "tick": 123,
+      "worldRevision": 2
+    },
+    {
+      "t": 32919.80000000447,
+      "tick": 125,
+      "worldRevision": 2
+    },
+    {
+      "t": 33012.40000000596,
+      "tick": 127,
+      "worldRevision": 2
+    },
+    {
+      "t": 33110.30000000447,
+      "tick": 129,
+      "worldRevision": 2
+    },
+    {
+      "t": 33204.10000000149,
+      "tick": 131,
+      "worldRevision": 2
+    },
+    {
+      "t": 33351.70000000298,
+      "tick": 133,
+      "worldRevision": 2
+    },
+    {
+      "t": 33446.60000000149,
+      "tick": 135,
+      "worldRevision": 2
+    },
+    {
+      "t": 33545.5,
+      "tick": 137,
+      "worldRevision": 2
+    },
+    {
+      "t": 33646.80000000447,
+      "tick": 139,
+      "worldRevision": 2
+    },
+    {
+      "t": 33744.60000000149,
+      "tick": 141,
+      "worldRevision": 2
+    },
+    {
+      "t": 33839.10000000149,
+      "tick": 144,
+      "worldRevision": 2
+    },
+    {
+      "t": 33945.20000000298,
+      "tick": 146,
+      "worldRevision": 2
+    },
+    {
+      "t": 34094,
+      "tick": 148,
+      "worldRevision": 2
+    },
+    {
+      "t": 34144.80000000447,
+      "tick": 150,
+      "worldRevision": 2
+    },
+    {
+      "t": 34286.90000000596,
+      "tick": 152,
+      "worldRevision": 4
+    },
+    {
+      "t": 34424.30000000447,
+      "tick": 154,
+      "worldRevision": 4
+    },
+    {
+      "t": 34472.60000000149,
+      "tick": 156,
+      "worldRevision": 4
+    },
+    {
+      "t": 34571.90000000596,
+      "tick": 158,
+      "worldRevision": 4
+    },
+    {
+      "t": 34688.70000000298,
+      "tick": 160,
+      "worldRevision": 4
+    }
+  ],
+  "moves": [
+    {
+      "t": 32824.5,
+      "tick": 123,
+      "worldRevision": 2
+    },
+    {
+      "t": 34286.90000000596,
+      "tick": 152,
+      "worldRevision": 4
+    }
+  ]
+}

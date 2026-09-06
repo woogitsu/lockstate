@@ -162,18 +162,21 @@ its first sender: `SimulationWorkerStateMachine.publishRenderDelta` posts an
 unsolicited keyframe of the live prisoner population beside the clock and
 status-counts publications already on the tick loop, on a **100 ms ceiling**
 and skipped entirely while the tick stands still. The body is an
-`array-buffer` `versionedPayload` -- `lockstate.render-actors` v1, whose layout
+`array-buffer` `versionedPayload` -- `lockstate.render-actors` (v1 at slice 1, v3 since ADR 0099), whose layout
 is defined once in `src/simulation/protocol/render-actors-payload.ts` -- and it
 is transferred rather than copied. Applying one replaces `RenderFrame.actors`
-and nothing else.
+and nothing else, and **reads one header word that is not about the actors at
+all**: ADR 0099's marker, which sets the feed's sixth `dirty` mark and touches
+no field of the frame.
 
 **Geometry still arrives on a snapshot request**, which is now a consistency net
 rather than the render path. The feed makes one with
 `reason: 'consistency-check'` so its requests are distinguishable from saves,
 and it asks only when the world can actually have changed: once when a session
 becomes ready, after any command is accepted, again once the simulation reaches
-the tick that command was scheduled for, when the clock *starts*, and on a
-**30-second** interval while the clock is running. A paused, *idle* prison costs
+the tick that command was scheduled for, when the clock *starts*, **when a
+delta reports that the drawn world changed**, and on a **30-second** interval
+while the clock is running. A paused, *idle* prison costs
 exactly one request — idle meaning the player is not doing anything, which since
 ADR 0051 (*"What a player sees for an order given while the clock is paused"*) is a distinction worth drawing: an order given
 during a pause is dispatched on the spot, so it costs the request its acceptance
@@ -185,7 +188,49 @@ be skipped at a tick already drawn.
 A running one costs **two over thirty seconds** — the session's first, and the
 consistency poll at the end of the interval — and
 `tests/unit/rendering-feed.test.ts` pins that figure against the traffic a
-running worker actually puts on the boundary.
+running worker actually puts on the boundary. A prison *being built* costs one
+more per **drawn phase change**, which is two per order and not one, because
+that is what the fifth mark reports — plus **one redundant request per
+geometry-changing command**, which ADR 0099 does not mention: zoning a room
+writes a chunk layer during the tick the feed is already fetching for, so the
+next delta asks again for a world it is already holding. Measured at 19 → 20
+feed snapshots over a full playtest run, bounded by how many such commands a
+player presses; `simulation-snapshot-feed.ts` says why it is not removed (it
+would need the marker on the snapshot *reply*, which is the protocol change
+ADR 0099 declines) and `tests/unit/rendering-feed.test.ts` pins it at one.
+
+> **The fifth of those marks arrived last, and the list above had five members
+> and not six until it did.** Every one of the original five is a fact about a
+> message this thread already had — a session becoming ready, an accepted
+> command, the tick that command was scheduled for, a resumed clock, a lost
+> request — and a build order *completing* is a fact about the simulation
+> alone: the command that created it was accepted hundreds of ticks earlier. So
+> the drawn world advanced only on the thirty-second poll, and
+> `docs/research/2026-09-06-what-a-finished-door-is-drawn-as.md` measured a
+> finished door drawn as a translucent unbuilt ghost for **22.0, 25.8, 26.1,
+> 27.6 and 28.0 seconds** across five runs while the Build panel had already
+> stopped listing the order (issue #1037).
+>
+> [ADR 0099](./adr/0099-how-the-renderer-learns-the-world-changed.md) is the
+> accepted answer and it is deliberately **a notification, not a channel**: the
+> worker publishes a monotone marker as the fifth header word of
+> `lockstate.render-actors` (`u32[4]`, four bytes a publication whatever the
+> population), the feed treats a change in it as a sixth `dirty` mark, and the
+> snapshot request above does the fetching. Measured on the branch that landed
+> it, with the same instrument that found the defect at 100 ms resolution
+> (`tests/browser/playtest-1037-when-the-renderer-learns.playtest.ts`):
+> **22,505 ms before, −238 ms after** — negative because the renderer now
+> learns from the simulation directly while the Build panel still waits for a
+> clock heartbeat.
+>
+> **The poll stays at thirty seconds and stays a consistency net.** Carrying
+> chunk geometry on the delta channel is still ADR 0040's slice 4 and this is
+> not it: the marker carries no tile, no order id and no phase, so
+> `SimulationSnapshotFeed.apply` still builds `world` and `structures` in one
+> object literal from one `SessionSnapshotBundle` and
+> `tests/integration/completed-edge-structures-arrive-with-their-edge.test.ts`
+> holds for exactly the reason it held before. A notification cannot split what
+> a single capture joins.
 
 > **This paragraph said the same thing before and was false when it was
 > written.** Between `d7b4a56` (2026-08-23) and the correction, the feed marked
@@ -223,16 +268,23 @@ a fresh process per configuration:
 | session bundle, as JSON | 101,856 bytes | 596,659 bytes |
 | render-actors keyframe (layout 1) | 8,016 bytes | **80,016 bytes** |
 | render-actors keyframe (layout 2, ADR 0059) | 10,016 bytes | **100,016 bytes** |
+| render-actors keyframe (layout 3, ADR 0099) | 10,020 bytes | **100,020 bytes** |
 | the same actors as JSON rows | 11,811 bytes | 126,823 bytes |
 
 Every timing in that table was measured against layout 1, whose record was four
 words. [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
 made it five -- a sub-tile position, a velocity and a heading, because there is
-now motion to publish -- so the two payload rows are given for both layouts and
+now motion to publish -- so the payload rows are given for each layout and
 the timings are **not** re-measured here: the boundary row cannot move for the
 reason the paragraph below gives, and the two decode rows would move by a fifth
 of a walk of the same records. A re-measurement is worth taking before either is
 cited as a current figure.
+
+**The layout 3 row is arithmetic and not a measurement, and it says so rather
+than borrowing the credibility of the rows above it.** ADR 0099 adds one header
+word and no record field, so the size is the layout 2 figure plus exactly four
+bytes at either population — which is also the whole point of putting the
+notification in the header rather than in a record.
 
 The delta's boundary cost is **flat in the population** -- a tenfold prison
 moves it by 0.0002 ms -- because `arrayBufferPayloadSchema` validates a schema

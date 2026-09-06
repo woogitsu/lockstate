@@ -229,6 +229,29 @@ export function deriveRoomCapacity(
  * construction** rather than by agreement, which is why neither capacity nor
  * the capability list is persisted any more.
  *
+ * ## Moment one is *completion*, and that is now a ruling rather than a default
+ *
+ * **The owner ruled it on 2026-09-06, on issue #1031, in these words:**
+ *
+ * > Świat ma rację -- licz po ukończeniu
+ *
+ * ("The world is right -- count on completion.") An ordered-but-unbuilt object
+ * must not raise a capacity, so the moment above is `finalizeConstruction` and
+ * never `ObjectPlacementService.place`. The list happens to have said that
+ * since ADR 0028 phase 1 -- the ruling changed no line of this file -- but it
+ * was an implementation detail until that date and is a decision now, which is
+ * why it is recorded here beside the code rather than only in the issue.
+ *
+ * **It is also the only thing standing between a plausible edit and a defect.**
+ * Registering the object at order time is a two-line change in `place`, it
+ * reads like an improvement (the money is spent, the tile is claimed), and
+ * before #1031 nothing in this repository would have gone red for it.
+ * `tests/integration/capacity-counts-on-completion.test.ts` is what does now:
+ * it samples `roomCapacity`, `accommodationCapacity`, `residentCapacity`, the
+ * `concurrentUseCapacityFor` ceiling and `objectCapabilities` at every tick of
+ * a four-bed session and requires each to equal the number of bed orders that
+ * have reached `completed` at that tick.
+ *
  * Idempotent and RNG-free: recomputation from the same objects gives the same
  * numbers, so running it twice is harmless and no named stream moves.
  */

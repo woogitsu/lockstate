@@ -68,6 +68,17 @@ They came from a shared tree and from shared ADR *numbers*.
   tell it to scope its globs there or to the repository. A probe that globbed the
   scratchpad root once collected other agents' files and reported a file count
   that was not this repository's.
+- **The process table is shared too, and until now nothing here said so.**
+  Every agent gets its own worktree and its own scratchpad subdirectory; it
+  has never had its own port, and nothing above said the process table was
+  anyone's alone to clear. Measured 2026-09-06: a pass clearing a Playwright
+  port collision ran `pkill -f "bin/vite.js"` and killed dev servers on ports
+  **5353** and **5354** belonging to two other agents, not the one it meant to
+  free. One of those two recorded seven `net::ERR_CONNECTION_REFUSED` failures
+  it could not explain at the time; a re-run passed. **Kill only PIDs you
+  started, and when a port is busy pick another rather than clearing the
+  machine.** The only reason this one was diagnosable at all is that the agent
+  it hit reported the failures instead of writing them off as flaky.
 - **Assign ADR numbers centrally, after the drafts come back.** Two agents took
   `0034` within an hour, each having correctly enumerated the open pull requests
   first — the number is not reserved until it is in `docs/adr/README.md`. Have
@@ -269,6 +280,44 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
         one, and what `git lfs pull` actually costs on a link that is genuinely
         metered. None of it is in git. **The three commands stay the answer,
         and now they have to be re-run rather than remembered.**
+    - **A FIFTH STATE, measured 2026-09-06 in this container, and it is the
+      good one: git-lfs installed, `.git/lfs` already holding the bytes, and
+      the good state outliving the pass that bought it because the object
+      store is shared.** A pass earlier in this container ran `bash
+      scripts/provision-git-lfs.sh && git lfs pull`; that pull took **2
+      seconds**, not the ~93 MB this chain has priced the route at, and at
+      the moment it finished the six `assets/source/blender/*.blend` files
+      were still pointers — nothing at runtime reads them, so it cost nothing
+      that they were not among the bytes it fetched.
+      - **Because `.git/lfs` is shared with every worktree and with the
+        primary checkout, this outlives the pass that bought it.** In the
+        primary checkout afterwards, `git lfs checkout` printed `Checking out
+        LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` — **`0 B/s`, nothing
+        fetched** — and `node tooling/validate-runtime-atlas.mjs
+        public/assets/actors` then printed *"Validated 10 clip atlases"* and
+        exited 0. Re-checked in this pass at `a2b3632b` (v0.0.507): the same
+        command still exits 0, `file` on `actor.guard.base.idle.png` still
+        returns `PNG image data, 260 x 3104`, and the six `.blend` files now
+        read `Zstandard compressed data` rather than pointer text — the
+        checkout above reached them too. A worktree cut fresh from
+        `origin/main` in this same container carries the same real bytes with
+        no `git lfs checkout` run in it at all: the shared store means a new
+        worktree does not start from pointers here.
+      - **So `verify:assets` and the browser art assertions run in this
+        container, and the standing note that they are an unfixable baseline
+        here is withdrawn — for this container, not as a repository fact.**
+        That is one more instance of the conclusion the "ADDED LATER" entry
+        above already drew: the state is a property of a moment, not of an
+        image, and this moment happens to be a good one rather than a cost.
+      - **`/etc/gitconfig` here carries no `--skip` on the smudge filter** —
+        `smudge = git-lfs smudge -- %f`, `process = git-lfs filter-process` —
+        matching the post-install container the "ADDED LATER" entry above
+        measured and differing from the state the "Why, and why it is not a
+        repository fact" entry below currently records for 2026-09-05
+        (`--skip`, in a different container). That is the other half of why
+        the fresh worktree above needed no extra command: the objects were
+        local **and** nothing in this container's filter configuration would
+        have skipped smudging them even if they had not been.
     - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
       `filter.lfs.process` and `filter.lfs.required` are set in
       **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
@@ -468,6 +517,44 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   citations resolve where anybody with a full clone reads them; that
   allowlist's own comment says an entry *"preserves a citation nobody can
   check"*, and these are checkable.
+  **Added 2026-09-06, and it corrects half of a sentence higher up in this
+  same bullet rather than the baseline itself.** "The tally moves whenever a
+  test is added and the *three* does not" is the sentence: both halves were
+  wrong within the day. The third of the three cases quoted above — *"cites
+  only commits this repository publishes, so CI reads the same history a
+  reader can"* — asserts `git rev-list --remotes=origin --tags` exceeds 500.
+  At 17:30 on 2026-09-05 that count was **381** and the case failed; by 21:15
+  the same day it was **2,946** and the case passed. **Nothing was fixed and
+  the clone is still shallow** — `git rev-parse --is-shallow-repository` was
+  `true` at both readings and `.git/shallow` was untouched. So the tally moved
+  from three failures to two with no test added and no citation touched,
+  which is exactly what the corrected sentence said could not happen.
+  The cause is a fetch, not a fix: one agent ran `git fetch origin
+  '+refs/heads/*:refs/remotes/origin/*' --prune`, which populated
+  remote-tracking refs for roughly 197 of origin's branches — and worktrees
+  share the object store and the refs with the primary checkout, the same
+  sharing this bullet's own `git branch -r` figures rest on, so one agent's
+  fetch moved the baseline for every agent in the container.
+  **Two wrong explanations were published before the right one, and both are
+  kept rather than replaced, because the point of this chain is showing how a
+  guess becomes a mechanism.** The integrator guessed *"today's merges
+  published enough refs"* — four merges cannot move a ref count by 2,565. The
+  agent who ran the fetch then wrote *"my fetch deepened the clone"* — it did
+  not; the clone was shallow before the fetch and is shallow after it, because
+  fetching branch tips is not fetching history depth.
+  **So the number to distrust here is not the count of failures, it is the
+  word "three."** Re-measured in this pass, in a clean worktree at `a2b3632b`
+  (v0.0.507): `git rev-list --remotes=origin --tags` returns **3,004** —
+  moved again, overnight, with nothing in this pass touching it — the clone
+  is still shallow (`.git/shallow` present, untouched since the prior
+  reading), and `node
+  /workspace/lockstate/node_modules/vitest/vitest.mjs run tests/foundation`
+  gives `Test Files  1 failed | 54 passed (55)`, `Tests  2 failed | 494
+  passed (496)`. **The ref count is a function of which refs have been
+  fetched, not a property of this repository, so it has to be measured on a
+  clean tree at the start of every pass rather than quoted from this
+  document** — the `2` in this paragraph is due to go stale exactly the way
+  the `3` above it did.
 - **Two tests sit close enough to their 5s budget that box load pushes them
   over, and neither is a flake to wave through.**
   `tests/foundation/comment-symbol-existence-contract.test.ts` (a
