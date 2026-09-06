@@ -3,6 +3,41 @@
 Every collection maps one-to-one to an owner-supplied source-art ID. Geometry is
 deliberately modular, at one Blender unit per logical tile, so it can later be
 replaced or refined without changing IDs, origins, or footprints.
+
+## The refinement that sentence promised (2026-09-06)
+
+The first pass built every model out of boxes and 16-sided cylinders in a
+six-colour palette with one 0.03 bevel, which is a placeholder and reads as one:
+rendered straight down by `tooling/blender/render-environment-objects.py`, the
+bed was three flat rounded rectangles and `fixture.cell.toilet_sink` was a
+cylinder hidden underneath a box. This pass replaces the geometry and keeps the
+contract: **the `MODELS` tuple, every collection name, every `assetId`, every
+`footprintTiles` pair and every origin empty's position are byte-for-byte what
+they were.** Only what is inside a collection changed.
+
+What it is refining *for* is a top-down view at 64 to 128 pixels a tile, which
+is the only view `tile-layer.ts` can draw. That rules most modelling detail out
+before it is attempted -- a locker's door, a fence's rails and a camera's mount
+are all elevation and contribute nothing from above -- and it rules three things
+in:
+
+- **Silhouette breaks.** A shape is read from above by its outline and by the
+  steps in it. The bed's head and foot rails now stand proud of the mattress, so
+  the bed has ends; the container's roof carries ribs; the bench is three slats
+  with gaps rather than one plank.
+- **Tonal separation between adjacent parts.** Every part used to be one of six
+  colours at one roughness (0.62), so a steel bowl inside a steel cistern was
+  invisible. The palette now carries porcelain, linen, blanket and a near-black
+  `shade` used for seams, openings and joints, and each material carries its own
+  roughness, so the specular breaks the parts apart even where the albedo is
+  close.
+- **One recognisable feature per object.** A player identifies a 64px sprite by
+  one thing: the pillow at the head of the bed, the dark opening in the toilet
+  seat, the folded blanket at the foot. Those are modelled; the rest is mass.
+
+Nothing here is textured, because nothing in this pipeline is: these are flat
+materials under two suns. That ceiling is real and is stated in the pull
+request rather than implied away.
 """
 import sys
 from pathlib import Path
@@ -15,10 +50,16 @@ import pipeline_common  # noqa: E402  (Blender does not add the script directory
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "assets/source/blender/environment.mvp.catalog.blend"
 
+# Colour and roughness together, because separating two parts in a top-down view
+# is as often a specular difference as an albedo one. `shade` is not a material
+# anything is made of: it is the near-black used for a seam, an opening or a
+# joint, and it is what makes a hole read as a hole at 64px.
 PALETTE = {
-    "concrete": (0.22, 0.23, 0.24, 1), "steel": (0.09, 0.12, 0.15, 1),
-    "blue": (0.025, 0.09, 0.24, 1), "green": (0.12, 0.2, 0.14, 1),
-    "wood": (0.28, 0.12, 0.035, 1), "light": (0.9, 0.92, 0.82, 1),
+    "concrete": ((0.22, 0.23, 0.24, 1), 0.85), "steel": ((0.09, 0.12, 0.15, 1), 0.45),
+    "blue": ((0.025, 0.09, 0.24, 1), 0.55), "green": ((0.12, 0.2, 0.14, 1), 0.7),
+    "wood": ((0.28, 0.12, 0.035, 1), 0.6), "light": ((0.9, 0.92, 0.82, 1), 0.75),
+    "porcelain": ((0.78, 0.8, 0.81, 1), 0.25), "linen": ((0.62, 0.6, 0.55, 1), 0.88),
+    "blanket": ((0.1, 0.17, 0.24, 1), 0.92), "shade": ((0.035, 0.04, 0.045, 1), 0.9),
 }
 
 MODELS = (
@@ -37,14 +78,14 @@ MODELS = (
 )
 
 
-def material(name, color):
+def material(name, color, roughness):
     item = bpy.data.materials.new(name)
     item.diffuse_color = color
     item.use_nodes = True
     shader = item.node_tree.nodes.get("Principled BSDF")
     if shader is not None:
         shader.inputs["Base Color"].default_value = color
-        shader.inputs["Roughness"].default_value = 0.62
+        shader.inputs["Roughness"].default_value = roughness
     return item
 
 
@@ -72,8 +113,8 @@ def box(collection, root, name, offset, size, surface, bevel=0.03):
     return item
 
 
-def cylinder(collection, root, name, offset, radius, depth, surface):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=radius, depth=depth, location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]))
+def cylinder(collection, root, name, offset, radius, depth, surface, vertices=16):
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=(root.location.x + offset[0], root.location.y + offset[1], offset[2]))
     item = bpy.context.object
     item.name, item.parent = name, root
     item.matrix_parent_inverse = root.matrix_world.inverted()
@@ -92,81 +133,138 @@ def empty(collection, name, location):
 
 def furniture(collection, root, asset_id):
     if "bed" in asset_id:
-        box(collection, root, "Frame", (0, 0, 0.42), (0.9, 1.9, 0.15), "steel")
-        box(collection, root, "Mattress", (0, 0, 0.56), (0.82, 1.72, 0.18), "green")
-        box(collection, root, "Pillow", (0, -0.6, 0.69), (0.62, 0.34, 0.1), "light")
+        # Head and foot rails stand proud of the mattress so the bed has ends
+        # from above; the pillow and the folded blanket are the two features
+        # that make it a bed rather than a slab at 64px.
+        box(collection, root, "Frame", (0, 0, 0.4), (0.94, 1.96, 0.14), "steel", 0.04)
+        box(collection, root, "Head rail", (0, -0.93, 0.6), (0.94, 0.1, 0.26), "steel", 0.05)
+        box(collection, root, "Foot rail", (0, 0.93, 0.62), (0.94, 0.1, 0.2), "steel", 0.05)
+        box(collection, root, "Mattress", (0, 0, 0.57), (0.82, 1.74, 0.2), "linen", 0.05)
+        box(collection, root, "Blanket", (0, 0.56, 0.695), (0.82, 0.56, 0.05), "blanket", 0.03)
+        box(collection, root, "Pillow", (0, -0.62, 0.735), (0.64, 0.34, 0.13), "light", 0.06)
     elif "locker" in asset_id:
+        # A locker is a box from above and there is no honest way round that.
+        # What the top can carry is a rim and the seam between two doors, which
+        # is enough to tell it from a cabinet.
         box(collection, root, "Locker", (0, 0, 1.0), (0.8, 0.55, 2.0), "steel")
-        box(collection, root, "Door seam", (0, -0.281, 1.0), (0.03, 0.01, 1.75), "light", 0)
+        box(collection, root, "Top rim", (0, 0, 2.02), (0.86, 0.6, 0.04), "concrete", 0.01)
+        box(collection, root, "Top seam", (0, 0, 2.045), (0.02, 0.56, 0.02), "shade", 0)
+        box(collection, root, "Door seam", (0, -0.281, 1.0), (0.03, 0.01, 1.75), "shade", 0)
+        box(collection, root, "Handle", (0.22, -0.3, 1.15), (0.05, 0.06, 0.22), "concrete", 0.02)
     elif "table_stool" in asset_id:
-        box(collection, root, "Table", (0, 0, 0.72), (1.4, 0.72, 0.12), "steel")
-        cylinder(collection, root, "Table leg", (0, 0, 0.35), 0.08, 0.65, "steel")
-        for x in (-0.8, 0.8):
-            cylinder(collection, root, f"Stool.{x}", (x, 0, 0.32), 0.22, 0.12, "steel")
-            cylinder(collection, root, f"Stool base.{x}", (x, 0, 0.16), 0.06, 0.32, "steel")
+        box(collection, root, "Table edge", (0, 0, 0.7), (1.44, 0.78, 0.06), "shade", 0.01)
+        box(collection, root, "Table", (0, 0, 0.76), (1.36, 0.7, 0.1), "concrete", 0.04)
+        cylinder(collection, root, "Table leg", (0, 0, 0.34), 0.09, 0.68, "steel")
+        for x in (-0.76, 0.76):
+            cylinder(collection, root, f"Stool.{x}", (x, 0, 0.5), 0.22, 0.1, "wood")
+            cylinder(collection, root, f"Stool base.{x}", (x, 0, 0.23), 0.06, 0.44, "steel")
     elif "bench" in asset_id:
-        box(collection, root, "Seat", (0, 0, 0.55), (1.8, 0.45, 0.12), "wood")
-        for x in (-0.65, 0.65): cylinder(collection, root, f"Leg.{x}", (x, 0, 0.25), 0.06, 0.5, "steel")
+        # Three slats with gaps: the gaps are the only thing that reads from
+        # above, and one plank read as a shelf.
+        for index, y in enumerate((-0.15, 0.0, 0.15)):
+            box(collection, root, f"Slat.{index}", (0, y, 0.54), (1.76, 0.12, 0.06), "wood", 0.02)
+        for x in (-0.7, 0.7):
+            box(collection, root, f"Leg.{x}", (x, 0, 0.26), (0.08, 0.44, 0.52), "steel", 0.02)
     elif "desk" in asset_id or "reception" in asset_id:
         length = 2.7 if "reception" in asset_id else 1.7
-        box(collection, root, "Counter", (0, 0, 0.9), (length, 0.7, 0.15), "wood")
-        box(collection, root, "Cabinet", (0, 0.18, 0.4), (length * 0.9, 0.48, 0.8), "steel")
+        box(collection, root, "Counter", (0, 0, 0.92), (length, 0.72, 0.1), "wood", 0.03)
+        box(collection, root, "Cabinet", (0, 0.2, 0.42), (length * 0.9, 0.46, 0.82), "steel")
+        if "reception" in asset_id:
+            # A transaction ledge one step above the worktop: from above it is
+            # the band that tells a counter from a desk.
+            box(collection, root, "Ledge", (0, -0.28, 1.06), (length, 0.22, 0.12), "concrete", 0.03)
+        else:
+            box(collection, root, "Blotter", (-0.16, -0.04, 0.976), (0.86, 0.46, 0.012), "shade", 0)
+            box(collection, root, "Tray", (0.58, -0.06, 1.0), (0.4, 0.3, 0.06), "steel", 0.02)
     else:
-        box(collection, root, "Chair seat", (0, 0, 0.5), (0.55, 0.55, 0.12), "steel")
-        box(collection, root, "Chair back", (0, 0.22, 0.92), (0.55, 0.1, 0.78), "steel")
-        cylinder(collection, root, "Chair base", (0, 0, 0.22), 0.06, 0.46, "steel")
+        box(collection, root, "Chair seat", (0, 0, 0.46), (0.5, 0.5, 0.08), "blue", 0.04)
+        box(collection, root, "Chair back", (0, 0.23, 0.72), (0.5, 0.08, 0.44), "blue", 0.04)
+        for x in (-0.2, 0.2):
+            for y in (-0.2, 0.2):
+                cylinder(collection, root, f"Chair leg.{x}.{y}", (x, y, 0.21), 0.025, 0.42, "steel", 8)
 
 
 def security(collection, root, asset_id):
     if "camera" in asset_id:
-        box(collection, root, "Camera body", (0, 0, 1.1), (0.62, 0.36, 0.28), "concrete")
-        cylinder(collection, root, "Lens", (0.32, -0.02, 1.1), 0.11, 0.08, "steel")
+        box(collection, root, "Camera body", (0, 0, 1.1), (0.58, 0.34, 0.26), "concrete", 0.04)
+        cylinder(collection, root, "Lens", (0.3, -0.02, 1.1), 0.11, 0.08, "shade")
         box(collection, root, "Mount", (-0.2, 0, 0.75), (0.12, 0.12, 0.65), "steel")
     elif "reader" in asset_id:
-        box(collection, root, "Reader", (0, 0, 0.55), (0.32, 0.1, 0.62), "steel")
-        box(collection, root, "Status", (0, -0.06, 0.71), (0.18, 0.02, 0.05), "green", 0.01)
+        box(collection, root, "Reader", (0, 0, 0.55), (0.32, 0.1, 0.62), "steel", 0.02)
+        box(collection, root, "Panel", (0, -0.055, 0.6), (0.24, 0.02, 0.4), "shade", 0)
+        box(collection, root, "Status", (0, -0.065, 0.78), (0.16, 0.02, 0.05), "green", 0.01)
     elif "turnstile" in asset_id:
         cylinder(collection, root, "Hub", (0, 0, 0.65), 0.16, 1.3, "steel")
+        cylinder(collection, root, "Hub cap", (0, 0, 1.32), 0.18, 0.04, "shade")
         for angle in (0, 2.09, 4.18):
-            arm = box(collection, root, "Turnstile arm", (0.45 * __import__('math').cos(angle), 0.45 * __import__('math').sin(angle), 0.72), (0.9, 0.08, 0.08), "steel")
+            arm = box(collection, root, "Turnstile arm", (0.45 * __import__('math').cos(angle), 0.45 * __import__('math').sin(angle), 0.72), (0.9, 0.08, 0.08), "steel", 0.02)
             arm.rotation_euler.z = angle
     else:
         box(collection, root, "Checkpoint gate", (0, 0, 1.5), (1.5, 0.25, 3.0), "steel")
-        box(collection, root, "Opening", (0, -0.14, 1.4), (0.78, 0.04, 2.4), "light", 0)
+        box(collection, root, "Gate cap", (0, 0, 3.03), (1.6, 0.32, 0.06), "concrete", 0.02)
+        box(collection, root, "Opening", (0, -0.14, 1.4), (0.78, 0.04, 2.4), "shade", 0)
 
 
 def perimeter(collection, root, asset_id):
     if "fence" in asset_id:
-        for x in (-1.3, 0, 1.3): cylinder(collection, root, f"Post.{x}", (x, 0, 1.15), 0.05, 2.3, "steel")
-        for z in (0.55, 1.1, 1.65): box(collection, root, f"Rail.{z}", (0, 0, z), (2.8, 0.05, 0.05), "steel")
+        for x in (-1.3, 0, 1.3):
+            cylinder(collection, root, f"Post.{x}", (x, 0, 1.15), 0.05, 2.3, "steel")
+            cylinder(collection, root, f"Post cap.{x}", (x, 0, 2.33), 0.06, 0.05, "shade")
+        for z in (0.55, 1.1, 1.65):
+            box(collection, root, f"Rail.{z}", (0, 0, z), (2.8, 0.05, 0.05), "steel", 0.01)
     elif "gate" in asset_id:
         box(collection, root, "Gate", (0, 0, 1.15), (3.5, 0.1, 2.3), "steel")
-        for x in (-1.7, 1.7): cylinder(collection, root, f"Post.{x}", (x, 0, 1.35), 0.12, 2.7, "concrete")
+        box(collection, root, "Gate rail", (0, 0, 2.33), (3.5, 0.14, 0.08), "concrete", 0.02)
+        for x in (-1.7, 1.7):
+            cylinder(collection, root, f"Post.{x}", (x, 0, 1.35), 0.12, 2.7, "concrete")
+            cylinder(collection, root, f"Post cap.{x}", (x, 0, 2.73), 0.14, 0.06, "shade")
     elif "watchtower" in asset_id:
         box(collection, root, "Tower", (0, 0, 2.0), (1.5, 1.5, 4.0), "concrete")
         box(collection, root, "Cabin", (0, 0, 4.3), (2.1, 2.1, 1.1), "blue")
         box(collection, root, "Roof", (0, 0, 5.0), (2.35, 2.35, 0.18), "steel")
+        box(collection, root, "Roof hatch", (0, 0, 5.11), (0.9, 0.9, 0.06), "shade", 0.01)
     else:
         cylinder(collection, root, "Pole", (0, 0, 2.4), 0.08, 4.8, "steel")
-        box(collection, root, "Lamp", (0, 0, 4.7), (0.65, 0.45, 0.22), "light")
+        box(collection, root, "Lamp housing", (0, 0, 4.6), (0.7, 0.5, 0.16), "concrete", 0.04)
+        box(collection, root, "Lamp", (0, 0, 4.72), (0.58, 0.4, 0.08), "light", 0.02)
 
 
 def architectural(collection, root, asset_id):
     if asset_id.startswith("floor"):
+        # A 2x2 module with the joint between its four tiles cut into the top,
+        # so a floor reads as a floor rather than as one flat colour.
         box(collection, root, "Tile", (0, 0, 0.06), (2, 2, 0.12), "concrete" if "concrete" in asset_id else "green", 0)
+        box(collection, root, "Joint north-south", (0, 0, 0.121), (0.035, 2, 0.004), "shade", 0)
+        box(collection, root, "Joint east-west", (0, 0, 0.121), (2, 0.035, 0.004), "shade", 0)
     elif asset_id.startswith("wall"):
         box(collection, root, "Wall module", (0, 0, 1.25), (2, 0.22, 2.5), "concrete")
+        box(collection, root, "Coping", (0, 0, 2.53), (2, 0.26, 0.07), "steel", 0.02)
+        box(collection, root, "Panel joint", (0, 0, 1.31), (0.04, 0.24, 2.62), "shade", 0)
         box(collection, root, "Base stripe", (0, -0.12, 0.42), (2, 0.03, 0.45), "green", 0)
     elif asset_id.startswith("door"):
         box(collection, root, "Frame", (0, 0, 1.3), (1.15, 0.28, 2.6), "concrete")
-        box(collection, root, "Door", (0, -0.17, 1.25), (0.82, 0.06, 2.25), "blue" if "security" in asset_id else "wood")
-        box(collection, root, "Window", (0, -0.205, 1.6), (0.25, 0.02, 0.42), "steel", 0)
+        box(collection, root, "Frame head", (0, 0, 2.62), (1.21, 0.32, 0.06), "steel", 0.02)
+        box(collection, root, "Door", (0, -0.2, 1.25), (0.82, 0.09, 2.25), "blue" if "security" in asset_id else "wood")
+        box(collection, root, "Reveal", (0, -0.152, 1.25), (0.88, 0.012, 2.31), "shade", 0)
+        box(collection, root, "Window", (0, -0.246, 1.6), (0.25, 0.02, 0.42), "steel", 0)
     elif "toilet" in asset_id:
-        cylinder(collection, root, "Toilet bowl", (0, 0, 0.42), 0.32, 0.5, "steel")
-        box(collection, root, "Sink tank", (0, 0.2, 0.95), (0.55, 0.38, 0.7), "steel")
+        # The one model whose shipped sheet cannot be used at all: the owner's
+        # sheet holds a 1:2.5 combined column and the catalogue declares (1, 1).
+        # Built to be read from directly above -- a rectangular cistern with a
+        # basin sunk into it at the north, a seat with a dark opening at the
+        # south, and the two joined by a visible spine.
+        box(collection, root, "Cistern", (0, -0.33, 0.31), (0.62, 0.28, 0.62), "porcelain", 0.04)
+        cylinder(collection, root, "Basin", (0, -0.33, 0.6), 0.19, 0.06, "porcelain")
+        cylinder(collection, root, "Basin well", (0, -0.33, 0.625), 0.15, 0.03, "shade")
+        box(collection, root, "Tap", (0, -0.45, 0.68), (0.07, 0.1, 0.1), "steel", 0.02)
+        box(collection, root, "Spine", (0, -0.11, 0.46), (0.12, 0.2, 0.12), "porcelain", 0.03)
+        cylinder(collection, root, "Bowl", (0, 0.12, 0.21), 0.25, 0.42, "porcelain")
+        cylinder(collection, root, "Seat", (0, 0.12, 0.445), 0.27, 0.05, "light")
+        cylinder(collection, root, "Opening", (0, 0.12, 0.462), 0.155, 0.06, "shade")
     else:
-        box(collection, root, "Ceiling panel", (0, 0, 1.75), (1.2, 0.45, 0.18), "light")
-        box(collection, root, "Housing", (0, 0.02, 1.88), (1.4, 0.5, 0.1), "steel")
+        box(collection, root, "Housing", (0, 0.02, 1.7), (1.4, 0.5, 0.24), "steel")
+        box(collection, root, "Ceiling panel", (0, 0, 1.87), (1.2, 0.45, 0.18), "light", 0.01)
+        box(collection, root, "Diffuser joint", (0, 0, 1.963), (1.2, 0.03, 0.008), "shade", 0)
 
 
 def create_model(asset_id, footprint, index):
@@ -182,8 +280,12 @@ def create_model(asset_id, footprint, index):
     elif asset_id.startswith("perimeter"):
         perimeter(collection, root, asset_id)
     elif asset_id.startswith("storage"):
-        box(collection, root, "Container", (0, 0, 0.9), (1.8, 0.9, 1.8), "green")
+        box(collection, root, "Container", (0, 0, 0.9), (1.86, 0.92, 1.72), "green")
         box(collection, root, "Container doors", (0, -0.46, 0.9), (1.55, 0.03, 1.5), "steel", 0)
+        # Roof ribs. The corrugation on a container's sides is invisible from
+        # above; the ribs across its roof are the only part of it that is not.
+        for index_rib, y in enumerate((-0.3, -0.15, 0.0, 0.15, 0.3)):
+            box(collection, root, f"Roof rib.{index_rib}", (0, y, 1.775), (1.86, 0.05, 0.05), "shade", 0.01)
     else:
         architectural(collection, root, asset_id)
 
@@ -195,7 +297,7 @@ def main():
     bpy.ops.object.delete(use_global=False)
     for collection in list(bpy.data.collections):
         if collection.name == "Collection": bpy.data.collections.remove(collection)
-    for name, color in PALETTE.items(): MATERIALS[name] = material(name, color)
+    for name, (color, roughness) in PALETTE.items(): MATERIALS[name] = material(name, color, roughness)
     for index, (asset_id, footprint) in enumerate(MODELS): create_model(asset_id, footprint, index)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(OUTPUT))
