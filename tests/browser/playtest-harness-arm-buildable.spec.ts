@@ -228,7 +228,10 @@ test.describe('armBuildable under a Build panel that redraws late (#1017)', () =
     await setDelay(page, DELAY_MS);
     await armBuildable(page, 'bed-wooden');
 
-    const commands = await uncheckedPress(page, WORLD.x, WORLD.y);
+    // The harness's own `press`, not the unchecked one: this is also where the
+    // placement check has to *not* fire, and a check that only ever appears in
+    // its own failure test is a check nothing has shown to be usable.
+    const commands = await press(page, WORLD.x, WORLD.y);
     expect(placed(commands)).toEqual(['PlaceObject bed-wooden']);
   });
 
