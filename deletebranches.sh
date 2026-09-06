@@ -68,7 +68,7 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
   exit 1
 fi
 
-repository="${GITHUB_REPOSITORY:-matmaxalez/lockstate}"
+repository="${GITHUB_REPOSITORY:-woogitsu/lockstate}"
 # THE LOOKUP AND ITS FAILURE ARE SEPARATED ON PURPOSE.
 #
 # These used to be one pipeline, and on 2026-08-30 that cost a diagnosis. The

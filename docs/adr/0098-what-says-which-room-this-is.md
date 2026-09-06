@@ -37,6 +37,53 @@
 
 **Proposed, 2026-09-06. Not self-approved.**
 
+> **TWO RULINGS BY THE OWNER, 2026-09-06, AND THE FIRST IS NOT ONE OF THE FIVE
+> OPTIONS BELOW.** The paragraphs of this section are kept as drafted rather
+> than rewritten, per `docs/AGENT_WORKFLOW.md` §4, because this document was
+> written as a question and a reader should see that it was answered as one —
+> and answered partly off the menu it offered.
+>
+> **Ruling 1, the channel.** Asked which channel should name a room, given the
+> measurement recorded in the amendment to Context §2, the owner answered:
+>
+>     Nazwa tekstem na mapie
+>
+> ("The name, as text on the map.") That is **option F**, added at the end of
+> the option list below, and it is the option this document did not think of.
+>
+> **Ruling 2, the palette.** Asked separately what should then happen to the
+> tint, given that a name now carries legibility, the owner chose to **take
+> option A as well** — key `zoningTint` by room id, eighteen rows instead of
+> eleven. The option was put to them with its measured limit stated in the same
+> breath: that it buys correctness and not legibility, because 5.30 delivered
+> units are still invisible. So this is a decision to close the seven
+> pixel-identical pairs on their own merits, not a belief that colour will name
+> a room.
+>
+> **BOTH RULINGS WERE GIVEN AGAINST A SUMMARY OF THE MEASUREMENT AND OF THE
+> OPTIONS, NOT AGAINST THIS DOCUMENT'S 703 LINES.** The option carrying ruling 1
+> said this much and no more:
+>
+>     Najczytelniejsze i jedyne, co działa na pewno: podpis typu pomieszczenia
+>     rysowany na podłodze. Koszt: src/rendering/ nie ma DZIŚ ŻADNEGO obiektu
+>     tekstowego — to nowy kanał i nowy moduł renderera, plus decyzja o
+>     skali/czcionce przy zoomie 0.2–3.0. Nazwy już istnieją w katalogu
+>     (labelKey), więc nie piszemy nowych stringów.
+>
+> That disclosure is the same one ADR 0075, ADR 0076 and ADR 0097 carry, for the
+> same reason: so that nobody later mistakes a ruling for a reading. One detail
+> in it was wrong and is corrected here rather than quietly: the catalogue field
+> is **`nameKey`**; `labelKey` is the HUD view-model field fed from it. The
+> substance — that no new player-facing string is authored — holds, and was
+> confirmed by the implementing pass.
+>
+> **WHAT THE RULINGS DO NOT SETTLE.** They name a channel and a table. They do
+> not accept this document's decisions 1 to 4, they do not settle the
+> requirement's wording, and they do not move any status. A name on the floor
+> answers *which room is this* without repairing the keying defect, which is
+> why ruling 2 exists; and neither ruling touches ADR 0097, which stays
+> Accepted.
+
 The question is the owner's to settle. What this document offers below is a
 *requirement* about room identity, together with five options that could
 discharge it, what each costs, and what each forecloses.
@@ -603,6 +650,97 @@ separate 1×1 objects in `src/content/object-catalog.ts`. The blocker is
 therefore that *one fixture would have to serve two catalogue ids*, not that the
 sheet resists cutting. It does not block the toilet; it blocks the sink.
 
+### Option F — the room's own name, drawn on the map
+
+**Added 2026-09-06, after the owner ruled. It is not one of the five this
+document offered, and the five are kept above unedited so that a reader can see
+what was on the menu when the ruling was made.**
+
+**What it is.** The room type's name, drawn over the room on the world map. Not
+a mark standing for a name — the name.
+
+**Why it was not on the list, which is the part worth recording.** Context §3
+established, by reading, that `src/rendering/` contains **no text object of any
+kind**. This document then treated that as a boundary and priced every option as
+a *mark*: a hue, a value, a glyph, a floor texture, a piece of furniture. Every
+one of the five is a thing a player has to learn the meaning of. Option C even
+says so in as many words — it *"would need the project's first legend"* — and a
+name needs none, because the name is the legend.
+
+**What the measurement says about it, and this is why the ruling is not a matter
+of taste.** The play-test in
+[`docs/research/2026-09-06-can-you-name-the-room.md`](../research/2026-09-06-can-you-name-the-room.md)
+measured the tightest pair at **ΔRGB 0.00 / −3.57 / 0.00** against a per-pixel σ
+of **15.54** — 0.23 σ — and then measured both option A and option B rendered
+live: A leaves the worst pair at **5.30** delivered units and B leaves it at
+**3.57**, while the whole channel's arithmetic ceiling for eighteen hues is
+**6.02**. A name is not competing with a 35.7-unit ceiling; it is not on that
+channel at all.
+
+**Cost, and it is honest rather than cheap.** MEASURED where it is a reading of
+the tree, ARITHMETIC nowhere:
+
+- **A new renderer module and a new channel.** VERIFIED by reading: there is no
+  text object to extend, so this is the first one. `mergeFloorRects` gives the
+  painter a zoned room as greedy rectangles and *not* as a room instance, so a
+  name per room needs either the instance rectangle
+  (`RoomInstance.anchorTile`/`width`/`height`) carried to the renderer, or a
+  label per merged run with the chunk-boundary artefact option C already
+  names.
+- **The per-room module ADR 0097 decision 2 already provides for** is the
+  obvious home, and whether identity can ride the channel 0097's accepted
+  option A introduces — or whether identity and condition are different
+  messages that merely sound alike — is the first thing the implementing pass
+  is asked to establish rather than assume.
+- **Scale.** `ZOOM_BOUNDS` is `{ min: 0.2, max: 3 }`. A label sized for zoom 1
+  is unreadable at 0.2 and enormous at 3.0, so a rule is owed. This document
+  does not invent one; it records that the decision exists and that it is to be
+  taken by looking at screenshots rather than by reasoning.
+- **No new player-facing string.** `src/content/room-catalog.ts` already carries
+  a `labelKey` per room type and the Rooms panel already resolves it, so the
+  words on the floor are the words in the panel. That keeps this inside
+  `AGENTS.md` reservation 4's 2026-09-04 release without spending any of it.
+
+**What it buys that no option above does.** It answers *which room is this*
+for a player who has never read a legend, in one glance, for all eighteen types
+at once — including `room.yard`, which option E cannot reach at all because it
+requires no objects, and including the two categories whose required objects
+have no sheet in the batch.
+
+**What it forecloses.**
+
+- **The room interior as a drawing surface**, the same cost option C carries:
+  a name occupies the middle of the room, so a later glyph, hatch or decal has
+  to share that space or sit at an edge.
+- **Nothing on the tint.** Unlike C, D and E, a name does not add a second
+  *mark* competing with the wash — it adds a second *kind* of thing. ADR 0097
+  decision 3's reservation of the tint for identity survives option F intact,
+  which is the one place where this option is cheaper than the three it
+  displaces.
+
+**What it inherits, and it is a defect rather than a cost.** A label is drawn
+from the same `RenderFrame` as the floor under it, so it inherits the staleness
+window in [#1037](https://github.com/woogitsu/lockstate/issues/1037) — 22 to 28
+seconds in which the drawn world lags the simulation, because none of
+`SimulationSnapshotFeed`'s five `dirty` marks fires when geometry changes. A
+name is a stronger claim than a colour: a stale wash is a wrong shade, a stale
+name is a *sentence* that is not true of the room. That does not block option F,
+because the same window already applies to everything the map draws, but it
+raises the value of fixing #1037 and it is why the implementing pass is asked to
+state which of the frame and the simulation its label is true of.
+
+**Why the recommendation above was not taken, recorded rather than deleted.**
+This document recommended **B plus D's cheap half**, resting on a claim it named
+as its own weakest: that a mean shift of a few units against a per-pixel spread
+of 25.4 would still read, because the eye integrates the first and suppresses
+the second. **That claim was tested and it failed.** The play-test rendered B
+and looked at it, and the pair B was chosen to fix — Canteen against Kitchen —
+went to 12.05 units and was still called marginal, while the pair B does not
+touch stayed at 3.57. So B buys a difference at the pair that was never the
+tightest one. The recommendation is kept above, unedited, because a
+recommendation that was overtaken by a measurement is the most useful kind of
+thing to leave in a document: it shows what was believed and what changed it.
+
 ---
 
 ## What each option forecloses, gathered
@@ -614,6 +752,7 @@ sheet resists cutting. It does not block the toilet; it blocks the sink.
 | C — a second mark | the room interior as a drawing surface; requires the project's first legend |
 | D — split floors | **ADR 0097 option B outright** — per-condition floor art becomes identity × condition in sheets |
 | E — furniture | nothing in the renderer, but it *opens* three collisions and cannot close the Yard |
+| **F — the room's name** | the room interior as a drawing surface; nothing on the tint |
 
 **Common to C, D and E, and it is ADR 0097's consequence read back.** Each of
 them adds a second channel, so the tint stops being the only thing that says

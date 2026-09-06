@@ -298,15 +298,31 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * themselves, exactly as the paragraph above says to, and the count is
    * carried forward rather than restarted because the count is the argument.
    *
-   * **Eight re-pins for two unchanged expressions**, and the count is now the
-   * argument rather than an anecdote: every one of them was a line above the
-   * site moving, none was a change to what the site does, and each cost a red
-   * gate on a branch whose author had no reason to expect one. The fix is to
-   * key this map on the quoted expression, which is the durable half of the
-   * entry already. It is deliberately **not** done here: this branch is a HUD
-   * layout fix, changing the map's key changes what the failure message points
-   * a reader at, and doing it as a side effect of an unrelated diff is how a
-   * gate loses the property it exists for. Recorded as owed.
+   * **A thirteenth, on 2026-09-06, and this one is a comment and nothing
+   * else.** Issue #1031's ruling ("licz po ukończeniu" -- count a placed object
+   * on completion) makes `paintQueue`'s block the only readout an
+   * ordered-but-unbuilt object appears in, so nineteen lines saying so went
+   * into that function's docblock and `:2482` became `:2501`. The expression is
+   * untouched, the delivery site above it did not move, and the branch that
+   * paid for the red gate added no player-visible text at all.
+   *
+   * **Nine re-pins for two unchanged expressions** -- the ninth is the
+   * paragraph immediately above -- and the count is the argument rather than an
+   * anecdote: every one of them was a line above the site moving, none was a
+   * change to what the site does, and each cost a red gate on a branch whose
+   * author had no reason to expect one. The fix is to key this map on the
+   * quoted expression, which is the durable half of the entry already. It is
+   * deliberately **not** done here: this branch is a HUD layout fix, changing
+   * the map's key changes what the failure message points a reader at, and
+   * doing it as a side effect of an unrelated diff is how a gate loses the
+   * property it exists for. Recorded as owed.
+   *
+   * **#1031's branch declined it for the same reason and it is worth saying
+   * why once more**, since that branch was the ninth to pay: its subject is
+   * when a capacity counts an object, the key change would rewrite this map's
+   * failure message for every reader, and a gate re-keyed inside a diff about
+   * something else is exactly the change nobody reviews. The owed item is
+   * unchanged and now has nine entries behind it.
    */
   /*
    * **Paid on 2026-09-06, and not by the condition the top of this docblock
