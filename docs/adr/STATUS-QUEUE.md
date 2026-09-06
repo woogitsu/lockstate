@@ -11900,13 +11900,31 @@ written for the occasion, and `docs/adr/README.md` agrees row for row: 40
 with all four sites already current and the first of the six that is not weak.**
 The five before it each reported the agreement against a window that added no
 ADR, so the mechanism that splits the four sites was never exercised; this
-window added one. `Next free number: 0099` here, restated from
+window added one. `Next free number: 0100` here, restated from
 `docs/adr/README.md` rather than recomputed, and the index and this file agree
-on it. **It read `0098` when this pass was taken and moved with the index on
-2026-09-06, when ADR 0098's row reserved that number**; the value is restated
-rather than recomputed, so this is the index moving and not a second opinion
-about it. The number #1025 moved when it reserved 0097; #1021's ADR moved it
-again.
+on it. **It read `0098` when this pass was taken, `0099` after ADR 0098's row
+reserved that number on 2026-09-06, and `0100` since ADR 0099's row reserved
+the next one the same day**; the value is restated rather than recomputed, so
+this is the index moving and not a second opinion about it. The number #1025
+moved when it reserved 0097; #1021's ADR moved it again, and #1037's moved it
+a third time.
+
+> **The four counts in the paragraph above are this pass's own and two of the
+> three ADRs since have moved them, which is the split this paragraph itself
+> predicts rather than a new defect.** They are corrected here rather than in
+> the four places that carry them, because re-anchoring is §5's job and a
+> partial re-anchor is how three of those places came to disagree in the first
+> place. Derived on 2026-09-06 from `docs/adr/README.md` at
+> `adr/how-the-renderer-learns-geometry-changed`, by replicating
+> `adr-numbering-contract.test.ts`'s own `INDEX_ROW` and `statusKeyword` rather
+> than by a grep written for the occasion: **92 rows, 42 `Proposed`, 50
+> `Accepted`**. ADR 0098 (`Proposed`, 2026-09-06) took it from 90/40/50 to
+> 91/41/50 and **nothing said so at the time**; ADR 0099 takes it to 92/42/50.
+> **And the streak sentence below is now wrong in the direction it warns
+> about**: it says the nine-anchor streak of outstanding ADRs arriving without
+> a §2 row was *"neither extended nor broken"* by 0097, which was true because
+> 0097 arrived `Accepted` — but 0098 and 0099 both arrive `Proposed` with no §2
+> row, so the streak is at eleven.
 
 **AND THE ADR IT ADDED CHANGED NO COUNT, FOR A REASON THAT IS ITSELF A FIRST.**
 ADR 0097 arrived **`Accepted`**, ruled on by the owner on the day it landed,
