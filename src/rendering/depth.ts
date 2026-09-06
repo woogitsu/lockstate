@@ -82,20 +82,34 @@ export const FLOOR_DEPTH = -1_000_000_000;
 export const FLOOR_ART_DEPTH = FLOOR_DEPTH - 1;
 
 /**
- * A room's name, written on its floor.
+ * A room's name, written across its floor.
  *
- * Above the ground `Graphics` -- which is the floor colour, the category tint,
- * the unowned shade and the grid -- and still a billion units below the
- * row-sorted band, so nothing with height can be hidden by a word. That
- * ordering is ADR 0098 option C's *"drawn over the floor and under the
- * objects"*: a bed a player has placed covers the name, because the bed is the
- * thing they are looking at and the name is what tells them where they are.
+ * **Above the row-sorted band, and that is a reversal of what ADR 0098 option C
+ * priced, taken on a measurement rather than on taste.** That option describes
+ * a per-room mark *"drawn over the floor and under the objects"*, so the first
+ * version of this constant was `FLOOR_DEPTH + 1`. Measured in Chromium at 1280
+ * x 720 with one finished bed standing at the centre of a named Canteen, the
+ * name rendered as **"teen" at zoom 1.0 and "een" at zoom 3.0** -- the bed is
+ * drawn with height, from its foot, so it covers the room's middle, which is
+ * exactly where a centred name goes. A name that cannot be read has not done
+ * the one thing the owner's ruling asked of it.
  *
- * `FLOOR_DEPTH + 1` rather than a constant of its own, so the relationship is
- * the declaration: there is no value the ground could take that would put it
- * over the label.
+ * What the reversal costs is small and bounded in the other direction: the name
+ * is a constant 13 screen pixels tall whatever the zoom, so at zoom 1 it hides
+ * 16 of a 64-pixel tile's height and at zoom 3 it hides 16 of 192. An object is
+ * identifiable around it; a word is not identifiable through it. ADR 0098's
+ * option C is a costing of an option, not a decision -- that document is
+ * Proposed, not Accepted -- so nothing approved is contradicted here.
+ *
+ * `-FLOOR_DEPTH - 1` rather than a bare literal, because the two bounds are one
+ * bound and writing it this way makes that the declaration: the ground sits as
+ * far below the row-sorted band as the name sits above it, so a world would
+ * have to extend about 1.95 million tiles from the origin -- in either
+ * direction -- for a row to reach either of them. The `- 1` leaves
+ * `BuildOverlay`'s fixed `1_000_000_000` preview depth on top, so a wall ghost
+ * the player is currently dragging still draws over a room's name.
  */
-export const ROOM_LABEL_DEPTH = FLOOR_DEPTH + 1;
+export const ROOM_LABEL_DEPTH = -FLOOR_DEPTH - 1;
 
 /**
  * Depth for something whose base sits at `anchorWorldY`.

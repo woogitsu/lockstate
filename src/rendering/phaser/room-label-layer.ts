@@ -46,6 +46,15 @@ import { planRoomLabels, type RoomLabelPlacement } from '../world/room-labels';
  * does not exist yet would be paying transport for a fact the geometry snapshot
  * already carries.
  *
+ * ## Where it sits in the draw order, which was measured and then changed
+ *
+ * Above everything with height, not under it. The first version followed ADR
+ * 0098 option C's phrasing -- a mark *"drawn over the floor and under the
+ * objects"* -- and in Chromium a bed standing at the centre of a named Canteen
+ * left the name reading **"teen" at zoom 1.0 and "een" at zoom 3.0**, because a
+ * bed is drawn with height from its foot and a centred name is exactly what it
+ * covers. `ROOM_LABEL_DEPTH` carries the full argument and the arithmetic.
+ *
  * ## What the 30-second geometry window does to a name (issue #1037)
  *
  * The frame this reads is the same frame the floor under it was painted from:
@@ -203,19 +212,30 @@ export class RoomLabelLayer {
 }
 
 /**
- * Whether the rectangle the name is written in is on screen at all.
+ * Whether the *name* can have a pixel on screen -- not whether its room can.
  *
- * The *room's* rectangle, not the text's box, and that is the conservative
- * direction on purpose: `roomLabelFits` only ever admits a name narrower than
- * `spanTiles`, so a name whose room is off screen cannot have glyphs on screen.
+ * Horizontally the room's own span is the right bound and it is the
+ * conservative one: `roomLabelFits` only ever admits a name narrower than
+ * `spanTiles`, so a name whose room is entirely off screen to the side cannot
+ * have glyphs on screen.
+ *
+ * Vertically the room's span is the **wrong** bound, and measuring it is what
+ * found that: a 4-tile-tall room whose southern row grazes the top of the
+ * viewport kept a `Text` live and positioned four tiles above the screen. The
+ * name's own height is what matters, it is a constant 13 screen pixels, and one
+ * tile is more than that in world units everywhere in `ZOOM_BOUNDS` -- at the
+ * far end, zoom 0.2, 13 screen pixels is 65 world units against a 64-unit tile.
+ * So one tile each way is a bound rather than a guess, and it does not grow
+ * with the room.
  */
+const LABEL_CULL_HALF_HEIGHT_TILES = 1;
+
 function overlaps(placement: RoomLabelPlacement, range: TileRange): boolean {
   const halfWidth = placement.spanTiles / 2;
-  const halfHeight = placement.spanRows / 2;
   return (
     placement.centreTileX + halfWidth >= range.minTileX &&
     placement.centreTileX - halfWidth <= range.maxTileX + 1 &&
-    placement.centreTileY + halfHeight >= range.minTileY &&
-    placement.centreTileY - halfHeight <= range.maxTileY + 1
+    placement.centreTileY + LABEL_CULL_HALF_HEIGHT_TILES >= range.minTileY &&
+    placement.centreTileY - LABEL_CULL_HALF_HEIGHT_TILES <= range.maxTileY + 1
   );
 }

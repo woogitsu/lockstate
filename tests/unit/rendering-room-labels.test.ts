@@ -23,8 +23,10 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
  * - **`roomLabelFits`** is the zoom rule, in the only form Node can hold it:
  *   given a measured text width, does the name fit the room at this zoom. What
  *   Node cannot supply is the width itself, which needs a browser laying out a
- *   real font -- `tests/browser/room-label.spec.ts` measures that and this file
- *   deliberately does not pretend to.
+ *   real font. That was measured by hand in Chromium against
+ *   `tests/browser/room-label-harness.ts` and the figures are in the commit
+ *   message; the spec that turns those figures into a gate is still owed, and
+ *   this file deliberately does not pretend to cover them.
  */
 
 const CHUNK_SIZE = 8;
