@@ -39,7 +39,52 @@
 
 ## Status
 
-**Proposed, 2026-09-06. Not self-approved.**
+**Accepted by the owner on 2026-09-06, together with the recommendation.**
+
+> The paragraph below is kept rather than overwritten, per
+> `docs/AGENT_WORKFLOW.md` §4, because this document was drafted as a question
+> and a reader should be able to see that it was answered as one.
+>
+> **Proposed, 2026-09-06. Not self-approved.**
+
+The decision was put to the owner as four choices — accept the recommendation;
+accept but take option 1c instead; shorten the poll first; or hold until they
+had read the document — and they chose:
+
+    Przyjmij z rekomendacją
+
+("Accept with the recommendation.") So the mechanism is the one §5 recommends:
+**a notification, deliberately not a channel** — a monotone marker published as
+a fifth header word on `lockstate.render-actors`, treated by
+`SimulationSnapshotFeed` as a sixth `dirty` mark, with the snapshot request that
+already exists doing the fetching.
+
+**THE ACCEPTANCE WAS GIVEN AGAINST A SUMMARY OF THE MECHANISM AND ITS THREE
+RIVALS, NOT AGAINST THIS DOCUMENT'S 805 LINES**, and the option carrying it said
+this much and no more:
+
+    Powiadomienie, nie kanał: worker publikuje monotoniczny znacznik jako PIĄTE
+    SŁOWO NAGŁÓWKA na już przyjętym kanale delty z ADR 0097, a pobraniem zajmuje
+    się istniejące żądanie snapshotu. Poniżej 200 ms wobec 22–28 s. 4 bajty na
+    publikację, jedna linia zapisu, jedna czytania, bez zmiany protokołu i bez
+    bumpa zapisu. Kluczowe: powiadomienie NIE MOŻE rozdzielić tego, co jedno
+    zdjęcie łączy, więc gate z #1034 zostaje prawdziwy z konstrukcji. Jedna
+    decyzja domyka dwa ADR-y na transporcie i nigdzie wyżej.
+
+That disclosure is the same one ADR 0075, ADR 0076, ADR 0097 and ADR 0098 carry,
+for the same reason: so that nobody later mistakes an acceptance for a reading.
+The three rivals were summarised beside it — option 1c's world epoch at 250 ms
+against the recommendation's 100 ms, both against a 26,000 ms defect and
+therefore within noise of each other; and the measured finding that shortening
+the poll costs **under 6 ms** per thirty seconds, so that option is refused on
+correctness rather than on cost.
+
+**WHAT ACCEPTANCE DOES NOT SETTLE.** It settles the mechanism and the channel.
+It does not settle §9's weakest claim, which is named there and stands: the
+`TileLayer` rebuild cost is the leg the cost table does not reach, and it is the
+number that would have to move for option 4 to become attractive again. Nor does
+it move any other document's `Status` line: ADR 0097 stays Accepted and ADR 0098
+stays Proposed.
 
 The question is the owner's to settle, and `docs/AGENT_WORKFLOW.md` §3's rule —
 *"Propose an ADR rather than deciding architecture inside implementation code,
