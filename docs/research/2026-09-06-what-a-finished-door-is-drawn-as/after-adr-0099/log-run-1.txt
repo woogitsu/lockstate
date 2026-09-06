@@ -1,3 +1,10 @@
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v8.2.2[39m  [2mready in [0m[1m283[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5292[22m/[39m
+
+Running 1 test using 1 worker
+
 calibration: tile (0,0) top-left = (-304, -574)
 door tile (15,13); centre probe {"x":688,"y":290}; north probe {"x":688,"y":264}
 this tile's own bare floor at the centre probe: [106,87,68]
@@ -26,3 +33,6 @@ console lines other than Phaser's banner: 8
   warning: [.WebGL-0x297c06a49800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
   warning: [.WebGL-0x297c06a49800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
   warning: [.WebGL-0x297c06a49800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+  ✓  1 tests/browser/playtest-1037-when-the-renderer-learns.playtest.ts:190:1 › how long between the simulation finishing a door and the renderer holding it (#1037) (57.1s)
+
+  1 passed (59.0s)
