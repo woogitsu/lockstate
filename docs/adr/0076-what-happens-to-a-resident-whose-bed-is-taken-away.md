@@ -742,11 +742,13 @@ reserves prices with the rest of #29), so it is named and not taken.
   promised
   *"One still being built is cancelled and its materials come back"*. Under
   ruling 20 the materials do not come back; money does, and only before the crew
-  starts. **Re-anchored 2026-09-06: replacement copy has since been written —
-  the key now reads "cancelled and refunds its money — but nothing comes back
-  once the crew has started it. A finished one is not refunded," and
-  `default-locale-en.ts:1464-1487` carries the owner's own account of the two
-  days the sentence was false and the ruling 20 quotes that fixed it.**
+  starts. **Re-anchored 2026-09-06 and converted to a quotation, per
+  `docs/AGENT_WORKFLOW.md` §4: replacement copy has since been written — the
+  key now reads `cancelled and refunds its money — but nothing comes back once
+  the crew has started it. A finished one is not refunded.` (verbatim in
+  `src/content/default-locale-en.ts`), and that file's own comment block
+  (`:1464-1487`) carries the owner's account of the two days the sentence was
+  false and the ruling 20 quotes that fixed it.**
   Replacement copy was **not written here** — `AGENTS.md`'s fourth
   exclusion reserves it — and the string is reported to the owner with the
   branch.

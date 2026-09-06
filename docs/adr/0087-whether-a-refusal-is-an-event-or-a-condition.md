@@ -320,10 +320,11 @@ command namespace, so **the wire cannot name which rung refused**: probe D
 asserts that a press-route refusal and a scheduled-construction-route refusal
 record byte-identical `reason` values. The shipped sentence for both was
 *"Nothing was bought — that would go past what the state will carry."*;
-**re-anchored 2026-09-06: ruling 23 has since replaced it with
-*"Nothing was bought — deliveries are refused until the prison earns the
-money"* (`src/content/default-locale-en.ts:858`, key
-`hud.alert.refusal.purchase.insufficient-funds`)**, the same clause the host
+**re-anchored 2026-09-06 and converted to a quotation, per
+`docs/AGENT_WORKFLOW.md` §4 — ruling 23 has since replaced it with
+`Nothing was bought — deliveries are refused until the prison earns the money.`
+(verbatim in `src/content/default-locale-en.ts`), key
+`hud.alert.refusal.purchase.insufficient-funds`**, the same clause the host
 side already carries — so the specific old sentence this row quotes no longer
 ships; the argument that follows (the wire cannot name which rung refused) is
 unaffected, because both wordings are one enum member wide.
