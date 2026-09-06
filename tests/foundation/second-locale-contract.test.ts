@@ -324,10 +324,69 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
    * something else is exactly the change nobody reviews. The owed item is
    * unchanged and now has nine entries behind it.
    */
-  'ui/hud/build-panel.ts:2088':
-    'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2501':
-    'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
+  /*
+   * **Paid on 2026-09-06, and not by the condition the top of this docblock
+   * names.** That condition was "if a fourth assembled sentence ever has to be
+   * recorded" -- a fourth has not arrived; there are still exactly two,
+   * `:2088` and `:2482` on `origin/main` at the commit this branch forked
+   * from (`a2b3632b`). What happened instead: a parallel, unmerged branch
+   * (`fix/1031-capacity-counts-on-completion`, commit `1c6ad206`) independently
+   * hit the same failure the same day -- nineteen lines added to `paintQueue`'s
+   * docblock moved `:2482` to `:2501` with neither expression touched -- and
+   * that branch's own commit message calls it the ninth re-pin, declines the
+   * expression-keyed fix as out of scope for its diff, and repeats the same
+   * "Recorded as owed" this docblock already carried. That branch is not part
+   * of this one's history and nothing here depends on it landing first; it is
+   * cited because it is independent, contemporaneous confirmation that the
+   * pattern above is still live on every branch that touches either site, not
+   * a closed chapter. The fix the top of this docblock already named -- "key
+   * the map on the quoted expression instead and let the reporter find the
+   * line" -- is taken here, ahead of whatever count would eventually have
+   * forced it, because the count was never the point; the pattern was.
+   *
+   * The paragraph at the top of this docblock, and all four historical blocks
+   * above this one, are left exactly as they stand, for the reason
+   * `docs/AGENT_WORKFLOW.md` §4 gives for marking both directions rather than
+   * overwriting: they are the entire argument for why this was worth doing,
+   * and a reader should see what was deferred, and for how long, before seeing
+   * that the deferral ended.
+   *
+   * **What changed, mechanically.** The keys below are now the quoted
+   * expression -- `template.text` in `findAssembledSentences`, the same
+   * string the value used to merely echo -- so a docblock line landing above
+   * a site no longer touches that site's key, and not one of the re-pins
+   * chronicled above -- on this branch or on `fix/1031-capacity-counts-on-completion`
+   * -- could fail this gate again. A genuinely new third expression still
+   * fails it, because its text matches neither key below. The failure message
+   * a reader sees is still built from `sites`, the live scan the test below
+   * performs at assertion time -- never from anything stored in this map -- so
+   * it still names a `file:line`, computed fresh rather than kept, which is
+   * the property the deferral was protecting and the reason it is not lost by
+   * this change.
+   *
+   * **What one recorded expression appearing at more than one call site would
+   * mean, decided here rather than left to fall out of `Set` semantics:** the
+   * risk an assembled sentence carries is the shape of the expression -- which
+   * fragments it stitches together -- not which line happens to hold it, so a
+   * second site producing byte-for-byte the same template shares the first
+   * site's justification rather than needing a second entry for it. Neither
+   * expression below is duplicated on this tree; the decision is recorded
+   * because the map's shape now makes it possible, and a decision a reader has
+   * to infer from the code is the same defect this whole entry exists to
+   * retire. The test below that names this decision constructs a duplicate
+   * and checks the collapse directly, rather than asserting the sentence and
+   * leaving it untested.
+   */
+  '`${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`':
+    "aria-label for a delivery row's Cancel button: a localized word, a " +
+    "hard-coded ': ', and text read back out of the row's own already-" +
+    'localized label. Fixing it means authoring a punctuation-template key ' +
+    "-- copy that reaches a screen-reader user, so the owner's under " +
+    '`AGENTS.md` exclusion 4.',
+  '`${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`':
+    "aria-label for a queue row's Cancel button -- the same shape as the " +
+    'delivery row above it, for the same reason: a localized word, a ' +
+    "hard-coded ': ', and the row's own already-localized label read back.",
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -422,16 +481,61 @@ describe('no player-visible sentence is assembled from a localized fragment and 
   const sites = scanned.flatMap((file) => findAssembledSentences(file.source, file.where));
 
   it('holds exactly the assembled sentences this list names', () => {
-    // Only the *locations* are compared. An earlier version of this
-    // assertion compared the source text too and built the expected side out
-    // of the scan's own output, which is the fixture-supplies-both-sides shape
-    // `docs/TESTING.md` forbids: it would have held for any text at all.
+    // Compared by *expression* (`site.text`), not by *location* (`site.where`)
+    // -- see the docblock above `ASSEMBLED_SENTENCES` for why the key changed.
+    // `ASSEMBLED_SENTENCES` is still a hand-maintained literal, independent of
+    // this scan, so this is not the fixture-supplies-both-sides shape
+    // `docs/TESTING.md` forbids: that shape is the *expected* side being built
+    // out of the thing under test, which would hold for any text at all, and
+    // is not what a `Set` over the scan's own findings does here. Two sites
+    // sharing one recorded expression are one finding, not two -- decided and
+    // tested below rather than left as an accident of `Set` semantics.
+    const found = [...new Set(sites.map((site) => site.text))].sort();
+
     expect(
-      sites.map((site) => site.where).sort(),
+      found,
       `put the punctuation inside the message (docs/LOCALIZATION.md rule 4), or record the site here with its reason.\n${sites
         .map((site) => `  ${site.where}  ${site.text}`)
         .join('\n')}`,
     ).toEqual(Object.keys(ASSEMBLED_SENTENCES).sort());
+  });
+
+  it("finds each recorded expression's current file:line by scanning, rather than trusting a stored one", () => {
+    // The half of the fix that keeps the property the deferral protected: a
+    // failure still has to point a reader at `build-panel.ts:NNNN`. Nothing in
+    // ASSEMBLED_SENTENCES carries a line any more, so this proves the line is
+    // still recoverable -- from `sites`, the live scan above, computed at
+    // assertion time rather than read out of the map.
+    for (const expression of Object.keys(ASSEMBLED_SENTENCES)) {
+      const locations = sites.filter((site) => site.text === expression);
+      expect(locations.length, `${expression} was not found anywhere in the current scan`).toBeGreaterThanOrEqual(1);
+      for (const location of locations) {
+        expect(location.where, `expected a ui/hud/build-panel.ts:NNNN citation, got ${location.where}`).toMatch(
+          /^ui\/hud\/build-panel\.ts:\d+$/,
+        );
+      }
+    }
+  });
+
+  it('treats two occurrences of one recorded expression as one finding, not two', () => {
+    // The decision the docblock above names, tested directly rather than left
+    // to fall out of `Set` semantics by accident: `tests/helpers/canonical-
+    // iteration.ts` applies the same reasoning to its own exemptions --
+    // "Two occurrences of the same view over the same field share one
+    // justification... the reason must justify the *field*, not one call
+    // site." An assembled sentence's risk is the shape of the expression, not
+    // which line holds it, so a second site producing byte-for-byte the same
+    // template is the same finding under a second spotlight.
+    const twice =
+      'a.setAttribute("aria-label", `${t(KEY.cancel)}: ${row.label.textContent}`); ' +
+      'b.setAttribute("aria-label", `${t(KEY.cancel)}: ${row.label.textContent}`);';
+    const found = findAssembledSentences(twice, 'fixture.ts');
+    // Both call sites are still reported individually -- nothing here hides a
+    // location from the file:line test above.
+    expect(found).toHaveLength(2);
+    // ...but they collapse to one required map entry, which is what the
+    // assertion above relies on.
+    expect(new Set(found.map((site) => site.text)).size).toBe(1);
   });
 
   it('makes every recorded site say why it is still there', () => {
@@ -440,7 +544,7 @@ describe('no player-visible sentence is assembled from a localized fragment and 
     // off for one line.
     const unexplained = Object.entries(ASSEMBLED_SENTENCES)
       .filter(([, reason]) => reason.trim().length < 40)
-      .map(([where]) => where);
+      .map(([expression]) => expression);
     expect(unexplained, 'record what the site assembles and why it has not been fixed').toEqual([]);
   });
 
