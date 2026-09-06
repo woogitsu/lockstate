@@ -37,6 +37,7 @@ import {
   type RoomToolPort,
   type TileRect,
 } from '../build/area-picking';
+import { RoomLabelLayer } from '../phaser/room-label-layer';
 import { TileLayer } from '../phaser/tile-layer';
 import { TILE_SIZE_PX, tileToWorld, visibleTileRange, type TileBounds, type TileRange } from '../tile-metrics';
 import { VOID_COLOR } from '../world/appearance';
@@ -183,6 +184,26 @@ export interface WorldSceneOptions {
   readonly roomTint?: () => number | undefined;
 
   /**
+   * The room type's own name, in the player's language, for a zoning numeric id
+   * -- or `undefined` for an id this build's catalogue does not name.
+   *
+   * A function, and text rather than a message key, for the two reasons
+   * `roomTint` above is a function returning a colour. The renderer is handed
+   * *the answer it needs to draw*: which words a room type is called is a
+   * content-plus-localization decision, and both live at the composition root
+   * (`src/main.ts`), so a scene that resolved a key would be a second place
+   * that knows how this game is translated. And it is read on every paint
+   * rather than taken once, so a future locale change reaches the map without
+   * the scene holding a stale copy.
+   *
+   * Absent, no room is named and every gesture keeps exactly the meaning it
+   * had -- the same shape an absent `buildTool` has. That is the state of
+   * `tests/browser/world-scene-harness.ts`, which asserts about input and
+   * nothing about words.
+   */
+  readonly roomName?: (zoningNumericId: number) => string | undefined;
+
+  /**
    * Where input settings are read from.
    *
    * The renderer used to reach for `window.localStorage` itself, in a class
@@ -235,6 +256,7 @@ export class WorldScene extends Phaser.Scene {
   private readonly editHistory: EditHistoryPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
   private readonly roomTint: (() => number | undefined) | undefined;
+  private readonly roomName: ((zoningNumericId: number) => string | undefined) | undefined;
   private readonly objectTool: ObjectToolPort | undefined;
   private readonly objectTint: (() => number | undefined) | undefined;
   /** The pointer currently drawing a wall run, and the world point it pressed. */
@@ -244,6 +266,12 @@ export class WorldScene extends Phaser.Scene {
   private hoveredEdge: EdgeTarget | undefined;
 
   private tiles: TileLayer | undefined;
+  /**
+   * Undefined when no `roomName` was supplied, rather than a layer that draws
+   * nothing: a layer with no source of words would still walk the world for
+   * regions once per revision to write no text.
+   */
+  private roomLabels: RoomLabelLayer | undefined;
   private actors: ActorLayer | undefined;
   private buildOverlay: BuildOverlay | undefined;
 
@@ -290,6 +318,7 @@ export class WorldScene extends Phaser.Scene {
     this.editHistory = options.editHistory;
     this.roomTool = options.roomTool;
     this.roomTint = options.roomTint;
+    this.roomName = options.roomName;
     this.objectTool = options.objectTool;
     this.objectTint = options.objectTint;
     this.keyboard = new KeyboardInputAdapter(
@@ -329,6 +358,8 @@ export class WorldScene extends Phaser.Scene {
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);
+    const roomName = this.roomName;
+    if (roomName !== undefined) this.roomLabels = new RoomLabelLayer(this, roomName);
     this.buildOverlay = new BuildOverlay(this);
     this.areaOverlay = new AreaOverlay(this);
     this.objectOverlay = new AreaOverlay(this);
@@ -637,11 +668,13 @@ export class WorldScene extends Phaser.Scene {
       window.removeEventListener('blur', blur);
       canvas.removeEventListener('pointerdown', capturePointer);
       this.tiles?.destroy();
+      this.roomLabels?.destroy();
       this.actors?.destroy();
       this.buildOverlay?.destroy();
       this.areaOverlay?.destroy();
       this.objectOverlay?.destroy();
       this.tiles = undefined;
+      this.roomLabels = undefined;
       this.actors = undefined;
       this.buildOverlay = undefined;
       this.areaOverlay = undefined;
@@ -693,6 +726,11 @@ export class WorldScene extends Phaser.Scene {
     this.lastLoadedBounds = frame.world.loadedBounds;
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
     this.tiles?.update(frame, range);
+    // After the tiles and with the same frame, because the two must not be able
+    // to disagree: a name is only ever true of the floor it is written on, and
+    // that floor is painted from this exact `frame.world` (`room-label-layer.ts`
+    // records what the 30-second geometry window does and does not do to that).
+    this.roomLabels?.update(frame, range, this.cameras.main.zoom);
     this.actors?.update(frame.actors, range, nowSeconds);
     // Handed over every frame rather than read once: `frame.world` is replaced
     // wholesale on every snapshot (`WorldRenderView.fromSnapshot`), and this is

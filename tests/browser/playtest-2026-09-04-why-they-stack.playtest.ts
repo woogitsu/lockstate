@@ -140,7 +140,8 @@ interface ActorSample {
  */
 async function installActorTee(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const HEADER_WORDS = 4;
+    // Five since ADR 0099 put the drawn world's marker in `u32[4]`.
+    const HEADER_WORDS = 5;
     const RECORD_WORDS = 5;
     const WORD = 4;
     const SUBTILE = 256;

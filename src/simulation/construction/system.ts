@@ -1364,6 +1364,13 @@ export class ConstructionSystem implements SystemRegistration {
       if (def === undefined) {
         order.state = 'failed';
         order.failReason = 'unknown-buildable';
+        // A ghost stops being drawn: `structuresFromConstruction` maps
+        // `failed` to no phase at all, so this tile had a translucent block on
+        // it a moment ago and now has none. Beyond the two transitions ADR
+        // 0099 decision 3 enumerates, and covered for the reason those two
+        // are: it happens on a tick rather than on a command, so nothing else
+        // would tell the renderer.
+        this.world.markDrawnWorldChanged();
         continue;
       }
 
@@ -1412,6 +1419,13 @@ export class ConstructionSystem implements SystemRegistration {
           crewBusy = true;
           order.assignedWorkerId = MOCK_CREW_WORKER_ID;
           order.state = 'in-progress';
+          // The first of an order's two drawn phase changes: the `planned`
+          // ghost becomes the `building` one (`structuresFromConstruction`).
+          // ADR 0099 decision 3's second bullet, and the reason that bullet
+          // exists -- no chunk layer is written here, so `geometryRevision`
+          // and `contentRevision` both stand still and a marker derived from
+          // them would say nothing happened.
+          this.world.markDrawnWorldChanged();
           break;
 
         case 'in-progress':
@@ -1422,6 +1436,17 @@ export class ConstructionSystem implements SystemRegistration {
             order.progress = def.workRequired;
             order.state = 'completed';
             this.finalizeConstruction(order);
+            // The second, and the one issue #1037 is about: the `building`
+            // ghost becomes the finished thing. `finalizeConstruction` bumps a
+            // chunk revision for most buildables and would therefore have
+            // moved the marker through `markChanged` anyway -- this line is
+            // not relying on that, because the *state* change is the fact
+            // being reported and a buildable whose finalisation writes no
+            // layer would otherwise finish invisibly. Idempotence is not
+            // needed: the marker means "not what it was", so counting one
+            // change twice costs nothing but a second comparison that already
+            // differs.
+            this.world.markDrawnWorldChanged();
           }
           break;
       }

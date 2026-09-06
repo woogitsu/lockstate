@@ -776,7 +776,16 @@ export class SimulationWorkerStateMachine {
     // of which the main thread should have to track (ADR 0059).
     const control = this._clock.control;
     const ticksPerWallSecond = (1_000 / this._clock.stepMilliseconds) * (control.mode === 'running' ? control.speed : 1);
-    const data = encodeRenderActorsKeyframe(this._runtime.prisoners, ticksPerWallSecond, this._runtime.securityGuards);
+    // ADR 0099 decision 3's marker, read off the world it is a marker for and
+    // published unexamined. `publishRenderDelta` is still strictly a read: the
+    // counter is incremented at the write sites that change what the renderer
+    // draws, never here.
+    const data = encodeRenderActorsKeyframe(
+      this._runtime.prisoners,
+      ticksPerWallSecond,
+      this._runtime.world.drawnWorldRevision,
+      this._runtime.securityGuards,
+    );
     const message: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: crypto.randomUUID(),

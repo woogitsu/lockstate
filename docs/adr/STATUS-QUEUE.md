@@ -743,8 +743,18 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `0b8af9f8` (**v0.0.511**) by the delta method this
-header describes, from the v0.0.503 anchor kept below. **EIGHT of the ten
+Re-anchored at `main` @ `4cc8a12f` (**v0.0.521**) by the delta method this
+header describes, from the v0.0.511 anchor kept below. **TEN of the ten
+releases the budget allows — spent to the unit, run because the next
+`chore(release)` would have turned this gate red with no CI run anywhere to
+report it**, which is how v0.0.495 was discovered. `package.json` ships 0.0.521
+at `4cc8a12f` and the anchor being replaced named v0.0.511.
+`ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at **10**.
+
+> **The v0.0.511 anchor's own opening, kept rather than overwritten**
+> (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `0b8af9f8`
+> (**v0.0.511**) by the delta method this header describes, from the v0.0.503
+> anchor kept below."* **EIGHT of the ten
 releases the budget allows — inside it by two**, counted on the tree this
 commit is written against: `package.json` ships 0.0.511 at `0b8af9f8` and the
 anchor being replaced named v0.0.503. `ANCHOR_STALENESS_BUDGET_RELEASES` is
@@ -828,8 +838,28 @@ double-counting — gives **41 `Proposed`, 50 `Accepted`, 91 documents with a
 status**. `docs/adr/README.md` agrees row for row
 (`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns 41 against 50
 `Accepted`), and carries 91 linked rows plus the unlinked, file-less `0018` row
-for **92** numbered rows. **Next free number: 0099**, unmoved since `6a661607`
-and restated here rather than recomputed.
+for **92** numbered rows. At `0b8af9f8` the index's next-free line read
+0099, unmoved since `6a661607` and restated rather than recomputed; on the
+tree this branch produces it is **Next free number: 0100**, because ADR 0099
+lands here. See the correction below.
+
+> **Corrected on this branch, 2026-09-06, and it is the correction the
+> composing note above predicted — with one column wrong.** ADR 0099 landing
+> moves every figure in the paragraph above, and that note forecast
+> `42 / 50 / 0100` on the assumption that 0099 would arrive `Proposed`, like
+> every outstanding ADR since 0056 and 0059. **The owner accepted it the same
+> day.** Re-derived on the tree this branch produces, with the same two greps
+> rather than taken from the forecast — which is exactly why the wrong column
+> was caught — the live figures are **41 `Proposed`, 51 `Accepted`, 92
+> documents with a status**, 92 linked rows plus the unlinked, file-less
+> `0018` row for **93** numbered rows, and **Next free number: 0100**, which
+> `docs/adr/README.md` on this branch already states.
+>
+> The paragraph and its forecast are both kept above rather than rewritten
+> (`docs/AGENT_WORKFLOW.md` §4): a forecast that named the right number for
+> the wrong reason is worth more to a later reader than a silently corrected
+> one, and this is the second time in two days that an ADR's *status* — not
+> its number — is what a counting sentence got wrong.
 
 **The outside-window population was checked directly rather than re-scanned
 from scratch.** The previous anchor's eight genuinely-live outside-window
@@ -10119,7 +10149,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `0b8af9f8` — `git diff --name-only 4e489701..0b8af9f8 -- supabase/` returns nothing, the directory still holds **24** migrations, and every row of the table above resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`) — and at `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
+absences were re-verified at `4cc8a12f` — `git diff --name-only 0b8af9f8..4cc8a12f -- supabase/` returns nothing, the directory still holds **24** migrations, and every row of the table above resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`, each opened individually on `20260823100000_bound_free_tier_capacity.sql` rather than inferred from the command returning nothing) — and at `0b8af9f8`, `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
 
 **THE ABSENCES HOLD AND THE GREP THAT ESTABLISHED THEM NO LONGER DOES, AND BOTH
 HALVES ARE KEPT.** This paragraph read, from `26434e8e` through `4c00eaba`:
@@ -12014,13 +12044,31 @@ written for the occasion, and `docs/adr/README.md` agrees row for row: 40
 with all four sites already current and the first of the six that is not weak.**
 The five before it each reported the agreement against a window that added no
 ADR, so the mechanism that splits the four sites was never exercised; this
-window added one. `Next free number: 0099` here, restated from
+window added one. `Next free number: 0100` here, restated from
 `docs/adr/README.md` rather than recomputed, and the index and this file agree
-on it. **It read `0098` when this pass was taken and moved with the index on
-2026-09-06, when ADR 0098's row reserved that number**; the value is restated
-rather than recomputed, so this is the index moving and not a second opinion
-about it. The number #1025 moved when it reserved 0097; #1021's ADR moved it
-again.
+on it. **It read `0098` when this pass was taken, `0099` after ADR 0098's row
+reserved that number on 2026-09-06, and `0100` since ADR 0099's row reserved
+the next one the same day**; the value is restated rather than recomputed, so
+this is the index moving and not a second opinion about it. The number #1025
+moved when it reserved 0097; #1021's ADR moved it again, and #1037's moved it
+a third time.
+
+> **The four counts in the paragraph above are this pass's own and two of the
+> three ADRs since have moved them, which is the split this paragraph itself
+> predicts rather than a new defect.** They are corrected here rather than in
+> the four places that carry them, because re-anchoring is §5's job and a
+> partial re-anchor is how three of those places came to disagree in the first
+> place. Derived on 2026-09-06 from `docs/adr/README.md` at
+> `adr/how-the-renderer-learns-geometry-changed`, by replicating
+> `adr-numbering-contract.test.ts`'s own `INDEX_ROW` and `statusKeyword` rather
+> than by a grep written for the occasion: **92 rows, 42 `Proposed`, 50
+> `Accepted`**. ADR 0098 (`Proposed`, 2026-09-06) took it from 90/40/50 to
+> 91/41/50 and **nothing said so at the time**; ADR 0099 takes it to 92/42/50.
+> **And the streak sentence below is now wrong in the direction it warns
+> about**: it says the nine-anchor streak of outstanding ADRs arriving without
+> a §2 row was *"neither extended nor broken"* by 0097, which was true because
+> 0097 arrived `Accepted` — but 0098 and 0099 both arrive `Proposed` with no §2
+> row, so the streak is at eleven.
 
 **AND THE ADR IT ADDED CHANGED NO COUNT, FOR A REASON THAT IS ITSELF A FIRST.**
 ADR 0097 arrived **`Accepted`**, ruled on by the owner on the day it landed,
@@ -12038,6 +12086,107 @@ span's text at the two ends of the window, which flags every citation sitting in
 a past-tense record exactly as loudly as a live one. Nothing in this pass
 establishes how many of the 51 are really wrong, and the honest bound is that it
 is somewhere between a handful and all of them.
+
+## 3. What the anchor pass of 2026-09-06 evening opened with the budget spent to the unit for the second time in one day: ten merges, seven coordinates moved, and a citation that cannot be re-aimed by its own text
+
+Taken at `4cc8a12f` (v0.0.521), from `0b8af9f8` (v0.0.511). **Ten of ten
+releases** — the gate passes at exactly the limit and the next
+`chore(release)` would have turned it red with no CI run anywhere to report it,
+which is how v0.0.495 was found. The budget is unmoved at **10**.
+
+**THE WINDOW RECONCILES TO THE FILE.** Ten pull-request merges landed:
+#1036, #1040, #1041, #1042, #1043, #1044, #1045, #1046, #1047 and #1048.
+Their per-merge file lists sum to **66**; five files are touched by more than
+one merge, so the union is **60**; plus `package.json`, bumped ten times by the
+ten `chore(release)` commits that are not merges, gives **61**, which is
+exactly `git diff --name-only 0b8af9f8..4cc8a12f`. Nothing is unaccounted for
+in either direction — the union contains no path the window's own diff lacks,
+and the diff contains no path but `package.json` that no merge touched.
+
+**Every sha verified individually** with `git cat-file -e <sha>^{commit}`:
+`4cc8a12f`, `0b8af9f8`, and the ten merge commits `21339f30`, `d93882eb`,
+`bce4de89`, `73fb06d8`, `a12bb364`, `a40e2fcf`, `85216327`, `b7f2e646`,
+`fd84e0a6`, `785a8aa7`. That check exists because a re-anchor once shipped a
+false sha by mistyping one character.
+
+**THE DELTA READ, DONE MECHANICALLY RATHER THAN BY EYE.** Every `file:line`
+citation in this file's live sections naming a file the window touched was
+extracted, and each one's cited line was read at both anchors and compared as
+text. Twenty-three distinct live spans, of which **sixteen held** — the same
+text at the same number — and **seven moved**:
+
+| citation | was | now |
+| --- | --- | --- |
+| `src/rendering/world/environment-art.ts:186` | 186 | **187** |
+| `src/main.ts:2945-2950` | 2945 | **2985** |
+| `src/main.ts:1429` | 1429 | **1469** |
+| `src/main.ts:3138` | 3138 | **3178** |
+| `src/main.ts:1439` | 1439 | **1479** |
+| `src/main.ts:3381` | 3381 | **3421** |
+| `src/main.ts:2762` | 2762 | see below |
+
+Each was re-aimed by **searching the new tree for the old line's text**, never
+by adding the window's line delta — the direction a previous pass got wrong and
+had to revert. Six of the seven resolve to exactly one line. `src/main.ts` moved
+by forty lines throughout, from #1044's room-name wiring and #1047's tint
+table.
+
+**THE SEVENTH IS THE FINDING, AND IT IS ABOUT WHAT A COORDINATE CAN CARRY.**
+`src/main.ts:2762` cannot be re-aimed by its own text, because its text is
+`*` — a blank continuation line inside a docblock — which matches **twenty-six
+lines** of the current file. A citation whose content is not distinctive is one
+this method cannot repair; it is re-aimed instead by the symbol its own
+paragraph names, `case 'purchase-materials': {`, at `:2758` before and
+**`:2798`** now. The paragraph citing it already argued the general case —
+*"re-derived by symbol here"* — and this is the first time the argument has
+been forced rather than made: a `file:line` into a comment body is strictly
+weaker than one into a statement, because only the statement can be found
+again.
+
+**Both live `verified at` chains re-verified at this anchor rather than
+carried forward.** `supabase/`'s two absences: `git diff --name-only
+0b8af9f8..4cc8a12f -- supabase/` returns nothing, the directory still holds
+**24** migrations, and all six coordinates were opened individually on
+`20260823100000_bound_free_tier_capacity.sql` rather than inferred from the
+command returning nothing — `:73` is still `as $$ select 4194304 $$;`. And
+`ui-hud-messages.test.ts:270-276` is unmoved for the **eleventh** consecutive
+anchor, on a file this window did not touch, which establishes that the file
+was left alone and nothing more.
+
+**A false alarm of the integrator's own, recorded because it is the same shape
+as three published errors this session.** Checking that `$$ select 4194304 $$`
+span, I read the telemetry migration instead of the one the paragraph names,
+found nothing, and was one step from publishing that the claim had been false
+since the previous anchor. It is not: the paragraph names
+`20260823100000_bound_free_tier_capacity.sql` in the sentence immediately
+above the coordinates, and the SQL is at `:73` exactly as claimed. **The
+measurement was real and the file was wrong** — which is the error class the
+handover already records twice today.
+
+**§2 is unmoved at nine entries.** No merge in this window edited §2, and none
+of the ten added a row: ADR 0099 and ADR 0100 both arrived and were both
+**Accepted the same day they were drafted**, which is new — every outstanding
+ADR since 0056 and 0059 arrived `Proposed` with no §2 row, and the streak this
+chain has counted eleven times is not extended by either of them because
+neither is outstanding.
+
+**The four counting sites, re-derived rather than restated.** `grep -cE
+'^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **41** against **51**
+`Accepted`, for **92** documents carrying a status; the index carries 93
+numbered rows, 92 linked plus the unlinked file-less `0018`. **Next free
+number: 0101**, which is one past 0100 on disk and what `docs/adr/README.md`
+states.
+
+**Two anchors in one day is the thing to notice, not the numbers.** This file
+was re-anchored at `0b8af9f8` (v0.0.511) this morning and again here at
+`4cc8a12f` (v0.0.521), because ten releases landed between them — and the two
+anchors together sit inside a day in which `main` took **nineteen** merged pull
+requests, counted with `git log --merges --since` rather than from memory:
+#1028, #1029, #1030, #1032, #1033, #1034, #1035, #1036, #1038, #1039, #1040,
+#1041, #1042, #1043, #1044, #1045, #1046, #1047 and #1048. The budget is a bound on unreviewed drift and it held; what
+it did not do is warn anybody early, because nothing measures the *rate*. If a
+session ever lands ten merges again, the gate will be at the limit again with
+the same absence of notice.
 
 ## 3. What the anchor pass of 2026-09-06 opened with the budget two clear of the limit: eight merges, one span re-opened and held, and a branch this pass composes with rather than edits
 
@@ -12081,31 +12230,54 @@ live claim. Nothing here needed a coordinate moved.
 ASSUMING NON-OVERLAP.** `adr/how-the-renderer-learns-geometry-changed` is cut
 from `a2b3632b` (v0.0.507, inside this window) and carries ADR 0099, not yet
 merged. Its sole edit to this file is one hunk inside the v0.0.503 anchor's
-own dated record above — correcting the next-free-number sentence there
-(then reading 0099) and the *"nine-anchor streak … neither extended nor
-broken"* sentence, to account for ADR 0098 and ADR 0099 both landing
-`Proposed` with no §2 row. This pass edits neither sentence and states no
-streak figure of its own: the header above reported 41 `Proposed` / 50
-`Accepted` and a next-free figure of 0099, which is what `docs/adr/README.md`
-stated on `main` at this pass's own anchor (`0b8af9f8`, v0.0.511; ADR 0099 was
-not on that tree), and PR #1043's correction is about the tree ADR 0099 lands
-on, not this one. The two accounts describe two different trees and neither
-needed to change for the other to be true; merging PR #1043 after this pass
-costs it nothing but rebasing past this section's own line numbers.
+own dated record above — correcting that record's next-free line and its
+*"nine-anchor streak … neither extended nor broken"* sentence to account for
+ADR 0098 and ADR 0099 both landing with no §2 row. This pass edits neither
+sentence and states no streak figure of its own: the header above reports
+41 `Proposed` / 50 `Accepted` and the next-free line as it stood at
+`0b8af9f8`, which is what `docs/adr/README.md` stated on `main` at that
+commit (ADR 0099 was not on that tree), and PR #1043's correction is about the
+tree ADR 0099 lands on, not that one. The two accounts describe two different
+trees and neither needed to change for the other to be true.
 
-**SUPERSEDED IN PART, 2026-09-06 — the figure this pass reported has since
-moved, not the claim it made about its own anchor.** A third branch neither
-this paragraph nor PR #1043 anticipated found the same held number PR #1043
-carries and took the number after it instead of colliding:
-[ADR 0100](./0100-whether-a-rendered-object-sprite-can-be-published-art.md),
-cut from `93c11bf8` (v0.0.517), found `0099-how-the-renderer-learns-the-world-changed.md`
-already committed on `adr/how-the-renderer-learns-geometry-changed` with no
-pull request — over a 216-head sweep its own Status section records — and
-took **0100** rather than the held 0099. `docs/adr/README.md`'s Next free
-number: 0101 as of that branch landing its own row, which supersedes only the
-figure two paragraphs up, not its claim about what `main` stated at
-`0b8af9f8`: that claim is still true of that commit, and PR #1043 still has
-not merged.
+> **Amended on PR #1043's branch, 2026-09-06, which is the tree this paragraph
+> was written to anticipate.** Two things in it needed correcting once the
+> merge actually happened, and both are the kind a forecast gets wrong rather
+> than a coordinate. **First, the numbers quoted here stopped being live and
+> started contradicting the index**: `adr-status-queue-anchor-contract`
+> classifies a next-free restatement as live by position, not by value, so the
+> figure this paragraph quoted from the older tree read as a live claim of
+> 0099 against an index that now says 0100 — a red gate, caught by running the
+> gates after the merge rather than before it. The literal phrasing is
+> therefore replaced by a description; the number itself lives in the dated
+> record above, where it is history and exempt. **Second, this paragraph said
+> ADR 0098 and ADR 0099 would both land `Proposed`.** ADR 0098 did. ADR 0099
+> was accepted by the owner on the day it was drafted, so the live figures on
+> this tree are 41 `Proposed` and 51 `Accepted`, and the index's next-free
+> line moved to the number after ADR 0099's — the number forecast, the
+> column not. The figure itself is stated once, live, in the paragraph
+> below, because ADR 0100 landing in the same drain moved it again and a
+> file with two live restatements is the defect this gate exists for. Kept and marked rather than rewritten
+> (`docs/AGENT_WORKFLOW.md` §4).
+
+**A THIRD BRANCH MOVED THE FIGURE AGAIN, IN THE SAME DRAIN, AND THIS IS THE
+ONE LIVE RESTATEMENT THIS FILE CARRIES.**
+[ADR 0100](./0100-whether-a-rendered-object-sprite-can-be-published-art.md) was
+cut from `93c11bf8` (v0.0.517), swept 216 remote heads, found
+`0099-how-the-renderer-learns-the-world-changed.md` already committed on
+`adr/how-the-renderer-learns-geometry-changed` with no pull request, and took
+**0100** rather than colliding with the held number. Both rows are on disk now,
+ADR 0099's by merge and ADR 0100's by this branch, so **Next free number: 0101**
+— which `docs/adr/README.md` states, and which
+`tests/foundation/adr-numbering-contract.test.ts` derives as one past the
+highest number on disk.
+
+**What that branch predicted and what actually happened differ in the reason
+rather than the number** (`docs/AGENT_WORKFLOW.md` §4): it recorded the line as
+moving *over a HELD 0099*, true when written, and 0099 merged the same day. So
+0101 is reached by two ordinary steps rather than by stepping over anything, and
+that record is the last time a sweep in this file had to reason about a number
+it could not see on disk.
 
 **THE OUTSIDE-WINDOW SCAN WAS NOT RE-RUN FROM SCRATCH.** The previous anchor's
 script enumerated eight genuinely-live citations outside its own window; this
@@ -16104,7 +16276,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `0b8af9f8` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **tenth** consecutive unmoved reading, and the tenth taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and at `4e489701`, `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then SIX unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
+  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `4cc8a12f` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **eleventh** consecutive unmoved reading, and the eleventh taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and at `0b8af9f8`, `4e489701`, `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then SIX unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256`;
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;

@@ -249,3 +249,113 @@ Third: act two keeps the feed fresh by pausing and resuming the clock,
 which is a real control but is not how a player plays. It is offered as evidence
 about what the *painter* does with a fresh frame, and act one — with nothing
 pressed — is the evidence about what a player sees.
+
+---
+
+## 10. Amendment, 2026-09-06: the window after ADR 0099, and why §9's weakest claim had to be answered first
+
+**Everything above is left exactly as it stands** (`docs/AGENT_WORKFLOW.md` §4).
+It is the *before*, and the numbers in it are the reason ADR 0099 exists.
+
+[ADR 0099](../adr/0099-how-the-renderer-learns-the-world-changed.md) was
+accepted by the owner on 2026-09-06 together with its recommendation, and
+implemented on `feat/1037-notify-the-renderer`: the worker publishes a monotone
+marker as the fifth header word of `lockstate.render-actors`, and
+`SimulationSnapshotFeed` treats a change in it as a sixth `dirty` mark.
+
+### The same instrument, re-run, and what it could not say
+
+`tests/browser/playtest-1027-what-a-finished-door-is-drawn-as.playtest.ts` was
+re-run against the change on this container. Before: **23,607 ms** (within the
+22.0–28.0 s spread §2 records). After: **4,062 ms** — and **that figure is
+§9's weakest claim, not a measurement of the renderer.** The run took *three
+samples* in act one, at t+259, t+5,555 and t+9,617 ms; the queue emptied at the
+second and the slab was gone by the third, so 4,062 ms is one gap between two
+of the sampler's own screenshots. The instrument cannot resolve a window
+narrower than its own cadence, and §9 said so before the fix existed.
+
+One detail of that run is worth keeping, because it is the resolution problem
+caught in the act: at t+5,555 ms the *centre* probe read the `building` ghost
+while the *north* probe of the same sample read the finished door's artwork.
+The two probes are two screenshots taken one after the other, so the repaint
+happened between them.
+
+### A second instrument, at 100 ms resolution
+
+`tests/browser/playtest-1037-when-the-renderer-learns.playtest.ts` measures the
+same window with **no screenshot in the loop** — it polls the Build panel's
+text and a worker tee every 100 ms, and takes its two screenshots at the end to
+confirm the frame it timed is what is on the screen. Both figures below are
+from that instrument, run on this container, on the base commit and on the
+change:
+
+| | Build panel stops listing | the render feed holds a completed door | window |
+| --- | --- | --- | --- |
+| base (`53bfe373`) | t+7,626 ms | t+30,131 ms, tick 606 | **22,505 ms** |
+| ADR 0099, run 1 | t+7,532 ms | t+7,294 ms, tick 154 | **−238 ms** |
+| ADR 0099, run 2 | t+7,361 ms | t+7,461 ms, tick 153 | **+99 ms** |
+
+**Two runs, one negative and one positive, and the pair is the honest reading:
+the two surfaces now agree to within a clock heartbeat.** The Build panel is a
+projection published on `CLOCK_STATE_PUBLISH_INTERVAL_MS` (250 ms) and polled
+here at 100 ms, so which of the two lands first is decided by where in that
+period the order finished — which is exactly the thing that used to decide
+*how much of the thirty-second poll was left*. What is no longer in the window
+at all is the poll.
+
+Raw output, all four runs:
+[ADR 0099 run 1](./2026-09-06-what-a-finished-door-is-drawn-as/after-adr-0099/log-run-1.txt),
+[ADR 0099 run 2](./2026-09-06-what-a-finished-door-is-drawn-as/after-adr-0099/log-run-2.txt),
+[the base run](./2026-09-06-what-a-finished-door-is-drawn-as/after-adr-0099/log-base-53bfe373.txt),
+[every delta and every marker move of run 2](./2026-09-06-what-a-finished-door-is-drawn-as/after-adr-0099/deltas-run-2.json),
+and [the #1027 instrument's own re-run](./2026-09-06-what-a-finished-door-is-drawn-as/after-adr-0099/log-1027-instrument-rerun.txt)
+whose 4,062 ms is discussed above. The committed
+[log.txt](./2026-09-06-what-a-finished-door-is-drawn-as/log.txt) and
+[samples.json](./2026-09-06-what-a-finished-door-is-drawn-as/samples.json) are
+still the *before* record and were deliberately not overwritten, which is why
+the re-runs are filed beside them rather than in place of them.
+
+**Negative on purpose.** The renderer now learns from the simulation directly,
+while the Build panel is a projection that waits for a clock heartbeat — so the
+pixels are correct *before* the sentence beside them is, which is the exact
+inversion of the defect. In both runs the closing screenshot read
+`centre=[106,87,68] slabAlpha=0.00 north=[125,119,116]`: this tile's own bare
+floor at the centre and the interior-door artwork at the northern boundary, so
+the timing above is about a frame that really is on the screen.
+
+### The notification itself, and what it cost
+
+On both ADR 0099 runs the tee decoded `u32[4]` out of every delta, and both
+agree: **82 deltas with the marker moving on 2**, and **77 with the marker
+moving on 2** — at the crew starting (`planned` → `building`, ticks 121 and
+123) and at completion (`building` → `built`, tick 152 both times). Two extra
+snapshot requests over a whole run, which is ADR 0099 decision 4's prediction
+of *"one request per drawn phase change, which is two per order and not one"*,
+observed. The marker steps by **2** at completion rather than by 1, because
+`finalizeConstruction` writes the door's edge — which moves it through
+`markChanged` — and the state change moves it in its own right; the marker
+means *"not what it was"*, so counting one change twice costs nothing.
+
+The round trip from notification to applied snapshot, inside the browser:
+**104 ms** (t+7,190 → t+7,294) and **54 ms** (t+7,407 → t+7,461), against ADR
+0099's arithmetic bound of 200 ms.
+
+**One cost the ADR does not mention, found in this trace.** A command that
+changes geometry now costs three snapshot requests where it cost two: zoning
+writes a chunk layer during the tick the feed is already fetching for, so the
+next delta asks again for a world the feed already holds. Measured at 19 → 20
+feed snapshots over a full run. It is documented at
+`SimulationSnapshotFeed.lastWorldRevision`, which also says why it stays —
+removing it would need the marker on the snapshot *reply*, and that is the
+protocol change ADR 0099 decision 2 declines.
+
+On the base run the same tee reported **0 deltas**, and that is not a fault: a
+new prison has no prisoners, so a layout-2 keyframe is a bare four-word header
+of 16 bytes and the tee refuses to read a fifth word that is not there.
+
+### What this amendment does not claim
+
+Not that the pixel latency is 104 ms. The instrument times the *frame* to the
+millisecond and confirms the pixel once at the end; the step from an applied
+snapshot to a `TileLayer` repaint is still the leg nothing here measures, and it
+is still ADR 0099's own named weakest claim.

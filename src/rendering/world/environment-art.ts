@@ -146,8 +146,9 @@ export function edgeArt(edgeNumericId: number): EdgeArt | undefined {
  * a patch of ground an interior, and drawing that patch as an interior floor is
  * a view of a fact the simulation already holds.
  *
- * The room's own category is still carried by `zoningTint`, drawn over this at
- * a reduced alpha, so "which room is this" survives the floor being art.
+ * The room's own identity is still carried by `zoningTint` (keyed by room id
+ * since ADR 0098 option A, not by category), drawn over this at a reduced
+ * alpha, so "which room is this" survives the floor being art.
  *
  * One floor for every category today. This returns per zoning id rather than
  * per category so a later split -- concrete for utility and logistics, linoleum

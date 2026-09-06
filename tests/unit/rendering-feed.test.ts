@@ -614,11 +614,19 @@ describe('the render delta channel feeds the actors', () => {
       readonly layoutVersion?: number;
       readonly schemaId?: string;
       readonly schemaVersion?: number;
+      /**
+       * ADR 0099's fifth header word. Defaults to `0` and therefore never
+       * moves across two calls, so every case in this describe block that is
+       * about the actors keeps the wire trace it had before the word existed:
+       * a marker that stood still is a delta the feed does not fetch on.
+       */
+      readonly worldRevision?: number;
     } = {},
   ): WorkerToMainMessage {
     const data = writeRenderActorsPayload({
-      layoutVersion: overrides.layoutVersion ?? 2,
+      layoutVersion: overrides.layoutVersion ?? 3,
       flags: overrides.flags ?? 1,
+      worldRevision: overrides.worldRevision ?? 0,
       records,
       removed: [],
     });
@@ -631,7 +639,7 @@ describe('the render delta channel feeds the actors', () => {
         tick,
         delta: {
           schemaId: overrides.schemaId ?? 'lockstate.render-actors',
-          schemaVersion: overrides.schemaVersion ?? 2,
+          schemaVersion: overrides.schemaVersion ?? 3,
           transport: 'array-buffer',
           contentType: 'application/x-lockstate-render-actors',
           byteLength: data.byteLength,
@@ -743,8 +751,8 @@ describe('the render delta channel feeds the actors', () => {
   it('keeps the actors it has when a payload is one it cannot read', () => {
     const cases: readonly [string, WorkerToMainMessage, RegExp][] = [
       ['a schema id from another read model', delta(6, [RECORD], { schemaId: 'lockstate.something-else' }), /understands "lockstate.render-actors"/],
-      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 3 }), /v3/],
-      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 3 }), /layout 3/],
+      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 4 }), /v4/],
+      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 4 }), /layout 4/],
       ['a changed-only message, which this receiver cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
     ];
 
@@ -763,12 +771,161 @@ describe('the render delta channel feeds the actors', () => {
   it('reports a body whose length contradicts its own header rather than drawing a phantom', () => {
     const { client, feed, errors } = feedWithWorld();
     const truncated = delta(6, [RECORD]) as { payload: { delta: { data: ArrayBuffer; byteLength: number } } };
-    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 28);
-    truncated.payload.delta.byteLength = 28;
+    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 32);
+    truncated.payload.delta.byteLength = 32;
 
     client.emit(truncated as unknown as WorkerToMainMessage);
     expect(feed.readFrame(0.3).actors).toEqual([]);
-    expect(errors.at(-1)?.message).toMatch(/must be 36 bytes, got 28/);
+    // Forty since ADR 0099's fifth header word: a five-word header and one
+    // twenty-byte record.
+    expect(errors.at(-1)?.message).toMatch(/must be 40 bytes, got 32/);
+  });
+
+  /*
+   * ADR 0099's sixth `dirty` mark, both halves of it.
+   *
+   * `docs/adr/0099-how-the-renderer-learns-the-world-changed.md`'s
+   * consequences ask for exactly these two cases and say which one matters
+   * more: *"a delta whose marker moved provokes exactly one request, and a
+   * delta whose marker did not provokes none. The second half is the one worth
+   * watching go red -- a marker read unconditionally would put a snapshot
+   * request on every delta, which is 10 Hz and worse than the bug."*
+   */
+  it('asks for a snapshot when a delta says the drawn world changed', () => {
+    const { client, feed } = feedWithWorld();
+    const requestsBefore = client.sent.length;
+
+    // Two deltas at the same marker establish the baseline and prove it is
+    // being read: the second is where an unconditional read would fire.
+    client.emit(delta(4, [RECORD], { worldRevision: 7 }));
+    feed.readFrame(0.2);
+    client.emit(delta(5, [RECORD], { worldRevision: 7 }));
+    feed.readFrame(0.3);
+    expect(client.sent).toHaveLength(requestsBefore);
+
+    // Something was built.
+    client.emit(delta(6, [RECORD], { worldRevision: 8 }));
+    feed.readFrame(0.4);
+    expect(client.sent).toHaveLength(requestsBefore + 1);
+    expect(client.sent.at(-1)?.kind).toBe('simulation/request-snapshot');
+
+    // And the answer to it is applied even though `pump` single-flights: the
+    // world the request fetched is what makes the notification worth sending.
+    client.emit(snapshotReply(client.lastRequestId, 6));
+    expect(feed.readFrame(0.5).revision).toBe(2);
+  });
+
+  it('asks for nothing across a hundred deltas whose marker never moved', () => {
+    /*
+     * The half worth watching go red. A hundred deltas is ten seconds of the
+     * worker's 100 ms ceiling, and an unconditional `dirty` would send a
+     * hundred `captureSessionSnapshot`s in that time -- each one also a
+     * `jsonValueSchema` walk on this thread and, through the frame revision, a
+     * whole `TileLayer` rebuild on the thread that draws. The literal is the
+     * claim.
+     */
+    const { client, feed } = feedWithWorld();
+    const requestsBefore = client.sent.length;
+
+    for (let tick = 4; tick < 104; tick += 1) {
+      client.emit(delta(tick, [{ ...RECORD, subX: tick * SUB }], { worldRevision: 12 }));
+      feed.readFrame(tick / 60);
+    }
+
+    expect(client.sent).toHaveLength(requestsBefore);
+    // Non-vacuous: a hundred deltas really were applied.
+    expect(feed.readFrame(2).actors[0]!.tileX).toBe(103);
+  });
+
+  it('costs one redundant request for a command that moved the marker, and not two', () => {
+    /*
+     * The cost ADR 0099 does not mention, pinned so it cannot quietly grow.
+     *
+     * A command that changes geometry sets `dirty` twice on its own -- at its
+     * acceptance, and again at the tick it was scheduled for -- and the second
+     * of those already fetches a world carrying the write. The write also
+     * moved the marker, so the next delta fetches once more for a change this
+     * feed has already drawn. Three requests where two would do, and the third
+     * is the safe direction to be wrong in; removing it would need the marker
+     * on the snapshot *reply*, which is a protocol change ADR 0099 declines.
+     *
+     * The literal is the claim: **one** extra, and every further delta at the
+     * same marker is free.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 1));
+    client.emit(delta(2, [RECORD], { worldRevision: 5 }));
+    feed.readFrame(0.1);
+    expect(client.sent).toHaveLength(1);
+
+    // A zoning command: accepted, then reached.
+    client.emit({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'ack',
+      replyTo: 'cmd-1',
+      kind: 'simulation/command-result',
+      payload: { status: 'queued', commandId: 'cmd-1', sequence: 0, scheduledForTick: 20 },
+    } as unknown as WorkerToMainMessage);
+    feed.readFrame(0.2);
+    client.emit(snapshotReply(client.lastRequestId, 10));
+    client.emit(clockState(20, 'running'));
+    feed.readFrame(0.3);
+    client.emit(snapshotReply(client.lastRequestId, 20));
+    expect(client.sent).toHaveLength(3);
+
+    // The write that command made moved the marker, and this feed has not seen
+    // the new value yet, so the next delta asks a third time for a world it is
+    // already holding.
+    client.emit(delta(21, [RECORD], { worldRevision: 6 }));
+    feed.readFrame(0.4);
+    expect(client.sent).toHaveLength(4);
+    client.emit(snapshotReply(client.lastRequestId, 21));
+
+    // And exactly one: every further delta at the same marker is free.
+    for (let tick = 22; tick < 40; tick += 1) {
+      client.emit(delta(tick, [RECORD], { worldRevision: 6 }));
+      feed.readFrame(0.4 + tick / 100);
+    }
+    expect(client.sent).toHaveLength(4);
+  });
+
+  it('treats the first marker of a session as a baseline rather than as a change', () => {
+    /*
+     * The judgement in this mechanism that ADR 0099 does not force, so it is
+     * pinned rather than left to the implementation: a session's opening
+     * request has already gone out on `simulation/ready`, and asking again on
+     * the first delta would ask for a world nothing has touched. It is also
+     * what keeps the pinned floor of *two requests over thirty running
+     * seconds* above -- a third would be this.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 1));
+    expect(client.sent).toHaveLength(1);
+
+    // A marker this feed has never seen before, and a large one: the counter
+    // starts at zero in a new world, so anything non-zero here is a world that
+    // has already been written to before the first delta went out.
+    client.emit(delta(4, [RECORD], { worldRevision: 4_294_967_295 }));
+    feed.readFrame(0.2);
+    expect(client.sent).toHaveLength(1);
+
+    // And a second session's marker is compared against nothing either: the
+    // counter restarts at zero, so `0` after `4,294,967,295` is not a change
+    // by 4 billion, it is a different simulation.
+    client.emit(ready('running'));
+    feed.readFrame(0.3);
+    const afterSecondReady = client.sent.length;
+    client.emit(delta(1, [RECORD], { worldRevision: 0 }));
+    feed.readFrame(0.4);
+    expect(client.sent).toHaveLength(afterSecondReady);
   });
 
   it('moves a walking actor between publications, from where it was published', () => {
