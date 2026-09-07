@@ -127,10 +127,26 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
 
 - **`pnpm <script>` does not work in a worktree** whose `node_modules` is a
   symlink outside the project root — pnpm's pre-run check aborts with
-  `ERR_PNPM_UNSAFE_MODULES_DIR`. Four agents hit it independently. Call the
-  binaries the scripts wrap:
-  `node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false`,
-  `node /workspace/lockstate/node_modules/vitest/vitest.mjs run <files>`.
+  `ERR_PNPM_UNSAFE_MODULES_DIR`. Four agents hit it independently.
+  - **Run the script anyway, with the pre-run check switched off:**
+    `pnpm --config.verify-deps-before-run=false <script>`. Added 2026-09-07,
+    after a fifth and sixth agent hit the same wall. What aborts is
+    `runDepsStatusCheck`, not the script — so disabling that one check runs the
+    **real `package.json` script**, and the stack trace in the failure names
+    that function if you want to confirm it rather than take this on faith.
+    Measured in a fresh worktree on `typecheck`, `verify:benchmark` and
+    `verify:deployment`, all exit 0.
+  - **The advice this bullet used to give — call the binaries the scripts wrap,
+    `node …/typescript/bin/tsc -b --pretty false` and
+    `node …/vitest/vitest.mjs run <files>` — still works and is kept as a
+    fallback, but it is no longer the first thing to reach for**, because it
+    quietly invites the failure §3 and this section spend most of their length
+    warning about. A hand-assembled command line is a **hand-picked subset**:
+    it is how an agent ends up reporting a green measurement of something that
+    is not the gate. `pnpm verify` already omits `verify:benchmark`; `pnpm test`
+    already omits the browser suite; a binary invocation you typed yourself
+    omits whatever you forgot. Run the named script, and prefer it exactly
+    because you did not choose its contents.
   - **`git worktree add` does not create that symlink.** It creates no
     `node_modules` at all, and every import then fails to resolve in a way that
     looks like the branch is broken. Make it yourself, first thing:
