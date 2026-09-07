@@ -209,12 +209,30 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * this one needed a second publishing lane rather than a thirteenth row of
  * the same kind `object.bed` got. `SPRITE_BY_OBJECT_ID` below maps it to
  * `env.object.toilet`, a Blender render rather than a sheet crop.
+ *
+ * **`object.bench`, `object.desk` and `object.storage-rack` left this list on
+ * 2026-09-06 (issue #1020), the pass that looked at the other 22 renders the
+ * toilet's batch shipped alongside it and asked, per object, whether the
+ * frame reads as the thing it names at the size the game actually draws it.**
+ * All three are the rendered-art lane, not an owner-sheet crop -- bytes are
+ * negligible either way (176.1 KiB for all 23 renders together, ADR 0100), the
+ * question was legibility, not download cost. Two more of the thirteen with a
+ * usable owner sheet were looked at and left here on purpose, and the reason
+ * is recorded once rather than at each row: `object.chair`'s only render
+ * (`furniture.visitor.chair.variants`) is a top-down seat cushion with no
+ * visible back or legs, and at 64px it reads as a rounded blue-grey blob
+ * barely distinct from this very fallback slab -- drawing it would trade a
+ * legible "there is an object here" block for a *less* legible one, not a
+ * better one. No other of the twenty has any render at all whose subject
+ * matches its footprint without stretching it (`docs/adr/0100-*.md` and this
+ * module's own history record the ones that were considered and rejected:
+ * a reception counter and a shipping container both happen to share a
+ * footprint with `object.loading-dock-door` and `object.prep-counter`
+ * respectively and neither looks anything like either object).
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
-  'object.bench',
   'object.bookshelf',
   'object.chair',
-  'object.desk',
   'object.dining-table',
   'object.fridge',
   'object.loading-dock-door',
@@ -224,7 +242,6 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.security-console',
   'object.shower-head',
   'object.sink',
-  'object.storage-rack',
   'object.stove',
   'object.utility-panel',
   'object.washing-machine',
@@ -268,10 +285,21 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
  * (`OBJECTS_ON_COLOUR_FALLBACK`'s comment says why). The mechanism this row
  * exercises is still exactly the one above: this line plus a sprite
  * definition, and `acquireObjectSprite` in `tile-layer.ts` is unchanged.
+ *
+ * **`object.bench`, `object.desk` and `object.storage-rack` are the fourth,
+ * fifth and sixth rows, all rendered-art, added 2026-09-06 (#1020).** Bytes
+ * are still not the reason there are three rather than nineteen -- the
+ * mechanism is unchanged and the three renders together are a few more KiB.
+ * The reason is `OBJECTS_ON_COLOUR_FALLBACK`'s own comment: every other
+ * object either has no render at all, or the render that shares its footprint
+ * does not read as the thing the object catalogue names.
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
   'object.toilet': 'env.object.toilet',
+  'object.bench': 'env.object.bench',
+  'object.desk': 'env.object.desk',
+  'object.storage-rack': 'env.object.storage-rack',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

@@ -420,6 +420,125 @@ test.describe('the environment artwork', () => {
   });
 
   /*
+   * The second, third and fourth rows from ADR 0100's second publishing lane
+   * (issue #1020): a bench, a desk and a storage rack, each proved the same
+   * two ways the toilet above already is. One parameterised pair rather than
+   * six near-identical blocks, because nothing about the two claims --
+   * "the sprite is on the tile the order named, sized to its footprint" and
+   * "the pixel differs from the fallback slab, and comes back when the
+   * artwork does" -- varies per object; only the buildable id, the
+   * catalogued object it places and the fixture tile it stands on do, and
+   * those three are exactly what the table below carries.
+   */
+  const RENDERED_OBJECT_CASES: readonly {
+    readonly label: string;
+    readonly buildableId: string;
+    readonly catalogueId: string;
+    readonly tileOf: (fixture: HarnessWorldFixture) => readonly [number, number];
+  }[] = [
+    {
+      label: 'bench',
+      buildableId: 'bench-wooden',
+      catalogueId: 'object.bench',
+      tileOf: (fixture) => [fixture.benchTileX, fixture.benchTileY],
+    },
+    {
+      label: 'desk',
+      buildableId: 'desk-wooden',
+      catalogueId: 'object.desk',
+      tileOf: (fixture) => [fixture.deskTileX, fixture.deskTileY],
+    },
+    {
+      label: 'storage rack',
+      buildableId: 'storage-rack-wooden',
+      catalogueId: 'object.storage-rack',
+      tileOf: (fixture) => [fixture.storageRackTileX, fixture.storageRackTileY],
+    },
+  ];
+
+  for (const { label, buildableId, catalogueId, tileOf } of RENDERED_OBJECT_CASES) {
+    test(`draws a finished ${label} from the atlas, over exactly the tiles the simulation reserved`, async ({ page }) => {
+      const fixture = await openHarness(page);
+      const tile = fixture.tileSizePx;
+      const [tileX, tileY] = tileOf(fixture);
+
+      const objectId = catalogueObjectId(buildableId);
+      expect(objectId, `${buildableId} no longer places a catalogued object`).toBe(catalogueId);
+      const spriteId = objectSprite(objectId!);
+      expect(spriteId, `${catalogueId} is no longer mapped to artwork`).toBeDefined();
+      const footprint = defaultObjectRegistry.getById(objectId!)?.footprint;
+      expect(footprint, `${catalogueId} is not in the object catalog`).toBeDefined();
+
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const matches = sprites.filter((sprite) => sprite.frameName === spriteId);
+      expect(matches.length, `the finished ${label} order should be drawn as exactly one sprite`).toBe(1);
+
+      const drawn = matches[0]!;
+      expect([drawn.x, drawn.y], `the ${label} sprite is not on the tile the order named`).toEqual([
+        tileX * tile,
+        tileY * tile,
+      ]);
+      expect([drawn.width, drawn.height], `the ${label} sprite does not cover its footprint`).toEqual([
+        footprint!.width * tile,
+        footprint!.height * tile,
+      ]);
+
+      const frame = await page.evaluate(
+        (name) => window.lockstateEnvironmentArtHarness!.atlasFrame(name),
+        spriteId!,
+      );
+      expect(frame, `the ${label} frame is not in the packed atlas`).toBeTruthy();
+      expect(frame!.width * drawn.tileScaleX, `the ${label} frame should fill its footprint once across`).toBeCloseTo(drawn.width, 3);
+      expect(frame!.height * drawn.tileScaleY, `the ${label} frame should fill its footprint once down`).toBeCloseTo(drawn.height, 3);
+    });
+
+    test(`puts the ${label} art on the screen, not the fallback slab colour, and the slab back when it is taken away`, async ({ page }) => {
+      const fixture = await openHarness(page);
+      const tile = fixture.tileSizePx;
+      const [tileX, tileY] = tileOf(fixture);
+
+      // Dead centre of the object's north-west tile: inside every one of
+      // these footprints (1x1 or 2x1) regardless of which case is running.
+      const worldX = (tileX + 0.5) * tile;
+      const worldY = (tileY + 0.5) * tile;
+
+      const read = async (): Promise<HarnessPixel> =>
+        page.evaluate(async (point) => {
+          const harness = window.lockstateEnvironmentArtHarness!;
+          await harness.centreCameraOn(point.x, point.y);
+          return harness.centrePixel();
+        }, { x: worldX, y: worldY });
+
+      const withArt = await read();
+      expect(withArt[3], 'the renderer produced a transparent frame').toBeGreaterThan(200);
+
+      expect(
+        channelDistance(withArt, FALLBACK_OBJECT_RGB),
+        `the ${label} tile reads as the fallback slab colour (${FALLBACK_OBJECT_RGB.join(',')}) with art loaded (${withArt.join(',')}), ` +
+          `so ${catalogueId} is drawing the coloured block rather than its render`,
+      ).toBeGreaterThan(20);
+
+      await page.evaluate(() => window.lockstateEnvironmentArtHarness!.removeArt());
+      expect(
+        await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites().length),
+        'removing the artwork should leave no tiling sprites behind',
+      ).toBe(0);
+      const withoutArt = await read();
+
+      expect(
+        channelDistance(withoutArt, FALLBACK_OBJECT_RGB),
+        `without the artwork, the ${label} tile (${withoutArt.join(',')}) does not read as the declared object fallback colour (${FALLBACK_OBJECT_RGB.join(',')})`,
+      ).toBeLessThanOrEqual(8);
+
+      expect(
+        channelDistance(withArt, withoutArt),
+        `the ${label} looked the same with art (${withArt.join(',')}) and without it (${withoutArt.join(',')}), ` +
+          `so ${catalogueId} is not being drawn from the atlas`,
+      ).toBeGreaterThan(20);
+    });
+  }
+
+  /*
    * The state every session's first frames are in.
    *
    * `docs/RENDERING.md` requires that "art that fails to load leaves a

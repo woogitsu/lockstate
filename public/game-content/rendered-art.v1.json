@@ -26,6 +26,81 @@
         "catalog": "assets/source/blender/environment.mvp.catalog.blend",
         "blenderVersion": "5.2.1"
       }
+    },
+    {
+      "assetId": "furniture.cell.locker.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.cell.locker.variants.10a6c751ad5c.png",
+      "sha256": "10a6c751ad5cdbffefeea7155333c635d1ab574c0e9f0f0e3104eb414f5e7759",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.corridor.bench.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.corridor.bench.variants.4afd4a1258e7.png",
+      "sha256": "4afd4a1258e75bade1daa19094c74043843b348cc5d6992c7b1c29a708434737",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
+      "assetId": "furniture.office.desk.employee.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.office.desk.employee.variants.70767a391cbe.png",
+      "sha256": "70767a391cbec4bbb8f2aeddf099087fe643a5815ca5f85cff7a6fd0eed6c82d",
+      "dimensionsPx": {
+        "width": 512,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 2,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 2.24,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
     }
   ]
 }
