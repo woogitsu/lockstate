@@ -38,7 +38,9 @@ import './ui-harness-api';
  * width is mostly a property of *which badges the prison is drawing* rather
  * than of how big its numbers are. There are four badges the strip can draw:
  *
- *   - `prisoners`: `{count} with no bed` (#609), when anybody is unhoused
+ *   - `prisoners`: `{count} unhoused` (#609; reworded from `{count} with no
+ *     bed` for #1064 -- see that badge's own docblock in
+ *     `src/ui/hud/messages.ts`), when anybody is unhoused
  *   - `coverage`: the authored one word for the worst rung anybody is standing
  *     on -- `Unguarded`, `Understaffed`, or `Covered` when nobody is on either
  *     lower rung. **This read `{understaffed} understaffed · {unguarded}
@@ -95,14 +97,17 @@ import './ui-harness-api';
  * fewer than the sentence, so the saving is **≈128px** and the badged row falls
  * from 1,627px to **≈1,499px** against the same 1,256px.
  *
- * **The weak claim, named.** The two costs the ruling quotes are not consistent
- * with one linear model, so the per-character figure is anchored on the coverage
+ * **The weak claim, named, and now measuring a string #1064 has since
+ * changed.** The two costs the ruling quotes are not consistent with one
+ * linear model, so the per-character figure is anchored on the coverage
  * badge's own published number and not on the other. `{count} with no bed`
- * renders 14 characters and is published at `+170.5px`; that badge *appears*
- * rather than changing text, so its fixed box is 2×8px of `.ui-badge` padding
- * plus the 8px `.hud-metric__trailing` gap, which would make it ≈10.5px per
- * character -- and the same rate applied to the coverage badge's own 30
- * characters gives 340px, not 140. Under that second anchor the saving is
+ * -- the badge's wording at the time of this measurement, reworded to
+ * `{count} unhoused` for #1064 -- rendered 14 characters and was published
+ * at `+170.5px`; that badge *appears* rather than changing text, so its
+ * fixed box is 2×8px of `.ui-badge` padding plus the 8px
+ * `.hud-metric__trailing` gap, which would make it ≈10.5px per character --
+ * and the same rate applied to the coverage badge's own 30 characters gives
+ * 340px, not 140. Under that second anchor the saving is
  * ≈220px and the row ≈1,407px. **What does not depend on the model is the
  * conclusion**: at either end of that range the badged row still overflows
  * 1,256px at 1280 by 150-250px, so ruling 21 alone does not put `FUNDS` and
@@ -279,7 +284,7 @@ test.describe('the status strip carries nine chips and the prison’s own state 
       // widest word its namespace authors.
       expect(badged.badges.length, `the four-badge state drew ${badged.badges.length} badges at ${at}`).toBe(4);
       expect(badged.badges.map((text) => text.trim()), `the badges drawn at ${at}`).toEqual([
-        '36 with no bed',
+        '36 unhoused',
         // Ruling 21: the worst rung, in one word. `EVERY_BADGE` has 36
         // unguarded as well as 42 understaffed, and `Unguarded` is what the
         // ladder says of that prison.

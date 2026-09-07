@@ -156,15 +156,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
-  // How many prisoners have no bed (#609). The owner's wording, approved
-  // before it was built, and it counts what is missing rather than what is
-  // fine: "9 housed" was the rejected alternative, because a player reads
-  // past a number that is already fine. It is the short form of the Intake
-  // panel's `hud.intake.no-place` below -- "{count} waiting with no bed to
-  // sleep in" -- on purpose, so the same fact reads the same way in both
-  // places; the strip's is the wider count of the two, since a prisoner whose
-  // bed was removed under them is not waiting for anything.
-  'hud.status.prisoners-without-bed': '{count} with no bed',
+  // How many prisoners have no bed (#609). The owner's original wording here
+  // was "{count} with no bed" -- approved before it was built, counting what
+  // is missing rather than what is fine ("9 housed" was the rejected
+  // alternative). Reworded for issue #1064: `action-system.ts:493` gates
+  // action selection on completed intake, not on a bed specifically, so a
+  // prisoner this badge counts is doing nothing at all -- no meal, no
+  // shower, no toilet, nothing -- and "with no bed" reads as a sleep problem
+  // alone. "unhoused" names the same population without naming only one of
+  // the six things it costs them, and it is the term this repository's own
+  // ADRs and prose already use for it (ADR 0036, ADR 0061). It is also the
+  // short form of the Intake panel's `hud.intake.no-place` below -- "{count}
+  // waiting with no bed, and idle otherwise" -- on purpose, so the same fact
+  // reads the same way in both places; the strip's is the wider count of the
+  // two, since a prisoner whose bed was removed under them is not waiting
+  // for anything. See `tests/integration/unhoused-total-action-lockout.test.ts`
+  // for what "idle otherwise" is true of and what it deliberately does not
+  // claim (safety is provisioned by guard coverage independent of housing).
+  'hud.status.prisoners-without-bed': '{count} unhoused',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
   /*
@@ -1734,7 +1743,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // would be told to do the wrong thing. It states the prison's condition and
   // promises no remedy -- placing a bed is one, and so is waiting for a
   // sentence to end.
-  'hud.intake.no-place': '{count} waiting with no bed to sleep in',
+  //
+  // **Reworded for issue #1064.** The sentence used to end "...to sleep in",
+  // which was true and was also the whole of what a player was told is at
+  // stake. It is not the whole cost: `ActionSystem` gates every action, not
+  // only sleep, on completed intake (`action-system.ts:493`), so a prisoner
+  // this line counts eats nothing, washes nothing, and does nothing else
+  // either, for as long as they wait -- verified in
+  // `tests/integration/unhoused-total-action-lockout.test.ts`, which drives a
+  // one-cell one-bed prison with a working canteen and shows the bedless
+  // admission never leaves `idle` and never selects an action at all, while a
+  // housed sibling in the same run eats, travels and performs normally.
+  // "and idle otherwise" says that without overclaiming: it is not "every
+  // need" or "nothing at all", because `SafetyCoverageSystem` provisions
+  // `safety` by standing on a guarded sector's post tile regardless of
+  // housing (the same file's second case measures this with one guard
+  // hired) -- what is true without exception, guard or no guard, is that the
+  // prisoner never *does* anything until they have a bed.
+  'hud.intake.no-place': '{count} waiting with no bed, and idle otherwise',
   // Where the arrivals already admitted are. "In intake" rather than "Queue":
   // the pipeline is what the simulation calls this and the stage named
   // `queued` is only its first step, so a header saying "queue" would name one

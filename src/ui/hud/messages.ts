@@ -21,12 +21,26 @@ export const HUD_MESSAGE_KEY = {
    * How many prisoners have no bed, as a badge under the `PRISONERS` chip
    * (issue #609).
    *
-   * **The wording is the owner's and was signed off before it was built**:
-   * *"N with no bed"*. It counts what is **missing** rather than what is
-   * fine -- "N housed" was the rejected alternative -- and it deliberately
-   * echoes the Intake panel's existing sentence, `hud.intake.no-place`
-   * (*"{count} waiting with no bed to sleep in"*), so a player meets the same
-   * fact in the same words in two places and connects them.
+   * **The wording was originally the owner's, signed off before it was
+   * built**: *"N with no bed"*. It counted what is **missing** rather than
+   * what is fine -- "N housed" was the rejected alternative -- and it
+   * deliberately echoed the Intake panel's sentence, `hud.intake.no-place`,
+   * so a player met the same fact in the same words in two places.
+   *
+   * **Reworded for issue #1064, under `AGENTS.md`'s 2026-09-04 release of
+   * the choice of words (not of the truth requirement).** "with no bed"
+   * named sleep specifically while the actual cost of this population is
+   * every action the prisoner never gets to take -- `action-system.ts:493`
+   * gates *all* action selection on completed intake, not on a bed alone
+   * (`tests/integration/unhoused-total-action-lockout.test.ts` measures it).
+   * "unhoused" states the population without singling out one of the six
+   * things it costs them, and it is the term this repository's own ADRs
+   * already use for exactly this state (ADR 0036 §2, ADR 0061). It still
+   * deliberately echoes the Intake panel's sentence, now *"{count} waiting
+   * with no bed, and idle otherwise"* -- both name the same population in
+   * words that agree with each other, which was always the point of pairing
+   * them, and neither claims more than `SafetyCoverageSystem`'s independent
+   * provisioning of `safety` by sector occupancy leaves true.
    *
    * The two counts are siblings rather than the same number, and the shorter
    * wording is what says so. The Intake panel's is *arrivals a bed would
@@ -38,7 +52,7 @@ export const HUD_MESSAGE_KEY = {
    *
    * **Not rendered when it is zero**, which is why it is a badge that comes
    * and goes rather than a permanent chip: `coverageTone` records the reason
-   * and it applies to a "0 with no bed" as much as to a green badge -- *"a
+   * and it applies to a "0 unhoused" as much as to a green badge -- *"a
    * status strip where several things are always amber teaches players to
    * ignore amber"*.
    */

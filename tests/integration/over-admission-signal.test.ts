@@ -199,8 +199,12 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
     // expectation built by the code under test holds for any implementation.
     const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
       parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
+    // Reworded for issue #1064: "waiting with no bed to sleep in" named only
+    // sleep, and `ActionSystem` gates every action -- not only sleep -- on
+    // completed intake. See `unhoused-total-action-lockout.test.ts` for what
+    // "idle otherwise" is measured to be true of.
     expect(formatIntakeWithoutPlaceText(t, pipeline)).toBe(
-      '11 waiting with no bed to sleep in',
+      '11 waiting with no bed, and idle otherwise',
     );
 
     // And the standing note no longer denies that this can happen. The sentence
