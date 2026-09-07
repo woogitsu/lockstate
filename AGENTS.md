@@ -165,6 +165,53 @@ outward-facing or unrevertable, which is the whole reason:
    file — which made this a decision the owner had to take rather than a patch
    an agent could write. ADR 0100 records the reading in full.
 
+   **A SECOND, NARROWER RELEASE INSIDE THE SAME RESERVATION, 2026-09-07 — three
+   glob segments on one line, and the reason it had to be asked at all is the
+   part worth reading.** The 2026-09-06 release above was granted in the
+   owner's words as *"JEDNĄ zmianę"* (one change), so whether appending to that
+   same filter a second time was covered or was a new decision is a question
+   the words do not settle, and an agent guessing either way would be guessing
+   about a file it may not touch. It was put to the owner, who answered:
+
+   > Tak — dopisz trzy globy, nic więcej
+
+   ("Yes — append the three globs, nothing more.") **Against a summary rather
+   than the full text**, and the summary carried the mechanism and the limit
+   in the same breath, verbatim:
+
+   > Filtr `git lfs pull --include=` to dosłowna lista pięciu ścieżek, nie
+   > wildcard `rendered.*` — więc każdy nowy sprite trzeba tam wpisać z nazwy,
+   > inaczej CI ściąga wskaźnik LFS zamiast pliku i krok dekodujący pada z
+   > własnym komunikatem „add '<id>' to the --include filter above". Ten plik
+   > jest Twój.
+   >
+   > Autoryzujesz DOKŁADNIE trzy segmenty doklejone do listy w linii 516:
+   > bench, desk, locker. Żadnego drugiego joba, żadnej innej linii, żadnego
+   > `deploy.yml`.
+
+   **THE FINDING THAT FORCED IT, WHICH REFUTES WHAT THE INTEGRATOR HAD ASSUMED
+   AND WRITTEN INTO A BRIEF.** The 2026-09-06 release is recorded above as
+   covering "the `browser` job's `git lfs pull --include=` filter and the
+   `Assert the environment sheets decoded` step", and #1050 made the *decode
+   assertion* generic: it greps `renderedArtId: '...'` out of
+   `environment-sprites.ts` and needs no edit for any number of new ids, ever.
+   **The `--include=` filter beside it is not generic and never was.** It is a
+   literal comma-separated list of specific globs; `rendered.` is a filename
+   prefix inside each entry, not a wildcard over them.
+   `public/game-content/**/*.png` is LFS-tracked (`.gitattributes:4`) and CI's
+   checkout is pointer-only outside what that list names, so an unnamed id's
+   file is never fetched and the decode step then fails closed with its own
+   instruction. **Two halves of one release, one generic and one not — and the
+   integrator briefed an agent that neither needed touching. The agent read
+   the file and refuted it.**
+
+   The rejected alternative is recorded because it will be proposed again:
+   replacing the list with a `rendered.*` pattern would end these decisions
+   permanently, and #1050 established that the list's literalness is
+   deliberate and fails closed — a wider pattern also fetches art nothing
+   draws, which is the rule that lane exists to enforce. The owner was offered
+   it and chose the narrow change.
+
    **`public/_headers`, `wrangler.jsonc`, `deploy.yml` and both dashboards are
    untouched by this**, and the sentence above about dashboards not being
    readable from here still holds for all of them.

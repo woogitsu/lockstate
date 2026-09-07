@@ -82,6 +82,9 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.door.interior.cap',
   'env.object.bed',
   'env.object.toilet',
+  'env.object.bench',
+  'env.object.desk',
+  'env.object.storage-rack',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -276,6 +279,69 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     runtimeSizePx: { width: 128, height: 128 },
     quarterTurns: 0,
     note: 'Toilet, rendered top-down and orthographic (ADR 0100), because the owner sheet only holds a combined toilet+sink column no crop fits a 1x1 tile. Drawn on object.toilet.',
+  },
+  /**
+   * The fourth and fifth catalogued objects drawn as artwork, and the second
+   * and third from ADR 0100's second publishing lane. Added 2026-09-06 when
+   * the owner asked for the remaining 22 renders to be looked at rather than
+   * left to ride along undeclared (issue #1020).
+   *
+   * `furniture.corridor.bench.variants` is a straight name match for
+   * `object.bench` and its footprint (2x1) is exact -- no stretch in either
+   * direction. Viewed at the actual on-screen size (128x64 world px at zoom
+   * 1, half of `runtimeSizePx` below), the three wooden slats and their two
+   * mounting brackets stay legible; this is the render this ADR's
+   * "does it read as the thing it names" test was written for.
+   *
+   * `quarterTurns: 0` for the same reason `env.object.toilet` carries it:
+   * the render is already authored top-down and north-up, and nothing here
+   * was modelled lying on its side.
+   */
+  'env.object.bench': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.corridor.bench.variants',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Corridor bench, three wooden slats on brackets, rendered top-down (ADR 0100). Drawn on object.bench.',
+  },
+  /**
+   * `furniture.office.desk.employee.variants` is a straight name match for
+   * `object.desk` and its footprint (2x1) is exact. Viewed at 128x64: a wood
+   * desktop, a dark blotter/mat and a small pale object beside it (a
+   * keyboard or a stack of paper, seen top-down and flat) -- distinct enough
+   * from a bare rectangle to read as furniture with something on it, which is
+   * the property the bench above and the toilet already have and the chair
+   * candidate below does not.
+   */
+  'env.object.desk': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.office.desk.employee.variants',
+    runtimeSizePx: { width: 256, height: 128 },
+    quarterTurns: 0,
+    note: 'Employee desk with a dark blotter, rendered top-down (ADR 0100). Drawn on object.desk.',
+  },
+  /**
+   * `object.storage-rack`'s render is the one judgement call in this batch of
+   * three, recorded here rather than left implicit. `environment-objects.render.json`
+   * has nothing named "rack": the closest 1x1 furniture render is
+   * `furniture.cell.locker.variants`, a double-doored cabinet with a visible
+   * hinge seam and latch, not open shelving. A locker and a rack are two
+   * different pieces of storage furniture in the real world, and this render
+   * is used anyway because it is the only 1x1 render whose footprint matches
+   * without stretching and whose subject -- "furniture you store things
+   * behind a door in" -- is close enough to the localisation string
+   * ("Storage Rack") to read as the same *kind* of thing at 64px, which the
+   * candidates considered and rejected below (a light-pole base for
+   * `object.utility-panel`, a reception counter for `object.loading-dock-door`)
+   * were not. Flagged rather than silently substituted, per the brief that
+   * asked for this to be a judgement and not a shrug.
+   */
+  'env.object.storage-rack': {
+    kind: 'rendered-art',
+    renderedArtId: 'furniture.cell.locker.variants',
+    runtimeSizePx: { width: 128, height: 128 },
+    quarterTurns: 0,
+    note: 'Double-doored storage locker, rendered top-down (ADR 0100); the closest one-tile storage render to "Storage Rack", not a literal rack. Drawn on object.storage-rack.',
   },
 };
 

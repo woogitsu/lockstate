@@ -162,7 +162,13 @@ describe('environment atlas plan', () => {
   });
 
   it('refuses a rendered-art sprite when no rendered-art catalog is supplied', () => {
-    expect(() => planEnvironmentAtlas(catalog)).toThrow(/rendered-art asset "fixture\.cell\.toilet_sink"/);
+    // Not pinned to a specific asset id: `planEnvironmentAtlas` walks sprite
+    // ids sorted alphabetically, so *which* rendered-art sprite is the first
+    // to fail depends on what else is declared -- `env.object.bench` overtook
+    // `env.object.toilet` the moment a `b` id joined it (#1020). The property
+    // under test is "a rendered-art sprite with no catalog supplied throws",
+    // not "which one happens to sort first", so the pattern matches either.
+    expect(() => planEnvironmentAtlas(catalog)).toThrow(/names rendered-art asset "[^"]+", but no rendered-art catalog was supplied/);
   });
 
   it('keeps every frame, and its gutter, inside the atlas', () => {

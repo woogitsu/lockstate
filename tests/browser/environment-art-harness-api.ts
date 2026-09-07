@@ -68,6 +68,20 @@ export interface HarnessWorldFixture {
    */
   readonly toiletTileX: number;
   readonly toiletTileY: number;
+  /**
+   * North-west tile of a finished `bench-wooden` order, standing on bare
+   * owned ground outside the zoned room, on the same footing as
+   * `bedTileX`/`bedTileY`. The second and third objects wired from ADR
+   * 0100's second publishing lane (#1020) sit beside it: `deskTileX`/`Y` and
+   * `storageRackTileX`/`Y`, each far enough apart that no two footprints
+   * touch.
+   */
+  readonly benchTileX: number;
+  readonly benchTileY: number;
+  readonly deskTileX: number;
+  readonly deskTileY: number;
+  readonly storageRackTileX: number;
+  readonly storageRackTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

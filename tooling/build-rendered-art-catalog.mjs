@@ -52,6 +52,15 @@ import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-gu
  * unread; `tests/foundation/rendered-art-catalog-generator-contract.test.ts`
  * cross-checks this list against that file's declared ids so they cannot
  * drift apart silently.
+ *
+ * **Grown to four entries on 2026-09-06 (#1020).** `object.bench`,
+ * `object.desk` and `object.storage-rack` joined `object.toilet` in
+ * `environment-sprites.ts` after a per-object legibility pass over the other
+ * 22 renders (`docs/adr/0100-*.md`, `environment-art.ts`'s
+ * `OBJECTS_ON_COLOUR_FALLBACK` comment) found those three, and only those
+ * three, worth their frame. The rule above still holds: this list follows
+ * that file rather than the other way round, so a fifth object gets a row
+ * here only once it has one there.
  */
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -67,7 +76,12 @@ const outputManifest = path.join(root, 'public/game-content/rendered-art.v1.json
  * test is what keeps the two lists honest, the same way `environment-art.test.ts`
  * keeps `OBJECTS_ON_COLOUR_FALLBACK` honest against the sprite registries.
  */
-export const PUBLISHED_ASSET_IDS = ['fixture.cell.toilet_sink'];
+export const PUBLISHED_ASSET_IDS = [
+  'fixture.cell.toilet_sink',
+  'furniture.cell.locker.variants',
+  'furniture.corridor.bench.variants',
+  'furniture.office.desk.employee.variants',
+];
 
 const sidecar = JSON.parse(await readFile(path.join(renderedDir, 'environment-objects.render.json'), 'utf8'));
 if (sidecar.schemaVersion !== 1 || !Array.isArray(sidecar.entries)) {
