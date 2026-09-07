@@ -37,6 +37,23 @@ because the decode step fails closed on any sprite published outside
 `public/game-content/source-art/`, which put the fix for object art inside a
 reserved file.
 
+**A FOURTH RELEASE LANDED ON 2026-09-07, AND IT IS THE SECOND INSIDE
+RESERVATION 3.** The owner authorised THREE GLOB SEGMENTS appended to the
+`browser` job's `git lfs pull --include=` list in `.github/workflows/ci.yml` —
+in their own words and dated, in `AGENTS.md` — and nothing else in that file.
+
+**The paragraph above is kept rather than corrected, because its last clause is
+where the mistake lives and a reader should see it.** It says the decode step
+fails closed on any sprite published outside a *path*, which is true and is the
+half that is generic. What it does not say, and what the integrator assumed on
+its authority when briefing an agent, is that the `--include=` filter beside
+that step is a **literal list of specific globs rather than a pattern over
+them** — so every new rendered sprite must be named there individually or CI
+fetches an LFS pointer and the decode step fails on it. The agent read the file
+and refuted the brief. **That is the third time this file's paraphrase has cost
+something, and the second time in the direction of believing a permission was
+broader or narrower than it is.** `AGENTS.md` carries the full reading.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04
