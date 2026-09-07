@@ -1359,7 +1359,21 @@ decision about what to build next.
     `src/simulation/economy/procurement.ts`: `ProcurementSystem.cancel`, for a
     just-in-time delivery the cancellation made surplus, and
     `ProcurementSystem.refundMaterials`, which is new and sells an allocated
-    order's materials back at the catalogue price. **Neither is an income
+    order's materials back at the catalogue price. **The second of those gained
+    a second caller with
+    [#717](https://github.com/matmaxalez/lockstate/issues/717), and the
+    sentence above is kept because it is what ruling 20 shipped.** The owner
+    took ADR 0076's own open question -- *"whether surplus stock can be sold
+    back"* -- on **2026-09-02**, in the broad reading and with the measured
+    cost in front of them, so `refundMaterials` now also sells back the stock a
+    cancelled `'approved'` or `'materials-pending'` order's demand left on the
+    shelf, bounded by that order's own requirement
+    (`JustInTimeMaterialsService.refundSurplusStock`). **No file and no count
+    moved**: it is the same call in the same file, so *three sites* and *four
+    events* stand, which is why this is a marked sentence rather than a new
+    bullet. `ProcurementSystem.previewRefundMaterials` is not a fifth of
+    anything either -- it is the pure formula `refundMaterials` is built on and
+    credits nothing, which is the whole reason a projection may ask it. **Neither is an income
     line** -- both are the prison's own money coming back, exactly as a
     cancelled purchase's refund is -- so neither is diverted to a loan under
     ADR 0075 decision 2, and neither may be added to a readout that shows

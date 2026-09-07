@@ -138,16 +138,24 @@ describe('the pending build queue, as a read model', () => {
       // submitted these -- and its first act on an `approved` order is to move
       // it on. One step is therefore enough to see the state a queued order
       // spends most of its wait in.
-      // `cancelRefundMinorUnits: 0` for both, and it is a fact about this
-      // fixture rather than about materials-pending in general: `session()`
-      // pre-seeds 500 bricks, so neither order's two-brick requirement ever
-      // triggers a just-in-time purchase -- `procureForPendingOrders` nets
-      // held stock off demand before it prices anything -- and cancelling
-      // turns around a delivery that was never made.
-      // `tests/unit/construction-preview-cancel-refund.test.ts` is where a
-      // real purchase makes this figure positive.
-      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 0 },
-      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 0 },
+      // `cancelRefundMinorUnits: 80` for both, and **this read `0` until the
+      // owner's ruling of 2026-09-02**. It is a fact about this fixture rather
+      // than about `materials-pending` in general: `session()` pre-seeds 500
+      // bricks, so neither order's two-brick requirement ever triggers a
+      // just-in-time purchase -- `procureForPendingOrders` nets held stock off
+      // demand before it prices anything -- and there is no delivery for a
+      // cancellation to turn around.
+      //
+      // What the ruling added is the second arm: `refundSurplusStock` sells
+      // the two bricks each cancelled order's requirement leaves surplus back
+      // at the catalogue price. **This fixture is therefore the cost of the
+      // broad reading, in a unit test** -- a shelf the player already holds,
+      // two commands, 80 minor units, exactly as the ruling was priced -- and
+      // the row must name it, because `CancelBuildOrder` pays it.
+      // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
+      // is where that agreement is proved against the treasury itself.
+      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 80 },
+      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 80 },
     ]);
   });
 
