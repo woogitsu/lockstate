@@ -54,6 +54,19 @@ and refuted the brief. **That is the third time this file's paraphrase has cost
 something, and the second time in the direction of believing a permission was
 broader or narrower than it is.** `AGENTS.md` carries the full reading.
 
+**A FIFTH RELEASE LANDED ON 2026-09-07, AND IT IS THE THIRD AND WIDEST INSIDE
+RESERVATION 3.** The owner directed that no workflow use the retired WSL2
+runners `woogitsu-wsl-DOM-NEW-01`–`-04` and that every self-hosted job go to
+the new pool `woogitsu-linux-01`–`-10` by the label set
+`[self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]` — in their own
+words and dated, in `AGENTS.md`. **This is the first release inside reservation
+3 that reaches `deploy.yml`**, and the first anywhere in that section given as a
+direct instruction rather than as an answer to drafted options, so it carries no
+"against a summary" disclosure. It covers the ten `runs-on:` keys and the prose
+and contracts that named the old pool, and nothing else — no step, matrix,
+permission, trigger or environment variable moved, and `public/_headers`,
+`wrangler.jsonc` and both dashboards are untouched.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

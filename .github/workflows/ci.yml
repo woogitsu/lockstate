@@ -71,7 +71,7 @@ jobs:
     # property of the workflow, and a job added with no `needs:` chain to
     # `verify`, or with `if: always()`, carries no protection at all.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -316,7 +316,7 @@ jobs:
     # Only so a failing build does not spend metered LFS bandwidth. Nothing in
     # this job depends on `verify` having provisioned anything.
     needs: verify
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]
     timeout-minutes: 20
     steps:
       # Deliberately NOT `lfs: true`, for two measured reasons.
@@ -453,7 +453,7 @@ jobs:
     #    has to be correct on a cold workspace, not merely on the one `assets`
     #    happened to leave behind.
     needs: assets
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]
     timeout-minutes: 30
     steps:
       - name: Checkout

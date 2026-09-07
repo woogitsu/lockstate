@@ -252,10 +252,24 @@ describe('blocked deploy announcement contract', () => {
     // same string is pinned in tests/foundation/ci-configuration-contract.test.ts,
     // and both had to move in the same commit -- a substring assertion left on
     // the old label reports the migration as a defect.
+    //
+    // THAT WSL2 POOL WAS RETIRED ON 2026-09-07, AND THE PARAGRAPH ABOVE IS
+    // KEPT RATHER THAN CORRECTED because it is the arrangement this one
+    // replaced. Every self-hosted job now goes to `woogitsu-linux-01` through
+    // `-10`, and the selector gained `i5-10400f` and `nvidia-gtx1070` to get
+    // there. Those two terms are not decoration: the retired machines carry
+    // `woogitsu` as well, so a list without them stays satisfiable by both
+    // pools at once and the job goes to whichever is idle first. The rule that
+    // this one is an instance of is now stated fleet-wide, in the self-hosted
+    // runner pool contract at the foot of
+    // tests/foundation/ci-configuration-contract.test.ts -- this assertion is
+    // kept anyway, because `staging-blocked` is the job whose whole purpose is
+    // to report that a deploy was refused, and a job that cannot start reports
+    // nothing at all.
     expect(
       body,
       `\`staging-blocked\` in ${DEPLOY} no longer runs on the self-hosted runner every working job in this repository uses.`,
-    ).toContain('runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]');
+    ).toContain('runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]');
   });
 
   it('cannot be cancelled by a later deploy joining the concurrency group', async () => {

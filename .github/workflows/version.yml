@@ -115,6 +115,15 @@ name: Version
 # same way in the same four seconds. Every workflow in this repository that
 # has ever succeeded runs on `[self-hosted, Linux, X64, wsl2]`.
 #
+# THAT SENTENCE IS A FACT ABOUT RUNS UP TO 2026-09-07 AND IS KEPT AS ONE.
+# On that date the owner retired the WSL2 pool `woogitsu-wsl-DOM-NEW-01`
+# through `-04` and moved every self-hosted job in this repository to
+# `woogitsu-linux-01` through `-10`, so the label this job asks for is now
+# `[self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]` and the
+# count of successful runs behind it starts at zero. What the sentence was
+# written to establish -- that `ubuntu-latest` does not work here, measured
+# on run 32727713492 -- is untouched by the move.
+#
 # The first version of this file chose a hosted runner deliberately, to keep
 # this job's commits and tags out of the shared workspace that ci.yml's
 # "Verify generated output did not modify tracked files" step judges, and cited
@@ -180,7 +189,7 @@ jobs:
     if: >-
       github.event.head_commit.author.name != 'github-actions[bot]'
       && !startsWith(github.event.head_commit.message, 'chore(release): v')
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]
     timeout-minutes: 10
     steps:
       - name: Checkout

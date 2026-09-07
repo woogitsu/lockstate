@@ -1098,8 +1098,8 @@ describe('version bump workflow contract', () => {
    * longer does these things is a different workflow.
    */
   const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
-    'runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]':
-      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all. The `woogitsu` label was appended on 2026-09-05, when the owner moved this repository into the `woogitsu` organisation and pointed every self-hosted job at that organisation\'s shared WSL2 pool (`woogitsu-wsl-DOM-NEW-01` through `-04`). It names the pool rather than adding a fifth requirement on the machine, and it takes nothing back from the paragraph above: a hosted runner still does not work here. This exact string is pinned in two places -- here and in tests/foundation/deploy-blocked-announcement-contract.test.ts -- and both moved in the same commit, because a substring assertion left on the old label reports the migration as a defect.',
+    'runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]':
+      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all. The `woogitsu` label was appended on 2026-09-05, when the owner moved this repository into the `woogitsu` organisation and pointed every self-hosted job at that organisation\'s shared WSL2 pool (`woogitsu-wsl-DOM-NEW-01` through `-04`). It named the pool rather than adding a fifth requirement on the machine, and it takes nothing back from the paragraph above: a hosted runner still does not work here. **THAT WSL2 POOL WAS RETIRED ON 2026-09-07 AND THE SENTENCE BEFORE THIS ONE IS KEPT RATHER THAN REWRITTEN, because it is the arrangement that was replaced and a reader needs to see it.** The owner moved every self-hosted job to `woogitsu-linux-01` through `-10`, and the selector had to gain `i5-10400f` and `nvidia-gtx1070` to do it: `woogitsu` alone is carried by the retired machines too, so the old list stayed satisfiable by them and the migration would have been a race rather than a move. Those two terms are the whole mechanism -- drop either and the retired pool is silently eligible again. This exact string is pinned in two places -- here and in tests/foundation/deploy-blocked-announcement-contract.test.ts -- and both moved in the same commit, because a substring assertion left on the old label reports the migration as a defect; the fleet-wide version of this rule, which covers the eight jobs neither of them reached, is the self-hosted runner pool contract at the foot of this file.',
     'persist-credentials: true':
       'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
     'git push --atomic':
@@ -2602,6 +2602,144 @@ describe('browser failure evidence contract', () => {
         .filter((line) => /^\s*outputDir\s*:/u.test(line))
         .map((line) => line.trim()),
       `${PLAYWRIGHT_CONFIG} now sets \`outputDir\`, and ${CI}'s failure-evidence upload still collects the default \`${DEFAULT_OUTPUT_DIR}\`. One of the two has to move: point the upload at the configured directory and update DEFAULT_OUTPUT_DIR here, in this commit. Playwright resolves an unset \`outputDir\` to \`<package.json dir>/test-results\`, which for this config is the repository root -- that is the only reason the literal in the workflow is right.`,
+    ).toEqual([]);
+  });
+});
+
+/*
+ * ---------------------------------------------------------------------------
+ * Which machines this repository's jobs are allowed to land on.
+ * ---------------------------------------------------------------------------
+ *
+ * THE PROBLEM THIS EXISTS FOR IS THAT `runs-on:` IS A REQUEST, NOT A CHOICE.
+ * A label list does not name a runner; it names the *minimum* a runner must
+ * carry, and GitHub hands the job to whichever idle runner satisfies it. So a
+ * pool migration is not done when the new machines are online -- it is done
+ * when the label list stops being satisfiable by the old ones. Until then both
+ * pools are eligible and which one a job gets is a race, which is the worst
+ * possible shape for a migration: it half-works, intermittently, and every
+ * green run is evidence for the wrong conclusion.
+ *
+ * `[self-hosted, Linux, X64, wsl2, woogitsu]` -- the list every job here
+ * carried until 2026-09-07 -- is satisfied by the retired WSL2 machines
+ * `woogitsu-wsl-DOM-NEW-01` through `-04`, whose full label set is exactly
+ * those five. MEASURED rather than assumed: the Actions API reports
+ * `"labels": ["self-hosted","Linux","X64","wsl2","woogitsu"]` against runner
+ * names `woogitsu-wsl-DOM-NEW-02`, `-03` and `-04` on jobs 101836828950,
+ * 101837005877 and 101837054747, all run on 2026-09-07.
+ *
+ * The new pool `woogitsu-linux-01` through `-10` additionally carries
+ * `i5-10400f` and `nvidia-gtx1070`, and those two are what make the list
+ * unsatisfiable by the old machines. **They are load-bearing, not decorative**
+ * -- dropping either one silently re-admits the retired pool -- which is why
+ * this contract pins the whole list rather than only the `woogitsu` term, and
+ * why it separately refuses `wsl2` by name.
+ *
+ * WHY THIS IS DIRECTORY-WIDE WHERE THE TWO ASSERTIONS IT JOINS WERE NOT.
+ * The label list was previously pinned as a literal in exactly two places --
+ * `REQUIRED_SETTINGS` above (for version.yml) and
+ * tests/foundation/deploy-blocked-announcement-contract.test.ts (for
+ * deploy.yml's `staging-blocked` job). Those two moved with this migration and
+ * still pin their own workflows, but between them they covered 2 of the 10
+ * jobs in this repository: `ci.yml`'s `verify`, `assets` and `browser`,
+ * `deploy.yml`'s `staging` and `production`, `branch-gc.yml`,
+ * `delete-branches.yml` and `migrate-database.yml` were all unpinned, and any
+ * of them could have been left on the retired pool without a single gate
+ * noticing. A per-file literal is the wrong shape for a fleet-wide property.
+ */
+describe('self-hosted runner pool contract', () => {
+  /**
+   * The label list every self-hosted job in this repository must ask for,
+   * spelled exactly as the workflows spell it so the failure message can be
+   * pasted straight into the file.
+   */
+  const POOL = 'runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]';
+
+  /**
+   * The label that identifies the retired WSL2 machines. Asserted absent
+   * separately from the positive pin above, because the two failures are
+   * different: the positive one catches a job that asks for something else,
+   * and this one catches a job that asks for the new pool AND the old label at
+   * once -- which is satisfiable by nothing at all, and would leave the job
+   * queued forever with no error to read.
+   */
+  const RETIRED = 'wsl2';
+
+  interface RunsOn {
+    /** Repository-relative path, so a failure message is actionable. */
+    readonly workflow: string;
+    /** 1-based line of the `runs-on:` key. */
+    readonly line: number;
+    /** The whole key line, trimmed. */
+    readonly value: string;
+  }
+
+  /**
+   * Every `runs-on:` key under `.github/workflows`, comments excluded by
+   * construction: a commented-out or prose mention starts with `#` after its
+   * indentation, so `^\s*runs-on:` cannot match it. That matters here --
+   * `branch-gc.yml`, `delete-branches.yml` and `version.yml` all discuss
+   * `runs-on` in prose, and a scan that counted those would report the wrong
+   * number and hide a real job behind the noise.
+   */
+  async function runsOnKeys(): Promise<{
+    readonly workflows: ReadonlyMap<string, string>;
+    readonly keys: readonly RunsOn[];
+  }> {
+    const workflows = await readWorkflows();
+    const keys: RunsOn[] = [];
+
+    for (const [workflow, contents] of workflows) {
+      contents.split(/\r?\n/u).forEach((line, index) => {
+        if (!/^\s*runs-on:/u.test(line)) {
+          return;
+        }
+
+        keys.push({ workflow, line: index + 1, value: line.trim() });
+      });
+    }
+
+    return { workflows, keys };
+  }
+
+  it('sends every job to the woogitsu-linux pool, and no job anywhere else', async () => {
+    const { workflows, keys } = await runsOnKeys();
+
+    // Vacuity guard, and it is not the usual "greater than zero". Every
+    // workflow whose file declares `jobs:` must contribute at least one
+    // `runs-on:`, so a job that loses its runner selector -- or a workflow
+    // this scan silently fails to read -- is a failure here rather than a
+    // silence. Stated as a set difference rather than a count so it does not
+    // rot the next time a workflow is added or removed.
+    const declaresJobs = [...workflows]
+      .filter(([, contents]) => contents.split(/\r?\n/u).some((line) => /^jobs:/u.test(line)))
+      .map(([workflow]) => workflow);
+    const contributes = new Set(keys.map((key) => key.workflow));
+
+    expect(
+      declaresJobs.filter((workflow) => !contributes.has(workflow)),
+      'a workflow declares `jobs:` but no job in it names a runner, so every assertion below holds of nothing for that file. Either it grew a job with no `runs-on:` -- which lands it on whatever GitHub decides, including the retired pool -- or this scan can no longer read it.',
+    ).toEqual([]);
+
+    expect(
+      keys.filter((key) => key.value !== POOL).map((key) => `${key.workflow}:${String(key.line)} ${key.value}`),
+      `every self-hosted job in this repository runs on the woogitsu-linux pool, spelled \`${POOL}\`. A job asking for anything else either lands on the retired WSL2 machines (\`woogitsu-wsl-DOM-NEW-01\` through \`-04\`, whose whole label set is \`self-hosted, Linux, X64, wsl2, woogitsu\`) or, if it asks for a hosted runner, does not start at all -- version.yml's header measures run 32727713492 failing in four seconds with no step recorded. Do not "fix" this by relaxing the list: \`i5-10400f\` and \`nvidia-gtx1070\` are the two terms the retired machines cannot satisfy, and dropping either one re-admits them silently.`,
+    ).toEqual([]);
+  });
+
+  it('asks for no label the retired WSL2 machines carry', async () => {
+    const { keys } = await runsOnKeys();
+
+    expect(
+      keys.length,
+      'no `runs-on:` key was found anywhere under .github/workflows, so the assertion below would hold of nothing.',
+    ).toBeGreaterThan(0);
+
+    expect(
+      keys
+        .filter((key) => new RegExp(`\\b${RETIRED}\\b`, 'u').test(key.value))
+        .map((key) => `${key.workflow}:${String(key.line)} ${key.value}`),
+      `\`${RETIRED}\` is the label that identifies the retired pool, and it must not appear in any \`runs-on:\`. Asking for it alongside the new pool's labels is worse than asking for the old pool outright: no runner in either pool satisfies both sets, so the job queues forever with no error anywhere to read.`,
     ).toEqual([]);
   });
 });

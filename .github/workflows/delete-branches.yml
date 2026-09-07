@@ -36,6 +36,12 @@ permissions:
 jobs:
   delete-branches:
     # `[self-hosted, Linux, X64, wsl2]`, not `ubuntu-latest`. The header above
+    # (RETIRED 2026-09-07: that five-label list named the WSL2 pool
+    # `woogitsu-wsl-DOM-NEW-01` through `-04`, which the owner has taken out of
+    # service. The selector below is the replacement pool,
+    # `woogitsu-linux-01` through `-10`. The sentence is kept because what it
+    # argues -- self-hosted rather than `ubuntu-latest` -- is unchanged and
+    # still measured; only the machines moved.)
     # records that this workflow HAS NEVER SUCCEEDED -- one run, failed after
     # four seconds with no step recorded and no log, the signature of a runner
     # that was never provisioned -- and that version.yml failed identically in
@@ -52,7 +58,7 @@ jobs:
     # DIAGNOSIS, not the tally: the four-second no-step-no-log signature is
     # gone, and with it the last reason to suspect the runner. Everything from
     # `runs-on:` to the script is now known to work on this label.
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]
     steps:
       # PINNED TO A COMMIT RATHER THAN A TAG, AND THIS IS THE WORKFLOW WHERE
       # THAT MATTERS MOST.
@@ -95,6 +101,9 @@ jobs:
       #
       # WHAT CHANGES ON THE RUNNER. v6 asks the Actions runner for the node24
       # handler where v4 asked for node20. On `[self-hosted, Linux, X64, wsl2]`
+      # -- the retired pool; see the note on `runs-on:` above, and read this
+      # measurement as a fact about 2026-09-05 rather than about the machines
+      # this job lands on today --
       # that is measured: every other call site here runs it, and every run in
       # this repository that has ever succeeded ran on that label.
       #
