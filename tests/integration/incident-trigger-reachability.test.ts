@@ -63,6 +63,35 @@ interface PrisonPlan {
   readonly toilets: boolean;
   /** A shower room, a canteen and a yard: the three rooms `action.shower`, `action.eat-meal` and `action.yard-recreation` need. */
   readonly amenities: boolean;
+  /**
+   * How much dining and hygiene those rooms actually provide, defaulting to
+   * what every case in this file built before the population ladder at the
+   * end of it: two `dining-table-wooden` (a `'dining'` ceiling of six), four
+   * `bench-wooden`, two `shower-head-brick` (a `'hygiene'` ceiling of two).
+   *
+   * They are parameters because `concurrentUseCapacityByCapability` is what a
+   * population contends for (`src/simulation/objects/room-capacity.ts`), and a
+   * ladder that varies the population without being able to vary the ceiling
+   * cannot tell "more prisoners" from "the same rooms, more thinly spread".
+   * Ignored entirely when `amenities` is false.
+   *
+   * The canteen is `room.canteen`'s authored 6x6 minimum and holds three rows
+   * of two 3x2 tables, with the benches taking the first row the tables leave
+   * -- so **`tables` and `benches` together must fit six rows**: 4 tables and 4
+   * benches do, 6 and 4 do not and the placement is refused. `room.canteen`
+   * authors `object.bench` `minQuantity: 4`, so a variant that drops them is a
+   * canteen a player has not finished and is not built here. The shower room
+   * is `room.shower-room`'s authored 3x3 minimum, which holds nine heads.
+   *
+   * Only `object.dining-table` carries `'dining'` and only
+   * `object.shower-head` carries `'hygiene'`, each with `footprint.width` 3
+   * and 1, so `tables` and `showerHeads` are those two ceilings divided by 3
+   * and by 1. `object.bench` carries `'seating'` and `'recreation'`, which no
+   * action performed in a canteen consumes.
+   */
+  readonly tables?: number;
+  readonly benches?: number;
+  readonly showerHeads?: number;
   readonly prisoners: number;
   readonly guards: number;
   /**
@@ -95,10 +124,14 @@ function buildPrison(plan: PrisonPlan, seed: number = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   const cells = Array.from({ length: plan.cells }, (_unused, index) => cellRect(index));
 
-  // One plank per bed; one brick per toilet; the canteen's two 3x2 tables and
-  // four 2x1 benches at three and two planks each; one brick per shower head.
-  const planks = plan.cells + (plan.amenities ? 6 + 8 : 0);
-  const bricks = (plan.toilets ? plan.cells : 0) + (plan.amenities ? 2 : 0);
+  const tables = plan.amenities ? (plan.tables ?? 2) : 0;
+  const benches = plan.amenities ? (plan.benches ?? 4) : 0;
+  const showerHeads = plan.amenities ? (plan.showerHeads ?? 2) : 0;
+
+  // One plank per bed; one brick per toilet; the canteen's 3x2 tables and 2x1
+  // benches at three and two planks each; one brick per shower head.
+  const planks = plan.cells + tables * 3 + benches * 2;
+  const bricks = (plan.toilets ? plan.cells : 0) + showerHeads;
   submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: planks }));
   if (bricks > 0) submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: bricks }));
 
@@ -118,20 +151,39 @@ function buildPrison(plan: PrisonPlan, seed: number = SEED): SimulationRuntime {
       submit(runtime, `wc${String(index)}`, packCommand({ type: 'PlaceObject', orderId: `wc${String(index)}`, definitionId: 'toilet-brick', x: rect.x + 1, y: rect.y }));
     }
   });
-  if (plan.amenities) {
-    submit(runtime, 'sh1', packCommand({ type: 'PlaceObject', orderId: 'sh1', definitionId: 'shower-head-brick', x: SHOWER.x, y: SHOWER.y }));
-    submit(runtime, 'sh2', packCommand({ type: 'PlaceObject', orderId: 'sh2', definitionId: 'shower-head-brick', x: SHOWER.x + 1, y: SHOWER.y }));
-    submit(runtime, 'dt1', packCommand({ type: 'PlaceObject', orderId: 'dt1', definitionId: 'dining-table-wooden', x: CANTEEN.x, y: CANTEEN.y }));
-    submit(runtime, 'dt2', packCommand({ type: 'PlaceObject', orderId: 'dt2', definitionId: 'dining-table-wooden', x: CANTEEN.x + 3, y: CANTEEN.y }));
-    for (let index = 0; index < 4; index += 1) {
-      submit(runtime, `bench${String(index)}`, packCommand({
-        type: 'PlaceObject',
-        orderId: `bench${String(index)}`,
-        definitionId: 'bench-wooden',
-        x: CANTEEN.x + (index % 2) * 2,
-        y: CANTEEN.y + 2 + Math.floor(index / 2),
-      }));
-    }
+  // The ids stay 1-based so that the two-table, two-head default submits
+  // `sh1`, `sh2`, `dt1` and `dt2` exactly as it did before these counts were
+  // parameters, and every figure measured under the old spelling still refers
+  // to the same run.
+  for (let index = 0; index < showerHeads; index += 1) {
+    submit(runtime, `sh${String(index + 1)}`, packCommand({
+      type: 'PlaceObject',
+      orderId: `sh${String(index + 1)}`,
+      definitionId: 'shower-head-brick',
+      x: SHOWER.x + (index % 3),
+      y: SHOWER.y + Math.floor(index / 3),
+    }));
+  }
+  for (let index = 0; index < tables; index += 1) {
+    submit(runtime, `dt${String(index + 1)}`, packCommand({
+      type: 'PlaceObject',
+      orderId: `dt${String(index + 1)}`,
+      definitionId: 'dining-table-wooden',
+      x: CANTEEN.x + (index % 2) * 3,
+      y: CANTEEN.y + Math.floor(index / 2) * 2,
+    }));
+  }
+  for (let index = 0; index < benches; index += 1) {
+    submit(runtime, `bench${String(index)}`, packCommand({
+      type: 'PlaceObject',
+      orderId: `bench${String(index)}`,
+      definitionId: 'bench-wooden',
+      x: CANTEEN.x + (index % 2) * 2,
+      // The first row the tables leave free. At the default two tables that is
+      // `CANTEEN.y + 2`, which is where every bench in this file has always
+      // stood.
+      y: CANTEEN.y + Math.ceil(tables / 2) * 2 + Math.floor(index / 2),
+    }));
   }
 
   // Delivery delay plus build progress; every order is standing well before this.
@@ -694,10 +746,89 @@ describe('who the prison agreed to take is a decision too, and an unguarded pris
  *   earlier claim generalised over the very variable its sentence conditions
  *   on. The ADR's Cost table predicted this outcome to within a tenth.
  *
- * What is left is still worth the owner's attention and is still not a defect:
- * an over-admitted prison that has built the rooms and hired **one** guard no
- * longer riots, at any over-admission ratio tried up to sixteen times its bed
- * capacity, and that is a route into the incident content narrowing.
+ * ## A THIRD WITHDRAWAL, IN THE SENTENCE THAT WAS ABOUT TO GO TO THE OWNER
+ *
+ * The paragraph that closed this docblock read, in full:
+ *
+ * > What is left is still worth the owner's attention and is still not a
+ * > defect: an over-admitted prison that has built the rooms and hired **one**
+ * > guard no longer riots, at any over-admission ratio tried up to sixteen
+ * > times its bed capacity, and that is a route into the incident content
+ * > narrowing.
+ *
+ * Its first clause is true, is unchanged, and is pinned by the two cases
+ * above. Its last clause -- *"a route into the incident content narrowing"* --
+ * is withdrawn. It was the balance question this branch was going to put to
+ * the owner, and it does not survive the run nobody had made.
+ *
+ * **Forty seeds and eight seeds were forty and eight runs of one curve.** Every
+ * sweep behind the finding varied the seed. On this fixture the seed does not
+ * reach the score: measured over eight consecutive seeds from `0x0cc0`, the
+ * sector score at tick 30,000 is **identical to four decimal places** on all
+ * eight -- 0.6195 for 16 prisoners on one guard, 0.6722 for 17, 0.7208 for 24,
+ * 0.6435 for 96 staffed to requirement -- and the riot count is identical with
+ * it. Only the assault count moves (9 to 11 at 17 prisoners). A seed sweep was
+ * therefore the one sweep that could not bound this claim.
+ *
+ * **Vary the population instead, and the riots come back one prisoner later.**
+ * Same rooms, same one guard, same 30,000 ticks, seed `0x0cc0`; "before" is
+ * this tree with `src/simulation/prisoners/action-system.ts` alone reverted to
+ * `558ece5f`, which is ADR 0102's whole production change:
+ *
+ * | prisoners | guards | required | riots before | riots after | score after |
+ * | --- | --- | --- | --- | --- | --- |
+ * | 16 | 1 | 2 | 4 | **0** | 0.6195 |
+ * | **17** | 1 | **3** | 5 | **1** | 0.6722 |
+ * | 18 | 1 | 3 | 5 | 2 | 0.6972 |
+ * | 20 | 1 | 3 | 5 | 3 | 0.7437 |
+ * | 24 | 1 | 3 | 5 | 3 | 0.7208 |
+ * | 32 | 1 | 4 | 5 | **5** | 0.8290 |
+ * | 64 | 1 | 8 | 6 | **6** | 0.9852 |
+ *
+ * The 16-prisoner row sat 0.0305 under `hotThreshold`, and the seventeenth
+ * prisoner costs 0.0527 of that -- 0.05 of it arithmetic rather than
+ * behaviour, because `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8 and a
+ * seventeenth occupant takes `required` from 2 to 3, so one guard's
+ * `staffingShortfall` goes 1/2 to 2/3 and its weighted contribution 0.15 to
+ * 0.20. By 32 prisoners the riot count is the same before and after: at that
+ * size ADR 0102 removes no incident at all.
+ *
+ * **Staffing to requirement moves the boundary rather than removing it.** With
+ * `shortage: 0` throughout, so the score *is* `needsPressure`:
+ *
+ * | prisoners | guards | riots before | riots after | score after |
+ * | --- | --- | --- | --- | --- |
+ * | 16 | 2 | 0 | 0 | 0.2838 |
+ * | 24 | 3 | 0 | 0 | 0.3630 |
+ * | 32 | 4 | **3** | **0** | 0.4068 |
+ * | 64 | 8 | 4 | 0 | 0.5816 |
+ * | 80 | 10 | -- | 0 | 0.6363 |
+ * | **96** | 12 | 5 | **3** | 0.6435 |
+ * | 128 | 16 | 5 | 4 | 0.6596 |
+ *
+ * (Those scores are the sample standing at tick 30,000, not the run's peak, so
+ * the 96-prisoner row reading under the line while it riots is the streak
+ * having been reset by `resetStreak` rather than a contradiction. The riot
+ * counts are what the rows are about.)
+ *
+ * **What is doing this is the ceiling on the rooms, and that is an
+ * intervention rather than an inference.** Hold the population at 96 and the
+ * staffing at requirement, change only the canteen and the shower room --
+ * four `dining-table-wooden` in place of two and six `shower-head-brick` in
+ * place of two, taking `'dining'` from 6 to 12 and `'hygiene'` from 2 to 6,
+ * with `room.canteen`'s four authored benches still in it -- and the score
+ * falls 0.6435 to **0.5158** and the riots go 3 to **0**. At 128 prisoners the
+ * same rooms read 0.5801 and riot **0** where the small ones riot 4. What an
+ * over-admitted prison contends for after ADR 0102 is
+ * `concurrentUseCapacityByCapability` (`src/simulation/objects/room-capacity.ts`),
+ * and a player who builds two more tables buys the headroom back.
+ *
+ * So the finding that stands is not that the incident content narrows. It is
+ * that **ADR 0102 moves the population at which a built prison starts
+ * rioting** -- by one prisoner where the prison is short a guard (16 to 17),
+ * and by a factor of three where it is not (32 to 96) -- and that past that
+ * population the riots are the same riots in the same numbers. The describe
+ * below pins both ends of it.
  */
 describe('an over-admitted prison that built the rooms stops rioting, if a guard is on post', () => {
   /** The `OVERCROWDED` prison above, with the canteen, shower room and yard it used to have. */
@@ -807,5 +938,78 @@ describe('an over-admitted prison that built the rooms stops rioting, if a guard
       // reaches 9 now.
       expect(riots.every((incident) => incident.severity <= 8)).toBe(true);
     }
+  }, 60_000);
+});
+
+/**
+ * **The population boundary of the describe above**, which is the assertion
+ * that would have caught its withdrawn last clause and which no sweep in this
+ * file could previously express: every over-admission ratio it tried was
+ * reached by *removing cells*, so all of them held sixteen prisoners, and
+ * sixteen is the last population at which that prison is quiet.
+ *
+ * Both cases are red on the tree ADR 0102 was cut from -- 5 riots rather than
+ * 1 at seventeen prisoners, 5 rather than 3 at ninety-six -- so neither can
+ * pass by being vacuous about a prison that never rioted.
+ */
+describe('and it starts rioting again one prisoner later, which is what bounds the finding above', () => {
+  /** The same eight consecutive seeds the describe above uses, for the same reason and with the opposite result. */
+  const SEEDS = Array.from({ length: 8 }, (_unused, index) => SEED + index);
+
+  it('is quiet at sixteen prisoners and riots at seventeen, on every one of those seeds', () => {
+    for (const seed of SEEDS) {
+      const quiet = runOnSeed({ cells: 8, toilets: true, amenities: true, prisoners: 16, guards: 1 }, seed);
+      expect(incidentsOfType(quiet, 'riot'), `16 prisoners, seed ${String(seed)}`).toEqual([]);
+      // `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so sixteen occupants ask for
+      // two guards and this prison is short exactly one of them.
+      expect(quiet.deploymentSystem.getCoverageReport(quiet.kernel.tick)).toEqual([
+        { sectorId: 'security-sector.prison', required: 2, assigned: 1, shortage: 1 },
+      ]);
+
+      const loud = runOnSeed({ cells: 8, toilets: true, amenities: true, prisoners: 17, guards: 1 }, seed);
+      // One more prisoner, one more required guard, and one riot where the
+      // unmodified tree opens five. Not "some riots": the count is a property
+      // of the change, and a sweep that found it seed-dependent would refute
+      // the whole of the docblock above.
+      expect(incidentsOfType(loud, 'riot').length, `17 prisoners, seed ${String(seed)}`).toBe(1);
+      expect(loud.deploymentSystem.getCoverageReport(loud.kernel.tick)).toEqual([
+        { sectorId: 'security-sector.prison', required: 3, assigned: 1, shortage: 2 },
+      ]);
+      // Non-vacuous both ways: the same eight beds, and everybody who was
+      // admitted is still alive to want one.
+      expect(housedPrisoners(quiet)).toBe(8);
+      expect(livingPrisoners(quiet)).toBe(16);
+      expect(housedPrisoners(loud)).toBe(8);
+      expect(livingPrisoners(loud)).toBe(17);
+    }
+  }, 60_000);
+
+  it('riots at ninety-six prisoners with a guard for every eight of them, and stops again when the canteen and the shower room are built for that many', () => {
+    const STAFFED_96 = { cells: 8, toilets: true, amenities: true, prisoners: 96, guards: 12 } as const;
+
+    const crowded = run(STAFFED_96);
+    expect(crowded.deploymentSystem.getCoverageReport(crowded.kernel.tick)).toEqual([
+      { sectorId: 'security-sector.prison', required: 12, assigned: 12, shortage: 0 },
+    ]);
+    // Fully staffed, so `staffingShortfall` contributes nothing and this is the
+    // needs term alone reaching `hotThreshold`: ninety-six prisoners against a
+    // `'dining'` ceiling of six and a `'hygiene'` ceiling of two.
+    expect(incidentsOfType(crowded, 'riot').length).toBe(3);
+
+    // The same prison, the same population, the same twelve guards, and still
+    // a canteen built to `room.canteen`'s authored requirements: four tables
+    // and four benches instead of two and four, six shower heads instead of
+    // two. `'dining'` goes 6 to 12 and `'hygiene'` 2 to 6, and nothing else
+    // about this prison moves.
+    const provisioned = run({ ...STAFFED_96, tables: 4, benches: 4, showerHeads: 6 });
+    expect(incidentsOfType(provisioned, 'riot')).toEqual([]);
+    expect(provisioned.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.55);
+
+    // Non-vacuous: both prisons are the same eight beds and the same
+    // ninety-six people, and the second is not quiet because it lost anybody.
+    expect(housedPrisoners(crowded)).toBe(8);
+    expect(livingPrisoners(crowded)).toBe(96);
+    expect(housedPrisoners(provisioned)).toBe(8);
+    expect(livingPrisoners(provisioned)).toBe(96);
   }, 60_000);
 });
