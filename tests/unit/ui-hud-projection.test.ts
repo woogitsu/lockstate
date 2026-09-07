@@ -791,8 +791,9 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
       numberParameters: { count: 9 },
     });
     // The same 9 the Intake panel already says out loud in this prison --
-    // "9 waiting with no bed to sleep in" -- which is why the strip uses the
-    // owner's matching wording rather than a second phrasing for one fact.
+    // "9 waiting with no bed, and idle otherwise" (issue #1064) -- which is
+    // why the strip's wording still matches it rather than saying the same
+    // fact twice in two different phrasings.
   });
 
   it('counts places and not capacity, in the prison where those differ', () => {
