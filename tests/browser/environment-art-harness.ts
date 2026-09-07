@@ -69,14 +69,14 @@ const FIXTURE: HarnessWorldFixture = {
   toiletTileX: 8,
   toiletTileY: 4,
   // 2x1 tiles of bare owned ground, clear of the bed, the toilet and every
-  // wall. #1020's second and third rendered-art rows.
+  // wall. #1020's second rendered-art row.
   benchTileX: 10,
   benchTileY: 4,
   deskTileX: 13,
   deskTileY: 4,
-  // One tile of bare owned ground, clear of everything above.
-  storageRackTileX: 16,
-  storageRackTileY: 4,
+  // storageRackTileX/Y stood here for object.storage-rack from 2026-09-06
+  // to 2026-09-07; removed with the fixture structure below it once #1059
+  // reverted that object to the colour fallback.
 };
 
 function memoryStore(): KeyValueStore {
@@ -180,17 +180,15 @@ function buildFrame(): RenderFrame {
       phase: 'built',
     },
     /*
-     * The fourth: a storage rack, 1x1, the one judgement call in this batch
-     * (`environment-sprites.ts`'s `env.object.storage-rack` docblock says
-     * why: the render is a locker, not a literal rack).
+     * A `finished-storage-rack` structure (`storage-rack-wooden`, 1x1) stood
+     * here from 2026-09-06 to 2026-09-07, the one judgement call in #1020's
+     * batch (a locker render standing in for a rack). Removed with
+     * `object.storage-rack`'s `SPRITE_BY_OBJECT_ID` row once #1059's playtest
+     * found the render illegible at every zoom the game draws it at -- see
+     * `environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` docblock. Placing it
+     * here again would draw the ordinary colour-fallback slab, which no test
+     * in this harness needs a dedicated fixture tile to prove.
      */
-    {
-      id: 'finished-storage-rack',
-      definitionId: 'storage-rack-wooden',
-      tileX: FIXTURE.storageRackTileX,
-      tileY: FIXTURE.storageRackTileY,
-      phase: 'built',
-    },
   ];
 
   return { revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()), structures, actors: [] };

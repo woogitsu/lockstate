@@ -420,15 +420,27 @@ test.describe('the environment artwork', () => {
   });
 
   /*
-   * The second, third and fourth rows from ADR 0100's second publishing lane
-   * (issue #1020): a bench, a desk and a storage rack, each proved the same
-   * two ways the toilet above already is. One parameterised pair rather than
-   * six near-identical blocks, because nothing about the two claims --
-   * "the sprite is on the tile the order named, sized to its footprint" and
-   * "the pixel differs from the fallback slab, and comes back when the
-   * artwork does" -- varies per object; only the buildable id, the
-   * catalogued object it places and the fixture tile it stands on do, and
-   * those three are exactly what the table below carries.
+   * The second and third rows from ADR 0100's second publishing lane (issue
+   * #1020): a bench and a desk, each proved the same two ways the toilet
+   * above already is. One parameterised pair rather than four near-identical
+   * blocks, because nothing about the two claims -- "the sprite is on the
+   * tile the order named, sized to its footprint" and "the pixel differs from
+   * the fallback slab, and comes back when the artwork does" -- varies per
+   * object; only the buildable id, the catalogued object it places and the
+   * fixture tile it stands on do, and those three are exactly what the table
+   * below carries.
+   *
+   * **A third row, a storage rack, stood here from 2026-09-06 to 2026-09-07
+   * and is not a fourth case that quietly vanished.** `object.storage-rack`
+   * was reverted to the colour fallback (#1059, `environment-art.ts`'s
+   * `OBJECTS_ON_COLOUR_FALLBACK` docblock) once a playtest found its render
+   * reads as a flat grey seam at every zoom the game draws it at, not as
+   * storage furniture -- the same "reads as a blob, not the thing it names"
+   * bar the same pass had already refused for `object.chair`. With
+   * `objectSprite('object.storage-rack')` now `undefined`, this case would
+   * fail its own first assertion (`${catalogueId} is no longer mapped to
+   * artwork`) rather than exercise anything real, which is why it is removed
+   * rather than left red.
    */
   const RENDERED_OBJECT_CASES: readonly {
     readonly label: string;
@@ -447,12 +459,6 @@ test.describe('the environment artwork', () => {
       buildableId: 'desk-wooden',
       catalogueId: 'object.desk',
       tileOf: (fixture) => [fixture.deskTileX, fixture.deskTileY],
-    },
-    {
-      label: 'storage rack',
-      buildableId: 'storage-rack-wooden',
-      catalogueId: 'object.storage-rack',
-      tileOf: (fixture) => [fixture.storageRackTileX, fixture.storageRackTileY],
     },
   ];
 
