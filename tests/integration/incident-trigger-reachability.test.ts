@@ -91,8 +91,8 @@ function cellRect(index: number): { readonly x: number; readonly y: number; read
   return { x: 1 + index * 3, y: 1, width: 2, height: 3 };
 }
 
-function buildPrison(plan: PrisonPlan): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+function buildPrison(plan: PrisonPlan, seed: number = SEED): SimulationRuntime {
+  const runtime = createNewSimulationRuntime(seed);
   const cells = Array.from({ length: plan.cells }, (_unused, index) => cellRect(index));
 
   // One plank per bed; one brick per toilet; the canteen's two 3x2 tables and
@@ -151,6 +151,23 @@ function buildPrison(plan: PrisonPlan): SimulationRuntime {
 
 function run(plan: PrisonPlan): SimulationRuntime {
   const runtime = buildPrison(plan);
+  stepTo(runtime, RUN_TICKS);
+  return runtime;
+}
+
+/**
+ * The same run on a seed other than this file's own.
+ *
+ * Added for ADR 0102, and for one claim only: **that the riots stopping is a
+ * property of the change and not of `0x0cc0`.** Every other figure in this
+ * file is single-seed and stays that way -- a seed sweep over tick counts and
+ * severities would pin nothing and cost thirty runs -- but "this prison no
+ * longer riots" is exactly the shape of claim a single seed cannot carry, and
+ * the assault counts beside it turned out to be seed-dependent when somebody
+ * looked.
+ */
+function runOnSeed(plan: PrisonPlan, seed: number): SimulationRuntime {
+  const runtime = buildPrison(plan, seed);
   stepTo(runtime, RUN_TICKS);
   return runtime;
 }
@@ -316,15 +333,23 @@ describe('a prison outgrows its staffing, and the coverage report says so before
    * and the reason it had to move is the strongest thing this file now says
    * about that decision.** An unhoused prisoner may eat, wash and take
    * recreation since 2026-09-07, so in a prison that has *built* those rooms
-   * the eight people with no bed are no longer at a need deficit near 1 -- and
-   * the three cases below, which are about what an over-admitted prison
-   * produces, all went silent. Measured over this file's own 30,000 ticks,
-   * with `amenities: true` and everything else as it stands:
+   * the eight people with no bed are no longer at a need deficit near 1, and
+   * the **riots** the cases below are about stop. Measured over this file's own
+   * 30,000 ticks with `amenities: true` and everything else as it stands, on
+   * seed `0x0cc0` and on the 39 consecutive seeds after it:
    *
    * | | before ADR 0102 | after |
    * | --- | --- | --- |
-   * | one guard | 3 assaults, 4 riots | 11 assaults, **0 riots** |
-   * | two guards | 10 assaults | **nothing at all** |
+   * | one guard | 4 riots (7,8,8,8) | **0 riots on 40 of 40 seeds** |
+   * | two guards | 0 riots | 0 riots |
+   *
+   * **The assault half of those runs is a different kind of number and is
+   * deliberately not in that table.** Assault counts are seed-dependent here in
+   * a way riot counts are not: over the same 40 seeds the two-guard prison
+   * opens assaults on 19 of them and none on the other 21, up to 10 in a run.
+   * Seed `0x0cc0` -- this file's own -- is one of the quiet 21, which is why
+   * the case at the end of this file can pin an empty incident log for it and
+   * why that pin says nothing about prisons in general.
    *
    * The sentence in the docblock above -- "nothing to restore any need" -- was
    * therefore describing a prison that had a canteen, a shower room and a yard
@@ -365,16 +390,33 @@ describe('a prison outgrows its staffing, and the coverage report says so before
    * This is the strongest single case in the file for ADR 0061, because it
    * needs no contraband at all: being unhoused is enough on its own.
    *
-   * **Two figures in this paragraph were re-measured for ADR 0102 and one
-   * word of it was wrong before that.** The sector mean read **0.5908** while
-   * `OVERCROWDED` still had amenities and reads **0.6456** now that it does
-   * not -- both under the 0.65 line, which is the only thing the case asserts
-   * about it. And "their six needs decay unopposed" was never quite true with
-   * two guards on post: `SafetyCoverageSystem` provisions `safety` for every
-   * occupant a sector's coverage covers and asks nothing about housing, so
-   * `safety` was recovering for these eight all along. The claim is stated as
-   * what is measured instead, and the deficit the assault actually carried is
-   * asserted below rather than described here.
+   * **The sector mean this paragraph used to name was never this prison's
+   * number, and the correction that replaced it was wrong in the other
+   * direction.** Both are recorded rather than overwritten, because the
+   * sequence is the point.
+   *
+   * The figure was written by #484 at `5b99b869`, the commit that introduced
+   * this case, and was never re-measured. Run at that commit, with the same
+   * fixture, the same seed and the same `RUN_TICKS`, this prison reports
+   * **0.5609** -- so the number did not describe it on the day it was
+   * written. It then moved to **0.4895** at `19482be6` (#612), the commit that
+   * made coverage provision `safety`, and stood there until `amenities` was
+   * dropped from `OVERCROWDED` above; it reads **0.6456** now. All three are
+   * under the 0.65 line, which is the only thing this case asserts about it.
+   *
+   * **A first pass at this correction asserted that the old figure was "the
+   * number while `OVERCROWDED` still had amenities". That is also false** --
+   * the contemporary number for that prison was 0.4895, measured at the merge
+   * base -- and it is left standing here as what it was, because the failure
+   * it illustrates is the one this file keeps having: a figure in prose that
+   * no run ever produced, corrected by another figure from a run nobody
+   * repeated.
+   *
+   * And "their six needs decay unopposed" was never quite true with two guards
+   * on post: `SafetyCoverageSystem` provisions `safety` for every occupant a
+   * sector's coverage covers and asks nothing about housing, so `safety` was
+   * recovering for these eight all along -- which is the same mechanism
+   * `19482be6` above landed, and the reason the mean fell then.
    */
   it('and the prisoners it never housed produce assaults the sector score cannot see', () => {
     const runtime = run({ ...OVERCROWDED, guards: 2 });
@@ -394,14 +436,34 @@ describe('a prison outgrows its staffing, and the coverage report says so before
 
     const factors = new Map(incidentsOfType(runtime, 'assault')[0]!.causeFactors.map((factor) => [factor.kind, factor.value]));
     expect(factors.get('staffing-shortfall')).toBe(0);
-    // Well above the sector mean of 0.5908 that the same prison reports, which
-    // is the point: this is one unhoused prisoner's own figure, read at the
-    // tick their assault opened rather than at the end of the run.
+    // Well above the sector mean the same prison reports at the end of the
+    // run, which is the point: this is one unhoused prisoner's own figure,
+    // read at the tick their assault opened. The mean itself is asserted a few
+    // lines up rather than restated here -- the figure that used to sit in
+    // this comment was the one the docblock above records as never having
+    // described this prison.
     expect(factors.get('need-deficit')).toBeGreaterThan(0.5);
   });
 });
 
-describe('past a point, staffing buys containment rather than prevention', () => {
+/**
+ * **This describe was titled "past a point, staffing buys containment rather
+ * than prevention", full stop, and that title is now narrowed rather than
+ * kept.** It read as a law of the game and it has stopped being one: since
+ * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
+ * six guards DO buy prevention in an over-admitted prison that has built the
+ * rooms. Measured over this file's own 30,000 ticks with `amenities: true`:
+ * four times bed capacity opens **0** riots where it opened 3, eight times
+ * opens 0 where it opened 4, and sixteen times opens 0 where it opened 5 --
+ * on every seed tried (4, 8 and 8 seeds respectively).
+ *
+ * So the claim survives, on the condition its fixture already carried and its
+ * title did not: **a prison that built nothing for the people it could not
+ * house**. The alternative -- keeping the general title and letting the
+ * fixture carry the condition silently -- is the shape of overclaim this file
+ * exists to catch, and it would have been the second one in it.
+ */
+describe('past a point, staffing buys containment rather than prevention -- in a prison that built nothing', () => {
   it('riots at four times its bed capacity however many guards are on the payroll, and contains every one of them', () => {
     // Twelve of sixteen prisoners homeless: `needsPressure` alone is over
     // `hotThreshold`, so the `staffingShortfall` term is not what fires it and
@@ -580,33 +642,68 @@ describe('who the prison agreed to take is a decision too, and an unguarded pris
 
 /**
  * **What [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
- * did to an over-admitted prison that had already built the rooms.**
+ * did to an over-admitted prison that had already built the rooms: the riots
+ * stop wherever a guard is on post, and nowhere else.**
  *
- * This describe exists because the three cases above had to change their
- * fixtures to survive that decision, and a fixture changed without the new
- * behaviour being written down anywhere is how a balance change disappears.
- * Each prison here is the `amenities: true` version of a prison that riots or
- * assaults elsewhere in this file, and the claim is the one a player would
- * make: **build a canteen, a shower room and a yard, staff to requirement, and
- * over-admission stops producing incidents at all.**
+ * This describe exists because the cases above had to change their fixtures to
+ * survive that decision, and a fixture changed without the new behaviour being
+ * written down anywhere is how a balance change disappears.
  *
- * That is ADR 0102's own Cost table read back off a run. It prices a covered
- * sector with those three rooms at a best-case need-deficit floor of 2/6
- * (0.333) against `DEFAULT_ASSAULT_POLICY`'s 0.65 threshold, and the sector
- * scores below land at 0.2838 and 0.3462 -- under the line by the margin that
- * table predicts, where the same prisons scored 0.4895 and 0.6513 before.
+ * ## The claim, in the narrowest form the runs support
  *
- * **It also contradicts, measurably, the sentence that document's acceptance
- * was given against.** ADR 0102's Status records that the owner accepted it
- * knowing "even a built one does not stop rioting outright". A built one does:
- * these prisons produce nothing whatsoever. That is recorded here, in the file
- * that measures reachability, rather than argued in a document -- and it is a
- * balance question for the owner rather than a defect, which is why nothing
- * here is written as a bug.
+ * Build a canteen, a shower room and a yard, put **at least one guard on
+ * post**, and an over-admitted prison stops rioting. Measured over this file's
+ * own 30,000 ticks, `amenities: true` throughout, before ADR 0102 -> after:
+ *
+ * | prison | guards | riots before | riots after | seeds |
+ * | --- | --- | --- | --- | --- |
+ * | 8 cells, 16 prisoners | 1 (short 1) | 4 | **0** | 40 of 40 |
+ * | 8 cells, 16 prisoners | 2 (covered) | 0 | 0 | 40 of 40 |
+ * | 4 cells, 16 prisoners | 6 | 3 | **0** | 4 of 4 |
+ * | 2 cells, 16 prisoners | 6 | 4 | **0** | 8 of 8 |
+ * | 1 cell, 16 prisoners | 6 | 5 | **0** | 8 of 8 |
+ * | 8 cells, 16 prisoners | **0** | 6 | **6** | 8 of 8 |
+ *
+ * The last row is the whole of the condition. A built prison with nobody
+ * guarding it riots exactly as often as it did: its sector score falls from
+ * 0.9759 to 0.7651 and stays above the 0.65 line, because a fully unguarded
+ * sector contributes `staffingShortfallWeight` 0.3 on top of a need term that
+ * ADR 0102 can push down to about 0.47 and no further. Its riots get *milder*
+ * -- severities 9 become 7 and 8 -- and there are still six of them.
+ *
+ * ## What is NOT claimed, and was, and had to be withdrawn
+ *
+ * **An earlier version of this describe said this prison "produces nothing
+ * whatsoever", and that it "contradicts, measurably" the clause about a built
+ * prison and rioting in ADR 0102's Status -- the second bullet under the
+ * acceptance, the one whose subject is that the cost is conditional. Both were
+ * wrong, and they are recorded here rather than quietly deleted because they
+ * are the same error twice.**
+ *
+ * - **"Produces nothing" is a property of seed `0x0cc0`.** Assault counts here
+ *   are seed-dependent where riot counts are not: over 40 consecutive seeds
+ *   the two-guard prison opens assaults on 19 of them, up to 10 in a run, and
+ *   this file's own seed is one of the 21 quiet ones. The empty incident logs
+ *   pinned below are therefore facts about `0x0cc0`, exactly like every other
+ *   figure in this file, and the case titles now say so.
+ * - **The contradiction was read off the wrong row of the ADR's own table.**
+ *   That bullet distinguishes a *covered* sector from an *unguarded* one and
+ *   prices them separately; the clause about rioting sits at the end of it,
+ *   after the unguarded case. The unguarded case is the last row above, and it
+ *   still riots six times -- so the document is right as written, and the
+ *   earlier claim generalised over the very variable its sentence conditions
+ *   on. The ADR's Cost table predicted this outcome to within a tenth.
+ *
+ * What is left is still worth the owner's attention and is still not a defect:
+ * an over-admitted prison that has built the rooms and hired **one** guard no
+ * longer riots, at any over-admission ratio tried up to sixteen times its bed
+ * capacity, and that is a route into the incident content narrowing.
  */
-describe('an over-admitted prison that built the rooms is quiet since ADR 0102', () => {
+describe('an over-admitted prison that built the rooms stops rioting, if a guard is on post', () => {
   /** The `OVERCROWDED` prison above, with the canteen, shower room and yard it used to have. */
   const OVERCROWDED_WITH_AMENITIES = { cells: 8, toilets: true, amenities: true, prisoners: 16 } as const;
+  /** Eight consecutive seeds starting at this file's own, so a claim that needs more than one seed can have them without a sweep. */
+  const SEEDS = Array.from({ length: 8 }, (_unused, index) => SEED + index);
 
   it('has no riots at all on one guard, where it had four -- the pressure comes out as fights instead', () => {
     const runtime = run({ ...OVERCROWDED_WITH_AMENITIES, guards: 1 });
@@ -619,16 +716,17 @@ describe('an over-admitted prison that built the rooms is quiet since ADR 0102',
     ]);
     expect(housedPrisoners(runtime)).toBe(8);
 
-    // 4 riots (severities 7, 8, 8, 8) before ADR 0102 and none after; 3
-    // assaults before and 11 after. The staffing shortfall is what still puts
-    // an individual over the assault line, which is why this row is not
-    // silent the way the staffed rows below are.
+    // 4 riots (severities 7, 8, 8, 8) before ADR 0102 and none after, on all
+    // 40 seeds measured. The assault half is the seed-dependent one and is
+    // asserted only as "not none": this row opens assaults on every one of
+    // those 40 seeds, 11 of them here, which is what the staffing shortfall
+    // still buys an individual score over the line.
     expect(incidentsOfType(runtime, 'riot')).toEqual([]);
     expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
     expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
   });
 
-  it('produces nothing at all once it is staffed to requirement, where it produced ten assaults', () => {
+  it('opens nothing at all on this file’s own seed once it is staffed to requirement -- and that emptiness is the seed’s', () => {
     const runtime = run({ ...OVERCROWDED_WITH_AMENITIES, guards: 2 });
 
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
@@ -636,26 +734,78 @@ describe('an over-admitted prison that built the rooms is quiet since ADR 0102',
     ]);
     // Non-vacuous: eight of the sixteen are still standing on the arrival tile
     // with no bed, exactly as they were when this prison produced ten
-    // assaults.
+    // assaults on this same seed.
     expect(housedPrisoners(runtime)).toBe(8);
     expect(livingPrisoners(runtime)).toBe(16);
 
+    // Pinned as the seed-level fact it is. On 19 of the 40 seeds measured this
+    // log is *not* empty -- see the docblock -- so this line says "0x0cc0 is
+    // quiet", never "this prison is quiet". The riot half of it is the general
+    // claim, and it has its own case below.
     expect(runtime.incidents.all()).toEqual([]);
     // 0.4895 before ADR 0102, against a `hotThreshold` the sector never
     // reaches now.
     expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.35);
   });
 
-  it('is quiet at four times its bed capacity too, where it had three riots and ten assaults', () => {
+  it('opens nothing on this file’s own seed at four times its bed capacity either, where it had three riots and ten assaults', () => {
     const runtime = run({ cells: 4, toilets: true, amenities: true, prisoners: 16, guards: 6 });
 
     expect(housedPrisoners(runtime)).toBe(4);
     expect(livingPrisoners(runtime)).toBe(16);
     expect(runtime.incidents.all()).toEqual([]);
     // 0.6513 before ADR 0102 -- over `hotThreshold` on the needs term alone,
-    // which is what the case above this describe says no number of hires could
+    // which is what the describe above this one says no number of hires could
     // hold back. Twelve homeless prisoners with somewhere to eat, wash and
     // exercise now read 0.3462.
     expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.4);
   });
+
+  /**
+   * **The riot half, on eight seeds instead of one**, which is the only claim
+   * in this file that a single seed could not carry: an empty riot list on
+   * `0x0cc0` alone would not distinguish "the change stopped them" from "this
+   * seed was quiet", and the assault counts beside it prove that distinction
+   * is real here.
+   *
+   * Three over-admission ratios, because the describe above this one is about
+   * a ratio past which staffing stops preventing anything: four, eight and
+   * sixteen times bed capacity, all with six guards, all rioting before ADR
+   * 0102 (3, 4 and 5 riots) and none of them rioting after.
+   */
+  it('stops rioting on every seed tried, at four, eight and sixteen times its bed capacity', () => {
+    for (const cells of [4, 2, 1]) {
+      for (const seed of SEEDS) {
+        const runtime = runOnSeed({ cells, toilets: true, amenities: true, prisoners: 16, guards: 6 }, seed);
+        expect(incidentsOfType(runtime, 'riot'), `cells ${String(cells)}, seed ${String(seed)}`).toEqual([]);
+        // Non-vacuous on every iteration: the prison really is over-admitted,
+        // and really is holding everybody it took.
+        expect(housedPrisoners(runtime)).toBe(cells);
+        expect(livingPrisoners(runtime)).toBe(16);
+      }
+    }
+  }, 60_000);
+
+  /**
+   * **And the row that stops the claim being general**, which is also the row
+   * that makes ADR 0102's own Status bullet true as written: take the guard
+   * away and the built prison riots exactly as often as it did.
+   *
+   * `staffingShortfallWeight` is 0.3 and a sector with no guard at all carries
+   * the whole of it, so the need term ADR 0102 pushes down to about 0.47 here
+   * still scores 0.7651 against a 0.65 line. What the decision buys this
+   * prison is milder riots -- severities 9 become 7 and 8 -- and nothing else.
+   */
+  it('still riots six times with no guard at all, exactly as often as before', () => {
+    for (const seed of SEEDS) {
+      const runtime = runOnSeed({ ...OVERCROWDED_WITH_AMENITIES, guards: 0 }, seed);
+      const riots = incidentsOfType(runtime, 'riot');
+      expect(riots.length, `seed ${String(seed)}`).toBe(6);
+      expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeGreaterThan(0.65);
+      // The change is visible in the severities rather than the count: every
+      // one of these was 9 before ADR 0102 except the first, and none of them
+      // reaches 9 now.
+      expect(riots.every((incident) => incident.severity <= 8)).toBe(true);
+    }
+  }, 60_000);
 });
