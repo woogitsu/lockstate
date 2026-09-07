@@ -138,21 +138,39 @@ below before landing anything.
 ### 1. The line, and what it actually excludes — VERIFIED, read
 
 `src/simulation/prisoners/action-system.ts`'s `ActionSystem.update` is the
-system that puts a prisoner into an action every tick. Its per-entity loop
-opens:
+system that puts a prisoner into an action every tick. **Until this document's
+Decision was implemented on 2026-09-07**, its per-entity loop opened by
+comparing `this.records.intakeStage[index]` against
+`intakeStageIndex('completed')` and `continue`-ing on anything that was not
+equal to it.
 
-`if (this.records.intakeStage[index] !== intakeStageIndex('completed')) continue;`
+That comparison was the loop's **first** statement, before the `phase` check
+that would otherwise route a prisoner to continue performing, continue
+travelling, or be planned an idle selection. A prisoner who had not yet reached
+intake stage `completed` was therefore excluded from the whole of `update` —
+not routed to a narrower set of legal actions, not given a fallback, simply
+never considered — and that was true whether they were one tick from being
+housed or had been waiting for a bed for the whole of a thirty-day sentence. No
+comment sat on that line explaining why the exclusion was total rather than
+partial; none existed anywhere else in the file either.
+
+**This paragraph is kept in the past tense rather than deleted, because it is
+the finding the whole document rests on and a reader needs to see what was
+there. What it no longer does is quote the removed line under
+`tests/foundation/adr-quotation-verbatim-contract.test.ts`'s form**: that
+contract fails on a verbatim quotation of code that is not in the file it
+names, which is exactly what a quotation of a deleted line becomes, and the
+answer to it is to describe rather than to restate. The evidence the paragraph
+offers is therefore the statement that stands there now:
+
+`if (!ACTION_ELIGIBLE_INTAKE_STAGE_INDICES.has(this.records.intakeStage[index]!)) {`
 (verbatim in `src/simulation/prisoners/action-system.ts`)
 
-That is the loop's **first** line, before the `phase` check that would
-otherwise route a prisoner to continue performing, continue travelling, or be
-planned an idle selection. A prisoner who has not yet reached intake stage
-`completed` is therefore excluded from the whole of `update` — not routed to a
-narrower set of legal actions, not given a fallback, simply never
-considered — and this is true whether they are one tick from being housed or
-have been waiting for a bed for the whole of a thirty-day sentence. No comment
-sits on this line explaining why the exclusion is total rather than partial;
-none exists anywhere else in the file either.
+— whose set is built from `intakeStageIndex` over exactly the two stages
+Decision §1 admits, and whose body gives back the claim of a prisoner whose
+stage leaves that set mid-action. That last part is an exit this document did
+not name and the implementing pass had to add; see "Consequences for existing
+sentences" below.
 
 ### 2. What happens once a prisoner is admitted and no bed is free — VERIFIED, read
 

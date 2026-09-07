@@ -311,9 +311,29 @@ describe('a staffed prison that leaves two needs unserved is paid less for every
   it('and the neglect is real throughout, not a prison that had stopped simulating', () => {
     const { runtime, days } = run(NEGLECTED);
 
-    // Nobody is idle and no route fails: the prisoners are living an ordinary
-    // day and there is simply nowhere to wash and nowhere to exercise.
-    expect(runtime.prisoners.actionSystem.getMetrics()).toMatchObject({ unmetDemandCycles: 0, routeFailures: 0 });
+    /*
+     * No route fails, and the only reconsiderations that find nothing to do
+     * are the eight arrivals' own pre-housing windows: the prisoners are
+     * living an ordinary day and there is simply nowhere to wash and nowhere
+     * to exercise.
+     *
+     * **This read `unmetDemandCycles: 0` until
+     * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md).**
+     * `ActionSystem` now considers a prisoner at intake stage
+     * `accommodation-assignment`, and `IntakeSystem` holds every arrival there
+     * for at least one of its own scheduled ticks -- so three of this prison's
+     * eight arrivals reach a reconsideration before they hold a cell, in a
+     * block whose only candidates need one, and are counted exactly as a
+     * housed prisoner with nowhere to go is counted. Three out of eight
+     * arrivals rather than eight because the two schedules interleave: whether
+     * an arrival is caught depends on where its 5-tick intake step falls
+     * against `ActionSystem`'s 20-tick cycle.
+     *
+     * Pinned at the measured 3 rather than bounded, because a bound here would
+     * stop distinguishing "the arrival window" from "a housed prisoner who
+     * cannot act", which is the whole of what this case is for.
+     */
+    expect(runtime.prisoners.actionSystem.getMetrics()).toMatchObject({ unmetDemandCycles: 3, routeFailures: 0 });
     // All eight are housed all the way through, so the reduction is about
     // conditions and never about an empty prison.
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(8);

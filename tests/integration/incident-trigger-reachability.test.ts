@@ -307,8 +307,34 @@ describe('a prison with beds and nothing else is one guard away from rioting', (
 });
 
 describe('a prison outgrows its staffing, and the coverage report says so before the riot does', () => {
-  /** Sixteen prisoners for eight beds: half the population is left at `accommodation-assignment` with nothing to restore any need. */
-  const OVERCROWDED = { cells: 8, toilets: true, amenities: true, prisoners: 16 } as const;
+  /**
+   * Sixteen prisoners for eight beds: half the population is left at
+   * `accommodation-assignment` with nothing to restore any need.
+   *
+   * **`amenities` was `true` here until
+   * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+   * and the reason it had to move is the strongest thing this file now says
+   * about that decision.** An unhoused prisoner may eat, wash and take
+   * recreation since 2026-09-07, so in a prison that has *built* those rooms
+   * the eight people with no bed are no longer at a need deficit near 1 -- and
+   * the three cases below, which are about what an over-admitted prison
+   * produces, all went silent. Measured over this file's own 30,000 ticks,
+   * with `amenities: true` and everything else as it stands:
+   *
+   * | | before ADR 0102 | after |
+   * | --- | --- | --- |
+   * | one guard | 3 assaults, 4 riots | 11 assaults, **0 riots** |
+   * | two guards | 10 assaults | **nothing at all** |
+   *
+   * The sentence in the docblock above -- "nothing to restore any need" -- was
+   * therefore describing a prison that had a canteen, a shower room and a yard
+   * standing in it, and was true only because of the line ADR 0102 removed.
+   * Dropping `amenities` makes the fixture what its own description says it
+   * is, and keeps every claim below on a prison where it is still true. What
+   * the amenity-rich prison does now is pinned in its own describe at the end
+   * of this file rather than left to be rediscovered.
+   */
+  const OVERCROWDED = { cells: 8, toilets: true, amenities: false, prisoners: 16 } as const;
 
   it('asks for a second guard at sixteen prisoners, and riots while it has one', () => {
     const runtime = run({ ...OVERCROWDED, guards: 1 });
@@ -373,7 +399,14 @@ describe('past a point, staffing buys containment rather than prevention', () =>
     // `IncidentResponseSystem` claims four responders per riot out of the pool
     // the deployment requirement has not taken, and a contained riot injures
     // nobody where a lapsed one injures every participant.
-    const runtime = run({ cells: 4, toilets: true, amenities: true, prisoners: 16, guards: 6 });
+    //
+    // `amenities` was `true` here until ADR 0102, for the reason `OVERCROWDED`
+    // above gives at length: with a canteen, a shower room and a yard built,
+    // twelve homeless prisoners are no longer at a deficit that reaches the
+    // threshold, and this prison produced nothing at all. The claim -- that
+    // past a point staffing buys containment rather than prevention -- is kept
+    // on the prison that still reaches it.
+    const runtime = run({ cells: 4, toilets: true, amenities: false, prisoners: 16, guards: 6 });
 
     const riots = runtime.incidents.all();
     expect(riots.length).toBeGreaterThan(0);
@@ -532,5 +565,87 @@ describe('who the prison agreed to take is a decision too, and an unguarded pris
     expect(riskTiers(runtime).filter((tier) => tier >= 3).length).toBeGreaterThan(0);
     expect(runtime.contraband.all().length).toBeGreaterThan(0);
     expect(runtime.contraband.all().every((item) => item.state === 'concealed')).toBe(true);
+  });
+});
+
+/**
+ * **What [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
+ * did to an over-admitted prison that had already built the rooms.**
+ *
+ * This describe exists because the three cases above had to change their
+ * fixtures to survive that decision, and a fixture changed without the new
+ * behaviour being written down anywhere is how a balance change disappears.
+ * Each prison here is the `amenities: true` version of a prison that riots or
+ * assaults elsewhere in this file, and the claim is the one a player would
+ * make: **build a canteen, a shower room and a yard, staff to requirement, and
+ * over-admission stops producing incidents at all.**
+ *
+ * That is ADR 0102's own Cost table read back off a run. It prices a covered
+ * sector with those three rooms at a best-case need-deficit floor of 2/6
+ * (0.333) against `DEFAULT_ASSAULT_POLICY`'s 0.65 threshold, and the sector
+ * scores below land at 0.2838 and 0.3462 -- under the line by the margin that
+ * table predicts, where the same prisons scored 0.4895 and 0.6513 before.
+ *
+ * **It also contradicts, measurably, the sentence that document's acceptance
+ * was given against.** ADR 0102's Status records that the owner accepted it
+ * knowing "even a built one does not stop rioting outright". A built one does:
+ * these prisons produce nothing whatsoever. That is recorded here, in the file
+ * that measures reachability, rather than argued in a document -- and it is a
+ * balance question for the owner rather than a defect, which is why nothing
+ * here is written as a bug.
+ */
+describe('an over-admitted prison that built the rooms is quiet since ADR 0102', () => {
+  /** The `OVERCROWDED` prison above, with the canteen, shower room and yard it used to have. */
+  const OVERCROWDED_WITH_AMENITIES = { cells: 8, toilets: true, amenities: true, prisoners: 16 } as const;
+
+  it('has no riots at all on one guard, where it had four -- the pressure comes out as fights instead', () => {
+    const runtime = run({ ...OVERCROWDED_WITH_AMENITIES, guards: 1 });
+
+    // The prison is still over-admitted and still short a guard: neither the
+    // coverage report nor the housing changed, only what the unhoused half of
+    // the population can do about its needs.
+    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
+      { sectorId: 'security-sector.prison', required: 2, assigned: 1, shortage: 1 },
+    ]);
+    expect(housedPrisoners(runtime)).toBe(8);
+
+    // 4 riots (severities 7, 8, 8, 8) before ADR 0102 and none after; 3
+    // assaults before and 11 after. The staffing shortfall is what still puts
+    // an individual over the assault line, which is why this row is not
+    // silent the way the staffed rows below are.
+    expect(incidentsOfType(runtime, 'riot')).toEqual([]);
+    expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.65);
+  });
+
+  it('produces nothing at all once it is staffed to requirement, where it produced ten assaults', () => {
+    const runtime = run({ ...OVERCROWDED_WITH_AMENITIES, guards: 2 });
+
+    expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
+      { sectorId: 'security-sector.prison', required: 2, assigned: 2, shortage: 0 },
+    ]);
+    // Non-vacuous: eight of the sixteen are still standing on the arrival tile
+    // with no bed, exactly as they were when this prison produced ten
+    // assaults.
+    expect(housedPrisoners(runtime)).toBe(8);
+    expect(livingPrisoners(runtime)).toBe(16);
+
+    expect(runtime.incidents.all()).toEqual([]);
+    // 0.4895 before ADR 0102, against a `hotThreshold` the sector never
+    // reaches now.
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.35);
+  });
+
+  it('is quiet at four times its bed capacity too, where it had three riots and ten assaults', () => {
+    const runtime = run({ cells: 4, toilets: true, amenities: true, prisoners: 16, guards: 6 });
+
+    expect(housedPrisoners(runtime)).toBe(4);
+    expect(livingPrisoners(runtime)).toBe(16);
+    expect(runtime.incidents.all()).toEqual([]);
+    // 0.6513 before ADR 0102 -- over `hotThreshold` on the needs term alone,
+    // which is what the case above this describe says no number of hires could
+    // hold back. Twelve homeless prisoners with somewhere to eat, wash and
+    // exercise now read 0.3462.
+    expect(runtime.sectorRisk.getScore('security-sector.prison')).toBeLessThan(0.4);
   });
 });
