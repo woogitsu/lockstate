@@ -109,6 +109,33 @@ export type ConstructionUndoOutcome =
   | { readonly reversed: true; readonly spendDestroyed: boolean };
 
 /**
+ * What one order of `definition` requires, summed per item id.
+ *
+ * **Summed rather than taken line by line, because the sell-back's bound is
+ * *this order's own requirement* and a definition is not forbidden from naming
+ * one item twice.** Two lines of one brick are one requirement for two bricks,
+ * and handing the procurement sink each line separately would bound the second
+ * call by a figure the first had already used up.
+ *
+ * A non-positive quantity is dropped rather than summed: it is not a
+ * requirement, and letting it into the map would put an item id in the walk
+ * that the order never needed.
+ *
+ * Shared by `ConstructionSystem.refundSurplusOf` and
+ * `ConstructionSystem.previewCancelRefundMinorUnits` rather than written once
+ * each, so the figure the Build panel's row is bounded by and the figure the
+ * press is bounded by cannot diverge.
+ */
+function requiredQuantitiesByItemId(definition: BuildableDefinition): Map<string, number> {
+  const requiredByItemId = new Map<string, number>();
+  for (const requirement of definition.materialsRequired) {
+    if (requirement.quantity <= 0) continue;
+    requiredByItemId.set(requirement.itemId, (requiredByItemId.get(requirement.itemId) ?? 0) + requirement.quantity);
+  }
+  return requiredByItemId;
+}
+
+/**
  * The other tile an edge order's edge belongs to.
  *
  * `BuildEdge` names only the two slots the world stores, so the tile across a
@@ -960,22 +987,7 @@ export class ConstructionSystem implements SystemRegistration {
     if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return;
     const definition = BUILDABLE_REGISTRY.get(order.definitionId);
     if (definition === undefined) return;
-    /*
-     * Summed per item id rather than taken line by line, because
-     * `refundSurplusStock`'s bound is *this order's own requirement* and a
-     * definition is not forbidden from naming one item twice. Two lines of one
-     * brick are one requirement for two bricks, and handing the sink each line
-     * separately would bound the second call by a figure the first had already
-     * used up.
-     */
-    const requiredByItemId = new Map<string, number>();
-    for (const requirement of definition.materialsRequired) {
-      if (requirement.quantity <= 0) continue;
-      requiredByItemId.set(
-        requirement.itemId,
-        (requiredByItemId.get(requirement.itemId) ?? 0) + requirement.quantity,
-      );
-    }
+    const requiredByItemId = requiredQuantitiesByItemId(definition);
     // Ascending item id: this credits the treasury, so the walk writes
     // simulation state (`docs/DETERMINISM.md`, "Canonical iteration order").
     for (const itemId of [...requiredByItemId.keys()].sort()) {
@@ -1075,14 +1087,26 @@ export class ConstructionSystem implements SystemRegistration {
     if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return 0;
     const definition = BUILDABLE_REGISTRY.get(order.definitionId);
     if (definition === undefined) return 0;
+    // The same per-item-id summing `refundSurplusOf` does, through the same
+    // helper: the stock arm's bound is the order's own requirement, and a
+    // preview that bounded it line by line where the press bounds it per item
+    // would disagree with the press for any definition naming one item twice.
+    const requiredByItemId = requiredQuantitiesByItemId(definition);
     // Ascending item id, matching `refundSurplusOf`'s own walk -- this reads no
     // simulation state, but a preview that visited items in a different order
     // from the real cancellation would be a second opinion about the walk
     // rather than a read of it.
-    const itemIds = [...new Set(definition.materialsRequired.map((requirement) => requirement.itemId))].sort();
     let refundMinorUnits = 0;
-    for (const itemId of itemIds) {
-      refundMinorUnits += sink.previewSurplusRefundMinorUnits(itemId, this.demandedQuantityOf(itemId, order.id));
+    for (const itemId of [...requiredByItemId.keys()].sort()) {
+      // Read once and handed to both arms, exactly as `refundSurplusOf` reads
+      // it once -- with the previewed order excluded by id here, because
+      // nothing has written `order.state = 'cancelled'` yet.
+      const demanded = this.demandedQuantityOf(itemId, order.id);
+      // Deliveries first, stock second: the same two arms in the same order
+      // `refundSurplusOf` runs them in, because the stock arm prices what the
+      // delivery arm leaves behind.
+      refundMinorUnits += sink.previewSurplusRefundMinorUnits(itemId, demanded);
+      refundMinorUnits += sink.previewSurplusStockRefundMinorUnits(itemId, demanded, requiredByItemId.get(itemId)!);
     }
     return refundMinorUnits;
   }

@@ -515,6 +515,42 @@ export interface ConstructionProcurementSink {
   previewSurplusRefundMinorUnits(itemId: string, demandedQuantity: number): number;
 
   /**
+   * What `refundSurplusStock` would pay, for the same three arguments, without
+   * selling anything.
+   *
+   * ## Why the delivery preview is not enough on its own
+   *
+   * `cancelOrder` runs the two refund arms in order -- deliveries first, stock
+   * second -- and the second one reads what the first one left behind: a
+   * cancelled delivery is no longer in flight, so `heldOrInFlightOf` shrinks
+   * and the surplus the stock arm is allowed to sell shrinks with it. A
+   * preview that priced the stock arm against the *pre-cancellation* supply
+   * would over-promise by exactly the quantity the delivery arm is about to
+   * take off the road, which is the one case where the Build panel's row would
+   * name a number the press does not pay.
+   *
+   * So an implementation must run the delivery selection first, over its own
+   * copy, and price the stock against what that leaves -- the same sequence
+   * `ConstructionSystem.refundSurplusOf` performs for real, shared with
+   * `previewSurplusRefundMinorUnits` rather than restated beside it.
+   *
+   * ## What it is bounded by
+   *
+   * The same three bounds `refundSurplusStock` clamps to and for the same
+   * reasons: the surplus left after the delivery arm, `limit` -- the cancelled
+   * order's own requirement -- and the stock actually available on the shelf
+   * with reservations netted off.
+   *
+   * `0` for a `limit` that is not a positive safe integer, for an item the
+   * catalogue cannot price, and whenever the clamp lands at or below zero:
+   * every case `refundSurplusStock` itself answers `0` for.
+   *
+   * It must not throw, for the reason every other method on this port must
+   * not: a projection request must not fault a `hud/build-queue` read.
+   */
+  previewSurplusStockRefundMinorUnits(itemId: string, demandedQuantity: number, limit: number): number;
+
+  /**
    * What `refundAllocatedMaterials` would credit for `allocations`, without
    * crediting it and without destroying anything.
    *

@@ -954,6 +954,61 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * instead and keeps the running total in step with it by hand.
    */
   public previewSurplusRefundMinorUnits(itemId: string, demandedQuantity: number): number {
+    return this.previewSurplusDeliveries(itemId, demandedQuantity).refundedMinorUnits;
+  }
+
+  /**
+   * `ConstructionProcurementSink.previewSurplusStockRefundMinorUnits`.
+   *
+   * `refundSurplusStock`'s own clamp, in the same order, with
+   * `ProcurementSystem.previewRefundMaterials` where that method calls
+   * `refundMaterials` -- so nothing is withdrawn, nothing is reserved and the
+   * treasury does not move. The two guards it opens with are that method's
+   * guards verbatim, for the same reason: a projection asks this on a cadence
+   * with no press behind it.
+   *
+   * **The one thing this has to do that `refundSurplusStock` gets for free.**
+   * The real method runs *after* `refundSurplusDeliveries` has already
+   * cancelled what it was going to cancel, so the `heldOrInFlightOf` it reads
+   * is the post-cancellation figure. A preview is asked before any of that
+   * happens, so it replays the delivery arm over a copy first and prices the
+   * stock against what that arm would leave -- `previewSurplusDeliveries` is
+   * the shared helper both preview methods run, which is what stops this from
+   * being a second opinion about which deliveries a cancellation takes.
+   */
+  public previewSurplusStockRefundMinorUnits(itemId: string, demandedQuantity: number, limit: number): number {
+    if (!Number.isSafeInteger(limit) || limit <= 0) return 0;
+    if (procurableMaterial(itemId) === undefined) return 0;
+    const { heldOrInFlight } = this.previewSurplusDeliveries(itemId, demandedQuantity);
+    const quantity = Math.min(heldOrInFlight - demandedQuantity, limit, this.stock.availableOf(itemId));
+    if (quantity <= 0) return 0;
+    return this.procurement.previewRefundMaterials(itemId, quantity);
+  }
+
+  /**
+   * The delivery arm of a cancellation, played out over a copy: what it would
+   * refund, and what supply of `itemId` it would leave behind.
+   *
+   * The same loop `refundSurplusDeliveries` runs, over the same selection rule
+   * (`largestSurplusDelivery`, shared rather than restated) -- with one
+   * difference, and it is the whole reason this exists rather than being a
+   * second caller of that method: each round removes its candidate from a
+   * **local copy** of `pendingDeliveries` and decrements a **local** running
+   * total instead of calling `this.procurement.cancel`, so nothing pending is
+   * touched and no money moves. `heldOrInFlightOf` is read once, up front, for
+   * the same reason -- the real loop re-reads it from `pendingDeliveries`
+   * because cancelling shrinks that list; this loop shrinks its own copy
+   * instead and keeps the running total in step with it by hand.
+   *
+   * `heldOrInFlight` is returned rather than kept private to the loop because
+   * the stock arm needs exactly it: `refundSurplusStock` reads the supply this
+   * arm has already reduced, and a preview that did not model the reduction
+   * would promise money the press cannot pay.
+   */
+  private previewSurplusDeliveries(
+    itemId: string,
+    demandedQuantity: number,
+  ): { readonly refundedMinorUnits: number; readonly heldOrInFlight: number } {
     let refundedMinorUnits = 0;
     let heldOrInFlight = this.heldOrInFlightOf(itemId);
     const remaining = [...this.procurement.pendingDeliveries];
@@ -967,7 +1022,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
       heldOrInFlight -= candidate.quantity;
       refundedMinorUnits += candidate.paidMinorUnits;
     }
-    return refundedMinorUnits;
+    return { refundedMinorUnits, heldOrInFlight };
   }
 
   /**
