@@ -58,13 +58,69 @@
 
 /* Every interactive island opts back in. */
 .hud-strip,
-.hud__corner > *,
 .hud__aside > *,
 .hud__side > *,
 .hud-tabs__inner {
   pointer-events: auto;
   /* The page sets `touch-action: none` for the world; HUD surfaces need
      normal touch behaviour so a control can be tapped and a list scrolled. */
+  touch-action: auto;
+}
+
+/*
+ * `.hud__corner` used to be in the list above as `.hud__corner > *`, and issue
+ * #1054 is why it no longer is.
+ *
+ * Every selector still above opts in a *whole panel* because each one is, at
+ * the panel's own root, a scroll container: `.ui-panel.hud-build`,
+ * `.ui-panel.hud-staff`, `.ui-panel.hud-rooms` and `.ui-panel.hud-regime` are
+ * each `overflow-y: auto` on the panel element itself (see that rule's own
+ * comment -- "the outer scroll container... this one is what catches whatever
+ * the catalogue's floor will not let it absorb"), and `.save-panel`
+ * (`src/styles.css`) is the same shape for the same reason ("a long prison
+ * list or a short window scrolls *here* instead of pushing the Build panel
+ * past the rail's edge"). A wheel turn or a touch drag over any pixel of one
+ * of those panels -- blank padding and the gaps between rows included -- has
+ * to reach the scrolling element itself, or the gesture falls through to
+ * whatever this file makes transparent underneath it: the world. So those
+ * four selectors stay opted in whole, on purpose. `.hud-tabs__inner` is
+ * `gap: 0` with every `.ui-tab` stretched to the bar's own height, so it has
+ * no blank interior to begin with and narrowing it would change nothing.
+ *
+ * `.hud__corner`'s two panels, `.hud-zoom` and `.hud-minimap`, are neither.
+ * Nothing in either one scrolls except `.hud-alerts__list`, opted in by name
+ * below, so opting the whole panel in bought nothing the four scroll panels
+ * buy and cost exactly what issue #1054 measured: a real press on
+ * `.hud-minimap`'s own `<h2>` title, with the removal tool armed, produced no
+ * command at all --
+ *
+ *     elementFromPoint -> H2.ui-panel__title (pointer-events: auto)
+ *     commands: []
+ *
+ * -- because the title carries no click handler in `hud.ts` and never will; a
+ * panel's name is not a button. The same was true of `.hud-zoom`'s own
+ * background around its legend. Both are opted OUT here by omission, and only
+ * their actual controls are opted back in below: the collapse toggle, the two
+ * zoom buttons, the surface issue #793 already wired, the alerts section's own
+ * fold header (itself a `<button>` per `createCollapsibleSection`, so its
+ * whole row is legitimately a control and not chrome) and the alerts list
+ * itself, which is the one scroll container `.hud__corner` actually holds.
+ *
+ * `tests/browser/hud-corner-chrome-passthrough.spec.ts` is the gate: one test
+ * presses the blank chrome this comment describes and asserts the world
+ * receives it, a second presses every real control in the corner and asserts
+ * none of them lost its press to this narrowing, and a third presses the foot
+ * of the alerts list and asserts the list, not the canvas, still receives it
+ * -- the two mirror-image checks, because an opt-in that overshot would be a
+ * worse defect than #1054's.
+ */
+.hud__corner .ui-panel__toggle,
+.hud__corner .hud-zoom__out,
+.hud__corner .hud-zoom__in,
+.hud__corner .hud-minimap__surface,
+.hud__corner .ui-section__header,
+.hud__corner .hud-alerts__list {
+  pointer-events: auto;
   touch-action: auto;
 }
 

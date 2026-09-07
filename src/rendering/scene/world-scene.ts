@@ -390,8 +390,12 @@ export class WorldScene extends Phaser.Scene {
      * The HUD frames the world and never covers it, but the islands in it that
      * take clicks have to take clicks: `.hud` is `pointer-events: none` and
      * `hud.css`'s "Every interactive island opts back in" rule restores `auto`
-     * on `.hud-strip`, `.hud__corner > *`, `.hud__aside > *`, `.hud__side > *`
-     * and `.hud-tabs__inner`. Phaser listens for `mousemove` on **this canvas**
+     * on `.hud-strip`, `.hud__aside > *`, `.hud__side > *` and
+     * `.hud-tabs__inner` (whole panels), plus, inside `.hud__corner`, the
+     * handful of actual controls named beneath that rule (issue #1054 --
+     * `.hud__corner`'s own panels are not scroll containers, so opting the
+     * whole panel in bought nothing and cost a press on their blank chrome).
+     * Phaser listens for `mousemove` on **this canvas**
      * and nowhere else (`node_modules/phaser/src/input/mouse/MouseManager.js`,
      * `startListeners`; `boot` falls back to `manager.game.canvas` because
      * `src/main.ts`'s game config sets no `input.mouseEventTarget`), so a
