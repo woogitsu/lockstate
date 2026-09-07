@@ -367,24 +367,34 @@ same "a declared sprite costs its download, so declaring art nothing draws
 costs bytes for nothing" rule the owner-sheet extraction manifest already
 follows. `object.toilet` is the first: `fixture.cell.toilet_sink`, 11.27 KiB.
 
-**Grown to four on 2026-09-06 (issue #1020).** `object.bench`, `object.desk`
-and `object.storage-rack` joined the toilet after a per-object legibility
-pass over the other 22 renders -- `environment-art.ts`'s
-`OBJECTS_ON_COLOUR_FALLBACK` comment records which of the remaining
-seventeen catalogued objects were considered and left on the colour
-fallback, and why. **Each new id needs its own edit to
-`.github/workflows/ci.yml`'s `browser` job, and that is the finding this
-paragraph exists to record rather than let a reader assume otherwise from
-the "prefix" language elsewhere in this document and in ADR 0100.** The
-`browser` job's decode-assertion step derives ids from
-`environment-sprites.ts` generically and needs no edit; the `git lfs pull
---include=` step immediately above it is a literal, comma-separated list of
-specific globs, not a `rendered.*` directory wildcard, and a new id's
-published file is never fetched in CI's pointer-only checkout until its own
-glob is added there. That edit is the owner's (`AGENTS.md` reservation 3)
-and had not landed as of this paragraph being written -- see the commit
-that added `object.bench`/`object.desk`/`object.storage-rack` for the exact
-line.
+**Grown to four on 2026-09-06 (issue #1020), then back to three the next day
+(#1059).** `object.bench`, `object.desk` and `object.storage-rack` joined the
+toilet after a per-object legibility pass over the other 22 renders --
+`environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` comment records which of
+the remaining catalogued objects were considered and left on the colour
+fallback, and why, including `object.storage-rack` itself: a playtest built
+one in a real prison and found the render a flat grey rectangle with a single
+seam at every zoom the game draws it at, failing the exact "reads as a blob,
+not the thing it names" bar the same pass had already refused for
+`object.chair`. It was reverted to the colour fallback, and the other two
+stayed -- both were checked in the same playtest and both read correctly.
+
+**Each new id needs its own edit to `.github/workflows/ci.yml`'s `browser`
+job, and that dependency is worth recording precisely because a revert does
+not automatically undo it.** The `browser` job's decode-assertion step
+derives ids from `environment-sprites.ts` generically and needs no edit; the
+`git lfs pull --include=` step immediately above it is a literal,
+comma-separated list of specific globs, not a `rendered.*` directory
+wildcard, and a new id's published file is never fetched in CI's
+pointer-only checkout until its own glob is added there. That edit landed on
+2026-09-06, narrowly released by the owner for exactly this path (`AGENTS.md`
+reservation 3), and **it is not narrowed back by #1059's revert**:
+`rendered.furniture.cell.locker.variants.*.png` is still in that include
+list and still fetches ~11 KiB nothing draws, because tidying `ci.yml` back
+down was offered as the alternative and the owner chose to leave the glob
+rather than touch that file a second time for a single stale entry. This
+paragraph records that choice rather than let a reader assume the glob's
+continued presence is an oversight.
 
 **Published into `public/game-content/source-art/`, the owner sheets'
 own directory, not a new one.** `public/_headers`' `/game-content/source-art/*`

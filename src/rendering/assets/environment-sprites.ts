@@ -84,7 +84,6 @@ export const ENVIRONMENT_SPRITE_IDS = [
   'env.object.toilet',
   'env.object.bench',
   'env.object.desk',
-  'env.object.storage-rack',
 ] as const;
 
 export type EnvironmentSpriteId = (typeof ENVIRONMENT_SPRITE_IDS)[number];
@@ -310,8 +309,9 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
    * desktop, a dark blotter/mat and a small pale object beside it (a
    * keyboard or a stack of paper, seen top-down and flat) -- distinct enough
    * from a bare rectangle to read as furniture with something on it, which is
-   * the property the bench above and the toilet already have and the chair
-   * candidate below does not.
+   * the property the bench above and the toilet already have and `object.chair`'s
+   * rejected render does not (`environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK`
+   * docblock).
    */
   'env.object.desk': {
     kind: 'rendered-art',
@@ -320,29 +320,19 @@ export const ENVIRONMENT_SPRITES: Readonly<Record<EnvironmentSpriteId, Environme
     quarterTurns: 0,
     note: 'Employee desk with a dark blotter, rendered top-down (ADR 0100). Drawn on object.desk.',
   },
-  /**
-   * `object.storage-rack`'s render is the one judgement call in this batch of
-   * three, recorded here rather than left implicit. `environment-objects.render.json`
-   * has nothing named "rack": the closest 1x1 furniture render is
-   * `furniture.cell.locker.variants`, a double-doored cabinet with a visible
-   * hinge seam and latch, not open shelving. A locker and a rack are two
-   * different pieces of storage furniture in the real world, and this render
-   * is used anyway because it is the only 1x1 render whose footprint matches
-   * without stretching and whose subject -- "furniture you store things
-   * behind a door in" -- is close enough to the localisation string
-   * ("Storage Rack") to read as the same *kind* of thing at 64px, which the
-   * candidates considered and rejected below (a light-pole base for
-   * `object.utility-panel`, a reception counter for `object.loading-dock-door`)
-   * were not. Flagged rather than silently substituted, per the brief that
-   * asked for this to be a judgement and not a shrug.
+  /*
+   * `env.object.storage-rack` stood here from 2026-09-06 to 2026-09-07,
+   * mapping `object.storage-rack` to `furniture.cell.locker.variants` (a
+   * double-doored cabinet, not open shelving -- `environment-art.ts`'s
+   * `OBJECTS_ON_COLOUR_FALLBACK` docblock quotes the judgement-call reasoning
+   * in full). It was removed on the finding a playtest made that this pass's
+   * own docblock did not: at both zoom 1 and `ZOOM_BOUNDS.max`, the frame is a
+   * flat grey-blue rectangle with one vertical seam and nothing else,
+   * failing the exact bar `object.chair` was refused on in the same pass this
+   * row was added by. Left as a removal rather than silently absent, per this
+   * file's own convention of recording *why* a sprite was not wired -- here,
+   * why one that briefly was no longer is.
    */
-  'env.object.storage-rack': {
-    kind: 'rendered-art',
-    renderedArtId: 'furniture.cell.locker.variants',
-    runtimeSizePx: { width: 128, height: 128 },
-    quarterTurns: 0,
-    note: 'Double-doored storage locker, rendered top-down (ADR 0100); the closest one-tile storage render to "Storage Rack", not a literal rack. Drawn on object.storage-rack.',
-  },
 };
 
 /** The frame's size once its quarter-turn has been applied: what the atlas actually holds. */
