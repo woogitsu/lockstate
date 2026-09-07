@@ -28,6 +28,31 @@
       }
     },
     {
+      "assetId": "furniture.cell.locker.variants",
+      "contentVersion": 1,
+      "image": "source-art/rendered.furniture.cell.locker.variants.10a6c751ad5c.png",
+      "sha256": "10a6c751ad5cdbffefeea7155333c635d1ab574c0e9f0f0e3104eb414f5e7759",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1.12,
+        "height": 1.12
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "furniture.corridor.bench.variants",
       "contentVersion": 1,
       "image": "source-art/rendered.furniture.corridor.bench.variants.4afd4a1258e7.png",

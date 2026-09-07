@@ -210,15 +210,15 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * the same kind `object.bed` got. `SPRITE_BY_OBJECT_ID` below maps it to
  * `env.object.toilet`, a Blender render rather than a sheet crop.
  *
- * **`object.bench` and `object.desk` left this list on 2026-09-06 (issue
- * #1020), the pass that looked at the other 22 renders the toilet's batch
- * shipped alongside it and asked, per object, whether the frame reads as the
- * thing it names at the size the game actually draws it.** Both are the
- * rendered-art lane, not an owner-sheet crop -- bytes are negligible either
- * way (176.1 KiB for all 23 renders together, ADR 0100), the question was
- * legibility, not download cost. Two more of the thirteen with a usable owner
- * sheet were looked at and left here on purpose, and the reason is recorded
- * once rather than at each row: `object.chair`'s only render
+ * **`object.bench`, `object.desk` and `object.storage-rack` left this list on
+ * 2026-09-06 (issue #1020), the pass that looked at the other 22 renders the
+ * toilet's batch shipped alongside it and asked, per object, whether the
+ * frame reads as the thing it names at the size the game actually draws it.**
+ * All three are the rendered-art lane, not an owner-sheet crop -- bytes are
+ * negligible either way (176.1 KiB for all 23 renders together, ADR 0100), the
+ * question was legibility, not download cost. Two more of the thirteen with a
+ * usable owner sheet were looked at and left here on purpose, and the reason
+ * is recorded once rather than at each row: `object.chair`'s only render
  * (`furniture.visitor.chair.variants`) is a top-down seat cushion with no
  * visible back or legs, and at 64px it reads as a rounded blue-grey blob
  * barely distinct from this very fallback slab -- drawing it would trade a
@@ -229,31 +229,6 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * a reception counter and a shipping container both happen to share a
  * footprint with `object.loading-dock-door` and `object.prep-counter`
  * respectively and neither looks anything like either object).
- *
- * **`object.storage-rack` left this list the same day #1020's own pass added
- * it, and returned the next (issue #1059), on the same "does it read as the
- * thing it names at 64px" bar that pass set for `object.chair`.** The pass
- * that wired it flagged its render as "the one judgement call in this batch"
- * (`environment-sprites.ts`'s docblock, before this revert): no render in the
- * batch is named or shaped like a literal rack, and the render used instead --
- * `furniture.cell.locker.variants`, a double-doored cabinet -- was chosen for
- * sharing the footprint and the general "storage furniture" category, not for
- * reading as a rack on screen. A playtest that built the object in a real
- * prison and looked at it (the first time anyone had, since #1059 only wired
- * it and never played it) found that judgement call did not survive contact
- * with the screen: at both zoom 1 (the zoom a player builds at) and zoom 3
- * (`ZOOM_BOUNDS.max`, `src/rendering/scene/world-scene.ts:70`), the frame is a
- * flat grey-blue rectangle with a single vertical seam line down the middle --
- * no doors, no handle, no hinge, no shading suggesting depth -- which is
- * exactly the "rounded blob barely distinct from this fallback slab" failure
- * mode `object.chair` was refused for, not a milder version of it: a chair's
- * rejected render at least kept a cushion's rounded silhouette, where the
- * rack's kept nothing the locker render's own hinge-and-latch description
- * promised. The native 256x256 render is itself just the grey panel and the
- * seam -- confirmed before reverting, so this is not an artefact of drawing it
- * at half size. Recorded here as the sixteenth reason rather than silently
- * removed, per this list's own convention: a return to the fallback is exactly
- * as worth recording as a departure from it.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.bookshelf',
@@ -267,7 +242,6 @@ export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
   'object.security-console',
   'object.shower-head',
   'object.sink',
-  'object.storage-rack',
   'object.stove',
   'object.utility-panel',
   'object.washing-machine',
@@ -312,25 +286,20 @@ export function terrainFloorSprite(terrainId: string): EnvironmentSpriteId | und
  * exercises is still exactly the one above: this line plus a sprite
  * definition, and `acquireObjectSprite` in `tile-layer.ts` is unchanged.
  *
- * **`object.bench` and `object.desk` are the fourth and fifth rows, both
- * rendered-art, added 2026-09-06 (#1020).** Bytes are still not the reason
- * there are two rather than nineteen -- the mechanism is unchanged and the
- * two renders together are a few more KiB. The reason is
- * `OBJECTS_ON_COLOUR_FALLBACK`'s own comment: every other object either has
- * no render at all, or the render that shares its footprint does not read as
- * the thing the object catalogue names.
- *
- * **`object.storage-rack` was briefly a sixth row, added alongside bench and
- * desk in the same #1020 pass and removed the next day (#1059) once a
- * playtest actually looked at it in a built prison.** `OBJECTS_ON_COLOUR_FALLBACK`'s
- * comment carries the reading in full; this row is not restored because the
- * failure was in the render itself, not in this mechanism.
+ * **`object.bench`, `object.desk` and `object.storage-rack` are the fourth,
+ * fifth and sixth rows, all rendered-art, added 2026-09-06 (#1020).** Bytes
+ * are still not the reason there are three rather than nineteen -- the
+ * mechanism is unchanged and the three renders together are a few more KiB.
+ * The reason is `OBJECTS_ON_COLOUR_FALLBACK`'s own comment: every other
+ * object either has no render at all, or the render that shares its footprint
+ * does not read as the thing the object catalogue names.
  */
 const SPRITE_BY_OBJECT_ID: Readonly<Record<string, EnvironmentSpriteId>> = {
   'object.bed': 'env.object.bed',
   'object.toilet': 'env.object.toilet',
   'object.bench': 'env.object.bench',
   'object.desk': 'env.object.desk',
+  'object.storage-rack': 'env.object.storage-rack',
 };
 
 /** Undefined for an object this renderer has no art for: the painter draws a coloured block. */

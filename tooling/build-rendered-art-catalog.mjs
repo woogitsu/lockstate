@@ -53,21 +53,14 @@ import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-gu
  * cross-checks this list against that file's declared ids so they cannot
  * drift apart silently.
  *
- * **Grown to four entries on 2026-09-06 (#1020), then back to three the next
- * day (#1059).** `object.bench`, `object.desk` and `object.storage-rack`
- * joined `object.toilet` in `environment-sprites.ts` after a per-object
- * legibility pass over the other 22 renders (`docs/adr/0100-*.md`,
- * `environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` comment) found those
- * three, and only those three, worth their frame. `object.storage-rack` left
- * `environment-sprites.ts` again the next day, once a playtest actually built
- * one and looked at it: the render is a flat grey rectangle with a seam at
- * every zoom the game draws it at, which is the same "reads as a blob, not
- * the thing it names" failure the same pass had already refused for
- * `object.chair` (`environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` comment
- * carries the reading in full). The rule above still holds either way: this
- * list follows that file rather than the other way round, so it shrank back
- * to three the moment the sprite registry did, and a fourth object gets a row
- * here only once it has one there again.
+ * **Grown to four entries on 2026-09-06 (#1020).** `object.bench`,
+ * `object.desk` and `object.storage-rack` joined `object.toilet` in
+ * `environment-sprites.ts` after a per-object legibility pass over the other
+ * 22 renders (`docs/adr/0100-*.md`, `environment-art.ts`'s
+ * `OBJECTS_ON_COLOUR_FALLBACK` comment) found those three, and only those
+ * three, worth their frame. The rule above still holds: this list follows
+ * that file rather than the other way round, so a fifth object gets a row
+ * here only once it has one there.
  */
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -85,6 +78,7 @@ const outputManifest = path.join(root, 'public/game-content/rendered-art.v1.json
  */
 export const PUBLISHED_ASSET_IDS = [
   'fixture.cell.toilet_sink',
+  'furniture.cell.locker.variants',
   'furniture.corridor.bench.variants',
   'furniture.office.desk.employee.variants',
 ];

@@ -71,22 +71,17 @@ export interface HarnessWorldFixture {
   /**
    * North-west tile of a finished `bench-wooden` order, standing on bare
    * owned ground outside the zoned room, on the same footing as
-   * `bedTileX`/`bedTileY`. The second object wired from ADR 0100's second
-   * publishing lane (#1020) sits beside it: `deskTileX`/`Y`, far enough apart
-   * that the two footprints do not touch.
-   *
-   * **A third pair, `storageRackTileX`/`Y`, stood here from 2026-09-06 to
-   * 2026-09-07** for `object.storage-rack`, which joined the fallback in the
-   * same #1020 pass and left it again the next day (#1059) once a playtest
-   * found its render illegible at every zoom -- see
-   * `environment-art.spec.ts`'s note on `RENDERED_OBJECT_CASES`. Removed
-   * along with the fixture structure that used it rather than left standing
-   * with nothing reading it.
+   * `bedTileX`/`bedTileY`. The second and third objects wired from ADR
+   * 0100's second publishing lane (#1020) sit beside it: `deskTileX`/`Y` and
+   * `storageRackTileX`/`Y`, each far enough apart that no two footprints
+   * touch.
    */
   readonly benchTileX: number;
   readonly benchTileY: number;
   readonly deskTileX: number;
   readonly deskTileY: number;
+  readonly storageRackTileX: number;
+  readonly storageRackTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {
