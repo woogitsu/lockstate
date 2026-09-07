@@ -418,7 +418,11 @@ export interface ConstructionProcurementSink {
    *
    * ## THIS TAKES A QUESTION ADR 0076 NAMED AND DID NOT TAKE
    *
-   * **Unsigned, and it must not merge before the owner rules.**
+   * **The heading read "Unsigned, and it must not merge before the owner
+   * rules" until 2026-09-02, and it is marked rather than deleted because the
+   * refusal is the record of the escalation working: an agent built the
+   * remedy, recognised it could not land it, and said so.** The owner ruled on
+   * that date and the ruling is recorded in ADR 0076's own amendment.
    * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
    * amendment of 2026-08-31 enumerates the three places an order's money can
    * be, and its case 3 is exactly this window: *"In stock in the container.

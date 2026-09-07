@@ -73,21 +73,25 @@ import {
  * of the issue's *"an undo now keeps the debt"*, and the second case below
  * plays it.
  *
- * ## What this branch takes, and why it is unsigned
+ * ## What this takes, and who took it
  *
- * **ADR 0076's amendment names this window and declines to close it, so the
- * change these cases measure is a proposal and not a fix that needs no
- * decision.** Its case 3 is exactly the window above -- *"In stock in the
- * container. The goods arrived, the order had not yet allocated them […] A
- * player who cancels in this window keeps the material and does not get the
- * money, and that is a real asymmetry rather than an oversight"* -- and its
- * open questions add *"**Not decided either: whether surplus stock can be sold
- * back.** […] That is a new economic surface and a price question (ADR 0017
- * decision 5 reserves prices with the rest of #29), so it is named and not
- * taken."*
+ * **This heading read "What this branch takes, and why it is unsigned" while
+ * the decision was open, and it is marked rather than deleted because the
+ * refusal is the record of the escalation working.** ADR 0076's amendment
+ * named this window and declined to close it: its case 3 is exactly the window
+ * above -- *"In stock in the container. The goods arrived, the order had not
+ * yet allocated them […] A player who cancels in this window keeps the
+ * material and does not get the money, and that is a real asymmetry rather
+ * than an oversight"* -- and its open questions added *"**Not decided either:
+ * whether surplus stock can be sold back.** […] That is a new economic surface
+ * and a price question (ADR 0017 decision 5 reserves prices with the rest of
+ * #29), so it is named and not taken."*
  *
- * The last case in this file is the cost of taking it, measured rather than
- * argued: **place a wall against a shelf you already hold and cancel it, and
+ * **The repository owner took it on 2026-09-02, in the broad reading, with the
+ * cost below in front of them**, and ADR 0076's amendment records the ruling.
+ * So these cases are a fix's expectations now rather than a proposal's
+ * measurements -- and the cost is not hidden by that, it is the last case in
+ * this file, measured rather than argued: **place a wall against a shelf you already hold and cancel it, and
  * two bricks become 80 minor units, per gesture, with no clock wait and no
  * crew.** That is a general material-to-money channel, not only #717's window,
  * and it dissolves ADR 0075's locked position for any prison holding bricks.
@@ -106,7 +110,8 @@ import {
  *    on the placing tick, so every delivery in it lands within a tick of every
  *    other and **the whole drag occupies the window at once**. Measured, 328
  *    walls put 26,240 -- the entire opening facility plus 1,240 of the
- *    overdraft -- into it, and cancelling all of them there returned nothing.
+ *    overdraft -- into it, and cancelling all of them there returned nothing
+ *    before the ruling.
  *
  * Every command here goes through `packCommand` and the real kernel:
  * `tests/unit/simulation-refusals.test.ts` states the rule this file follows —
