@@ -743,24 +743,60 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `1e7c63c7` (**v0.0.528**) by the delta method this
-header describes, from the v0.0.521 anchor kept below. **This anchor is a
-merge commit rather than the `chore(release)` commit above it for the first
-time in this chain** — `1e7c63c7` is #1057's merge; `fbf7772b`
-(`chore(release): v0.0.529`) sits one commit above it on `main` and is not
-what this line names, because a `chore(release)` commit starts no CI run at
-all and a reader who followed one out to verify it would find nothing to
-verify against. `package.json` ships **0.0.528** at `1e7c63c7`, so this pass
-is dispatched at **SEVEN of the ten releases the budget allows — inside it by
-three**, counted against the merge rather than against `main`'s actual tip:
-against the tip (`fbf7772b`, v0.0.529) the spend reads eight, which is the
-figure the dispatching brief carried and is left here rather than silently
-reconciled away, because the two counting rules disagree by exactly the one
-release the `chore(release)` commit itself represents and a reader deserves to
-see both rather than only the one this pass adopts. The anchor being replaced
-named v0.0.521. `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at **10** and
-raising it was never on the table — the gate's own failure message forbids it
-in words.
+Re-anchored at `main` @ `ebdcb317` (**v0.0.534**) by the delta method this
+header describes, from the v0.0.528 anchor kept below. **This anchor is again
+a merge commit rather than the `chore(release)` commit above it** — `ebdcb317`
+is #1065's merge; `044ca175` (`chore(release): v0.0.535`) sits one commit
+above it on `main` and is not what this line names, for the reason every
+anchor in this chain has repeated: a `chore(release)` commit starts no CI run
+at all and a reader who followed one out to verify it would find nothing to
+verify against. `package.json` ships **0.0.534** at `ebdcb317`, so this pass
+is dispatched at **SIX of the ten releases the budget allows — inside it by
+four**, counted against the merge rather than against `main`'s actual tip:
+against the tip at dispatch (`044ca175`, v0.0.535) the spend reads seven, the
+same figure the dispatching brief carried, stated rather than reconciled away
+for the same reason the `1e7c63c7` anchor gave.
+
+**A further merge landed on `main` while this pass was running, and then its
+own `chore(release)` commit landed behind it, and the anchor chased
+neither.** `2eee6836`/#1066 (the per-room zoning alpha ADR 0101 itself
+mandates, `551c9804`, plus a documentation follow-up, `64c960c1`) merged
+after this pass had already read the `1e7c63c7..ebdcb317` window; `main` was
+fetched and merged into this branch, and the spend re-measured rather than
+assumed stable. At that first re-fetch, `package.json` still shipped
+**0.0.535** at `2eee6836` — unchanged by #1066's own merge, because that
+merge had not yet been followed by its own `chore(release)` commit — so the
+reading against `main`'s tip at that moment was **seven**, identical to the
+reading taken against `044ca175` before #1066 landed. `main` was fetched a
+second time before this commit was written, and `e823d641` (`chore(release):
+v0.0.536`) had by then landed on top of `2eee6836`; merged in the same way,
+giving a third reading of **eight** against that tip. **Three readings, all
+stated rather than reconciled to one**: six against the merge this anchor
+names, seven against the tip as it stood when #1066's merge alone had
+landed, eight against the tip as it stands now that #1066's own release
+commit has too. The anchor stays at `ebdcb317` regardless of which of the
+three a future reader cares about: moving it to chase either later commit
+would mean re-reading a window this pass never opened, and `ebdcb317`
+remains a correct, verified re-anchor point under all three readings — the
+widest of them, eight, is still two clear of the budget. The anchor being
+replaced named v0.0.528. `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+**10** and raising it was never on the table — the gate's own failure
+message forbids it in words, and this pass's own brief forbade it
+independently.
+
+> **The v0.0.528 anchor's own opening, kept rather than overwritten**
+> (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `1e7c63c7`
+> (**v0.0.528**) by the delta method this header describes, from the v0.0.521
+> anchor kept below."* **This anchor was itself a merge commit rather than
+the `chore(release)` commit above it, the first time in this chain** —
+`1e7c63c7` was #1057's merge, and `fbf7772b` (`chore(release): v0.0.529`) sat
+one commit above it and was not what the line named, for the reason every
+anchor since has repeated. `package.json` shipped **0.0.528** at `1e7c63c7`,
+dispatched at **SEVEN of the ten releases the budget allows — inside it by
+three** against the merge (**eight** against `main`'s actual tip at the time,
+`fbf7772b`, v0.0.529, both stated rather than one reconciled away). The
+anchor being replaced named v0.0.521. `ANCHOR_STALENESS_BUDGET_RELEASES` was
+unmoved at **10**.
 
 > **The v0.0.521 anchor's own opening, kept rather than overwritten**
 > (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `4cc8a12f`
@@ -10170,7 +10206,7 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `1e7c63c7` — `git diff --name-only 4cc8a12f..1e7c63c7 -- supabase/` returns nothing, the directory still holds **24** migrations, and every row of the table above resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`, each opened individually on `20260823100000_bound_free_tier_capacity.sql` rather than inferred from the command returning nothing) — and at `4cc8a12f`, `0b8af9f8`, `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
+absences were re-verified at `ebdcb317` — `git diff --name-only 1e7c63c7..ebdcb317 -- supabase/` returns nothing, the directory still holds **24** migrations, and every row of the table above resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`, each opened individually on `20260823100000_bound_free_tier_capacity.sql` rather than inferred from the command returning nothing) — and at `1e7c63c7`, `4cc8a12f`, `0b8af9f8`, `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
 
 **THE ABSENCES HOLD AND THE GREP THAT ESTABLISHED THEM NO LONGER DOES, AND BOTH
 HALVES ARE KEPT.** This paragraph read, from `26434e8e` through `4c00eaba`:
@@ -12123,6 +12159,272 @@ span's text at the two ends of the window, which flags every citation sitting in
 a past-tense record exactly as loudly as a live one. Nothing in this pass
 establishes how many of the 51 are really wrong, and the honest bound is that it
 is somewhere between a handful and all of them.
+
+## 3. What the anchor pass of 2026-09-07's second run opened six clear of the limit: six merges, one file's citations moved for the second window running, two long-lived chains extended, and a merge that landed mid-pass and was not chased
+
+Taken at `ebdcb317` (v0.0.534), from `1e7c63c7` (v0.0.528). **Six of ten
+releases**, counted against the merge this line names — against `main`'s tip
+at dispatch, `044ca175` (v0.0.535), the gate would read seven, because that
+tip is a `chore(release)` commit and this pass anchors to the merge under it
+instead, for the reason the header above gives. Either count clears the
+budget; this one clears it by four. `ANCHOR_STALENESS_BUDGET_RELEASES` is
+unmoved at **10**, and it was never a candidate to move — the dispatching
+brief said so in words, the gate's own failure message says so
+independently, and this pass adds a third refusal on top of both.
+
+**A FURTHER MERGE LANDED WHILE THIS PASS WAS RUNNING, THEN ITS OWN RELEASE
+COMMIT LANDED BEHIND IT, AND NEITHER IS RECORDED AS A CHASE.** `2eee6836`/#1066
+(per-room zoning alpha, ADR 0101's own implementation: `551c9804` plus
+`64c960c1`'s documentation follow-up) merged into `main` after this pass had
+already read the `1e7c63c7..ebdcb317` window; `main` was fetched and merged
+into this branch, giving a second reading of **seven** against the tip
+(`package.json` still `0.0.535` at `2eee6836`, unchanged from `044ca175`
+because #1066's own `chore(release)` had not landed yet). `main` was fetched
+a second time before this pass finished writing, and `e823d641`
+(`chore(release): v0.0.536`) had landed on top of `2eee6836` by then; merged
+in the same way, giving a third reading of **eight**. All three readings —
+six against the merge this anchor names, seven and eight against two
+successive states of `main`'s tip — are stated in the header above rather
+than reconciled to one, and the anchor itself does not move to either later
+commit: `ebdcb317` is what this pass's own window reconciliation and delta
+read were performed against, and re-pointing the anchor to a commit this
+pass never read would assert work that was not done.
+
+**THE WINDOW RECONCILES TO THE FILE, IN BOTH DIRECTIONS.** Six pull-request
+merges landed between the two anchors, read off `git log --oneline
+--first-parent 1e7c63c7..ebdcb317`: `1928db13`/#1058 (the previous anchor's
+own pass, this file alone, 1 file), `e1d1fdf4`/#1059 (drawing bench, desk and
+storage-rack from ADR 0100's rendered-art lane, #1020 — the CI three-globs
+release and the AGENTS.md/CLAUDE.md text it required, 15 files),
+`e80116cf`/#1060 (wip-sweep pushes committed work to the real branch, 1
+file), `3f492ef0`/#1062 (reverting `object.storage-rack` to the colour
+fallback on the owner's playtest ruling, 9 files), `bb1f8fc4`/#1063
+(drafting and, the same PR, accepting ADR 0101 — the per-room zoning-tint
+alpha — 3 files), `ebdcb317`/#1065 itself (annotating the anchor budget's
+spend on every version bump, 5 files). Their per-merge file lists (`git diff
+--name-only <merge>~1..<merge>`, what the merge actually changed rather than
+its commit-message tally) sum to **34** raw entries; **ten** files are
+touched by more than one merge (`docs/ART_PIPELINE.md`, `docs/adr/STATUS-QUEUE.md`,
+`public/game-content/rendered-art.v1.json`,
+`rendered.furniture.cell.locker.variants.10a6c751ad5c.png` (under
+`public/game-content/source-art/`),
+`src/rendering/assets/environment-sprites.ts`,
+`src/rendering/world/environment-art.ts`,
+`tests/browser/environment-art-harness-api.ts`,
+`tests/browser/environment-art-harness.ts`, `tests/browser/environment-art.spec.ts`
+and `tooling/build-rendered-art-catalog.mjs`), so the de-duplicated union is
+**24**.
+
+That union is not quite `git diff --name-only 1e7c63c7..ebdcb317` on its own,
+and the two differences are named rather than smoothed over. Checked with
+`comm -23`/`comm -13` against the sorted union and the sorted diff:
+`rendered.furniture.cell.locker.variants.10a6c751ad5c.png` (under
+`public/game-content/source-art/`)
+sits in the union (added by #1059, deleted by #1062's revert) but not in the
+diff, because it does not exist at either end of the window and nets to
+zero; `package.json` sits in the diff but not in the union, because its only
+edits in this window are the `chore(release)` commits that sit directly on
+`main`'s first-parent chain *between* merges (`fbf7772b`, `2aee4cc1`,
+`3949ddce`, `712175fe`, `d141dbd1`, `f18d217b`) rather than inside any PR's
+own diff. Swap one for the other — union minus the locker sprite, plus
+`package.json` — and the two sets are identical: **24 and 24**, nothing in
+the diff missing from the reconciled union and nothing in the reconciled
+union absent from the diff.
+
+**Every sha named above and below was verified individually** with `git
+cat-file -e <sha>^{commit}`: `1e7c63c7`, `ebdcb317`, `044ca175`, `2eee6836`,
+`e823d641`, the six merge commits `1928db13`, `e1d1fdf4`, `e80116cf`,
+`3f492ef0`, `bb1f8fc4` (`ebdcb317` is both the anchor and a merge and is
+counted once), the six `chore(release)` commits named above, `fd266b8c` and
+`64c960c1` (#1066's own merge parents), `a17662d1`, `43421b42`, `911ff581`
+and `343d876b` (the commits inside #1063), and `551c9804` (#1066's
+implementation commit). None resolved from cache alone; each returned exit 0
+against the fetched history.
+
+**THE DELTA READ, DONE BY OPENING THE FILE AT BOTH ENDS RATHER THAN BY
+OFFSETTING THE DIFF.** Every `file:line` citation in this file's live
+sections naming a file the window touched was extracted and each cited span
+read at `1e7c63c7` and at `ebdcb317`, compared as text.
+
+- `docs/adr/README.md` — thirteen distinct spans across twenty-five
+  citations (`:44-52`, `:59` repeated, `:97`, `:100`, `:102-106`, `:103-110`,
+  `:108`, `:158`) — **all held**. The window's only edit to this file is a
+  pure append: `git diff 1e7c63c7 ebdcb317 -- docs/adr/README.md` shows one
+  hunk, `@@ -255,6 +255,21 @@`, adding ADR 0101's row and its own "Next free
+  number" paragraph after the existing text and removing nothing — every
+  cited span sits above old line 255, so nothing below it could have shifted
+  regardless of net line count, and nothing was added above any of them
+  either.
+- `src/rendering/world/environment-art.ts:24` and `:186` — **held**. The
+  window's two hunks (#1059 adding the bench/desk/locker sprites, #1062
+  reverting the storage-rack one) both start at original line 209, after
+  both cited spans.
+- `tests/unit/environment-art.test.ts:248` and `:256` (the previous anchor's
+  own pass corrected these in place to `:286` and `:294` for the
+  `4cc8a12f..1e7c63c7` window) — **in this window too, and both moved again.**
+  `git diff 1e7c63c7 ebdcb317 -- tests/unit/environment-art.test.ts` is a
+  single hunk, `@@ -162,7 +162,13 @@`, twelve lines above old `:286`, net
+  +6. Read at both ends by searching for the `it(...)` titles themselves
+  rather than offsetting: `it('accounts for every catalogued object exactly
+  once', ...)` sits at `:286` on the `1e7c63c7` tree and at **`:292`** on the
+  `ebdcb317` tree; `it('accounts for every terrain exactly once', ...)` sits
+  at `:294` and at **`:300`**. A uniform +6 across both, matching the hunk's
+  net insertion exactly. Corrected in place, with `:286`/`:294` kept beside
+  the new values rather than deleted — this is the second window running in
+  which this pair has moved, and the third distinct pair of values this
+  citation has carried since `c00b641`.
+- `docs/adr/0023-room-occupancy-authority.md`,
+  `docs/adr/0025-guard-hiring-surface.md`,
+  `docs/adr/0086-what-refreshes-a-pulled-hud-readout.md`,
+  `src/simulation/protocol/types.ts`, `src/simulation/protocol/transferables.ts`
+  and `src/simulation/worker/state-machine.ts` — **not in this window's
+  24-file list at all**, so every live citation into them (§5's ADR
+  0023/0025/0086 entries, the four `types.ts` and two `transferables.ts`
+  handshake anchors, and `state-machine.ts`'s seven `transition()`/handshake
+  sites, all seven of which moved at the previous anchor) is **held by
+  construction**.
+- `.github/workflows/version.yml`, `AGENTS.md`, `CLAUDE.md`,
+  `docs/AGENT_WORKFLOW.md`, `docs/ART_PIPELINE.md`,
+  `docs/adr/0101-what-a-zoning-tint-must-deliver.md`, `package.json`,
+  `public/game-content/rendered-art.v1.json`, both new rendered PNGs,
+  `src/rendering/assets/environment-sprites.ts`,
+  `tests/browser/environment-art-harness-api.ts`,
+  `tests/browser/environment-art-harness.ts`,
+  `tests/browser/environment-art.spec.ts`,
+  `tests/foundation/anchor-budget-spend-annotation.test.ts`,
+  `tests/foundation/ci-configuration-contract.test.ts`,
+  `tooling/anchor-budget-spend.d.mts`, `tooling/anchor-budget-spend.mjs` and
+  `tooling/build-rendered-art-catalog.mjs` — all in the window, none cited
+  anywhere in §§1-6 by rooted path or line number, checked by name (a
+  basename search excluding a preceding word character, hyphen or dot, the
+  same decoy-proofing the `c00b641` anchor established). Nothing to re-aim.
+  `.github/workflows/ci.yml` is also in this window (the three-globs
+  extension #1059 carries, already authorised in `AGENTS.md`) and is named
+  by two mentions in the previous pass's own dependency-list bullet, neither
+  of them a line-number citation — checked and unchanged.
+
+**TWO LONG-LIVED "VERIFIED AT" CHAINS WERE EXTENDED RATHER THAN LEFT NAMING A
+SUPERSEDED ANCHOR, BOTH ON FILES THIS WINDOW DID NOT TOUCH.** `adr-status-queue-anchor-contract`
+reads every live "verified at `<sha>`" and requires it to name the header's
+own anchor commit, and moving the header without updating these two would
+have failed that gate on this pass's own commit.
+
+- §5's ADR 0013 §§5-6 entry: *"Both absences were re-verified at
+  `1e7c63c7`"* — `git diff --name-only 1e7c63c7..ebdcb317 -- supabase/`
+  returns nothing, `supabase/migrations/` still holds **24** files, and every
+  row of the capacity table resolves on
+  `20260823100000_bound_free_tier_capacity.sql` unchanged (`:45`, `:71-73`,
+  `:91`, `:150`, `:178`, `:188`, each opened individually rather than
+  inferred from the empty diff). Updated to *"re-verified at `ebdcb317`"*,
+  with `1e7c63c7` pushed into the "and at" list of prior checkpoints beside
+  it, one more entry on a chain that already ran to fifteen.
+- §6's `ui-hud-messages.test.ts:270-276` entry: the file is outside this
+  window (absent from the 24-file list above), the loop is still at
+  `:273-275` inside the cited span, and this is the **thirteenth**
+  consecutive unmoved reading since the `52838020` move — one more than the
+  previous anchor's twelfth. Updated to *"re-verified at `ebdcb317`"*, with
+  `1e7c63c7` pushed into the "and at" list. The **four**-then-move-then-**SEVEN**
+  historical split describing the two runs either side of `52838020` is
+  untouched, because both of those labels describe fixed, already-closed
+  spans of history and this reading extends the open-ended tail after them,
+  not either closed run.
+
+**ADR 0101 WAS DRAFTED AND ACCEPTED INSIDE ONE WINDOW, AND NO ANCHOR EVER
+READ IT AS `PROPOSED`.** `docs/adr/0101-what-a-zoning-tint-must-deliver.md`
+does not exist at `1e7c63c7`; both `911ff581` (drafting it) and `43421b42`
+(the owner accepting option 1, the per-room alpha, the same day) are commits
+inside `bb1f8fc4`/#1063, one PR. So the document enters this file's tracked
+corpus already `Accepted` — there was no live anchor between its draft and
+its acceptance at which a `Proposed` reading of it could have been taken, and
+none of §§3-6's `Proposed`/`Accepted` bookkeeping ever carried it as
+outstanding.
+
+**A GAP BETWEEN AN ACCEPTED DECISION AND THE CODE OPENED AND CLOSED INSIDE
+THIS PASS'S OWN RUN, OUTSIDE THE ANCHORED WINDOW, AND IS RECORDED RATHER THAN
+SILENTLY SKIPPED.** At `ebdcb317` itself, ADR 0101 is `Accepted` and no file
+under `src/` implements the per-room alpha it mandates (`grep -rn
+"perRoomAlpha\|per-room alpha" src/` returns nothing on that tree) — the
+shape of gap §5 exists to record. It is not recorded as one here, because by
+the time this pass merged `main` to re-measure the budget spend, `2eee6836`/#1066
+had already landed `551c9804` (`fix(rendering): per-room over-art zoning
+alpha, capped at ZONING_TINT_ALPHA (ADR 0101, #1061)`) and `64c960c1`
+(moving ADR 0101's own code quotation to match). The gap opened at
+`bb1f8fc4` and closed at `551c9804`, both outside the `1e7c63c7..ebdcb317`
+window this pass anchors to, and both readable in the same `git fetch` this
+pass's own budget re-measurement performed — so nothing here is owed a §5
+entry for a gap that no longer exists on the tree a reader would check
+against.
+
+**§2 IS UNMOVED AT NINE ENTRIES.** No merge in this window touched it, and
+ADR 0101's acceptance needed no queue row for the same class of reason ADR
+0098's did not: by the time the acceptance and its implementation are both
+readable together (which, per the paragraph above, is true again by
+`2eee6836`), there is no gap between decision and code for a row to name.
+
+**THE FOUR COUNTING SITES, RE-DERIVED BY COUNTING THE ACTUAL `docs/adr/`
+TREE RATHER THAN BY ADJUSTING THE PREVIOUS ANCHOR'S NUMBERS.** The previous
+anchor's own count (above, already corrected in place by `343d876b` for
+0101's reservation before this pass ever opened): **40 `Proposed`, 52
+`Accepted`, 92 documents with a status**, 93 numbered rows, **Next free
+number: 0102**. This pass re-read every one of the 94 files on disk at
+`ebdcb317` by the established method — the first non-blank line under each
+document's own `## Status` heading or `- Status:` bullet, `0013` counted
+separately as always because its own status line is split (`Accepted for
+§§1-4; §§5-6 remain Proposed`) rather than one keyword. Result: **40
+`Proposed`, 53 `Accepted`, 93 documents with a status**, **94** numbered
+rows — only `Accepted` and the two row counts move, by exactly one each,
+because ADR 0101 is the sole document this window added to disk and it
+arrived already `Accepted` (established two paragraphs above). `Proposed`
+is unchanged at 40 because nothing that was `Proposed` flipped and nothing
+new arrived in that column. **Next free number: 0102** is unchanged and was
+already corrected in place by `343d876b`, ahead of this pass, for the reason
+its own kept blockquote in the previous anchor's account gives; this pass
+re-verified it rather than trusting the earlier fix, against
+`docs/adr/README.md`'s current line directly.
+
+Cross-checked against `docs/adr/README.md` directly: `grep -cE
+'^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40** against **54**
+`Accepted` — the blunt grep counts `0013`'s row as `Accepted` (its table cell
+opens with that word even though the ADR's own status line is split), which
+is exactly one more than this file's own 53, the same one-off gap this file
+has carried at every anchor that has run this cross-check.
+
+**THE OUTSIDE-WINDOW POPULATION WAS CHECKED BY NAME RATHER THAN RE-SCANNED
+FROM SCRATCH, FOR A THIRD CONSECUTIVE ANCHOR.** The previous anchor's eight
+genuinely-live outside-window citations — `room-capacity.ts`,
+`action-system.ts`, `release.ts`, `entity-generation-wrap.test.ts`,
+`challenges/verification.ts`, `adr-status-reference-contract.test.ts` and two
+`docs/research/` records — are checked against this window's 24-file list by
+name: **none of the eight is a member.** All eight are inherited unchanged
+for a third consecutive anchor.
+
+**THE `documentation-commit-citation-contract` FAILURE COUNT WAS MEASURED ON
+THE TREE THIS PASS WAS DISPATCHED AGAINST, BEFORE ANY EDIT, AND AFTER EVERY
+EDIT.** Two failures both times, over a shallow container's clone, naming
+pre-existing shas and `docs/research/` records this pass neither introduces
+nor touches; CI's `verify` job runs at `fetch-depth: 0` and carries neither.
+**Every sha this pass itself introduces was checked individually against
+`git cat-file -e`, listed above, and is not among the failures.**
+
+**No new self-citation defect was found this pass.** The one already on
+record — this file's own recommendation-1 discussion citing
+`docs/adr/STATUS-QUEUE.md:15532` for a sentence that has not lived there
+since well before `26434e8e` — was already converted to the verbatim-quote
+form the previous anchors' passes describe, and this pass's own insertions
+do not touch that quotation's source text, so it needed nothing further.
+
+**The weakest claim in this pass, named.** "Nothing in §§1-6 cites
+`.github/workflows/version.yml`, `AGENTS.md`, `CLAUDE.md`,
+`docs/AGENT_WORKFLOW.md`, `docs/ART_PIPELINE.md`, `docs/adr/0101-…md`,
+`package.json`, the two new rendered PNGs, `environment-sprites.ts`, the
+three `tests/browser/environment-art*` files, the two new
+`tests/foundation/` contract tests, `tooling/anchor-budget-spend.*` or
+`tooling/build-rendered-art-catalog.mjs` by rooted path or line number" rests
+on a basename grep read by eye over six live sections, the same shape of
+check every anchor since `c00b641` has named as its own weakest claim and
+carries the same limit: a citation phrased in a form the grep did not
+anticipate — a relative markdown link, a bare quoted symbol with no path at
+all — is the one shape of miss this method cannot rule out by construction.
 
 ## 3. What the anchor pass of 2026-09-07 opened at three clear of the limit: eight merges, seven citations moved on one file, two ADRs' own status text falsified by the window, and one self-citation found broken from long before it
 
@@ -16608,7 +16910,7 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `1e7c63c7` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **twelfth** consecutive unmoved reading, and the twelfth taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and at `4cc8a12f`, `0b8af9f8`, `4e489701`, `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then SEVEN unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256` (**this entry was re-verified at `4cc8a12f`, unmoved through every anchor from `c00b641` to there — and MOVED at `1e7c63c7`, the anchor after: #1050 adds twelve hunks above both spans, and both citations named one line above the `it(...)` block they quote even before this window, a pre-existing off-by-one this anchor's own pass repairs at the same time it re-aims them, to the `it(...)` lines themselves, now `:286` and `:294` — corrected in §3 above, in place, rather than here, because this sentence is this anchor's own dated history and not the live copy**);
+  `ui-hud-messages.test.ts:270-276` (moved from `:218-224` by #827 and from `:269-275` by #891, byte-identical throughout, re-verified at `ebdcb317` — where the file is again outside the window and the loop is still at `:273-275` inside the cited span, the **thirteenth** consecutive unmoved reading, and the thirteenth taken on a file the window did not touch, so it establishes that the file was left alone and nothing more — and at `1e7c63c7`, `4cc8a12f`, `0b8af9f8`, `4e489701`, `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955`, `1e9b0a6a` and `3f8c00b0` before that — **four consecutive anchors unmoved, then a move, then SEVEN unmoved again** (the fifth being `4c00eaba`, whose window is 48 files, the widest of the five and the second widest this chain has recorded; the fourth `0e614c71` at 40 and the third `2732e81e` at 10, and in all three the file is in no merge of the window at all — so `4c00eaba`'s 48 and `0e614c71`'s 40 are the two of the five unmoved readings that establish anything beyond the file having been left alone), and the move is one line, from `52838020` naming a new HUD module in the pinned inventory above the loop); `environment-art.test.ts:248` and `:256` (**this entry was re-verified at `4cc8a12f`, unmoved through every anchor from `c00b641` to there — and MOVED at `1e7c63c7`, the anchor after: #1050 adds twelve hunks above both spans, and both citations named one line above the `it(...)` block they quote even before this window, a pre-existing off-by-one this anchor's own pass repairs at the same time it re-aims them, to the `it(...)` lines themselves, now `:286` and `:294` — corrected in §3 above, in place, rather than here, because this sentence is this anchor's own dated history and not the live copy**);
   `adr-status-reference-contract.test.ts:147-150`, `:405`, `:427` and `:431`;
   `docs/adr/README.md:103-110` and `:158`; `docs/TRUSTED_SERVICES.md:604`,
   `:607` and `:610`; `docs/adr/0013-…md:15`, `:19-21` and `:151`;
