@@ -91,6 +91,45 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * the regression test for the gate and a fixture that built every room would
  * stop being ADR 0102's named one.
  *
+ * ## Whether that table is the fixture's story or its seed's
+ *
+ * Every figure above is one run of one seed, and the sibling file
+ * `incident-trigger-reachability.test.ts` had to withdraw two claims in
+ * exactly that shape -- an incident count that turned out to belong to its
+ * seed rather than to the change. So the same question was put to this
+ * fixture before it could be trusted, and the answer is the opposite one.
+ *
+ * Measured 2026-09-07 over **16 consecutive seeds from `0x1064`**, both
+ * columns run the same way as the table above (`558ece5f` unmodified against
+ * `558ece5f` plus this change alone, 20,000 ticks, this file's prison):
+ *
+ * | | before | after | seeds |
+ * | --- | --- | --- | --- |
+ * | riots opened | 3 | 3 | 16 of 16 |
+ * | riot severities, in order | 7, 10, 10 | 7, **9**, 10 | 16 of 16 |
+ * | unhoused: final mean need deficit | 1.0000 | 0.8425 | 16 of 16 |
+ * | housed: final mean need deficit | 0.5869 | 0.5850 | 16 of 16 |
+ * | sector `needsPressure` at tick 20,000 | 0.7935 | 0.7137 | 16 of 16 |
+ * | total incidents | 4 | 4 | 12 of 16 |
+ * | total incidents | 4 | **5** | `0x106c`, `0x1070` |
+ * | total incidents | 5 | 5 | `0x1069`, `0x106f` |
+ *
+ * **Every number this file's argument rests on is seed-invariant, and the one
+ * that is not is an assault.** The riot count, the severity that falls, both
+ * deficits and the needs pressure are identical on all sixteen; what moves is
+ * a single assault appearing on two seeds where it did not before -- the same
+ * seed-dependence the sibling file found, and nowhere in the claims below. So
+ * *the incident count does not move* is a property of this fixture rather than
+ * of `0x1064`, and the finding it supports -- that ADR 0102's Cost expectation
+ * about incident pressure is not borne out on the fixture the ADR named --
+ * survives the check that broke the other file's.
+ *
+ * This sweep is **recorded rather than asserted**, for the reason the next
+ * section gives about the table above it: sixteen extra 20,000-tick runs would
+ * pin balance figures this file is not the regression test for. The seed sweep
+ * that *is* asserted is in `incident-trigger-reachability.test.ts`, whose
+ * subject is which prisons riot.
+ *
  * ## What is asserted, and what is only recorded
  *
  * Every expectation below is a property of the mechanism -- a count that is

@@ -106,10 +106,24 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * prison that has not built those rooms. Measured on
  * `tests/integration/incident-trigger-reachability.test.ts`'s ladder, an
  * over-admitted prison with a canteen, a shower room and a yard, staffed to
- * requirement, now opens nothing at all where it opened ten assaults and three
- * riots. Nothing about this control changes either way -- the admission is
- * still accepted and the player is still told -- which is why the decision
- * above stands as written.
+ * requirement, stops rioting where it opened three riots and ten assaults.
+ *
+ * **That sentence read "now opens nothing at all where it opened ten assaults
+ * and three riots" until 2026-09-07, and it is corrected rather than
+ * overwritten because it is what three files beside this one repeated.** Two
+ * things were over-general in it, both re-measured on that ladder: the
+ * *assaults* did not stop -- over 40 consecutive seeds the same prison one
+ * guard short opens assaults on 19 of them, and the empty log was seed
+ * `0x0cc0`'s -- and the *riots* stopping is bounded by population rather than
+ * general. Sixteen prisoners on one guard opens none where the tree before
+ * ADR 0102 opens four; a seventeenth opens one, because
+ * `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8 and occupant 17 takes the sector's
+ * `required` from 2 to 3. What changed is the population an over-admitted
+ * prison rides out, not whether over-admission reaches the incident content.
+ *
+ * Nothing about this control changes either way -- the admission is still
+ * accepted and the player is still told -- which is why the decision above
+ * stands as written.
  *
  * It is folded away at `0`, which is every prison with a bed to spare, so it is
  * not furniture and a player who sees it has genuinely run out.

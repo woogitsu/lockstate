@@ -61,10 +61,24 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ticks: an over-admitted prison that has built **nothing** for a bedless
  * prisoner is unaffected -- byte-identical incidents before and after -- and
  * one that has built a canteen, a shower room and a yard and is staffed to
- * requirement now produces **no incidents at all**, where it produced ten
- * assaults and three riots. So over-admission is still a route into the
- * incident content, and it is now a route only through a prison that has not
- * built the rooms.
+ * requirement **stops rioting**, where it produced three riots and ten
+ * assaults.
+ *
+ * **The paragraph above said "now produces no incidents at all" and closed
+ * "so over-admission is ... now a route only through a prison that has not
+ * built the rooms", and both are withdrawn.** They are quoted here rather
+ * than deleted because three files beside this one carried the same sentence.
+ * Re-measured on the same ladder on 2026-09-07, against this tree with
+ * `src/simulation/prisoners/action-system.ts` alone reverted to `558ece5f`:
+ * the assaults do not stop (over 40 consecutive seeds that prison opens
+ * assaults on 19 of them; the empty log belonged to seed `0x0cc0`), and the
+ * riots stop only up to a population. Sixteen prisoners on one guard: 4 riots
+ * before, 0 after. Seventeen: 5 before, 1 after -- occupant 17 takes the
+ * sector's `required` from 2 to 3, `DEFAULT_SECTOR_PRISONERS_PER_GUARD` being
+ * 8. Thirty-two: 5 before and 5 after, no incident removed at all. So
+ * over-admission is still a route into the incident content through a prison
+ * that built the rooms too, once it has admitted more people than the rooms
+ * were built for.
  *
  * **What this file asserts is untouched by that**, which is why nothing below
  * moved: every expectation here is about the admission being accepted and the
