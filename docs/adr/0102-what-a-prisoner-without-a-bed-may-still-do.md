@@ -33,40 +33,90 @@
 
 ## Status
 
-**Proposed. Not self-approved.** `AGENTS.md` is explicit that the owner
-accepts an ADR and an agent never does; nothing below changes that. What the
-owner has ruled on is the *direction* — that an unhoused prisoner must be able
-to eat and wash while waiting for a bed — and that ruling is recorded here in
-their own words. The document that works the direction out into a boundary, a
-cost and a list of what stays excluded is this one, and it has not itself been
-put in front of them.
+**Accepted by the owner on 2026-09-07, with one addition.**
 
-**Asked directly** whether the total exclusion from action selection that a
-prisoner below intake stage `completed` receives today is a decision anyone
-took, or an accident of one line the owner should rule on, the owner answered:
+**This section read `Proposed. Not self-approved.` until then, and everything
+that paragraph and the two below it said is kept exactly as it stood** — per
+`docs/AGENT_WORKFLOW.md` §4, a reader should be able to see that this document
+was accepted *after* a boundary and a cost had actually been drawn, not
+before, and the record of the earlier, narrower ruling that only set the
+direction is what makes that visible:
 
-    ADR: nieulokowany ma móc jeść i się myć
+> **Proposed. Not self-approved.** `AGENTS.md` is explicit that the owner
+> accepts an ADR and an agent never does; nothing below changes that. What the
+> owner has ruled on is the *direction* — that an unhoused prisoner must be
+> able to eat and wash while waiting for a bed — and that ruling is recorded
+> here in their own words. The document that works the direction out into a
+> boundary, a cost and a list of what stays excluded is this one, and it has
+> not itself been put in front of them.
+>
+> **Asked directly** whether the total exclusion from action selection that a
+> prisoner below intake stage `completed` receives today is a decision anyone
+> took, or an accident of one line the owner should rule on, the owner
+> answered:
+>
+>     ADR: nieulokowany ma móc jeść i się myć
+>
+> ("ADR: an unhoused [prisoner] must be able to eat and wash.")
+>
+> **THE DISCLOSURE, BECAUSE A RULING MUST NOT BE MISTAKEN FOR A READING.** The
+> question was put as a summary of the finding — that
+> `src/simulation/prisoners/action-system.ts`'s per-entity loop excludes a
+> prisoner waiting for a bed from *every* action, not merely from sleeping,
+> and that no Accepted or Proposed decision anywhere in `docs/adr/` requires
+> that — and the owner answered it on that summary, not on a reading of this
+> document's Context, Decision or Cost sections below. This is the same
+> disclosure ADR 0075, 0076, 0097, 0098, 0099 and 0100 each carry, for the
+> same reason: so that nobody later mistakes a ruling given on a summary for
+> one given on a reading of the boundary this document actually draws.
+>
+> **What the ruling settled, and what it left to this document.** It settled
+> the *direction* — eating and washing must be reachable without a bed — and
+> nothing about *how far* that reaches, *which* intake stages gain it, *which*
+> of the six needs it touches beyond the two named, or what it costs the
+> incident content those prisoners drive today. Those were Decision, Cost and
+> Consequences below, and none of the three had been shown to the owner. The
+> status stayed `Proposed` until they had been — which is the acceptance
+> recorded above this blockquote.
 
-("ADR: an unhoused [prisoner] must be able to eat and wash.")
+**THE ACCEPTANCE ITSELF, AND WHAT IT WAS GIVEN AGAINST.** Asked to accept this
+document, against a summary of its boundary and its cost rather than against
+its own text — the same disclosure ADR 0075, 0076, 0097, 0098, 0099, 0100 and
+0101 each carry, for the same reason as the earlier ruling above — the owner
+answered:
 
-**THE DISCLOSURE, BECAUSE A RULING MUST NOT BE MISTAKEN FOR A READING.** The
-question was put as a summary of the finding — that
-`src/simulation/prisoners/action-system.ts`'s per-entity loop excludes a
-prisoner waiting for a bed from *every* action, not merely from sleeping, and
-that no Accepted or Proposed decision anywhere in `docs/adr/` requires that —
-and the owner answered it on that summary, not on a reading of this document's
-Context, Decision or Cost sections below. This is the same disclosure ADR
-0075, 0076, 0097, 0098, 0099 and 0100 each carry, for the same reason: so that
-nobody later mistakes a ruling given on a summary for one given on a reading
-of the boundary this document actually draws.
+    Akceptuję, ale dopisz toaletę jako otwarte pytanie
 
-**What the ruling settles, and what it leaves to this document.** It settles
-the *direction* — eating and washing must be reachable without a bed — and
-nothing about *how far* that reaches, *which* intake stages gain it, *which*
-of the six needs it touches beyond the two named, or what it costs the
-incident content those prisoners drive today. Those are Decision, Cost and
-Consequences below, and none of the three has been shown to the owner. The
-status stays `Proposed` until they have been.
+("I accept, but add the toilet as an open question.")
+
+**What the summary put in front of them, so a later reader can see the
+acceptance was not given blind.** Two consequences were named explicitly, and
+both are exactly true of the document as it stands:
+
+- **The `own-accommodation` boundary leaves bladder relief structurally
+  unreachable.** `action.use-toilet` is the only authored action anywhere in
+  the catalogue that restores `bladder`, and its target is
+  `own-accommodation` — so no reachable action serves that need for a
+  prisoner with no assigned cell, and Decision §2 does not propose one. The
+  owner's addition, worked out in Open Question 1 below, is exactly this gap.
+- **The cost is conditional, and riots do not simply stop.** Cost above's
+  need-deficit floor reaches roughly a third only in a covered sector with a
+  canteen, a shower and a recreation room all built; with only the named
+  fixture's own canteen, in an unguarded sector, the floor is roughly
+  five-sixths — still above `DEFAULT_ASSAULT_POLICY`'s threshold on need
+  alone. The owner accepted knowing a prison that has built nothing for a
+  bedless prisoner is unaffected by this document at all, and that even a
+  built one does not stop rioting outright.
+
+**What the acceptance obliges, and what it does not.** It obliges widening
+`ActionSystem`'s gate on the structural boundary Decision describes, and it
+obliges recording the toilet gap as a first-class open question — Open
+Question 1 below is that addition, not an afterthought. It does **not** decide
+`failed`'s inclusion (Decision §1's recommendation stays a recommendation),
+does not decide work (Decision §2's exclusion stands), does not decide
+`SanctionSystem`'s gate (untouched, per Decision §3), and authors no
+player-facing string. The implementing pass still owes the measurement named
+below before landing anything.
 
 ## Claim tiers used below
 
@@ -291,7 +341,10 @@ arithmetic rather than by anything drawn from randomness.
 
 ## Decision
 
-**Proposed, not approved.**
+**Accepted by the owner on 2026-09-07** — see the Status section, which
+records the ruling in the owner's own words and discloses that it was given
+against a summary rather than against this section's own text, and names the
+one addition the owner asked for as part of accepting it.
 
 ### 1. Which intake stages gain access to action selection
 
@@ -611,17 +664,48 @@ every number in Cost above should be read as a bound rather than a forecast.
 
 ## Open questions
 
-1. **Should `failed`-stage prisoners be included alongside
+1. **Bladder relief has no reachable action under this decision, and closing
+   that gap is not decided here — added at the owner's own request on
+   acceptance.** `action.use-toilet` is the only entry in `DEFAULT_ACTIONS`
+   whose `needEffectsPerTick` names `bladder` at all — confirmed by search,
+   one hit — and its target is `own-accommodation`:
+
+   `id: 'action.use-toilet', category: 'hygiene', target: { kind: 'own-accommodation' },`
+   (verbatim in `src/simulation/prisoners/actions.ts`)
+
+   `requiredObjectCapability: 'sanitation', needEffectsPerTick: { bladder: 5 }, minDurationTicks: 10,`
+   (verbatim in `src/simulation/prisoners/actions.ts`)
+
+   So no action this decision makes reachable, and no action anywhere in the
+   catalogue, restores `bladder` for a prisoner with no assigned cell — the
+   need floors at deficit 1 for the whole of `accommodation-assignment` (and
+   `failed`, if Decision §1's recommendation is taken), exactly as it does
+   today, and Decision §2 already says so plainly rather than in passing.
+   **This is a known, unresolved problem, not a side effect for a later pass
+   to rediscover.** Closing it is not a boundary question this document can
+   answer by redrawing the `own-accommodation` line: it would need **a
+   non-cell sanitation action that does not exist in the catalogue today** —
+   new content (a room-catalogue-targeted fixture, or a standalone facility,
+   with its own object capability and its own footprint rules) — which is new
+   content and its own decision, not a corollary of the structural boundary
+   Decision §2 already draws. This document deliberately does not take it:
+   authoring a fixture and an action to serve one need is a different scope
+   than deciding which existing actions an unhoused prisoner may already
+   reach, and conflating the two would have made this document's own
+   Decision harder to implement cleanly for no gain to the direction the
+   owner ruled on. The owner accepted this document with the gap named
+   rather than closed, and asked for exactly this entry.
+2. **Should `failed`-stage prisoners be included alongside
    `accommodation-assignment`?** Decision §1 recommends it and names why; the
    owner's own words describe a narrower case than the codebase's own
    `SENTENCE_BEARING_STAGES` grouping does.
-2. **Should work be opened to an unhoused prisoner in a later document?**
+3. **Should work be opened to an unhoused prisoner in a later document?**
    Decision §2 excludes it and names the open questions (pay, job
    persistence, regime scheduling) a future ADR would have to answer.
-3. **Should `SanctionSystem`'s gate widen the same way this one does?**
+4. **Should `SanctionSystem`'s gate widen the same way this one does?**
    Context §4 names the gap — a sanction can be written against an unhoused
    prisoner and never served — without arguing either side of closing it.
-4. **What does a second amenity configuration (shower and yard added to the
+5. **What does a second amenity configuration (shower and yard added to the
    named fixture) actually measure?** Named in "The measurement the
    implementation will owe" as recommended, not owed, and would settle which
    row of the Cost table describes a real prison rather than the theoretical
