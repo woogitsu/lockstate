@@ -1034,13 +1034,20 @@ export class ConstructionSystem implements SystemRegistration {
    * preview has no mutated `order.state` to dispatch on and therefore cannot
    * be folded into `refundSurplusOf`'s existing dispatch the way this method's
    * one sibling call is. What is **not** restated is any arithmetic: every
-   * money figure below is computed by `sink.previewSurplusRefundMinorUnits` or
-   * `sink.previewAllocatedRefundMinorUnits`, the exact non-mutating twins of
-   * the two calls `cancelOrder` itself makes
-   * (`sink.refundSurplusDeliveries`, `sink.refundAllocatedMaterials`) --
-   * sharing their selection and pricing rules with those methods by
-   * construction, not by this method's own judgement about what they would
-   * answer.
+   * money figure below is computed by one of the sink's three preview methods
+   * -- `previewSurplusRefundMinorUnits`, `previewSurplusStockRefundMinorUnits`
+   * and `previewAllocatedRefundMinorUnits` -- the exact non-mutating twins of
+   * the three calls `cancelOrder` itself makes (`refundSurplusDeliveries`,
+   * `refundSurplusStock`, `refundAllocatedMaterials`), sharing their
+   * selection, clamping and pricing rules with those methods by construction
+   * and not by this method's own judgement about what they would answer.
+   *
+   * **The stock twin was the third and arrived with the sell-back of #717.**
+   * Until the owner ruled on 2026-09-02 a cancellation in the ten-tick window
+   * between a delivery landing and its order allocating paid nothing, so a row
+   * reading `0` there was right; it is not any more, and
+   * `tests/integration/construction-queue-row-pays-what-it-shows.test.ts` is
+   * the assertion that says so against the treasury itself.
    *
    * `demandedQuantityOf(itemId, id)` is the one place this diverges from
    * `refundSurplusOf`'s own call to it, and it has to: `refundSurplusOf` runs
