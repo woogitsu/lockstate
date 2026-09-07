@@ -12312,20 +12312,10 @@ repair.
 **THE FOUR COUNTING SITES, RE-DERIVED RATHER THAN CARRIED FORWARD, BECAUSE
 ADR 0098'S FLIP CHANGES A COLUMN.** The previous anchor's own count (above):
 **41 `Proposed`, 51 `Accepted`, 92 documents with a status**, 93 numbered rows,
-**Next free number: 0102**. No ADR was added or removed from disk in this
+**Next free number: 0101**. No ADR was added or removed from disk in this
 window — #1056 changes a status, not a row count — so only the `Proposed`/
 `Accepted` split moves: **40 `Proposed`, 52 `Accepted`, 92 documents with a
-status**, 93 numbered rows unchanged.
-
-> **THIS SITE READ 0101 TWICE WHEN THE ANCHOR WAS TAKEN, AND BOTH READINGS WERE
-> CORRECT THEN.** The branch drafting ADR 0101 adds its row to
-> `docs/adr/README.md`, which is what reserves a number, so the index moved to
-> 0102 and this restatement moved with it — updated rather than marked-and-kept
-> because `adr-status-queue-anchor-contract` reads a restatement as a LIVE claim
-> by position, and a kept-but-stale copy here is the exact mutation that gate
-> exists to catch. The row count and the `Proposed`/`Accepted` split above are
-> untouched: an ADR drafted as `Proposed` adds one row and one `Proposed`, and
-> those two figures are re-derived by the branch that lands it, not here.
+status**, 93 numbered rows unchanged, **Next free number: 0101** unchanged.
 Cross-checked against `docs/adr/README.md` directly: `grep -cE
 '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40** against **52**
 `Accepted`. §2 is unmoved at nine entries — no merge in this window touched
@@ -12480,10 +12470,9 @@ neither is outstanding.
 **The four counting sites, re-derived rather than restated.** `grep -cE
 '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **41** against **51**
 `Accepted`, for **92** documents carrying a status; the index carries 93
-numbered rows, 92 linked plus the unlinked file-less `0018`. The next free
-number **that pass recorded was one past 0100 on disk**, matching
-`docs/adr/README.md` as it then stood — described rather than restated, because
-this gate reads a restatement as live by position and the index has since moved.
+numbered rows, 92 linked plus the unlinked file-less `0018`. **Next free
+number: 0101**, which is one past 0100 on disk and what `docs/adr/README.md`
+states.
 
 **Two anchors in one day is the thing to notice, not the numbers.** This file
 was re-anchored at `0b8af9f8` (v0.0.511) this morning and again here at
@@ -12575,11 +12564,10 @@ cut from `93c11bf8` (v0.0.517), swept 216 remote heads, found
 `0099-how-the-renderer-learns-the-world-changed.md` already committed on
 `adr/how-the-renderer-learns-geometry-changed` with no pull request, and took
 **0100** rather than colliding with the held number. Both rows are on disk now,
-ADR 0099's by merge and ADR 0100's by this branch, so the next free number that
-branch left behind was **one past 0100** — which `docs/adr/README.md` stated at
-the time, and which `tests/foundation/adr-numbering-contract.test.ts` derives as
-one past the highest number on disk. Described rather than restated, for the
-reason the entry above gives.
+ADR 0099's by merge and ADR 0100's by this branch, so **Next free number: 0101**
+— which `docs/adr/README.md` states, and which
+`tests/foundation/adr-numbering-contract.test.ts` derives as one past the
+highest number on disk.
 
 **What that branch predicted and what actually happened differ in the reason
 rather than the number** (`docs/AGENT_WORKFLOW.md` §4): it recorded the line as
