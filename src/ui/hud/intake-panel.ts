@@ -99,6 +99,18 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * closing it would close the game's most interesting content. The player is
  * told; the button still works.
  *
+ * **That sentence is kept and is now conditional**
+ * ([ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+ * accepted 2026-09-07): a prisoner waiting for a bed may now eat, wash and
+ * take recreation, so the term pushes needs pressure past the line only in a
+ * prison that has not built those rooms. Measured on
+ * `tests/integration/incident-trigger-reachability.test.ts`'s ladder, an
+ * over-admitted prison with a canteen, a shower room and a yard, staffed to
+ * requirement, now opens nothing at all where it opened ten assaults and three
+ * riots. Nothing about this control changes either way -- the admission is
+ * still accepted and the player is still told -- which is why the decision
+ * above stands as written.
+ *
  * It is folded away at `0`, which is every prison with a bed to spare, so it is
  * not furniture and a player who sees it has genuinely run out.
  *

@@ -357,14 +357,24 @@ describe('a prison outgrows its staffing, and the coverage report says so before
    *
    * The case above is the one #442 and ADR 0048 left the prison in: hire the
    * second guard and the readout goes quiet, with half the population standing
-   * on the arrival tile with nowhere to sleep, eat or wash. Their six needs
-   * decay unopposed to a deficit near 0.95, and the sector *mean* -- eight of
-   * them against eight who are perfectly well housed -- comes to 0.5908, under
-   * the line. That is the mean hiding the individual, and it is the reading
-   * `flashpoint.ts` exists to add.
+   * on the arrival tile with nowhere to sleep, eat or wash. Their needs decay
+   * towards the floor, and the sector *mean* -- eight of them against eight who
+   * hold a bed and a toilet -- stays under the line. That is the mean hiding
+   * the individual, and it is the reading `flashpoint.ts` exists to add.
    *
    * This is the strongest single case in the file for ADR 0061, because it
    * needs no contraband at all: being unhoused is enough on its own.
+   *
+   * **Two figures in this paragraph were re-measured for ADR 0102 and one
+   * word of it was wrong before that.** The sector mean read **0.5908** while
+   * `OVERCROWDED` still had amenities and reads **0.6456** now that it does
+   * not -- both under the 0.65 line, which is the only thing the case asserts
+   * about it. And "their six needs decay unopposed" was never quite true with
+   * two guards on post: `SafetyCoverageSystem` provisions `safety` for every
+   * occupant a sector's coverage covers and asks nothing about housing, so
+   * `safety` was recovering for these eight all along. The claim is stated as
+   * what is measured instead, and the deficit the assault actually carried is
+   * asserted below rather than described here.
    */
   it('and the prisoners it never housed produce assaults the sector score cannot see', () => {
     const runtime = run({ ...OVERCROWDED, guards: 2 });

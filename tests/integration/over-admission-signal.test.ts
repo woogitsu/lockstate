@@ -51,6 +51,27 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * route. `records no refusal` below pins the acceptance rather than leaving it
  * to be quietly changed by a later reading of the same issue.
  *
+ * **The paragraph above is left as it stands, and the sentence in the middle
+ * of it is now conditional rather than general.**
+ * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
+ * -- accepted by the owner on 2026-09-07 -- lets a prisoner waiting for a bed
+ * eat, wash and take recreation, and its own Consequences section asks
+ * whoever revisits this file to re-read exactly this reasoning. Re-read, and
+ * measured on `incident-trigger-reachability.test.ts`'s own ladder over 30,000
+ * ticks: an over-admitted prison that has built **nothing** for a bedless
+ * prisoner is unaffected -- byte-identical incidents before and after -- and
+ * one that has built a canteen, a shower room and a yard and is staffed to
+ * requirement now produces **no incidents at all**, where it produced ten
+ * assaults and three riots. So over-admission is still a route into the
+ * incident content, and it is now a route only through a prison that has not
+ * built the rooms.
+ *
+ * **What this file asserts is untouched by that**, which is why nothing below
+ * moved: every expectation here is about the admission being accepted and the
+ * panel saying so, and none of them is about an incident. The decision the
+ * paragraph records is the owner's and the change to its premise is a balance
+ * question for them, not a sentence for this file to settle.
+ *
  * ## The assertion that would have caught the defect, and the one that would not
  *
  * "Eleven are at Cell Assignment" was already true before this change, and the
