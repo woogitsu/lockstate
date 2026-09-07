@@ -1688,8 +1688,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *
    * The corner is a flex column with `justify-content: flex-end`, so this row
    * sits directly above the minimap frame and the pair stays anchored to the
-   * bottom-left. `.hud__corner > *` already opts every child back into
-   * `pointer-events`, so this needs no rule of its own for that.
+   * bottom-left. **Its two buttons need `pointer-events: auto` of their own**
+   * (`hud.css`, `.hud__corner .hud-zoom__out, .hud__corner .hud-zoom__in`) --
+   * `.hud__corner` stopped opting whole panels back in wholesale on issue
+   * #1054, because the pill's own background and its legend carry no handler
+   * and were swallowing presses meant for the world underneath.
    *
    * `createIconButton` rather than hand-built buttons: it gives each one the
    * `--tap-target` box `app-shell.spec.ts` measures at 1280x800 and 375x812,
