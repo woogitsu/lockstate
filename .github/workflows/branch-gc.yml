@@ -139,7 +139,26 @@ jobs:
     #
     # tests/foundation/ci-configuration-contract.test.ts carries the same
     # argument against version.yml's `runs-on`, with the measurement.
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    #
+    # THE LABEL THIS PARAGRAPH DESCRIBES CHANGED ON 2026-09-07, AND ONE
+    # SENTENCE ABOVE WENT FALSE OF THE NEW ONE. "Every run that has ever
+    # succeeded ran on it" was true of `[self-hosted, Linux, X64, wsl2,
+    # woogitsu]` and is NOT true of the list below, which at the time of
+    # writing has no successful run behind it at all -- the owner retired the
+    # WSL2 pool `woogitsu-wsl-DOM-NEW-01` through `-04` and moved every
+    # self-hosted job to `woogitsu-linux-01` through `-10`. The paragraph is
+    # kept rather than corrected because the argument it makes is against
+    # `ubuntu-latest`, and THAT half is untouched and still measured: the two
+    # four-second no-step-no-log failures happened and are still the reason a
+    # hosted runner is not an option here.
+    #
+    # `i5-10400f` and `nvidia-gtx1070` are what make the move real rather than
+    # nominal. The retired machines carry `woogitsu` too, so a list without
+    # those two stays satisfiable by both pools and the job goes to whichever
+    # is idle first. The fleet-wide gate is the self-hosted runner pool
+    # contract at the foot of
+    # tests/foundation/ci-configuration-contract.test.ts.
+    runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]
     timeout-minutes: 30
 
     # NO CHECKOUT, AND NO ACTIONS AT ALL. That is a decision, not an omission,

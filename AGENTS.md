@@ -215,6 +215,65 @@ outward-facing or unrevertable, which is the whole reason:
    **`public/_headers`, `wrangler.jsonc`, `deploy.yml` and both dashboards are
    untouched by this**, and the sentence above about dashboards not being
    readable from here still holds for all of them.
+
+   **THE SENTENCE DIRECTLY ABOVE STOPPED BEING TRUE OF `deploy.yml` ON
+   2026-09-07, AND IT IS KEPT RATHER THAN CORRECTED BECAUSE IT IS THE STATE
+   THAT WAS RELEASED FROM.** A third release inside this reservation landed
+   that day, and it is the widest of the three: it is the first to reach
+   `deploy.yml`, `branch-gc.yml`, `delete-branches.yml` and
+   `migrate-database.yml` at all. **It is also the first release in this
+   document given as a direct instruction rather than as an answer to options
+   an agent drafted**, which is why it carries no "against a summary"
+   disclosure — there was no summary; the owner wrote the requirement, named
+   the machines and specified the label list themselves.
+
+   The owner's own words, in the original:
+
+   > Zaktualizuj konfigurację GitHub Actions w tym repozytorium tak, aby żaden
+   > workflow nie używał starych runnerów […] Wszystkie joby, które mają
+   > działać na self-hosted, skieruj wyłącznie na nową pulę
+   > `woogitsu-linux-01`–`woogitsu-linux-10`.
+
+   ("Update the GitHub Actions configuration in this repository so that no
+   workflow uses the old runners […] Point every job that is to run
+   self-hosted exclusively at the new pool `woogitsu-linux-01`–
+   `woogitsu-linux-10`.") They also fixed the mechanism and one prohibition
+   themselves:
+
+   > w `runs-on` nie wybieraj runnera po jego nazwie. Użyj wspólnego zestawu
+   > etykiet, który występuje tylko na nowych runnerach
+
+   > Nie zamieniaj self-hosted runnerów na `ubuntu-latest`.
+
+   ("in `runs-on` do not select a runner by its name. Use the shared label set
+   that occurs only on the new runners" / "Do not replace self-hosted runners
+   with `ubuntu-latest`.")
+
+   **What the release covers, exactly.** The `runs-on:` key of every job in
+   every workflow under `.github/workflows/` — ten keys across six files —
+   moved from `[self-hosted, Linux, X64, wsl2, woogitsu]` to
+   `[self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]`, plus the
+   comments that described the retired pool and the two contract assertions
+   that pinned the old string. **Nothing else in any of those files moved**:
+   no step, no `needs:`, no matrix, no `permissions:` block, no `env:`, no
+   trigger, no concurrency group. `public/_headers`, `wrangler.jsonc` and both
+   dashboards are untouched, and the dashboard sentence above still holds for
+   them.
+
+   **WHAT COULD NOT BE VERIFIED FROM HERE, STATED BECAUSE IT IS THE RISK.**
+   Half the owner's premise was confirmed against the Actions API rather than
+   taken on trust: jobs 101836828950, 101837005877 and 101837054747, all run
+   on 2026-09-07, report runner names `woogitsu-wsl-DOM-NEW-02`, `-03` and
+   `-04` carrying exactly `["self-hosted","Linux","X64","wsl2","woogitsu"]` —
+   so the old list really was satisfiable by the retired machines, and
+   `i5-10400f` plus `nvidia-gtx1070` really are what makes the new one
+   unsatisfiable by them. **The other half could not be checked from this
+   repository at all**: nothing here can enumerate the organisation's
+   registered runners, so that `woogitsu-linux-01` through `-10` exist, are
+   online, and carry those two labels rests entirely on the owner's statement.
+   If any of that is wrong the failure mode is not a red run — it is every job
+   queued indefinitely with no error to read, which is why the contract that
+   gates this refuses `wsl2` and the new labels appearing together.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
