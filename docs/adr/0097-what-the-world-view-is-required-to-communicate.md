@@ -166,7 +166,27 @@ paints from three inputs and no more:
    of two alphas depending only on whether art is under it:
 
    `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;`
+   (that line stood in `src/rendering/phaser/tile-layer.ts` on the commit this
+   document was cut from; it does not any more, which is the point.)
+
+   **Amended 2026-09-07, issue #1061 — kept above rather than rewritten, per
+   `docs/AGENT_WORKFLOW.md` §4, because a reader should see what the line was
+   before the amendment and not just what it is now.** "One of two alphas" is
+   no longer the whole story: a Holding Cell drew its name but no tint, traced
+   to `env.floor.institutional`'s own strong blue-over-red lean cancelling that
+   specific orange at `ZONING_TINT_ALPHA_OVER_ART`'s flat 0.14 (measured;
+   `docs/adr/0098-what-says-which-room-this-is.md` §2's amendment carries the
+   numbers). The over-art alpha is now per room —
+
+   `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : zoningTintAlphaOverArt(sample.zoning);`
    (verbatim in `src/rendering/phaser/tile-layer.ts`)
+
+   — `ZONING_TINT_ALPHA_OVER_ART` itself for every room whose blend already
+   read as coloured, raised only for the ones whose hue washed out against
+   this floor art. This document's own claim in item 2 (`floors[localY...`
+   before this amendment) is the case that is now sometimes false, and the
+   amendment to `docs/adr/0098-what-says-which-room-this-is.md` §2 is where
+   the consequence for its Context §2 pairwise table is priced.
 
    and resolved, at the time this was written, through a table keyed by the
    room's **category**:
