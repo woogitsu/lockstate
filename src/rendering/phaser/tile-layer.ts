@@ -13,11 +13,11 @@ import {
   UNOWNED_SHADE_ALPHA,
   UNOWNED_SHADE_COLOR,
   ZONING_TINT_ALPHA,
-  ZONING_TINT_ALPHA_OVER_ART,
   edgeAppearance,
   structureAppearance,
   terrainAppearance,
   zoningTint,
+  zoningTintAlphaOverArt,
   type StructureAppearance,
 } from '../world/appearance';
 import { edgeArt, objectSprite, zonedFloorSprite } from '../world/environment-art';
@@ -360,7 +360,15 @@ export class TileLayer {
           // Weaker over art. The tint is what says *which* room this is, and
           // that has to survive; at its full strength it also washes the floor
           // out until the texture underneath stops reading as a floor.
-          const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;
+          // `zoningTintAlphaOverArt` is `ZONING_TINT_ALPHA_OVER_ART` itself for
+          // every room whose blend already reads as coloured -- it only raises
+          // the alpha for the rooms whose hue would otherwise wash out against
+          // this floor art to less than the untinted floor's own spread
+          // (issue #1061).
+          const alpha =
+            floors[localY * size + localX] === undefined
+              ? ZONING_TINT_ALPHA
+              : zoningTintAlphaOverArt(sample.zoning);
           graphics.fillStyle(tint, alpha);
           graphics.fillRect(localX * TILE_SIZE_PX, localY * TILE_SIZE_PX, TILE_SIZE_PX, TILE_SIZE_PX);
         }

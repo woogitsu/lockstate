@@ -150,12 +150,121 @@ export const ZONING_TINT_ALPHA = 0.28;
  */
 export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
 
+/**
+ * `env.floor.institutional`'s own average colour, measured directly rather
+ * than assumed -- issue #1061 (Holding Cell drew its name but no tint) traced
+ * to exactly this number being absent from ADR 0098's analysis.
+ *
+ * ADR 0098 Context §2 measured this texture's per-tile *noise* (σ 9.92 / 8.40
+ * / 6.65 on R/G/B, luminance p5-p95 of 25.4) to show the signal a 0.14 wash
+ * competes against, and its "the base cancels" identity is exact for the
+ * *difference between two tints* at the same alpha -- but a difference
+ * cancelling the base is not the same claim as the base being neutral, and
+ * nothing in that ADR asked what the base's own hue does to one tint alone.
+ * It has one, and a strong one: MEASURED, decoding
+ * `public/game-content/source-art/floor.linoleum.institutional.788e81d4e081.png`
+ * and box-averaging the exact crop `env.floor.institutional` names --
+ * `sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }`
+ * (verbatim in `src/rendering/assets/environment-sprites.ts`) -- over every
+ * pixel: `rgb(116.4, 128.9, 142.9)`. Blue leads red by 26.5 units before any
+ * tint is painted at all.
+ */
+const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [116.396, 128.916, 142.908];
+
+/** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
+function channelSpread(rgb: readonly [number, number, number]): number {
+  return Math.max(rgb[0], rgb[1], rgb[2]) - Math.min(rgb[0], rgb[1], rgb[2]);
+}
+
+function blendOverInstitutionalFloor(tint: number, alpha: number): readonly [number, number, number] {
+  const r = (tint >> 16) & 0xff;
+  const g = (tint >> 8) & 0xff;
+  const b = tint & 0xff;
+  return [
+    INSTITUTIONAL_FLOOR_ART_BASE[0] * (1 - alpha) + r * alpha,
+    INSTITUTIONAL_FLOOR_ART_BASE[1] * (1 - alpha) + g * alpha,
+    INSTITUTIONAL_FLOOR_ART_BASE[2] * (1 - alpha) + b * alpha,
+  ];
+}
+
+/**
+ * The untinted floor's own spread (~26.5). A tinted tile reading *less*
+ * distinctly coloured than an untinted one is the actual defect #1061 found
+ * by playing -- not "subtle" (ADR 0098 decision 3 already accepted subtle;
+ * the room *name* is what carries legibility, per that ADR's own ruling 2)
+ * but backwards: eight of eighteen rooms' 0.14-alpha blend measured *below*
+ * this floor, two of them (`room.holding-cell`, `room.solitary-cell`) below
+ * 6 -- effectively no tint at all, because those two hues sit close to this
+ * texture's own complement and a partial blend of near-complementary colours
+ * desaturates toward grey rather than shifting toward either hue.
+ */
+const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BASE);
+
+/**
+ * Ceiling on the per-room search below, so the hue that fights this floor
+ * hardest still stops well short of `ZONING_TINT_ALPHA`'s no-art wash --
+ * this is a floor-legibility fix, not a licence to repaint every room's
+ * institutional floor as a coloured rectangle (the exact cost
+ * `ZONING_TINT_ALPHA_OVER_ART`'s own docblock says 0.14 was chosen to avoid).
+ */
+const ZONING_TINT_ALPHA_OVER_ART_CEILING = 0.4;
+
+/**
+ * The smallest alpha at or above `ZONING_TINT_ALPHA_OVER_ART` at which this
+ * tint's blend over the institutional floor reads at least as coloured as
+ * the untinted floor itself -- or the ceiling, if even that is not enough.
+ * Monotonic search: increasing alpha only pulls the blend further from the
+ * base and closer to the tint, so `channelSpread` rises (or the room needed
+ * no help at all, and this returns the default unchanged).
+ */
+function minimumLegibleAlphaOverArt(tint: number): number {
+  if (channelSpread(blendOverInstitutionalFloor(tint, ZONING_TINT_ALPHA_OVER_ART)) >= INSTITUTIONAL_FLOOR_ART_SPREAD) {
+    return ZONING_TINT_ALPHA_OVER_ART;
+  }
+  let low = ZONING_TINT_ALPHA_OVER_ART;
+  let high = ZONING_TINT_ALPHA_OVER_ART_CEILING;
+  for (let step = 0; step < 40; step += 1) {
+    const mid = (low + high) / 2;
+    if (channelSpread(blendOverInstitutionalFloor(tint, mid)) < INSTITUTIONAL_FLOOR_ART_SPREAD) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+  return high;
+}
+
+/**
+ * Per-room override of `ZONING_TINT_ALPHA_OVER_ART`, computed once from the
+ * table above rather than hand-tuned -- adding a room to
+ * `ZONING_TINT_BY_ROOM_ID` costs nothing extra here, correct or not, the same
+ * way `zoningTint` itself needs no per-room maintenance.
+ */
+const ZONING_TINT_ALPHA_OVER_ART_BY_ROOM_ID: ReadonlyMap<string, number> = new Map(
+  Object.entries(ZONING_TINT_BY_ROOM_ID).map(([id, tint]) => [id, minimumLegibleAlphaOverArt(tint)]),
+);
+
 /** Undefined when the tile is unzoned or the zoning id is not a known room. */
 export function zoningTint(zoningNumericId: number): number | undefined {
   if (zoningNumericId === 0) return undefined;
   const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
   if (room === undefined) return undefined;
   return ZONING_TINT_BY_ROOM_ID[room.id];
+}
+
+/**
+ * The alpha `TileLayer` should paint this zoning's tint at, over floor art
+ * specifically -- `ZONING_TINT_ALPHA_OVER_ART` for every room whose blend
+ * already clears the untinted floor's own spread, and the room's own
+ * computed floor above that for the ones which do not (issue #1061).
+ * Falls back to the flat constant for an unzoned or unknown tile, matching
+ * `zoningTint`'s own fallback, though a caller only reaches here after
+ * `zoningTint` has already returned a defined colour.
+ */
+export function zoningTintAlphaOverArt(zoningNumericId: number): number {
+  const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+  if (room === undefined) return ZONING_TINT_ALPHA_OVER_ART;
+  return ZONING_TINT_ALPHA_OVER_ART_BY_ROOM_ID.get(room.id) ?? ZONING_TINT_ALPHA_OVER_ART;
 }
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */

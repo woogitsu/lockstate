@@ -265,7 +265,8 @@ decides whether the issue's cheapest option is a fix or a rearrangement.
 floor art at the same alpha —
 
 `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;`
-(verbatim in `src/rendering/phaser/tile-layer.ts`)
+(that line stood in `src/rendering/phaser/tile-layer.ts` on the commit this
+document was cut from; it does not any more, which is the point.)
 
 — so the base cancels and the difference between two tinted tiles is exactly
 `α × |t₁ − t₂|` per channel, with
@@ -273,6 +274,41 @@ floor art at the same alpha —
 (verbatim in `src/rendering/world/appearance.ts`). That is the identity #1021
 used to reproduce #1018's 5.8 from the constants, and everything below is the
 same identity applied to all 55 pairs instead of one.
+
+**Amended 2026-09-07, issue #1061 — kept above rather than rewritten, per
+`docs/AGENT_WORKFLOW.md` §4.** "The same alpha" stopped being true of every
+pair the day this line changed: a Holding Cell drew its name on the map but no
+tint, and reading rather than guessing found why. This "base cancels" identity
+is exact for the *difference between two tints at one shared alpha* — that half
+still holds, and nothing below needed the base's own colour to be neutral to
+be true. What it does not establish, and what nobody had asked, is whether one
+tint alone, blended with a base that is **not** neutral, still reads as
+tinted at all against the untinted floor. MEASURED, decoding
+`floor.linoleum.institutional.788e81d4e081.png`'s exact
+`env.floor.institutional` crop (`sourceRectPx` in
+`src/rendering/assets/environment-sprites.ts`) and box-averaging every pixel:
+`rgb(116.4, 128.9, 142.9)` — blue leads red by 26.5 units, before any tint. Two
+of the eighteen room-id tints option A below adopted (`room.holding-cell`
+`0xd17b4f`, `room.solitary-cell` `0xd1a64f`) sit close enough to this base's own
+complement that a 0.14 blend does not shift the hue toward orange; it
+desaturates the base toward grey, landing at a channel spread of 5.9 and 4.7 —
+*less* colourful than the untinted floor's own 26.5. Six more of the eighteen
+(`room.reception`, `room.cell`, `room.kitchen`, `room.utility-room`,
+`room.canteen`, `room.garbage-room`) fall short of that same 26.5 by smaller
+margins. **The fix is per room, not a new flat alpha**: `ZONING_TINT_ALPHA_OVER_ART`
+stays 0.14 for the ten rooms whose blend already cleared 26.5, and rises —
+only as far as the smallest value that clears it, capped well short of
+`ZONING_TINT_ALPHA`'s no-art 0.28 — for the eight that did not
+(`zoningTintAlphaOverArt`, `src/rendering/world/appearance.ts`; gated by
+`tests/unit/appearance-zoning-tint-legibility.test.ts`). **The consequence for
+the table two paragraphs below:** its "effective, after 0.14" column is exact
+for the eleven *category* tints this section was measured against, and for
+today's eighteen room-id tints wherever *neither* room in a pair is one of the
+eight — a pair naming one of the eight now composites at that room's own
+raised alpha instead, which was not this table's premise and is not
+recomputed here. The 20°-spacing conclusion two sections below is untouched:
+it is about hue separation before any alpha is applied, and the amendment
+changes an alpha, not a hue.
 
 **MEASURED, over all 55 pairs of the eleven shipped tints:**
 
