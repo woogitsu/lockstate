@@ -150,6 +150,155 @@ export const ZONING_TINT_ALPHA = 0.28;
  */
 export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
 
+/**
+ * `env.floor.institutional`'s own mean colour under the exact crop the tile
+ * painter draws -- `sourceRectPx: { x: 732, y: 711, width: 304, height: 304 }`
+ * (verbatim in `src/rendering/assets/environment-sprites.ts`), box-averaged
+ * over every pixel in that crop. MEASURED, by a decoder written for this
+ * table (`git log`, the commit that added it, carries the run): `rgb(116.396,
+ * 128.916, 142.908)`.
+ *
+ * **Why this crop, and not the whole 1448x1086 sheet.** ADR 0101 Context §1
+ * decoded both and named the two available samples: the whole sheet's opaque
+ * average, `rgb(117.6, 128.6, 140.7)`, and this crop, `rgb(116.4, 128.9,
+ * 142.9)`. They agree in direction and are close in magnitude, but this crop
+ * is the one used here, for the same two reasons ADR 0101 gives: it is the
+ * sample that actually sits under a rendered tile (`zonedFloorSprite` always
+ * resolves `env.floor.institutional`, and that sprite's own `sourceRectPx` is
+ * this crop, not the sheet), and it is the sample three independently written
+ * decoders -- the issue's, ADR 0101's, and this session's -- agree on most
+ * tightly.
+ *
+ * **This is a measured constant, not a computation, and that is a real
+ * foreclosure rather than a convenience.** `appearance.ts` is a data module
+ * (this file's own header: "content definitions belong in data modules, not
+ * hard-coded condition chains") and must not gain a PNG decoder -- decoding
+ * art is the loader's job, not a data table's. So if
+ * `floor.linoleum.institutional.*.png` is ever replaced, or `env.floor
+ * .institutional`'s `sourceRectPx` ever moves, **every per-room alpha derived
+ * below goes stale silently**: nothing here would notice, the numbers below
+ * would still compile and still look like considered choices, and they would
+ * quietly be aimed at a floor that no longer exists. Production code does not
+ * catch that -- there is nothing at runtime that could, short of shipping a
+ * decoder. The one thing that does catch it is
+ * `tests/unit/appearance-zoning-tint-legibility.test.ts`'s own gate, which
+ * decodes the real PNG at test time (skipping, visibly, when Git LFS content
+ * is not materialised) and fails loudly the moment this constant stops
+ * matching the art on disk.
+ */
+const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [116.396, 128.916, 142.908];
+
+/** `max(r,g,b) - min(r,g,b)`: how "coloured" a triple reads, independent of which channel leads. */
+function channelSpread(rgb: readonly [number, number, number]): number {
+  return Math.max(rgb[0], rgb[1], rgb[2]) - Math.min(rgb[0], rgb[1], rgb[2]);
+}
+
+function blendOverInstitutionalFloor(tint: number, alpha: number): readonly [number, number, number] {
+  const r = (tint >> 16) & 0xff;
+  const g = (tint >> 8) & 0xff;
+  const b = tint & 0xff;
+  return [
+    INSTITUTIONAL_FLOOR_ART_BASE[0] * (1 - alpha) + r * alpha,
+    INSTITUTIONAL_FLOOR_ART_BASE[1] * (1 - alpha) + g * alpha,
+    INSTITUTIONAL_FLOOR_ART_BASE[2] * (1 - alpha) + b * alpha,
+  ];
+}
+
+/**
+ * The untinted floor's own spread, ~26.5. ADR 0101 Context §1: eight of
+ * eighteen shipped room tints blend to *less* than this at the flat
+ * `ZONING_TINT_ALPHA_OVER_ART` -- the tint makes those eight rooms' floors
+ * read as less distinctly coloured than painting no tint at all, which is the
+ * defect issue #1061 found by playing. ADR 0101 (accepted 2026-09-07, option
+ * 1) obliges raising exactly those eight, and this is the target their raised
+ * alpha is computed against.
+ */
+const INSTITUTIONAL_FLOOR_ART_SPREAD = channelSpread(INSTITUTIONAL_FLOOR_ART_BASE);
+
+/**
+ * The smallest alpha at or above `ZONING_TINT_ALPHA_OVER_ART`, and never above
+ * `ZONING_TINT_ALPHA`, at which this tint's blend over the institutional floor
+ * reads at least as coloured as the untinted floor itself.
+ *
+ * **The cap is `ZONING_TINT_ALPHA` itself, not a separate number, and that is
+ * a deliberate, statable choice rather than the unmarked round 0.4 an earlier,
+ * unmerged branch (`fix/1061-holding-cell-tint`) used.** `ZONING_TINT_ALPHA_
+ * OVER_ART` exists *because* floor art is present and is defined, in its own
+ * docblock above, as the *weaker* of the two zoning alphas -- the whole reason
+ * it is a separate, lower constant from `ZONING_TINT_ALPHA` is that a tile
+ * with floor art under it must be painted less strongly than one without.
+ * Letting a per-room override exceed `ZONING_TINT_ALPHA` would invert that
+ * invariant for exactly the tiles it exists to protect, and ADR 0101 Context
+ * §4 prices what a flat raise above 0.28 costs the floor-legibility argument
+ * for every room; nothing here should spend more of that budget on one room
+ * than a room with no floor art at all is ever painted with. ARITHMETIC,
+ * against this same base and cap: four of the eight raised rooms
+ * (`room.holding-cell` and `room.solitary-cell` -- the two ADR 0101 confirms
+ * by screenshot, needing ~0.339 uncapped -- plus `room.reception` and
+ * `room.kitchen`, needing ~0.281) sit close enough to the floor's own
+ * complement that even the `ZONING_TINT_ALPHA` cap does not fully clear
+ * `INSTITUTIONAL_FLOOR_ART_SPREAD`; each lands exactly at the cap instead.
+ * That is still a real, substantial gain over the flat 0.14 for all four --
+ * `tests/unit/appearance-zoning-tint-legibility.test.ts` pins the exact
+ * before/after spread for each -- and, for Holding Cell specifically, a
+ * clear, verified-in-browser warm cast rather than the grey #1061 found.
+ * Closing the remaining gap for the two nearest the complement would need
+ * ~0.34, a stronger wash than the no-art alpha itself, which is exactly the
+ * option (a flat, all-room raise well past 0.28) ADR 0101 prices and does
+ * not recommend.
+ *
+ * Monotonic in the region this searches: increasing alpha here only pulls the
+ * blend further from the base and closer to the tint, so `channelSpread`
+ * rises across `[ZONING_TINT_ALPHA_OVER_ART, ZONING_TINT_ALPHA]` for every
+ * tint this table ships (there is a small, harmless dip in the first couple
+ * of alpha steps above 0.14 for a few hues, well below either threshold this
+ * function cares about, and confirmed not to cross either boundary by the
+ * per-room table `tests/unit/appearance-zoning-tint-legibility.test.ts`
+ * checks). If a future tint's own dip did cross a threshold, the effect would
+ * be a slightly-too-low alpha for that one room, caught the same way any
+ * other wrong value here would be: the legibility test names every room by
+ * id and fails on the one whose blend does not clear what the table claims
+ * it clears.
+ */
+function minimumLegibleAlphaOverArt(tint: number): number {
+  if (channelSpread(blendOverInstitutionalFloor(tint, ZONING_TINT_ALPHA_OVER_ART)) >= INSTITUTIONAL_FLOOR_ART_SPREAD) {
+    return ZONING_TINT_ALPHA_OVER_ART;
+  }
+  let low = ZONING_TINT_ALPHA_OVER_ART;
+  let high = ZONING_TINT_ALPHA;
+  for (let step = 0; step < 40; step += 1) {
+    const mid = (low + high) / 2;
+    if (channelSpread(blendOverInstitutionalFloor(tint, mid)) < INSTITUTIONAL_FLOOR_ART_SPREAD) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+  return high;
+}
+
+/**
+ * Per-room override of `ZONING_TINT_ALPHA_OVER_ART`, computed once at module
+ * load from the table above rather than hand-tuned -- adding a room to
+ * `ZONING_TINT_BY_ROOM_ID` costs nothing extra here, correct or not, the same
+ * way `zoningTint` itself needs no per-room maintenance.
+ *
+ * **ADR 0101 (accepted 2026-09-07), option 1.** Ten of the eighteen rooms
+ * below resolve back to the flat `ZONING_TINT_ALPHA_OVER_ART` unchanged,
+ * because their hue already clears the untinted floor's own spread at 0.14.
+ * Eight do not, and each gets the smallest alpha, capped at `ZONING_TINT_
+ * ALPHA`, that clears it (or gets as close as that cap allows). **This is the
+ * cost ADR 0101's acceptance obliges recording in ADR 0098**: ADR 0098
+ * Context §2's whole pairwise-distance table rests on one identity -- every
+ * tint painted at the same alpha, so the base cancels and the difference
+ * between any two tints is exactly `alpha * |t1 - t2|` -- and that identity
+ * no longer holds for any pair naming one of these eight rooms. See
+ * `docs/adr/0098-what-says-which-room-this-is.md`'s amendment.
+ */
+const ZONING_TINT_ALPHA_OVER_ART_BY_ROOM_ID: ReadonlyMap<string, number> = new Map(
+  Object.entries(ZONING_TINT_BY_ROOM_ID).map(([id, tint]) => [id, minimumLegibleAlphaOverArt(tint)]),
+);
+
 /** Undefined when the tile is unzoned or the zoning id is not a known room. */
 export function zoningTint(zoningNumericId: number): number | undefined {
   if (zoningNumericId === 0) return undefined;
@@ -157,6 +306,31 @@ export function zoningTint(zoningNumericId: number): number | undefined {
   if (room === undefined) return undefined;
   return ZONING_TINT_BY_ROOM_ID[room.id];
 }
+
+/**
+ * The alpha `TileLayer` should paint this zoning's tint at, over floor art
+ * specifically -- `ZONING_TINT_ALPHA_OVER_ART` for every room whose blend
+ * already clears the untinted floor's own spread, and the room's own raised
+ * alpha above that for the eight which do not (ADR 0101, issue #1061). Falls
+ * back to the flat constant for an unzoned or unknown tile, matching
+ * `zoningTint`'s own fallback, though a caller only reaches here after
+ * `zoningTint` has already returned a defined colour.
+ */
+export function zoningTintAlphaOverArt(zoningNumericId: number): number {
+  const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+  if (room === undefined) return ZONING_TINT_ALPHA_OVER_ART;
+  return ZONING_TINT_ALPHA_OVER_ART_BY_ROOM_ID.get(room.id) ?? ZONING_TINT_ALPHA_OVER_ART;
+}
+
+/**
+ * Exported for `tests/unit/appearance-zoning-tint-legibility.test.ts`'s
+ * substrate-drift gate only -- nothing in `src/` should ever need this
+ * outside the alpha table above, which already closes over it. See the
+ * constant's own docblock for why a gate, not a comment, is what actually
+ * catches this value going stale.
+ */
+export const INSTITUTIONAL_FLOOR_ART_BASE_FOR_DRIFT_GATE: readonly [number, number, number] =
+  INSTITUTIONAL_FLOOR_ART_BASE;
 
 /** How a built thing is drawn: a top face raised above a side face, giving height in a top-down view. */
 export interface StructureAppearance {
