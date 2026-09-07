@@ -86,6 +86,38 @@ They came from a shared tree and from shared ADR *numbers*.
   renumbered.
 - **Never `git add -A`, and never leave a scratch file under `tests/`.** A stray
   probe has broken `pnpm verify` collection more than once.
+- **`scripts/wip-sweep.sh` pushes COMMITTED work to the real branch, not to
+  `wip/` — so you cannot hold a commit back, and the session-start hook's
+  one-line description of it is misleading.** That hook says *"agent worktrees
+  snapshot to `wip/` every 3 min"*. The script's own header says what it
+  actually does: *"Committed work is pushed to the real branch; uncommitted
+  work goes to `wip/` so it never lands on a branch an agent is about to push
+  to itself."* Its gate is `[ -n "$upstream" ] && git push -q origin "$b"`, and
+  the only skip is a clean tree whose branch already equals its tracking ref.
+
+  Measured 2026-09-07, at a cost of one CI cycle. The integrator merged `main`
+  into an open pull request's branch **in a worktree and deliberately did not
+  push**: the base delta was documentation-only, and the `browser` job then
+  thirteen minutes into its run was the one job that would prove a new
+  `ci.yml` include-filter entry actually fetched its file instead of an LFS
+  pointer. Three minutes later the sweep pushed the merge commit, GitHub
+  cancelled the run, and CI restarted from zero — on a **single self-hosted
+  runner where jobs serialise**, which is what makes a cancelled thirteen-minute
+  job expensive rather than merely untidy.
+
+  **The sweep was right and the intent behind it is worth more than the run it
+  cost.** The same session watched it pay off: a re-anchor pass was killed
+  mid-flight by a container restart, and its branch survived complete because
+  it had been pushed. That is the guarantee this script exists to provide and
+  it does not depend on anyone complying.
+
+  So the rule is about *where you work*, not about the sweep: **if you need a
+  commit to stay local, work on a detached HEAD** — the sweep reads
+  `git branch --show-current`, which is empty for a detached head, and
+  `continue`s — **or delete the worktree before the next three-minute tick.**
+  And the cheaper habit, given CI is the scarce serialised resource here:
+  **merge the base branch in and push once BEFORE opening the pull request**,
+  rather than opening it and merging the base in afterwards.
 
 ---
 
