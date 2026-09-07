@@ -612,6 +612,94 @@ experiences.
 
 ---
 
+## What the owed measurement returned — added 2026-09-07, after acceptance
+
+**This section adds measurements and corrects one claim. It does not touch
+Status, Decision or the owner's words, and it decides nothing.** It is here
+because "What would change my mind" below commits this document to exactly
+this correction if the numbers came back this way, and they did.
+
+### The owed fixture, both sides, on sixteen seeds rather than one
+
+One bed, one canteen, two admissions, 20,000 ticks, seeds `0x1064` and the
+fifteen after it. "Before" is `558ece5f` unmodified; "after" is `558ece5f`
+with `src/simulation/prisoners/action-system.ts`'s widened gate and nothing
+else. Recorded in full in `tests/integration/unhoused-prisoner-actions.test.ts`.
+
+| | before | after | seeds |
+| --- | --- | --- | --- |
+| unhoused: ticks performing any action | 0 | 1,688 (all `action.eat-meal`) | `0x1064`* |
+| unhoused: final mean need deficit | 1.0000 | 0.8425 | 16 of 16 |
+| unhoused: final `bladder` | 0 | 0 | 16 of 16 |
+| sector `needsPressure` at tick 20,000 | 0.7935 | 0.7137 | 16 of 16 |
+| riots opened | 3 | 3 | 16 of 16 |
+| riot severities, in order | 7, 10, 10 | 7, **9**, 10 | 16 of 16 |
+| total incidents | 4 | 4 | 12 of 16 |
+| total incidents | 4 | 5 | `0x106c`, `0x1070` |
+| `solitarySanctionEndTick` served | never | never | 16 of 16 |
+
+\* The performing-tick row and the recommended second configuration below are
+the implementing pass's own measurements, taken on `0x1064` alone and recorded
+in that test file; every other row above was re-run across the sixteen seeds
+for this section. The second configuration — the same prison with a shower
+room and a yard, still unguarded — gave 0 → 3,924 performing ticks
+(`action.eat-meal` 656, `action.shower` 520, `action.yard-recreation` 2,748),
+a final mean deficit of 1.0000 → 0.5307, four incidents both ways, and all
+three riots at severity 7 (from 7, 9, 9).
+
+**Cost's arithmetic is confirmed.** It prices the canteen-only unguarded floor
+at 5/6 ≈ 0.833 and the canteen + shower + recreation floor at 3/6 = 0.5; the
+runs land at 0.8425 and 0.5307, just above each bound, exactly as that section
+says its numbers should be read.
+
+### The one claim that is corrected
+
+Cost opens: *"an unhoused prisoner is … today's single most reliable source of
+assault and riot pressure, and this decision is expected to reduce that."*
+**On the fixture this document named, the incident count does not move at
+all** — four both ways on twelve of sixteen seeds, the same assault at the
+same severity with the same unhoused instigator, onsets pushed 400–500 ticks
+later, severity falling only in the amenity-rich configuration. This is the
+first entry under "What would change my mind" and it is recorded here rather
+than left standing.
+
+The claim is not simply false, though: it is **true of a different variable
+than the one Cost measures.** See below.
+
+### What the named weakest claim asked for, and what contention actually does
+
+The weakest claim below is that Cost bounds what is possible without measuring
+what a *contested* canteen produces. Measured on
+`tests/integration/incident-trigger-reachability.test.ts`'s ladder — eight
+cells, all three amenity rooms, 30,000 ticks — varying the population rather
+than the seed, because on this ladder the sector score is identical to four
+decimal places across eight consecutive seeds:
+
+| prisoners | guards | riots before | riots after |
+| --- | --- | --- | --- |
+| 16 | 1 (of 2 required) | 4 | **0** |
+| 17 | 1 (of 3 required) | 5 | **1** |
+| 32 | 1 (of 4 required) | 5 | 5 |
+| 32 | 4 (requirement met) | 3 | **0** |
+| 64 | 8 (requirement met) | 4 | **0** |
+| 96 | 12 (requirement met) | 5 | 3 |
+
+**So the decision moves the population at which a built prison starts rioting,
+rather than the amount of incident pressure a given prison carries** — by one
+prisoner where the prison is short a guard, and from 32 to 96 where it is not.
+Past that population the riots are the same riots in the same numbers.
+
+Contention is the binding constraint, and this is an intervention rather than
+an inference: at 96 prisoners with their twelve guards, raising only the
+canteen's `'dining'` ceiling from 6 to 12 and the shower room's `'hygiene'`
+ceiling from 2 to 6 takes the score from 0.6435 to 0.5158 and the riots from
+3 to 0, with the population and the staffing unchanged. That also answers
+**open question 5**: neither the "canteen only" row nor the "full amenities"
+row describes a real prison on its own — which row applies depends on how many
+prisoners are sharing the rooms.
+
+---
+
 ## Consequences for existing sentences
 
 `tests/integration/over-admission-signal.test.ts`'s own docblock argues, in
@@ -658,6 +746,16 @@ document commits the implementing pass to, above, is the only way to learn
 where in that range a real prison actually lands, and until that run exists,
 every number in Cost above should be read as a bound rather than a forecast.
 
+**That run now exists, and this paragraph was right about the direction and
+wrong about the size** — see "What the owed measurement returned" above,
+added 2026-09-07. Contention is not a partial discount on the deficit floor;
+it is what decides whether the prison riots at all. The floors hold (0.8425
+against 5/6, 0.5307 against 3/6) on a prison of two, and on a prison of
+ninety-six the same rooms put the sector back over `hotThreshold` while four
+dining tables and six shower heads take it back under with nothing else
+changed. So read Cost as a bound **per prisoner sharing the room**, not per
+prison.
+
 ---
 
 ## What would change my mind
@@ -670,6 +768,11 @@ every number in Cost above should be read as a bound rather than a forecast.
   own terms (an unhoused prisoner should be able to eat and wash), but this
   document's claim that it meaningfully reduces incident pressure would be
   wrong and should be corrected rather than left standing.
+
+  **This happened, and the correction is above** ("What the owed measurement
+  returned", added 2026-09-07). On the named fixture the incident count does
+  not move at all. The bullet's own conclusion is what was applied: the
+  direction stands, the incident-pressure claim does not.
 - **A reading of `failed`'s treatment that disagrees with Decision §1's
   recommendation.** The `SENTENCE_BEARING_STAGES` precedent is real, but it
   was authored for `DischargeSystem`'s question (does a sentence's clock run),
@@ -728,3 +831,10 @@ every number in Cost above should be read as a bound rather than a forecast.
    implementation will owe" as recommended, not owed, and would settle which
    row of the Cost table describes a real prison rather than the theoretical
    ends of it.
+
+   **Answered 2026-09-07, and the answer is that neither row describes a real
+   prison on its own.** Which row applies is set by how many prisoners share
+   the rooms: the same fully-amenitied, fully-staffed prison sits at 0.2838
+   with sixteen of them and 0.6435 with ninety-six, and raising only the two
+   ceilings takes the ninety-six back to 0.5158. See "What the owed
+   measurement returned" above.
