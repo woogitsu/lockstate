@@ -2656,12 +2656,30 @@ describe('self-hosted runner pool contract', () => {
   const POOL = 'runs-on: [self-hosted, Linux, X64, woogitsu, i5-10400f, nvidia-gtx1070]';
 
   /**
-   * The label that identifies the retired WSL2 machines. Asserted absent
-   * separately from the positive pin above, because the two failures are
-   * different: the positive one catches a job that asks for something else,
-   * and this one catches a job that asks for the new pool AND the old label at
-   * once -- which is satisfiable by nothing at all, and would leave the job
-   * queued forever with no error to read.
+   * The label the retired WSL2 machines carry. Asserted absent separately from
+   * the positive pin above, because the two failures are different: the
+   * positive one catches a job that asks for something else entirely, and this
+   * one catches a job that asks for the new pool AND `wsl2` at once, which
+   * silently re-admits the retired machines to that job.
+   *
+   * **AN EARLIER VERSION OF THIS COMMENT CALLED `wsl2` "the label that
+   * identifies the retired pool" AND SAID A LIST CARRYING BOTH WOULD BE
+   * "satisfiable by nothing at all". BOTH SENTENCES WERE FALSE AND ARE
+   * CORRECTED HERE RATHER THAN QUIETLY DROPPED**, because the measurement that
+   * refuted them is the reason this assertion earns its place. On 2026-09-07
+   * job 101846181533 asked for `[self-hosted, Linux, X64, wsl2, woogitsu]` --
+   * the pre-migration list -- and GitHub placed it on `woogitsu-linux-11`
+   * (runner id 26). A runner is only offered a job when it carries **every**
+   * requested label, so the NEW machines carry `wsl2` too. `wsl2` therefore
+   * does not discriminate between the pools at all, and a `runs-on` naming it
+   * is not unsatisfiable -- it is a coin toss between a provisioned machine
+   * and one that is not.
+   *
+   * That is not a hypothetical: it is what turned `main` red that day. The
+   * positive pin above is what actually performs the migration, because
+   * `i5-10400f` and `nvidia-gtx1070` are absent from the retired machines and
+   * present on the new ones. This assertion is the belt to that pair of
+   * braces.
    */
   const RETIRED = 'wsl2';
 
@@ -2739,7 +2757,7 @@ describe('self-hosted runner pool contract', () => {
       keys
         .filter((key) => new RegExp(`\\b${RETIRED}\\b`, 'u').test(key.value))
         .map((key) => `${key.workflow}:${String(key.line)} ${key.value}`),
-      `\`${RETIRED}\` is the label that identifies the retired pool, and it must not appear in any \`runs-on:\`. Asking for it alongside the new pool's labels is worse than asking for the old pool outright: no runner in either pool satisfies both sets, so the job queues forever with no error anywhere to read.`,
+      `\`${RETIRED}\` is carried by the retired WSL2 machines, so a \`runs-on:\` naming it can be placed on one of them and must not appear. MEASURED 2026-09-07: it does NOT distinguish the pools -- job 101846181533 asked for the pre-migration list and landed on \`woogitsu-linux-11\`, so the new machines carry \`wsl2\` as well. A list carrying both it and the new labels is therefore not unsatisfiable, which would at least be loud; it is a coin toss between a provisioned machine and one that is not, and that is what turned \`main\` red.`,
     ).toEqual([]);
   });
 });
