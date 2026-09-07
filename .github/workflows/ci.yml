@@ -71,7 +71,7 @@ jobs:
     # property of the workflow, and a job added with no `needs:` chain to
     # `verify`, or with `if: always()`, carries no protection at all.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -316,7 +316,7 @@ jobs:
     # Only so a failing build does not spend metered LFS bandwidth. Nothing in
     # this job depends on `verify` having provisioned anything.
     needs: verify
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
     timeout-minutes: 20
     steps:
       # Deliberately NOT `lfs: true`, for two measured reasons.
@@ -453,7 +453,7 @@ jobs:
     #    has to be correct on a cold workspace, not merely on the one `assets`
     #    happened to leave behind.
     needs: assets
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -485,15 +485,22 @@ jobs:
       # `createImageBitmap`. Measured on this branch before the second filter
       # existed.
       #
-      # The three names are the sheets `src/rendering/assets/environment-sprites.ts`
+      # The names are the sheets `src/rendering/assets/environment-sprites.ts`
       # cuts from, and **that file is the source of truth** -- a sprite added
-      # there naming a fourth sheet has to be added here too. The globs match on
+      # there naming a further sheet has to be added here too. The globs match on
       # the stable prefix rather than the content hash, so re-rendered art keeps
       # working. Deliberately not the whole directory: that is ~36 MB against
-      # ~4.4 MB for these three, on metered LFS bandwidth.
+      # ~5.7 MB for these four, on metered LFS bandwidth.
       #
-      # The guard below is what turns a forgotten fourth sheet into a message
-      # that says so, instead of into seven decode errors.
+      # **This said "the three" and "~4.4 MB" until 2026-09-05 (#1020), when
+      # `furniture.cell.bed.single.variants` became the fourth**: the first
+      # catalogued object drawn as art rather than as a coloured block. The
+      # sentence about a forgotten sheet is the one that predicted this edit,
+      # and it is worth noting that it was written before there was a fourth
+      # and held exactly.
+      #
+      # The guard below is what turns a forgotten sheet into a message that says
+      # so, instead of into seven decode errors.
       - name: Fetch runtime art from Git LFS
         env:
           LFS_TOKEN: ${{ github.token }}
@@ -506,7 +513,7 @@ jobs:
           git config --local 'http.https://github.com/.extraheader' \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
           git lfs pull --include="public/assets/actors"
-          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png"
+          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png,public/game-content/source-art/furniture.cell.bed.single.variants.*.png,public/game-content/source-art/rendered.fixture.cell.toilet_sink.*.png,public/game-content/source-art/rendered.furniture.corridor.bench.variants.*.png,public/game-content/source-art/rendered.furniture.office.desk.employee.variants.*.png,public/game-content/source-art/rendered.furniture.cell.locker.variants.*.png"
 
       # Every sheet the extraction manifest names must have materialised. The
       # manifest is TypeScript and this is bash, so the asset ids are read out
@@ -516,15 +523,11 @@ jobs:
       - name: Assert the environment sheets decoded
         run: |
           set -euo pipefail
-          ids="$(grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts \
-                 | sed "s/assetId: '//; s/'//" | sort -u)"
-          [ -n "$ids" ] || { echo "::error::no assetId found in environment-sprites.ts; the grep needs updating"; exit 1; }
-          for id in $ids; do
-            file="$(ls public/game-content/source-art/"$id".*.png 2>/dev/null | head -1 || true)"
-            if [ -z "$file" ]; then
-              echo "::error::environment-sprites.ts names source-art asset '$id' and no such sheet is on disk"
-              exit 1
-            fi
+          # The per-file checks are a function because there are now two id
+          # lists to run them over, and two copies of a fails-closed check are
+          # how one copy quietly stops matching the other.
+          assert_decoded() {
+            file="$1"; id="$2"
             if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
               echo "::error::$file is still a Git LFS pointer; add '$id' to the --include filter above"
               exit 1
@@ -535,6 +538,52 @@ jobs:
               exit 1
             fi
             echo "$file: $(stat -c%s "$file") bytes"
+          }
+
+          ids="$(grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts \
+                 | sed "s/assetId: '//; s/'//" | sort -u)"
+          [ -n "$ids" ] || { echo "::error::no assetId found in environment-sprites.ts; the grep needs updating"; exit 1; }
+          for id in $ids; do
+            file="$(ls public/game-content/source-art/"$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names source-art asset '$id' and no such sheet is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "$id"
+          done
+
+          # ADR 0100's second publishing lane. The owner authorised this one
+          # change to this file on 2026-09-06 -- the --include filter above and
+          # this assertion -- and nothing else in it; `AGENTS.md` records the
+          # release and its limits.
+          #
+          # A rendered sprite carries `renderedArtId`, not `assetId`. That is
+          # deliberate rather than incidental: it keeps the manifest's own
+          # sentence "The catalog names the file; this never does" literally
+          # true of `assetId`, which still resolves only against
+          # `source-art.v1.json`. The grep above therefore cannot see a
+          # rendered id, which is why this is a second list and not a wider
+          # pattern.
+          #
+          # THE `rendered.` PREFIX IN THE GLOB IS LOAD-BEARING. Both files sit
+          # in this directory today under the same id:
+          # `fixture.cell.toilet_sink.<hash>.png` is the owner's sheet, which
+          # nothing loads, and `rendered.fixture.cell.toilet_sink.<hash>.png`
+          # is the render the game draws. Globbing `"$id".*.png` here would
+          # find the owner's sheet, decode it happily, and let the render ship
+          # as an unpulled pointer -- exactly the failure this step exists to
+          # make impossible. An empty list is not an error: until a second
+          # object is drawn from a render there is one id, and a tree with none
+          # is a legitimate state.
+          rendered_ids="$(grep -oE "renderedArtId: '[^']+'" src/rendering/assets/environment-sprites.ts \
+                 | sed "s/renderedArtId: '//; s/'//" | sort -u)"
+          for id in $rendered_ids; do
+            file="$(ls public/game-content/source-art/rendered."$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names rendered asset '$id' and no published render is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "rendered.$id"
           done
 
       - name: Setup Node

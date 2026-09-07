@@ -77,14 +77,187 @@ outward-facing or unrevertable, which is the whole reason:
    rejected an entry point deliberately, and ADR 0046's telemetry ingest is the
    first thing that would need one. `docs/DEPLOYMENT.md` carries the nine-item
    pre-merge checklist that has to be worked and approved first.
+
+   **Released by the owner on 2026-09-03, for ADR 0046's ingest and for
+   nothing else.** The paragraph above is left as it stands rather than
+   rewritten, because it is the reservation that was released and a reader
+   needs to see what was given up. The decision was put to the owner as three
+   options — prepare the change for review without merging it, leave the
+   surface blocked, or build it and merge it — and they answered:
+
+   > Zbuduj i zmerguj
+
+   ("Build it and merge it.") **That is the owner's decision and not a
+   recommendation of this repository's**, which is why it is recorded here in
+   their words with the date on it, per `docs/AGENT_WORKFLOW.md` §3's rule that
+   an implementing agent does not approve its own work.
+
+   **What the release covers, exactly.** One `main` in `wrangler.jsonc` and the
+   Worker module it names, carrying the telemetry ingest ADR 0046 describes.
+   It is not a general licence to run server code: a second route, a second
+   handler, or any server-side behaviour that is not that ingest is back inside
+   this reservation and comes to the owner on its own terms. `src/worker/`'s
+   entry point states the same limit in its own docblock, with the threat model
+   for what it accepts from the open internet.
+
+   **What was not released, and is still owed.** Items 2 and 3 below are
+   untouched, and the ingest needs both before it stores anything: the
+   `telemetry_events` table, its insert function and the dedicated
+   least-privilege database role are `supabase/migrations/`, and the two Worker
+   variables that would configure a destination are deploy configuration. Until
+   those land the endpoint refuses every batch, which is why merging the entry
+   point changes no behaviour on `lockstate.io`.
+
+   **HALF OF THAT IS NO LONGER OWED, AND THE PARAGRAPH ABOVE IS KEPT RATHER
+   THAN REWRITTEN BECAUSE IT IS THE STATE THIS DOCUMENT DESCRIBED FOR A DAY.**
+   The migration landed on 2026-09-04 in
+   `supabase/migrations/20260904090000_create_telemetry_events.sql`, authorised
+   by the owner as four objects plus retention: the `telemetry_ingest` role
+   (`:152`), the `telemetry_events` table (`:203`),
+   `record_telemetry_events(p_events jsonb)` (`:568`) and the retention pair
+   (`telemetry_retention_runs` at `:759`, `enforce_telemetry_retention()` at
+   `:951`). **Item 2 was not thereby released** — a further migration is still
+   the owner's, and this one was authorised individually.
+
+   **The conclusion still holds and now holds for a different reason, which is
+   why a reader must not stop at the premise.** The endpoint still refuses every
+   batch, but because `LOCKSTATE_TELEMETRY_INGEST_PATH` is unbound — the Worker
+   reads it at `src/worker/telemetry-ingest-route.ts:12`, and that binding is
+   deploy configuration, item 3, untouched. **So an agent who checks the
+   sentence above, finds the migration present, and infers the endpoint is live
+   would be wrong.** Retention additionally needs `pg_cron` enabled from the
+   Supabase panel and the scheduled call made there; until that happens
+   `enforce_telemetry_retention()` is a function nothing invokes.
 2. **`supabase/migrations/`.** An applied migration is history. Propose new
    migration content in an ADR or an issue instead. Rollback is not automated.
 3. **Deploy configuration** — `public/_headers`, `.github/workflows/deploy.yml`,
    the Cloudflare or Supabase dashboards. Nothing in this repository can read
    back what those dashboards hold, so a change there cannot be verified here.
+
+   **NARROWLY RELEASED ON 2026-09-06, FOR ONE CHANGE IN ONE FILE.** Asked how
+   to unblock object art, the owner answered:
+
+   > Przyjmij drugą ścieżkę i odblokuj ci.yml
+
+   ("Accept the second lane and unblock `ci.yml`.") The option carrying that
+   answer named exactly what it authorised, and the release is that and nothing
+   wider:
+
+   > Tym samym autoryzujesz JEDNĄ zmianę w `.github/workflows/ci.yml`:
+   > rozszerzenie filtra LFS i asercji dekodowania o nową ścieżkę.
+
+   ("You are thereby authorising ONE change in `.github/workflows/ci.yml`:
+   extending the LFS filter and the decode assertion to the new path.")
+
+   **What the release covers, exactly.** The `browser` job's
+   `git lfs pull --include=` filter and the `Assert the environment sheets
+   decoded` step that follows it, extended to cover the published path ADR 0100
+   defines. Nothing else in that file: not a second job, not a second workflow,
+   not `deploy.yml`, and not the runner selectors, which were authorised
+   separately on 2026-09-05.
+
+   **Why it had to be released before any agent could draw an object.** The
+   decode step derives its ids from `src/rendering/assets/environment-sprites.ts`
+   by grep and then requires each to exist under
+   `public/game-content/source-art/`, failing closed with an error whose own
+   text says `add '<id>' to the --include filter above`. So a sprite published
+   anywhere else fails seven browser specs, and the fix was inside a reserved
+   file — which made this a decision the owner had to take rather than a patch
+   an agent could write. ADR 0100 records the reading in full.
+
+   **A SECOND, NARROWER RELEASE INSIDE THE SAME RESERVATION, 2026-09-07 — three
+   glob segments on one line, and the reason it had to be asked at all is the
+   part worth reading.** The 2026-09-06 release above was granted in the
+   owner's words as *"JEDNĄ zmianę"* (one change), so whether appending to that
+   same filter a second time was covered or was a new decision is a question
+   the words do not settle, and an agent guessing either way would be guessing
+   about a file it may not touch. It was put to the owner, who answered:
+
+   > Tak — dopisz trzy globy, nic więcej
+
+   ("Yes — append the three globs, nothing more.") **Against a summary rather
+   than the full text**, and the summary carried the mechanism and the limit
+   in the same breath, verbatim:
+
+   > Filtr `git lfs pull --include=` to dosłowna lista pięciu ścieżek, nie
+   > wildcard `rendered.*` — więc każdy nowy sprite trzeba tam wpisać z nazwy,
+   > inaczej CI ściąga wskaźnik LFS zamiast pliku i krok dekodujący pada z
+   > własnym komunikatem „add '<id>' to the --include filter above". Ten plik
+   > jest Twój.
+   >
+   > Autoryzujesz DOKŁADNIE trzy segmenty doklejone do listy w linii 516:
+   > bench, desk, locker. Żadnego drugiego joba, żadnej innej linii, żadnego
+   > `deploy.yml`.
+
+   **THE FINDING THAT FORCED IT, WHICH REFUTES WHAT THE INTEGRATOR HAD ASSUMED
+   AND WRITTEN INTO A BRIEF.** The 2026-09-06 release is recorded above as
+   covering "the `browser` job's `git lfs pull --include=` filter and the
+   `Assert the environment sheets decoded` step", and #1050 made the *decode
+   assertion* generic: it greps `renderedArtId: '...'` out of
+   `environment-sprites.ts` and needs no edit for any number of new ids, ever.
+   **The `--include=` filter beside it is not generic and never was.** It is a
+   literal comma-separated list of specific globs; `rendered.` is a filename
+   prefix inside each entry, not a wildcard over them.
+   `public/game-content/**/*.png` is LFS-tracked (`.gitattributes:4`) and CI's
+   checkout is pointer-only outside what that list names, so an unnamed id's
+   file is never fetched and the decode step then fails closed with its own
+   instruction. **Two halves of one release, one generic and one not — and the
+   integrator briefed an agent that neither needed touching. The agent read
+   the file and refuted it.**
+
+   The rejected alternative is recorded because it will be proposed again:
+   replacing the list with a `rendered.*` pattern would end these decisions
+   permanently, and #1050 established that the list's literalness is
+   deliberate and fails closed — a wider pattern also fetches art nothing
+   draws, which is the rule that lane exists to enforce. The owner was offered
+   it and chose the narrow change.
+
+   **`public/_headers`, `wrangler.jsonc`, `deploy.yml` and both dashboards are
+   untouched by this**, and the sentence above about dashboards not being
+   readable from here still holds for all of them.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
+
+   **Partly released by the owner on 2026-09-04: the CHOICE OF WORDS is ours
+   now; the requirement that a sentence be TRUE is not.** Until that date this
+   reservation was read strictly, and the reading was wider than the words
+   above: agents and the integrator reported *what a sentence must convey* and
+   authored none, so every player-visible string waited on the owner. Four such
+   sentences were waiting when the release came (#901, #903, #904, #893), and
+   two more had just been found by playing — a FUNDS badge asserting the state
+   owed a prison money it did not owe (#913), and one all-clear sentence
+   serving both a handled incident and an expired one.
+
+   Asked which words each should carry, the owner answered twice, to two
+   different questions, in the same direction:
+
+   > Sam decyduj zawsze, jak zacznę grać to ujednolicimy
+
+   ("Decide yourself, always; when I start playing we will unify them.")
+
+   > Wybierz sam a potem się ujednolici sposób pisania
+
+   ("Choose yourself, and afterwards the way it is written will be unified.")
+
+   **What the release covers, exactly: choosing the wording.** It does not
+   touch the reservation's actual subject, which is the *promise*. A sentence
+   we now write ourselves must still be true of the code that renders it, and
+   the way to establish that is to open that code — the two findings that
+   prompted the release were both false sentences, not badly worded ones. So
+   the rule that replaces "ask the owner" is **verify, then write**, and a
+   string whose truth cannot be established still does not ship.
+
+   **What we owe the owner in exchange.** They said the wording will be
+   *unified* once they play, which is only possible if they can find what we
+   wrote. Every string authored under this release is therefore recorded — in
+   the commit that lands it and in the pull request body, quoted verbatim
+   alongside the code opened to prove it true — so the harmonising pass is one
+   reading rather than an excavation.
+
+   The paragraph above this release is left exactly as it stood, for the same
+   reason reservation 1's is: it is the rule that was relaxed, and a reader
+   needs to see what was given up.
 
 **Merging publishes.** `deploy.yml` fires on CI completion and its `staging` job
 publishes on every merge to `main`, and `lockstate.io` is attached by hand to

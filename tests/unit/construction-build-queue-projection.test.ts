@@ -18,6 +18,20 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 /**
+ * A hand-built `BuildOrderSource`, for the tests below that assert the
+ * projection's own sort rather than `ConstructionSystem`'s. `previewOf`
+ * defaults to `0` for every order -- these tests are about ordering, not
+ * money, and `tests/unit/construction-preview-cancel-refund.test.ts` is where
+ * `previewCancelRefundMinorUnits`'s own values are exercised.
+ */
+function stubSource(
+  orders: readonly BuildOrder[],
+  previewOf: (orderId: string) => number = () => 0,
+): { allOrders: () => readonly BuildOrder[]; previewCancelRefundMinorUnits: (orderId: string) => number } {
+  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf };
+}
+
+/**
  * The read model behind the Build panel's queue, and the command it makes
  * aimable.
  *
@@ -124,8 +138,16 @@ describe('the pending build queue, as a read model', () => {
       // submitted these -- and its first act on an `approved` order is to move
       // it on. One step is therefore enough to see the state a queued order
       // spends most of its wait in.
-      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending' },
-      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending' },
+      // `cancelRefundMinorUnits: 0` for both, and it is a fact about this
+      // fixture rather than about materials-pending in general: `session()`
+      // pre-seeds 500 bricks, so neither order's two-brick requirement ever
+      // triggers a just-in-time purchase -- `procureForPendingOrders` nets
+      // held stock off demand before it prices anything -- and cancelling
+      // turns around a delivery that was never made.
+      // `tests/unit/construction-preview-cancel-refund.test.ts` is where a
+      // real purchase makes this figure positive.
+      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 0 },
+      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 0 },
     ]);
   });
 
@@ -206,7 +228,7 @@ describe('the pending build queue, as a read model', () => {
       { id: 'order-b', definitionId: 'wall-brick', location: tile(3, 4), state: 'assigned', progress: 0, materialsAllocated: [] },
     ];
 
-    const view = projectBuildQueue({ allOrders: () => scrambled });
+    const view = projectBuildQueue(stubSource(scrambled));
     expect(view.orders.rows.map((row) => row.orderId)).toEqual(['order-a', 'order-b', 'order-c']);
     // The rows travelled with their own tiles rather than only being reordered:
     // a sort that shuffled the ids and left the tiles behind would pass the line
@@ -236,7 +258,7 @@ describe('the pending build queue, as a read model', () => {
       { id: 'order-c', definitionId: 'wall-brick', location: tile(3, 5), placementSequence: 10, state: 'assigned', progress: 0, materialsAllocated: [] },
     ];
 
-    const view = projectBuildQueue({ allOrders: () => scrambled });
+    const view = projectBuildQueue(stubSource(scrambled));
     expect(view.orders.rows.map((row) => `${row.orderId}@${row.tile.x},${row.tile.y}`)).toEqual([
       'order-c@3,5',
       'order-b@3,4',
@@ -258,7 +280,7 @@ describe('the pending build queue, as a read model', () => {
       { id: 'order-old-a', definitionId: 'wall-brick', location: tile(3, 3), state: 'assigned', progress: 0, materialsAllocated: [] },
     ];
 
-    const view = projectBuildQueue({ allOrders: () => mixed });
+    const view = projectBuildQueue(stubSource(mixed));
     expect(view.orders.rows.map((row) => row.orderId)).toEqual(['order-old-a', 'order-old-z', 'order-new']);
   });
 

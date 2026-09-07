@@ -27,10 +27,33 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * A `Record` over the closed `SimulationEventType` union, for the reason
  * `REFUSAL_LABEL_KEYS` and `PROTOCOL_FAULT_LABEL_KEYS` are `Record`s over
  * theirs: an event type added to the protocol **fails to compile here** until
- * somebody has decided what it says to a player and how serious it is. That
- * property is the entire argument for `simulation/event` carrying a typed
- * union instead of the opaque `versionedPayload` it was declared with; see
- * `simulationEventSchema` in `src/simulation/protocol/types.ts`.
+ * somebody has decided what it says to a player, how serious it is, and which
+ * surfaces it reaches. That property is the entire argument for
+ * `simulation/event` carrying a typed union instead of the opaque
+ * `versionedPayload` it was declared with; see `simulationEventSchema` in
+ * `src/simulation/protocol/types.ts`.
+ *
+ * ## `surfaces`, and why a third column exists at all
+ *
+ * This channel paints two things: the alerts list, which is the **log**, and
+ * `.hud__event`, which is the **band** -- one line, laid out at every viewport
+ * with nothing to open. Until 2026-09-05 every event reached both by
+ * construction: `hudEventAlertsFromWorkerMessage` and
+ * `hudEventNoticeFromWorkerMessage` are two readings of one message and
+ * neither asked what kind of event it was.
+ *
+ * They already disagreed about one thing, and that disagreement is the shape
+ * this column generalises: a **restored** record goes to the log and never to
+ * the band (the owner's decision 4 of 2026-09-01 on ADR 0084 -- *"a restored
+ * record is not an announcement"*). That is a property of the message. This is
+ * the same distinction drawn on the event *type* instead, and `rooms.zoned` is
+ * its first and so far only user; see its section below for the ruling that
+ * put it there.
+ *
+ * `'log-only'` means the log and nothing else. It is not silence and it is not
+ * a lower severity -- there is no grade below `'info'` and inventing a fourth
+ * tone was never the question; it is the same sentence, on the surface that
+ * keeps it rather than the surface that interrupts with it.
  *
  * The keys are HUD-namespaced (`hud.alert.event.*`) and authored rather than
  * derived through `src/content/simulation-message-keys.ts`, on the same
@@ -130,6 +153,17 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   also what stops a `'danger'` band standing over a calm prison for the rest
  *   of a session; see the schema's own comment in
  *   `src/simulation/protocol/types.ts`.
+ * - **`incidents.all-clear-after-lapse` is `'warning'`, and the step is the
+ *   whole reason it is a separate member** (issue #914's finding 4). The row
+ *   above is graded on *nothing is wrong any more*, which is true of a
+ *   containment and false of a lapse: every participant of a lapsed incident
+ *   is injured by `IncidentResponseSystem.lapse`, so something did go wrong
+ *   and the prison is only calm because the incident expired. `'warning'`
+ *   rather than `'danger'`: nothing is *ongoing* -- the band's `'danger'`
+ *   grades incidents that are still running, and a closing row that outranked
+ *   an open riot would be the eviction order the wrong way round
+ *   (`SEVERITY_EVICTION_ORDER` drops `'info'` first, so this row also
+ *   survives a run of confirmations that the plain all-clear would not).
  *
  * ## `contraband.discovered` is `'warning'`, and a weapon is not louder (#703 ruling 13)
  *
@@ -223,6 +257,53 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   sentence names how many orders moved, which is the owner's ruling: an undo
  *   reverses a whole transaction and a sentence naming one would be a small lie
  *   whenever a run of several was taken back.
+ * - **`construction.undone-spend-destroyed` is `'warning'`, and it is the row
+ *   above graded by the same rule `construction.order-cancelled-underway` is**
+ *   ([#927](https://github.com/matmaxalez/lockstate/issues/927)). An undo that
+ *   reversed a finished or started order destroyed what it had consumed --
+ *   `ConstructionSystem.cancelOrder` releases nothing and refunds nothing for
+ *   either state -- so what this reports is value destroyed, and grading it
+ *   `'info'` beside the plain undo would take back in the tone exactly what the
+ *   second sentence exists to distinguish. Not `'danger'`, for the reason the
+ *   cancellation row is not: a deliberate press is not "stop trusting what you
+ *   are looking at".
+ *
+ *   **The severity is also what settled the shape of the fix.** Raising
+ *   `construction.order-cancelled-underway` alongside `construction.undone`
+ *   would have needed no new key at all -- and `admitToEventBand` would have
+ *   discarded the `'info'` incumbent the moment the `'warning'` arrived, so the
+ *   band would have said *"The order was cancelled…"* and never that anything
+ *   was undone. One press, one sentence, and the sentence says both halves.
+ * - **`objects.removed-spend-destroyed` is `'warning'`, graded by the same rule
+ *   as the two rows above it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *   Taking a standing object away destroys what it cost --
+ *   `ObjectPlacementService.remove`'s standing-object arm credits no treasury
+ *   and fills no container, which is the owner's ruling of 2026-09-01 -- so
+ *   what this reports is value destroyed, and `'info'` would take back in the
+ *   tone exactly what the sentence exists to say. Not `'danger'`, for the reason
+ *   neither loss row above is: a deliberate press is not "stop trusting what you
+ *   are looking at".
+ *
+ *   **The severity is also why the removal's *other* success does not raise
+ *   this row.** `remove` answers `'order-cancelled'` for a placement still in
+ *   flight, and that one refunds -- an `'info'` fact wearing a `'warning'`
+ *   sentence would be worse than the silence #945 found, because it would scare
+ *   a player off a control that costs them nothing. The producer records the
+ *   loss event only for `kind === 'removed'`.
+ *
+ *   **That paragraph said "stays off this table" until
+ *   [#988](https://github.com/matmaxalez/lockstate/issues/988), and the words
+ *   are corrected rather than the claim, because the claim was never about the
+ *   table.** The other success has had a row here all along --
+ *   `construction.order-cancelled`, whose own bullet in this list grades it
+ *   `'info'` -- and what it did not have was a *producer*. It said nothing, and on a band that carries
+ *   one sentence a press that says nothing is read as the last press's: with
+ *   the clock paused, this `'warning'` stood over the refund below it. It is
+ *   raised on that row now, by the same
+ *   `SimulationEventLog.recordBuildOrderCancelled` `CancelBuildOrder` uses, so
+ *   the severity argument above lands where it was always aiming -- the refund
+ *   wears `'info'` and the loss wears `'warning'`, and each press wears its
+ *   own.
  * - **`economy.delivery-cancelled` is `'info'`**, and it is the only success
  *   here that names a figure. `ProcurementSystem.cancel` already answers
  *   `refundedMinorUnits`, so `{total}` costs nothing; `ConstructionSystem.cancelOrder`
@@ -234,44 +315,253 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * line"* -- so a success sentence can now displace a simulation event the
  * player has not read. That is the same class of defect
  * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md)
- * decision 4 is about -- **the one of that ADR's four decisions the owner did
- * not take on 2026-09-01, and it is still open**. No dwell or
- * priority rule is invented here: deciding it inside implementation code is
- * exactly what `AGENTS.md` forbids, and the collision is recorded so the owner
- * can rule on it with this producer in front of them.
+ * decision 4 is about.
+ *
+ * **That decision has since been taken, and the sentence this replaces is kept
+ * because it is why the collision was recorded rather than fixed.** It read:
+ * *"the one of that ADR's four decisions the owner did not take on 2026-09-01,
+ * and it is still open. No dwell or priority rule is invented here: deciding it
+ * inside implementation code is exactly what `AGENTS.md` forbids, and the
+ * collision is recorded so the owner can rule on it with this producer in front
+ * of them."* Recording it rather than inventing a rule was correct, and it
+ * worked: the owner ruled on decision 4 with this producer in front of them,
+ * choosing arbitration **by severity, the way the alerts list already evicts**
+ * -- and `EVENT_BAND_DWELL_FLOOR_MS = 600` in
+ * [`event-band-dwell.ts`](./hud/event-band-dwell.ts) is that ruling built: a
+ * 600 ms dwell floor with severity promotion, derived against a measured 625 ms
+ * shortest real gap at x4. So a success sentence can no longer displace an
+ * unread simulation event of equal or higher severity, which is exactly the
+ * cost this paragraph was written to name. The producer here is unchanged; what
+ * changed is that something downstream now arbitrates.
+ *
+ * ## `rooms.zoned` is `'info'` and `'log-only'` (issue #966 site 2, and the
+ * owner's ruling of 2026-09-05)
+ *
+ * The first row on this table that acknowledges something a player did. Every
+ * other member is bad news, an undo, a recovery, or `prisoners.discharged`,
+ * whose gate is a clock -- the acknowledgement census filed as #960 and #966
+ * counted them. (That record is cited by issue rather than by path: it lives on
+ * an unmerged branch, and `documentation-links-contract.test.ts` is right to
+ * refuse a rooted path to a file that is not on disk.)
+ *
+ * ### The ruling
+ *
+ * **The acknowledgement goes to the alerts log and does not raise the band.**
+ * That is the owner's decision of 2026-09-05, taken on four options after the
+ * band was measured against the layout it lands in, and it is what
+ * `surfaces: 'log-only'` above is.
+ *
+ * What it was taken on is [#985](https://github.com/matmaxalez/lockstate/issues/985),
+ * and the defect there is **not** this member's: `.hud__event` is one grid row
+ * whatever raised it, that row costs 32px, and at 900x600 the rail is already
+ * documented in `hud.css` as *"OVER by 30"* before any band exists. The
+ * refusal band (#207) and the unavailable band (#220) spend the same 32px, and
+ * `event-band-dwell.ts` replaces an incumbent rather than releasing the row, so
+ * once anything raises a band the cost stands for the session. An
+ * acknowledgement is simply the first thing that would raise one on a path a
+ * player takes **deliberately and often**, which is why the ruling routes
+ * around the clip rather than repairing it. #985 is still open and still owns
+ * the repair.
+ *
+ * ### Two clauses of that paragraph are now wrong, and it is kept whole
+ *
+ * The ruling above is untouched -- an acknowledgement still goes to the log and
+ * not to the band -- but the paragraph is a description of code, and #985's
+ * repair landed on 2026-09-05. Marked rather than overwritten
+ * (`docs/AGENT_WORKFLOW.md` section 4), because the reasoning the owner ruled
+ * on is what it records.
+ *
+ * - **"once anything raises a band the cost stands for the session" is false of
+ *   this band now.** `EVENT_BAND_HOLD_CEILING_MS` and `advanceEventBand`
+ *   (`src/ui/hud/event-band-dwell.ts`) give the row back when nothing has
+ *   replaced the sentence. It stays true of the other two: a refusal clears on
+ *   its own terms (ADR 0091) and *"this browser cannot start a worker"* cannot
+ *   stop being true while the page is loaded.
+ * - **"the rail is already documented in `hud.css` as OVER by 30" cites a
+ *   configuration that was never shipped.** That table is `hud.css`'s record of
+ *   an **uncapped** `.hud-minimap__surface`, and the declaration immediately
+ *   under it -- `max-width: calc(224px * var(--ui-scale))` -- is the cap that
+ *   rejected it; the figure is the alerts list inside `.hud__corner`, not the
+ *   rail. Measured on the assembled application at 900x600 with no band up, the
+ *   rail is 482.8px and nothing in it is over its box: the Rooms panel's body is
+ *   291 client / 291 scroll and the Build panel 336 / 336. The 30px was never
+ *   the rail's, and #985's clip is the band's 32px on its own.
+ *
+ * **What the two bands beside this one cost is additive, not shared**, which
+ * neither the paragraph above nor #985 says: they are three separate grid rows
+ * (`grid-template-areas: 'strip' 'unavailable' 'notice' 'event' 'middle'
+ * 'tabs'`). Measured on the same page, a refusal and an event up together take
+ * 64px, and the Rooms panel is then 288 client over 300 scroll on a prison with
+ * no rooms in it at all.
+ *
+ * ### The argument this replaces, quoted rather than deleted
+ *
+ * It was true of the code that carried it, so it is kept
+ * (`docs/AGENT_WORKFLOW.md` section 4). It read:
+ *
+ * > **`'info'` is not the mild option, it is the only defensible one, and the
+ * > machinery says why rather than the tone.** `admitToEventBand`
+ * > (`hud/event-band-dwell.ts`) promotes on *strictly* greater severity, so an
+ * > `'info'` arrival can never take the line from a `'warning'` or a
+ * > `'danger'` incumbent -- it waits in the dwell floor's one slot and loses
+ * > even that slot to anything more severe, which is exactly the priority an
+ * > acknowledgement deserves against a riot. Graded `'warning'` it would do the
+ * > opposite: `outranks` would hand it the line and **discard** the incumbent,
+ * > so designating a room would delete the sentence about the escape attempt
+ * > the player had not finished reading.
+ *
+ * Every clause of that is still a true description of `admitToEventBand`. What
+ * has changed is that it no longer describes anything this member does: a
+ * sentence that never reaches `.hud__event` is never offered to that function,
+ * so it can neither wait for the line nor take it. **The band half of the grade
+ * argument is moot, and a reader must not go on believing the grade is load
+ * bearing there.**
+ *
+ * ### The grade is still needed, and it is still `'info'`
+ *
+ * The reason is the half that used to come second.
+ * `SEVERITY_EVICTION_ORDER` governs the **list**, which keeps
+ * `MAX_EVENT_ALERT_ROWS` rows and drops `'info'` first: a player who designates
+ * room after room evicts their own confirmations, and the other `'info'` rows,
+ * before touching a `'warning'` or a `'danger'`. Graded `'warning'` the run
+ * would tie with an unpaid payday and the older row -- the payday -- would go
+ * instead. That is the property `tests/unit/ui-simulation-events.test.ts` pins,
+ * by driving a full list rather than by asserting the label: under the ruling a
+ * grade that is only checked by a `severity` equality is checked by nothing
+ * that reaches a player.
+ *
+ * And with the payload being the room type alone (see the schema), a run of
+ * designations of *one* type does not spend rows at all --
+ * `simulationEventIdentity` collapses it into a single counted row. The
+ * eviction case is a player designating several *different* types.
+ *
+ * **There is no grade below `'info'`.** `HudSeverity` has three members and no
+ * fourth tone for a good thing to wear, which is the census's finding about
+ * this table restated as a type: the channel can say "wrong", "worse" and
+ * "not wrong", and an acknowledgement has to wear the third.
  */
 const EVENT_PRESENTATION: Readonly<
-  Record<SimulationEventType, { readonly labelKey: LocalizationKey; readonly severity: HudSeverity }>
+  Record<
+    SimulationEventType,
+    {
+      readonly labelKey: LocalizationKey;
+      readonly severity: HudSeverity;
+      /**
+       * Which of this channel's two surfaces the sentence reaches.
+       *
+       * `'band-and-log'` is what every member did before this column existed
+       * and what all but one still does. `'log-only'` keeps the row and
+       * declines the line -- see the `surfaces` section of the docblock above,
+       * and `rooms.zoned`'s section for the ruling that is the only reason a
+       * member carries it today.
+       */
+      readonly surfaces: 'band-and-log' | 'log-only';
+    }
+  >
 > = {
-  'construction.order-cancelled': { labelKey: 'hud.alert.event.construction.order-cancelled', severity: 'info' },
+  'construction.order-cancelled': {
+    labelKey: 'hud.alert.event.construction.order-cancelled',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
   'construction.order-cancelled-underway': {
     labelKey: 'hud.alert.event.construction.order-cancelled-underway',
     severity: 'warning',
+    surfaces: 'band-and-log',
   },
-  'construction.redone': { labelKey: 'hud.alert.event.construction.redone', severity: 'info' },
-  'construction.undone': { labelKey: 'hud.alert.event.construction.undone', severity: 'info' },
-  'contraband.discovered': { labelKey: 'hud.alert.event.contraband.discovered', severity: 'warning' },
-  'economy.construction-refused': { labelKey: 'hud.alert.event.economy.construction-refused', severity: 'warning' },
-  'economy.deliveries-refused': { labelKey: 'hud.alert.event.economy.deliveries-refused', severity: 'warning' },
-  'economy.delivery-cancelled': { labelKey: 'hud.alert.event.economy.delivery-cancelled', severity: 'info' },
-  'economy.wages-unpaid': { labelKey: 'hud.alert.event.economy.wages-unpaid', severity: 'warning' },
-  'incidents.all-clear': { labelKey: 'hud.alert.event.incidents.all-clear', severity: 'info' },
-  'incidents.assault-opened': { labelKey: 'hud.alert.event.incidents.assault-opened', severity: 'warning' },
+  'construction.redone': {
+    labelKey: 'hud.alert.event.construction.redone',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'construction.undone': {
+    labelKey: 'hud.alert.event.construction.undone',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'construction.undone-spend-destroyed': {
+    labelKey: 'hud.alert.event.construction.undone-spend-destroyed',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'contraband.discovered': {
+    labelKey: 'hud.alert.event.contraband.discovered',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'economy.construction-refused': {
+    labelKey: 'hud.alert.event.economy.construction-refused',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'economy.deliveries-refused': {
+    labelKey: 'hud.alert.event.economy.deliveries-refused',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'economy.delivery-cancelled': {
+    labelKey: 'hud.alert.event.economy.delivery-cancelled',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'economy.wages-unpaid': {
+    labelKey: 'hud.alert.event.economy.wages-unpaid',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'incidents.all-clear': {
+    labelKey: 'hud.alert.event.incidents.all-clear',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'incidents.all-clear-after-lapse': {
+    labelKey: 'hud.alert.event.incidents.all-clear-after-lapse',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'incidents.assault-opened': {
+    labelKey: 'hud.alert.event.incidents.assault-opened',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
   'incidents.escape-attempt-opened': {
     labelKey: 'hud.alert.event.incidents.escape-attempt-opened',
     severity: 'danger',
+    surfaces: 'band-and-log',
   },
   'incidents.escape-succeeded': {
     labelKey: 'hud.alert.event.incidents.escape-succeeded',
     severity: 'danger',
+    surfaces: 'band-and-log',
   },
   'incidents.gang-retaliation-opened': {
     labelKey: 'hud.alert.event.incidents.gang-retaliation-opened',
     severity: 'danger',
+    surfaces: 'band-and-log',
   },
-  'incidents.riot-opened': { labelKey: 'hud.alert.event.incidents.riot-opened', severity: 'danger' },
-  'prisoners.discharged': { labelKey: 'hud.alert.event.prisoners.discharged', severity: 'info' },
-  'prisoners.relocated': { labelKey: 'hud.alert.event.prisoners.relocated', severity: 'info' },
+  'incidents.riot-opened': {
+    labelKey: 'hud.alert.event.incidents.riot-opened',
+    severity: 'danger',
+    surfaces: 'band-and-log',
+  },
+  'objects.removed-spend-destroyed': {
+    labelKey: 'hud.alert.event.objects.removed-spend-destroyed',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'prisoners.discharged': {
+    labelKey: 'hud.alert.event.prisoners.discharged',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  'prisoners.relocated': {
+    labelKey: 'hud.alert.event.prisoners.relocated',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  // The one `'log-only'` member, and the only reason the column exists: the
+  // owner's ruling of 2026-09-05. See the section on this member above.
+  'rooms.zoned': { labelKey: 'hud.alert.event.rooms.zoned', severity: 'info', surfaces: 'log-only' },
 };
 
 /**
@@ -630,14 +920,46 @@ export function hudEventNoticeFromWorkerMessage(
        * loading a prison over a running one, emptying is `simulation/stopped`'s
        * job and it has already done it.
        *
-       * The band's own rule is untouched by this. It still carries the newest
-       * event and still replaces whatever it holds without arbitration, which
-       * is ADR 0084's decision 4 -- a dwell floor -- and that decision is not
-       * taken.
+       * The band's own rule is untouched by this.
+       *
+       * **What this sentence said about that rule has stopped being true, and
+       * is kept rather than overwritten.** It read: *"It still carries the
+       * newest event and still replaces whatever it holds without arbitration,
+       * which is ADR 0084's decision 4 -- a dwell floor -- and that decision is
+       * not taken."* The first half is still right: this function still returns
+       * the newest event and this file still arbitrates nothing. The second
+       * half is not -- ADR 0084 decision 4 **was** taken, and
+       * `EVENT_BAND_DWELL_FLOOR_MS = 600` (`event-band-dwell.ts`) is the
+       * arbitration, promoting by severity. The distinction worth keeping is
+       * that the arbitration is not *here*: this producer is unarbitrated by
+       * design and the floor is applied downstream, which is why nothing in
+       * this file had to change when the decision landed.
        */
       if (message.payload.restored === true) return undefined;
       const { event } = message.payload;
-      const { labelKey, severity } = EVENT_PRESENTATION[event.type];
+      const { labelKey, severity, surfaces } = EVENT_PRESENTATION[event.type];
+      /*
+       * **The second place the two surfaces of this channel disagree about a
+       * message, and the first that disagrees by event *type*** (the owner's
+       * ruling of 2026-09-05 on issue #966 site 2).
+       *
+       * The branch above is the first: a restored record is not an
+       * announcement. This is the same distinction taken on the type instead --
+       * `rooms.zoned` is a row in the log and never a line on the band -- and
+       * `EVENT_PRESENTATION.surfaces` is where that is decided, so this
+       * function stays what it has always been: a reading of one table.
+       *
+       * **`undefined` and not `'none'`, and the difference is a sentence a
+       * player may be mid-way through reading.** `undefined` is *this message
+       * says nothing about the band*, so `src/main.ts` leaves `HudViewModel.event`
+       * exactly as it is; `'none'` is *there is no event*, which empties the
+       * band. An acknowledgement that emptied the band would delete an
+       * escape-attempt sentence outright -- the very outcome the grade argument
+       * this ruling replaced was written to prevent, arriving by the other
+       * door. The alerts list is untouched either way: it is the log, and
+       * `hudEventAlertsFromWorkerMessage` does not consult this field.
+       */
+      if (surfaces === 'log-only') return undefined;
       const messages = eventParameterMessages(event);
       return {
         sequence: event.sequence,
@@ -660,6 +982,11 @@ export function hudEventNoticeFromWorkerMessage(
 }
 
 function eventAlertRow(event: SimulationEvent, statement: string, dayLengthTicks: number): HudAlertViewModel {
+  // `surfaces` is deliberately not read here. The log takes every event on this
+  // channel -- that is what makes it the log, and it is what the owner's ruling
+  // of 2026-09-05 relies on when it sends the acknowledgement here and only
+  // here. A `'log-only'` member is a member this function treats exactly like
+  // any other; the declining is `hudEventNoticeFromWorkerMessage`'s.
   const { labelKey, severity } = EVENT_PRESENTATION[event.type];
   const messages = eventParameterMessages(event);
   const at = alertTime(event.tick, dayLengthTicks);
@@ -859,6 +1186,12 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // contraband category, whose word lives in the catalog under a `nameKey`.
     case 'contraband.discovered':
       return {};
+    // #966 site 2's `{room}`: a room type, resolved below from the room
+    // catalog's own `nameKey`, exactly as the relocation notice's is. No
+    // figure -- the rectangle and the anchor tile are both in the accepted
+    // outcome and both deliberately left off the wire; the schema says why.
+    case 'rooms.zoned':
+      return {};
     // Four members with nothing to substitute, and an empty object rather than
     // `undefined`: a `switch` that sometimes returned nothing would make an
     // absent `labelParameters` mean two different things at the two call
@@ -875,6 +1208,13 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
+    // And the lapse's closing row carries none either, though a count of
+    // injured does exist at its producer: `HudLocalizer` exposes `format` and
+    // not `formatPlural`, and a lapsed escape attempt injures exactly one
+    // while a riot injures its whole roll, so the sentence is quantified over
+    // the participants instead of counting them. Argued in full at the schema
+    // in `src/simulation/protocol/types.ts`.
+    case 'incidents.all-clear-after-lapse':
       return {};
     // #749's four amount-free successes. Each is a whole sentence with no
     // placeholder in it, and that is the owner's ruling rather than a gap:
@@ -885,6 +1225,16 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
     case 'construction.undone':
+    // #927's sixth. It carries no figure for the reason the two cancellation
+    // rows above carry none -- `ConstructionSystem.cancelOrder` answers `void`
+    // -- and no count for the reason `construction.undone` carries none.
+    case 'construction.undone-spend-destroyed':
+    // #945's seventh, and the one whose figure is unreachable for a *third*
+    // reason: `PlacedObjectRegistry.remove` answers `boolean`, `PlacedObject`
+    // carries no price, and the money went on materials some deliveries ago. No
+    // count either -- one press, one tile, one object, so there is nothing to
+    // count rather than a count being withheld.
+    case 'objects.removed-spend-destroyed':
     case 'construction.redone':
       return {};
   }
@@ -958,6 +1308,13 @@ function eventParameterMessages(
       return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
     case 'incidents.escape-succeeded':
       return { name: prisonerName(event.entityId, event.name) };
+    // #966 site 2's `{room}`, and it is the first bullet's `{room}` again
+    // rather than a third kind of thing: the same catalog field, passed
+    // through, resolved by the renderer. Nothing here authors a room's name and
+    // nothing here looks one up -- `RoomZoningService.zone` read it from the
+    // definition it decided the request against.
+    case 'rooms.zoned':
+      return { room: { key: event.roomNameKey } };
     // #703 ruling 13's `{item}`: the contraband catalog's own `nameKey`, passed
     // through exactly as the relocation notice's `{room}` is. This module
     // resolves nothing and authors nothing -- the five words a player can read
@@ -979,6 +1336,7 @@ function eventParameterMessages(
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':
     case 'incidents.all-clear':
+    case 'incidents.all-clear-after-lapse':
     // #749's five. Four carry nothing at all; the delivery's `{total}` is a
     // figure and is supplied by `eventParameters` above, which is where a
     // sum of minor units belongs -- nothing here needs a localizer to produce
@@ -986,6 +1344,8 @@ function eventParameterMessages(
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
     case 'construction.undone':
+    case 'construction.undone-spend-destroyed':
+    case 'objects.removed-spend-destroyed':
     case 'construction.redone':
     case 'economy.delivery-cancelled':
       return undefined;

@@ -109,12 +109,54 @@ import { tileCoordinate } from '../world/coordinates';
  * `events` is the session's `SimulationEventLog`, and it is `refusals`' mirror
  * for the case that log could never carry: a command that **worked** (the
  * owner's ruling of 2026-09-01 on
- * [#749](https://github.com/matmaxalez/lockstate/issues/749)). Only two of the
- * ten routes write to it today -- this file's `CancelMaterialPurchase`, and
- * `CancelBuildOrder`/`Undo`/`Redo` inside the construction handler it
- * constructs -- because those are the four controls #749 measured saying
- * nothing when they succeeded. The other six are outside that ruling's scope
- * and are left silent rather than given sentences nobody has written.
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749)).
+ *
+ * **Three of the ten routes write to it, and the third was not in #749's scope
+ * -- it is [#945](https://github.com/matmaxalez/lockstate/issues/945), a
+ * command that destroys money.** The paragraph below is kept as it stood
+ * because its reasoning is what left the third one silent, and the reasoning
+ * was about *scope* rather than about whether the silence was defensible. It
+ * read:
+ *
+ * > Only two of the ten routes write to it today -- this file's
+ * > `CancelMaterialPurchase`, and `CancelBuildOrder`/`Undo`/`Redo` inside the
+ * > construction handler it constructs -- because those are the four controls
+ * > #749 measured saying nothing when they succeeded. The other six are outside
+ * > that ruling's scope and are left silent rather than given sentences nobody
+ * > has written.
+ *
+ * `RemoveObject` was one of those six, and it is not like the other five.
+ * Un-zoning a room, hiring, admitting, placing and releasing a guard either
+ * move no money or produce something the player can see arrive. Removing a
+ * *standing* object destroys what it cost and leaves nothing on screen at all:
+ * #945 measured a bed costing 65 to place (`25,000 -> 24,935`) and the removal
+ * moving the treasury not at all, with the sentence band `hidden`. So this
+ * route now speaks on its standing-object success, and the remaining five stay
+ * silent -- whether *every* success should speak is the design question #945
+ * declines to settle here and marks as needing an ADR.
+ *
+ * The wording is ours under the owner's release of `AGENTS.md` reservation 4 on
+ * 2026-09-04; the truth is not, which is why the sentence is authored against
+ * `ObjectPlacementService.remove`'s standing-object arm and quoted in the commit
+ * that landed it.
+ *
+ * **A fourth route writes to it since #966 site 2, and it is the first one that
+ * moves no money: `ZoneRoom`.** The paragraph above is left exactly as it stood,
+ * for the reason it kept #749's -- its reasoning is the thing that changed. It
+ * grouped zoning with the presses that *"produce something the player can see
+ * arrive"*, which is true and is not the whole truth: a designated rectangle is
+ * tinted on the map by `zoningTint`, and that tint is keyed by the room's
+ * **category**, so the paint cannot tell a `room.cell` from a
+ * `room.holding-cell`, or a `room.kitchen` from a `room.canteen`. The type --
+ * the thing the player chose -- is what no surface stated, while all eight
+ * `zone.*` refusal sentences state their reason when the press fails.
+ *
+ * **Six routes are still silent** -- un-zoning, hiring, admitting, placing an
+ * object, releasing a guard, dismissing staff -- and whether every success
+ * should speak is still the design question #945 marks as needing an ADR. This
+ * is not that decision. It is one site the acknowledgement census (#960, #966)
+ * established as a place where a true claim was available and nothing was
+ * published.
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -189,6 +231,28 @@ export function createSessionCommandHandler(
         // and cheap, and there is no reading of "this rectangle is not
         // enclosed" that survives a room having just been zoned inside it.
         refusals.supersede(zoneAreaSupersessionKey(simCommand.x, simCommand.y, simCommand.width, simCommand.height));
+        // Issue #966 site 2: and now it says so. Until this line the only word
+        // a player got for a designation that *worked* was red text
+        // disappearing -- eight `zone.*` refusal sentences speak when the press
+        // fails, and the branch above withdraws two of them on the grounds that
+        // this rectangle is "a fact the world just confirmed" while confirming
+        // it to nobody. That is the asymmetry #749's ruling already closed for
+        // construction, never applied to zoning.
+        //
+        // Here rather than inside `RoomZoningService.zone`, which is where the
+        // other nine command successes in this function are answered -- and
+        // note that #945 had to make the opposite choice for the opposite
+        // reason: it raised its notice inside `ObjectPlacementService.remove`
+        // because a removal *cascades* into a relocation that also speaks, and
+        // the order of the two decides which one the band keeps. Zoning
+        // cascades into nothing: `zone` returns, this branch returns.
+        //
+        // `outcome.roomNameKey` and not `outcome.instance.roomCatalogId`,
+        // because the sentence names the room *type* and the catalog's
+        // `nameKey` is the word for it. The schema in `../protocol/types.ts`
+        // says why the rest of the instance -- the rectangle, the anchor tile,
+        // the enclosure reading -- is deliberately not carried.
+        events.recordRoomZoned(outcome.roomNameKey, context.tick);
       }
       return;
     }
@@ -670,6 +734,66 @@ export function createSessionCommandHandler(
         // Issue #492: the tile. A removal elsewhere must not silence a
         // standing `nothing-to-remove` about this one.
         refusals.supersede(removeKey);
+        /*
+         * **A removal that destroyed a purchase says so, and this branch is not
+         * where it says it** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+         *
+         * The notice is raised inside `ObjectPlacementService.remove`, on the
+         * line that drops the registry row, through
+         * `RemovedObjectNoticePort` -- which is wired to this session's
+         * `SimulationEventLog` in `createNewSimulationRuntime`. **Not here**,
+         * for a reason that is about the band and not about layering: a removal
+         * can also raise `prisoners.relocated`, `admitToEventBand` discards an
+         * `'info'` incumbent that a `'warning'` displaces, and a `'warning'`
+         * recorded *after* the relocation would paint over the sentence naming
+         * the prisoner who moved and lose it. Recorded before, both are read.
+         * That port's docblock carries the whole argument.
+         *
+         * Left as a comment rather than as nothing, because the other nine
+         * routes' successes are answered in this file and a reader looking for
+         * the tenth would otherwise conclude it is still silent.
+         */
+        /*
+         * **The other success this press can be, and it says the opposite
+         * thing** ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+         *
+         * A `RemoveObject` aimed at a tile whose object is still being built
+         * cancels that order instead, and a cancellation *refunds* -- so the
+         * `'warning'` above is false of it and `ObjectPlacementService.remove`
+         * has always refused to raise it there. What it did instead was say
+         * nothing, and on a band that holds exactly one sentence that is not
+         * neutral: `HudViewModel.event` is replaced by a newer event and by
+         * nothing else, and `refusals.supersede(removeKey)` two lines up
+         * supersedes a *refusal*. With the clock paused, a removal followed by
+         * a cancellation therefore left *"The object was removed -- the money
+         * it cost does not come back."* standing over the press that refunded.
+         *
+         * **`events.recordBuildOrderCancelled`, which is the event
+         * `CancelBuildOrder` already records, and no new sentence.** This press
+         * and that command reach the same `ConstructionSystem.cancelOrder`, so
+         * the same state decides the same truth: the four states before the
+         * crew starts get *"the money it cost is refunded"* and `'in-progress'`
+         * gets *"anything already spent past the point of no return stays
+         * spent"*. #945's brief called this arm *"the channel #932 fixed"* and
+         * it was not -- the route never enters that branch -- which is why the
+         * sibling arm was fixed and this one was left; that correction is
+         * `tests/integration/command-success-notices.test.ts`'s and is what
+         * this line finally acts on.
+         *
+         * **Here and not inside `remove`, which is the opposite of where #945's
+         * notice sits, and the difference is the band-ordering hazard rather
+         * than a change of mind.** That notice had to be raised before
+         * `relocateResidentsLeftWithoutAPlace` so a `'warning'` could not paint
+         * over the relocation's `'info'`; this arm relocates nobody, raises
+         * nothing else, and returns immediately -- so there is no order to get
+         * right, and the sentence belongs with the other command successes this
+         * file answers. It also keeps `ObjectPlacementService` free of a second
+         * notice port: the state travels out on the outcome, which is a fact
+         * about what happened rather than a dependency on the events channel.
+         */
+        if (outcome.kind === 'order-cancelled') {
+          events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
+        }
       }
       return;
     }

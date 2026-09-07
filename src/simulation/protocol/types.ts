@@ -885,6 +885,21 @@ export const statusCountsSchema = z
      * that particular 40, and a single percentage cannot say which rung the
      * missing ones are on.
      *
+     * **There were no 40s to attribute between 2026-09-03 and 2026-09-04, and
+     * there are again.** On 2026-09-03 the owner suspended the withheld share
+     * at `0` while they played and judged difficulty, so no grant was smaller
+     * than the headline rate for want of a guard; on 2026-09-04, after the two
+     * measurements they made it conditional on, they restored it to `40`. Both
+     * rulings are in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
+     * docblock and both directions are marked here rather than overwritten
+     * (`docs/AGENT_WORKFLOW.md` §4). The paragraph above is the reason these
+     * three counts have the shape they have, and the shape was unaffected by
+     * either move: `SafetyCoverageSystem` still decides whether `safety` is
+     * unmet, the counts still say which rung the uncovered are on, and neither
+     * the suspension nor the restoration needed a change to this payload --
+     * which the 2026-09-03 note predicted and this line now records as
+     * measured.
+     *
      * They sum to the population **standing in a sector**, which in the
      * shipped single-sector topology is every living prisoner on owned land
      * (ADR 0048 decision 1) -- not necessarily to `prisoners` above, which
@@ -1661,25 +1676,62 @@ const snapshotMessageSchema = z
  * confirmations evicts itself and other `'info'` rows before it evicts a riot.
  * Both halves are recorded because the first is a claim in that file that these
  * members falsify.
+ *
+ * ## `rooms.zoned` is the first member that acknowledges something, and that is a
+ * narrow widening again (issue #966 site 2)
+ *
+ * A census of this registry (issues #960 and #966) counted twenty members and
+ * classified them: nine bad news, six undos, two recoveries, and one --
+ * `prisoners.discharged` -- that reports something going right on a gate that
+ * is *a clock*, so nothing the player did earns it. This member is the first
+ * one a press earns.
+ *
+ * **It is the same widening #749 made and not a new one.** That ruling put the
+ * prison carrying out an instruction on this channel; an accepted room
+ * designation is a carried-out instruction that was simply not among the five,
+ * and the asymmetry it leaves is stark: all eight `zone.*` refusal sentences
+ * speak when the press fails and nothing spoke when it worked.
+ *
+ * **What it may claim is narrower than what it knows**, and the narrowing is
+ * the point rather than caution. The accepted outcome holds the whole
+ * `RoomInstance`, but a room being designated is not a room being *usable*
+ * ([#938](https://github.com/matmaxalez/lockstate/issues/938): a `sealed`
+ * perimeter reads identically for a reachable room and one with no doorway,
+ * and a prisoner measured hygiene 0 of 255 in a doorless shower room) and not
+ * a room that *works* (every type but `room.yard` needs objects placed in it,
+ * which is what the Rooms panel's own needs readout exists to say). So the
+ * payload is the room type and nothing else, and the sentence says the type
+ * was designated and stops.
+ *
+ * **The type alone is also what bounds the volume.** `simulationEventIdentity`
+ * drops the envelope and keeps the payload, so a run of designations of one
+ * type collapses into a single counted row rather than filling
+ * `MAX_EVENT_ALERT_ROWS`; carrying the rectangle or the anchor tile -- both in
+ * hand -- would make every press a distinct row, which is a real cost for a
+ * fact the player supplied themselves by dragging.
  */
 export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled',
   'construction.order-cancelled-underway',
   'construction.redone',
   'construction.undone',
+  'construction.undone-spend-destroyed',
   'contraband.discovered',
   'economy.construction-refused',
   'economy.deliveries-refused',
   'economy.delivery-cancelled',
   'economy.wages-unpaid',
   'incidents.all-clear',
+  'incidents.all-clear-after-lapse',
   'incidents.assault-opened',
   'incidents.escape-attempt-opened',
   'incidents.escape-succeeded',
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
+  'objects.removed-spend-destroyed',
   'prisoners.discharged',
   'prisoners.relocated',
+  'rooms.zoned',
 ] as const;
 
 export type SimulationEventType = (typeof SIMULATION_EVENT_TYPES)[number];
@@ -1772,6 +1824,57 @@ const residentRelocatedEventSchema = z
       .strict()
       .optional(),
     /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
+  })
+  .strict();
+
+/**
+ * A rectangle the player designated is now a room of that type
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+ *
+ * **One event per accepted press.** `createSessionCommandHandler`'s `ZoneRoom`
+ * branch records it on the `outcome.kind === 'zoned'` arm, which
+ * `RoomZoningService.zone` reaches only after it has painted every tile of the
+ * rectangle with the definition's `numericId` and registered the instance --
+ * so the fact is already in the world when this is written. A refused press
+ * records nothing here and a refusal reason instead, exactly as the other nine
+ * command successes in that function do.
+ *
+ * ## Why the payload is one message key and nothing else
+ *
+ * The accepted outcome carries the whole `RoomInstance` -- the instance id,
+ * the anchor tile, the rectangle, the derived capacities -- and this schema
+ * declines all of it.
+ *
+ * - **The room type is the fact the screen does not already carry.** A zoned
+ *   rectangle is tinted on the map by `zoningTint`
+ *   (`src/rendering/world/appearance.ts`), which is keyed by the room's
+ *   *category*: six of the eleven categories hold more than one type, so the
+ *   tint cannot tell a `room.cell` from a `room.holding-cell`, or a
+ *   `room.kitchen` from a `room.canteen`. The type is what a player cannot
+ *   read off the paint.
+ * - **The rectangle and the tile are what the player just supplied.** They
+ *   dragged them, and `hud.rooms.area-value` reads them back before the press.
+ *   Carrying them would also give every press a distinct
+ *   `simulationEventIdentity` and therefore its own row, where the type alone
+ *   collapses a run of designations into one counted row.
+ * - **Nothing about enclosure, capacity or readiness.** `enclosure: 'sealed'`
+ *   does not mean anybody can reach the room
+ *   ([#938](https://github.com/matmaxalez/lockstate/issues/938)) and a
+ *   registered instance is not a working one -- `residentCapacity` is 0 until
+ *   an object stands in it. A sentence built on either would be the promise
+ *   `AGENTS.md`'s fourth reservation protects.
+ *
+ * `roomNameKey` is the catalog's own `nameKey`, read from the definition `zone`
+ * decided the request against, and it crosses this boundary for the reason
+ * `prisoners.relocated`'s does: ADR 0011 keeps translated *text* off the wire
+ * and a message key is not text. The main thread resolves it.
+ */
+const roomZonedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('rooms.zoned'),
+    /** The type that was designated, as the room catalog's own `nameKey`. */
     roomNameKey: identifierSchema,
   })
   .strict();
@@ -2026,19 +2129,87 @@ const escapeSucceededEventSchema = z
  * producer emits only when the terminal transition leaves *no* incident open
  * anywhere (`IncidentLog.openIncidentCount`), so two overlapping incidents
  * closing produce one line rather than two, and the count of these events is
- * bounded above by the count of openings for any session at all. It is also
- * the only true thing to say after a *lapse*: an incident that ran its course
- * was not "resolved", but the prison does have nothing open.
+ * bounded above by the count of openings for any session at all.
+ *
+ * **It used to be said after a *lapse* as well, and that half is now
+ * `incidents.all-clear-after-lapse` below.** The paragraph here read: *"It is
+ * also the only true thing to say after a lapse: an incident that ran its
+ * course was not 'resolved', but the prison does have nothing open."* Every
+ * clause of that is true about `openIncidentCount` and the conclusion does not
+ * follow, which is what
+ * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` finding 4
+ * measured: a prison that had taken 114 prisoner-injuries and lost three
+ * prisoners read the same row as one that resolved fifteen incidents with
+ * nobody hurt. So this member is now the *containment* half only, and the
+ * producer chooses between the two on which terminal transition emptied the
+ * log.
  *
  * Carries no figure. What it costs -- who was injured, what was damaged,
  * whether anybody got out -- is `IncidentOutcome`, which the `hud/incidents`
- * projection already renders per incident; summing it into one number here
- * would be a second, coarser answer to a question that already has one.
+ * projection renders per incident. **That deferral is to a surface no player
+ * can reach**: nothing under `src/ui/` requests `hud/incidents`, and
+ * `tests/foundation/projection-reachability-contract.test.ts` names it in
+ * `UNPAINTED_PROJECTION_IDS` for exactly that reason. It is left standing
+ * because a per-incident accounting still belongs in that panel rather than
+ * summed onto this channel; what the sibling below adds is the one fact that
+ * cannot wait for it, which is that the ending was not a containment.
  */
 const incidentsAllClearEventSchema = z
   .object({
     ...simulationEventEnvelopeFields,
     type: z.literal('incidents.all-clear'),
+  })
+  .strict();
+
+/**
+ * The same return to calm, when the transition that produced it was a **lapse**
+ * rather than a containment (issue #914's finding 4;
+ * `docs/research/2026-09-04-does-anyone-answer-an-incident.md`).
+ *
+ * **Why the sibling above could not carry it, measured.** With six guards, 15
+ * incidents out of 15 ended `'resolved'` with zero injuries; with none, 19 out
+ * of 19 ended `'lapsed'` with 114 prisoner-injuries and three escapes -- and
+ * both prisons' alert columns held the same rows saying the same sentence,
+ * *"The prison is under control again -- no incident is still open."* That
+ * sentence is true about `IncidentLog.openIncidentCount` and misleading about
+ * the prison, and the record above says as much in its own words: *"it is also
+ * the only true thing to say after a lapse"* -- true only while the two
+ * endings shared one event, which is the premise this member removes.
+ *
+ * **A lapse is materially different and the difference is in
+ * `IncidentOutcome`, not in the opinion of whoever writes the sentence.**
+ * `IncidentResponseSystem.lapse` writes
+ * `injuredEntityIds: [...incident.participantIds]` -- every participant, with
+ * no exception and no roll -- while the `'resolved'` branch writes `[]`. It is
+ * also the only route to `escaped: true`. So "everyone caught in it was hurt"
+ * is a property of the transition rather than a flourish, which is what lets
+ * this sentence assert a cost at all.
+ *
+ * **Carries no figure, and this is a decision rather than an omission.** The
+ * count of injured is available at the producer -- `outcome.injuredEntityIds`
+ * is built one line above the call -- and is deliberately not put on the wire:
+ * `HudLocalizer` exposes `format` and not `formatPlural`
+ * (`src/ui/hud/messages.ts` states the rule at
+ * `securityCoverageUnguardedHint`), so a `{count}` here would have to read
+ * correctly at 1 as well as at 8, and a lapsed escape attempt injures exactly
+ * one (`tryOpenEscapeAttempt` names a single participant) while a riot injures
+ * its whole roll. A sentence quantified over the participants needs no plural
+ * rule and is true at every size. What a *per-incident* accounting is owed --
+ * who was hurt, what was damaged -- is finding 2 of that record and is a
+ * panel, not a row on this channel: `hud/incidents` already projects
+ * `injuredCount` and **nothing under `src/ui/` requests it**, which is the gap
+ * this member narrows rather than closes.
+ *
+ * **Bounded exactly as the sibling is**, by the same `openIncidentCount` guard
+ * in `reportAllClearIfCalm`: at most one of the two is emitted per return to
+ * calm, chosen by which terminal transition emptied the log, so this cannot
+ * outpace the openings it closes off. And suppressed by the same
+ * `escapeAnnounced` gate, so an announced escape still owns its tick (#683).
+ */
+const incidentsAllClearAfterLapseEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.all-clear-after-lapse'),
   })
   .strict();
 
@@ -2156,9 +2327,20 @@ const buildOrderCancelledEventSchema = z
   .strict();
 
 /**
- * A build order was cancelled after the crew had started it, and what it had
- * already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes it
- * true).
+ * A build order was cancelled at or past the point of no return, and what it
+ * had already consumed is gone (#749, and ruling 20 of 2026-08-31 is what makes
+ * it true).
+ *
+ * **The name says `-underway` and the member covers `'completed'` too since
+ * [#927](https://github.com/matmaxalez/lockstate/issues/927); the name is kept
+ * because it is a persisted discriminant.** `save-schema.ts` validates a save's
+ * alerts section against `simulationEventSchema` below, so renaming a type
+ * breaks every save that carries one -- and `docs/PERSISTENCE.md` prices what
+ * an existing field changing meaning costs. What a player reads is the
+ * sentence, which is quantified over *"anything already spent past the point of
+ * no return"* and is therefore true of a finished order as well as a started
+ * one. `SimulationEventLog.recordBuildOrderCancelled` carries the argument, and
+ * the two dead premises the `'completed'` silence had rested on.
  *
  * The counterpart of the member above, and the one the owner's *"silence about
  * a loss is the worst option"* is actually about. `ConstructionSystem.cancelOrder`
@@ -2213,6 +2395,91 @@ const constructionRedoneEventSchema = z
   .strict();
 
 /**
+ * The build history was walked back one transaction, and some of what it
+ * reversed was past the point of no return
+ * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ *
+ * The member above's counterpart, and the same relationship
+ * `construction.order-cancelled-underway` has to `construction.order-cancelled`
+ * on the other channel: one press, two outcomes, two sentences, split on
+ * whether anything was destroyed. `ConstructionSystem.undo` cancels every order
+ * in the transaction *including a `'completed'` one*, and `cancelOrder`
+ * destroys what an `'in-progress'` or `'completed'` order was holding -- so a
+ * `Z` on a finished wall takes the wall down and refunds nothing.
+ *
+ * **Why it took a new member rather than raising the existing
+ * `construction.order-cancelled-underway` beside `construction.undone`.** The
+ * band shows one sentence: `admitToEventBand` gives an arriving `'warning'` the
+ * line immediately over an `'info'` incumbent and **discards the incumbent
+ * rather than queueing it** (`src/ui/hud/event-band-dwell.ts`), so two events
+ * raised on one tick would have painted *"The order was cancelled…"* alone --
+ * naming a control the player did not press, in the singular, over a drag of
+ * twelve. Its own issue calls that the weakest claim in the diagnosis and it
+ * does not survive the band's arbitration.
+ *
+ * **Carries no count and no figure**, exactly as the member above does, for the
+ * same two rulings: the owner's ruling of 2026-09-01 on #749 declines the
+ * transaction-size plumbing, and `cancelOrder` answers `void` so the value
+ * destroyed is not reachable from any call site on this channel. What crosses
+ * the boundary is one bit -- see `ConstructionUndoSpendOutcome`.
+ */
+const constructionUndoneSpendDestroyedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.undone-spend-destroyed'),
+  })
+  .strict();
+
+/**
+ * An object that was standing in the prison was taken away, and what it cost
+ * is gone with it
+ * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * **The first member on this channel that is not a construction *order*'s
+ * event, and that is the whole reason it exists rather than reusing one.**
+ * `RemoveObject` has two success outcomes and they are different facts:
+ * `ObjectPlacementService.remove` reaches `ConstructionSystem.cancelOrder` for
+ * a placement still in flight -- an *order*, which the two
+ * `construction.order-cancelled*` members above already describe -- and reaches
+ * `PlacedObjectRegistry.remove` for an object that is finished and standing,
+ * which is not an order any more. Nothing on the order channel is true of the
+ * second: no order changed state, and *"the order was cancelled"* names a thing
+ * the player did not do.
+ *
+ * **What makes the sentence true is that this route gives nothing back.**
+ * `ObjectPlacementService.remove`'s standing-object arm drops the registry row,
+ * re-derives the room's capacity and relocates whoever lost a place; it holds no
+ * treasury and no container reference and writes to neither, which is the owner's
+ * ruling of 2026-09-01 -- *"Taking a finished object away returns nothing. Not
+ * its materials, not its money."*, ADR 0076's amendment of that date.
+ * `tests/integration/economy-bed-recycling.test.ts` is the measurement: the
+ * next bed is bought at 65 like anybody else's.
+ *
+ * **`-spend-destroyed` is in the name even though it is the only removal member
+ * today**, for the reason `construction.order-cancelled-underway` is a warning
+ * about names: that member's own docblock records that it had to keep a name
+ * describing one state after it grew to cover two, because a persisted
+ * discriminant cannot be renamed. So this one names the *fact its sentence
+ * asserts* rather than the gesture. A removal that one day gave something back
+ * takes a member of its own instead of quietly making this one's sentence false.
+ *
+ * **Carries no count and no figure.** No count because a removal is one press on
+ * one tile taking one object -- there is nothing to count -- and no figure for
+ * the reason the order members carry none: `PlacedObjectRegistry.remove` answers
+ * `boolean`, `PlacedObject` holds `placedObjectId`, `objectId`, `anchorTile` and
+ * `orientation` and no price, and the money the object cost was spent on
+ * materials some deliveries ago. Nothing at the call site knows the amount, so
+ * the sentence says *that* the money is gone and not how much -- the shape the
+ * owner's ruling of 2026-09-01 chose for `ConstructionSystem.cancelOrder`.
+ */
+const objectRemovedSpendDestroyedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('objects.removed-spend-destroyed'),
+  })
+  .strict();
+
+/**
  * A delivery that had not landed was cancelled, and this is what came back
  * (#749).
  *
@@ -2257,7 +2524,9 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   buildOrderCancelledEventSchema,
   buildOrderCancelledUnderwayEventSchema,
   constructionUndoneEventSchema,
+  constructionUndoneSpendDestroyedEventSchema,
   constructionRedoneEventSchema,
+  objectRemovedSpendDestroyedEventSchema,
   deliveryCancelledEventSchema,
   contrabandDiscoveredEventSchema,
   wagesUnpaidEventSchema,
@@ -2265,12 +2534,14 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   constructionRefusedEventSchema,
   dischargedEventSchema,
   residentRelocatedEventSchema,
+  roomZonedEventSchema,
   riotOpenedEventSchema,
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,
   escapeAttemptOpenedEventSchema,
   escapeSucceededEventSchema,
   incidentsAllClearEventSchema,
+  incidentsAllClearAfterLapseEventSchema,
 ]);
 
 export type SimulationEvent = DeepReadonly<z.infer<typeof simulationEventSchema>>;

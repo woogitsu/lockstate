@@ -242,6 +242,46 @@ an abort deadline, and it never retries: a failed batch is dropped by the sink,
 silently, because a diagnostics pipeline that reports its own failures can spam a
 player about a problem they did not have.
 
+### And what is on the other end, as of 2026-09-03
+
+There is now a receiving half, and **it accepts nothing.**
+
+The owner authorised this project's first server-side entry point on
+2026-09-03, for this ingest and for nothing else (`AGENTS.md`, "The owner's
+standing mandate", carries their words and the date; `docs/DEPLOYMENT.md`, "What
+actually landed", answers the nine pre-merge items). `wrangler.jsonc` declares
+`main`, and `src/worker/` holds a handler whose own docblock carries the threat
+model for what it accepts from the open internet.
+
+What it does before it would store anything: `POST` only, `application/json`
+only, a bounded body checked against both the declared and the delivered length,
+strict UTF-8, `JSON.parse`, a `.strict()` wire schema, a bounded batch, and then
+every envelope through the **same** admission function the sink calls — envelope
+schema, registration, category agreement, redaction fixed point. One bad
+envelope refuses the whole batch; nothing is coerced, truncated or partially
+stored; and a refusal is one machine-readable code with no part of the request
+echoed back. The stored arrival time is the server's and the sample rate comes
+from the receiver's own registry copy, so neither of the two fields this
+document warns about below is trusted.
+
+**Three things are still absent, and the middle one is why nothing collects.**
+
+1. **A destination.** The `telemetry_events` table, its insert function and the
+   dedicated least-privilege database role are `supabase/migrations/`, which is
+   the owner's. With no destination the handler refuses a well-formed batch with
+   `destination-unconfigured` *before it reads the body* — a stricter posture
+   than validating and discarding.
+2. **A configured path, on either side.** The Worker claims a route only when
+   its own binding names one, and no environment sets it; the client sends only
+   when its two compile-time strings are set, and no workflow sets those. Both
+   default to absent. **Set the Worker binding first**: a client path with no
+   matching Worker route reaches the SPA shell with `200`, and the sink counts
+   that as a delivered batch.
+3. **A request-rate bound.** Deliberately not in the Worker: a limiter must key
+   on something, and the only value available is the caller's IP, which this
+   document and ADR 0046 both forbid retaining. It belongs at the edge, in
+   configuration.
+
 ## Release correlation without public source maps
 
 `vite.config.ts` keeps `sourcemap: false` for shipped assets, and
@@ -262,6 +302,30 @@ wrong fix and is explicitly rejected.
 **These numbers are not enforced by anything today.** Retention is the
 ingestion side's to enforce and no ingestion side exists; the client's
 obligation is only to send the minimum that makes them meaningful, and it does.
+
+**Both paragraphs below this one are superseded as of 2026-09-04 and are left
+standing, because each was true of the tree it was written against and the
+direction is the finding.** The first says the numbers are *"not enforced by
+anything today"*; the second says *"there is no table for a window to run over
+and no job to run one"*. There is now a table, a retention function and an audit
+table for its runs, in
+`supabase/migrations/20260904090000_create_telemetry_events.sql`, authorised by
+the owner on 2026-09-04 in the words that file quotes and dates. **What replaces
+those two sentences is not the word "enforced"** — see "What exists, and what one
+command away means" below, which is the current statement and the one to read
+first.
+
+**Still true on 2026-09-03, and the clause that changed is worth being precise
+about.** An *endpoint* now exists (see "And what is on the other end" above) and
+nothing about retention does: there is no table for a window to run over and no
+job to run one. What the endpoint does supply is the value a window would have
+to key on — `receivedAt`, stamped by the server from its own clock and
+unsettable from the body — which is the precondition ADR 0046 §7 item 1 spends
+its whole correction on. The retention job itself is a different kind of thing
+from the ingest: ADR 0008's scope amendment puts it **inside** §3, because
+deciding which events survive *is* the half §2 assigns to Z2, so it owes an
+audit of what rule it applied over what window and what it removed. The ingest
+owes none of that and the job owes all of it.
 [ADR 0046](./adr/0046-shipping-the-telemetry-pipeline.md) lists what the
 ingestion side must do before this table is true — a scheduled deletion job, no
 stored IP address, no join from a session id to anything, server-side schema
@@ -283,6 +347,52 @@ deletion or data request, telemetry associated with that account is deleted
 identifier by design, which is the intended outcome rather than a gap. No
 attempt is made to re-identify a session id, and session ids are never
 joined to account records.
+
+### What exists, and what "one command away" means
+
+**Added 2026-09-04, and it is the current statement of this section's status.**
+Two things landed together: the ingest destination itself and a retention rule
+for it, both in one migration and neither applied anywhere.
+
+**The rule is expressed in code.** `public.enforce_telemetry_retention()` runs
+the three windows above, one per category, and deletes strictly on the
+server-stamped `received_at` — never on the client's `occurredAt`, which arrives
+as a separate `claimed_occurred_at` that the window does not read. Every run
+writes one row per category into `public.telemetry_retention_runs`, in the same
+transaction as the delete it describes, recording the rule applied, the boundary
+used, the role it ran as and how many rows stopped existing. That audit is not a
+nicety: [ADR 0008](./adr/0008-trusted-service-boundary.md)'s 2026-08-27 scope
+amendment puts a *scheduled* job **inside** its §3, unlike the ingest, and §3
+step 6 asks for one. The audit table holds counts, boundaries and the rule and
+no part of any row it deleted, because an audit of a privacy deletion that
+copies the deleted data has deleted nothing. The column that names the key is
+pinned by a constraint:
+`check (keyed_on = 'received_at')` (verbatim in `supabase/migrations/20260904090000_create_telemetry_events.sql`),
+so a run cannot record a window it did not run.
+
+**And "enforced" is still the wrong word, which is why this heading does not use
+it: a function nothing calls enforces nothing.** No schedule exists in this
+repository. Scheduling it is one command, and both forms — a `pg_cron` entry and
+an external caller — are written out ready to run in that migration's own
+section 7, with a sentence saying which is the owner's to pick. Enabling an
+extension and adding a deploy schedule are both outside what this repository
+decides. **Until one of those commands is run, and a destination is configured,
+these numbers are a rule the database knows and does not apply.**
+
+**One row of the table above does not describe the same thing the code selects,
+and it is named here rather than quietly reinterpreted.** Rows one and two say
+`events`; row three says `aggregates`, and nothing stores an aggregate — ADR 0008's
+same amendment expects aggregates to be *"folded from the stored events, never
+written independently"*. The job applies 30 days to the rows `category =
+'gameplay'` selects, on the reading that "aggregates" describes that category,
+which is how this document's own category table introduces it: "Coarse
+aggregates for scenario/tutorial design". What settles the reading is the
+direction of the risk rather than the grammar — a retention number is a
+**ceiling**, so 30 days over those rows keeps the promise under either reading,
+while leaving the window out would keep it under neither and let those rows grow
+without bound. If the intended reading was ever "a future rollup gets 30 days
+and raw gameplay events get 90", that is a decision somebody has to write down,
+and until they do the honest thing is to apply the number this table prints.
 
 ## Adding an event
 

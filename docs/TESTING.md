@@ -67,7 +67,7 @@ fails `pnpm test` without needing any art at all.
 
 ```bash
 scripts/provision-postgres.sh   # needs root or passwordless sudo
-pnpm verify:sql                 # 321 pgTAP assertions
+pnpm verify:sql                 # 412 pgTAP assertions
 ```
 
 It is deliberately **version-agnostic**. It uses whichever PostgreSQL major version is already installed, or failing that whichever one the distribution ships, and installs the matching `postgresql-<major>-pgtap`. No third-party apt repository is added and no major version is pinned anywhere: the schema is executed and green on **PostgreSQL 16.13 + pgTAP 1.3.2** and on **18.6 + pgTAP 1.3.4**, and Ubuntu 26.04 does not package 16 at all. It then ensures the cluster is running and that the invoking user has a login role with SUPERUSER — the compatibility harness creates extensions and roles, so CREATEDB alone is insufficient. Set `DATABASE_URL` to point `pnpm verify:sql` at an existing server instead; the role step then does nothing.
@@ -297,6 +297,42 @@ passed before the gate existed, and the marker window is deliberately narrow
 because the first version read markers over the whole comment block and a
 hundred-line docblock's unrelated *"there is no ..."* exempted a real defect.
 
+### A conflict marker is invisible to every other gate (#983)
+
+`tests/foundation/merge-conflict-marker-contract.test.ts` reads every **tracked**
+file — enumerated from `git ls-files`, read out of the working tree — and fails
+when a line *begins* with a merge conflict marker.
+
+The reason it is a gate rather than a habit is that nothing else here can see
+one. Measured at `1ad2189a` (v0.0.483) with `<<<<<<< HEAD`, `=======` and
+`>>>>>>> origin/main` committed into `docs/research/README.md` and nothing else
+changed: both `pnpm typecheck` projects exit 0, `tests/foundation` reports
+**483 passed (483)** and `pnpm test` reports **401** files and **4729 passed |
+1 skipped**. `docs/**` is on no TypeScript project's `include`, no test imports
+a Markdown file, and the markers render as literal text inside a table cell, so
+the index goes on looking approximately right in a diff. That index is also the
+file this repository conflicts on constantly — every research note appends at
+the same point — so the residue has a well-worn route in.
+
+It reports three shapes separately. A **complete hunk** is a conflict `git
+merge` wrote and nobody resolved. An **unpaired marker line** is what a
+mis-scoped resolution regex leaves behind, and is the shape #983 is actually
+about — a check that required the pair, as that issue first proposed, would be
+blind to it. A **marker-shaped line the strict patterns cannot read** is the
+second-pattern discipline `tests/foundation/adr-quotation-verbatim-contract.test.ts`
+learned the hard way in #981: a pattern cannot report its own misses.
+
+**What keeps it from shouting at documentation is that a marker must start the
+line.** Prose quotes a marker inline in backticks — this paragraph does — and
+`git` only ever writes one at column zero. A bare `=======` is never a finding
+on its own, because it is a legal setext heading underline; it counts only in a
+file that already carries an open or close line, and that blind spot is named
+in the contract rather than left to be discovered. Measured across all 1390
+tracked text files at that base: **zero** lines begin with seven `<`, `>`, `|`
+or `=`, so the rule costs nothing today. Git LFS pointers are text and are
+scanned; the 23 screenshots under `docs/research/` are skipped by the same
+NUL-byte heuristic `git` uses. The whole walk is 133 ms.
+
 ### The production artefact layer, and the hole it closes
 
 `pnpm test:browser` and `pnpm test:artifact` both drive Chromium and they are
@@ -471,7 +507,7 @@ It gates the narrower measure deliberately. "No consumer in `src/` outside the c
 
 **And a state attribute does not imply the state.** The sibling of the paragraph above, found the same way and worth stating separately because the false pass is one layer further from the pixels. `createPanel` collapses a panel by setting `hidden` on its body and stamping `data-collapsed`; `hud.css` gives two panel bodies a flex `display` of their own, which outranks the user agent's `[hidden] { display: none }`. So the Build and Rooms panels' collapse controls set the attribute, stamped the flag, announced `aria-expanded="false"` and left the body on screen — measured at 375x812, a 451.1px panel with its body still laid out at 404.1px. Nothing was asserting it, and an assertion on `data-collapsed` or on `hidden` would have agreed with the defect: both were correct, and only the *box* was not. The fold assertions therefore read `getClientRects().length` on the body, and the fix is a stylesheet line rather than a per-panel `:not([hidden])`, so a third panel with its own `display` cannot inherit it. This is the same lesson as the `--tap-target` one: a token is not a layout, an attribute is not a layout, and only a measured box is.
 
-**The same defect at the leaf, and only at some viewports** (#451). The `.ui-panel__body[hidden]` line above closes it for panel bodies; it does not close it for the individual *lines* inside them, and two of those had it. `hud.css` clamps `.hud-build__note`, `.hud-staff__note`, `.hud-rooms__note` and `.hud-regime__note` to one line under `@media (max-height: 700px)`, and the clamp needs `display: -webkit-box` — an author `display`, so at those viewports and only at those viewports it outranks `[hidden] { display: none }` for every line carrying one of those classes. `build-panel.ts` already knew: `deliveriesMore` and `queueMore` each carry a second class purely to hang a `[hidden]` rule on. The two lines that did not were the Staff panel's `heldEmpty` and the Regime panel's `rosterEmpty`, and each is hidden exactly when its list is *not* empty — so "Nobody is assigned right now." was on screen between three held guards and "and 2 more", and "Nobody has been admitted yet." was on screen under four prisoners. Both at 900x600, which is the only viewport either spec visits that is 700px tall or shorter — the same viewport every other measurement in this file turns on, and the reason it is in both lists. Measured, in both cases, by removing the `[hidden]` guard and watching the assertion go red; before the guards existed the suite was green with both sentences painted. Every existing assertion agreed with the defect for the usual reason and one more: `heldGuardsProbe.emptyText` filters by `getClientRects()`, which was right, but it reports the *first* laid-out `.hud-staff__note` in the block and the block ends with a permanent hint carrying the same class — so the field reads the hint the moment the empty line is correctly gone, and the assertion has to be a rendered-text one (`innerText` on the block) rather than a probe field. The guards are `.hud-staff__note[hidden]` and `.hud-regime__note[hidden]`, in the form the file already uses for `.hud-staff__held[hidden]` and `.hud-regime__roster-more[hidden]`.
+**The same defect at the leaf, and only at some viewports** (#451). The `.ui-panel__body[hidden]` line above closes it for panel bodies; it does not close it for the individual *lines* inside them, and two of those had it. `hud.css` clamps `.hud-build__note`, `.hud-staff__note`, `.hud-rooms__note` and `.hud-regime__note` to one line under `@media (max-height: 700px)`, and the clamp needs `display: -webkit-box` — an author `display`, so at those viewports and only at those viewports it outranks `[hidden] { display: none }` for every line carrying one of those classes. `build-panel.ts` already knew: `deliveriesMore` and `queueMore` each carry a second class purely to hang a `[hidden]` rule on. The two lines that did not were the Staff panel's `heldEmpty` and the Regime panel's `rosterEmpty`, and each is hidden exactly when its list is *not* empty — so "Nobody is assigned right now." was on screen between three held guards and "and 2 more", and "Nobody has been admitted yet." was on screen under four prisoners (the wording measured; `hud.regime.roster-empty` reads "No prisoners yet. Build a cell with a bed to take somebody in." since the owner's ruling of 2026-09-03, and the defect was about the `[hidden]` guard rather than the words). Both at 900x600, which is the only viewport either spec visits that is 700px tall or shorter — the same viewport every other measurement in this file turns on, and the reason it is in both lists. Measured, in both cases, by removing the `[hidden]` guard and watching the assertion go red; before the guards existed the suite was green with both sentences painted. Every existing assertion agreed with the defect for the usual reason and one more: `heldGuardsProbe.emptyText` filters by `getClientRects()`, which was right, but it reports the *first* laid-out `.hud-staff__note` in the block and the block ends with a permanent hint carrying the same class — so the field reads the hint the moment the empty line is correctly gone, and the assertion has to be a rendered-text one (`innerText` on the block) rather than a probe field. The guards are `.hud-staff__note[hidden]` and `.hud-regime__note[hidden]`, in the form the file already uses for `.hud-staff__held[hidden]` and `.hud-regime__roster-more[hidden]`.
 
 The #82 guard itself was **deliberately left DOM-only** for one release, with the measurement written above it, because pairing it with `toBeVisible()` would have failed while the sentence was still routed into the alerts list — where that alert should go was #220's design decision and not a test's to make. #220 settled it: the sentence now goes to `.hud__unavailable`, a HUD grid row of its own that is laid out at every width and needs no section opened, and the guard asserts `toBeVisible()`, a non-zero rendered box and that `.hud` innerText contains the sentence, at 1280x720 and again at 375x812. The comment above it records the old measurement, so the history of the false pass stays readable at the assertion that used to be it.
 

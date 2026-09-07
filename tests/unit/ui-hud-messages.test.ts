@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
@@ -44,6 +44,59 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
 
 const hudFiles = collectTypeScriptFiles(HUD_ROOT);
 const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
+
+/**
+ * Every module `src/ui/hud/` and `src/ui/primitives/` hold today, named.
+ *
+ * The floors below (`> 4`, `> 8`) tolerate losing most of a flat directory
+ * before they notice; a walk that silently dropped a subset of it -- the
+ * exact shape `tests/unit/services-layer-boundaries.test.ts` and
+ * `tests/unit/navigation-no-phaser.test.ts` were both found to carry in
+ * `docs/research/2026-09-02-the-unit-gates-that-cannot-fail.md` -- would
+ * still clear them while an offending file sat unscanned, including one that
+ * imports the simulation directly (AGENTS.md boundary 1). These lists close
+ * that: adding or removing a module is a one-line, reviewable diff here.
+ */
+const HUD_MODULE_NAMES = [
+  'alert-row-label.ts',
+  'build-panel.ts',
+  'dismiss-arming.ts',
+  'event-band-dwell.ts',
+  'hud-state.ts',
+  'hud.ts',
+  'index.ts',
+  'intake-panel.ts',
+  'label-parameters.ts',
+  'messages.ts',
+  'pooled-row-binding.ts',
+  'projection.ts',
+  'regime-panel.ts',
+  'rooms-panel.ts',
+  'staff-panel.ts',
+  'status-strip.ts',
+  'tool-arming.ts',
+  'view-model.ts',
+] as const;
+const PRIMITIVE_MODULE_NAMES = [
+  'action-button.ts',
+  'async-action.ts',
+  'choice-group.ts',
+  'collapsible-section.ts',
+  'dom.ts',
+  'focus-handoff.ts',
+  'icon-button.ts',
+  'icon.ts',
+  'index.ts',
+  'list-row.ts',
+  'number-field.ts',
+  'panel.ts',
+  'roving-focus-keydown.ts',
+  'roving-focus.ts',
+  'segmented-bar.ts',
+  'stat-chip.ts',
+  'status-badge.ts',
+  'tab-button.ts',
+] as const;
 
 /**
  * Source with comments removed, so prose about a rule cannot trip the rule.
@@ -357,6 +410,11 @@ describe('HUD architectural boundaries', () => {
   it('covers a non-trivial number of files', () => {
     expect(hudFiles.length).toBeGreaterThan(4);
     expect(primitiveFiles.length).toBeGreaterThan(8);
+  });
+
+  it('scans every module by name, not just enough of them to clear the floor above', () => {
+    expect(hudFiles.map((path) => basename(path)).sort()).toEqual([...HUD_MODULE_NAMES].sort());
+    expect(primitiveFiles.map((path) => basename(path)).sort()).toEqual([...PRIMITIVE_MODULE_NAMES].sort());
   });
 
   it('imports nothing from the simulation', () => {

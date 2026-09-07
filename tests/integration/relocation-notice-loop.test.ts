@@ -272,7 +272,49 @@ describe('what the player is told when a removal moves somebody (ADR 0076 A(i))'
     expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'stranded, and not evicted').toBe(cellInstanceId);
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity, 'in a cell with no bed').toBe(0);
     expect(relocationEventsOf(runtime), 'and the prison says nothing, because nobody moved').toEqual([]);
-    expect(runtime.events.since(0), 'nothing else is announced either').toEqual([]);
+    /*
+     * **The second assertion here read `toEqual([])` over the whole log until
+     * [#945](https://github.com/matmaxalez/lockstate/issues/945), and the old
+     * expectation is quoted rather than deleted** (`docs/AGENT_WORKFLOW.md`
+     * section 4). It was:
+     *
+     * > expect(runtime.events.since(0), 'nothing else is announced either').toEqual([]);
+     *
+     * It was written to catch a producer that announced *something* about a
+     * resident it could not move, and the whole log was the widest net
+     * available for that at the time -- because this press said nothing at all.
+     * That is what #945 found and fixed: the press destroys what the bed cost,
+     * so `objects.removed-spend-destroyed` is now on the log, and a bare `[]`
+     * would be asserting the silence rather than the subject.
+     *
+     * **The net is narrowed to its subject rather than widened to fit.** The
+     * removal sentence is named as the *only* thing allowed here, so a producer
+     * that says anything about the stranded resident still fails -- which is the
+     * property the old line had and the reason it existed. What is no longer
+     * asserted is that the press is mute, which was never this case's point.
+     */
+    /*
+     * **And it happened again, to the narrowed line, which is worth recording
+     * as a pattern rather than as an event.** From #945 until #966 site 2 the
+     * assertion below read:
+     *
+     * > expect(runtime.events.since(0).map((event) => event.type), '…').toEqual(['objects.removed-spend-destroyed']);
+     *
+     * An accepted `ZoneRoom` now says so, and this fixture presses two of them
+     * to build the prison at all -- so the whole log again holds something this
+     * case has no opinion about. The response is the one the paragraph above
+     * argues for rather than a wider `toEqual`: the net is narrowed to the two
+     * families that could say anything about the removal or about the resident,
+     * so a producer that announces something about either still fails here, and
+     * a fixture that presses one more button does not.
+     */
+    expect(
+      runtime.events
+        .since(0)
+        .map((event) => event.type)
+        .filter((type) => type.startsWith('objects.') || type.startsWith('prisoners.')),
+      'the removal says what it cost, and nothing says anything about the resident it could not move',
+    ).toEqual(['objects.removed-spend-destroyed']);
   });
 
   it('says nothing when the removal moved nobody, so the band is not noise', () => {

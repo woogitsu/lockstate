@@ -57,10 +57,21 @@ export interface SecuritySectorDefinition {
 
 /**
  * Like sessions do not fabricate room instances (#24), a sector's static
- * definition is assumed re-registered identically by session/scenario setup
- * before `loadSnapshot` runs -- only the *mutable* control state is part of
- * the snapshot, matching `RoomInstanceRegistry`'s "occupancy only" restore
- * scope.
+ * definition is assumed re-registered by session/scenario setup before
+ * `loadSnapshot` runs -- only the *mutable* control state is part of what
+ * `loadSnapshot` itself restores, matching `RoomInstanceRegistry`'s
+ * "occupancy only" restore scope.
+ *
+ * **This used to say "re-registered identically," full stop, and that is no
+ * longer the whole story.** Since [ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)
+ * decision 3 a restore caller may follow `register` with `redefine` for a
+ * sector id the payload's own row disagrees with -- deliberately, so the
+ * save wins over whatever session/scenario setup would otherwise have
+ * derived. The class itself stays a plain append-then-narrow-mutate store and
+ * knows nothing about payloads or precedence; that policy lives in the
+ * restore caller (`restoreSessionSystems`, `session-systems.ts`), which is
+ * exactly where `RoomInstanceRegistry`'s own "occupancy only" policy lives
+ * too rather than in that registry.
  */
 export class SecuritySectorRegistry {
   private readonly definitions = new Map<string, SecuritySectorDefinition>();
@@ -83,6 +94,45 @@ export class SecuritySectorRegistry {
 
   public getDefinition(id: string): SecuritySectorDefinition | undefined {
     return this.definitions.get(id);
+  }
+
+  /**
+   * Narrow, explicit mutator for an already-registered sector
+   * ([ADR 0092](../../../docs/adr/0092-who-decides-where-a-guard-stands.md)
+   * decision 2) -- the only three fields nothing else in the registry derives
+   * anything from. Throws for an unknown id, exactly like every other
+   * `id`-addressed method here. Deliberately cannot touch `id`, `gradeId` or
+   * `doorIds`: those are what `normalDoorStates` was captured against at
+   * `register` time (decision 2's own reasoning, and ADR 0036 decision 4
+   * point 2's "no un-register and no replace" before it), and this method
+   * leaves `controlStates` and `normalDoorStates` untouched for the same
+   * reason -- a sector under lockdown whose post moves stays under lockdown.
+   * A field absent from `changes` is left exactly as it is; `patrolRoute` and
+   * `expectedPatrolLoopTicks` are themselves optional on the definition, so
+   * "leave as is" already covers the only case decision 3's restore-path
+   * caller needs from a payload row that carries neither.
+   */
+  public redefine(
+    id: string,
+    changes: {
+      readonly postTile?: TilePosition;
+      readonly patrolRoute?: readonly TilePosition[];
+      readonly expectedPatrolLoopTicks?: number;
+    },
+  ): void {
+    const current = this.requireDefinition(id);
+    this.definitions.set(id, {
+      id: current.id,
+      gradeId: current.gradeId,
+      doorIds: current.doorIds,
+      postTile: changes.postTile ?? current.postTile,
+      ...((changes.patrolRoute ?? current.patrolRoute) !== undefined
+        ? { patrolRoute: changes.patrolRoute ?? current.patrolRoute }
+        : {}),
+      ...((changes.expectedPatrolLoopTicks ?? current.expectedPatrolLoopTicks) !== undefined
+        ? { expectedPatrolLoopTicks: changes.expectedPatrolLoopTicks ?? current.expectedPatrolLoopTicks }
+        : {}),
+    });
   }
 
   public requireDefinition(id: string): SecuritySectorDefinition {

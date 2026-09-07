@@ -19,6 +19,7 @@ import {
   UNKNOWN_HUD_CLOCK,
   type HudClockViewModel,
   type HudCountsViewModel,
+  type HudRoomNeedsViewModel,
   type HudSpeed,
 } from '../../src/ui/hud/view-model';
 import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/segmented-bar';
@@ -208,7 +209,92 @@ function metric(view: HudCountsViewModel, id: HudMetricId): HudMetricDescriptor 
   return found!;
 }
 
+/**
+ * The same lookup with the second input the strip now takes (#1006 finding 1).
+ *
+ * A second helper rather than a second parameter on `metric`, because the
+ * cases above are about a strip that has been handed **no** room readout at
+ * all, and that is the state a session spends its first frames in. Passing
+ * `undefined` explicitly through the existing helper would have made every one
+ * of those cases assert the absent-readout arm by accident rather than on
+ * purpose; the case directly below asserts it deliberately.
+ */
+function metricWithRoomNeeds(
+  view: HudCountsViewModel,
+  roomNeeds: HudRoomNeedsViewModel | undefined,
+  id: HudMetricId,
+): HudMetricDescriptor {
+  const found = projectStatusMetrics(view, roomNeeds).find((descriptor) => descriptor.id === id);
+  expect(found, `no ${id} metric in the strip`).toBeDefined();
+  return found!;
+}
+
+/**
+ * A room readout in the shape `roomNeedsFromProjections` returns one.
+ *
+ * `needs` is left empty in every case here on purpose: the badge is drawn from
+ * `unfinishedRooms` alone, and a fixture that filled the list would let a
+ * projection reading `needs.length` pass. The two figures are deliberately made
+ * to disagree below for the same reason.
+ */
+function roomNeeds(overrides: Partial<HudRoomNeedsViewModel> = {}): HudRoomNeedsViewModel {
+  return { unfinishedRooms: 0, totalRooms: 0, totalNeeds: 0, needs: [], atCapacity: [], ...overrides };
+}
+
 describe('status strip: tone and badges', () => {
+  it('says on the rooms chip how many rooms are not ready, on every tab (#1006 finding 1)', () => {
+    /*
+     * The defect this closes, measured by play-test on 2026-09-05: a cell with
+     * no door in its wall line reported `NOT READY 1 of 1` in `.hud-rooms`,
+     * which is not laid out on any other tab, while the strip read `1 ROOMS`
+     * with no qualifier. Eight game days on OVERVIEW produced two messages and
+     * not one word about the door.
+     *
+     * The badge is what a player on any tab now sees. It does not say *why* --
+     * that stays the panel's job, and a missing bed and a missing door are both
+     * counted here.
+     */
+    const notReady = metricWithRoomNeeds(
+      counts({ rooms: 3 }),
+      // The two figures disagree deliberately: `totalNeeds` counts the things
+      // those rooms are short between them, and a badge reading 4 would be
+      // counting requirements where the sentence says rooms.
+      roomNeeds({ unfinishedRooms: 2, totalRooms: 3, totalNeeds: 4 }),
+      'rooms',
+    );
+    expect(notReady.value, 'the chip keeps the raw room count a player asks it for').toBe(3);
+    expect(notReady.badge).toEqual({
+      tone: 'warning',
+      textKey: HUD_MESSAGE_KEY.roomsNotReady,
+      numberParameters: { count: 2 },
+    });
+    // `numberParameters` and not `parameters`: the strip formats these through
+    // `HudLocalizer.formatNumber`, so a prison with 1,240 unfinished rooms
+    // reads `1,240 not ready` under a chip reading `1,240` rather than `1240`.
+    // The badge that forced that channel is `{remaining} left`; this is the
+    // class, not the instance.
+    expect(notReady.badge?.numberParameters).toBeDefined();
+    expect(notReady.tone, 'the badge is the only signal, so the chip is not toned as well').toBeUndefined();
+
+    /*
+     * The two states that draw nothing, and they are different facts.
+     *
+     * `unfinishedRooms === 0` is the simulation saying every room works; an
+     * absent readout is nothing having asked, which is what a session before it
+     * starts and after it stops looks like. Neither may render as `0 not
+     * ready`: the first would be a permanent badge on a chip that is fine --
+     * *"a status strip where several things are always amber teaches players to
+     * ignore amber"* -- and the second would be a claim about a prison nothing
+     * is answering for.
+     */
+    expect(metricWithRoomNeeds(counts({ rooms: 3 }), roomNeeds({ totalRooms: 3 }), 'rooms').badge).toBeUndefined();
+    expect(metricWithRoomNeeds(counts({ rooms: 3 }), undefined, 'rooms').badge).toBeUndefined();
+    // And the strip's other eight chips are unmoved by the new input.
+    expect(projectStatusMetrics(counts(), roomNeeds({ unfinishedRooms: 2 })).map((each) => each.id)).toEqual(
+      projectStatusMetrics(counts()).map((each) => each.id),
+    );
+  });
+
   it('states the incident condition in words, so colour is never the only signal', () => {
     const clear = metric(counts({ activeIncidents: 0 }), 'incidents');
     expect(clear?.badge).toEqual({ tone: 'success', textKey: HUD_MESSAGE_KEY.incidentsClear });
@@ -1067,5 +1153,40 @@ describe('refusalMessageKey: what a refused control says', () => {
     expect(refusalMessageKey('set-clock', 'past-the-overdraft-floor')).toBe(HUD_MESSAGE_KEY.refusalSetClock);
     expect(refusalMessageKey('undo', 'past-the-overdraft-floor')).toBe(HUD_MESSAGE_KEY.refusalUndo);
     expect(refusalMessageKey('select-tab', 'past-the-overdraft-floor')).toBeUndefined();
+    // The second reason obeys the same rule, and this is the half that matters:
+    // 'no-room-to-hold-anybody' on a control that admits nobody would be a
+    // claim about beds on a button that buys bricks.
+    expect(refusalMessageKey('purchase-materials', 'no-room-to-hold-anybody')).toBe(
+      HUD_MESSAGE_KEY.refusalPurchaseMaterials,
+    );
+    expect(refusalMessageKey('set-clock', 'no-room-to-hold-anybody')).toBe(HUD_MESSAGE_KEY.refusalSetClock);
+    expect(refusalMessageKey('select-tab', 'no-room-to-hold-anybody')).toBeUndefined();
+  });
+
+  it('says what a refused Admit is missing, which is the owner\'s ruling of 2026-09-03', () => {
+    /*
+     * **Before the ruling, a refused Admit said only the generic sentence** and
+     * the real reason went to `console.warn`: `src/main.ts` threw a plain
+     * `Error`, and the message on a thrown value is diagnostic English that
+     * ADR 0011 says deliberately never reaches a player. So the game knew what
+     * was missing and told nobody (issue #869 -- whose first filing prescribed
+     * "throw the other type, the sentence already exists" and was **wrong**,
+     * because the sentence did not exist and had to be ruled).
+     *
+     * The generic sentence is deliberately kept reachable: a refused Admit for
+     * any other reason still reads it, which is what stops this reason from
+     * becoming the only thing an Admit can ever say.
+     */
+    expect(refusalMessageKey('admit-prisoner', 'no-room-to-hold-anybody')).toBe(
+      HUD_MESSAGE_KEY.refusalAdmitPrisonerNoRoom,
+    );
+    expect(refusalMessageKey('admit-prisoner')).toBe(HUD_MESSAGE_KEY.refusalAdmitPrisoner);
+    expect(refusalMessageKey('admit-prisoner', 'past-the-overdraft-floor')).toBe(
+      HUD_MESSAGE_KEY.refusalAdmitPrisoner,
+    );
+    // Two different sentences, so a player can tell the two refusals apart.
+    expect(refusalMessageKey('admit-prisoner', 'no-room-to-hold-anybody')).not.toBe(
+      refusalMessageKey('admit-prisoner'),
+    );
   });
 });

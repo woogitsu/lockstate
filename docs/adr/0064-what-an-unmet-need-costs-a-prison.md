@@ -76,6 +76,181 @@ prisoner is held in, evaluated per occupied place.**
    type is added, no RNG stream is taken, no state is added, and
    `SAVE_SCHEMA_VERSION` stays at 4.
 
+### Amendment, 2026-09-03: the owner suspended the withheld share at zero
+
+**This records the repository owner's own ruling, dated, in their words. It is
+not a recommendation of this repository's and it was not self-approved** — per
+`docs/AGENT_WORKFLOW.md` §3, an implementing agent does not approve its own
+work, and this section exists because the decision was the owner's to take.
+**Nothing in this ADR's `Status` moves and no word of decisions 1 to 5 above is
+edited**: they are quoted below rather than rewritten, because what the owner
+suspended is a *rate*, and a reader restoring it needs the decision exactly as
+it was taken.
+
+#### What was put to the owner, and what they answered
+
+They were shown the shipped mechanic measured in play: the grant pays 300 per
+prisoner-day and withholds 40 for every unmet need, so a fully served prisoner
+is worth **five times** a neglected one, and in a measured twenty-day run a
+prison took **1,196 a day where 2,700–3,600 was available** — roughly two
+thirds of the grant withheld daily, with **nothing on screen saying so**. They
+were offered four ways to surface it. They chose none of them and ruled
+instead:
+
+> usuń na razie kary, zobaczymy jak pogram i ocenię łatwość
+
+("remove the penalties for now, we'll see how it plays and I'll judge the
+ease.")
+
+#### What that suspends, quoted rather than overwritten
+
+Decision 2 above reads:
+
+> One place pays `stateIncomeForPrisonerDay(unmetNeeds)` =
+> `max(0, 300 − 40 × unmetNeeds)`, where `unmetNeeds` counts how many of that
+> place's occupant's six needs stand at or below **51** — a fifth of
+> `NEED_MAX`. The schedule is `300, 260, 220, 180, 140, 100, 60`.
+
+**The `40` in that sentence is `0` while the owner plays**, so the schedule is
+`300, 300, 300, 300, 300, 300, 300` and an unmet need costs a prison nothing.
+The line that made it so was
+`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 0;`, with the
+ruling and the owner's words recorded in that constant's own docblock.
+
+> **That line is no longer in the file, and this paragraph is kept as it stood
+> rather than rewritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+> The owner restored the withheld share on 2026-09-04 — see *"Amendment,
+> 2026-09-04"* below, which carries the current line verbatim. Its attribution
+> was removed from the sentence above for one mechanical reason worth stating:
+> `tests/foundation/adr-quotation-verbatim-contract.test.ts` binds every
+> `(verbatim in …)` quotation to the file it names, and it went red on this
+> sentence the moment the constant moved. That gate is what discovered this
+> paragraph, which is the thing it was built to do.
+
+Everything else decisions 1 to 5 settle is **untouched and still in force**: the
+grant is still paid per occupied place per in-game day holding no state (1); a
+day's income is still the sum of per-place terms and never a mean (3); the
+"earned today" readout is still derived from the same walk (4); and nothing
+retunes the risk policy, adds an incident type, takes an RNG stream, adds state
+or moves `SAVE_SCHEMA_VERSION` (5). `STATE_INCOME_UNMET_NEED_LEVEL` (51) is
+**not** suspended — it still decides which needs count as unmet, which is what
+the projected flag on the Regime panel's need bar reports and what the money
+will be priced from again when the rate returns.
+
+#### Why "na razie" is load-bearing, and what keeps the mechanic from rotting
+
+**"na razie" means "for now".** The ruling is an experiment the owner runs while
+playing and judging difficulty, not a withdrawal of this decision, so the
+mechanic is switched off rather than removed:
+
+- The constant, every reader of it, and `stateIncomeForPrisonerDay`'s formula
+  all stay. **Restoring the mechanic is one number.**
+- The schedule is still gated. `stateIncomeForPrisonerDayAt` takes the withheld
+  rate as an argument, and `tests/unit/economy-state-income.test.ts` drives it
+  at `40`, at the shipped constant, and at a rate high enough that decision 2's
+  `max(0, …)` clamp actually binds — a case no shipped rate has ever made
+  observable. Deleting the withheld term as dead arithmetic turns eight
+  assertions red across five test files, measured.
+- Every driven measurement this ADR rests on is re-run at `40` rather than
+  deleted: `tests/integration/needs-state-grant-loop.test.ts` still prices its
+  ten measured days into 20,800 and still prices the two rooms at 3,200, off
+  the same measured unmet-need series.
+
+### Amendment, 2026-09-04: the owner restored the withheld share to 40
+
+**This records the repository owner's own ruling, dated. It is not a
+recommendation of this repository's and it was not self-approved** — the same
+terms the 2026-09-03 amendment above was recorded under, and for the same
+reason (`docs/AGENT_WORKFLOW.md` §3). **Nothing in this ADR's `Status` moves
+and no word of decisions 1 to 5 is edited**; the 2026-09-03 amendment is left
+standing in full, because a suspension that ended is part of how this decision
+got to where it is.
+
+Decision 2's schedule is in force as written: one place pays
+`max(0, 300 − 40 × unmetNeeds)`, the schedule is `300, 260, 220, 180, 140, 100,
+60`, and the line that makes it so is
+`export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;`
+(verbatim in `src/simulation/economy/income.ts`).
+
+#### The ruling, and the condition it carried
+
+The suspension was *"na razie"* — for now — and the owner attached a
+measurement to lifting it. Asked on 2026-09-04 whether the prison should ever
+be allowed to be in trouble, they ruled:
+
+> Zmierzcie to najpierw
+
+("Measure it first.") Shown the four-prisoner measurement that produced, they
+ruled the constant back to `40` **on condition that a fifty-prisoner prison was
+measured first**. Both measurements now exist:
+[the four-prisoner one](../research/2026-09-04-what-pressure-there-is.md),
+merged on `main` as PR #971, and the fifty-prisoner one, which is
+`2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/` — named
+without a rooted path because its branch is unmerged and
+`tests/foundation/documentation-links-contract.test.ts` fails on a dangling
+link. So this amendment is that ruling carried out and not a proposal.
+
+**Unlike the 2026-09-03 ruling, this one was made by choosing a presented
+option rather than in the owner's own words.** There is therefore no verbatim
+quotation of it to set beside *"usuń na razie kary"* above, and none is
+invented. What is recorded instead is the condition, the two measurements that
+satisfied it, and the fact that the choice was the owner's.
+
+#### What the measurements said, including where they disagree
+
+- At **four** prisoners the restored penalty cuts the daily gain by **71%**:
+  the same prison, five of six needs unmet on every prisoner, is paid 1,200 a
+  day at `0` and 400 a day at `40`. The treasury still rises, at +320 against
+  +1,120.
+- At **fifty** it cuts it by **27.7%** — +14,440 a day becomes +10,440 —
+  because a prison built to the limit of the reachable map settles at **two**
+  unmet needs rather than five, so decision 2's schedule prices a place at 220
+  rather than 100.
+- Break-even, measured one hire at a time rather than divided, moves from
+  **187 → 188** guards to **137 → 138**; headroom over the `ceil(n / 8)` the
+  game asks for falls from **26.7×** to **19.6×**.
+- **The fifty-prisoner figures are the pessimistic end of a range**, and that
+  note says so itself: neither instrument ever builds a door, and #938's fix
+  (`tests/integration/dead-room-no-doorway.test.ts`) measures that a sealed
+  room with no doorway is dead — `hygiene` 254.8/255 with a door, **0**
+  without. The two needs priced at fifty are `hygiene` and `recreation`, which
+  is that signature; a door can only *reduce* the unmet count, so a prison with
+  one earns more than 11,000 a day and breaks even above 137 guards.
+
+#### What this does not settle, and what it contradicts
+
+Open question 1 — *"Should the withheld share be steeper?"* — is **still
+open**, and the prior question the 2026-09-03 amendment put in front of it
+(*whether the share should be anything at all*) is now answered: it should.
+Neither is answered by anything in this repository; both are the owner's.
+
+**One argument this decision rests on is now measured false at fifty
+prisoners**, and it is recorded here rather than quietly dropped. The withheld
+share is per *need* so that the player is paid for each thing they fix, and the
+cheapest such fix was an 8×8 `room.yard`, which requires no object. At four
+prisoners that paid exactly `4 × 40 = 160` a day, measured. At fifty the same
+zoning returned **nothing**: `recreation` read 0 permille and unmet for 50 of
+50, and no prisoner performed `action.yard-recreation` at all. Capacity is
+ruled out as a sufficient cause; reachability is the strongest candidate and is
+untested for `recreation`. **That is a separate finding and is not fixed by
+this amendment** — restoring the rate does not by itself make the incentive
+work at scale.
+
+#### This ADR predicted this ruling, which is the reason to record it here
+
+"What would change my mind" already reads:
+
+> **The owner deciding the readout cannot be built.** A consequence a player
+> cannot understand is a worse game than no consequence, and I would rather
+> this were reverted than shipped permanently unexplained.
+
+The owner was offered the readout in four shapes and took none of them. So this
+is that falsifier arriving, and the response is the weaker of the two it names:
+**suspended pending play, not reverted.** Open question 1 above — *"Should the
+withheld share be steeper?"* — now has a prior question in front of it, and it
+is the one the owner has taken for themselves: whether the share should be
+anything at all. **That question is theirs and is not answered here.**
+
 ### The property that decided it: there is no new promise to make
 
 **"Earned today" is already on the status strip.** It is an existing, shipped,

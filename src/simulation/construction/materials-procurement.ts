@@ -476,4 +476,61 @@ export interface ConstructionProcurementSink {
    * not: it is reached from a command dispatch and from `undo()`.
    */
   refundSurplusStock(itemId: string, demandedQuantity: number, limit: number): number;
+
+  /**
+   * What `refundSurplusDeliveries` would pay, for the same `itemId` and
+   * `demandedQuantity`, without cancelling anything.
+   *
+   * ## Why this exists at all
+   *
+   * The Build panel's queue row says what Cancel would give back, next to the
+   * button itself (the owner's ruling of 2026-09-02) -- and the row is painted
+   * from a **projection**, read many times a second on a cadence
+   * (`BuildQueueReader`), never from a command. `refundSurplusDeliveries`
+   * cannot answer that question: calling it *is* cancelling deliveries, so
+   * asking it "what would you pay" would make every repaint of an unwatched
+   * row spend money nobody pressed for.
+   *
+   * ## What it shares with the mutating method, and what it does not
+   *
+   * The selection rule -- which delivery a cancellation would take, largest
+   * first inside the surplus, ties broken by ascending order id -- is the one
+   * piece of this that is genuinely hard to get right twice, so it is not
+   * written twice: both methods choose through the same helper, over
+   * `pendingDeliveries` for the real one and over a private working copy for
+   * this one, so a change to the tie-break cannot silently diverge between the
+   * row a player reads and the money `CancelBuildOrder` actually pays.
+   *
+   * What this cannot share is the mutation: the real method removes a chosen
+   * delivery from `pendingDeliveries` before asking what surplus is left, and
+   * this one removes it from a copy instead. Implementations must keep that
+   * copy-vs-live distinction to be the only difference between the two loops.
+   *
+   * `0` for an item with no candidate deliveries, exactly as
+   * `refundSurplusDeliveries` answers when nothing was there to cancel.
+   *
+   * It must not throw, for the reason every other method on this port must
+   * not: a projection request must not fault a `hud/build-queue` read.
+   */
+  previewSurplusRefundMinorUnits(itemId: string, demandedQuantity: number): number;
+
+  /**
+   * What `refundAllocatedMaterials` would credit for `allocations`, without
+   * crediting it and without destroying anything.
+   *
+   * `refundAllocatedMaterials` is not itself unsafe to call twice -- pricing an
+   * allocation does not remove it from `pendingDeliveries` the way a surplus
+   * delivery is removed -- but it still must not be the answer this method
+   * gives: it credits the treasury through `ProcurementSystem.refundMaterials`
+   * on every call, and a projection repainted on a cadence cannot be allowed
+   * to mint money each time nobody presses Cancel. So this is the read-only
+   * twin, priced through `ProcurementSystem.previewRefundMaterials` -- the same
+   * pure formula `refundMaterials` itself is built on -- summed over every
+   * priceable line and silently skipping a line the catalogue cannot price,
+   * exactly as the mutating method leaves such a line for `materialsProvider`
+   * to release rather than pricing it at zero and calling that an answer.
+   *
+   * It must not throw.
+   */
+  previewAllocatedRefundMinorUnits(allocations: readonly MaterialRequirement[]): number;
 }

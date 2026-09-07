@@ -86,7 +86,7 @@ walk is by ascending id, the one that starts is always the first eligible id and
 never the first submission."*
 
 A real session mints those ids as `order-${crypto.randomUUID()}`
-(`src/main.ts:2208` for a wall drag, `:2439` for a purchase). **So build orders
+(`src/main.ts:2600` for a wall drag, `:2878` for a purchase). **So build orders
 are carried out in an order that is a uniformly random permutation of the order
 the player placed them in**, and nothing in the code or the interface says so.
 

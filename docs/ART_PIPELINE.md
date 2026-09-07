@@ -169,6 +169,277 @@ writes. `tests/contract/art-pipeline-contract.test.ts` is what catches a
 catalog that disagrees with the bytes it names, in either kind of checkout
 (issue #141).
 
+## Environment objects
+
+The character half of this pipeline renders eight directions of an animated
+actor. The environment half renders one still frame of a static object, and
+until 2026-09-06 it did not exist: `tooling/blender/create-environment-catalog.py`
+built all 23 environment models and nothing rendered them. That is why the 23
+sheets under `public/game-content/source-art/` are owner-supplied PNGs from
+2026-08-22 rather than output of this repository's own catalogue, and why
+`fixture.cell.toilet_sink` ships as a 1:2.5 combined column while the catalogue
+declares its footprint `(1, 1)`.
+
+`tooling/blender/render-environment-objects.py` is that renderer.
+
+```bash
+/opt/blender/blender -b assets/source/blender/environment.mvp.catalog.blend \
+    --factory-startup --python tooling/blender/render-environment-objects.py -- \
+    --output assets/rendered/environment
+```
+
+It renders each collection **orthographically, straight down**, on transparent
+film, to one PNG per object plus `environment-objects.render.json`. Orthographic
+because `tile-layer.ts` draws an object frame flat into the rectangle its
+footprint reserves: a perspective render would put a vanishing point inside a
+sprite drawn next to a copy of itself.
+
+**A frame carries its object's declared footprint aspect exactly.**
+`tests/unit/environment-art.test.ts` checks two ratios within 3% -- the source
+crop against the packed frame, and the packed frame against the footprint -- and
+both are satisfied by construction here rather than measured afterwards. Every
+declared footprint is an exact multiple of 1/20 of a tile, so the pixel size is
+taken from the footprint reduced to lowest integer terms and `res_x / res_y`
+equals `footprint_w / footprint_h` with no rounding. The recorded drift is `0`
+for all 23 models. A consumer reading one of these PNGs whole therefore needs
+`quarterTurns: 0`; the quarter-turn `env.object.bed` carries exists because the
+*owner's sheet* holds the bed lying east-west, not because a bed needs turning.
+
+**The frame is the footprint plus a stated transparent margin**, 6% on each
+side, not a tight crop. Issue #1028 measured why: the alpha scan in
+`src/rendering/assets/environment-sprites.ts` shrinks a rectangle inwards while
+its rim is not fully opaque, which is right for a *tiling* frame and wrong for a
+discrete object, whose outermost pixels are its own silhouette -- a bed's head
+and foot rails.
+
+**Where a model overhangs its declared footprint the frame grows uniformly**, so
+the aspect never moves and nothing is clipped, and `frameTiles` plus
+`overhangsFootprint` in the sidecar say so per asset. Nine of the 23 do, and
+eight are the ones you would expect: the two doors and the two walls, whose
+frames and copings are deeper than the quarter-tile edge they are declared as;
+`fixture.ceiling_light.panel.variants`, whose housing is 1.4 units across a
+1-tile footprint; `perimeter.watchtower.variants`, whose roof is 2.35 across
+two tiles; and `security.camera.wall.variants` and
+`security.checkpoint.turnstile.variants`, whose lens and arms swing outside
+theirs.
+
+The ninth is worth naming because the flag is doing real work there and the
+overhang is small enough to have gone unnoticed: `fixture.cell.toilet_sink`
+declares `(1, 1)` and its basin disc reaches 0.52 of a tile from the origin, so
+it hangs 0.02 over its own tile edge and the frame is 1.1648 tiles square
+rather than the 1.12 the margin alone would give. Nothing is clipped and the
+aspect is still exactly 1:1; the effect is that the fixture is drawn at 96% of
+the size a frame sized from the footprint alone would give it. It is recorded
+rather than corrected, because 0.02 of a tile is not worth re-rendering the set
+for and a reader who sees the flag should be able to find out what tripped it.
+
+`furniture.cell.bed.single.variants`, the one object `SPRITE_BY_OBJECT_ID` draws
+today, does not overhang.
+
+**One vertical flip is owed, and it is done on the encoded PNG.** A camera above
+the ground cannot put north at the top of the image and east on the right at the
+same time: with view direction `-Z` and image-right `+X`, image-up is
+necessarily `+Y`, and `+Y` is south (see "Character directions" above). The only
+rotation that puts north up also puts west on the right. Blender 5.2 has no
+scene compositor `node_tree` and its `CompositorNodeFlip` no longer carries an
+`axis` property, so the renderer reverses the row order of the PNG it just wrote
+and re-emits it with filter type 0 -- an exact reordering of the same 8-bit
+samples, not a re-render.
+
+**These outputs are byte-reproducible, which the character frames are not.**
+That rewrite carries only `IHDR`, the colour-space chunks and `IDAT`, so the
+`Date`, `RenderTime` and absolute `.blend` path `tEXt` chunks Blender embeds --
+the reason "Reproducibility" below refuses to hash intermediate frames -- are
+gone before the file lands. `--verify-determinism` is therefore not needed:
+running the script twice and comparing digests is sufficient, and both the file
+digest and the raw-pixel digest are recorded per asset in the sidecar.
+
+**What it does not do.** It renders discrete objects. A *tiling* surface --
+floor, wall face, wall cap -- needs a zero-margin frame whose edges meet their
+own repeat exactly, and a 6% transparent margin is precisely wrong for that. The
+four surface frames in `environment-sprites.ts` remain cut from the owner
+sheets, and nothing here changes them.
+
+**Where the output is, and what it measures.** `assets/rendered/environment/`
+holds the 23 PNGs and the sidecar, 236 KB in total, tracked with Git LFS by the
+same kind of `.gitattributes` rule as the sheets beside them. Measured on
+2026-09-06 with two independent runs of the renderer executing *concurrently*
+against the same `.blend`:
+
+| | run A | run B |
+| --- | --- | --- |
+| digest over all 23 files | `b4e70814…` | `b4e70814…` ✓ |
+| digest over all 23 decoded pixel buffers | `d136db43…` | `d136db43…` ✓ |
+| sidecar manifest | identical | identical ✓ |
+
+`frameAspectDriftFromFootprint` is `0` for every one of the 23. The catalogue
+that fed them regenerates to an identical `scene-fingerprint.py` document across
+runs as well (`a242a490…`), so neither half of the chain reintroduced the
+order-instability issue #64 fixed.
+
+**That measurement had no gate behind it, and now it does.**
+`render-environment-objects.py`'s own docblock used to say so of itself:
+"NOTHING CHECKS THAT AUTOMATICALLY... Writing that gate is owed work." The two
+digests above were reproduced by hand, twice, by two people and two decoders;
+`tooling/verify-environment-render-determinism.mjs` is the executable form of
+the same comparison -- run this script N times (default 2) and diff the
+SHA-256 of every PNG and of the sidecar -- and
+`tests/determinism/environment-render-determinism.test.ts` wires its fast,
+single-collection form into `pnpm test`, with the same `it.skipIf(!canRunLive)`
+idiom `tests/determinism/art-pipeline-determinism.test.ts` already uses for the
+character pipeline: SKIPPED, visibly, wherever Blender is absent or is not the
+pinned 5.2.x -- never silently passed -- and actually exercised wherever it is
+present.
+
+**It needs Blender, and CI does not have it.** `.github/workflows/ci.yml` was
+read, not assumed, on 2026-09-06: none of its three jobs (`verify`, `assets`,
+`browser`) installs Blender anywhere. So this gate cannot be, and does not
+claim to be, a required CI check -- it runs in this container, or on any other
+machine with the pinned Blender installed, exactly as
+`tooling/verify-pipeline-determinism.mjs` already does for the character
+pipeline. Making it CI-enforced would mean installing Blender 5.2.1 on the
+self-hosted runner and adding a job for it to `ci.yml`; that file is reserved
+to the owner (`AGENTS.md` reservation 3), so that is a decision for the owner,
+recorded here rather than made silently.
+
+Measured directly, in the container this gate was built in, with Blender 5.2.1
+installed at `/opt/blender/blender` (deliberately not on `PATH`, matched by
+`--blender`/`$LOCKSTATE_BLENDER` rather than assumed): two independent runs of
+`door.interior.variants` -- the smallest, fastest frame in the catalogue --
+agree byte-for-byte at `baa834a5d1cb68ee…`, matching the hash already committed
+in `environment-objects.render.json`. Reinstating `tEXt` in
+`_flip_and_rewrite_png`'s passthrough set (the chunk kind carrying Blender's
+own `Date`/`RenderTime`/absolute `.blend` path, described above under
+"Determinism") makes the same two runs disagree on both the PNG and the
+sidecar, through this gate, and the gate reports it as such rather than
+passing. Reverting the mutation restores the match. That is the regression
+class this gate exists to catch, demonstrated rather than assumed.
+
+**What a green run proves, and what it still does not.** It proves the
+renderer is reproducible on the Blender version actually running, right now.
+It does not, by itself, prove the *committed* renders under
+`assets/rendered/environment/` would reproduce today -- `--only` lets a caller
+ask it to re-render specific ids and compare, but the default run renders into
+a fresh scratch directory and compares runs against each other, not against
+the committed bytes. Nor does it say anything about a Blender version other
+than the pinned one: `pipeline_common.require_blender_version()` refuses to
+run under any other, and this gate never sets
+`LOCKSTATE_ALLOW_BLENDER_MISMATCH` to get past that refusal.
+
+`assets/rendered/evidence/` holds three pictures, because a claim that art looks
+better needs one: `bed-vs-owner-sheet.png` puts the rendered bed beside the
+owner sheet's declared `env.object.bed` crop -- (740, 288, 460x230), resampled
+and quarter-turned exactly as `environment-textures.ts` would -- at 3x and at
+the 128x256 the game actually draws; `geometry-before-after.png` pairs six
+objects across the 2026-09-06 remodel; `all-23-objects.png` is the whole set.
+
+**The honest reading of that first picture: the owner's sheet wins at 3x and the
+render wins at 1x.** The sheet carries fabric weave, creases in the pillow and a
+folded blanket with a real fold in it, and this pipeline cannot produce any of
+that -- there are no textures anywhere in it, only flat materials under two
+suns. At the size the game draws an object those details are gone to
+downsampling, and what survives is contrast between parts, which the render has
+more of: a blue blanket against a grey sheet reads at 64px where dark grey
+against cream does not. So the render is not better *art*; it is better *sprite*
+at this scale, and it is the only option at all for an object whose sheet holds
+no usable view -- which is `fixture.cell.toilet_sink`, and is why this exists.
+
+**Blender needs an EGL library even in `--background`.** On a container without
+one, every render fails with `Couldn't open libEGL.so.1` before writing
+anything; `libegl1` and `libegl-mesa0` are enough, and EEVEE then runs on
+llvmpipe at roughly 50 seconds for a 256x512 frame.
+
+### Publishing a render (ADR 0100)
+
+A render committed under `assets/rendered/environment/` is not runtime art
+until it is published, and it is published by a second, narrow generator
+rather than by widening the one above: `tooling/build-rendered-art-catalog.mjs`
+(run as `pnpm content:rendered-art`) reads `environment-objects.render.json`,
+content-hashes each published render, and writes
+`public/game-content/rendered-art.v1.json` -- a sibling of `source-art.v1.json`,
+not a branch inside it, because every entry here carries its *own*
+`dimensionsPx`, `footprintTiles` and `frameTiles` rather than the fixed
+1448x1086 every owner sheet shares.
+
+It publishes only the render ids `src/rendering/assets/environment-sprites.ts`
+actually declares (its `kind: 'rendered-art'` entries) -- not all 23 -- the
+same "a declared sprite costs its download, so declaring art nothing draws
+costs bytes for nothing" rule the owner-sheet extraction manifest already
+follows. `object.toilet` is the first: `fixture.cell.toilet_sink`, 11.27 KiB.
+
+**Grown to four on 2026-09-06 (issue #1020), then back to three the next day
+(#1059).** `object.bench`, `object.desk` and `object.storage-rack` joined the
+toilet after a per-object legibility pass over the other 22 renders --
+`environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` comment records which of
+the remaining catalogued objects were considered and left on the colour
+fallback, and why, including `object.storage-rack` itself: a playtest built
+one in a real prison and found the render a flat grey rectangle with a single
+seam at every zoom the game draws it at, failing the exact "reads as a blob,
+not the thing it names" bar the same pass had already refused for
+`object.chair`. It was reverted to the colour fallback, and the other two
+stayed -- both were checked in the same playtest and both read correctly.
+
+**Each new id needs its own edit to `.github/workflows/ci.yml`'s `browser`
+job, and that dependency is worth recording precisely because a revert does
+not automatically undo it.** The `browser` job's decode-assertion step
+derives ids from `environment-sprites.ts` generically and needs no edit; the
+`git lfs pull --include=` step immediately above it is a literal,
+comma-separated list of specific globs, not a `rendered.*` directory
+wildcard, and a new id's published file is never fetched in CI's
+pointer-only checkout until its own glob is added there. That edit landed on
+2026-09-06, narrowly released by the owner for exactly this path (`AGENTS.md`
+reservation 3), and **it is not narrowed back by #1059's revert**:
+`rendered.furniture.cell.locker.variants.*.png` is still in that include
+list and still fetches ~11 KiB nothing draws, because tidying `ci.yml` back
+down was offered as the alternative and the owner chose to leave the glob
+rather than touch that file a second time for a single stale entry. This
+paragraph records that choice rather than let a reader assume the glob's
+continued presence is an oversight.
+
+**Published into `public/game-content/source-art/`, the owner sheets'
+own directory, not a new one.** `public/_headers`' `/game-content/source-art/*`
+rule is directory-wide and content-hash-keyed, so reusing the directory needs
+no header change -- ADR 0100 §Decision names this explicitly. Because
+`fixture.cell.toilet_sink` already names a *different*, already-published file
+there (the owner's unused combined toilet+sink sheet), the published filename
+carries a `rendered.` prefix the owner sheets' never will:
+`source-art/rendered.fixture.cell.toilet_sink.<hash>.png`. The catalog's
+`assetId` field is the unprefixed logical id (matching the render sidecar);
+only the published *filename* is disambiguated.
+
+**`tooling/validate-rendered-art-catalog.mjs`** (wired into `pnpm verify:assets`
+beside the actor-atlas validator) is this lane's gate, sized to what can
+actually be checked without Blender: that the published catalog's declared
+sha256 agrees with `environment-objects.render.json`'s own, that the committed
+render and the published copy both hash (or, in a pointer-only checkout,
+declare an LFS `oid`) to that same value, and that
+`frameTiles` never falls short of `footprintTiles`. It does not, and cannot,
+re-invoke Blender to prove today's render would reproduce those bytes again --
+that claim rests on the independent-run comparison described above under
+"Reproducibility" (both the by-hand measurement and
+`tooling/verify-environment-render-determinism.mjs`, which needs the pinned
+Blender version and an EGL-capable container this gate does not require).
+
+**The aspect invariant is recomputed, not trusted from the renderer's own
+field.** Until this line, "`frameAspectDriftFromFootprint` is zero" was
+checked by reading that field and asserting it stayed near zero -- which
+stays green even if the renderer's *own* computation of that number were
+wrong, as long as it kept writing a small one. `exactPixelAspectMatchesFootprint`
+(exported from this same file) instead scales `footprintTiles` to an integer
+numerator -- exact, because every declared footprint is a multiple of 1/20 of
+a tile -- and cross-multiplies it against the declared pixel size as `BigInt`,
+an integer identity with no rounding at any step. It never reads
+`frameAspectDriftFromFootprint` at all.
+`tests/contract/rendered-art-pipeline-contract.test.ts` imports the same
+function and runs it against all 23 entries in `environment-objects.render.json`
+-- not only the currently-published subset this validator iterates -- so the
+"recorded drift is `0` for all 23 models" claim above is checked in full, on
+every `pnpm test`, with no Blender and no image bytes: plain committed JSON is
+enough. Demonstrated by mutation: incrementing a committed `sizePx.width` by
+one pixel (both here and against the published catalog's `dimensionsPx`) makes
+both the tool and the test fail, naming the exact cross-multiplication that
+disagrees; reverting the mutation restores both to green.
+
 ## Intake status
 
 The owner-generated PNG sheets remain source reference/intake material. They are

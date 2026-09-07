@@ -10,6 +10,20 @@
 export interface SpritePosition {
   readonly x: number;
   readonly y: number;
+  /**
+   * `Phaser.GameObjects.Image.depth` -- what the display list sorts by, so a
+   * spec can tell "both figures are drawn" from "one is on top of the other".
+   * Exposed for issue #944, where the two are the whole question.
+   */
+  readonly depth: number;
+}
+
+/** One record for `publishCrowd`, in the two populations `ActorLayer` has art for. */
+export interface CrowdRecord {
+  readonly population: 'prisoner' | 'guard';
+  /** Raw entity id within that population's store. Unique per population, per this harness's caller. */
+  readonly entityId: number;
+  readonly tile: { readonly x: number; readonly y: number };
 }
 
 export interface LockstateActorMotionHarness {
@@ -34,6 +48,20 @@ export interface LockstateActorMotionHarness {
    * sprite from it, as opposed to counting the record `unresolved`.
    */
   publishGuard(tick: number, tile: { readonly x: number; readonly y: number }): void;
+  /**
+   * Publishes several records of either population in **one** keyframe, in the
+   * order given -- which is what `publishActor` and `publishGuard` cannot do
+   * between them, because a keyframe replaces the frame's whole actor list
+   * (ADR 0040) so two calls leave only the second population on screen.
+   *
+   * The order matters and is the caller's: a real keyframe carries prisoners in
+   * ascending entity index and then guards in ascending entity id
+   * (`encodeRenderActorsKeyframe`), and since #944 that order decides where in
+   * a shared tile's spread each actor stands. A spec that wants the production
+   * order writes it out; a spec that wants to prove the order is not what makes
+   * the figures distinct reverses it.
+   */
+  publishCrowd(tick: number, records: readonly CrowdRecord[]): void;
   /** Tells the feed the clock is running or paused, as an unsolicited `simulation/clock-state` would. */
   publishClock(tick: number, mode: 'running' | 'paused'): void;
   /**

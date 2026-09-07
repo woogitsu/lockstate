@@ -70,9 +70,134 @@ export function isJustInTimePurchaseOrderId(orderId: string): boolean {
  * against this same in-flight total*, which is a restored session re-running
  * the tick it was saved on. That is a purchase which already stands, so the
  * caller treats it as satisfied rather than as a refusal.
+ *
+ * ## **"STRICTLY INCREASING WITHIN A TICK" IS FALSE, AND ISSUE #861 IS THE
+ * MEASUREMENT. THE PARAGRAPHS ABOVE ARE KEPT BECAUSE THEY ARE THE ARGUMENT
+ * THIS ONE HAS TO ANSWER.**
+ *
+ * A **cancel** at that same tick lowers it. `ProcurementSystem.cancel` removes
+ * a pending delivery, and both routes into it are reachable with the clock
+ * stopped: `refundSurplusDeliveries` below, from a `CancelBuildOrder`, and
+ * `CancelMaterialPurchase`. So the sequence is
+ * *rise, rise, fall* rather than *rise, rise* -- and a fall re-exposes a value
+ * some **still-pending** delivery is already named after.
+ *
+ * Measured, and these are #861's own figures: two walls take `...:0` and
+ * `...:2`; `Cancel` on the second cancels `...:0` (`largestSurplusDelivery`
+ * ties on ascending id), putting the in-flight total back to 2 **without
+ * freeing the id that names 2**; and every further wall at that tick composes
+ * `...:2` again, is refused as a `duplicate-order`, and is swallowed. Seven
+ * standing orders wanting fourteen bricks, **two** on the road, one wall's
+ * worth of money spent, and a `lastReport` with an empty `unfunded` -- so
+ * nothing on the panel said so.
+ * [ADR 0051](../../../docs/adr/0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md)
+ * is what makes it a player's afternoon rather than a thought experiment: a
+ * command already due is dispatched during a pause, so the whole run happens
+ * at one tick, and the tick part of the id never changes while the player
+ * stays paused.
+ *
+ * ## What separates two purchases now, and why it is not the build order's id
+ *
+ * **`attempt`: the first free id in the sequence
+ * `<base>`, `<base>/1`, `<base>/2`, ...**, chosen by
+ * `JustInTimeMaterialsService.freeJustInTimePurchaseOrderId` against the
+ * pending deliveries themselves. The base is unchanged, so the id a purchase
+ * carries is the same one it carried before in every case that never collided;
+ * a suffix appears only where the old scheme would have refused a purchase the
+ * queue was owed.
+ *
+ * **The build order's id was the obvious answer and it does not close the
+ * class**, which is worth recording because it is the fix a reader will reach
+ * for first. `QueuedOrderDemand.orderId` is available at the purchase site, so
+ * `jit:<tick>:<itemId>:<orderId>` composes -- and the collision
+ * `tests/unit/construction-just-in-time-materials.test.ts` constructs is **one
+ * order colliding with itself**: it buys at `inFlightBefore` 0, buys again at
+ * 2, has the first cancelled, and comes back a third time at 2. Adding the
+ * order id leaves that untouched, and it is not a corner: an earlier order in
+ * the walk claims the in-flight bricks a later pass then finds missing, so the
+ * *same* order legitimately buys the same item twice at one tick. A discriminator
+ * that is a function of the collision itself is the only one that answers all
+ * of them.
+ *
+ * ## Determinism
+ *
+ * Unchanged in kind: `pendingDeliveries` is simulation state the save carries,
+ * the test is membership rather than an enumeration, so no iteration order
+ * reaches the answer, and there is still no counter, no clock and no UUID here.
+ * Two clients replaying one command stream hold the same pending list and
+ * therefore compose the same id, and a restored session composes the same id
+ * the saved one did.
+ *
+ * ## What `duplicate-order` means after this
+ *
+ * For this caller, nothing: the id it hands `ProcurementSystem.purchase` is by
+ * construction not one of the pending ones, so the refusal is unreachable from
+ * here. It keeps its full meaning for the caller it was written for -- the
+ * player's *Buy* press, whose `order-${crypto.randomUUID()}` id comes from the
+ * command and really can arrive twice. `procureForPendingOrders` still handles
+ * the branch, for the reason it still handles `insufficient-funds`: an
+ * unreachable branch that is recorded says so on the day it stops being
+ * unreachable.
  */
-export function justInTimePurchaseOrderId(tick: number, itemId: string, inFlightBefore: number): string {
-  return `${JUST_IN_TIME_ORDER_ID_PREFIX}${tick}:${itemId}:${inFlightBefore}`;
+export function justInTimePurchaseOrderId(
+  tick: number,
+  itemId: string,
+  inFlightBefore: number,
+  attempt = 0,
+): string {
+  const base = `${JUST_IN_TIME_ORDER_ID_PREFIX}${tick}:${itemId}:${inFlightBefore}`;
+  /*
+   * `attempt === 0` is the whole id and not `<base>/0`, deliberately: every id
+   * that never collided is unchanged, so no save, no `data-delivery` attribute
+   * and no pinned string moves for a purchase this defect never touched.
+   *
+   * **`/` and not `#`, and this is not cosmetic.** A purchase order id is an
+   * `identifierSchema` (`src/simulation/protocol/types.ts`) in two places that
+   * both reach a player: `economySectionSchema`'s `procurement.pending[].orderId`,
+   * so an id that fails it cannot be **saved**, and
+   * `CancelMaterialPurchase.orderId`, so an id that fails it cannot be
+   * **cancelled** -- the command is refused before it reaches the kernel. That
+   * regex is `/^[A-Za-z0-9][A-Za-z0-9._:/-]*$/`, which admits `/` and rejects
+   * `#`; the first draft of this fix used `#` and would have made the very
+   * session it repairs unsaveable. Pinned by
+   * `tests/unit/construction-just-in-time-materials.test.ts` against
+   * `identifierSchema` itself rather than against a copy of the character set,
+   * and measured end to end through a save round trip and a real
+   * `CancelMaterialPurchase` in
+   * `tests/integration/construction-same-tick-cancel-still-buys.test.ts`.
+   */
+  return attempt === 0 ? base : `${base}/${attempt}`;
+}
+
+/**
+ * The biggest `jit:` delivery of `itemId` in `deliveries` that fits inside
+ * `surplus`, by `(quantity, orderId)`.
+ *
+ * A free function rather than a method, so `JustInTimeMaterialsService.refundSurplusDeliveries`
+ * and `previewSurplusRefundMinorUnits` can share exactly this selection rule
+ * over two different lists -- the live `pendingDeliveries` for the first, a
+ * local working copy for the second -- without either restating it. See
+ * `ConstructionProcurementSink.previewSurplusRefundMinorUnits` for why the
+ * two loops cannot share more than this.
+ */
+function largestSurplusDelivery(
+  deliveries: readonly PendingDelivery[],
+  itemId: string,
+  surplus: number,
+): PendingDelivery | undefined {
+  let best: PendingDelivery | undefined;
+  for (const delivery of deliveries) {
+    if (delivery.itemId !== itemId) continue;
+    if (delivery.quantity > surplus) continue;
+    if (!isJustInTimePurchaseOrderId(delivery.orderId)) continue;
+    if (best === undefined) {
+      best = delivery;
+      continue;
+    }
+    if (delivery.quantity > best.quantity) best = delivery;
+    else if (delivery.quantity === best.quantity && delivery.orderId < best.orderId) best = delivery;
+  }
+  return best;
 }
 
 /**
@@ -595,7 +720,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
       for (const line of lines) {
         const inFlightBefore = this.inFlightOf(line.itemId);
         const outcome = this.procurement.purchase(
-          justInTimePurchaseOrderId(tick, line.itemId, inFlightBefore),
+          this.freeJustInTimePurchaseOrderId(tick, line.itemId, inFlightBefore),
           line.itemId,
           line.quantity,
           tick,
@@ -634,6 +759,18 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
             // the next tick composes a different id if any shortfall remains.
             // `tests/unit/construction-just-in-time-materials.test.ts` constructs
             // the state and measures both halves.
+            //
+            // **THAT WAS THE DEFECT ISSUE #861 MEASURED, AND IT IS KEPT BECAUSE
+            // IT IS WHAT THE LINE ABOVE NOW ANSWERS.** "Nothing is owed" was
+            // false: seven standing orders wanted fourteen bricks and two were
+            // on the road. `freeJustInTimePurchaseOrderId` makes this branch
+            // unreachable from here -- the id was free among the pending
+            // deliveries a statement earlier -- so it is now recorded rather
+            // than acted on, exactly as `insufficient-funds` above is, and for
+            // the same reason: the day it fires, this says so instead of an
+            // order silently going unbought. Whether an unbought order also
+            // owes the player a *sentence* is a question about copy and is the
+            // owner's; nothing here invents one.
             break;
         }
       }
@@ -728,7 +865,7 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     for (;;) {
       const surplus = this.heldOrInFlightOf(itemId) - demandedQuantity;
       if (surplus <= 0) break;
-      const candidate = this.largestSurplusDelivery(itemId, surplus);
+      const candidate = largestSurplusDelivery(this.procurement.pendingDeliveries, itemId, surplus);
       if (candidate === undefined) break;
       const outcome = this.procurement.cancel(candidate.orderId);
       /*
@@ -802,21 +939,53 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
     return this.procurement.refundMaterials(itemId, quantity);
   }
 
-  /** The biggest `jit:` delivery of `itemId` that fits inside `surplus`, by `(quantity, orderId)`. */
-  private largestSurplusDelivery(itemId: string, surplus: number): PendingDelivery | undefined {
-    let best: PendingDelivery | undefined;
-    for (const delivery of this.procurement.pendingDeliveries) {
-      if (delivery.itemId !== itemId) continue;
-      if (delivery.quantity > surplus) continue;
-      if (!isJustInTimePurchaseOrderId(delivery.orderId)) continue;
-      if (best === undefined) {
-        best = delivery;
-        continue;
-      }
-      if (delivery.quantity > best.quantity) best = delivery;
-      else if (delivery.quantity === best.quantity && delivery.orderId < best.orderId) best = delivery;
+  /**
+   * `ConstructionProcurementSink.previewSurplusRefundMinorUnits`.
+   *
+   * The same loop `refundSurplusDeliveries` runs, over the same selection
+   * rule (`largestSurplusDelivery`, shared rather than restated) -- with one
+   * difference, and it is the whole reason this method exists rather than
+   * being a second caller of that one: each round removes its candidate from
+   * a **local copy** of `pendingDeliveries` and decrements a **local** running
+   * total instead of calling `this.procurement.cancel`, so nothing pending is
+   * touched and no money moves. `heldOrInFlightOf` is read once, up front,
+   * for the same reason -- the real loop re-reads it from `pendingDeliveries`
+   * because cancelling shrinks that list; this loop shrinks its own copy
+   * instead and keeps the running total in step with it by hand.
+   */
+  public previewSurplusRefundMinorUnits(itemId: string, demandedQuantity: number): number {
+    let refundedMinorUnits = 0;
+    let heldOrInFlight = this.heldOrInFlightOf(itemId);
+    const remaining = [...this.procurement.pendingDeliveries];
+    for (;;) {
+      const surplus = heldOrInFlight - demandedQuantity;
+      if (surplus <= 0) break;
+      const candidate = largestSurplusDelivery(remaining, itemId, surplus);
+      if (candidate === undefined) break;
+      const index = remaining.indexOf(candidate);
+      remaining.splice(index, 1);
+      heldOrInFlight -= candidate.quantity;
+      refundedMinorUnits += candidate.paidMinorUnits;
     }
-    return best;
+    return refundedMinorUnits;
+  }
+
+  /**
+   * `ConstructionProcurementSink.previewAllocatedRefundMinorUnits`.
+   *
+   * `refundAllocatedMaterials`'s pricing, over `ProcurementSystem.previewRefundMaterials`
+   * rather than `refundMaterials`, so nothing is credited: a line the
+   * catalogue cannot price answers `0` and is skipped, exactly as
+   * `refundAllocatedMaterials` leaves such a line for `materialsProvider` to
+   * release rather than pricing it here.
+   */
+  public previewAllocatedRefundMinorUnits(allocations: readonly MaterialRequirement[]): number {
+    let total = 0;
+    for (const allocation of allocations) {
+      if (allocation.quantity <= 0) continue;
+      total += this.procurement.previewRefundMaterials(allocation.itemId, allocation.quantity);
+    }
+    return total;
   }
 
   /**
@@ -830,6 +999,49 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    */
   public heldOrInFlightOf(itemId: string): number {
     return this.stock.availableOf(itemId) + this.inFlightOf(itemId);
+  }
+
+  /**
+   * The first id in `justInTimePurchaseOrderId`'s sequence that no pending
+   * delivery already carries.
+   *
+   * ## Why the answer has to be read off `pendingDeliveries`
+   *
+   * Because that is the list `ProcurementSystem.purchase` refuses against, and
+   * issue #861 is what happens when a composed id is merely *usually* free.
+   * `justInTimePurchaseOrderId`'s docblock carries the measurement and the
+   * argument; the short version is that `inFlightBefore` falls when a delivery
+   * is cancelled at the same tick, so it can name a value a still-pending
+   * delivery is already named after, and every further purchase at that tick
+   * was then swallowed as a `duplicate-order` with nothing reported.
+   *
+   * ## Why it terminates
+   *
+   * Each round composes an id no earlier round composed -- `attempt` rises and
+   * the suffix is part of the id -- and `pendingDeliveries` is finite and is
+   * not appended to while this runs. So the loop runs at most
+   * `pendingDeliveries.length` times: after that many distinct rejections the
+   * list is exhausted. This is the same shape of bound
+   * `refundSurplusDeliveries` states for its own loop, and it is stated here
+   * for the same reason -- this is reached from inside a system `update`, where
+   * `ConstructionProcurementSink` forbids a throw and a spin would be a hung
+   * worker.
+   *
+   * ## Determinism
+   *
+   * `some` is a membership test, not an enumeration, so the order
+   * `pendingDeliveries` happens to be in cannot reach the answer -- which is
+   * the property `docs/DETERMINISM.md`'s "Canonical iteration order" asks for,
+   * satisfied by not depending on an order at all rather than by sorting one.
+   */
+  private freeJustInTimePurchaseOrderId(tick: number, itemId: string, inFlightBefore: number): string {
+    let attempt = 0;
+    let candidate = justInTimePurchaseOrderId(tick, itemId, inFlightBefore);
+    while (this.procurement.pendingDeliveries.some((delivery) => delivery.orderId === candidate)) {
+      attempt += 1;
+      candidate = justInTimePurchaseOrderId(tick, itemId, inFlightBefore, attempt);
+    }
+    return candidate;
   }
 
   /** Everything of `itemId` that has been paid for and not yet unloaded, whoever bought it. */

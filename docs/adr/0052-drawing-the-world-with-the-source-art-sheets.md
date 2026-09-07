@@ -184,6 +184,28 @@ Positive:
 - Adding art for a new object is a row in a data module, in both directions:
   a mapping row naming a sprite that does not exist fails `tsc`, and an object
   with no row fails a named test.
+
+  > **Amendment, 2026-09-06: this sentence was false for objects when it was
+  > written, and is true now.** Kept rather than rewritten, per
+  > `docs/AGENT_WORKFLOW.md` §4 — both what falsified it and what repaired it
+  > are worth a later reader's time, and the interval is the useful part.
+  >
+  > Issue #1024 measured the gap: `objectSprite` had exactly two occurrences in
+  > the whole tree — its own definition and `objectArtCoverage` — while
+  > `zonedFloorSprite` and `edgeArt` were each read by the painter in
+  > `src/rendering/phaser/tile-layer.ts`, inside `paintChunk` and
+  > `acquireEdgeSprite` respectively. So for objects the second direction held
+  > and the first did not: a mapping row would have made the coverage test
+  > report art that never reached a pixel. #1024 therefore declined to add the
+  > row the issue asked for and gated the premise instead.
+  >
+  > #1028 made the sentence true by adding the reader it was missing:
+  > `const sprite = this.acquireObjectSprite(depth, structure.definitionId, footprint, alpha);`
+  > in the structure loop, falling back to `paintSlab` — the shape
+  > `acquireEdgeSprite` has had since edges got art. The cost of the *second*
+  > object was then measured rather than estimated: 4 files and +11/-3 lines of
+  > code, so what this sentence promises about a row is now the price a reader
+  > will actually pay for the code half of it.
 - A finished door stops being drawn as a brick wall — a defect
   `DOOR_EDGE_NUMERIC_ID`'s own comment records as owed work — because the edge
   appearance is now a per-value lookup with or without art.

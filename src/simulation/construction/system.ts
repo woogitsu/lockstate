@@ -50,6 +50,65 @@ function isCancellable(state: BuildOrder['state']): boolean {
 }
 
 /**
+ * States whose cancellation destroys what was spent on the order, in both
+ * currencies -- the point of no return.
+ *
+ * The two states `cancelOrder` neither releases nor pays for: `'in-progress'`
+ * by ruling 20 of 2026-08-31, and `'completed'` by the owner's ruling of
+ * 2026-09-01 (*"Taking a finished object away returns nothing. Not its
+ * materials, not its money."*, ADR 0076's amendment of that date). The table
+ * on `cancelOrder` argues each.
+ *
+ * **A named predicate rather than the inline `stateAtCancellation ===
+ * 'in-progress' || hadGeometry` it replaces, because there are now two readers
+ * and they must never disagree.** `cancelOrder` uses it to decide what is
+ * destroyed; `undo()` uses it to decide whether the transaction it just
+ * reversed destroyed anything, which is what
+ * [#927](https://github.com/matmaxalez/lockstate/issues/927) is about. A third
+ * state joining this set has to be told to one place, not remembered in two.
+ *
+ * `SimulationEventLog.recordBuildOrderCancelled` deliberately does **not** read
+ * this: that module imports `BuildOrderLifecycleState` for its type only and
+ * runs no construction code, and its `switch` over the whole lifecycle is
+ * exhaustive on purpose so that a ninth state fails to compile until somebody
+ * has decided what the prison says about it. Two spellings of the same fact,
+ * one of which the compiler defends -- which is the shape that file argues for.
+ */
+function destroysSpendOnCancel(state: BuildOrder['state']): boolean {
+  return state === 'in-progress' || state === 'completed';
+}
+
+/**
+ * What one `undo()` press did: whether it reversed anything at all, and -- when
+ * it did -- whether any of what it reversed was past the point of no return
+ * ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ *
+ * ## Why this is not the count the ruling declined
+ *
+ * The owner's ruling of 2026-09-01 on
+ * [#749](https://github.com/matmaxalez/lockstate/issues/749) rules that Undo's
+ * sentence *"does not name a count"* and rules explicitly that the
+ * transaction-size plumbing is not to be built. `spendDestroyed` is not that
+ * plumbing and cannot become it: it is one bit, it says nothing about how many
+ * orders moved, and it is `true` for a run of one exactly as for a run of
+ * twelve. What it carries is the same distinction the *Cancel* channel has had
+ * since that ruling -- money back, or what was spent stays spent -- which the
+ * Undo channel could not make and therefore never made.
+ *
+ * ## Why a union rather than two booleans
+ *
+ * `spendDestroyed` is meaningless when nothing was reversed, and a flat
+ * `{ reversed: boolean; spendDestroyed: boolean }` would let a caller read it
+ * anyway. Narrowing on `reversed` is what stops that. It also stops the older
+ * hazard: this method answered `boolean`, so `if (system.undo())` was the
+ * caller, and an object return would have made that condition true for ever
+ * without the compiler saying a word.
+ */
+export type ConstructionUndoOutcome =
+  | { readonly reversed: false }
+  | { readonly reversed: true; readonly spendDestroyed: boolean };
+
+/**
  * The other tile an edge order's edge belongs to.
  *
  * `BuildEdge` names only the two slots the world stores, so the tile across a
@@ -524,17 +583,29 @@ export class ConstructionSystem implements SystemRegistration {
 
   /**
    * Reverses the most recent transaction, and answers **whether it reversed
-   * anything** (#749).
+   * anything and whether what it reversed was past the point of no return**
+   * (#749, #927).
    *
    * ## Why the return value exists, and what it is deliberately not
    *
-   * It is `boolean` and not a count. The owner's ruling of 2026-09-01 on
+   * It is not a count. The owner's ruling of 2026-09-01 on
    * [#749](https://github.com/matmaxalez/lockstate/issues/749) gives Undo a
    * success sentence and rules that it *"does not name a count"* -- an undo
    * reverses a whole transaction, so naming one order would be a small lie
    * whenever a run of several was taken back -- and rules explicitly that the
    * transaction-size plumbing is **not** to be built. `redoTransaction.length`
    * is sitting right there and is not returned, on purpose.
+   *
+   * **This method answered a bare `boolean` until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * paragraph above is kept whole because it is still the rule -- what changed
+   * is that one bit was not enough to be honest with.** A `boolean` says only
+   * *something moved*, so the handler could say only *"the last change to the
+   * build queue was undone"* -- over a press that had just destroyed a finished
+   * wall's materials and refunded nothing. `ConstructionUndoOutcome` adds the
+   * one bit that fixes it and no more: `spendDestroyed` is not a size and
+   * cannot grow into one. See that type for why it is not the plumbing the
+   * ruling declined.
    *
    * What *is* needed for that sentence to be honest is the one bit this
    * answers: a press against an empty stack, or against a transaction whose
@@ -544,14 +615,30 @@ export class ConstructionSystem implements SystemRegistration {
    * that `AGENTS.md`'s fourth exclusion is about. `false` is what stops the
    * handler saying it.
    *
-   * Both no-op shapes answer `false` and the second is the one a caller would
-   * miss: a transaction *was* popped -- so the undo stack really did shrink --
-   * and yet nothing in the world changed, because `isCancellable` rejected
-   * every order in it. The redo stack is not pushed in that case either, which
-   * is the existing behaviour this return value now reports rather than
-   * changes.
+   * Both no-op shapes answer `{ reversed: false }` and the second is the one a
+   * caller would miss: a transaction *was* popped -- so the undo stack really
+   * did shrink -- and yet nothing in the world changed, because `isCancellable`
+   * rejected every order in it. The redo stack is not pushed in that case
+   * either, which is the existing behaviour this return value now reports
+   * rather than changes.
+   *
+   * ## Where `spendDestroyed` is read from, and why it costs nothing
+   *
+   * The state each order is in **before** `cancelOrder` is called, which this
+   * loop already holds in `order` and which `cancelOrder` would otherwise
+   * compute privately and throw away -- the same read, for the same reason, the
+   * `CancelBuildOrder` branch of `createConstructionCommandHandler` makes one
+   * level up. Read after the call every order is `'cancelled'` and the
+   * distinction is gone.
+   *
+   * It is an **or** across the transaction, not a per-order answer: a drag that
+   * mixes three finished walls with nine queued ones destroys what the three
+   * cost and refunds what the nine did, and *"anything already spent past the
+   * point of no return stays spent"* is true of exactly that mixture. A
+   * per-order breakdown would be the count the ruling declined, arrived at from
+   * the other side.
    */
-  public undo(): boolean {
+  public undo(): ConstructionUndoOutcome {
     if (this.currentTransaction.length > 0) {
       this.undoStack.push([...this.currentTransaction]);
       this.currentTransaction = [];
@@ -559,9 +646,10 @@ export class ConstructionSystem implements SystemRegistration {
     }
 
     const transaction = this.undoStack.pop();
-    if (!transaction) return false; // Nothing to undo
+    if (!transaction) return { reversed: false }; // Nothing to undo
 
     const redoTransaction: string[] = [];
+    let spendDestroyed = false;
 
     for (const orderId of transaction) {
       const order = this.orders.get(orderId);
@@ -576,13 +664,16 @@ export class ConstructionSystem implements SystemRegistration {
       // write, so undo means the same thing for a finished order as for a
       // pending one.
       if (!isCancellable(order.state)) continue;
+      // Before the call, because `cancelOrder` sets `'cancelled'` on its second
+      // line. This is the whole of #927's plumbing.
+      if (destroysSpendOnCancel(order.state)) spendDestroyed = true;
       this.cancelOrder(orderId);
       redoTransaction.push(orderId);
     }
 
-    if (redoTransaction.length === 0) return false;
+    if (redoTransaction.length === 0) return { reversed: false };
     this.redoStack.push(redoTransaction);
-    return true;
+    return { reversed: true, spendDestroyed };
   }
 
   /**
@@ -724,14 +815,20 @@ export class ConstructionSystem implements SystemRegistration {
    * used to.
    *
    * **With no procurement sink wired, every cancellable state releases exactly
-   * as it did before ruling 20, and `in-progress` is the one exception.** A
-   * bare `ConstructionSystem` is not a session -- it has no treasury behind it
-   * and cannot pay anybody -- so "money instead of bricks" has no meaning
-   * there and the materials go back, which is what
+   * as it did before ruling 20, and `in-progress` and `completed` are the two
+   * exceptions.** A bare `ConstructionSystem` is not a session -- it has no
+   * treasury behind it and cannot pay anybody -- so "money instead of bricks"
+   * has no meaning there and the materials go back, which is what
    * `UNLIMITED_MATERIALS_PROVIDER` and `ContainerMaterialsProvider` have always
-   * done. `in-progress` is not conditional on the sink because its rule is not
-   * about money: the materials are consumed by the works whether or not
-   * anybody is keeping accounts.
+   * done. Neither of those two is conditional on the sink because their rule is
+   * not about money: the materials are consumed by works that are being
+   * un-built, whether or not anybody is keeping accounts.
+   *
+   * **This sentence said `in-progress` was *"the one exception"* and it stopped
+   * being true on 2026-09-01, the day the ruling above moved `completed` into
+   * the same arm; it is corrected rather than deleted because the count is
+   * exactly the kind of claim that rots** (`docs/AGENT_WORKFLOW.md` §4). Found
+   * while reading this method for #927, three days late.
    *
    * **What stops that fallback hiding a lost wiring** is that the sink's one
    * production caller is `createNewSimulationRuntime`, and
@@ -758,10 +855,16 @@ export class ConstructionSystem implements SystemRegistration {
       // refund are computed from it and the emptying is unconditional.
       const allocated = order.materialsAllocated;
       order.materialsAllocated = [];
-      if (stateAtCancellation === 'in-progress' || hadGeometry) {
+      if (destroysSpendOnCancel(stateAtCancellation)) {
         // Ruling 20's "nothing" for `in-progress`, and the owner's ruling of
         // 2026-09-01 for `completed`. Neither released nor paid for: see the
         // table above for why each is the ruling rather than a leak.
+        //
+        // **The condition read `stateAtCancellation === 'in-progress' ||
+        // hadGeometry` until #927 and is now the named `destroysSpendOnCancel`,
+        // which is the same test and not a new one.** `undo()` needs the same
+        // question answered to say what it destroyed, and two inline copies of
+        // a two-state set is how they come to disagree.
         //
         // **`hadGeometry` moved into this arm on 2026-09-01 and the line it
         // left is kept in the table above rather than deleted.** It used to
@@ -898,6 +1001,93 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /**
+   * What `cancelOrder(orderId)` would credit the treasury right now, without
+   * calling it -- the figure the Build panel's queue row shows beside its own
+   * Cancel button (the owner's ruling of 2026-09-02).
+   *
+   * ## Why a preview and not the row reading `cancelOrder`'s own return
+   *
+   * `cancelOrder` answers `void` and mutates on every call -- it flips the
+   * order to `'cancelled'`, drops its allocation, and (through the sink) may
+   * turn a delivery around -- and the row is painted from a **projection**,
+   * read on a cadence with no press behind it
+   * (`src/simulation/presentation/construction-projection.ts`). Reading the
+   * figure the same way the row reads everything else would cancel the order
+   * to find out what cancelling it pays.
+   *
+   * ## The table this reads, and where it actually lives
+   *
+   * `cancelOrder`'s own docblock carries the owner's ruling 20 table -- what
+   * state pays what -- and this method's branches are that table, because a
+   * preview has no mutated `order.state` to dispatch on and therefore cannot
+   * be folded into `refundSurplusOf`'s existing dispatch the way this method's
+   * one sibling call is. What is **not** restated is any arithmetic: every
+   * money figure below is computed by `sink.previewSurplusRefundMinorUnits` or
+   * `sink.previewAllocatedRefundMinorUnits`, the exact non-mutating twins of
+   * the two calls `cancelOrder` itself makes
+   * (`sink.refundSurplusDeliveries`, `sink.refundAllocatedMaterials`) --
+   * sharing their selection and pricing rules with those methods by
+   * construction, not by this method's own judgement about what they would
+   * answer.
+   *
+   * `demandedQuantityOf(itemId, id)` is the one place this diverges from
+   * `refundSurplusOf`'s own call to it, and it has to: `refundSurplusOf` runs
+   * after `cancelOrder` has already written `order.state = 'cancelled'`, so
+   * the demand walk excludes this order for free. This method must not write
+   * that, so it passes the order's own id to exclude it explicitly instead --
+   * see `pendingOrderDemand`'s comment.
+   *
+   * `0` for an id that names no order, for a terminal state (`isCancellable`
+   * says no), and for every state ruling 20 (and the owner's ruling of
+   * 2026-09-01 for `completed`) pays nothing for: `'planned'`,
+   * `'in-progress'`, `'completed'`. `0` also when no procurement sink is
+   * wired -- a bare `ConstructionSystem` has no treasury to credit, and
+   * `cancelOrder` pays no money there either, exactly as `refundSurplusOf`
+   * itself returns early for the same reason.
+   *
+   * Never throws and never asserts `isCancellable` past the early return:
+   * this is read by a projection request, which the same contract
+   * `refundSurplusDeliveries` and its siblings are held to (must not throw)
+   * binds transitively -- a row that cannot be cancelled simply reads `0`.
+   */
+  public previewCancelRefundMinorUnits(orderId: string): number {
+    const order = this.orders.get(orderId);
+    if (order === undefined || !isCancellable(order.state)) return 0;
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return 0;
+
+    const stateAtCancellation = order.state;
+    if (order.materialsAllocated.length > 0) {
+      // Only `'assigned'` reaches here paying anything: `'in-progress'` and
+      // `'completed'` are the two states `cancelOrder` destroys an allocation
+      // for rather than pricing it (ruling 20, and the owner's ruling of
+      // 2026-09-01 for `completed`), and both hold a non-empty
+      // `materialsAllocated` exactly as `'assigned'` does.
+      if (stateAtCancellation === 'in-progress' || stateAtCancellation === 'completed') return 0;
+      return sink.previewAllocatedRefundMinorUnits(order.materialsAllocated);
+    }
+
+    // Empty `materialsAllocated` and cancellable is `'planned'`, `'approved'`
+    // or `'materials-pending'`: the three states that have not allocated yet.
+    // Only the last two are `refundSurplusOf`'s own candidates -- `'planned'`
+    // never became demand, so `pendingOrderDemand` never counted it and no
+    // purchase was ever made for it.
+    if (stateAtCancellation !== 'approved' && stateAtCancellation !== 'materials-pending') return 0;
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) return 0;
+    // Ascending item id, matching `refundSurplusOf`'s own walk -- this reads no
+    // simulation state, but a preview that visited items in a different order
+    // from the real cancellation would be a second opinion about the walk
+    // rather than a read of it.
+    const itemIds = [...new Set(definition.materialsRequired.map((requirement) => requirement.itemId))].sort();
+    let refundMinorUnits = 0;
+    for (const itemId of itemIds) {
+      refundMinorUnits += sink.previewSurplusRefundMinorUnits(itemId, this.demandedQuantityOf(itemId, order.id));
+    }
+    return refundMinorUnits;
+  }
+
+  /**
    * Takes queued orders back off the book until the prison no longer has to
    * buy `itemId` again -- the demand-side answer to a cancelled just-in-time
    * delivery (issue #687).
@@ -1028,9 +1218,13 @@ export class ConstructionSystem implements SystemRegistration {
     return withdrawn;
   }
 
-  /** What the queue still wants of one item, read off `pendingMaterialDemand` so the two can never disagree. */
-  private demandedQuantityOf(itemId: string): number {
-    for (const requirement of this.pendingMaterialDemand(this.orderedOrders())) {
+  /**
+   * What the queue still wants of one item, read off `pendingMaterialDemand`
+   * so the two can never disagree. `excludeOrderId` is threaded through to it;
+   * see that method's own comment for why it exists.
+   */
+  private demandedQuantityOf(itemId: string, excludeOrderId?: string): number {
+    for (const requirement of this.pendingMaterialDemand(this.orderedOrders(), excludeOrderId)) {
       if (requirement.itemId === itemId) return requirement.quantity;
     }
     return 0;
@@ -1236,6 +1430,13 @@ export class ConstructionSystem implements SystemRegistration {
       if (def === undefined) {
         order.state = 'failed';
         order.failReason = 'unknown-buildable';
+        // A ghost stops being drawn: `structuresFromConstruction` maps
+        // `failed` to no phase at all, so this tile had a translucent block on
+        // it a moment ago and now has none. Beyond the two transitions ADR
+        // 0099 decision 3 enumerates, and covered for the reason those two
+        // are: it happens on a tick rather than on a command, so nothing else
+        // would tell the renderer.
+        this.world.markDrawnWorldChanged();
         continue;
       }
 
@@ -1284,6 +1485,13 @@ export class ConstructionSystem implements SystemRegistration {
           crewBusy = true;
           order.assignedWorkerId = MOCK_CREW_WORKER_ID;
           order.state = 'in-progress';
+          // The first of an order's two drawn phase changes: the `planned`
+          // ghost becomes the `building` one (`structuresFromConstruction`).
+          // ADR 0099 decision 3's second bullet, and the reason that bullet
+          // exists -- no chunk layer is written here, so `geometryRevision`
+          // and `contentRevision` both stand still and a marker derived from
+          // them would say nothing happened.
+          this.world.markDrawnWorldChanged();
           break;
 
         case 'in-progress':
@@ -1294,6 +1502,17 @@ export class ConstructionSystem implements SystemRegistration {
             order.progress = def.workRequired;
             order.state = 'completed';
             this.finalizeConstruction(order);
+            // The second, and the one issue #1037 is about: the `building`
+            // ghost becomes the finished thing. `finalizeConstruction` bumps a
+            // chunk revision for most buildables and would therefore have
+            // moved the marker through `markChanged` anyway -- this line is
+            // not relying on that, because the *state* change is the fact
+            // being reported and a buildable whose finalisation writes no
+            // layer would otherwise finish invisibly. Idempotence is not
+            // needed: the marker means "not what it was", so counting one
+            // change twice costs nothing but a second comparison that already
+            // differs.
+            this.world.markDrawnWorldChanged();
           }
           break;
       }
@@ -1352,9 +1571,20 @@ export class ConstructionSystem implements SystemRegistration {
    * leaves the worst case exactly where it is"*. ADR 0082 proposes a persisted
    * placement ordinal and is unsigned, so nothing here anticipates it.
    */
-  private pendingOrderDemand(orders: readonly BuildOrder[]): readonly QueuedOrderDemand[] {
+  /**
+   * `excludeOrderId` is second and optional, and every existing caller passes
+   * neither -- `procureQueuedMaterials` and `pendingMaterialDemand`'s own
+   * production caller (`refundSurplusOf`) both want the demand as the order
+   * book stands. It exists for `previewCancelRefundMinorUnits`: a preview must
+   * not mutate `order.state` to ask "what if this one had already been
+   * cancelled", where `refundSurplusOf` gets that answer for free because
+   * `cancelOrder` has already written `'cancelled'` by the time it calls this
+   * chain. Passing an id here is the read-only route to the same exclusion.
+   */
+  private pendingOrderDemand(orders: readonly BuildOrder[], excludeOrderId?: string): readonly QueuedOrderDemand[] {
     const demand: QueuedOrderDemand[] = [];
     for (const order of orders) {
+      if (order.id === excludeOrderId) continue;
       if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
       const definition = BUILDABLE_REGISTRY.get(order.definitionId);
       if (definition === undefined) continue;
@@ -1402,9 +1632,10 @@ export class ConstructionSystem implements SystemRegistration {
    * nothing and is left for the walk to fail, which is where the reason the
    * player is told is decided.
    */
-  private pendingMaterialDemand(orders: readonly BuildOrder[]): readonly MaterialRequirement[] {
+  /** `excludeOrderId` is threaded straight through to `pendingOrderDemand`; see its own comment. */
+  private pendingMaterialDemand(orders: readonly BuildOrder[], excludeOrderId?: string): readonly MaterialRequirement[] {
     const demand = new Map<string, number>();
-    for (const order of this.pendingOrderDemand(orders)) {
+    for (const order of this.pendingOrderDemand(orders, excludeOrderId)) {
       for (const requirement of order.requirements) {
         demand.set(requirement.itemId, (demand.get(requirement.itemId) ?? 0) + requirement.quantity);
       }

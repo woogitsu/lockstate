@@ -13,6 +13,7 @@ import {
   rungFloorMinorUnits,
 } from '../../src/simulation/economy';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
+import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -959,6 +960,19 @@ const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
  */
 const BARE_WORLD_SCAN_MAX_PX = 336;
 
+/**
+ * How finely `dragRectangleOnWorld`'s `wholeSquare` scan samples a candidate
+ * gesture, in CSS pixels.
+ *
+ * 16, which is the same step the scan itself walks the page in, so the lattice
+ * is the scan's own grid rather than a second number -- and it is a quarter of
+ * `TILE_SIZE_PX`, so no tile of a candidate rectangle goes unsampled on either
+ * axis. Nothing this is aimed against is anywhere near that small: the HUD
+ * islands that swallow a pointer are whole panels, the narrowest of them
+ * `.hud-rooms` at 264px wide (measured at 1280x800).
+ */
+const BARE_SQUARE_SAMPLE_STEP_PX = 16;
+
 /** One pending-rectangle control, measured as a tap target and hit-tested. */
 interface RoomControlHit {
   readonly control: string;
@@ -1108,10 +1122,47 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
  *
  * `null` still means what `false` meant: there was no square of bare world to
  * draw in, which is a measurement and not a failure -- see the paragraph above.
+ *
+ * ### `wholeSquare`, and the measurement that made it necessary
+ *
+ * The scan's default is three points on a diagonal -- press, midpoint, release
+ * -- and the paragraph below calls that coarse on purpose. It is coarse in a
+ * direction that matters to any caller which draws the *same* rectangle twice:
+ * a square whose three diagonal points are canvas may still lie mostly under a
+ * HUD island, and an island that later grows takes the aim point with it.
+ *
+ * **Measured on 2026-09-05, at 1280x800, on the branch that added the first
+ * acknowledgement (#966 site 2).** The second room drag of the `#331` spec
+ * aimed at `(328,344)`, which was bare canvas by **3.8px** -- the bottom-left
+ * minimap panel's top edge was at `347.8`. Designating the first room put a row
+ * in the alerts list inside that panel, the list went `32px -> 60px`, and
+ * `.hud__corner` grew upward from `y=334.8` to `y=306.8` (its bottom pinned at
+ * `730.8`). `elementFromPoint(328,344)` then returned `h2.ui-panel__title`, the
+ * scan slid right to `(424,344)`, and the drag drew `12,15 4x4` where its walls
+ * had been built around `11,15 4x4`.
+ *
+ * The canvas did not move: `0,0 1280x800`, attributes `1280x800`, identical
+ * before and after. What moved was how much world a HUD island covers.
+ *
+ * So `wholeSquare` asks the question the caller actually has -- *is this square
+ * world?* -- by sampling the whole gesture on a 16px lattice instead of three
+ * points on its diagonal. The aim it returns is then bounded by the islands'
+ * horizontal extent rather than by an island's top edge, and a panel that grows
+ * upward by a row cannot slide it. That is a stronger property than the default
+ * and not a proof: nothing here can promise a square stays bare, which is why
+ * `drawRoomRectangle` still asserts the rectangle it drew rather than trusting
+ * the aim.
+ *
+ * **Off by default, and the two other callers are the reason.** Both drag once,
+ * never redraw, assert only `not.toBeNull()`, and run at 375x812 where
+ * `.hud-minimap`'s `calc(396px * var(--ui-scale))` is wider than the viewport --
+ * so a strictly bare square is a different and much scarcer thing there, and
+ * tightening what they aim with would change what they measure. Only a caller
+ * that has to hit the same tiles twice needs this.
  */
 async function dragRectangleOnWorld(
   page: Page,
-  options: { readonly minY?: number } = {},
+  options: { readonly minY?: number; readonly wholeSquare?: boolean } = {},
 ): Promise<WorldDragGesture | null> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
@@ -1120,14 +1171,39 @@ async function dragRectangleOnWorld(
   // midpoint and release -- lands on the canvas wins. Coarse on purpose; this is
   // aiming at open ground, not measuring a boundary, and a fine grid would spend
   // hundreds of round trips to find the same point.
+  //
+  // `wholeSquare` trades that coarseness for a lattice over the whole square,
+  // for the reason recorded above. Both forms are one `evaluate` -- the cost is
+  // `elementFromPoint` calls in the page, not round trips -- and both stop at
+  // the first point that is not canvas, so a candidate under an island is
+  // rejected on its first or second sample.
   const aim = await page.evaluate(
-    ({ width, height, deltas, minY }) => {
+    ({ width, height, deltas, minY, wholeSquare, step }) => {
       const free = (x: number, y: number): boolean =>
         document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
+      // Inclusive on both axes, and the last offset is the exact far edge rather
+      // than the last multiple of `step` below it: the release point is a corner
+      // of the square and is exactly where a drag ends.
+      const offsetsWithin = (delta: number): number[] => {
+        const offsets: number[] = [];
+        for (let d = 0; d < delta; d += step) offsets.push(d);
+        offsets.push(delta);
+        return offsets;
+      };
+      const bare = (x: number, y: number, delta: number): boolean => {
+        if (!wholeSquare) return free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta);
+        const offsets = offsetsWithin(delta);
+        for (const dy of offsets) {
+          for (const dx of offsets) {
+            if (!free(x + dx, y + dy)) return false;
+          }
+        }
+        return true;
+      };
       for (const delta of deltas) {
         for (let y = Math.max(8, minY); y + delta < height - 8; y += 16) {
           for (let x = 8; x + delta < width - 8; x += 16) {
-            if (free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta)) {
+            if (bare(x, y, delta)) {
               return { x, y, delta };
             }
           }
@@ -1135,7 +1211,14 @@ async function dragRectangleOnWorld(
       }
       return null;
     },
-    { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX], minY: options.minY ?? 8 },
+    {
+      width: viewport.width,
+      height: viewport.height,
+      deltas: [...ROOM_DRAG_DELTAS_PX],
+      minY: options.minY ?? 8,
+      wholeSquare: options.wholeSquare ?? false,
+      step: BARE_SQUARE_SAMPLE_STEP_PX,
+    },
   );
 
   if (aim === null) return null;
@@ -1289,7 +1372,15 @@ async function drawRoomRectangle(
   what: string,
   options: { readonly roomCatalogId: string; readonly minY?: number; readonly clearOf?: readonly TileRectangle[] },
 ): Promise<{ readonly rectangle: TileRectangle; readonly gesture: WorldDragGesture }> {
-  const gesture = await dragRectangleOnWorld(page, options.minY === undefined ? {} : { minY: options.minY });
+  const gesture = await dragRectangleOnWorld(page, {
+    // Every drag through this helper is one half of a pair: a probe that
+    // decides where thirty wall segments go, and the real drag that has to land
+    // on the same tiles once they are up. `wholeSquare` is what stops a HUD
+    // island that grew in between from moving the second one -- see
+    // `dragRectangleOnWorld`'s own note for the 3.8px this was measured at.
+    wholeSquare: true,
+    ...(options.minY === undefined ? {} : { minY: options.minY }),
+  });
   if (gesture === null) {
     throw new Error(
       `${what}: no square of bare world to draw a room in, from y=${String(options.minY ?? 8)} down` +
@@ -2031,6 +2122,11 @@ const INTERACTIVE_SELECTOR =
  * `hud.css` drops `.hud__corner` there: the minimap and the alerts section go
  * away entirely rather than compete with the Build panel for a phone's width.
  *
+ * **Since 2026-09-05 the camera zoom pair goes with them (#1023), and it is
+ * not the same kind of entry.** The two originals have a second route on a
+ * phone or nothing to show yet; the zoom has neither. See the comment on those
+ * two entries below, which is where the argument is kept.
+ *
  * Written out rather than inferred. A reachability check that skips whatever
  * happens not to be laid out cannot tell a considered responsive decision from
  * a control that has quietly collapsed to nothing, and the second is the shape
@@ -2181,6 +2277,35 @@ const NEVER_LAID_OUT_BELOW_720 = [
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
     'button.ui-section__header "Alerts"',
+  /*
+   * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
+   * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
+   *
+   * They are here for the same mechanical reason -- `.hud__corner` is
+   * `display: none` at 720px and below, and these two buttons are in it -- and
+   * that is where the similarity stops. The minimap draws nothing yet and the
+   * alerts log has a second route on a phone (`.hud__event`, and the refusal
+   * and unavailable bands, all of which `hud.ts` documents as existing because
+   * this corner does not). **The zoom has no second route on a phone at all**:
+   * there is no wheel, there are no `+`/`-` keys, and the one gesture that
+   * zooms -- a pinch -- has no affordance anywhere, which is the exact defect
+   * #1023 was filed about, surviving at one viewport.
+   *
+   * It is exempted rather than fixed because the fix is not a breakpoint edit.
+   * `hud.css`'s own comment on that rule records two attempts at removing it,
+   * the diagnosis they produced (the corner collides with the **stretched
+   * rail**, and this very test is what caught it), and the owner's steer that
+   * the desktop browser comes first and mobile is refined later. This test also
+   * pins the rule directly, at "still mounts the interface when the simulation
+   * worker cannot start (#82)", so bringing the corner back is a decision with
+   * an owner and not a line for an implementing agent to change on its way past.
+   *
+   * So this pair belongs on the mobile layout pass's list, and these two
+   * entries are how it stays on it: the accounting assertion below fails the
+   * moment they become reachable, which is what will retire them.
+   */
+  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__out "Zoom out"',
+  'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__in "Zoom in"',
 ] as const;
 
 /*
@@ -3647,8 +3772,45 @@ test.describe('the assembled application', () => {
        * on the projection read that publication triggers, so a press timed
        * between the two would name somebody already dismissed and be refused as
        * `dismiss.unknown-staff`.
+       *
+       * **Two presses per dismissal, and this loop used to make one** (issue
+       * #877, the owner's ruling of 2026-09-03). A dismissal is confirmed now:
+       * the first press arms the row and states who is about to be sacked, the
+       * second sends the command. Nothing else about the gesture changed -- same
+       * control, no modal, no second button -- so the count assertions below are
+       * untouched and still fail if either press stops working.
+       *
+       * `.first()` is re-resolved for the second press deliberately rather than
+       * held: it selects `[data-staff]`, the arm publishes nothing, and a
+       * re-resolution that found a different row would mean the roster moved
+       * between the two presses, which is exactly what #877's fix forbids. If
+       * that ever happens the confirmed press lands on a row the arm was not on
+       * and `pressDismiss` arms *that* row instead of sending anything -- so the
+       * metric below does not move and this sweep goes red rather than quiet.
        */
       for (let remaining = STAFF_ROSTER_ROW_LIMIT - 1; remaining >= 0; remaining -= 1) {
+        await rosterRows.first().locator('.ui-action').click();
+        /*
+         * Armed, not sent -- asserted rather than assumed, so a confirm step
+         * that silently stopped arming would fail here instead of leaving the
+         * dismissals below to pass for the wrong reason.
+         *
+         * **Once per viewport, on the first of the three, and the reason is this
+         * test's budget rather than tidiness.** It is the most expensive test in
+         * the suite, `test.slow()` triples its 60 s and its own comment above
+         * records 14-28 s on an idle machine -- but it has been measured at
+         * **2.9 m against that 3.0 m** on a box running other suites
+         * (`docs/AGENT_WORKFLOW.md`, the contention canaries). The confirm step
+         * already doubles this block's presses from 15 to 30 across the sweep,
+         * which is irreducible; a poll per press is not, so it is spent where it
+         * proves the same thing.
+         */
+        if (remaining === STAFF_ROSTER_ROW_LIMIT - 1) {
+          await expect(
+            page.locator('.hud-staff__roster .hud-staff__held-row[data-dismiss="armed"]'),
+            `the first press did not arm a roster row at ${width}x${height}`,
+          ).toHaveCount(1);
+        }
         await rosterRows.first().locator('.ui-action').click();
         await expect(
           staffMetric,
@@ -4699,10 +4861,45 @@ test.describe('the assembled application', () => {
         timeout: 20_000,
       })
       .toBe(String(purchases));
-    await page.locator('.hud-strip__transport [title="Pause"]').click();
+    /*
+     * **The funds assertion goes BEFORE the pause, and that ordering is the
+     * whole of issue #842.**
+     *
+     * It used to read: poll `data-pending` to five, click Pause, assert funds.
+     * That treats *"five deliveries are pending"* as *"five purchases have been
+     * charged"*, and those are not the same statement. Measured in a browser
+     * with the clock running, sampling every 100ms:
+     *
+     *     t+100ms  spent 240  pending=3
+     *     t+200ms  spent 240  pending=4
+     *     t+300ms  spent 320  pending=5   <-- pending is FIVE, four are debited
+     *     t+400ms  spent 400  pending=5
+     *
+     * `data-pending` is written by the projection ahead of the debit landing,
+     * so the poll can trip with one or two purchases still outstanding. Pausing
+     * there froze the clock those debits needed, the shortfall became permanent,
+     * and `toHaveText`'s ten seconds of retries could not rescue it: CI's log
+     * shows thirteen polls all reading the same short value. It failed twice
+     * that way -- `dc720790` at 24,680 and PR #839's job at 24,760, which are
+     * **exactly one and two purchases** short of 24,600.
+     *
+     * Asserting first is self-synchronising: `toHaveText` retries while the
+     * clock is still running, so the outstanding debits land. There is room for
+     * it -- a debit lands within ~100ms, and a delivery needs
+     * `PROCUREMENT_DELIVERY_DELAY_TICKS` -- and the Pause below then does only
+     * what its own comment says it is for, keeping the deliveries in flight for
+     * the rest of the test rather than also freezing the accounting.
+     *
+     * **The economy was never wrong**, which is worth stating because the first
+     * report of #842 read like a money leak. Five presses against a paused
+     * clock debit exactly 400 and hold it (ADR 0051 dispatches a purchase
+     * during a pause and charges for it), and five against a running clock
+     * reach 400 too if nothing stops the clock first.
+     */
     await expect(funds).toHaveText(
       fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - purchases * 2 * unitPriceOf('item.brick')),
     );
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
 
     // Closed again: the arrival state, with five purchases outstanding.
     await page.locator('.hud-build__buy-toggle').click();
@@ -4941,52 +5138,62 @@ test.describe('the assembled application', () => {
     expect(await deliveries.boundingBox(), 'an empty deliveries block kept its box').toBeNull();
 
     /*
-     * **The identity above is no longer the whole story, as of #749.** The
-     * `Cancel` pressed earlier in this test is one of the four presses that
-     * issue put a success sentence on `.hud__event` for, and `hud.ts`'s
-     * `applyEventNotice` documents that band as never auto-dismissing: it
-     * "is replaced by the next event or emptied when the session ends", and
-     * nothing that happens between the cancel and here -- the remaining
-     * deliveries landing, the fold opening and shutting again -- is either.
-     * So the band is still showing "The delivery was cancelled -- {total}
-     * back." at the point this test measures its final geometry, and that
-     * is a fourth row `.hud` (`grid-template-rows: auto auto auto auto
-     * minmax(0, 1fr) auto`) never had to give space to at the top of this
-     * test, where nothing had happened yet.
+     * **The identity above stopped being the whole story with #749, and is the
+     * whole story again as of #985.** Both directions are recorded rather than
+     * one overwritten (`docs/AGENT_WORKFLOW.md` section 4), because the middle
+     * state is what #985 was filed about.
      *
-     * Asserted directly, so the arithmetic below is traceable to its cause
-     * rather than four re-pinned numbers a reader has to take on faith.
+     * The `Cancel` pressed earlier in this test is one of the four presses
+     * #749 put a success sentence on `.hud__event` for. That band is
+     * `grid-area: event`, an `auto` row of `.hud`
+     * (`grid-template-rows: auto auto auto auto minmax(0, 1fr) auto`), so
+     * while it is up it costs the middle row 32px and the Build panel 24px of
+     * that -- and `hud.ts`'s `applyEventNotice` documented the band as never
+     * auto-dismissing, so nothing between the cancel and here would ever have
+     * taken it back. This block therefore read:
+     *
+     * > `await expect(event, 'the cancellation this test drove should still be
+     * > the band`s last word').toBeVisible();`
+     *
+     * and pinned `panelHeight: 314.1`, `panelOverflow: 24`, `foldSlack: -16.2`
+     * -- a Build panel whose last section, "Enter coordinates", sat 16.2px
+     * *below its own fold on arrival*, with `scrollTop` 0. That is #174's
+     * defect, reproduced here as an expectation because it was what the code
+     * did.
+     *
+     * #985's repair is `EVENT_BAND_HOLD_CEILING_MS`: the band lets go of the
+     * row when nothing has replaced its sentence. So the two surfaces part
+     * company here, and both halves are asserted --
+     *
+     *  - **the alerts list keeps the sentence** (ADR 0084 decisions 1 to 3),
+     *    which is also this block's vacuity guard: without it, a band that had
+     *    never been raised at all would satisfy the assertion below;
+     *  - **the band has let the row go**, and the panel is byte-identical to
+     *    the arrival geometry measured at the top of this test.
+     *
+     * `toBeHidden` waits, so what this asserts is one-directional and not a
+     * race: a band still up after twice its own ceiling is the defect, and a
+     * slow machine costs wall-clock time rather than a false red.
      */
-    const event = page.locator('.hud__event');
-    await expect(event, 'the cancellation this test drove should still be the band`s last word').toBeVisible();
-    await expect(event).toHaveAttribute('data-severity', 'info');
-    await expect(event).toHaveText(
-      localeText('hud.alert.event.economy.delivery-cancelled').replace('{total}', fundsText(refundOf)),
-    );
+    await expect(
+      page.locator('.hud-alerts__list'),
+      'the cancellation never reached the alerts log, so the band assertion below would be vacuous',
+    ).toContainText(localeText('hud.alert.event.economy.delivery-cancelled').replace('{total}', fundsText(refundOf)));
+    await expect(
+      page.locator('.hud__event'),
+      'the events band is still holding its grid row long after its hold ceiling (#985)',
+    ).toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
 
     /*
-     * The band is an `auto` row and everything below it shares the grid's one
-     * `minmax(0, 1fr)` row, so 24px of band is 24px the Build panel's own box
-     * no longer has: `panelHeight` and `foldSlack` both fall by exactly that
-     * (338.1 -> 314.1, 7.8 -> -16.2 -- the last section now sits 16.2px past
-     * the fold), and because the panel's *content* did not shrink to match,
-     * `panelOverflow` opens up by the same 24px it used to be flush at. Every
-     * other field -- both catalogue figures, the body's own content height,
-     * the last section's text, the scroll position -- is untouched, which is
-     * the rest of the #703 identity still holding: this block still donates
-     * nothing of its own, on top of or under the fold.
+     * And with the row given back, every field is `before`'s again -- the
+     * panel's height, its fold slack, both catalogue figures, the body's own
+     * content height, the last section's text and the scroll position. That is
+     * *"a pending delivery costs the Build panel nothing"* restored whole,
+     * rather than the seven-of-nine version #749 left it as.
      */
-    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual({
-      panelHeight: 314.1,
-      panelOverflow: 24,
-      panelScrollTop: before?.panelScrollTop,
-      bodyHeight: before?.bodyHeight,
-      bodyContent: before?.bodyContent,
-      listHeight: before?.listHeight,
-      listContent: before?.listContent,
-      lastText: before?.lastText,
-      foldSlack: -16.2,
-    });
+    expect(await geometry(), 'the panel did not return to its arrival geometry once nothing was on its way').toEqual(
+      before,
+    );
   });
 
   /**
@@ -5144,6 +5351,34 @@ test.describe('the assembled application', () => {
    * quantity, because both sides of that comparison are hand-written.
    */
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
+    /*
+     * `test.slow()` triples the 60 s budget, and unlike its three siblings this
+     * sweep was left without it -- which made it a test that could not pass
+     * rather than a test that sometimes did not.
+     *
+     * Measured 2026-09-04 on an idle machine (no `playwright` or `vitest`
+     * process running, load average **1.55**): at the bare 60 s it failed
+     * `Test timeout of 60000ms exceeded` on the `locator.click` below, and the
+     * call log had already reported the row *resolved*, *"visible, enabled and
+     * stable"* and *"done scrolling"* -- so nothing was being waited on, the
+     * budget had simply run out mid-sweep. The same commit, the same idle
+     * machine, run with `--timeout 180000`: **`1 passed (1.9m)`**, the test
+     * itself 1.8 m. It needs about 108 s and was being given 60.
+     *
+     * The budget is arithmetic here and not a race, which is why raising it
+     * hides nothing: the sweep is 18 rooms x 5 viewports, every step is
+     * awaited, and the work does not vary with timing. Nothing about the
+     * assertions changes -- a mutation of the production code this measures
+     * (`ROOM_NEEDS_NAMED_LIMIT` 4 -> 8) is still red inside the raised budget,
+     * on the fold assertion rather than on the clock.
+     *
+     * `main`'s CI runner does the whole browser suite in about 14 minutes and
+     * has never been red on this test, so the 60 s fitted there and only there.
+     * A canary entry in `docs/AGENT_WORKFLOW.md` recorded that asymmetry for
+     * one afternoon; the budget is the fix and the entry was the workaround.
+     */
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
@@ -5721,6 +5956,32 @@ test.describe('the assembled application', () => {
     ).toBeHidden();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
 
+    /*
+     * **And neither designation raised the events band** -- the owner's ruling
+     * of 2026-09-05 on issue #966 site 2, measured on the assembled page rather
+     * than at the translator.
+     *
+     * An accepted `ZoneRoom` is acknowledged: it puts a row in the alerts list
+     * in the bottom-left corner, which is what a player reads. It does **not**
+     * take `.hud__event`, and this is the assertion that says so where it
+     * matters -- that band is a grid row, it costs the middle row 32px whatever
+     * raised it, and `event-band-dwell.ts` replaces an incumbent rather than
+     * releasing the row, so once raised the cost stands for the session. Issue
+     * #985 is where that clip is measured and owned; nothing here fixes it, and
+     * the loop below passing at 900x600 is this line's consequence rather than
+     * a repair.
+     *
+     * `toBeHidden` and not "does not say `{room} designated`": nothing else in
+     * this fixture can raise the band -- no prisoner is admitted, no incident
+     * producer has anybody to open one about, and the ladder rungs need a
+     * treasury this prison has not spent -- so hidden is the state, and a
+     * weaker assertion would pass on the band showing something else.
+     */
+    await expect(
+      page.locator('.hud__event'),
+      'a designation raised the events band, which the ruling of 2026-09-05 says it must not',
+    ).toBeHidden();
+
     for (const [width, height] of [
       [1280, 800],
       [375, 812],
@@ -5812,13 +6073,31 @@ test.describe('the assembled application', () => {
       );
       const expectedItem = (objectKey: string, count: string): string =>
         localeText('hud.rooms.needs-object').replace('{count}', count).replace('{object}', localeText(objectKey));
+      /*
+       * **The doorway line came first, and finding it here is what #938 is.**
+       *
+       * This assertion read `[bed, toilet]` and `data-needs` `'4'` until then,
+       * and both were true of what the panel drew and false of the prison:
+       * `wallRectanglesFromTheKeyboard` builds a `wall-brick` on **every**
+       * perimeter segment and no door anywhere, so the two cells this test
+       * zones are rooms no prisoner can ever walk into -- which is the exact
+       * state #938 measured, sitting inside this suite's own fixture, green,
+       * for as long as the readout had no way to say it.
+       *
+       * So this is the fix arriving on the assembled page rather than a
+       * fixture repaired to suit it: three lines per cell now, six unmet
+       * things across the two, and the door named before the furniture because
+       * nothing can be carried into a room nobody can enter.
+       */
       expect(shown.items, `the readout does not enumerate what the room needs at ${width}x${height}`).toEqual([
+        localeText('hud.rooms.needs-doorway'),
         expectedItem('object.bed.name', '1'),
         expectedItem('object.toilet.name', '1'),
       ]);
       // The same figure as a number rather than as prose, so the count above is
-      // not being read off the sentence it is meant to be checking.
-      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('4');
+      // not being read off the sentence it is meant to be checking. Six: a
+      // door, a bed and a toilet, twice over.
+      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('6');
 
       // 5. Nothing else in the panel was pushed out to make room. The
       // catalogue list is deliberately absent: it is the one box here that is
@@ -5841,6 +6120,80 @@ test.describe('the assembled application', () => {
         `the rail with the room readout showing at ${width}x${height}`,
       ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
     }
+
+    /*
+     * 6. **And the player is told on the tab the game opens on**
+     *    ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+     *    finding 1).
+     *
+     * Everything above this line is drawn inside `.hud-rooms`, and the
+     * play-test that filed #1006 measured what that costs: this fixture's own
+     * state -- two cells, no door in either, six unmet things -- read as
+     * `1 ROOMS` with no qualifier on OVERVIEW, and eight game days there
+     * produced two messages and not a word about the door. The panel is one
+     * click away and a player who does not click never learns.
+     *
+     * So the assertion is not that the badge exists; it is that the badge is
+     * **laid out on a tab where `.hud-rooms` is not**, off a readout this
+     * thread has to keep pulling for it. That is why it is measured here and
+     * not in `ui-shell.spec.ts`: the harness never runs `src/main.ts`, which is
+     * where the tab gate lives. **The assertion that actually distinguishes the
+     * two behaviours is the second tab hop below**, and the block there says
+     * why the three immediately following this paragraph do not.
+     *
+     * The number is the panel's own: `2` unfinished rooms is `shown.unfinished`
+     * asserted at every viewport above, off the same `HudRoomNeedsViewModel`.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    await expect(page.locator('.hud-rooms')).toBeHidden();
+
+    const notReady = page.locator('.ui-stat[data-metric="rooms"] .ui-badge');
+    // Built from the bundled catalogue rather than typed, for the reason the
+    // room line above is: ADR 0011 puts the key on one side of that boundary
+    // and the text on the other.
+    await expect(notReady.locator('.ui-badge__text')).toHaveText(
+      localeText('hud.status.rooms-not-ready').replace('{count}', '2'),
+    );
+    await expect(notReady).toHaveAttribute('data-tone', 'warning');
+    expect(
+      await notReady.evaluate((node) => node.getClientRects().length > 0),
+      'the badge has no box on OVERVIEW, so it says nothing a player can read',
+    ).toBe(true);
+    expect(
+      await page.evaluate(() => document.querySelector('.hud-rooms')?.getClientRects().length ?? -1),
+      'the Rooms panel still has a box on OVERVIEW, so this assertion is not measuring the finding',
+    ).toBe(0);
+
+    /*
+     * **A second hop, and it is the assertion that actually bites.**
+     *
+     * The three above pass on `origin/main`'s `src/main.ts` as well, and the
+     * reason is worth writing down because it is a race rather than a bug in
+     * this test: leaving the Rooms tab used to call `applyRoomNeeds(undefined)`,
+     * but the `read()` started on the Rooms tab resolves *after* that and puts
+     * the readout back with no tab check. The badge is then on screen and
+     * **frozen** -- nothing refreshes it again for the rest of the session --
+     * which is a state the assertions above cannot tell from a live one.
+     *
+     * A second tab change is what separates them. On the old behaviour there is
+     * no read in flight this time, so the clear stands and the badge never
+     * comes back; on this one every tab asks, so it is there on BUILD and still
+     * there on the way back. Both directions are checked, because "it survived
+     * one hop" is exactly the weaker claim the paragraph above describes.
+     */
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+    await expect(
+      notReady.locator('.ui-badge__text'),
+      'the badge went away on a tab nothing refreshes the room readout from',
+    ).toHaveText(localeText('hud.status.rooms-not-ready').replace('{count}', '2'));
+
+    await page.locator('.ui-tab[data-tab="overview"]').click();
+    await expect(page.locator('.hud-rooms')).toBeHidden();
+    await expect(notReady.locator('.ui-badge__text')).toHaveText(
+      localeText('hud.status.rooms-not-ready').replace('{count}', '2'),
+    );
   });
 
   /**
@@ -8410,7 +8763,33 @@ test.describe('the assembled application', () => {
     await expect(buy).toHaveAttribute('data-action-failed', 'true');
     const refusalId = await refusal.getAttribute('id');
     expect(refusalId).not.toBeNull();
-    await expect(buy).toHaveAttribute('aria-describedby', String(refusalId));
+    /*
+     * **`aria-describedby` is a token LIST, and this asserted equality until
+     * the owner's ruling of 2026-09-03 put the shortfall on the control.**
+     * It read `toHaveAttribute('aria-describedby', String(refusalId))` and
+     * went red with `Received: "hud-build-buy-shortfall-6 hud-refusal-1"`.
+     * That failure was the assertion's, not the interface's: a refused Buy
+     * now has two things to say -- how much is missing, and that nothing was
+     * bought -- and a control that references only one of them would be
+     * withholding the other from a screen reader. Equality on a
+     * space-separated list is a claim that no second description may ever
+     * exist, which is not a property this surface should have.
+     *
+     * Both tokens are now asserted **by name and independently**, so this is
+     * strictly stronger than the equality it replaces: it still fails if the
+     * refusal stops being referenced, and it now also fails if the shortfall
+     * line stops being. Order is deliberately not asserted; see below.
+     */
+    const describedBy = (await buy.getAttribute('aria-describedby')) ?? '';
+    const describedTokens = describedBy.split(/\s+/u).filter((token) => token.length > 0);
+    expect(describedTokens).toContain(String(refusalId));
+    const shortfall = page.locator('.hud-build__buy-shortfall');
+    await expect(shortfall).toHaveCount(1);
+    const shortfallId = await shortfall.getAttribute('id');
+    expect(shortfallId).not.toBeNull();
+    expect(describedTokens).toContain(String(shortfallId));
+    // Exactly these two, so a third description cannot be added unnoticed.
+    expect(describedTokens).toHaveLength(2);
 
     // Nothing left this thread, so the worker has nothing it *could* report
     // about this press: the throw happened instead of the submit, not

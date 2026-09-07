@@ -33,6 +33,22 @@ import type { SimulationEvent } from '../protocol/types';
 export const MAX_BUFFERED_SIMULATION_EVENTS = 64;
 
 /**
+ * Whether one `Undo` press destroyed what had been spent on any of the orders
+ * it reversed ([#927](https://github.com/matmaxalez/lockstate/issues/927)).
+ *
+ * The discriminator `recordConstructionUndone` splits its two sentences on, and
+ * deliberately the whole of what crosses into this module about that press:
+ * **not a count, not a figure, and not a list of states.** The owner's ruling
+ * of 2026-09-01 on #749 declines the first two, and the third would be the
+ * first by another name. `ConstructionSystem.undo` computes it as an or across
+ * the transaction, where the orders and their pre-cancellation states are.
+ *
+ * A `type` and not a `boolean` so that the call site says which case it means;
+ * see `recordConstructionUndone` for why each member is named what it is.
+ */
+export type ConstructionUndoSpendOutcome = 'nothing-destroyed' | 'spend-destroyed';
+
+/**
  * What the prison has just done, for the events channel to carry.
  *
  * ## Why this is a queue where `RefusalLog` is a single record
@@ -368,6 +384,29 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that a rectangle the player designated is now a room of that type
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 2).
+   *
+   * **One call per accepted press**, like `recordResidentRelocated` above: the
+   * caller is `createSessionCommandHandler`'s `ZoneRoom` branch, on the arm
+   * where `RoomZoningService.zone` answered `'zoned'`.
+   *
+   * **Unguarded, because there is no figure to guard and the caller is what
+   * bounds it** -- the same shape `recordIncidentsAllClear` relies on. A
+   * refused press takes the other arm, which records a `RefusalLog` reason and
+   * calls nothing here; re-deciding that here would be a second, weaker copy
+   * of `zone`'s own answer.
+   *
+   * @param roomNameKey `ZoneRoomAccepted.roomNameKey` -- the room catalog's own
+   * `nameKey`, from the definition `zone` decided the request against. Passed
+   * through rather than derived from the instance's `roomCatalogId`, so the
+   * word the player reads cannot disagree with the type the world recorded.
+   */
+  public recordRoomZoned(roomNameKey: string, tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'rooms.zoned', roomNameKey });
+  }
+
+  /**
    * Records that a prisoner got out
    * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
    *
@@ -550,35 +589,83 @@ export class SimulationEventLog {
    * **Two sentences, split on whether the crew had started**, which is the
    * owner's answer to "one sentence or two" and their reasoning for it:
    * *"silence about a loss is the worst option"*. An order cancelled before the
-   * crew reached it gives its money back; an `'in-progress'` one drops its
-   * allocation unreleased and unpaid (ruling 20 of 2026-08-31, argued at
-   * `ConstructionSystem.cancelOrder`). Two different outcomes, so two different
-   * things to say.
+   * crew reached it gives its money back; one cancelled past the point of no
+   * return -- `'in-progress'` by ruling 20 of 2026-08-31, `'completed'` by the
+   * owner's ruling of 2026-09-01, both argued at
+   * `ConstructionSystem.cancelOrder` -- drops its allocation unreleased and
+   * unpaid. Two different outcomes, so two different things to say.
+   *
+   * **The split was `'in-progress'` against everything else until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927)**, which found
+   * `'completed'` saying nothing at all; the paragraph below the `switch`
+   * argument records what that silence rested on and why neither half of it
+   * survived.
    *
    * **A `switch` over `BuildOrderLifecycleState` rather than a boolean the
    * caller computes**, for the reason `recordIncidentOpened` above switches
    * over `IncidentType`: exhaustiveness is the point. A ninth lifecycle state
    * fails to compile here until somebody has decided what the prison says when
-   * an order in it is cancelled, and the three states that deliberately say
+   * an order in it is cancelled, and the two states that deliberately say
    * nothing say so at a site where the reason can be read.
    *
    * `BuildOrderLifecycleState` is imported for its type only, so this module
    * still runs no construction code -- the same shape the `IncidentType` import
    * above has.
    *
-   * **`'completed'` records nothing, and it is the one exclusion worth
-   * arguing.** A completed order is cancellable and `cancelOrder` reverses the
-   * geometry it wrote, but neither approved sentence is true of it: the money
-   * did not come back (`refundSurplusOf` runs for `'approved'` and
-   * `'materials-pending'` only) and the materials are not gone either (ADR 0076
-   * decision B puts them back in the container). No control can reach that
-   * press today -- `PENDING_BUILD_ORDER_STATES` excludes `'completed'`, so no
-   * Build-panel row names one -- and it is reachable only by an order finishing
-   * between a projection and the press that answers it. Saying one of the two
-   * sentences there would be a promise the code does not keep, which
-   * `AGENTS.md`'s fourth exclusion reserves to the owner; the sentence a
-   * cancelled *finished* order deserves is therefore recorded as owed, here,
-   * rather than guessed at.
+   * **`'completed'` recorded nothing until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and both
+   * reasons it gave had gone dead.** The paragraph is kept below rather than
+   * deleted, because it is the argument that produced a silence about a
+   * destroyed purchase and a reader needs to see why it stopped holding. It
+   * read:
+   *
+   * > **`'completed'` records nothing, and it is the one exclusion worth
+   * > arguing.** A completed order is cancellable and `cancelOrder` reverses
+   * > the geometry it wrote, but neither approved sentence is true of it: the
+   * > money did not come back (`refundSurplusOf` runs for `'approved'` and
+   * > `'materials-pending'` only) and the materials are not gone either (ADR
+   * > 0076 decision B puts them back in the container). No control can reach
+   * > that press today -- `PENDING_BUILD_ORDER_STATES` excludes `'completed'`,
+   * > so no Build-panel row names one -- and it is reachable only by an order
+   * > finishing between a projection and the press that answers it. Saying one
+   * > of the two sentences there would be a promise the code does not keep,
+   * > which `AGENTS.md`'s fourth exclusion reserves to the owner; the sentence
+   * > a cancelled *finished* order deserves is therefore recorded as owed,
+   * > here, rather than guessed at.
+   *
+   * Both operands are false, so the conclusion inverts:
+   *
+   * - **The materials *are* gone.** The owner's ruling of 2026-09-01 --
+   *   *"Taking a finished object away returns nothing. Not its materials, not
+   *   its money."*, ADR 0076's amendment of that date -- reverses decision B,
+   *   and `ConstructionSystem.cancelOrder` has followed it since:
+   *   `destroysSpendOnCancel` holds `'completed'`, so the allocation is dropped
+   *   unreleased and unpaid. The paragraph above was arguing from a decision the
+   *   simulation had already stopped honouring.
+   * - **A control does reach that press.** `ConstructionSystem.undo()` is
+   *   *"cancel every order in this transaction, including a `completed` one"* in
+   *   its own comment, and `KeyZ` is the ordinary press for it. The narrow
+   *   version of the claim is the true one and is a different claim: no
+   *   Build-panel *row* names a completed order, which is about the queue list
+   *   and not about reachability.
+   *
+   * So the money still does not come back **and** the materials are destroyed,
+   * which is precisely what `'construction.order-cancelled-underway'` says --
+   * *"Anything already spent past the point of no return stays spent."* It is
+   * that sentence's own condition rather than a stretch of it: the clause is
+   * quantified over what was spent past the point of no return, and a finished
+   * order is the furthest past it an order gets. So `'completed'` now records
+   * the same event `'in-progress'` does, and the silence the owner's *"silence
+   * about a loss is the worst option"* argued against is closed on the larger
+   * of the two losses.
+   *
+   * **The event type keeps the name `-underway`, which describes the state
+   * `'in-progress'` and not this one.** Renaming it is not available: saves
+   * carry these records (`simulationEventSchema` is read by `save-schema.ts`)
+   * and the type is a persisted discriminant. The name is developer-facing, the
+   * sentence is what a player reads, and the sentence is true of both; the
+   * schema in `src/simulation/protocol/types.ts` says so where the name is
+   * declared.
    *
    * **`'cancelled'` and `'failed'` record nothing because they cannot happen**:
    * `cancelOrder` throws for both and the caller records only after it returns.
@@ -598,9 +685,9 @@ export class SimulationEventLog {
         this.append({ sequence, tick, type: 'construction.order-cancelled' });
         return;
       case 'in-progress':
+      case 'completed':
         this.append({ sequence, tick, type: 'construction.order-cancelled-underway' });
         return;
-      case 'completed':
       case 'cancelled':
       case 'failed':
         return;
@@ -621,9 +708,78 @@ export class SimulationEventLog {
    * reverses a whole transaction, so a sentence naming one order would be a
    * small lie whenever a run of several was taken back, and surfacing the size
    * needs plumbing on `redoTransaction` that the ruling declines. Left known.
+   *
+   * **Two sentences since [#927](https://github.com/matmaxalez/lockstate/issues/927),
+   * split on whether the transaction destroyed anything -- the same split
+   * `recordBuildOrderCancelled` above has had since #749, on the channel that
+   * can destroy strictly more.** `Undo` goes through
+   * `ConstructionSystem.cancelOrder` for every order in the transaction,
+   * `'completed'` ones included, so a `Z` on a finished wall takes the wall
+   * down, refunds nothing and destroys the materials. It said *"the last change
+   * to the build queue was undone"* and nothing else, which is true and is not
+   * the part that mattered.
+   *
+   * **A named union rather than a `boolean`**, for the reason the `switch`
+   * above is a `switch`: a call site reading `recordConstructionUndone(true,
+   * tick)` says nothing about what is true, and the two members here have to
+   * be told apart by somebody reading the handler. Not
+   * `BuildOrderLifecycleState`, which is the discriminator on the other
+   * channel: an undo reverses many orders in many states at once, so there is
+   * no single state to pass, and the or-across-the-transaction is computed
+   * where the orders are (`ConstructionSystem.undo`).
+   *
+   * **`'nothing-destroyed'` is the honest name for the other member, not
+   * `'money-refunded'`.** A transaction of `'planned'` orders spent nothing and
+   * refunds nothing, so a member claiming money came back would be false of it;
+   * what both refundable cases share is only that nothing was destroyed, and
+   * the shipped sentence for them says only that the change was undone.
    */
-  public recordConstructionUndone(tick: number): void {
-    this.append({ sequence: this._sequence + 1, tick, type: 'construction.undone' });
+  public recordConstructionUndone(spend: ConstructionUndoSpendOutcome, tick: number): void {
+    const sequence = this._sequence + 1;
+    switch (spend) {
+      case 'nothing-destroyed':
+        this.append({ sequence, tick, type: 'construction.undone' });
+        return;
+      case 'spend-destroyed':
+        this.append({ sequence, tick, type: 'construction.undone-spend-destroyed' });
+        return;
+    }
+  }
+
+  /**
+   * Records that an object standing in the prison was taken away, and that what
+   * it cost is gone with it
+   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   *
+   * **The silence this closes destroyed money and put nothing on screen.** #945
+   * measured it at v0.0.451: a standing bed cost 65 on placement
+   * (`25,000 -> 24,935`) and removing it moved the treasury not at all
+   * (`24,935 -> 24,935`) with the sentence band `hidden` -- so nothing
+   * distinguished it from a removal that had refunded. It survived #932, which
+   * made `Undo` and `CancelBuildOrder` state-aware, because a standing object
+   * reaches neither: `ObjectPlacementService.remove`'s first arm goes to
+   * `PlacedObjectRegistry.remove` and never to `ConstructionSystem.cancelOrder`.
+   *
+   * **No discriminator, unlike `recordConstructionUndone` above, and that is a
+   * fact about the route rather than a simplification.** That method splits two
+   * sentences because an undo reverses orders in states that differ in whether
+   * money comes back. This one has nothing to split: every buildable with a
+   * `placesObjectId` in `BUILDABLE_REGISTRY` requires at least one material, so
+   * a standing object always cost something, and the removal returns nothing
+   * whatever it was -- the owner's ruling of 2026-09-01, *"Taking a finished
+   * object away returns nothing. Not its materials, not its money."* A future
+   * removal that gave something back would be a second event type, argued at
+   * `objects.removed-spend-destroyed`'s schema, and not a second arm here.
+   *
+   * **Unguarded, because there is no figure to guard**, exactly as
+   * `recordConstructionUndone` is. The caller records only on
+   * `RemoveObjectOutcome.kind === 'removed'`, which is the arm that has already
+   * dropped the registry row -- so this cannot report a removal that did not
+   * happen, which is the promise-the-code-does-not-keep `AGENTS.md`'s fourth
+   * exclusion reserves.
+   */
+  public recordObjectRemoved(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'objects.removed-spend-destroyed' });
   }
 
   /** Records that the build history was walked forward one transaction (#749). The mirror of `recordConstructionUndone` above, on every point. */
@@ -668,6 +824,24 @@ export class SimulationEventLog {
    */
   public recordIncidentsAllClear(tick: number): void {
     this.append({ sequence: this._sequence + 1, tick, type: 'incidents.all-clear' });
+  }
+
+  /**
+   * Records that the prison has nothing open any more **and that the last
+   * thing to close was not contained** (issue #914's finding 4).
+   *
+   * The lapse half of `recordIncidentsAllClear` above, split off it for the
+   * reason the schema in `src/simulation/protocol/types.ts` sets out: the two
+   * endings cost a prison entirely different amounts and read as one row.
+   * Unguarded and figure-free for exactly the sibling's reasons -- the caller
+   * is what bounds it to at most one per return to calm, and this class knows
+   * nothing about incidents.
+   *
+   * `IncidentResponseSystem.reportAllClearIfCalm` calls **one** of the two,
+   * never both, so a return to calm is still one row on the alerts list.
+   */
+  public recordIncidentsAllClearAfterLapse(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'incidents.all-clear-after-lapse' });
   }
 
   /**

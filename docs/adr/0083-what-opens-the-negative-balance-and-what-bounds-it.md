@@ -270,6 +270,30 @@ prisoner-day, not 300: `stateIncomeForPrisonerDay` withholds 40 per unmet need
 (`src/simulation/economy/income.ts:411`) and a bare cell leaves three unmet
 (`docs/research/2026-08-30-pricing-the-way-out.md` §2a).
 
+**Corrected 2026-09-03, and the paragraph above is kept because it is the tree
+the sweep below was measured on.** The withheld share is `0` while the owner
+plays and judges difficulty — their ruling, in their words, is recorded in
+[ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md)'s dated amendment of
+that date and in `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own
+docblock. So **the "Income is 180 a prisoner-day, not 300" premise reads 300
+again**, and a bare cell's three unmet needs cost the prison nothing. Two
+consequences for what follows, both stated rather than re-measured, because
+re-running the sweep is a separate piece of work and this correction does not
+pretend to have done it:
+
+- **Every figure in this subsection is a lower bound on the inflow and
+  therefore an upper bound on how long the escalated step takes to fire.** At
+  300 a prisoner-day rather than 180 the debt clears faster, so the principals
+  quoted below (`P > 1,761` at one occupied place, `P > 7,043` at a full cell)
+  are the *hardest* case for the step, not the current one.
+- **The `src/simulation/economy/income.ts:411` anchor is stale in the way
+  `docs/AGENT_WORKFLOW.md` §4 warns about**, and the reason is the change that
+  suspended the rate rather than anything about this ADR: the withheld term now
+  lives in `stateIncomeForPrisonerDayAt`, which
+  `stateIncomeForPrisonerDay` calls, and the line number moved with it. Cited
+  by symbol here rather than re-numbered, for §4's reason — a second number
+  rots on the next edit above it.
+
 **The step does not fire at all below a principal the ruled 45 days make large.**
 At 25% of a 180-a-day inflow the debt clears in `1.15P / 45` days, so day 45 is
 reached only when `P > 1,761`; with a full cell at 720 a day it takes
@@ -340,14 +364,25 @@ without the schema moving:
 | save schema `treasury.balanceMinorUnits` | `z.number().int().safe()`; already signed, already proven both ways by `tests/migrations/save-v5-negative-balance.test.ts` |
 | determinism fingerprint | reads no economy surface at all (`#697`); the save checksum is the surface that sees money |
 
-**One divergence rather than a break, and it is the interface's:**
-`src/main.ts:2428` and `:2607` pre-check `total > viewModel.counts.treasuryMinorUnits`
-before submitting a purchase or a hire. Those comparisons are against a floor of
-zero, so with a floor open the interface would refuse presses the simulation
-would accept. It is not reachable from `pnpm test` — `vitest.config.ts` sets
-`environment: 'node'` and `main.ts` touches `document` — so it is named here
-rather than pinned, and the fix is a pure function the way `orderPrisonsForDisplay`
-was.
+**One divergence rather than a break, and it is the interface's — as of this
+document's own drafting; re-anchored 2026-09-06, and the divergence is
+closed.** `src/main.ts:2428` and `:2607` (drafting-time coordinates; the
+same pre-checks live at `main.ts:2845` and `:3067` today) pre-checked
+`total > viewModel.counts.treasuryMinorUnits`
+before submitting a purchase or a hire. Those comparisons were against a floor of
+zero, so with a floor open the interface would have refused presses the simulation
+would accept. **That comparison no longer exists in `main.ts` at all** —
+`main.ts`'s own comment at `:2799-2806` narrates its own history: moved out to
+`judgeAffordability` (`src/ui/affordability.ts`) as "#703 ruling A", the exact
+extraction this row goes on to recommend, now floor-aware via
+`pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, …)` at both call
+sites. It is still not reachable from `pnpm test` — `vitest.config.ts` sets
+`environment: 'node'` and `main.ts` touches `document` — so correctness of the
+extraction rests on review and the browser suite, exactly as this row already
+argued it would have to; the fix is a pure function the way `orderPrisonsForDisplay`
+was, and it already is one. Left in place and marked per
+`docs/AGENT_WORKFLOW.md` §4 rather than rewritten, because what closed this
+divergence is independent of this document's own Status.
 
 ### (e) No `SAVE_SCHEMA_VERSION` bump is required, in either reading
 

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
@@ -14,10 +14,16 @@ import {
   ENVIRONMENT_SPRITES,
   ENVIRONMENT_SPRITE_IDS,
   environmentFrameSize,
+  environmentRenderedArtIds,
   environmentSourceAssetIds,
   type EnvironmentSpriteDefinition,
   type EnvironmentSpriteId,
 } from '../../src/rendering/assets/environment-sprites';
+import {
+  RENDERED_ART_BASE_PATH,
+  RenderedArtCatalog,
+  renderedArtCatalogSchema,
+} from '../../src/rendering/assets/rendered-art-catalog';
 import {
   SOURCE_ART_BASE_PATH,
   SourceArtCatalog,
@@ -33,6 +39,7 @@ import {
   edgeArt,
   edgeArtCoverage,
   objectArtCoverage,
+  objectSprite,
   terrainArtCoverage,
   zonedFloorSprite,
 } from '../../src/rendering/world/environment-art';
@@ -59,6 +66,16 @@ import {
 const catalogPath = join(import.meta.dirname, '../../public/game-content/source-art.v1.json');
 const committedCatalog = sourceArtCatalogSchema.parse(JSON.parse(readFileSync(catalogPath, 'utf8')));
 const catalog = SourceArtCatalog.fromParsed(SOURCE_ART_BASE_PATH, committedCatalog);
+
+/**
+ * The second catalog ADR 0100 added, read the same way and for the same
+ * reason: a claim about "this rectangle is inside that sheet" should be a
+ * claim about the shipped, committed art rather than about a fixture typed
+ * twice, and that is equally true of "this frame is the render's own size".
+ */
+const renderedCatalogPath = join(import.meta.dirname, '../../public/game-content/rendered-art.v1.json');
+const committedRenderedCatalog = renderedArtCatalogSchema.parse(JSON.parse(readFileSync(renderedCatalogPath, 'utf8')));
+const renderedCatalog = RenderedArtCatalog.fromParsed(RENDERED_ART_BASE_PATH, committedRenderedCatalog);
 
 describe('source-art catalog', () => {
   it('parses the committed catalog the generator writes', () => {
@@ -99,6 +116,7 @@ describe('environment extraction manifest', () => {
   it('reads only rectangles that lie inside the sheet they come from', () => {
     for (const spriteId of ENVIRONMENT_SPRITE_IDS) {
       const definition = ENVIRONMENT_SPRITES[spriteId];
+      if (definition.kind !== 'source-art') continue;
       const sheet = catalog.dimensions(definition.assetId);
       const rect = definition.sourceRectPx;
       expect(rect.x + rect.width, `${spriteId} runs off the east edge of ${definition.assetId}`).toBeLessThanOrEqual(sheet.width);
@@ -106,8 +124,15 @@ describe('environment extraction manifest', () => {
     }
   });
 
+  it('names only rendered-art ids the committed catalog holds', () => {
+    for (const assetId of environmentRenderedArtIds()) {
+      expect(renderedCatalog.has(assetId), `no rendered-art catalog entry for "${assetId}"`).toBe(true);
+    }
+  });
+
   it('turns a frame size with its quarter-turn', () => {
     const upright: EnvironmentSpriteDefinition = {
+      kind: 'source-art',
       assetId: 'floor.linoleum.institutional',
       sourceRectPx: { x: 0, y: 0, width: 10, height: 20 },
       runtimeSizePx: { width: 30, height: 40 },
@@ -126,14 +151,24 @@ describe('environment extraction manifest', () => {
 });
 
 describe('environment atlas plan', () => {
-  const plan = planEnvironmentAtlas(catalog);
+  const plan = planEnvironmentAtlas(catalog, ENVIRONMENT_SPRITES, renderedCatalog);
 
   it('places every declared sprite', () => {
     expect(plan.frames.map((frame) => frame.spriteId).sort()).toEqual([...ENVIRONMENT_SPRITE_IDS].sort());
   });
 
   it('is identical on every run, so a packed rectangle is a fact about the packer', () => {
-    expect(planEnvironmentAtlas(catalog)).toEqual(plan);
+    expect(planEnvironmentAtlas(catalog, ENVIRONMENT_SPRITES, renderedCatalog)).toEqual(plan);
+  });
+
+  it('refuses a rendered-art sprite when no rendered-art catalog is supplied', () => {
+    // Not pinned to a specific asset id: `planEnvironmentAtlas` walks sprite
+    // ids sorted alphabetically, so *which* rendered-art sprite is the first
+    // to fail depends on what else is declared -- `env.object.bench` overtook
+    // `env.object.toilet` the moment a `b` id joined it (#1020). The property
+    // under test is "a rendered-art sprite with no catalog supplied throws",
+    // not "which one happens to sort first", so the pattern matches either.
+    expect(() => planEnvironmentAtlas(catalog)).toThrow(/names rendered-art asset "[^"]+", but no rendered-art catalog was supplied/);
   });
 
   it('keeps every frame, and its gutter, inside the atlas', () => {
@@ -164,8 +199,17 @@ describe('environment atlas plan', () => {
     }
   });
 
-  it('names one sheet per distinct source asset, with a key that changes when the art does', () => {
-    expect(plan.sheets.map((sheet) => sheet.assetId)).toEqual([...environmentSourceAssetIds()]);
+  it('names one sheet per distinct asset across both catalogs, with a key that changes when the art does', () => {
+    // Both catalogs' declared ids should appear, sorted by `sheetKey` rather
+    // than by the raw id -- `environmentSourceAssetIds()` and
+    // `environmentRenderedArtIds()` on their own would collide if the two
+    // catalogs ever shared a raw id (they do, for `fixture.cell.toilet_sink`,
+    // just not on the same sprite), which is exactly why `sheetKey` and not
+    // `assetId` is the plan's own uniqueness guarantee.
+    expect([...plan.sheets.map((sheet) => sheet.assetId)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(
+      [...environmentSourceAssetIds(), ...environmentRenderedArtIds()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    );
+    expect(new Set(plan.sheets.map((sheet) => sheet.sheetKey)).size).toBe(plan.sheets.length);
     for (const sheet of plan.sheets) expect(plan.textureKey).toContain(sheet.imageUrl);
   });
 
@@ -263,6 +307,204 @@ describe('declared fallback', () => {
 
   it('draws both edge values rather than leaving one on colour', () => {
     expect(edgeArtCoverage()).toEqual({ drawn: ['wall', 'door'], onFallback: [] });
+  });
+});
+
+/**
+ * The floor #1020 asks for, and the hole underneath it that it does not close.
+ *
+ * #1020 asks for "a non-regression floor on `objectArtCoverage().drawn.length`"
+ * so that "a later atlas change can[not] silently return an object to the
+ * fallback and every existing test stay green". **Half of that gate was already
+ * here**, and it was verified by mutation rather than read: adding
+ * `'object.bed': 'env.floor.institutional'` to `SPRITE_BY_OBJECT_ID` fails
+ * `describe('declared fallback')`'s first case above with *"expected
+ * [ 'object.bench', ...(18) ] to deeply equal [ 'object.bed', 'object.bench',
+ * ...(18) ]"*, because that case pins `onFallback` against
+ * `OBJECTS_ON_COLOUR_FALLBACK` exactly and `drawn` is its complement. A row
+ * that vanishes is therefore not silent today.
+ *
+ * **What is silent is the row landing in the first place.** Completing the same
+ * mutation the way #1020 prescribes -- add the row, strike `'object.bed'` from
+ * `OBJECTS_ON_COLOUR_FALLBACK` -- was measured on `bd6fa32` (v0.0.499) at
+ * **229 files / 3344 passed, `tsc -b` exit 0**, with the bed still drawn as the
+ * same slate-blue slab as every other object. Nothing observed the difference
+ * because there is nothing to observe: `objectSprite`'s only caller in `src/`
+ * is `objectArtCoverage`, and the loop that draws objects
+ * (`tile-layer.ts:481-498`, as it stood that day) calls `structureAppearance`
+ * and `paintSlab` and never asks this module anything. So the coverage number
+ * the floor would defend can be raised without a pixel changing, which makes
+ * the floor alone a gate on a claim rather than on the screen.
+ *
+ * This file cannot watch a pixel -- `vitest.config.ts` runs `environment:
+ * 'node'` and the module docblock above says a mutation inside the painter is
+ * unobservable here. What it can do is refuse to let the two get out of step,
+ * by reading the Phaser-facing sources for the call that would make the mapping
+ * matter. That is the same kind of check
+ * `tests/unit/rendering-module-boundaries.test.ts` already makes over this
+ * tree, for the same reason: the property is about which module reads which,
+ * and it is cheaper to read the source than to boot a canvas.
+ *
+ * ## What changed later on 2026-09-05, and what this block is for now
+ *
+ * **The painter path landed, so the everything above describes a state that no
+ * longer exists** -- it is kept because it is the measurement that decided the
+ * order of two commits, and because the source-reading check below only makes
+ * sense if a reader can see what it was built to catch. `tile-layer.ts`'s
+ * structure loop now calls `acquireObjectSprite`, which reads `objectSprite`,
+ * so the first case below can no longer fail the way it was designed to. Its
+ * author named that as the weakest claim in the change that added it: *"the
+ * gate's detector is a regex, so it proves a reference, not a draw call"*.
+ *
+ * **The draw call is now proved where a draw call can be proved: in a browser.**
+ * `tests/browser/environment-art.spec.ts` places a finished `bed-wooden` order
+ * in the harness prison, reads the pixel at the middle of the bed, removes the
+ * artwork, reads the same pixel again, and requires the two to differ -- the
+ * same instrument the floor art and the door already answer to. That test is
+ * the replacement for the claim this describe used to carry alone.
+ *
+ * **The source-reading case is kept anyway, and its job has reversed.** It used
+ * to say "do not add a row before the painter reads this module"; what it says
+ * now is "do not delete the painter path while rows remain", which is the same
+ * assertion pointing the other way and costs nothing to keep. It is *not* the
+ * evidence that an object is drawn. The two cases below it are, in the two
+ * halves this environment can reach: the mapping resolves to a declared sprite
+ * shaped like the footprint the simulation reserved, and the count never falls.
+ */
+describe('object art reaching the screen', () => {
+  /**
+   * The directories whose whole job is to drive Phaser -- the only ones that
+   * can put a pixel anywhere. The same two `rendering-module-boundaries.test.ts`
+   * calls `PHASER_FACING`, and for the same reason.
+   */
+  const PAINTER_DIRECTORIES = ['src/rendering/phaser', 'src/rendering/scene'] as const;
+
+  function painterSources(): readonly string[] {
+    const found: string[] = [];
+    for (const directory of PAINTER_DIRECTORIES) {
+      const root = join(import.meta.dirname, '../..', directory);
+      for (const entry of readdirSync(root, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.endsWith('.ts')) found.push(readFileSync(join(root, entry.name), 'utf8'));
+      }
+    }
+    // A directory that has stopped holding sources would make the check below
+    // pass vacuously -- "nothing reads objectSprite" and "there is nothing to
+    // read" are the same answer from a regex and opposite answers from a
+    // reviewer. Thrown rather than asserted because this runs while the suite
+    // is being collected, not inside a test.
+    if (found.length === 0) throw new Error(`No painter sources under ${PAINTER_DIRECTORIES.join(' or ')}; this check would pass vacuously.`);
+    return found;
+  }
+
+  /**
+   * Named rather than inlined so the failure message can say which of the two
+   * halves is missing, and so that wiring the painter up flips this without
+   * anyone editing the assertion.
+   */
+  const painterReadsObjectSprite = painterSources().some((source) => /\bobjectSprite\b/.test(source));
+
+  it('keeps a painter reading objectSprite for as long as any object is mapped', () => {
+    const drawn = [...objectArtCoverage().drawn];
+    expect(
+      drawn.length === 0 || painterReadsObjectSprite,
+      `SPRITE_BY_OBJECT_ID maps ${drawn.join(', ')} to artwork, but nothing under ${PAINTER_DIRECTORIES.join(' or ')} reads objectSprite. ` +
+        'objectArtCoverage() would report those ids as drawn while the painter still fills a coloured slab for them, ' +
+        'which is a claim about the screen the screen does not honour. Add the painter path before the row.',
+    ).toBe(true);
+  });
+
+  /**
+   * The half of "is it really drawn" that this environment *can* settle.
+   *
+   * A row here names a sprite id, and `tsc` proves that id is declared -- but
+   * not that its rectangle is the right shape for the object it is mapped to.
+   * That gap is a real one and it is the one the painter path opened: an
+   * object frame fills its footprint exactly once (`acquireObjectSprite`), so a
+   * frame whose proportions disagree with the footprint is drawn *stretched*,
+   * and nothing else in the repository would say so. A 1x2 bed cut from a
+   * square crop is a bed squashed to two-thirds of its length, on every screen,
+   * silently.
+   *
+   * **Two ratios, because there are two places an object can be stretched and
+   * they are independent.** The crop is resampled into `runtimeSizePx` when it
+   * is packed, and the packed frame is then drawn into the footprint -- so a
+   * rectangle measured tightly round the bed (428x197, 2.172:1) resampled into
+   * a 2:1 frame is stretched at *pack* time and would leave the second ratio
+   * perfect, and a correct crop packed into a frame the footprint does not
+   * match is stretched at *draw* time and would leave the first perfect. Both
+   * are checked, both pre-turn where the source is measured and post-turn
+   * where it is drawn.
+   *
+   * This applies to objects only, and deliberately: `env.wall.interior.cap` is
+   * a 290x30 coping band resampled to 128x28, which is a distortion of more
+   * than a factor of two and is the whole point of that frame. A surface is
+   * cut to be repeated; an object is cut to be looked at.
+   *
+   * Three percent, because that is the tolerance `acquireSprite`'s docblock
+   * already argues for on the tiling path and there is no reason for an object
+   * to be looser. `env.object.bed` is exact on both: a 460x230 crop into a
+   * 256x128 frame, turned to 128x256, drawn into a 1x2 footprint.
+   */
+  const MAX_ASPECT_DRIFT = 0.03;
+
+  const driftBetween = (
+    left: { readonly width: number; readonly height: number },
+    right: { readonly width: number; readonly height: number },
+  ): number => {
+    const target = right.width / right.height;
+    return Math.abs(left.width / left.height - target) / target;
+  };
+
+  it('gives every mapped object a frame shaped like the footprint the simulation reserved', () => {
+    const drawn = objectArtCoverage().drawn;
+    expect(drawn.length, 'no object is mapped, so this case would pass vacuously').toBeGreaterThan(0);
+
+    for (const objectId of drawn) {
+      const definition = defaultObjectRegistry.getById(objectId);
+      expect(definition, `${objectId} is reported as drawn but the object catalog does not hold it`).toBeDefined();
+
+      const spriteId = objectSprite(objectId);
+      expect(spriteId, `${objectId} is reported as drawn with no sprite id`).toBeDefined();
+      expect(
+        (ENVIRONMENT_SPRITE_IDS as readonly string[]).includes(spriteId!),
+        `${objectId} is mapped to "${spriteId}", which the manifest does not declare`,
+      ).toBe(true);
+
+      const sprite = ENVIRONMENT_SPRITES[spriteId!];
+      // A source-art sprite reviews its own crop rectangle; a rendered-art
+      // sprite has none to review -- the whole render is the crop, at the
+      // size the rendered-art catalog itself declares for that entry
+      // (`planEnvironmentAtlas` derives the identical rectangle at plan-build
+      // time rather than one being written in `environment-sprites.ts`).
+      const crop = sprite.kind === 'source-art' ? sprite.sourceRectPx : renderedCatalog.dimensions(sprite.renderedArtId);
+      expect(
+        driftBetween(crop, sprite.runtimeSizePx),
+        `${objectId} reads a ${crop.width}x${crop.height} crop and packs it into ` +
+          `${sprite.runtimeSizePx.width}x${sprite.runtimeSizePx.height}, so the art is stretched when it is cut. ` +
+          'Pad the crop outwards with transparent sheet rather than resampling it into a different shape.',
+      ).toBeLessThanOrEqual(MAX_ASPECT_DRIFT);
+
+      const frame = environmentFrameSize(sprite);
+      const footprint = definition!.footprint;
+      expect(
+        driftBetween(frame, footprint),
+        `${objectId} is drawn from a ${frame.width}x${frame.height} frame into a ` +
+          `${footprint.width}x${footprint.height}-tile footprint, so the art is stretched when it is drawn. ` +
+          'Give the frame the footprint\'s proportions.',
+      ).toBeLessThanOrEqual(MAX_ASPECT_DRIFT);
+    }
+  });
+
+  /**
+   * The floor itself. **It was inert at zero and said so; it is load-bearing
+   * from `object.bed` onwards.** Raise it with each object that starts being
+   * drawn. Never lower it: an object that stops being drawn is the regression
+   * this exists to name.
+   */
+  const OBJECT_ART_DRAWN_FLOOR = 1;
+
+  it('never draws fewer objects as art than it did before', () => {
+    expect(objectArtCoverage().drawn.length).toBeGreaterThanOrEqual(OBJECT_ART_DRAWN_FLOOR);
   });
 });
 

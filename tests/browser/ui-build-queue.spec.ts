@@ -62,6 +62,12 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
     tile: { x: 12, y: 30 + index },
     edge: index % 2 === 0 ? ('north' as const) : ('west' as const),
     state,
+    // Arbitrary and fixed: this file is about the block's layout and which
+    // control cancels which order, never about the figure's arithmetic --
+    // `tests/unit/construction-preview-cancel-refund.test.ts` and
+    // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
+    // are where that is measured.
+    cancelRefundMinorUnits: 80,
   };
 }
 
@@ -307,41 +313,140 @@ test.describe('the Build panel queue', () => {
       { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const settled = await probeQueue(page);
-    expect(settled.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-02']);
     expect(settled.countText).toContain('11');
-    // The third pooled row is repainted away rather than left holding a dead
-    // order id: a stale row is a control aimed at something that no longer
-    // exists.
-    expect(settled.rows).toHaveLength(2);
+    /*
+     * The row whose order has gone is **emptied immediately and keeps its box
+     * for one publication** (#860). It carries no order id, no label and no
+     * state word, so nothing on it can be read as a control aimed at something
+     * -- which is the property this block asserted before, in the sentence
+     * *"the third pooled row is repainted away rather than left holding a dead
+     * order id"*. What has changed is only when the box goes: hiding it in this
+     * paint would slide `order-02` up a row's height into whatever pointer was
+     * resting on it, and a press landing there would then cancel an order the
+     * player never aimed at. `pooled-row-binding.ts` carries the measurement.
+     */
+    expect(settled.rows.map((row) => row.orderId)).toEqual(['order-00', '', 'order-02']);
+    expect(settled.rows[1]?.labelText).toBe('');
+    expect(settled.rows[1]?.stateText).toBe('');
+    expect(settled.rows[1]?.state).toBe('');
+
+    // And the two survivors did not move a pixel, which is the whole reason the
+    // emptied row keeps its box.
+    expect(settled.rows[0]?.cancelBox?.y).toBe(afterPress.rows[0]?.cancelBox?.y);
+    expect(settled.rows[2]?.cancelBox?.y).toBe(afterPress.rows[2]?.cancelBox?.y);
+
+    // A press on the emptied row reaches nothing: it names no order, so
+    // `pressBuildQueueCancel` cannot even find it, and no second intent
+    // appears.
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-01'))).toBe(false);
+    expect((await intents(page)).filter((intent) => intent.includes('cancel-build-order'))).toHaveLength(1);
+
+    /*
+     * And the blank place keeps its box for as long as `order-02` is below it,
+     * however many publications arrive -- giving it up would slide `order-02`
+     * up a row's height into a pointer resting on it. Only a trailing run of
+     * blank places gives its boxes up, which is why this list is still three
+     * rows tall for a queue of two.
+     */
+    await page.evaluate(
+      (model) => window.lockstateUiHarness.reportBuildQueue(model),
+      { total: 11, started: 1, orders: [order(0, 'in-progress'), order(2, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
+    );
+    const held = await probeQueue(page);
+    expect(held.rows.map((row) => row.orderId)).toEqual(['order-00', '', 'order-02']);
+    expect(held.rows[2]?.cancelBox?.y).toBe(afterPress.rows[2]?.cancelBox?.y);
+
+    // It is the *last* place that goes, and only when nothing is under it.
+    await page.evaluate(
+      (model) => window.lockstateUiHarness.reportBuildQueue(model),
+      { total: 11, started: 1, orders: [order(0, 'in-progress')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
+    );
+    const closed = await probeQueue(page);
+    expect(closed.rows.map((row) => row.orderId)).toEqual(['order-00']);
   });
 
-  test('re-aims a pooled row at the order that is in it now, not the one that was', async ({ page }) => {
+  test('never re-aims a pooled row, so a press cannot reach an order the row never named (#860)', async ({ page }) => {
     /*
-     * The defect a pooled row buys with one hand and could give back with the
-     * other. The rows are created once and repainted per publication -- which is
-     * what keeps the HUD's busy group, `add` with no `remove`, from growing over
-     * a session -- so a cancel handler that captured its id at construction
-     * would cancel whatever order sat in that row two seconds ago.
+     * **The gate for #860, and it replaces a test that asserted the opposite.**
+     *
+     * That test was called *"re-aims a pooled row at the order that is in it
+     * now, not the one that was"*, and it was guarding a real defect: the rows
+     * are created once and repainted per publication -- which is what keeps the
+     * HUD's busy group, `add` with no `remove`, from growing over a session --
+     * so a cancel handler that captured its id at construction would cancel
+     * whatever order sat in that row two seconds ago. Reading the id at press
+     * time closed that, and this file proved it.
+     *
+     * It did not close the other direction, and the other direction is worse.
+     * Reading at press time makes the id current; it does not make it the id
+     * the player read. Measured in a real session with a coordinate press on
+     * 2026-09-03: two presses of four cancelled a **different wall** than the
+     * row named, at decision delays of 250ms and 600ms, while both presses at a
+     * 0ms delay were aimed correctly. So the row must not be re-pointed at all,
+     * and both halves are asserted here -- the press still reaches the order
+     * the row names, and the row's order never changes under it.
      */
     await page.setViewportSize({ width: 1280, height: 800 });
     await openBuildTab(page);
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
     await page.evaluate(() => window.lockstateUiHarness.toggleBuildQueue());
 
-    // The queue advances: the first order finished, so every row shifts up one.
+    const before = await probeQueue(page);
+    expect(before.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-01', 'order-02']);
+    // Where the player's pointer is: the middle row's Cancel, aimed at
+    // `order-01` because that is what the row they read said.
+    const aimed = before.rows[1]?.cancelBox;
+    expect(aimed, 'the middle row has no cancel box to aim at').not.toBeNull();
+    const target = { x: aimed!.x + Math.round(aimed!.width / 2), y: aimed!.y + Math.round(aimed!.height / 2) };
+
+    // The queue advances: the first order finished. Under `rows[i] = orders[i]`
+    // this moved `order-01` up to row 0 and put `order-02` under the pointer.
     await page.evaluate(
       (model) => window.lockstateUiHarness.reportBuildQueue(model),
       { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel,
     );
     const advanced = await probeQueue(page);
-    expect(advanced.rows.map((row) => row.orderId)).toEqual(['order-01', 'order-02', 'order-03']);
+    // `order-01` and `order-02` are still in the rows they were in, and the row
+    // that held the finished `order-00` is emptied rather than re-aimed. The
+    // arriving `order-03` gets no row this publication, because the only free
+    // one is the box being held open.
+    expect(advanced.rows.map((row) => row.orderId)).toEqual(['', 'order-01', 'order-02']);
+    expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
+    expect(advanced.rows[2]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);
+    // The tail is counted against what was drawn: two of eleven are on screen.
+    expect(advanced.moreText).toContain('9');
 
-    // Pressing the first row now cancels `order-01`, which is what is in it --
-    // never `order-00`, which is what was.
-    expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-01'))).toBe(true);
+    /*
+     * The press, at the coordinates read from the paint the player acted on --
+     * `page.mouse.click` and not a locator, because a locator re-resolves
+     * `[data-order]` immediately before clicking and a player has no selector.
+     * This is the assertion the old code fails.
+     */
+    await page.mouse.click(target.x, target.y);
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
       .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01' })]);
+
+    /*
+     * The freed place stays blank for `BUILD_QUEUE_ROW_SETTLE_MS`, and
+     * publications arriving inside that window do not fill it. This is the half
+     * the first version of the fix did not have, and it is the half the
+     * re-measurement of 2026-09-03 said was missing: keeping surviving orders
+     * in their places does nothing for the player whose order left, because the
+     * next order took the place their pointer was already over.
+     */
+    const advance = { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel;
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), advance);
+    const stillBlank = await probeQueue(page);
+    expect(stillBlank.rows.map((row) => row.orderId)).toEqual(['', 'order-01', 'order-02']);
+
+    // Past the window, the waiting order takes it -- so the block does not go
+    // on drawing two rows for a queue of eleven for ever.
+    await page.waitForTimeout(1_200);
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), advance);
+    const refilled = await probeQueue(page);
+    expect(refilled.rows.map((row) => row.orderId)).toEqual(['order-03', 'order-01', 'order-02']);
+    expect(refilled.moreText).toContain('8');
   });
 
   test('cannot be pressed through the fold, so a collapsed block reaches no order', async ({ page }) => {
@@ -377,6 +482,74 @@ test.describe('the Build panel queue', () => {
     const returned = await probeQueue(page);
     expect(returned.sectionLaidOut).toBe(false);
     expect(returned.rows).toEqual([]);
+  });
+
+  test('draws its rows again after the tab has been away, with no publication to unstick it (#860, #88)', async ({
+    page,
+  }) => {
+    /*
+     * **The regression #860's own fix shipped, caught by `app-shell.spec.ts`'s
+     * #88 sweep and reproduced here in seconds instead of twenty-one minutes.**
+     *
+     * The sweep walks every tab at every viewport with six orders queued and
+     * the clock stopped, then comes back to Build and opens the queue fold. It
+     * failed on `expect(page.locator('.hud-build__queue-list')).toBeVisible()`
+     * -- the element resolved fourteen times and never had a box.
+     *
+     * The sequence is what matters, and `src/main.ts` supplies the first step:
+     * leaving the Build tab calls `applyBuildQueue(undefined)`, which is the
+     * honest state because nothing refreshes the queue from another tab.
+     * `paintQueue` then empties every pooled place. The first version of #860's
+     * settle window stamped `freedAtMs` there too, so on coming back **every
+     * place was inside its settle window and refused the six orders** -- and
+     * with the clock stopped there is no further publication to arrive after
+     * the window expires, so the block stayed empty for good.
+     *
+     * The correction is that a place with **no box** carries no settle window:
+     * the window exists so that a label a player may have read is not replaced
+     * under their pointer, and a place with no box has no label. See
+     * `pooled-row-binding.ts` and `BUILD_QUEUE_ROW_SETTLE_MS`.
+     *
+     * This is deliberately not a test about `freedAtMs`. It is the player's
+     * sequence -- look away, look back, open the fold -- and it asserts the
+     * three things the sweep needs and one it does not: that the list has a
+     * box, that all three rows are drawn, that each names its own order, and
+     * that each Cancel can actually be pressed.
+     */
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openBuildTab(page);
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
+    expect((await probeQueue(page)).sectionLaidOut).toBe(true);
+
+    // Away and back, which is `applyBuildQueue(undefined)` and then a fresh
+    // answer -- the sweep's tab walk, in two lines.
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+    await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
+
+    // Opened, exactly as the #88 sweep opens it.
+    if ((await probeQueue(page)).open === false) {
+      await page.evaluate(() => window.lockstateUiHarness.toggleBuildQueue());
+    }
+    const listHasBox = await page.evaluate(
+      () => (document.querySelector('.hud-build__queue-list')?.getClientRects().length ?? 0) > 0,
+    );
+    expect(listHasBox, 'the queue list has no box after the tab came back').toBe(true);
+
+    const returned = await probeQueue(page);
+    expect(returned.rows.map((row) => row.orderId)).toEqual(['order-00', 'order-01', 'order-02']);
+    // Stronger than the sweep's `toBeVisible`, which one drawn row would
+    // satisfy: every row is drawn, each names its own order, and each control
+    // is genuinely pressable rather than merely present.
+    for (const row of returned.rows) {
+      expect(row.cancelHasOffsetParent, `${row.orderId}'s cancel has no offsetParent`).toBe(true);
+      expect(row.cancelDisabled, `${row.orderId}'s cancel is disabled`).toBe(false);
+      expect(row.cancelBox?.height ?? 0, `${row.orderId}'s cancel has no height`).toBeGreaterThan(0);
+    }
+    expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-02'))).toBe(true);
+    await expect
+      .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-02' })]);
   });
 
   test('leaves every revealed cancel inside the panel, scrolling to them where it has to', async ({ page }) => {

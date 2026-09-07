@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { DoorRegistry } from '../../src/simulation/navigation/door';
 import { roomInstanceIdFor } from '../../src/simulation/rooms/zoning';
-import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
+import { SparseWorld } from '../../src/simulation/world/sparse-world';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import { RoomInstanceRegistry, type RoomInstance } from '../../src/simulation/prisoners/room-instance-registry';
 import { buildContentRegistry } from '../../src/content/registry';
 import type { RoomCatalogDefinition } from '../../src/content/room-catalog';
@@ -127,12 +130,14 @@ describe('what the interface is told a zoned room is missing', () => {
      */
     expect(needs.needs).toEqual([
       {
+        kind: 'object',
         instanceId: 'room.cell:4:4',
         roomLabelKey: 'room.cell.name',
         tile: { x: 4, y: 4 },
         objectLabelKey: 'object.bed.name',
       },
       {
+        kind: 'object',
         instanceId: 'room.cell:4:4',
         roomLabelKey: 'room.cell.name',
         tile: { x: 4, y: 4 },
@@ -157,6 +162,7 @@ describe('what the interface is told a zoned room is missing', () => {
       unfinishedRooms: 0,
       totalRooms: 1,
       totalNeeds: 0,
+      atCapacity: [],
       needs: [],
     });
   });
@@ -360,13 +366,211 @@ describe('what the interface is told a zoned room is missing', () => {
 
     const needs = roomNeedsFromProjections(list, detail === undefined ? [] : [detail]);
     expect(needs.needs).toEqual([
-      { instanceId: 'room.ghost:0:0', roomLabelKey: 'room.ghost.name', tile: { x: 0, y: 0 } },
+      { kind: 'object', instanceId: 'room.ghost:0:0', roomLabelKey: 'room.ghost.name', tile: { x: 0, y: 0 } },
     ]);
     // Absent, not present-and-`undefined`: `exactOptionalPropertyTypes` is on,
     // and the panel branches on the key being there at all.
     expect(Object.hasOwn(needs.needs[0] ?? {}, 'objectLabelKey')).toBe(false);
   });
 });
+
+/**
+ * **A room nobody can get into is a room that is not finished** -- issue #938.
+ *
+ * The projection's `access` verdict, carried into the readout as a
+ * `kind: 'doorway'` entry. Both halves matter and they are asserted apart:
+ * that a doorless room is *counted* as unfinished even when it is short of
+ * nothing else, and that when it is short of something else as well, the
+ * doorway is named **first**.
+ *
+ * The ordering is not taste. `ROOM_NEEDS_NAMED_LIMIT` is 4, so a room short of
+ * four objects would push the doorway line into the "and 1 more" remainder --
+ * and it is the one line that makes the other four pointless, because nothing
+ * can be carried into a room nobody can enter.
+ *
+ * The world and the doors are the real `SparseWorld` and the real
+ * `DoorRegistry`, walled through the same helper the integration fixtures use,
+ * for this file's own stated reason: a hand-written stand-in for the perimeter
+ * would prove only that the stand-in and the assertion agree.
+ */
+describe('a room with no way into it (#938)', () => {
+  const CHUNK_SIZE = 32;
+
+  /** A world owning one chunk, so the edge writes below land somewhere. */
+  function ownedWorld(): SparseWorld {
+    const world = new SparseWorld(CHUNK_SIZE);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    world.load(origin);
+    world.setOwned(origin, true);
+    return world;
+  }
+
+  /** The list and the details, projected with the perimeter question asked. */
+  function projectWithWalls(
+    source: { readonly roomInstances: RoomInstanceRegistry },
+    world: SparseWorld,
+    doors: DoorRegistry,
+  ): { readonly list: RoomListViewModel; readonly details: readonly RoomDetailViewModel[] } {
+    const options = { perimeter: { edges: world, doors } };
+    const list = projectRoomList(source, {}, options);
+    const details: RoomDetailViewModel[] = [];
+    for (const id of unfinishedRoomIds(list).slice(0, ROOM_NEEDS_ROOMS_LIMIT)) {
+      const detail = projectRoomDetail(source, id, options);
+      if (detail !== undefined) details.push(detail);
+    }
+    return { list, details };
+  }
+
+  it('counts a furnished room with no door as unfinished, and says a door is what it is short', () => {
+    // A cell with both of its objects, so `missingCapability` is 0 and every
+    // readout that existed before #938 was silent about it.
+    const source = registryOf(cell(4, 4, ['sleep-surface', 'sanitation']));
+    const world = ownedWorld();
+    wallRoomPerimeter(world, { x: 4, y: 4, width: 2, height: 3 });
+    const { list, details } = projectWithWalls(source, world, new DoorRegistry());
+
+    // The premise: the requirement verdict really is clean, so nothing below
+    // is riding on an unmet object.
+    expect(list.rooms.rows[0]?.requirementSummary.missingCapability).toBe(0);
+    expect(list.rooms.rows[0]?.access).toBe('no-way-in');
+
+    const needs = roomNeedsFromProjections(list, details);
+    expect(needs).toEqual({
+      unfinishedRooms: 1,
+      totalRooms: 1,
+      totalNeeds: 1,
+      atCapacity: [],
+      needs: [
+        {
+          kind: 'doorway',
+          instanceId: 'room.cell:4:4',
+          roomLabelKey: 'room.cell.name',
+          tile: { x: 4, y: 4 },
+        },
+      ],
+    });
+  });
+
+  it('names the doorway before the objects, because nothing can be carried into a room nobody can enter', () => {
+    // An empty cell -- two unmet object requirements -- that is also sealed
+    // shut. Three things short, and the order is the assertion.
+    const source = registryOf(cell(4, 4, []));
+    const world = ownedWorld();
+    wallRoomPerimeter(world, { x: 4, y: 4, width: 2, height: 3 });
+    const { list, details } = projectWithWalls(source, world, new DoorRegistry());
+
+    const needs = roomNeedsFromProjections(list, details);
+    expect(needs.totalNeeds, 'two objects and one door').toBe(3);
+    expect(needs.needs.map((need) => need.kind)).toEqual(['doorway', 'object', 'object']);
+    expect(needs.needs.map((need) => need.objectLabelKey)).toEqual([
+      undefined,
+      'object.bed.name',
+      'object.toilet.name',
+    ]);
+  });
+
+  /*
+   * **The third state, and it was a surviving mutation.** Making this branch
+   * answer `'no-way-in'` instead of absent -- so an instance with no recorded
+   * rectangle reported a room nobody can enter -- passed 298 tests across the
+   * unit, integration, contract and determinism suites. Nothing pinned it,
+   * which is the same shape as #529's optional field: a state no assertion
+   * reaches is a state that can be invented.
+   *
+   * What it would have cost is a readout telling a player to build a door into
+   * a room whose walls this projection cannot find, on a V4 save, with no way
+   * to act on it.
+   */
+  it('answers nothing at all for an instance with no rectangle, rather than calling it sealed shut', () => {
+    const roomInstances = new RoomInstanceRegistry();
+    // A V4 save's shape: registered, and carrying no `width`/`height` at all.
+    roomInstances.register({
+      instanceId: 'room.cell:9:9',
+      roomCatalogId: CELL,
+      anchorTile: { x: tileCoordinate(9), y: tileCoordinate(9) },
+      residentCapacity: 1,
+      concurrentUseCapacity: 0,
+      objectCapabilities: ['sleep-surface', 'sanitation'],
+    });
+    const world = ownedWorld();
+    const { list, details } = projectWithWalls({ roomInstances }, world, new DoorRegistry());
+
+    // Absent, not present-and-`undefined`, and not a verdict: the projection
+    // has no rectangle to walk and may not answer as though it had.
+    expect(Object.hasOwn(list.rooms.rows[0] ?? {}, 'access')).toBe(false);
+    expect(roomNeedsFromProjections(list, details)).toEqual({
+      unfinishedRooms: 0,
+      totalRooms: 1,
+      totalNeeds: 0,
+      atCapacity: [],
+      needs: [],
+    });
+  });
+
+  /*
+   * **The prison `tests/browser/app-shell.spec.ts` builds, projected here
+   * because that spec cannot be run in this container.**
+   *
+   * That test walls two `room.cell` rectangles with a `wall-brick` on every
+   * perimeter segment and no door, places nothing in either, and asserts what
+   * the panel draws. This is the same prison through the same reader, so the
+   * figures the spec expects are established somewhere a `vitest` run can
+   * reach them: `data-needs` is `totalNeeds`, and the lines drawn are the
+   * needs of the one room `ROOM_NEEDS_ROOMS_LIMIT` allows the reader to ask
+   * about.
+   *
+   * It is not a substitute for that spec -- only the assembled page can say
+   * whether five lines still sit inside the Rooms panel's unscrolled fold at
+   * 900x600 -- and it is not a fixture agreeing with an assertion either:
+   * every number here comes out of the real projections over a real world.
+   */
+  it('reports six things short for two sealed, empty cells, and names one room three lines deep', () => {
+    const source = registryOf(cell(4, 4, []), cell(10, 10, []));
+    const world = ownedWorld();
+    wallRoomPerimeter(world, { x: 4, y: 4, width: 2, height: 3 });
+    wallRoomPerimeter(world, { x: 10, y: 10, width: 2, height: 3 });
+    const { list, details } = projectWithWalls(source, world, new DoorRegistry());
+
+    const needs = roomNeedsFromProjections(list, details);
+    expect(needs.unfinishedRooms, 'both cells are unfinished').toBe(2);
+    expect(needs.totalRooms).toBe(2);
+    // A door, a bed and a toilet, twice over -- the `data-needs` the panel
+    // publishes and `app-shell.spec.ts` reads.
+    expect(needs.totalNeeds).toBe(6);
+    // And one room's worth of lines, in the order the panel draws them.
+    expect(details).toHaveLength(ROOM_NEEDS_ROOMS_LIMIT);
+    // `room.cell:10:10` and not `room.cell:4:4`: the two rooms are short the
+    // same three things, so the tie breaks on `compareInstanceIds`, which is a
+    // code-unit comparison -- `'1' < '4'` -- and is `rows`' own published
+    // order rather than a second opinion about it.
+    expect(needs.needs.map((need) => need.instanceId)).toEqual([
+      'room.cell:10:10',
+      'room.cell:10:10',
+      'room.cell:10:10',
+    ]);
+    expect(needs.needs.map((need) => need.kind)).toEqual(['doorway', 'object', 'object']);
+  });
+
+  it('says nothing about a room with a door in its wall, which is the sample that refutes the other two', () => {
+    const source = registryOf(cell(4, 4, ['sleep-surface', 'sanitation']));
+    const world = ownedWorld();
+    const doors = new DoorRegistry();
+    // The same helper, with a door: it writes what a completed `door-wooden`
+    // order writes, on the rectangle's south boundary.
+    wallRoomPerimeter(world, { x: 4, y: 4, width: 2, height: 3 }, { doors });
+    const { list, details } = projectWithWalls(source, world, doors);
+
+    expect(list.rooms.rows[0]?.access).toBe('doorway');
+    expect(roomNeedsFromProjections(list, details)).toEqual({
+      unfinishedRooms: 0,
+      totalRooms: 1,
+      totalNeeds: 0,
+      atCapacity: [],
+      needs: [],
+    });
+  });
+});
+
 
 // ---------------------------------------------------------------------------
 // The reader
@@ -455,17 +659,20 @@ describe('the reader that asks the worker what the rooms are missing', () => {
       unfinishedRooms: 1,
       totalRooms: 1,
       totalNeeds: 2,
+      atCapacity: [],
       // Both of the cell's unmet requirements come back from the one detail
       // request, which is the point of the split between "rooms to ask about"
       // and "lines to draw": one message, the room's whole shopping list.
       needs: [
         {
+          kind: 'object',
           instanceId: 'room.cell:4:4',
           roomLabelKey: 'room.cell.name',
           tile: { x: 4, y: 4 },
           objectLabelKey: 'object.bed.name',
         },
         {
+          kind: 'object',
           instanceId: 'room.cell:4:4',
           roomLabelKey: 'room.cell.name',
           tile: { x: 4, y: 4 },
@@ -492,7 +699,7 @@ describe('the reader that asks the worker what the rooms are missing', () => {
     await settle();
     channel.deliver(reply(channel.idOf(0), 'hud/room-list', list));
 
-    await expect(pending).resolves.toEqual({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] });
+    await expect(pending).resolves.toEqual({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [], atCapacity: [] });
     expect(channel.sent).toHaveLength(1);
   });
 
@@ -560,6 +767,7 @@ describe('the reader that asks the worker what the rooms are missing', () => {
       unfinishedRooms: 1,
       totalRooms: 1,
       totalNeeds: 2,
+      atCapacity: [],
       needs: [],
     });
   });

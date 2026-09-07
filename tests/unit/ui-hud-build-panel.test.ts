@@ -6,6 +6,7 @@ import {
   BUILD_CATEGORY_ALL,
   BUILD_QUEUE_ROW_LIMIT,
   PENDING_DELIVERY_ROW_LIMIT,
+  armedHintKey,
   buildCatalogueFocusRing,
   buildCategoryOptions,
   buildEdgeChoiceOptions,
@@ -85,6 +86,75 @@ describe('the HUD edge vocabulary matches the simulation', () => {
  * a DOM. Whether the control's box is actually hidden is a browser question and
  * is measured in `tests/browser/ui-shell.spec.ts`.
  */
+/**
+ * **The armed tool's hint must describe the gesture the armed tool performs**
+ * (issue #904).
+ *
+ * One line said *"Click a tile edge to place a wall. Drag along it to lay a
+ * run."* for all twenty-one catalogue rows, and nineteen of them place an
+ * object on a tile: `ObjectTool.place` takes one press on one tile and there is
+ * no drag route for it at all. So the hint told a player who had armed a Bed to
+ * do two things, neither of which works, and nothing failed -- `paintArmed` is
+ * reachable only through a mounted panel, which is why the choice is an
+ * exported pure function now and why these cases exist.
+ *
+ * Asserted against the *catalogue text* rather than against the key alone for
+ * the two arms that matter: a key is satisfied by any sentence, and what was
+ * wrong here was a sentence.
+ */
+describe('the armed hint says what the armed gesture does (#904)', () => {
+  const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+  const row = (placesObject: boolean): HudBuildableViewModel => ({
+    definitionId: placesObject ? 'bed-wooden' : 'wall-brick',
+    labelKey: 'content.buildable',
+    occupiesEdge: !placesObject,
+    placesObject,
+    categoryId: 'structure',
+    categoryLabelKey: 'category.structure',
+  });
+
+  it('tells an edge row to click an edge and drag a run', () => {
+    const hint = localizer.format(armedHintKey(row(false), false));
+    expect(hint).toContain('tile edge');
+    expect(hint, 'a run is the wall gesture and only the wall gesture').toContain('Drag');
+  });
+
+  it('tells a tile row to press a tile, and does not offer it a run', () => {
+    const hint = localizer.format(armedHintKey(row(true), false));
+    /*
+     * The three facts a press on this row is actually subject to.
+     * `ObjectPlacementService` asks `roomInstanceContaining` of the anchor and
+     * refuses `'outside-room'` when there is none, so the room is a rule and
+     * not a suggestion; and `ObjectTool.place` is "one press, one tile, one
+     * command", so there is nothing to drag.
+     */
+    expect(hint, 'a tile object is addressed by a tile').toContain('tile');
+    expect(hint, 'and refused outside a room -- `outside-room`').toContain('designated room');
+    expect(hint, 'there is no dragged run for an object').not.toContain('Drag');
+    expect(hint, 'and it is not an edge gesture').not.toContain('tile edge');
+  });
+
+  it('is the removal hint while removing, whatever is selected', () => {
+    // A removal names no buildable -- what goes is whatever is on the tile --
+    // which is the same reason it hides the edge chooser.
+    expect(armedHintKey(row(true), true)).toBe(armedHintKey(row(false), true));
+    expect(localizer.format(armedHintKey(row(true), true))).toContain('take it away');
+  });
+
+  it('falls back to the edge sentence when nothing is selected', () => {
+    // Not a judgement about the empty catalogue: `paintArmed` only reaches this
+    // with no row chosen, and the wall route is what a row answering `false` to
+    // both shape facts takes as well.
+    expect(armedHintKey(undefined, false)).toBe(armedHintKey(row(false), false));
+  });
+
+  it('gives the two arms different sentences, which is the whole of the fix', () => {
+    expect(localizer.format(armedHintKey(row(true), false))).not.toBe(
+      localizer.format(armedHintKey(row(false), false)),
+    );
+  });
+});
+
 describe('the edge chooser and the edge a command carries agree', () => {
   const row = (occupiesEdge: boolean): HudBuildableViewModel => ({
     definitionId: occupiesEdge ? 'wall-brick' : 'bed-wooden',
@@ -412,7 +482,7 @@ describe('a queued row names its own order', () => {
   const sentinels = buildMessageCatalog('en', {
     'build-edge.north.name': 'EDGE-NORTH-SENTINEL',
     'build-edge.west.name': 'EDGE-WEST-SENTINEL',
-    'hud.build.queue-order': 'order/{buildable}/{x}/{y}/{edge}',
+    'hud.build.queue-order': 'order/{buildable}/{x}/{y}/{edge}/{total}',
     'hud.build.queue-unnamed': 'UNNAMED-SENTINEL',
     'hud.build.buildable.wall-brick': 'WALL-SENTINEL',
   });
@@ -426,21 +496,22 @@ describe('a queued row names its own order', () => {
     tile: { x: 5, y: 7 },
     edge: 'north',
     state: 'assigned',
+    cancelRefundMinorUnits: 80,
     ...overrides,
   });
 
   it('says what it is, where it is and which edge -- which is how a player tells two walls apart', () => {
-    expect(formatBuildQueueOrderText(t, order())).toBe('order/WALL-SENTINEL/5/7/EDGE-NORTH-SENTINEL');
+    expect(formatBuildQueueOrderText(t, order(), 'TOTAL-SENTINEL')).toBe('order/WALL-SENTINEL/5/7/EDGE-NORTH-SENTINEL/TOTAL-SENTINEL');
   });
 
   it('distinguishes two orders on the same tile by their edge', () => {
     // The case that makes the edge load-bearing rather than decorative: a
     // corner is two walls on one tile, and a row that dropped the edge would
     // offer two identical controls for two different orders.
-    const north = formatBuildQueueOrderText(t, order({ edge: 'north' }));
-    const west = formatBuildQueueOrderText(t, order({ edge: 'west' }));
+    const north = formatBuildQueueOrderText(t, order({ edge: 'north' }), 'TOTAL-SENTINEL');
+    const west = formatBuildQueueOrderText(t, order({ edge: 'west' }), 'TOTAL-SENTINEL');
     expect(north).not.toBe(west);
-    expect(west).toBe('order/WALL-SENTINEL/5/7/EDGE-WEST-SENTINEL');
+    expect(west).toBe('order/WALL-SENTINEL/5/7/EDGE-WEST-SENTINEL/TOTAL-SENTINEL');
   });
 
   it('still draws a row for an order the host names no buildable for', () => {
@@ -452,7 +523,29 @@ describe('a queued row names its own order', () => {
      * would hide the only control that reaches it.
      */
     const { labelKey: _dropped, ...unnamed } = order();
-    expect(formatBuildQueueOrderText(t, unnamed)).toBe('order/UNNAMED-SENTINEL/5/7/EDGE-NORTH-SENTINEL');
+    expect(formatBuildQueueOrderText(t, unnamed, 'TOTAL-SENTINEL')).toBe('order/UNNAMED-SENTINEL/5/7/EDGE-NORTH-SENTINEL/TOTAL-SENTINEL');
+  });
+
+  it('says what cancelling it would give back, in the pending-deliveries row\'s own pattern (the owner\'s ruling of 2026-09-02)', () => {
+    // `total` is a formatted string handed in, exactly as `formatPendingDeliveryText`'s
+    // own `total` parameter is -- this function does no number formatting of
+    // its own, so the caller's `HudLocalizer.formatNumber` output passes
+    // through unchanged.
+    expect(formatBuildQueueOrderText(t, order(), '80')).toBe('order/WALL-SENTINEL/5/7/EDGE-NORTH-SENTINEL/80');
+  });
+
+  it('says "0 back" rather than hiding the row or the figure when nothing would come back', () => {
+    // The owner's ruling names this explicitly: zero is a real, displayed
+    // answer -- an `'in-progress'` order, among others -- never an absence.
+    const shipped = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+    const format = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
+      parameters === undefined ? shipped.format(key) : shipped.format(key, parameters);
+    const row = formatBuildQueueOrderText(
+      format,
+      order({ state: 'in-progress', cancelRefundMinorUnits: 0 }),
+      shipped.formatNumber(0),
+    );
+    expect(row).toContain('0 back');
   });
 
   it('produces a different row per order with the strings that actually ship', () => {
@@ -462,11 +555,27 @@ describe('a queued row names its own order', () => {
     const shipped = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
     const format = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
       parameters === undefined ? shipped.format(key) : shipped.format(key, parameters);
-    const first = formatBuildQueueOrderText(format, order({ tile: { x: 5, y: 7 } }));
-    const second = formatBuildQueueOrderText(format, order({ tile: { x: 5, y: 8 } }));
-    const third = formatBuildQueueOrderText(format, order({ tile: { x: 5, y: 7 }, edge: 'west' }));
+    const first = formatBuildQueueOrderText(format, order({ tile: { x: 5, y: 7 } }), '80');
+    const second = formatBuildQueueOrderText(format, order({ tile: { x: 5, y: 8 } }), '80');
+    const third = formatBuildQueueOrderText(format, order({ tile: { x: 5, y: 7 }, edge: 'west' }), '80');
     expect(new Set([first, second, third]).size).toBe(3);
     expect(first).toContain(shipped.format('build-edge.north.name'));
+  });
+
+  it('carries the refund figure through into the shipped row, distinguishing two otherwise-identical orders', () => {
+    // The fourth field the shipped template interpolates, alongside tile and
+    // edge: two rows that agree on buildable, tile and edge must still read
+    // differently when what cancelling them gives back differs, or a player
+    // reading two queued walls at the same coordinates could not tell the
+    // fresh one (money back) from the started one (nothing back) apart.
+    const shipped = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+    const format = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
+      parameters === undefined ? shipped.format(key) : shipped.format(key, parameters);
+    const funded = formatBuildQueueOrderText(format, order(), shipped.formatNumber(80));
+    const started = formatBuildQueueOrderText(format, order(), shipped.formatNumber(0));
+    expect(funded).not.toBe(started);
+    expect(funded).toContain(shipped.formatNumber(80));
+    expect(started).toContain(shipped.formatNumber(0));
   });
 
   it('bounds how many rows the block ever holds', () => {

@@ -473,6 +473,18 @@ charge for becomes rare, which weakens the case for it.
   recycled prison now earns one resident's income where it earned three, and the
   40 minor units still separating it from the control are an unmet-need
   withholding that file derives in place and that has nothing to do with places.
+  **Corrected 2026-09-03: there is no 40 any more.** The repository owner
+  suspended the withheld share at `0` while they play and judge difficulty —
+  their ruling, in their words, is in
+  [ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md)'s dated amendment of
+  that date — so what separates the two arms is now **130 minor units of
+  materials alone**, two planks at 65, and the recycled arm sits below the
+  control rather than above it. The sentence before this one is kept rather
+  than rewritten because the 40 it names is what the withholding does to this
+  same pair of prisons and will do again if the rate returns
+  (`docs/AGENT_WORKFLOW.md` §4: mark both directions); what it says about
+  **places** — that the withholding had nothing to do with them — is unaffected
+  either way, and is the half this bullet actually turns on.
   **What is outstanding is therefore B alone**, together with the gate this ADR
   made non-optional for it: one refund per order, the allocation emptied in the
   same step, and a conservation test over `Remove` → `Undo` and
@@ -768,10 +780,18 @@ balance question with the rest of #29. The mechanism takes no position on it.
   penalty than the pre-B behaviour ever had, and it is the owner's ruling
   knowingly.
 - **A player-facing sentence becomes false.**
-  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:630`) promises
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:1496`, re-anchored)
+  promised
   *"One still being built is cancelled and its materials come back"*. Under
   ruling 20 the materials do not come back; money does, and only before the crew
-  starts. Replacement copy is **not written here** — `AGENTS.md`'s fourth
+  starts. **Re-anchored 2026-09-06 and converted to a quotation, per
+  `docs/AGENT_WORKFLOW.md` §4: replacement copy has since been written — the
+  key now reads `cancelled and refunds its money — but nothing comes back once
+  the crew has started it. A finished one is not refunded.` (verbatim in
+  `src/content/default-locale-en.ts`), and that file's own comment block
+  (`:1464-1487`) carries the owner's account of the two days the sentence was
+  false and the ruling 20 quotes that fixed it.**
+  Replacement copy was **not written here** — `AGENTS.md`'s fourth
   exclusion reserves it — and the string is reported to the owner with the
   branch.
 - **`docs/OPERATIONS.md`'s justification for the `release` seam narrows.** It
@@ -1120,7 +1140,7 @@ because a list of test names in an ADR rots on the first rename.
   rather than argued as a justification -- the reason for the ruling is the
   inversion, not the exploit.
 - **A player-facing sentence gets *more* true, and none gets less.**
-  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:697`) already
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:1496`) already
   reads *"a finished one is not refunded"*, which this makes true of every route
   rather than of one. The half of that string ruling 20 falsified --
   *"One still being built is cancelled and its materials come back"* -- is

@@ -6,7 +6,15 @@ import {
   type MainToWorkerMessage,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
+import { STATE_INCOME_UNMET_NEED_LEVEL } from '../../src/simulation/economy/income';
 import type { StaffViewModel } from '../../src/simulation/presentation/staff-projection';
+import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
+import {
+  NEED_DECAY_PER_TICK,
+  NEED_MAX,
+  SAFETY_COVERAGE_PROVISION_MULTIPLIER,
+  SAFETY_COVERAGE_PROVISION_PER_TICK,
+} from '../../src/simulation/prisoners/needs';
 import { HUD_MESSAGE_KEY, describeStaffCoverage } from '../../src/ui/hud';
 import type { ProjectionMessageChannel } from '../../src/ui/simulation-projections';
 import { StaffCoverageReader, staffCoverageFromProjection } from '../../src/ui/simulation-staff-coverage';
@@ -111,8 +119,26 @@ describe('the block says one of three things, and which one is a decision', () =
       tone: 'danger',
       badgeKey: HUD_MESSAGE_KEY.securityCoverageUnguarded,
       hintKey: HUD_MESSAGE_KEY.securityCoverageUnguardedHint,
+      consequenceKey: HUD_MESSAGE_KEY.securityCoverageUnguardedConsequence,
       hireCount: 2,
     });
+  });
+
+  it('says what the rung costs on the unguarded rung and on neither other', () => {
+    // The owner's wording of 2026-09-03 is a *second* fact about one rung, not
+    // a fourth state, so the assertion that carries it is which rungs have it.
+    // `undefined` on the other two is the multiplier and not a choice about
+    // emphasis -- the coupling test below is where that is nailed down.
+    expect(describeStaffCoverage({ required: 2, assigned: 0, shortage: 2 }).consequenceKey).toBe(
+      HUD_MESSAGE_KEY.securityCoverageUnguardedConsequence,
+    );
+    expect(describeStaffCoverage({ required: 2, assigned: 1, shortage: 1 }).consequenceKey).toBeUndefined();
+    expect(describeStaffCoverage({ required: 2, assigned: 2, shortage: 0 }).consequenceKey).toBeUndefined();
+    // And a prison that asks for nobody, which reads `covered` rather than
+    // `unguarded` (ADR 0048 decision 3's exemption): it has no occupant for
+    // `SafetyCoverageSystem` to fail to provision, so the sentence would be a
+    // warning about a prison the simulation is asking nothing of.
+    expect(describeStaffCoverage({ required: 0, assigned: 0, shortage: 0 }).consequenceKey).toBeUndefined();
   });
 
   it('puts the boundary between unguarded and understaffed at the first assigned guard', () => {
@@ -159,6 +185,77 @@ describe('every sentence the block can render is real text with its placeholders
     expect(met.trim().length).toBeGreaterThan(0);
   });
 
+  /**
+   * **The sentence the top rung says, verbatim, and the assertion it is no
+   * longer allowed to make** (issue
+   * [#941](https://github.com/matmaxalez/lockstate/issues/941)).
+   *
+   * **The expectation this replaces, quoted rather than deleted**
+   * (`docs/AGENT_WORKFLOW.md` §4): nothing in this repository pinned the
+   * covered rung's *content* at all -- the test directly above asserts only
+   * that it has no placeholder and is not a raw key, and it passed unchanged
+   * across this fix. The sentence it passed against was *"This prison has the
+   * guards it asks for."*, and that absence of any content assertion is what
+   * #941 §4 means by nothing having caught it.
+   *
+   * Pinned verbatim, because the owner's release of `AGENTS.md` reservation 4
+   * on 2026-09-04 buys the harmonising pass in exchange for every authored
+   * string being findable: a test that matched loosely would let the words
+   * drift out from under that promise.
+   *
+   * `not.toContain('asks for')` is the half that would go red on a
+   * *restoration* rather than on a typo -- the old sentence's own phrase, which
+   * is what made the requirement read as the whole bill. See
+   * `tests/integration/staff-coverage-readout.test.ts` for the measurement: at
+   * exactly the requirement the responder pool is empty, and the panel's
+   * figures are identical to a prison one hire past it.
+   *
+   * ## Widened on 2026-09-05 (issue #989), and the sentence it pinned is kept
+   *
+   * **This pinned *"Only free guards answer incidents."*, and that sentence was
+   * true.** What retired it is that the free pool has two consumers and it
+   * named one: `SearchSystem` staffs a contraband sweep from the same
+   * `claimableGuardIds`, so the prison #941 measured could not search either.
+   * The rung now reads *"Incidents and searches need free guards."* -- both
+   * duties, no number, no outcome. The clause-by-clause proof and the clamp it
+   * was measured against are in `hud.security.coverage-met-hint`'s own entry.
+   *
+   * **`not.toContain('only')` is deliberately absent**, and the omission is
+   * worth stating: the replacement drops that word, but a future wording that
+   * carried it would not be wrong, so pinning its absence would be pinning a
+   * preference rather than a truth. The two duty words below are the truth
+   * condition -- the sentence enumerates, and
+   * `tests/foundation/claimable-guard-pool-contract.test.ts` is what fails when
+   * the enumeration goes stale.
+   */
+  it('says what a free guard is for, and no longer that the prison is finished hiring', () => {
+    const met = render({ required: 3, assigned: 3, shortage: 0 });
+
+    expect(met).toBe('Incidents and searches need free guards.');
+    // Both duties that draw on the pool, named. The verbatim assertion above
+    // already covers this; these two are what a reviewer reads as the *reason*
+    // the sentence is this long, and they survive a reworded fix.
+    expect(met.toLowerCase()).toContain('incidents');
+    expect(met.toLowerCase()).toContain('searches');
+    // The phrase the sentence #941 replaced turned on. A regression to it fails
+    // here even if the assertion above were relaxed one day.
+    expect(met).not.toContain('asks for');
+    // It promises no outcome: `describeStaffCoverage`'s docblock refuses "a
+    // riot is coming" on measured grounds, and PR #854 refused an owner's
+    // wording that said guards stop incidents.
+    expect(met.toLowerCase()).not.toContain('riot');
+    expect(met.toLowerCase()).not.toContain('safe');
+
+    // Three sentences for three prisons, not one sentence with three badges --
+    // and this is what fails if the branch is repointed at another rung's hint.
+    const sentences = [
+      met,
+      render({ required: 3, assigned: 2, shortage: 1 }),
+      render({ required: 3, assigned: 0, shortage: 3 }),
+    ];
+    expect(new Set(sentences).size).toBe(3);
+  });
+
   it('renders the header pair the way the panel renders it', () => {
     // `{assigned} of {required}` -- the shape `hud.status.occupancy-value`
     // already set for a figure against its ceiling.
@@ -181,6 +278,102 @@ describe('every sentence the block can render is real text with its placeholders
     // Three words, not one word three times: a badge that read the same in
     // every state would be a colour standing alone after all.
     expect(new Set(words).size).toBe(3);
+  });
+
+  it('renders the consequence sentence whole, and it declares no placeholder to leave unfilled', () => {
+    const readout = describeStaffCoverage({ required: 1, assigned: 0, shortage: 1 });
+    // Narrowed rather than asserted non-null: the field is optional and the
+    // test above is what proves this rung has it.
+    const key = readout.consequenceKey;
+    expect(key).toBeDefined();
+    if (key === undefined) return;
+
+    const sentence = localizer.format(key);
+    expect(sentence).not.toBe(key);
+    expect(sentence).not.toContain('{');
+    // The panel calls `t(consequenceKey)` with no parameters, so a placeholder
+    // authored into this sentence later would reach the player as literal
+    // braces. That is the failure this line catches, and it is the reason the
+    // sentence is a separate key from the hint rather than a clause of it.
+    expect(sentence.trim().length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **The sentence is a claim about a constant, so the constant is what guards
+ * it** -- the owner's wording of 2026-09-03, *"No guard is posted here, so
+ * nobody in this sector is kept safe."*
+ *
+ * Everything above proves the panel *says* it on the right rung. Nothing above
+ * would notice the day it stopped being **true**, and that day is a balance
+ * pass away: `SAFETY_COVERAGE_PROVISION_PER_TICK`'s own docblock calls itself
+ * "a directional default, not a committed balance decision" and names the four
+ * values the rate could take. What must not survive such a pass silently is a
+ * player-facing sentence promising something the simulation no longer does
+ * (`AGENTS.md`, exclusion 4).
+ *
+ * So this block asserts the mechanic the sentence names, from the simulation's
+ * own modules, and it is deliberately in the file that owns what the block
+ * says rather than beside the constants: a test next to `needs.ts` would fail
+ * with "the multiplier moved", which is a balance decision somebody may well
+ * be making on purpose, while a test here fails with *"the sentence on the
+ * Staff panel is now false"*, which is the consequence they need to be shown.
+ *
+ * The imports cross the HUD's boundary on purpose and are allowed to: it is
+ * `src/ui/hud/**` that may not import `src/simulation/**`
+ * (`AGENTS.md` boundary 1, pinned by `tests/unit/ui-hud-messages.test.ts`), and
+ * a test that reads both ladders is exactly the place the two are permitted to
+ * meet -- the same standing `src/simulation/security/coverage-state.ts` gives
+ * `tests/unit/security-coverage-state.test.ts` in its own words.
+ */
+describe('the unguarded consequence sentence is still true of the simulation it describes', () => {
+  it('is the one rung that provisions nothing, which is what "nobody ... is kept safe" asserts', () => {
+    expect(
+      SAFETY_COVERAGE_PROVISION_MULTIPLIER.unguarded,
+      'hud.security.coverage-unguarded-consequence says nobody in an unguarded sector is kept safe; ' +
+        'a non-zero multiplier here means somebody is, and the sentence has to change with it',
+    ).toBe(0);
+
+    // And that the *other* two rungs do provision, which is what makes the
+    // sentence exclusive to this one rather than merely emphatic about it. A
+    // ladder where every rung provisioned nothing would satisfy the line above
+    // and make `describeStaffCoverage`'s silence on the other two wrong.
+    expect(SAFETY_COVERAGE_PROVISION_MULTIPLIER.covered).toBeGreaterThan(0);
+    expect(SAFETY_COVERAGE_PROVISION_MULTIPLIER.understaffed).toBeGreaterThan(0);
+  });
+
+  it('leaves the need draining, so provisioning nothing is a cost and not a plateau', () => {
+    // `SafetyCoverageSystem` never subtracts; `NeedsDecaySystem` does, at this
+    // rate, regardless of coverage. Without a positive decay "provisions
+    // nothing" would mean "nothing happens", and the sentence would be
+    // describing a prison where an empty post costs the player nothing at all.
+    expect(NEED_DECAY_PER_TICK.safety).toBeGreaterThan(0);
+
+    // The figure the locale entry's comment quotes, derived here rather than
+    // copied: full to the level the state withholds against, at the net rate an
+    // unguarded sector leaves.
+    const netPerTick = NEED_DECAY_PER_TICK.safety - SAFETY_COVERAGE_PROVISION_PER_TICK * SAFETY_COVERAGE_PROVISION_MULTIPLIER.unguarded;
+    expect((NEED_MAX - STATE_INCOME_UNMET_NEED_LEVEL) / netPerTick).toBe(4080);
+  });
+
+  it('finds no other provisioner of safety, which is what makes coverage the whole of the claim', () => {
+    // `action.sleep` carried `safety: 0.2` and `action.yard-recreation` carried
+    // `safety: 0.1`; both were removed by issue #588 precisely so that coverage
+    // would be the only instrument. If either came back, a prisoner with a bed
+    // in an unguarded sector would be kept safe by their bed and the sentence
+    // would be false for them.
+    const providers = DEFAULT_ACTIONS.filter((action) => (action.needEffectsPerTick.safety ?? 0) > 0).map((action) => action.id);
+    expect(
+      providers,
+      'an action that restores safety is a second provisioner, and hud.security.coverage-unguarded-consequence ' +
+        'claims there is none',
+    ).toEqual([]);
+
+    // The control: the filter is looking at a real catalogue with real need
+    // effects in it, so the empty result above is a finding rather than a
+    // mis-spelled field name.
+    expect(DEFAULT_ACTIONS.length).toBeGreaterThan(0);
+    expect(DEFAULT_ACTIONS.some((action) => Object.keys(action.needEffectsPerTick).length > 0)).toBe(true);
   });
 });
 

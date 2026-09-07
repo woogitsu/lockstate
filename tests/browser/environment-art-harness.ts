@@ -62,6 +62,21 @@ const FIXTURE: HarnessWorldFixture = {
   westWallTileY: 3,
   builtWallTileX: 2,
   builtWallTileY: 2,
+  // 1x2 tiles of bare owned ground east of the room, clear of every wall.
+  bedTileX: 6,
+  bedTileY: 4,
+  // One tile of bare owned ground, clear of the bed and of every wall.
+  toiletTileX: 8,
+  toiletTileY: 4,
+  // 2x1 tiles of bare owned ground, clear of the bed, the toilet and every
+  // wall. #1020's second rendered-art row.
+  benchTileX: 10,
+  benchTileY: 4,
+  deskTileX: 13,
+  deskTileY: 4,
+  // storageRackTileX/Y stood here for object.storage-rack from 2026-09-06
+  // to 2026-09-07; removed with the fixture structure below it once #1059
+  // reverted that object to the colour fallback.
 };
 
 function memoryStore(): KeyValueStore {
@@ -114,6 +129,66 @@ function buildFrame(): RenderFrame {
       tileY: FIXTURE.builtWallTileY,
       phase: 'built',
     },
+    /*
+     * One finished bed, as a build order and nothing else, because that is the
+     * only way an object reaches the renderer: `structuresFromConstruction`
+     * projects the construction snapshot and the world's tile layers carry no
+     * furniture at all. `bed-wooden` rather than `object.bed` for the same
+     * reason -- an order carries the *buildable* id, and `catalogueObjectId`
+     * is the step that turns it into the catalogued object the artwork is
+     * keyed by. A fixture that named `object.bed` here would test a path no
+     * player can produce.
+     */
+    {
+      id: 'finished-bed',
+      definitionId: 'bed-wooden',
+      tileX: FIXTURE.bedTileX,
+      tileY: FIXTURE.bedTileY,
+      phase: 'built',
+    },
+    /*
+     * One finished toilet, the first object drawn from ADR 0100's second
+     * publishing lane rather than from an owner sheet -- `toilet-brick` is
+     * the buildable a build order carries, `object.toilet` is what the
+     * catalog and `SPRITE_BY_OBJECT_ID` are keyed by, and `catalogueObjectId`
+     * is the same step that turns one into the other for the bed above.
+     */
+    {
+      id: 'finished-toilet',
+      definitionId: 'toilet-brick',
+      tileX: FIXTURE.toiletTileX,
+      tileY: FIXTURE.toiletTileY,
+      phase: 'built',
+    },
+    /*
+     * The second and third objects wired from ADR 0100's second publishing
+     * lane (#1020): a bench and a desk, each 2x1, both rendered rather than
+     * cut from an owner sheet.
+     */
+    {
+      id: 'finished-bench',
+      definitionId: 'bench-wooden',
+      tileX: FIXTURE.benchTileX,
+      tileY: FIXTURE.benchTileY,
+      phase: 'built',
+    },
+    {
+      id: 'finished-desk',
+      definitionId: 'desk-wooden',
+      tileX: FIXTURE.deskTileX,
+      tileY: FIXTURE.deskTileY,
+      phase: 'built',
+    },
+    /*
+     * A `finished-storage-rack` structure (`storage-rack-wooden`, 1x1) stood
+     * here from 2026-09-06 to 2026-09-07, the one judgement call in #1020's
+     * batch (a locker render standing in for a rack). Removed with
+     * `object.storage-rack`'s `SPRITE_BY_OBJECT_ID` row once #1059's playtest
+     * found the render illegible at every zoom the game draws it at -- see
+     * `environment-art.ts`'s `OBJECTS_ON_COLOUR_FALLBACK` docblock. Placing it
+     * here again would draw the ordinary colour-fallback slab, which no test
+     * in this harness needs a dedicated fixture tile to prove.
+     */
   ];
 
   return { revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()), structures, actors: [] };

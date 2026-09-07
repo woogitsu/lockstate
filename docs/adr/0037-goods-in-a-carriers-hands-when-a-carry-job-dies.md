@@ -109,7 +109,10 @@ dropoff leg is cancelled or fails?
   stock after, for every item, on every path", and that was false in the commit
   that wrote it** — `64cd379` added this document and
   `compensateHeldStock`'s `if (source === undefined) return;`
-  (`src/simulation/operations/job-system.ts:310`) together. On the **dropoff**
+  (then `job-system.ts:310`, a file
+  [ADR 0093](./0093-a-carry-is-an-action.md) deleted; the method moved verbatim
+  in behaviour to `src/simulation/operations/carry-executor.ts` and the guard
+  reads `if (source === undefined) return;` there) together. On the **dropoff**
   leg `withdrawReserved` has already committed, so a missing source container
   means the carried quantity has nowhere to go and is voided silently. On the
   pickup leg nothing is lost: what is held there is a reservation *on the
@@ -198,14 +201,22 @@ goods to be a mechanic, and then it needs the accounting first.
 - `docs/OPERATIONS.md`'s no-teleport section gains a third named exception,
   written in the same place as the other two, in the terms that section already
   uses.
-- `JobSystem.compensateHeldStock` is the one implementation of compensation for
-  both the failure and the cancellation path, so the two cannot drift apart per
-  leg again — which is how BUG-02 happened.
+- `CarryJobExecutor.compensateHeldStock` is the one implementation of
+  compensation for both the failure and the cancellation path, so the two
+  cannot drift apart per leg again — which is how BUG-02 happened. **It was
+  `JobSystem.compensateHeldStock` until [ADR 0093](./0093-a-carry-is-an-action.md)
+  deleted that class; this decision holds without amendment, because the two
+  cases it decides (a reservation on the pickup leg, goods in hand on the
+  drop-off leg) are still exhaustive and this is still the one implementation
+  for both paths.**
 - The conservation property is asserted, not assumed:
-  `tests/unit/operations-job-system.test.ts` pins total stock before against
-  total stock after with literal quantities on the route-failure path, the
-  cancellation path, and a case where another job holds a live reservation on
-  the same item. All three were run red against the unfixed code first.
+  `tests/unit/operations-carry-executor.test.ts` pins total stock before
+  against total stock after with literal quantities on the route-failure path,
+  the cancellation path, and a case where another job holds a live reservation
+  on the same item. All three were run red against the unfixed code first, and
+  every literal survived ADR 0093 unchanged — the file was
+  `operations-job-system.test.ts` until it was renamed with the class it
+  tests.
 
 ## Open questions
 

@@ -223,6 +223,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the interface-scale control's three message keys and nothing else, in the shape `src/ui/hud/messages.ts`, `save-panel-messages.ts` and `brand-messages.ts` all use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
   },
   {
+    file: 'src/ui/app-shell-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of one key -- the accessible name of `<main id=\"app\">`, the element the whole application mounts into -- in the shape `display-scale-messages.ts`, `save-panel-messages.ts` and `brand-messages.ts` all use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check the entry at compile time. Erased, so no content code runs because of it, and it names no other layer. Added when `index.html`'s hard-coded `aria-label` moved into the catalogue, so `src/main.ts` -- the one file that reaches `document.getElementById('app')` -- has a key to resolve rather than a literal to splice in.",
+  },
+  {
     file: 'src/ui/display-scale.ts',
     tree: 'content',
     kind: 'type-only',
@@ -361,6 +368,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'type-only',
     reason:
       "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The eleventh of the translators outside `src/ui/hud/` and the seventh that reads a *pulled* read model, and it is the **second** reader of `hud/staff` -- beside `simulation-staff-coverage.ts` above, which asks the same projection with `limit: 0` for totals and no rows. Two readers on one projection because they ask for different things, not because one was forgotten: merging them would tie a warning readout's cadence to a control list's and publish a window one of them cannot use. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import here would be the sharpest violation in this manifest alongside `simulation-held-guards.ts`'s: it would mean the main thread had started deciding *who is employed* from a roster it does not own, and every row it produced carries a staff id that a press **destroys** (#533).",
+  },
+  {
+    file: 'src/ui/simulation-prisoner-detail.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonerDetailViewModel` from `src/simulation/presentation/prisoner-projection` (issue #895). The thirteenth of the translators outside `src/ui/hud/` and the ninth that reads a *pulled* read model, and the first of any of them whose request names **one** row -- `hud/prisoner-detail` is `target: 'entity'`, so the id the player pressed on a roster row is what crosses. It derives no message key of its own and therefore has no `content` entry beside this one, unlike its sibling: the two rules it needs are `prisonerNeed` and `prisonerStandingLabelKey`, exported from `src/ui/simulation-prisoner-roster.ts` so that the roster and the inspector cannot disagree about a prisoner whose classification has not run yet -- a same-tree import, which this gate does not and should not see. Erased, so no simulation code runs on its account; the projection executes in the worker, and it has to, because `projectPrisonerDetail` starts with `entityStore.isAlive(entityId)` over a store this thread does not hold, and its `unmetForStateIncome` per need is `STATE_INCOME_UNMET_NEED_LEVEL` applied in `src/simulation/economy/income.ts`. A `value` import here would mean the main thread had started deciding what the state is withholding from whom, which is a balance number on the thread that owns none.",
   },
   {
     file: 'src/ui/simulation-prisoner-roster.ts',
@@ -530,6 +544,7 @@ describe('UI orchestration boundaries', () => {
     // `ui-hud-messages.test.ts` both carry a guard for.
     expect(orchestrationFiles.map(({ file }) => file)).toEqual([
       'src/ui/affordability.ts',
+      'src/ui/app-shell-messages.ts',
       'src/ui/brand-badge.ts',
       'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',
@@ -549,6 +564,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',
+      'src/ui/simulation-prisoner-detail.ts',
       'src/ui/simulation-prisoner-roster.ts',
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
@@ -584,7 +600,14 @@ describe('UI orchestration boundaries', () => {
     for (const subtree of GATED_ELSEWHERE) {
       expect(allUiFiles.filter((entry) => subtreeOf(entry) === subtree).length, `src/ui/${subtree}/ is empty or gone`).toBeGreaterThan(4);
     }
-    expect(allUiFiles.length).toBe(orchestrationFiles.length + allUiFiles.filter((entry) => subtreeOf(entry) !== undefined).length);
+    // Not `allUiFiles.length === orchestrationFiles.length + (the rest)`: that
+    // partitions `allUiFiles` by the same predicate on both sides and is a
+    // tautology for any array whatsoever, including an empty one -- proved
+    // and reported in `docs/research/2026-09-02-the-unit-gates-that-cannot-fail.md`.
+    // The real floor belongs on the corpus itself, read independently of how
+    // it gets divided: 66 files today, so this tolerates ordinary change
+    // while still catching the walk collapsing.
+    expect(allUiFiles.length, 'src/ui/ scanned far fewer files than expected; the walk is broken').toBeGreaterThan(50);
   });
 
   it('imports no package, Phaser included', () => {

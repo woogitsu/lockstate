@@ -11,6 +11,7 @@ import { SearchSystem, type CategoryConcealmentResolver, type CategoryNameKeyRes
 import { SimulationEventLog } from '../../src/simulation/events';
 import type { SearchPolicyDefinition } from '../../src/simulation/contraband/search-policy';
 import { GuardRoster } from '../../src/simulation/security/guard-roster';
+import { INCIDENT_RESPONSE_GUARD_RESERVE } from '../../src/simulation/security/post-eligibility';
 import { CONTRABAND_DETECTION_RNG_STREAM } from '../../src/simulation/runtime/new-session';
 import type { TilePosition } from '../../src/simulation/world/coordinates';
 
@@ -53,6 +54,21 @@ function buildHarness(cellCount: number, policies: readonly SearchPolicyDefiniti
   return { cellBlock, navigation, contraband, intelligence, confiscations, guards, search, kernel, events };
 }
 
+/**
+ * Hires the staff one search needs: the searcher, plus
+ * `INCIDENT_RESPONSE_GUARD_RESERVE` more that the search may not claim
+ * ([issue #996](https://github.com/matmaxalez/lockstate/issues/996)).
+ *
+ * The reserve is read from the constant rather than written out as a number,
+ * so a later change to it moves these fixtures with it instead of leaving a
+ * suite that pins a staffing rule nobody meant to pin. The searcher is the
+ * **lowest** entity id -- `claimableSearchGuardIds` slices from the front --
+ * so `guards.allGuardIds()[0]` is still the guard every case below follows.
+ */
+function hireForSearch(guards: GuardRoster, tile: TilePosition): void {
+  for (let index = 0; index < 1 + INCIDENT_RESPONSE_GUARD_RESERVE; index += 1) guards.hire('staff-role.guard', tile);
+}
+
 // Cell indices excluded from `i % 5 === 0` medical-only gating and `i % 7 === 0` closed doors, so a plain guard reaches them without delay.
 const OPEN_CELL_INDEX = 1;
 
@@ -68,7 +84,19 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
     kernel.step(); // still no guards -- stays queued
     expect(search.isQueued('search-1')).toBe(true);
 
+    /*
+     * One guard is no longer enough, and that is the rule issue #996 added:
+     * `claimableSearchGuardIds` withholds the last
+     * `INCIDENT_RESPONSE_GUARD_RESERVE` free guards so a sweep can never be the
+     * reason an incident has nobody to send. So the order stays queued through
+     * a hire that used to staff it -- observable backlog, not a failure.
+     */
     guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!); // canteen origin; exact tile irrelevant to staffing
+    for (let tick = 0; tick < 50; tick += 1) kernel.step();
+    expect(search.isQueued('search-1')).toBe(true);
+    expect(search.getMetrics().searchesCompleted).toBe(0);
+
+    for (let index = 0; index < INCIDENT_RESPONSE_GUARD_RESERVE; index += 1) guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
 
@@ -80,7 +108,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
   it('records a typed confiscation event with provenance and search order id', () => {
     const { cellBlock, contraband, confiscations, guards, search, kernel } = buildHarness(6, [CERTAIN_DETECT_POLICY]);
     contraband.introduce('item-1', 'contraband.weapon', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'prisoner', sourceId: '3', introducedAtTick: 2 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-evidence', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
@@ -119,7 +147,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
   it('records a contraband.discovered event naming the category, at the tick of the find (#703 ruling 13)', () => {
     const { cellBlock, confiscations, contraband, events, guards, search, kernel } = buildHarness(6, [CERTAIN_DETECT_POLICY]);
     contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     // The premise: nothing is announced before a search finds anything, so the
     // assertion below cannot pass off a pre-existing event as this one.
     expect(events.count).toBe(0);
@@ -146,7 +174,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
   it('says nothing to the player about a search that found nothing (#703 ruling 13)', () => {
     const { cellBlock, contraband, events, guards, search, kernel } = buildHarness(6, [CERTAIN_MISS_POLICY]);
     contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
@@ -178,7 +206,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
     // resolver knows is `contraband.phone` alone, which is what makes this the
     // unnameable case rather than an invalid one.
     contraband.introduce('item-1', 'contraband.tool', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
@@ -215,7 +243,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
     for (let index = 0; index < 5; index += 1) {
       contraband.introduce(`item-${String(index)}`, 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
     }
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
@@ -233,7 +261,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
   it('a certain-miss policy leaves the item concealed and records a miss', () => {
     const { cellBlock, contraband, guards, search, kernel } = buildHarness(6, [CERTAIN_MISS_POLICY]);
     contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
@@ -247,7 +275,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
     function run(): { discovered: number; missed: number; state: string | undefined } {
       const { cellBlock, contraband, guards, search, kernel } = buildHarness(10, [{ ...CERTAIN_DETECT_POLICY, baseDetectionProbability: 0.5 }]);
       for (let i = 0; i < 5; i += 1) contraband.introduce(`item-${i}`, 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-      guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+      hireForSearch(guards, cellBlock.canteenTiles[0]!);
       search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
       for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
       return { discovered: search.getMetrics().itemsDiscovered, missed: search.getMetrics().itemsMissed, state: contraband.get('item-0')?.state };
@@ -262,7 +290,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
   it('snapshot/restore resumes a mid-travel search and still completes it correctly', () => {
     const { cellBlock, contraband, guards, search, kernel } = buildHarness(6, [CERTAIN_DETECT_POLICY]);
     contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     kernel.step(); // assign + issue travel request, not yet arrived
@@ -311,7 +339,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
     const { cellBlock, contraband, intelligence, guards, search, kernel } = buildHarness(6, [lowProbabilityPolicy]);
     contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
     intelligence.report('cell', String(OPEN_CELL_INDEX), 1, 'observation', 0);
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
     search.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: String(OPEN_CELL_INDEX) }] });
 
     for (let tick = 0; tick < 500 && search.getMetrics().searchesCompleted < 1; tick += 1) kernel.step();
@@ -324,7 +352,7 @@ describe('SearchSystem: staffing, real navigation, deterministic detection and c
     const { cellBlock, contraband, guards, search, kernel } = buildHarness(6, [sectorPolicy]);
     contraband.introduce('item-cell-1', 'contraband.phone', { kind: 'cell', id: '1' }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
     contraband.introduce('item-cell-2', 'contraband.currency', { kind: 'cell', id: '2' }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
-    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
 
     search.submitOrder({
       id: 'sweep-1',

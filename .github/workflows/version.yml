@@ -180,7 +180,7 @@ jobs:
     if: >-
       github.event.head_commit.author.name != 'github-actions[bot]'
       && !startsWith(github.event.head_commit.message, 'chore(release): v')
-    runs-on: [self-hosted, Linux, X64, wsl2]
+    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -256,3 +256,28 @@ jobs:
 
           echo "::error::Three attempts to publish a version bump were all rejected; the branch is moving faster than this workflow can bump it. Nothing was published and no tag was left behind -- the pushes are atomic. The next merge bumps again, so the sequence loses a number rather than a commit."
           exit 1
+
+      # Runs only after a successful publish above -- GitHub skips a step
+      # following one that exited non-zero, so a rejected bump (the `exit 1`
+      # just above) reports nothing here, which is correct: no version moved,
+      # so there is nothing new to say about the spend against it.
+      #
+      # NON-BLOCKING BY CONSTRUCTION. `tooling/anchor-budget-spend.mjs` never
+      # exits non-zero -- see that file's header -- so this step cannot fail
+      # this job. That matters because this job runs *after* the merge it is
+      # reporting on has already landed: a failing step here would block
+      # nothing and would only be noise. This is an annotation, not a gate;
+      # the gate is `tests/foundation/adr-status-queue-anchor-contract.test.ts`,
+      # which runs inside `verify` and can still fail a pull request as it
+      # always has. What was missing before this step is visibility *between*
+      # the gate's runs, at the one moment (a version bump) the gate itself
+      # never gets to see, because `ci.yml` never runs on this workflow's own
+      # release commit.
+      #
+      # Reads `package.json` from the working tree the successful attempt
+      # above left behind -- already bumped and already confirmed to match
+      # what was just pushed -- rather than re-fetching, so this reports the
+      # version the badge and the next pull request's tree will actually
+      # carry.
+      - name: Report the anchor budget's current spend
+        run: node tooling/anchor-budget-spend.mjs

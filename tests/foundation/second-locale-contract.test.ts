@@ -167,6 +167,17 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',
   'hud.status.prisoners-without-bed',
+  // `{count} not ready`, the badge under the `ROOMS` chip (#1006 finding 1).
+  // Listed rather than authored with forms, and the reason is the entry
+  // directly above it: `hud.status.prisoners-without-bed` is the same badge on
+  // the same strip, formatted through the same `HudMetricBadge` channel, and
+  // that channel calls `format` rather than `formatPlural` -- so a plural entry
+  // here would be one key in the catalogue whose forms nothing selects between,
+  // which is worse than a flat string that says so. English needs none ("1 not
+  // ready" and "3 not ready" are the same shape); Polish would, and it is the
+  // same debt the entry above already carries, with the same one-line fix once
+  // the badge channel learns to count.
+  'hud.status.rooms-not-ready',
   'save.list.item',
 ] as const;
 
@@ -227,12 +238,155 @@ const LOCALIZER_CALL = /(?:\bt|\.format|\.formatPlural)\s*\(/;
  * punctuation template -- copy that reaches a screen-reader user, so the
  * owner's under `AGENTS.md` exclusion 4. Recorded here rather than fixed, and
  * pinned so a third cannot arrive unnoticed.
+ *
+ * **The keys are `file:line` and they rot faster than anything else in this
+ * file.** Both moved three times inside one branch (#860) -- 1780 -> 1781 ->
+ * 1828 and 2010 -> 2100 -> 2167 -> 2197 -- every time because a docblock was
+ * added *above* an untouched site, never because a site changed. That is
+ * `docs/AGENT_WORKFLOW.md` §4's least-durable-citation rule paying for itself,
+ * and it is recorded here rather than fixed because the line number is what
+ * makes the failure message point at the offending expression. If a fourth
+ * assembled sentence ever has to be recorded, key the map on the quoted
+ * expression instead and let the reporter find the line.
  */
 const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
-  'ui/hud/build-panel.ts:1770':
-    'aria-label for a delivery row\'s Cancel: `${t(buildDeliveryCancel)}: ${row.label.textContent}`',
-  'ui/hud/build-panel.ts:2000':
-    'aria-label for a queue row\'s Cancel: `${t(buildQueueCancel)}: ${row.label.textContent}`',
+  /*
+   * **These two numbers moved four times on 2026-09-03 and neither side of the
+   * merge that produced them was right.** #874 put a shortfall line under the
+   * Buy control and #860 rewrote `paintQueue`'s row loop; each branch re-pinned
+   * these sites against its own tree, so the merge offered `:1828`/`:2197` on
+   * one side and `:1858`/`:2088` on the other and **both were stale on the
+   * merged tree**. The live numbers below were read off the merged file by
+   * grepping for the assembled expressions themselves, not taken from either
+   * branch. `docs/AGENT_WORKFLOW.md` §4 already names this shape: a `file:line`
+   * into a file under active edit is the least durable citation here, and a
+   * quoted sentence is the most -- which is why the value beside each key
+   * quotes the expression and the key is the part that rots.
+   */
+  /*
+   * **A fifth and sixth move, on 2026-09-04, and again neither site changed.**
+   * Issue #904 added `armedHintKey` and its docblock above both of these, so
+   * `:1906` became `:1952` and `:2275` became `:2321`. Read off the tree by
+   * grepping for the expressions themselves, exactly as the paragraph above
+   * says to. Six re-pins for two unchanged expressions is the whole of the
+   * argument for keying this map on the quoted expression instead, and it is
+   * left as a `file:line` for the reason given above: the number is what makes
+   * the failure message point at the offending code.
+   */
+  /*
+   * **A seventh and eighth move, later the same day, and again neither site
+   * changed.** Issue #920 gave `hud.build.note` a renderer again -- an element
+   * and a paint branch in `paintQueue`, plus the docblock that carries the
+   * measurement -- so `:1952` became `:2033` and `:2321` became `:2427`. Read
+   * off the tree by grepping for the expressions themselves, exactly as the
+   * paragraph above says to.
+   *
+   * **And a ninth and tenth, three commits later, inside the same branch.**
+   * That branch's second attempt at the layout added forty-two lines of
+   * measurement to the docblock above these sites -- the two placements it had
+   * measured and rejected -- and `:2033`/`:2427` became `:2075`/`:2469`. Both
+   * expressions are still untouched. Recorded because the interval is the
+   * point: **the seventh re-pin was falsified by the same branch that made
+   * it**, one commit apart, which no delta pass across branches could have
+   * caught. Five re-pins in one day, all of them a comment growing.
+   *
+   * **An eleventh and twelfth, on 2026-09-04, and again neither site
+   * changed.** Issue #926 added thirteen lines of correction to the removal
+   * control's docblock -- the amendment recording that `min-width: 0` fitted
+   * the third *button* and not the third *label* -- so `:2075`/`:2469` became
+   * `:2088`/`:2482`. Read off the tree by grepping for the expressions
+   * themselves, exactly as the paragraph above says to, and the count is
+   * carried forward rather than restarted because the count is the argument.
+   *
+   * **A thirteenth, on 2026-09-06, and this one is a comment and nothing
+   * else.** Issue #1031's ruling ("licz po ukończeniu" -- count a placed object
+   * on completion) makes `paintQueue`'s block the only readout an
+   * ordered-but-unbuilt object appears in, so nineteen lines saying so went
+   * into that function's docblock and `:2482` became `:2501`. The expression is
+   * untouched, the delivery site above it did not move, and the branch that
+   * paid for the red gate added no player-visible text at all.
+   *
+   * **Nine re-pins for two unchanged expressions** -- the ninth is the
+   * paragraph immediately above -- and the count is the argument rather than an
+   * anecdote: every one of them was a line above the site moving, none was a
+   * change to what the site does, and each cost a red gate on a branch whose
+   * author had no reason to expect one. The fix is to key this map on the
+   * quoted expression, which is the durable half of the entry already. It is
+   * deliberately **not** done here: this branch is a HUD layout fix, changing
+   * the map's key changes what the failure message points a reader at, and
+   * doing it as a side effect of an unrelated diff is how a gate loses the
+   * property it exists for. Recorded as owed.
+   *
+   * **#1031's branch declined it for the same reason and it is worth saying
+   * why once more**, since that branch was the ninth to pay: its subject is
+   * when a capacity counts an object, the key change would rewrite this map's
+   * failure message for every reader, and a gate re-keyed inside a diff about
+   * something else is exactly the change nobody reviews. The owed item is
+   * unchanged and now has nine entries behind it.
+   */
+  /*
+   * **Paid on 2026-09-06, and not by the condition the top of this docblock
+   * names.** That condition was "if a fourth assembled sentence ever has to be
+   * recorded" -- a fourth has not arrived; there are still exactly two,
+   * `:2088` and `:2482` on `origin/main` at the commit this branch forked
+   * from (`a2b3632b`). What happened instead: a parallel, unmerged branch
+   * (`fix/1031-capacity-counts-on-completion`, commit `1c6ad206`) independently
+   * hit the same failure the same day -- nineteen lines added to `paintQueue`'s
+   * docblock moved `:2482` to `:2501` with neither expression touched -- and
+   * that branch's own commit message calls it the ninth re-pin, declines the
+   * expression-keyed fix as out of scope for its diff, and repeats the same
+   * "Recorded as owed" this docblock already carried. That branch is not part
+   * of this one's history and nothing here depends on it landing first; it is
+   * cited because it is independent, contemporaneous confirmation that the
+   * pattern above is still live on every branch that touches either site, not
+   * a closed chapter. The fix the top of this docblock already named -- "key
+   * the map on the quoted expression instead and let the reporter find the
+   * line" -- is taken here, ahead of whatever count would eventually have
+   * forced it, because the count was never the point; the pattern was.
+   *
+   * The paragraph at the top of this docblock, and all four historical blocks
+   * above this one, are left exactly as they stand, for the reason
+   * `docs/AGENT_WORKFLOW.md` §4 gives for marking both directions rather than
+   * overwriting: they are the entire argument for why this was worth doing,
+   * and a reader should see what was deferred, and for how long, before seeing
+   * that the deferral ended.
+   *
+   * **What changed, mechanically.** The keys below are now the quoted
+   * expression -- `template.text` in `findAssembledSentences`, the same
+   * string the value used to merely echo -- so a docblock line landing above
+   * a site no longer touches that site's key, and not one of the re-pins
+   * chronicled above -- on this branch or on `fix/1031-capacity-counts-on-completion`
+   * -- could fail this gate again. A genuinely new third expression still
+   * fails it, because its text matches neither key below. The failure message
+   * a reader sees is still built from `sites`, the live scan the test below
+   * performs at assertion time -- never from anything stored in this map -- so
+   * it still names a `file:line`, computed fresh rather than kept, which is
+   * the property the deferral was protecting and the reason it is not lost by
+   * this change.
+   *
+   * **What one recorded expression appearing at more than one call site would
+   * mean, decided here rather than left to fall out of `Set` semantics:** the
+   * risk an assembled sentence carries is the shape of the expression -- which
+   * fragments it stitches together -- not which line happens to hold it, so a
+   * second site producing byte-for-byte the same template shares the first
+   * site's justification rather than needing a second entry for it. Neither
+   * expression below is duplicated on this tree; the decision is recorded
+   * because the map's shape now makes it possible, and a decision a reader has
+   * to infer from the code is the same defect this whole entry exists to
+   * retire. The test below that names this decision constructs a duplicate
+   * and checks the collapse directly, rather than asserting the sentence and
+   * leaving it untested.
+   */
+  '`${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`':
+    "aria-label for a delivery row's Cancel button: a localized word, a " +
+    "hard-coded ': ', and text read back out of the row's own already-" +
+    'localized label. Fixing it means authoring a punctuation-template key ' +
+    "-- copy that reaches a screen-reader user, so the owner's under " +
+    '`AGENTS.md` exclusion 4.',
+  '`${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`':
+    "aria-label for a queue row's Cancel button -- the same shape as the " +
+    'delivery row above it, for the same reason: a localized word, a ' +
+    "hard-coded ': ', and the row's own already-localized label read back.",
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -327,16 +481,61 @@ describe('no player-visible sentence is assembled from a localized fragment and 
   const sites = scanned.flatMap((file) => findAssembledSentences(file.source, file.where));
 
   it('holds exactly the assembled sentences this list names', () => {
-    // Only the *locations* are compared. An earlier version of this
-    // assertion compared the source text too and built the expected side out
-    // of the scan's own output, which is the fixture-supplies-both-sides shape
-    // `docs/TESTING.md` forbids: it would have held for any text at all.
+    // Compared by *expression* (`site.text`), not by *location* (`site.where`)
+    // -- see the docblock above `ASSEMBLED_SENTENCES` for why the key changed.
+    // `ASSEMBLED_SENTENCES` is still a hand-maintained literal, independent of
+    // this scan, so this is not the fixture-supplies-both-sides shape
+    // `docs/TESTING.md` forbids: that shape is the *expected* side being built
+    // out of the thing under test, which would hold for any text at all, and
+    // is not what a `Set` over the scan's own findings does here. Two sites
+    // sharing one recorded expression are one finding, not two -- decided and
+    // tested below rather than left as an accident of `Set` semantics.
+    const found = [...new Set(sites.map((site) => site.text))].sort();
+
     expect(
-      sites.map((site) => site.where).sort(),
+      found,
       `put the punctuation inside the message (docs/LOCALIZATION.md rule 4), or record the site here with its reason.\n${sites
         .map((site) => `  ${site.where}  ${site.text}`)
         .join('\n')}`,
     ).toEqual(Object.keys(ASSEMBLED_SENTENCES).sort());
+  });
+
+  it("finds each recorded expression's current file:line by scanning, rather than trusting a stored one", () => {
+    // The half of the fix that keeps the property the deferral protected: a
+    // failure still has to point a reader at `build-panel.ts:NNNN`. Nothing in
+    // ASSEMBLED_SENTENCES carries a line any more, so this proves the line is
+    // still recoverable -- from `sites`, the live scan above, computed at
+    // assertion time rather than read out of the map.
+    for (const expression of Object.keys(ASSEMBLED_SENTENCES)) {
+      const locations = sites.filter((site) => site.text === expression);
+      expect(locations.length, `${expression} was not found anywhere in the current scan`).toBeGreaterThanOrEqual(1);
+      for (const location of locations) {
+        expect(location.where, `expected a ui/hud/build-panel.ts:NNNN citation, got ${location.where}`).toMatch(
+          /^ui\/hud\/build-panel\.ts:\d+$/,
+        );
+      }
+    }
+  });
+
+  it('treats two occurrences of one recorded expression as one finding, not two', () => {
+    // The decision the docblock above names, tested directly rather than left
+    // to fall out of `Set` semantics by accident: `tests/helpers/canonical-
+    // iteration.ts` applies the same reasoning to its own exemptions --
+    // "Two occurrences of the same view over the same field share one
+    // justification... the reason must justify the *field*, not one call
+    // site." An assembled sentence's risk is the shape of the expression, not
+    // which line holds it, so a second site producing byte-for-byte the same
+    // template is the same finding under a second spotlight.
+    const twice =
+      'a.setAttribute("aria-label", `${t(KEY.cancel)}: ${row.label.textContent}`); ' +
+      'b.setAttribute("aria-label", `${t(KEY.cancel)}: ${row.label.textContent}`);';
+    const found = findAssembledSentences(twice, 'fixture.ts');
+    // Both call sites are still reported individually -- nothing here hides a
+    // location from the file:line test above.
+    expect(found).toHaveLength(2);
+    // ...but they collapse to one required map entry, which is what the
+    // assertion above relies on.
+    expect(new Set(found.map((site) => site.text)).size).toBe(1);
   });
 
   it('makes every recorded site say why it is still there', () => {
@@ -345,7 +544,7 @@ describe('no player-visible sentence is assembled from a localized fragment and 
     // off for one line.
     const unexplained = Object.entries(ASSEMBLED_SENTENCES)
       .filter(([, reason]) => reason.trim().length < 40)
-      .map(([where]) => where);
+      .map(([expression]) => expression);
     expect(unexplained, 'record what the site assembles and why it has not been fixed').toEqual([]);
   });
 
@@ -354,6 +553,9 @@ describe('no player-visible sentence is assembled from a localized fragment and 
     // and a scan that read nothing satisfies it.
     // FLOOR at the measured values: 366 `.ts` files under `src/`, of which
     // these are the UI ones, and the localizer is called throughout them.
+    // 372 on 2026-09-02, and that number will be wrong again next week: the
+    // floors below are what this case asserts and neither of them counts
+    // `src/` as a whole. The tally is context, not a claim.
     expect(scanned.length, 'the scan resolved fewer UI modules than when this floor was set').toBeGreaterThanOrEqual(28);
     const callSites = scanned.reduce(
       (total, file) => total + [...file.source.matchAll(/(?:\bt|\.format|\.formatPlural)\s*\(/g)].length,

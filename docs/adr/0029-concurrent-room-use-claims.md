@@ -531,6 +531,18 @@ and this ADR does not close it.
   residency figure. `concurrentUseCapacity` is now a second number a room can be
   over, and `projectOccupancy` projects neither it nor the use count — noted in
   `room-projection.ts`'s own comment as not projected at all yet. Phase 5's job.
+
+  **Half of that is no longer owed, and the bullet is corrected rather than
+  overwritten because the clause that moved is not the one it is about
+  (2026-09-05).** The *use count* is projected: `RoomListRowViewModel.
+  concurrentUse` carries one ceiling per capability and `useOccupancyOf`'s
+  count against each, and the Rooms panel reads it out (#997, #1003). So
+  `room-projection.ts`'s comment no longer says "not projected at all yet" and
+  an agent who greps for that sentence will not find it. What is still owed is
+  the **over-capacity** readout itself, and its reason has changed too: not
+  that the projection cannot say it — `current` and `capacity` are both
+  published unclamped, so `current > capacity` is derivable — but that no
+  surface does.
 - **The starvation in decision 5**, with the revisit condition stated there.
 - **A use claim in #31's release path**, per decision 3.
 

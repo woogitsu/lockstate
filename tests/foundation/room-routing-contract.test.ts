@@ -22,6 +22,16 @@ import { SOLITARY_SANCTION_ROOM_CATALOG_ID } from '../../src/simulation/prisoner
  * `room.holding-cell` graduated by being named in a zoning test. All six read
  * as consumed there. Not one of them is somewhere a prisoner can go.
  *
+ * **`room.delivery-bay` left that list at `71617799` (2026-08-30), and the
+ * sentence above is corrected rather than replaced -- 2026-09-02.** It gained
+ * a test consumer at that commit and graduated out of *both* of that file's
+ * lists, so `room.storage-room` alone sits in `PROTECTED_BY_DECISION` and
+ * `room.delivery-bay` reads as consumed there for the same reason the other
+ * four do. **The six-room count and every word about the gap are unaffected:**
+ * all six still read as consumed one directory over and none of them is
+ * anywhere a prisoner can go, which is the whole claim. Only the route by
+ * which one of the six got there changed.
+ *
  * So this file asks the other question, and asks it of the mechanisms rather
  * than of the text: **for each room type in `src/content/room-catalog.ts`, is
  * there any authored route by which a prisoner ends up in it?** There are
@@ -92,8 +102,17 @@ const unrouted = declaredRoomIds.filter((id) => !routed.has(id)).sort();
  * what makes that mandatory.
  */
 const UNROUTED: Readonly<Record<string, string>> = {
+  // **This entry's reason was falsified by ADR 0093 and is rewritten rather
+  // than deleted, because the room is still unrouted**: the membership rule
+  // this list applies is *"no prisoner can be routed into it"*, and a carry
+  // routes a prisoner to a **tile**, not to a room instance. What it used to
+  // say is kept so the change is visible, and both of its clauses are now
+  // false -- it read *"`src/simulation/runtime/new-session.ts` records that the
+  // purchase path delivers straight into the construction container instead:
+  // 'No session instantiates that room ... so there is no bay to deliver to'.
+  // `object.loading-dock-door`'s `delivery-access` capability has no reader."*
   'room.delivery-bay':
-    'ADR 0017 names it the physical route for procured materials, and `src/simulation/runtime/new-session.ts` records that the purchase path delivers straight into the construction container instead: "No session instantiates that room ... so there is no bay to deliver to". `object.loading-dock-door`\'s `delivery-access` capability has no reader.',
+    'ADR 0017 names it the physical route for procured materials and ADR 0093 built it, so `delivery-access` now has a reader: `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`) takes the first bay instance holding it and binds `container:<instanceId>` to it. No prisoner is *routed into* the bay even so -- `action.carry`\'s target is `{ kind: \'job-board\' }`, `resolveTargetInstance` answers a job rather than a `RoomInstance`, the carrier walks to `job.sourceTile` (which happens to be the bay\'s anchor), and `currentActionTargetInstanceId` is deliberately not written for a carry (ADR 0093 decision 1). No `DEFAULT_ACTIONS` entry names `room.delivery-bay`, no `AccommodationPolicy` does, and no sanction does.',
   'room.garbage-room':
     '`object.waste-bin`\'s `waste-disposal` capability has no reader, and nothing in `src/simulation/` produces waste for it to take: there is no quantity a bin could hold and no job that empties one.',
   'room.holding-cell':
@@ -106,8 +125,14 @@ const UNROUTED: Readonly<Record<string, string>> = {
     '`object.security-console`\'s `surveillance` capability has no reader. A guard stands on their sector\'s `postTile`, which `deriveDefaultSecuritySector` derives from the world\'s owned chunks and which names no room.',
   'room.staff-room':
     'Staff have no needs and no day: `DeploymentSystem` posts a guard to a sector, `PayrollSystem` pays them, and neither reads a room instance. `object.desk`\'s `workstation` capability has no reader.',
+  // **Rewritten for the same reason as `room.delivery-bay` above, and the same
+  // way.** It read: *"`ContainerRegistry` holds exactly one container in a new
+  // session, the construction materials one, and no container is bound to a
+  // room instance. `object.storage-rack`'s `item-storage` capability has no
+  // reader."* The first clause is still true of a *new* session; the other two
+  // are not true of any session whose player has built the route.
   'room.storage-room':
-    'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it. `ContainerRegistry` holds exactly one container in a new session, the construction materials one, and no container is bound to a room instance. `object.storage-rack`\'s `item-storage` capability has no reader.',
+    'ADR 0017 names it the destination for procured materials and ADR 0093 built that half, so `item-storage` now has a reader: `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`) takes the first storeroom instance holding it and binds it to `CONSTRUCTION_MATERIALS_CONTAINER_ID`. #99\'s dismantle salvage is still unbuilt. No prisoner is *routed into* it either -- a carrier walks to `job.destinationTile` under an action whose target is the job board, so no `DEFAULT_ACTIONS` entry, `AccommodationPolicy` or sanction names this room.',
   'room.utility-room':
     '`UtilityNetwork` is constructed twice in `src/simulation/runtime/new-session.ts` and `addNode` is never called from `src/`, so both networks are permanently empty and nothing binds a node to a placed object. `object.utility-panel`\'s `utility-control` capability has no reader.',
 };

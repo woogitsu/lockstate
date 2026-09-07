@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
-import { unmetNeedCount, stateIncomeForPrisonerDay } from '../../src/simulation/economy/income';
+import {
+  STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
+  stateIncomeForPrisonerDay,
+  stateIncomeForPrisonerDayAt,
+  unmetNeedCount,
+} from '../../src/simulation/economy/income';
 import { combineRegimeOverrides, HIGH_RISK_REGIME, GENERAL_POPULATION_REGIME } from '../../src/simulation/prisoners/regime';
 import { buildPrisonerScenarioFixture, type PrisonerScenarioFixture } from '../helpers/prisoner-fixture';
 
@@ -35,7 +40,7 @@ function accommodationCatalogIdOf(fixture: PrisonerScenarioFixture, entityId: nu
 }
 
 describe('SanctionSystem: the follow-through half of a solitary sanction (issue #80)', () => {
-  it('relocates a sanctioned prisoner into solitary, restricts their day, costs the ADR 0064 grant, and releases them on schedule', () => {
+  it('relocates a sanctioned prisoner into solitary, restricts their day, moves the count the ADR 0064 grant is priced from, and releases them on schedule', () => {
     const fixture = buildPrisonerScenarioFixture({ capacity: 10, cellCount: 4, sanctionPolicy: { solitaryTermTicks: 200 } });
     const kernel = makeKernel();
     fixture.registerOn(kernel);
@@ -71,11 +76,29 @@ describe('SanctionSystem: the follow-through half of a solitary sanction (issue 
 
     // `HIGH_RISK_REGIME` restricts most of the day to sleep/meal/hygiene, so
     // recreation stops being reachable at all -- run most of a day under it
-    // and the ADR 0064 grant for this one place drops.
+    // and the count the ADR 0064 grant is priced from rises for this one
+    // place.
+    //
+    // **This assertion used to read
+    // `expect(stateIncomeForPrisonerDay(duringUnmet)).toBeLessThan(300)`**, and
+    // it is rewritten rather than dropped. It was false from the moment the
+    // owner suspended the withheld rate at `0` on 2026-09-03 -- but it was also
+    // never a fact about `SanctionSystem`: given a count that has risen from
+    // zero, "the grant is lower" is a fact about `stateIncomeForPrisonerDay`,
+    // which `tests/unit/economy-state-income.test.ts` prices at `40` and at
+    // every other rate. What belongs *here* is the sanction's own consequence,
+    // and that is the count it moved plus the linkage between the count and
+    // the money -- both true at any withheld rate, including the suspended one.
     for (let i = 0; i < 2_000; i += 1) kernel.step();
     const duringUnmet = unmetNeedCount(fixture.prisoners.needs, index);
     expect(duringUnmet).toBeGreaterThan(before);
-    expect(stateIncomeForPrisonerDay(duringUnmet)).toBeLessThan(300);
+    expect(stateIncomeForPrisonerDay(duringUnmet)).toBe(
+      stateIncomeForPrisonerDay(before) - STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS * (duringUnmet - before),
+    );
+    // And what that same restricted day would cost at ADR 0064's own rate,
+    // so the sanction's money consequence stays measured rather than merely
+    // described while the rate is off.
+    expect(stateIncomeForPrisonerDayAt(40, duringUnmet)).toBeLessThan(stateIncomeForPrisonerDayAt(40, before));
 
     // The term ends (200 ticks after imposition) and `SanctionSystem` moves
     // this prisoner back to an ordinary cell of their own accord -- nobody

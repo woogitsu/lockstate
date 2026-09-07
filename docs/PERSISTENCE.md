@@ -516,52 +516,87 @@ work are not.**
   reference an old name, a restored counter and a reset one are
   indistinguishable. `IncidentTriggerSystem.sequence` is the exception and
   *is* persisted, because it names incident records that outlive the tick.
-- **`JobSystem.performingSince`.** A restored `'performing'` carry job
-  restarts its pickup/drop-off timer. This is the same "restart rather than
-  assume arrival" convention as travel, and is a real loss rather than a
-  derivation — it is listed here rather than fixed because the field is
-  private to `JobSystem` and exposing it is a job-system change, not a
-  persistence one.
+- **`JobSystem.performingSince` — GONE, and this entry is kept because the
+  measurement it carried is the reason it could go.**
+  [ADR 0093](./adr/0093-a-carry-is-an-action.md) decision 5 retired both the
+  field and the class: a carry is an `ActionDefinition` now, so the dwell timer
+  is `CurrentActionComponent.phaseStartedAtTick`, **which this payload already
+  carries**. There is no exclusion left to list.
 
-  It used to say "a real (small) loss", which was an estimate.
-  `tests/determinism/job-performing-restart-bound.test.ts` measures it, so
-  the bound is now a number and the number is a guard:
+  **What is measured now, and it is not the same shape.**
+  `tests/determinism/job-performing-restart-bound.test.ts` was rewritten with
+  the decision and measures the new profile on a prison built through commands:
 
-  - **One `JobSystem` interval — 5 ticks — on the leg that was in flight**,
-    and that is the whole cost of the field. It does not depend on where
-    inside the 5-tick window the save was taken: the re-seed happens on the
-    first scheduled update after the restore, which is the very tick the
-    continuous run would have finished on, so a save at +1 and a save at +4
-    both cost exactly 5.
-  - **The same 5 ticks, once, on every job queued behind the delayed one.**
-    Measured on a single worker with three jobs waiting on it, which is the
-    shape that would compound if anything did. It does not compound and it
-    does not reorder: the completion order is unchanged and each job moves by
-    one interval, not by one interval each.
-  - **One full `ConstructionSystem` interval — 10 ticks — on a build order
-    waiting for the delivery.** This is the one place the cost is not the five
-    ticks it starts as: the deposit slips across a boundary of a system with a
-    10-tick cadence of its own, and that system re-quantises the delay. The
-    amplification is one downstream interval, not a compounding one.
-  - **Nothing else.** Every state surface a save carries — jobs, workers,
-    containers, construction, world, prisoners — is identical again from the
-    delayed build completion onwards and stays identical for the rest of the
-    run. The only residue found anywhere was
-    `PathRequestQueueMetrics.totalExpansions` settling two node-expansions
-    apart in the richer `tests/helpers/determinism-scenario.ts`: a cumulative
-    diagnostic counter with no reader in `src/`, absent from this payload, and
-    reset to zero by a restore in any case.
+  - **A save taken mid-dwell costs nothing at all.** `phaseStartedAtTick` comes
+    back with the prisoner, so `continuePerforming`'s
+    `elapsed >= action.minDurationTicks` test resumes where it was.
+  - **A save taken mid-walk costs at most two `ActionSystem` reconsideration
+    cycles — 40 ticks.** `PrisonerOperationsRuntime.loadSnapshot` drops every
+    traveller to `idle`, so up to 20 ticks pass before the carrier re-selects,
+    and re-selecting re-does the request-then-collect handshake for up to
+    another 20. **ADR 0093 decision 5 predicted one cycle; the measurement is
+    two**, and the prediction is corrected rather than the code, because this is
+    the exclusion *every* action already has under ADR 0059 open question 3 and
+    not a property of the carry.
 
-  The reason this stays an exclusion rather than becoming a V6 field is also
-  measured. Saving five ticks *earlier*, while the same job is `'travelling'`
-  rather than `'performing'`, produces the identical profile — every job one
-  `JobSystem` interval late, the wall one `ConstructionSystem` interval late —
-  through the travel restart `JobBoard.loadSnapshot` documents and the
-  "Navigation caches and the pending path-request queue" entry above already
-  accepts. Carrying `performingSince` would narrow the window in which a save
-  costs anything; it would not remove the cost, because the window either side
-  of it already does. A schema version is the wrong instrument for that, and
-  the test is the right one. Also recorded in `docs/DETERMINISM.md`.
+  **The old reading is kept below rather than deleted**, because "the cost was
+  five ticks and is now zero" is a claim a reader can only check if the five is
+  written down. It read:
+
+  > A restored `'performing'` carry job restarts its pickup/drop-off timer.
+  > This is the same "restart rather than assume arrival" convention as travel,
+  > and is a real loss rather than a derivation — it is listed here rather than
+  > fixed because the field is private to `JobSystem` and exposing it is a
+  > job-system change, not a persistence one.
+  >
+  > - **One `JobSystem` interval — 5 ticks — on the leg that was in flight**,
+  >   and that is the whole cost of the field. It does not depend on where
+  >   inside the 5-tick window the save was taken.
+  > - **The same 5 ticks, once, on every job queued behind the delayed one.**
+  >   It does not compound and it does not reorder.
+  > - **One full `ConstructionSystem` interval — 10 ticks — on a build order
+  >   waiting for the delivery**, because the deposit slips across a boundary
+  >   of a system with a 10-tick cadence of its own.
+  > - **Nothing else.** Every state surface a save carries is identical again
+  >   from the delayed build completion onwards.
+  >
+  > The reason this stays an exclusion rather than becoming a V6 field is also
+  > measured. Saving five ticks *earlier*, while the same job is
+  > `'travelling'` rather than `'performing'`, produces the identical profile
+  > ... Carrying `performingSince` would narrow the window in which a save
+  > costs anything; it would not remove the cost, because the window either
+  > side of it already does. A schema version is the wrong instrument for
+  > that, and the test is the right one.
+
+  **That last paragraph was right and is the reason nothing here needed a
+  schema version.** The field was not carried; the *class* was removed, and the
+  dwell landed on a field the payload already held. `SAVE_SCHEMA_VERSION` is
+  still 5.
+- **`operations.jobWorkers`, which is in the payload and is written empty.**
+  ADR 0093 decision 4 retired `JobWorkerPool` — eligibility is the regime's
+  and busyness is the board's — so there is nothing to put in it. The key
+  stays because **removing it would be the save bump the decision refuses to
+  spend**: an older build refuses a save on a missing required key, and
+  `save-schema.ts` validates this one as required. Two empty arrays against a
+  `SAVE_SCHEMA_VERSION` move is the same trade
+  [ADR 0038](./adr/0038-what-makes-a-save-compatible.md) decision 4 makes for
+  keeping `masterSeed` optional.
+
+  An older save with a non-empty pool loads cleanly and is *ignored*: a listed
+  worker who holds an assigned job is resumed from the board — their own active
+  job makes `action.carry` providable again — and one who does not was merely
+  *eligible*, which is now a question the regime answers every cycle rather
+  than a stored fact.
+- **The prisoner → job link.** Derived from each job's own `assignedWorkerId`,
+  which the payload carries, and rebuilt into `JobBoard`'s worker index by
+  `loadSnapshot`. The same standing a use claim has under ADR 0029 decision 6,
+  for the same reason: storing it would put a value in the payload that can
+  disagree with the state that produced it.
+- **The bay-to-container and storeroom-to-container bindings.** Functions of
+  the room registry, which the payload carries (ADR 0093 decision 2). What
+  *is* stored is the bay container's **stock**, which appears in the existing
+  `containers` array the moment the container is registered — so a delivery
+  waiting in a bay survives a save without one new key.
 - **`SafetyCoverageSystem`'s census** (`Covered N / Understaffed N /
   Unguarded N`, issue #588). A pure function of the sectors, the guards
   assigned to them and where the prisoners are standing, all three of which
@@ -1230,7 +1265,7 @@ snapshot-capable and never connected to a payload. V3 connects them.
 | Section | Subsystems | Why it is authoritative |
 | --- | --- | --- |
 | `prisoners` | `PrisonerRecordComponent`, `NeedsComponent`, `CurrentActionComponent`, `PositionComponent`, `PrisonerColdState`, `RoomInstanceRegistry` | Nothing derives a prisoner's sentence, needs, risk tier, position or cell assignment from anything else. |
-| `operations` | `Container`/`ContainerRegistry`, `JobBoard`, `JobWorkerPool`, both `UtilityNetwork`s | Stock, reservations, carry jobs and utility topology are player-caused state. |
+| `operations` | `Container`/`ContainerRegistry`, `JobBoard`, both `UtilityNetwork`s | Stock, reservations, carry jobs and utility topology are player-caused state. `JobWorkerPool` was a fourth owner here and **no longer exists** (ADR 0093 decision 4); its `jobWorkers` key stays in the payload, written empty, rather than costing a schema version to remove. |
 | `navigation` | `DoorRegistry` | A door is placed, not derived: the world's edge planes say a boundary exists, the registry says it is a gated opening and how it is locked. |
 | `security` | `SecuritySectorRegistry`, `GuardRoster`, `DeploymentSchedule[]`, `DeploymentSystem`, `PatrolSystem` | Hired staff, their posts, sector control state and the schedules that drive them. |
 | `contraband` | `ContrabandRegistry`, `IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, `SearchPolicyDefinition[]`, `SearchSystem` | Concealed items, their provenance and movement history, decayed suspicion, and the evidence chain a confiscation produced. |

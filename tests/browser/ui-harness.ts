@@ -18,6 +18,7 @@ import {
   type HudRoomGesture,
   type HudBuildQueueViewModel,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerDetailViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -29,6 +30,7 @@ import {
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 import type {
+  ActionLabelFitProbe,
   AlertProbe,
   AlertRowProbe,
   BuildLayoutProbe,
@@ -50,6 +52,7 @@ import type {
   LockstateUiHarness,
   RefusalProbe,
   RegimeBlockProbe,
+  RegimeDetailNeedProbe,
   RegimeProbe,
   RegimeRosterRowProbe,
   RepaintFormatterCost,
@@ -667,6 +670,7 @@ function buildQueueProbe(): BuildQueueProbe {
 function staffCoverageProbe(): StaffCoverageProbe {
   const block = document.querySelector<HTMLElement>('.hud-staff__coverage');
   const badge = block?.querySelector<HTMLElement>('.ui-badge') ?? null;
+  const consequence = block?.querySelector<HTMLElement>('.hud-staff__coverage-consequence') ?? null;
   return {
     blockLaidOut: block !== null && block.getClientRects().length > 0,
     tone: block?.dataset['tone'] ?? null,
@@ -675,9 +679,15 @@ function staffCoverageProbe(): StaffCoverageProbe {
     badgeTone: badge?.dataset['tone'] ?? null,
     hintText:
       [...(block?.querySelectorAll<HTMLElement>('.hud-staff__note') ?? [])]
+        // `.hud-staff__coverage-consequence` is a `.hud-staff__note` too and it
+        // is *below* the hint, so `find` still lands on the hint. Excluded
+        // anyway rather than relying on document order, because the order of
+        // two siblings is not the claim this field is making.
+        .filter((line) => !line.classList.contains('hud-staff__coverage-consequence'))
         .filter((line) => line.getClientRects().length > 0)
         .map((line) => (line.textContent ?? '').trim())
         .find((text) => text.length > 0) ?? '',
+    consequenceText: consequence !== null && consequence.getClientRects().length > 0 ? (consequence.textContent ?? '').trim() : '',
     blockBox: layoutBoxOf(block),
   };
 }
@@ -734,6 +744,15 @@ function regimeProbe(): RegimeProbe {
         prisoner: row.dataset['prisoner'] ?? '',
         classificationGroup: row.dataset['classificationGroup'] ?? null,
         riskTier: row.dataset['riskTier'] ?? null,
+        // Whether the row is a control at all, and whether it is the chosen
+        // one (issue #895). `getAttribute` for the two ARIA carriers, because
+        // *absent* is a distinct state from `"false"` on both -- a vacated
+        // pooled row has no `role` and no `aria-checked`, which is what keeps
+        // it out of the #88 control sweep's inventory.
+        role: row.getAttribute('role'),
+        tabIndex: row.tabIndex,
+        ariaChecked: row.getAttribute('aria-checked'),
+        selected: row.dataset['selected'] ?? null,
         nameText: textOf(row.querySelector('.hud-regime__roster-name')),
         activityText: textOf(row.querySelector('.hud-regime__roster-activity')),
         badgeText: textOf(badge),
@@ -768,6 +787,36 @@ function regimeProbe(): RegimeProbe {
       ...(drawn(empty) && empty !== undefined ? [empty] : []),
     ].reduce((lowest, node) => Math.max(lowest, node.getBoundingClientRect().bottom), 0),
     panelBox: layoutBoxOf(panel),
+    // The inspector, and its need lines are filtered by `getClientRects()` for
+    // the reason every list in this probe is: they are pooled, so a line with
+    // no need in it is present in the DOM and must not be reported as one the
+    // player can see.
+    detail: (() => {
+      const block = document.querySelector<HTMLElement>('.hud-regime__detail');
+      const badge = block?.querySelector<HTMLElement>('.ui-badge') ?? null;
+      const needs = [...(block?.querySelectorAll<HTMLElement>('.hud-regime__detail-need') ?? [])].filter((line) =>
+        drawn(line),
+      );
+      return {
+        laidOut: drawn(block),
+        prisoner: block?.dataset['prisoner'] ?? null,
+        nameText: textOf(block?.querySelector('.hud-regime__detail-name')),
+        badgeText: textOf(badge),
+        badgeTone: badge?.dataset['tone'] ?? null,
+        needs: needs.map((line): RegimeDetailNeedProbe => {
+          const bar = line.querySelector<HTMLElement>('.ui-bar');
+          return {
+            need: line.dataset['need'] ?? null,
+            permille: line.dataset['needPermille'] ?? null,
+            unmet: line.dataset['needUnmet'] ?? null,
+            nameText: textOf(line.querySelector('.hud-regime__detail-need-name')),
+            tone: bar?.dataset['tone'] ?? null,
+            valueText: bar?.getAttribute('aria-valuetext') ?? null,
+          };
+        }),
+        box: layoutBoxOf(block),
+      };
+    })(),
   };
 }
 
@@ -1271,6 +1320,7 @@ window.lockstateUiHarness = {
     const buyRow = document.querySelector<HTMLElement>('.hud-build__buy');
     const buySubmit = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
     const buyQuantity = document.querySelector<HTMLInputElement>('.hud-build__buy .ui-number__input');
+    const buyShortfall = document.querySelector<HTMLElement>('.hud-build__buy-shortfall');
     const target = document.querySelector<HTMLElement>('.hud-build__target');
     const targetValue = document.querySelector<HTMLElement>('.hud-build__target .hud-build__target-value');
     const coordinates = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')].find((section) =>
@@ -1340,6 +1390,55 @@ window.lockstateUiHarness = {
         const rightmost = buttons.reduce((widest, button) => Math.max(widest, button.getBoundingClientRect().right), 0);
         return buttons.length === 0 ? 0 : Math.round((rightmost - limit) * 10) / 10;
       })(),
+      /*
+       * Label against button, which is the measurement `actionsOverflowPx`
+       * above cannot take (issue #926, and `ActionLabelFitProbe` carries the
+       * argument).
+       *
+       * Rounded to a tenth like every other figure in this probe, and read in
+       * one pass so the button, its label and its neighbour are all measured
+       * against the same layout -- a second `evaluate` could observe a
+       * different one.
+       */
+      actionLabelFits: ((): readonly ActionLabelFitProbe[] => {
+        if (actions === null) return [];
+        const laidOut = [...actions.querySelectorAll<HTMLElement>('.ui-action')].filter(
+          (button) => button.getClientRects().length > 0,
+        );
+        // The class that names the control, rather than its index: an index
+        // renumbers itself the moment the buy toggle leaves the row, and this
+        // probe is read in both states.
+        const nameOf = (button: HTMLElement): string =>
+          [...button.classList].find((name) => name.startsWith('hud-build__')) ?? '';
+        return laidOut.map((button, index) => {
+          const buttonBox = button.getBoundingClientRect();
+          const labelNode = button.querySelector<HTMLElement>('.ui-action__label');
+          const labelBox = labelNode?.getBoundingClientRect() ?? null;
+          const neighbour = laidOut[index + 1] ?? null;
+          const neighbourLeft = neighbour === null ? null : neighbour.getBoundingClientRect().left;
+          const round = (value: number): number => Math.round(value * 10) / 10;
+          return {
+            control: nameOf(button),
+            label: labelNode?.textContent?.trim() ?? '',
+            buttonWidthPx: round(buttonBox.width),
+            buttonHeightPx: round(buttonBox.height),
+            buttonRightPx: round(buttonBox.right),
+            labelWidthPx: labelBox === null ? 0 : round(labelBox.width),
+            labelHeightPx: labelBox === null ? 0 : round(labelBox.height),
+            labelRightPx: labelBox === null ? 0 : round(labelBox.right),
+            labelOverflowPx: labelBox === null ? 0 : round(labelBox.right - buttonBox.right),
+            neighbourLeftPx: neighbourLeft === null ? null : round(neighbourLeft),
+            neighbour: neighbour === null ? null : nameOf(neighbour),
+            neighbourOverlapPx:
+              labelBox === null || neighbourLeft === null ? 0 : round(labelBox.right - neighbourLeft),
+            // `+ 0.5` rather than `>`: both figures are sub-pixel and a
+            // fractional layout would otherwise report every label as wider
+            // than its own box.
+            labelWiderThanBox: labelNode !== null && labelNode.scrollWidth > labelNode.clientWidth + 0.5,
+          };
+        });
+      })(),
+      actionsHeightPx: actions === null ? 0 : Math.round(actions.getBoundingClientRect().height * 10) / 10,
       hint: hint?.textContent?.trim() ?? '',
       coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
       targetReadout: target?.dataset['target'] ?? null,
@@ -1364,6 +1463,15 @@ window.lockstateUiHarness = {
       buyUnavailable: (buySubmit?.getAttribute('aria-disabled') ?? 'true') === 'true',
       buyDisabled: buySubmit?.disabled ?? true,
       buyQuantity: buyQuantity?.value ?? '',
+      // The sentence that says what stops a press (the owner's wording of
+      // 2026-09-03). Three answers rather than one, on `BuildQueueProbe`'s
+      // terms: the text, a box the browser actually gave it, and the
+      // `aria-describedby` link -- a `textContent` read alone is identical on a
+      // line that was painted and one that has no box, which is the defect
+      // `.hud-build__buy-shortfall[hidden]` in `hud.css` exists to prevent.
+      buyShortfallText: buyShortfall?.textContent?.trim() ?? '',
+      buyShortfallLaidOut: buyShortfall !== null && buyShortfall.getClientRects().length > 0,
+      buyDescribedBy: buySubmit?.getAttribute('aria-describedby') ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
@@ -1376,6 +1484,7 @@ window.lockstateUiHarness = {
     const panel = document.querySelector<HTMLElement>('.hud-staff');
     const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__list [data-staff-role]')];
     const hire = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
+    const hireShortfall = document.querySelector<HTMLElement>('.hud-staff__hire-shortfall');
 
     return {
       // `hidden` is inherited through the DOM, so `offsetParent` is what the
@@ -1384,7 +1493,18 @@ window.lockstateUiHarness = {
       options: rows.map((row) => row.dataset['staffRole'] ?? ''),
       selected: rows.find((row) => row.dataset['selected'] === 'true')?.dataset['staffRole'] ?? null,
       hireLabel: hire?.textContent?.trim() ?? '',
+      // Two bits, not one, and the pair is the assertion (see
+      // `StaffProbe.hireDisabled`). A missing button reads as unavailable
+      // *and* disabled, on `buildProbe`'s terms: both defaults say "no press
+      // is going to happen here", which is what an absent control means, and
+      // neither default can make a test about a present one pass by accident.
+      hireUnavailable: (hire?.getAttribute('aria-disabled') ?? 'true') === 'true',
       hireDisabled: hire?.disabled ?? true,
+      // The same three answers `buildProbe` gives for the Buy button's line,
+      // for the same reason and about the same authored sentence.
+      hireShortfallText: hireShortfall?.textContent?.trim() ?? '',
+      hireShortfallLaidOut: hireShortfall !== null && hireShortfall.getClientRects().length > 0,
+      hireDescribedBy: hire?.getAttribute('aria-describedby') ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
@@ -1442,12 +1562,25 @@ window.lockstateUiHarness = {
    * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
    * on the field being there at all.
    */
-  reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void {
+  reportRegime(
+    regime: HudRegimeViewModel | undefined,
+    roster?: HudPrisonerRosterViewModel,
+    detail?: HudPrisonerDetailViewModel,
+  ): void {
     hud?.update({
       ...BASE_VIEW_MODEL,
       ...(regime === undefined ? {} : { regime }),
       ...(roster === undefined ? {} : { prisonerRoster: roster }),
+      // The third block of the same panel (issue #895), on the same terms as
+      // the two above and in the same call for the same reason: its height is
+      // the panel's, so a spec measuring the selected state has to be able to
+      // publish all three at once.
+      ...(detail === undefined ? {} : { prisonerDetail: detail }),
     });
+  },
+
+  clearPrisonerSelection(): void {
+    hud?.clearPrisonerSelection();
   },
 
   clickHireStaff(): boolean {
@@ -1832,6 +1965,7 @@ window.lockstateUiHarness = {
         document.querySelector<HTMLElement>('.hud-rooms__enclosure-value')?.textContent?.trim() ?? '',
       enclosureLaidOut: laidOut('.hud-rooms__enclosure'),
       panelNeeds: panel?.dataset['needs'] ?? '',
+      panelFull: panel?.dataset['full'] ?? '',
       // Laid out, not merely present: `paintActions` uses `hidden`, so a control
       // that is not showing must have no box at all and be out of the tab order.
       armLaidOut: laidOut('.hud-rooms__arm'),
@@ -1876,6 +2010,9 @@ window.lockstateUiHarness = {
         return body !== null && body.getClientRects().length > 0;
       })(),
       needsLaidOut: laidOut('.hud-rooms__needs'),
+      needsLabelText:
+        document.querySelector<HTMLElement>('.hud-rooms__needs-label')?.textContent?.trim() ?? '',
+      needsFull: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['full'] ?? '',
       needsUnfinished: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['unfinished'] ?? '',
       needsTotal: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['needs'] ?? '',
       needsCountText:
@@ -1884,10 +2021,20 @@ window.lockstateUiHarness = {
       // and the panel undoes that class's uppercasing, so reading the rendered
       // text would make this assertion depend on a CSS rule it is not about.
       needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
-      /** One entry per object the named room is short, in the order drawn (#529). */
+      /** One entry per thing the named room is short, in the order drawn (#529). */
       needsItemText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
         (item) => item.textContent?.trim() ?? '',
       ),
+      /** The same lines' `data-kind`, so a spec need not read English to tell an object line from a doorway one (#938). */
+      needsItemKinds: [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map(
+        (item) => item.dataset['kind'] ?? '',
+      ),
+      /** Distinct top edges among those lines, so a wrapping row can be measured as rows (#938). */
+      needsItemRows: new Set(
+        [...document.querySelectorAll<HTMLElement>('.hud-rooms__needs-item')].map((item) =>
+          Math.round(item.getBoundingClientRect().top),
+        ),
+      ).size,
       /**
        * The readout's own height, so a spec can measure what the block costs the
        * panel rather than asserting a line count and hoping.

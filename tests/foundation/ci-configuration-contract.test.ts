@@ -1098,8 +1098,8 @@ describe('version bump workflow contract', () => {
    * longer does these things is a different workflow.
    */
   const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
-    'runs-on: [self-hosted, Linux, X64, wsl2]':
-      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all.',
+    'runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]':
+      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all. The `woogitsu` label was appended on 2026-09-05, when the owner moved this repository into the `woogitsu` organisation and pointed every self-hosted job at that organisation\'s shared WSL2 pool (`woogitsu-wsl-DOM-NEW-01` through `-04`). It names the pool rather than adding a fifth requirement on the machine, and it takes nothing back from the paragraph above: a hosted runner still does not work here. This exact string is pinned in two places -- here and in tests/foundation/deploy-blocked-announcement-contract.test.ts -- and both moved in the same commit, because a substring assertion left on the old label reports the migration as a defect.',
     'persist-credentials: true':
       'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
     'git push --atomic':
@@ -1108,6 +1108,8 @@ describe('version bump workflow contract', () => {
       "the tag spelling, stated rather than inherited from npm's default. `v0.0.7` is what the badge puts on screen, so it is what a bug report quotes.",
     'git reset --quiet --hard "origin/$branch"':
       'every retry recomputes the next patch from what the branch holds now. Without it a run that lost a race would re-propose the version the winner just took, and all three attempts would be rejected for the same reason.',
+    'run: node tooling/anchor-budget-spend.mjs':
+      'the annotation that reports the STATUS-QUEUE.md anchor budget\'s spend at the one moment (a version bump) `ci.yml` never runs a check on its own release commit. See tooling/anchor-budget-spend.mjs and tests/foundation/anchor-budget-spend-annotation.test.ts.',
   };
 
   it('runs on a push to main, and on nothing that carries no commit', async () => {
@@ -1233,6 +1235,52 @@ describe('version bump workflow contract', () => {
       await readRepositoryFile('src/content/default-locale-en.ts'),
       "the `brand.build` catalog entry no longer renders the version with a leading `v`. The tags .github/workflows/version.yml publishes are `v0.0.N` precisely so that the string on screen and the string in the tag list are the same string. Change one and you have to change the other, and say so in the workflow header's tag section.",
     ).toContain("'brand.build': 'v{version}");
+  });
+
+  it('reports the anchor budget spend only after the bump step, from the script that computation actually lives in', async () => {
+    const workflow = withoutComments(await readRepositoryFile(WORKFLOW));
+
+    const bumpStepIndex = workflow.indexOf('git push --atomic origin');
+    const reportStepIndex = workflow.indexOf('node tooling/anchor-budget-spend.mjs');
+
+    expect(
+      bumpStepIndex,
+      `${WORKFLOW} no longer contains the atomic push this ordering assertion anchors on; see the "keeps the settings..." test above for that step's own gate.`,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      reportStepIndex,
+      `${WORKFLOW} no longer runs tooling/anchor-budget-spend.mjs; see the REQUIRED_SETTINGS entry above.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    expect(
+      reportStepIndex,
+      `the anchor budget spend annotation in ${WORKFLOW} must run AFTER the bump step's atomic push, not before it -- it reports the version package.json now holds, and that value does not exist until the bump has already landed.`,
+    ).toBeGreaterThan(bumpStepIndex);
+
+    // The script itself must exist and export what version.yml's step and
+    // tests/foundation/anchor-budget-spend-annotation.test.ts both depend on --
+    // a workflow step naming a script that was never committed would parse,
+    // "keeps the settings" above would still pass (it only checks the workflow
+    // text), and CI would only discover the mistake by failing at runtime on
+    // `main`, after a merge, which is exactly the silent-failure shape this
+    // annotation exists to avoid for the anchor budget itself.
+    const script = await readRepositoryFile('tooling/anchor-budget-spend.mjs');
+    expect(
+      script,
+      'tooling/anchor-budget-spend.mjs is referenced from .github/workflows/version.yml but is empty or missing.',
+    ).toMatch(/export function computeAnchorSpend/u);
+    expect(script).toMatch(/export function formatAnchorSpendAnnotation/u);
+
+    // Non-blocking by construction: the CLI's only path to a non-zero exit
+    // would be `process.exit`/an uncaught throw escaping the top-level
+    // try/catch its own header commits to. Asserting the shape here means a
+    // future edit that removes that guard fails a fast, textual check instead
+    // of only being discoverable by a real failing merge on `main`.
+    expect(
+      script,
+      'tooling/anchor-budget-spend.mjs no longer wraps its CLI entry point in a try/catch. This annotation runs from a workflow that has already merged -- a failing step here blocks nothing and would only be noise, so the script must never let an unexpected error escape as a non-zero exit.',
+    ).toMatch(/try\s*\{[\s\S]*\}\s*catch/u);
+    expect(script).not.toMatch(/process\.exit\(\s*[1-9]/u);
   });
 });
 

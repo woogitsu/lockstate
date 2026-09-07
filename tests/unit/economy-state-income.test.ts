@@ -6,7 +6,9 @@ import {
   StateIncomeSystem,
   stateIncomeAccruedByTick,
   stateIncomeForCompletedDay,
+  stateIncomeForOccupiedPlaces,
   stateIncomeForPrisonerDay,
+  stateIncomeForPrisonerDayAt,
   unmetNeedCount,
   type PrisonerDayGrantSource,
 } from '../../src/simulation/economy';
@@ -300,14 +302,52 @@ describe('the "earned today" readout matches what is actually credited', () => {
 });
 
 /**
- * **What a place pays depends on the occupant's conditions**
- * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md), #443, #477).
+ * **What a place pays depends on the occupant's conditions, and on what one
+ * unmet need is worth** ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md),
+ * #443, #477 -- as amended 2026-09-03).
  *
  * The arithmetic of the rule, against need levels this file sets. What a real
  * prison actually leaves unmet, and what that costs it over days of play, is
  * `tests/integration/needs-state-grant-loop.test.ts`.
+ *
+ * ## The owner suspended the cost, and this block was in two halves because of it
+ *
+ * **That suspension is over: the owner restored the rate to `40` on
+ * 2026-09-04, and the paragraph below is kept as it stood rather than
+ * rewritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions). It is what
+ * the block was shaped by, and the shape is still here -- the two halves were
+ * built so that the restoration would be one constant, and this file is the
+ * measure of how nearly that held.
+ *
+ * > The owner ruled on 2026-09-03 -- *"usuń na razie kary, zobaczymy jak
+ * > pogram i ocenię łatwość"* ("remove the penalties for now, we'll see how it
+ * > plays and I'll judge the ease") -- and
+ * > `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is `0` while they play.
+ * > **"na razie" is "for now", so the mechanic is switched off rather than
+ * > removed, and a switched-off mechanic that nothing asserts rots.** So:
+ * >
+ * > - the tests below that go through the *shipped* rate assert what the game
+ * >   pays today -- the flat rate, whoever is neglected -- and each one keeps
+ * >   the figure it used to assert in its own comment rather than losing it;
+ * > - and the schedule itself is pinned through `stateIncomeForPrisonerDayAt`,
+ * >   which takes the withheld rate as an argument. That is the half that
+ * >   proves the withholding still works, and it is parameterised on the
+ * >   constant rather than on the literal `40`, so restoring the constant
+ * >   needs no edit here.
+ * >
+ * > Nothing in this block is skipped and nothing is deleted.
+ *
+ * **What restoring it actually took, measured rather than predicted.** The
+ * second bullet held exactly: the parameterised test needed no edit. The first
+ * bullet is what carried the cost, and it is the reason the figures were kept
+ * in comments -- four tests in this block assert a figure that goes through
+ * the shipped rate, and each of the four moved back to the number its own
+ * comment had preserved. `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s
+ * docblock predicted that the tests here would *"re-price themselves from the
+ * constant and stay true without being touched"*; that prediction is refuted
+ * by this file, and the docblock now says so.
  */
-describe('the state withholds part of a prisoner-day for each need the prison leaves unmet', () => {
+describe('what a prisoner-day pays, given how many needs are unmet and what one unmet need is worth', () => {
   it('counts a need as unmet at or below one fifth of NEED_MAX, and not above it', () => {
     // Written as a fifth rather than as `51` alone, so a change to either
     // number has to face the other.
@@ -329,34 +369,136 @@ describe('the state withholds part of a prisoner-day for each need the prison le
     expect(unmetNeedCount(needs, 0)).toBe(NEED_IDS.length);
   });
 
-  it('pays the full rate for a prisoner whose needs are all served, and 40 less for each one that is not', () => {
+  it('withholds 40 of a prisoner-day for each unmet need, the rate the owner restored on 2026-09-04', () => {
+    // The ruling, asserted rather than described, so that a change to the
+    // shipped rate cannot happen by accident and fails here first with the
+    // reason attached.
+    //
+    // **Restored 2026-09-04. The sentence that was true from 2026-09-03 is
+    // kept here rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark
+    // both directions). This test was named *"withholds nothing at the shipped
+    // rate, which the owner set to 0 on 2026-09-03"*, asserted `toBe(0)`, and
+    // pinned a flat `[300, 300, 300, 300, 300, 300, 300]` -- under the owner's
+    // *"usuń na razie kary, zobaczymy jak pogram i ocenię łatwość"* ("remove
+    // the penalties for now, we'll see how it plays and I'll judge the ease").
+    // That suspension was an experiment with a condition on it: asked on
+    // 2026-09-04 whether the prison should ever be allowed to be in trouble,
+    // the owner ruled *"Zmierzcie to najpierw"* ("measure it first"), and,
+    // shown the four-prisoner measurement, ruled the constant back to `40`
+    // **on condition that a fifty-prisoner prison was measured first**. Both
+    // measurements exist -- `docs/research/2026-09-04-what-pressure-there-is.md`
+    // and its `-at-fifty` companion, the latter named without a rooted path
+    // because its branch is unmerged and
+    // `tests/foundation/documentation-links-contract.test.ts` fails on a
+    // dangling link -- so this is that ruling carried out.
+    // Unlike the suspension, the restoration was made by choosing a presented
+    // option rather than in the owner's own words, so no verbatim quotation of
+    // it is available to put here and none is invented.
     expect(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS).toBe(40);
-    // The whole schedule, written out rather than recomputed with the
+    // The whole shipped schedule, written out rather than recomputed with the
     // production expression (#375): a fixture that derives the expected value
-    // the same way the code does holds for any implementation.
+    // the same way the code does holds for any implementation. This is the
+    // schedule the test below pins at the literal `40`, and the two agree
+    // because the constant is `40` -- which is the whole of what changed.
     expect([0, 1, 2, 3, 4, 5, 6].map(stateIncomeForPrisonerDay)).toEqual([300, 260, 220, 180, 140, 100, 60]);
+  });
+
+  it('withholds the rate per unmet need whenever the rate is not zero, which is what keeps the mechanic gated while it is off', () => {
+    // **This is the test the ruling's reversibility rests on.** It drives
+    // `stateIncomeForPrisonerDayAt` -- the same formula
+    // `stateIncomeForPrisonerDay` calls, with the withheld rate as an argument
+    // -- so the shape ADR 0064 decided (linear in the count, one term per
+    // need, no interaction) stays asserted at a rate the owner has switched
+    // off. Deleting the `- withheld x unmetNeeds` term as dead arithmetic goes
+    // red here.
+    //
+    // ADR 0064's own schedule, written out for the same #375 reason as above.
+    const SCHEDULE_AT_FORTY = [300, 260, 220, 180, 140, 100, 60];
+    expect([0, 1, 2, 3, 4, 5, 6].map((unmet) => stateIncomeForPrisonerDayAt(40, unmet))).toEqual(SCHEDULE_AT_FORTY);
+
+    // Parameterised on the constant rather than on the literal, so restoring
+    // the mechanic needs no edit in this file: at `0` the schedule is flat, at
+    // any other rate every additional unmet need costs exactly that rate until
+    // the clamp binds.
+    const shipped = [0, 1, 2, 3, 4, 5, 6].map(stateIncomeForPrisonerDay);
+    const parameterised = [0, 1, 2, 3, 4, 5, 6].map((unmet) =>
+      stateIncomeForPrisonerDayAt(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS, unmet),
+    );
+    expect(shipped).toEqual(parameterised);
+
+    // One term per need and no interaction: each step down the schedule is the
+    // same rate, at three rates including the suspended one.
+    for (const rate of [0, 40, STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS]) {
+      for (let unmet = 1; unmet <= NEED_IDS.length; unmet += 1) {
+        expect(
+          stateIncomeForPrisonerDayAt(rate, unmet - 1) - stateIncomeForPrisonerDayAt(rate, unmet),
+          `at a withheld rate of ${String(rate)}, one more unmet need costs exactly that and no more`,
+        ).toBe(rate);
+      }
+    }
   });
 
   it('never pays nothing, so a neglected prison is not put beyond digging itself out', () => {
     // `300 - 6 x 40` reaches 60 exactly; the floor is arrived at rather than
     // clamped, and ADR 0049 made insolvency a state rather than a loss
-    // condition, which an income line that could reach zero would undo.
-    expect(stateIncomeForPrisonerDay(NEED_IDS.length)).toBe(60);
+    // condition, which an income line that could reach zero would undo. Stated
+    // at `40` rather than at the shipped rate because that is the rate the
+    // property was chosen for; at the suspended `0` the figure is the full 300
+    // and the property holds trivially, which is asserted second so that both
+    // rates are covered.
+    expect(stateIncomeForPrisonerDayAt(40, NEED_IDS.length)).toBe(60);
+    expect(stateIncomeForPrisonerDayAt(40, NEED_IDS.length)).toBeGreaterThan(0);
     expect(stateIncomeForPrisonerDay(NEED_IDS.length)).toBeGreaterThan(0);
   });
 
-  it('charges the withholding per occupant, so one neglected prisoner is not hidden by seven contented ones', () => {
+  it('clamps at zero rather than billing the prison for holding somebody, at a rate that makes the clamp bind', () => {
+    // `Math.max(0, ...)` is unobservable at both `40` (floor 60) and the
+    // shipped `0` (floor 300), so it is pinned at a rate above a sixth of the
+    // grant -- the case its own comment says `Treasury.credit` is not the place
+    // to discover.
+    expect(stateIncomeForPrisonerDayAt(51, NEED_IDS.length)).toBe(0);
+    expect(stateIncomeForPrisonerDayAt(1_000, 1)).toBe(0);
+    expect(() => stateIncomeForPrisonerDayAt(-1, 0)).toThrow(RangeError);
+    expect(() => stateIncomeForPrisonerDayAt(1.5, 0)).toThrow(RangeError);
+  });
+
+  it('pays each occupied place at its own occupant`s rate, so a day is a sum of individual terms and never a mean', () => {
     const prison = wellRunPrison(8);
     expect(stateIncomeForCompletedDay(prison)).toBe(2_400);
 
     // Prisoner 3 alone has two needs on the floor -- the shape of #477's
     // prison, applied to one person. A mean over the sector would round this
     // away; the grant is a sum of individual terms and cannot.
+    //
+    // **The money can show that again**: the rate was restored to `40` on
+    // 2026-09-04, so one neglected occupant costs the day exactly their own
+    // term and nobody else's. From 2026-09-03 these three assertions read
+    // `2_400`, `300` and `2_400` -- the flat rate, whoever is neglected --
+    // because a mean and a sum agree when nothing is withheld, and the figures
+    // below are the ones those comments preserved (`docs/AGENT_WORKFLOW.md`
+    // §4: mark both directions). `2_400 - 80` is two unmet needs at 40 on one
+    // of eight places; `2_400 - 240` is six.
     floorNeeds(prison, 3, 2);
+    expect(unmetNeedCount(prison.needs, 3)).toBe(2);
     expect(stateIncomeForCompletedDay(prison)).toBe(2_400 - 80);
+    expect(stateIncomeForOccupiedPlaces(prison, [3])).toBe(220);
 
     floorNeeds(prison, 3, NEED_IDS.length);
+    expect(unmetNeedCount(prison.needs, 3)).toBe(NEED_IDS.length);
     expect(stateIncomeForCompletedDay(prison)).toBe(2_400 - 240);
+
+    // The structural half, which holds at every rate: the day is exactly the
+    // sum over occupied places of what each place pays for its own occupant's
+    // unmet count. A prison-wide mean, a prison-wide unmet count, or a walk
+    // that read one prisoner's needs for all eight would fail this at `40` and
+    // it is the identity that makes the restored mechanic per-occupant.
+    const places = prison.roomInstances.residentIdsWithExistingPlace();
+    const termByTerm = places.reduce(
+      (total, entityId) => total + stateIncomeForPrisonerDay(unmetNeedCount(prison.needs, entityId)),
+      0,
+    );
+    expect(stateIncomeForCompletedDay(prison)).toBe(termByTerm);
+    expect(places.map((entityId) => unmetNeedCount(prison.needs, entityId))).toEqual([0, 0, 0, 6, 0, 0, 0, 0]);
   });
 
   it('pays nothing extra for a prisoner who holds no place, however well kept', () => {
@@ -369,7 +511,7 @@ describe('the state withholds part of a prisoner-day for each need the prison le
     expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(600);
   });
 
-  it('credits the reduced figure through a real kernel day, not merely from the pure function', () => {
+  it('credits what the day is worth through a real kernel day, not merely from the pure function', () => {
     const prison = wellRunPrison(4);
     floorNeeds(prison, 0, 2);
     floorNeeds(prison, 1, 2);
@@ -378,18 +520,33 @@ describe('the state withholds part of a prisoner-day for each need the prison le
 
     const { kernel, treasury } = incomeOnlyKernel(prison);
     step(kernel, DAY_LENGTH_TICKS);
-    // Four places at 220 rather than four at 300.
+    // Four places at 220 -- two unmet needs apiece, at the `40` the owner
+    // restored on 2026-09-04. From 2026-09-03 this asserted `1_200`, four at
+    // the flat 300, and the comment then said this figure was `880`; both
+    // directions are marked rather than overwritten
+    // (`docs/AGENT_WORKFLOW.md` §4). The boundary still pays whatever
+    // `stateIncomeForCompletedDay` says, which is the property this test is
+    // for, and it is that function's own tests above that price it.
     expect(treasury.balanceMinorUnits).toBe(880);
+    expect(treasury.balanceMinorUnits).toBe(stateIncomeForCompletedDay(prison));
   });
 
-  it('the readout beside the balance falls with the payment rather than promising the old rate', () => {
+  it('the readout beside the balance says what the boundary will pay rather than a rate of its own', () => {
     const prison = wellRunPrison(4);
     const system = new StateIncomeSystem(new Treasury(0), prison);
     expect(system.accruedThisDay(DAY_LENGTH_TICKS - 1)).toBe(1_200);
 
     floorNeeds(prison, 0, 6);
-    // A chip that still said 1,200 would be promising money the boundary is
-    // not going to pay.
+    // A chip that disagreed with the boundary in either direction would be
+    // promising money the boundary is not going to pay, or hiding money it
+    // will. The assertion that survives the rate is the agreement, so it is
+    // written as the agreement first and the figure second. That figure was
+    // `1_200 - 240` at the `40` ADR 0064 shipped, `1_200` while the owner had
+    // the rate suspended at `0` from 2026-09-03, and is `1_200 - 240` again
+    // now they have restored it -- one of the four places holds a prisoner
+    // with all six needs on the floor, so it pays the schedule's own floor of
+    // 60 rather than 300 (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+    expect(system.accruedThisDay(DAY_LENGTH_TICKS - 1)).toBe(stateIncomeForCompletedDay(prison));
     expect(system.accruedThisDay(DAY_LENGTH_TICKS - 1)).toBe(1_200 - 240);
   });
 });

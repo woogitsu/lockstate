@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import type { SimulationEvent } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **What a control says when it works** (issue
@@ -43,6 +45,23 @@ const WALL = 'wall-brick';
 const BRICK = 'item.brick';
 /** Three bricks at 40. */
 const THREE_BRICKS = 120;
+
+/**
+ * `room.cell`'s authored minimum, clear of every `placeWall` tile above (all of
+ * which sit on `y: 6` at `x >= 8`).
+ */
+const CELL_RECT = { x: 2, y: 12, width: 2, height: 3 } as const;
+/** Inside `CELL_RECT`, so a bed's `1x2` footprint lies wholly in the cell. */
+const BED_TILE = { x: 2, y: 12 } as const;
+/** Inside `CELL_RECT`, on neither of the bed's two tiles. */
+const EMPTY_TILE = { x: 3, y: 14 } as const;
+/**
+ * What one bed costs, and it is the figure #945 measured: one `item.wood-plank`
+ * at 65. A literal for the reason the brick figures above are literals -- a
+ * value read back off the catalogue holds for an implementation that charges
+ * the wrong price consistently.
+ */
+const ONE_PLANK = 65;
 
 function createSession(seed = 0x749) {
   const runtime = createNewSimulationRuntime(seed);
@@ -186,19 +205,33 @@ describe('a build order that is cancelled says so, and says which of two things 
     expect(session.types()).toEqual(['construction.order-cancelled-underway']);
   });
 
-  it('says nothing at all about a finished order, because neither sentence is true of one', () => {
+  it('says the spend is gone for a finished order too, which is the same sentence (#927)', () => {
     /*
-     * The gap this change ships knowingly, pinned so it cannot close by
-     * accident. A completed order is cancellable and `cancelOrder` reverses the
-     * geometry, but the money did not come back (`refundSurplusOf` runs for
-     * `'approved'` and `'materials-pending'` only) and the materials are not
-     * gone either -- ADR 0076 decision B puts them in the container. No control
-     * can reach the press: `PENDING_BUILD_ORDER_STATES` excludes `'completed'`,
-     * so no Build-panel row names one, and only an order finishing between a
-     * projection and the press that answers it gets here.
+     * **This case asserted `[]` for two rulings, and the reason it did was
+     * false by the time it was read.** It was written as a knowingly-shipped
+     * gap, pinned so it could not close by accident, on two premises:
      *
-     * The sentence it deserves is the owner's to write. A change that adds one
-     * fails here, which is the point.
+     * > the money did not come back (`refundSurplusOf` runs for `'approved'`
+     * > and `'materials-pending'` only) and the materials are not gone either
+     * > -- ADR 0076 decision B puts them in the container. No control can reach
+     * > the press: `PENDING_BUILD_ORDER_STATES` excludes `'completed'`, so no
+     * > Build-panel row names one
+     *
+     * The first premise died on 2026-09-01 -- the owner's *"Taking a finished
+     * object away returns nothing. Not its materials, not its money."*, ADR
+     * 0076's amendment of that date -- and this comment already recorded that
+     * and kept the `[]` anyway, on the remaining argument that neither *shipped
+     * sentence* was true of a completed order. That is the half
+     * [#927](https://github.com/matmaxalez/lockstate/issues/927) refuted: with
+     * the materials destroyed and the money not refunded, *"anything already
+     * spent past the point of no return stays spent"* is true of a finished
+     * order and is the closest thing to a *tautology* on this channel. The
+     * second premise is false of `Z` (`ConstructionSystem.undo` cancels
+     * `'completed'` orders by design) and true only of the Build-panel row.
+     *
+     * The old expectation is quoted rather than deleted because it is the
+     * shape of the mistake: a tripwire whose comment recorded its own premise
+     * dying and stayed green regardless.
      */
     const session = createSession();
     placeWall(session, 'order-e', 8);
@@ -206,7 +239,9 @@ describe('a build order that is cancelled says so, and says which of two things 
 
     session.send({ type: 'CancelBuildOrder', orderId: 'order-e' });
     expect(session.stateOf('order-e')).toBe('cancelled');
-    expect(session.types(), 'a finished order has no approved sentence yet').toEqual([]);
+    expect(session.types(), 'the larger loss gets the loss sentence').toEqual([
+      'construction.order-cancelled-underway',
+    ]);
   });
 
   it('says nothing when the cancellation named an order that does not exist', () => {
@@ -348,6 +383,139 @@ describe('undo and redo say so, once, and say nothing when there was nothing to 
     ).toEqual(['cancelled', 'cancelled', 'cancelled']);
   });
 
+  it('says what a Z on a finished wall destroyed, and does not say only that it was undone (#927)', () => {
+    /*
+     * **The reproduction of [#927](https://github.com/matmaxalez/lockstate/issues/927),
+     * as a test.** Build a wall, let the crew finish it, press `Z`: the wall
+     * comes down, the money does not come back, the materials are destroyed --
+     * and the only thing the game said was *"The last change to the build queue
+     * was undone."*
+     *
+     * Each half is asserted against the state rather than against the event
+     * alone, because the event is only worth having if the loss is real:
+     * `'completed'` is what puts the order past the point of no return, and
+     * `cancelOrder` neither releases the allocation nor calls `refundSurplusOf`
+     * for it (`ConstructionSystem.destroysSpendOnCancel`).
+     *
+     * The negative assertion is the one that fails against the old code:
+     * `construction.undone` on its own is what shipped, and it is *not wrong*
+     * -- which is why a test asserting only "some event was recorded" would have
+     * passed throughout the defect.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z1', 23, 'tx-z');
+    session.runUntilState('order-z1', 'completed');
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+
+    expect(session.stateOf('order-z1'), 'the finished order really was reversed').toBe('cancelled');
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['construction.undone-spend-destroyed']);
+    expect(said.map((event) => event.type), 'the silent sentence is not what a destructive undo says').not.toContain(
+      'construction.undone',
+    );
+    expect(Object.keys(said[0]!).sort(), 'no count and no figure, which is both rulings').toEqual([
+      'sequence',
+      'tick',
+      'type',
+    ]);
+  });
+
+  it('says the same thing for a run that mixes finished orders with queued ones (#927)', () => {
+    /*
+     * The transaction is the unit, so the answer is an **or** across it: a drag
+     * that mixes a finished wall with queued ones destroys what the finished one
+     * cost and refunds what the others did, and *"anything already spent past
+     * the point of no return stays spent"* is true of exactly that mixture --
+     * the hedge is what makes it true rather than a lie in either direction.
+     *
+     * **One event, not one per order**, which is ruling 4 read through this
+     * case: a per-order answer would be the count the ruling declined, arrived
+     * at from the other side.
+     *
+     * The two later walls are placed after the first has finished, in the same
+     * transaction id, so `registerTransactionOrder` groups all three and the
+     * states genuinely differ at the press.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z2', 24, 'tx-mix');
+    session.runUntilState('order-z2', 'completed');
+    placeWall(session, 'order-z3', 26, 'tx-mix');
+    placeWall(session, 'order-z4', 27, 'tx-mix');
+
+    expect(
+      ['order-z2', 'order-z3', 'order-z4'].map((id) => session.stateOf(id)),
+      'the run really is mixed at the press',
+      // The two later walls sit at `'approved'` rather than
+      // `'materials-pending'` because `placeWall` steps the kernel once and
+      // promotion happens on a construction tick (`schedule.intervalTicks: 10`).
+      // Either way they are short of the point of no return, which is the only
+      // property this case needs of them -- and the literals are pinned rather
+      // than a set membership asserted, so a change that let a placement reach
+      // the crew in one step fails here instead of quietly making the mixture
+      // uniform.
+    ).toEqual(['completed', 'approved', 'approved']);
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+
+    expect(session.types().slice(before), 'one press, one sentence, and it names the loss').toEqual([
+      'construction.undone-spend-destroyed',
+    ]);
+    expect(
+      ['order-z2', 'order-z3', 'order-z4'].map((id) => session.stateOf(id)),
+      'and all three were reversed by the one press',
+    ).toEqual(['cancelled', 'cancelled', 'cancelled']);
+  });
+
+  it('still says only that the change was undone when nothing was past the point of no return (#927)', () => {
+    /*
+     * The other half of the split, and the assertion that stops the fix being
+     * "say the loud sentence always". An undo of orders that are still awaiting
+     * their materials refunds the money -- `refundSurplusOf` runs for
+     * `'materials-pending'` -- so a sentence about spend that stays spent would
+     * be false of it, and false in the direction that scares a player off a
+     * control that costs them nothing.
+     *
+     * The same three-order transaction the ruling-4 case above uses, so the
+     * only difference between the two answers is the state.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z5', 28, 'tx-safe');
+    placeWall(session, 'order-z6', 29, 'tx-safe');
+
+    expect(
+      ['order-z5', 'order-z6'].map((id) => session.stateOf(id)),
+      'nothing has reached the crew',
+      // Both are refundable states -- `refundSurplusOf` runs for exactly these
+      // two -- and they differ only because the first has had one more
+      // construction tick to be promoted in.
+    ).toEqual(['materials-pending', 'approved']);
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+    expect(session.types().slice(before)).toEqual(['construction.undone']);
+  });
+
+  it('says the loss for an undo of an order the crew had started but not finished (#927)', () => {
+    /*
+     * `'in-progress'` has been a loss since ruling 20 of 2026-08-31 and the
+     * Cancel channel has said so since #749; the Undo channel said nothing
+     * about it either, and this is the case that shows #927 was never only
+     * about finished orders. `destroysSpendOnCancel` holds both states, which
+     * is why one predicate answers both.
+     */
+    const session = createSession();
+    placeWall(session, 'order-z7', 31, 'tx-wip');
+    session.runUntilState('order-z7', 'in-progress');
+
+    const before = session.types().length;
+    session.send({ type: 'Undo' });
+    expect(session.stateOf('order-z7')).toBe('cancelled');
+    expect(session.types().slice(before)).toEqual(['construction.undone-spend-destroyed']);
+  });
+
   it('says nothing when Undo is pressed against no history at all', () => {
     const session = createSession();
     session.send({ type: 'Undo' });
@@ -387,17 +555,410 @@ describe('undo and redo say so, once, and say nothing when there was nothing to 
   });
 });
 
+/**
+ * **A removal that destroys a purchase says so, and the two that do not stay
+ * quiet** ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * `RemoveObject` was one of the six routes #749's ruling did not reach, and it
+ * is the one where money is *destroyed*: #945 measured a standing bed costing
+ * 65 to place (`25,000 -> 24,935`) and the removal moving the treasury not at
+ * all (`24,935 -> 24,935`), with the sentence band `hidden`. It survived #932 --
+ * which made `Undo` and `CancelBuildOrder` state-aware about exactly this loss
+ * -- because `ObjectPlacementService.remove`'s standing-object arm reaches
+ * `PlacedObjectRegistry.remove` and never `ConstructionSystem.cancelOrder`, so
+ * there is no order state for either of those channels to switch on.
+ *
+ * **The three cases below are separated so that no single mutation can pass all
+ * three**, which is what #932's pair was separated for. Deleting the recording
+ * fails the first only; moving it out of the `kind === 'removed'` guard fails
+ * the third only; wiring it to the branch rather than to the success fails the
+ * second only.
+ */
+describe('a removal that destroys what an object cost says so (#945)', () => {
+  /** A zoned cell with one bed standing in it, built and paid for by the press that placed it. */
+  function prisonWithStandingBed(session: ReturnType<typeof createSession>): void {
+    // Walled and zoned first, because `PlaceObject` refuses `outside-room`.
+    // Written on the world directly, exactly as `object-removal-loop.test.ts`
+    // does it: what is under test is the removal, not the wall crew.
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-945', definitionId: 'bed-wooden', ...BED_TILE });
+  }
+
+  it('says the money is gone when a standing object is taken away, and the money really is gone', () => {
+    /*
+     * **The reproduction of #945 as a test.** The treasury is asserted on both
+     * sides of the press rather than only the event, because the event is worth
+     * having only if the loss is real -- and the issue's own note is that the
+     * *placement* assertion keeps passing throughout the defect, so a test that
+     * only checked "the money moved" would have been green all along.
+     */
+    const session = createSession();
+    const openingBalance = session.runtime.treasury.balanceMinorUnits;
+    prisonWithStandingBed(session);
+
+    // The plank is bought by the placement itself (ADR 0017 decision 7, #627),
+    // so this is the 65 the issue measured leaving the treasury.
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'the placement really did cost the player money',
+    ).toBe(openingBalance - ONE_PLANK);
+
+    session.runUntilState('bed-945', 'completed');
+    expect(session.runtime.placedObjects.size, 'the bed is standing, not in flight').toBe(1);
+
+    const treasuryBefore = session.runtime.treasury.balanceMinorUnits;
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...BED_TILE });
+
+    expect(session.runtime.placedObjects.size, 'the bed really came out of the world').toBe(0);
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'and nothing came back, which is what the sentence claims',
+    ).toBe(treasuryBefore);
+    expect(session.stateOf('bed-945'), 'no order changed state, so no order sentence is true here').toBe('completed');
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['objects.removed-spend-destroyed']);
+    expect(Object.keys(said[0]!).sort(), 'no figure and no count').toEqual(['sequence', 'tick', 'type']);
+  });
+
+  it('says nothing when the press found no object and nothing being built there', () => {
+    /*
+     * The absence half. A refused removal is `nothing-to-remove` on the
+     * `RefusalLog`, and it must not also produce a success sentence -- a
+     * producer wired to the branch rather than to the outcome would say the
+     * player's money was destroyed by a press that removed nothing.
+     */
+    const session = createSession();
+    prisonWithStandingBed(session);
+    session.runUntilState('bed-945', 'completed');
+
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...EMPTY_TILE });
+
+    expect(session.runtime.refusals.last?.reason, 'the press really was refused').toBe(
+      'remove-object.nothing-to-remove',
+    );
+    expect(session.runtime.placedObjects.size, 'and the standing bed was left alone').toBe(1);
+    expect(session.types().slice(before), 'a removal that removed nothing destroyed nothing').toEqual([]);
+  });
+
+  it('says the money came back when the press cancelled a placement still in flight, not that it was destroyed', () => {
+    /*
+     * **The other success `remove` answers, and the assertion that stops the
+     * fix being "say the loud sentence always".** A press on a tile whose object
+     * is still being built reaches `ConstructionSystem.cancelOrder`, which
+     * *refunds* for every state before the crew starts -- so a sentence about
+     * money that does not come back would be false of it, and false in the
+     * direction that scares a player off a control that costs them nothing.
+     *
+     * **This case pinned a *silence* until
+     * [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+     * paragraph that argued for it is kept rather than deleted, because it is
+     * the diagnosis the fix finally acts on.** It read:
+     *
+     * > **This case also pins a silence, and the reason is recorded so it
+     * > cannot close by accident and cannot be mistaken for a considered
+     * > answer.** The refund here says nothing either, and #945's brief and its
+     * > §1 both describe this path as *"the channel #932 fixed"*. **It is not.**
+     * > `remove` calls `ObjectOrderSink.cancelOrder` --
+     * > `ConstructionSystem.cancelOrder` -- directly, and no event is recorded
+     * > anywhere in `ConstructionSystem`: the state-aware
+     * > `events.recordBuildOrderCancelled` #932 made state-aware sits in
+     * > `createConstructionCommandHandler`'s `CancelBuildOrder` branch, which
+     * > this route does not go through. So a `RemoveObject` on a bed the crew
+     * > has *started* destroys its spend and is still silent, exactly as a
+     * > standing one was.
+     * >
+     * > That is a second finding rather than this issue, which is scoped to the
+     * > standing object, and #945 §4 leaves *"whether the other silent commands
+     * > should speak"* to an ADR. A change that gives this path a sentence comes
+     * > here and says which one and why.
+     *
+     * Every sentence of that diagnosis is still true of the routing, and it is
+     * still `grep -c "events\." src/simulation/construction/system.ts` → 0. What
+     * turned out not to follow is the conclusion that the silence could wait
+     * for an ADR: on a band that holds exactly one sentence, a press that says
+     * nothing leaves the *previous* press's sentence standing over it, and the
+     * previous press here is the removal above saying money was destroyed. So
+     * the silence was not neutral, and #988 measured it with the clock paused.
+     *
+     * **Which sentence, and why it needed no decision.** The same one
+     * `CancelBuildOrder` records, chosen by the same state, because it is the
+     * same act on the same `cancelOrder`: `ObjectPlacementService.remove` reads
+     * the order's state before cancelling and carries it out on the outcome,
+     * and `createSessionCommandHandler` passes it to
+     * `recordBuildOrderCancelled`. No new event type and no new string.
+     */
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-flight', definitionId: 'bed-wooden', ...BED_TILE });
+
+    // Inside the window between the press and the object existing: the order is
+    // waiting on its own delivery and nothing stands on the tile.
+    session.run(20);
+    expect(session.stateOf('bed-flight')).toBe('materials-pending');
+    expect(session.runtime.placedObjects.size).toBe(0);
+
+    const treasuryBefore = session.runtime.treasury.balanceMinorUnits;
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...BED_TILE });
+
+    expect(session.stateOf('bed-flight'), 'the press really did cancel the order').toBe('cancelled');
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'the money really did come back, which is what makes the refund sentence true and the loss sentence false',
+    ).toBe(treasuryBefore + ONE_PLANK);
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type), 'a refund is not the loss sentence').toEqual([
+      'construction.order-cancelled',
+    ]);
+    expect(Object.keys(said[0]!).sort(), 'no figure and no count').toEqual(['sequence', 'tick', 'type']);
+  });
+
+  it('says what a cancellation past the point of no return really costs, when the press caught the crew mid-build', () => {
+    /*
+     * The other side of the `switch`, and the reason this case exists at all:
+     * `recordBuildOrderCancelled` picks between two sentences, and a `switch`
+     * is exactly the thing that can be right for one member and wrong for
+     * another. A bed the crew has *started* destroys what it spent
+     * (`destroysSpendOnCancel` holds `'in-progress'`, ruling 20 of 2026-08-31),
+     * so the refund sentence would be false here in the other direction --
+     * telling a player money came back that did not.
+     *
+     * The order is still in flight, so `remove` takes the same arm the case
+     * above takes; only the state differs, which is the whole point.
+     */
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'PlaceObject', orderId: 'bed-underway', definitionId: 'bed-wooden', ...BED_TILE });
+
+    session.runUntilState('bed-underway', 'in-progress');
+    expect(session.runtime.placedObjects.size, 'the crew has started but the bed does not exist yet').toBe(0);
+
+    const treasuryBefore = session.runtime.treasury.balanceMinorUnits;
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', ...BED_TILE });
+
+    expect(session.stateOf('bed-underway'), 'the press really did cancel the order').toBe('cancelled');
+    expect(
+      session.runtime.treasury.balanceMinorUnits,
+      'and nothing came back, which is what the second sentence claims',
+    ).toBe(treasuryBefore);
+    expect(session.types().slice(before)).toEqual(['construction.order-cancelled-underway']);
+  });
+
+  it('records the loss before the relocation it caused, so the band paints both sentences', () => {
+    /*
+     * **The order of the two sentences one press can raise, and it is
+     * load-bearing rather than cosmetic.** A removal that drops a room's
+     * `residentCapacity` below its occupancy also relocates whoever lost their
+     * place (ADR 0076 decision A(i)) and says so, naming them --
+     * *"{name} had nowhere to sleep and moved to {room}."*, `'info'`. This
+     * change adds a `'warning'` to the same press.
+     *
+     * `admitToEventBand` (`src/ui/hud/event-band-dwell.ts`) gives an arriving
+     * `'warning'` the line immediately over an `'info'` incumbent and
+     * **discards the incumbent rather than queueing it** -- the same mechanism
+     * that settled #932's shape. So recorded in the wrong order the money
+     * sentence paints over the prisoner's name and loses it, and loses it
+     * outright below 720px where `hud.css` drops the alerts list that would
+     * otherwise still hold the row. Recorded in this order the `'info'` arrives
+     * second, does not outrank the `'warning'`, and therefore **waits** in the
+     * dwell floor's one slot until `releaseEventBandFloor` puts it up.
+     *
+     * That is why the notice is raised inside `ObjectPlacementService.remove`
+     * rather than in `createSessionCommandHandler`'s `RemoveObject` branch,
+     * where the other nine command successes are answered: the handler runs
+     * after `remove` has already announced the relocation. **A change that
+     * moves the recording back to the handler fails here**, which is the whole
+     * reason this case exists.
+     *
+     * The fixture is `tests/browser/ui-relocation-notice.spec.ts`'s, seed
+     * included, so the two files agree about which press rehouses whom.
+     */
+    const session = createSession(0x0b1ec7);
+    const cellRect = { x: 4, y: 6, width: 2, height: 3 } as const;
+    const secondCellRect = { x: 7, y: 6, width: 2, height: 3 } as const;
+    session.send({ type: 'PurchaseMaterials', orderId: 'buy-945', itemId: 'item.wood-plank', quantity: 2 });
+    for (const [index, rect] of [cellRect, secondCellRect].entries()) {
+      wallRoomPerimeter(session.runtime.world, rect, { doors: session.runtime.navigation.doors });
+      session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...rect });
+      session.send({
+        type: 'PlaceObject',
+        orderId: `bed-${String(index)}`,
+        definitionId: 'bed-wooden',
+        x: rect.x,
+        y: rect.y,
+      });
+    }
+    // Both beds standing, then a prisoner admitted and housed on the first.
+    while (session.runtime.kernel.tick < 600) session.runtime.kernel.step();
+    session.send({ type: 'AdmitPrisoner', x: 16, y: 16, sentenceLengthTicks: 100_000, priorIncidents: 0 });
+    while (session.runtime.kernel.tick < 700) session.runtime.kernel.step();
+    const prisoner = session.runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(
+      session.runtime.prisoners.coldState.getAccommodation(prisoner),
+      'housed on the bed about to be taken',
+    ).toBe(`room.cell:${String(cellRect.x)}:${String(cellRect.y)}`);
+
+    const before = session.types().length;
+    session.send({ type: 'RemoveObject', x: cellRect.x, y: cellRect.y });
+
+    expect(
+      session.runtime.prisoners.coldState.getAccommodation(prisoner),
+      'the press really did rehouse them, which is what there is to say',
+    ).toBe(`room.cell:${String(secondCellRect.x)}:${String(secondCellRect.y)}`);
+    // The whole assertion: both sentences, in severity order. `toEqual` on the
+    // sequence rather than two `toContain`s, because the defect this guards is
+    // *only* the order.
+    expect(session.types().slice(before)).toEqual(['objects.removed-spend-destroyed', 'prisoners.relocated']);
+  });
+});
+
+/**
+ * **A room the player designates says so** (issue
+ * [#966](https://github.com/matmaxalez/lockstate/issues/966) site 2, whose
+ * body carries the acknowledgement census this closes one site of).
+ *
+ * The asymmetry this closes is the one #749 closed for construction. All eight
+ * `hud.alert.refusal.zone.*` sentences speak when a designation is refused; the
+ * accepted branch of `createSessionCommandHandler`'s `ZoneRoom` arm *withdrew
+ * two standing refusals* on the grounds that the rectangle is "a fact the world
+ * just confirmed" and confirmed it to nobody.
+ *
+ * **The three cases below are separated so that no single mutation passes all
+ * three**, which is what #945's trio was separated for. Deleting the recording
+ * fails the first only; wiring it to the branch rather than to the accepted
+ * outcome fails the second only; hard-coding a room type instead of passing the
+ * accepted outcome's own `roomNameKey` fails the third only.
+ */
+describe('a room that is designated says so (#966)', () => {
+  it('says which type was designated, and carries nothing but the type', () => {
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+
+    const before = session.types().length;
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+
+    // The designation really is in the world, asserted on both halves `zone`
+    // writes -- the registry and the zoning plane -- because the sentence is
+    // worth having only if "designated" is true of the world and not merely of
+    // the outcome object the handler was handed.
+    const instanceId = `room.cell:${String(CELL_RECT.x)}:${String(CELL_RECT.y)}`;
+    expect(
+      session.runtime.prisoners.roomInstances.getById(instanceId)?.roomCatalogId,
+      'the instance the sentence is about is registered',
+    ).toBe('room.cell');
+    expect(
+      session.runtime.world.getZoning({ x: tileCoordinate(CELL_RECT.x), y: tileCoordinate(CELL_RECT.y) }),
+      'and the plane is painted',
+    ).not.toBe(0);
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['rooms.zoned']);
+    /*
+     * **The payload, pinned exhaustively.** `roomNameKey` and the envelope, and
+     * nothing else -- not the rectangle, not the anchor tile, not the enclosure
+     * reading, all three of which `ZoneRoomAccepted` is holding one line above
+     * the call.
+     *
+     * Two reasons, and neither is tidiness. A field on this payload is a field
+     * `simulationEventIdentity` reads, so an anchor tile would give every press
+     * its own row instead of collapsing a run of one type into one counted row.
+     * And `enclosure: 'sealed'` is the #938 trap: it reads identically for a
+     * reachable room and a room with no doorway, so a sentence built on it
+     * would claim the room can be *used*.
+     */
+    expect(Object.keys(said[0]!).sort(), 'the type, and no geometry').toEqual([
+      'roomNameKey',
+      'sequence',
+      'tick',
+      'type',
+    ]);
+    expect(said[0]).toMatchObject({ roomNameKey: 'room.cell.name' });
+  });
+
+  it('says nothing when the press was refused', () => {
+    /*
+     * The absence half, and the reason it is a `1x1`: `room.cell` authors a
+     * `2x3` minimum, so this is refused by `below-minimum-size` before `zone`
+     * touches a tile. A producer wired to the branch rather than to the
+     * accepted outcome would tell the player they had designated a room that
+     * does not exist.
+     */
+    const session = createSession();
+    const before = session.types().length;
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 20, width: 1, height: 1 });
+
+    expect(session.runtime.refusals.last?.reason, 'the press really was refused').toBe('zone.below-minimum-size');
+    expect(
+      session.runtime.prisoners.roomInstances.getById('room.cell:2:20'),
+      'and no room was recorded',
+    ).toBeUndefined();
+    expect(session.types().slice(before), 'a refused designation designated nothing').toEqual([]);
+  });
+
+  it('names the type the player actually asked for, not the last one anybody zoned', () => {
+    /*
+     * **The key travels from the accepted outcome and is not hard-coded.** Two
+     * designations of different types in one session: a `room.cell`, which
+     * authors `enclosed` and needs the perimeter, and a `room.yard`, which
+     * authors `outdoors` and an `8x8` minimum and is the one room type in the
+     * catalogue that authors no `object` requirement at all.
+     *
+     * The yard is deliberately the second: a producer that read the room type
+     * from anywhere but this press -- the last instance registered, the first
+     * catalogue entry, a literal -- says "Cell" twice and fails here while
+     * passing the first case above.
+     *
+     * The yard rectangle is `tests/integration/yard-and-common-room.test.ts`'s
+     * `MINIMUM_YARD`, so the two files agree about which ground a new prison
+     * owns.
+     */
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+
+    const before = session.types().length;
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'ZoneRoom', roomId: 'room.yard', x: 20, y: 6, width: 8, height: 8 });
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['rooms.zoned', 'rooms.zoned']);
+    expect(said.map((event) => (event as { roomNameKey?: string }).roomNameKey)).toEqual([
+      'room.cell.name',
+      'room.yard.name',
+    ]);
+  });
+});
+
 describe('nothing else on the channel changed', () => {
   it('leaves a session that pressed nothing with nothing to say', () => {
     /*
      * The absence that makes every case above mean something. A new prison run
-     * for four hundred ticks with no press records no event of these five kinds
+     * for four hundred ticks with no press records no event of these kinds
      * -- so a producer wired to a tick rather than to a command would fail here
      * rather than pass every case above by accident.
+     *
+     * `objects.` joined the filter with #945, whose event is on the same
+     * footing: it is a statement about a press and nothing else can produce it.
+     * `rooms.` joined it with #966 site 2, on the same footing again -- nothing
+     * but an accepted `ZoneRoom` can produce one, and no system zones anything.
      */
     const session = createSession();
     session.run(400);
-    const said = session.types().filter((type) => type.startsWith('construction.') || type === 'economy.delivery-cancelled');
+    const said = session
+      .types()
+      .filter(
+        (type) =>
+          type.startsWith('construction.') ||
+          type.startsWith('objects.') ||
+          type.startsWith('rooms.') ||
+          type === 'economy.delivery-cancelled',
+      );
     expect(said).toEqual([]);
   });
 });

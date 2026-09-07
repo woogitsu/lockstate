@@ -126,6 +126,10 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
       chargeMinorUnits: 65,
       balanceMinorUnits: -1_230,
       spendableMinorUnits: 20,
+      // The shortfall, added 2026-09-03 for the owner's sentence: 65 needed
+      // against 20 of room is 45 short. Four different numbers in one verdict,
+      // which is what makes the field readable from a test.
+      shortfallMinorUnits: 45,
     });
     /*
      * **And `spendableMinorUnits` is now the room to the *rung*, which is a
@@ -141,6 +145,77 @@ describe('judgeAffordability: the one comparison the host makes about money', ()
       judgeAffordability(65, 25_000, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS).spendableMinorUnits,
       'the grant plus the whole facility, which is what the FUNDS chip still shows',
     ).toBe(27_500);
+  });
+
+  /**
+   * **What the owner's sentence of 2026-09-03 interpolates, and the reason it
+   * is measured at a balance where nothing else could pass for it.**
+   *
+   * The sentence is *"Not enough money — you need {amount} more."*, and
+   * `{amount}` is the **shortfall**: how much more money the prison needs
+   * before this press goes through. Three other figures are within one
+   * subtraction of it and each would read as plausible on screen -- the charge,
+   * the balance, and the spendable room -- so the case below is chosen to make
+   * all four different numbers. A test at, say, a balance of `0` would pass
+   * while reading the wrong one.
+   *
+   * At a charge of **2,000** against a balance of **100** at the mature
+   * `'deliveries'` rung (`-1,250`): the room is `100 - (-1,250) = 1,350`, and
+   * `2,000 - 1,350 = 650`. **2,000 / 100 / 1,350 / 650** -- no two equal, no
+   * two within a sign flip, and 650 is the only one that answers "how much
+   * more".
+   */
+  it('reports the shortfall, and it is neither the charge, the balance, nor the room left', () => {
+    const verdict = judgeAffordability(2_000, 100);
+    expect(verdict.refusal, 'the case has to be a refusal for a shortfall to mean anything').toBe('past-the-floor');
+    expect(verdict.shortfallMinorUnits).toBe(650);
+    // Stated as inequalities as well as as a value, so that a future change
+    // returning one of the neighbours fails with the reason rather than with a
+    // bare number mismatch.
+    expect(verdict.shortfallMinorUnits, 'the shortfall is the charge').not.toBe(verdict.chargeMinorUnits);
+    expect(verdict.shortfallMinorUnits, 'the shortfall is the balance').not.toBe(verdict.balanceMinorUnits);
+    expect(verdict.shortfallMinorUnits, 'the shortfall is the room left').not.toBe(verdict.spendableMinorUnits);
+
+    /*
+     * **It is exactly what closes the gap**, which is the property the sentence
+     * makes a promise about: a player who finds that much more money gets the
+     * press through, and one minor unit less is still refused. Asserted through
+     * the same function rather than by arithmetic here, so the promise is
+     * checked against the comparison the press is really judged by.
+     */
+    expect(judgeAffordability(2_000, 100 + verdict.shortfallMinorUnits).refused, 'the promise the sentence makes').toBe(
+      false,
+    );
+    expect(judgeAffordability(2_000, 100 + verdict.shortfallMinorUnits - 1).refused, 'one unit short of it').toBe(true);
+
+    /*
+     * **Zero on every verdict that is not about money**, so a caller can use
+     * the field as the condition for drawing the sentence at all. A `NaN`
+     * charge is refused as `'malformed-charge'` and has no shortfall: "how much
+     * more you need" has no answer for a charge the state would not carry, and
+     * a `NaN` reaching a player-facing figure is worse than the branch saying
+     * nothing.
+     */
+    expect(judgeAffordability(65, 25_000).shortfallMinorUnits, 'an affordable press is short of nothing').toBe(0);
+    expect(judgeAffordability(Number.NaN, 25_000).refusal).toBe('malformed-charge');
+    expect(judgeAffordability(Number.NaN, 25_000).shortfallMinorUnits, 'a malformed charge has no shortfall').toBe(0);
+    expect(judgeAffordability(-1, 25_000).shortfallMinorUnits, 'a negative charge has no shortfall').toBe(0);
+
+    /*
+     * **And it is strictly positive on the money branch**, walked rather than
+     * argued: there is no refused-for-money case with a shortfall of zero, which
+     * is what lets `shortfallMinorUnits > 0` and `refusal === 'past-the-floor'`
+     * be used interchangeably by a panel.
+     */
+    for (const balance of [-1_250, -1_249, -1_000, 0, 1, 100, 25_000]) {
+      for (const charge of [1, 40, 65, 1_251, 2_000, 26_250, 26_251, 100_000]) {
+        const walked = judgeAffordability(charge, balance);
+        expect(
+          walked.shortfallMinorUnits > 0,
+          `charge ${String(charge)} against ${String(balance)}: shortfall and refusal disagree`,
+        ).toBe(walked.refusal === 'past-the-floor');
+      }
+    }
   });
 
   /**

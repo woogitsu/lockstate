@@ -62,15 +62,35 @@ document is the choosing.
 
 ### The corner: a 226px box that has not widened since it existed
 
-`.hud__corner` holds one panel that stacks a minimap placeholder above the
-alerts log (`src/ui/hud/hud.ts:1307-1326`). The panel is `calc(224px *
-var(--ui-scale))` (`hud.css:275`), which renders at a measured **226px**
+**Re-anchored 2026-09-06, and read this whole paragraph as history: it
+describes the corner before this document's own Decision 1 shipped, and
+before #1023.** `.hud__corner` held one panel that stacked a minimap
+placeholder above the alerts log (`src/ui/hud/hud.ts:1666`, `minimapPanel.body.append(minimapSurface, alertsSection.element)`). The panel was `calc(224px *
+var(--ui-scale))` (`hud.css:335`, which now reads `396px` — see "DONE,
+2026-09-01, FOR #739" at that rule, and Decision 1 below, which already tracks
+this), which rendered at a measured **226px**
 including its hairline border — confirmed independently twice, by issue #720's
 own measurement and by the mobile-collision comment's `250x127`/`250x380`
-footprint figures (`hud.css:3232`, `:3242`; corner footprint = panel + 24px of
-`.hud__corner`'s own padding). It has been this width at every viewport the
-browser suite visits since before #720 was filed, and #726's fix (wrapping the
+footprint figures (`hud.css:4220`, `:4230`; corner footprint = panel + 24px of
+`.hud__corner`'s own padding). It had been this width at every viewport the
+browser suite visited since before #720 was filed, and #726's fix (wrapping the
 label instead of clipping it) changed *how* the box fails and not its size.
+
+**Two facts past this document's own Addendum, neither yet accounted for
+here.** First, `.hud__corner` gained a second child on 2026-09-05 (#1023): a
+`zoomControl` sits beside `minimapPanel` now (`src/ui/hud/hud.ts:1737`), so
+"holds one panel" is no longer true of the corner as a whole, only of the
+minimap side of it — the four-candidate table and Decision 1's argument below
+were made about a one-panel corner and do not yet say what the zoom island
+does to their costs. Second, the corner's own stylesheet records a
+mobile-visibility regression found and *reverted* the same day: `hud.css`'s
+`@media (max-width: 720px)` block hides `.hud__corner` again as of 2026-09-05,
+deferred to "a mobile layout pass" (`hud.css:4197-4247`, narrated again at
+`src/ui/hud/hud.ts:1009-1019`)
+— the "at every viewport" framing above, and this ADR's Decision 1 built on
+the alerts list being visible everywhere, again does not hold below 720px.
+Neither fact is this document's to resolve; both are named because "what the
+corner is for" is this ADR's own title.
 
 **Finding D1** (`docs/research/2026-09-01-playing-after-the-rulings.md`,
 MEASURED, act 5b): the longest sentence in the refusal namespace — 109
@@ -99,7 +119,7 @@ length — `{understaffed} understaffed · {unguarded} unguarded`, +140px — bu
 `coverageBadge` (`src/ui/hud/projection.ts:368-381`) renders exactly one of
 `Understaffed` / `Unguarded` / nothing (`Covered`), from
 `hud.security.coverage-short` / `-unguarded`
-(`src/content/default-locale-en.ts:980`, `:982`). **#719's route 1 is done.**
+(`src/content/default-locale-en.ts:2146`, `:2148`). **#719's route 1 is done.**
 
 **And the overflow persists regardless.** D9 (MEASURED, act 6, post-#723): a
 twelve-prisoner, four-guard prison measured `scrollWidth 1389` in `clientWidth
@@ -150,7 +170,7 @@ to answer — D1 measured the deficiency *identically* at 900×600 and at
 1920×1080, so a fix gated to wide viewports leaves three of the four measured
 viewports exactly as broken as today, which is the same mistake #634's
 viewport-breakpoint reasoning already made once for the strip and had to be
-corrected for (`hud.css:2912-2917`, "AND IT IS A VIEWPORT BREAKPOINT"). C is
+corrected for (`hud.css:3893-3900`, "AND IT IS A VIEWPORT BREAKPOINT"). C is
 the most flexible in principle but every cost in its row is UNDERIVED — this
 pass has no comparable element in this codebase to price a new destination
 against, and choosing one is a bigger layout decision than this ADR should
@@ -160,7 +180,7 @@ asymmetric corner shape nothing here has built before, for a placeholder that
 costs nothing to let grow — A gets the same alerts-box win with a shape this
 codebase already knows how to lay out, and a bigger minimap footprint is
 forward investment in the real minimap the placeholder already promises
-(`hud.css:282`, *"the renderer will draw a square region of the world here"*),
+(`hud.css:419`, *"the renderer will draw a square region of the world here"*),
 not waste.
 
 **What is not decided here: the exact width.** `docs/research/2026-09-01-what-the-corner-and-strip-cost.md` §5 item 1 lists the measurement this needs
@@ -234,7 +254,7 @@ against the document's own words.**
 
 | candidate | where it applies | cost | what it leaves unsolved |
 | --- | --- | --- | --- |
-| Wrap chips onto a second metrics row, height-gated | 1280×800 and any desktop viewport ≥800px tall (measured slack ~8px at 1280×800; `hud.css:3123-3135`) | ≈30–45px of world height where it fires | **Not available at 1280×720** — the Build panel's always-visible budget there is ~2px (the corrected figure from #726, not the "8px" `hud.css:3022-3023` still states for the same viewport — a stale figure this document flags rather than fixes, being out of scope for this ADR), which the ≈45px wrap cost overruns by more than 20× either way. 900×600 is already committed to the strip's one-row layout by a prior, explicit owner choice (`hud.css:2930-2937`, *"this file chooses the fold and says so"*) and this document does not reopen that. |
+| Wrap chips onto a second metrics row, height-gated | 1280×800 and any desktop viewport ≥800px tall (measured slack ~8px at 1280×800; `hud.css:4111-4123`) | ≈30–45px of world height where it fires | **Not available at 1280×720** — the Build panel's always-visible budget there is ~2px (the corrected figure from #726, not the "8px" `hud.css:4010-4011` still states for the same viewport — a stale figure this document flags rather than fixes, being out of scope for this ADR), which the ≈45px wrap cost overruns by more than 20× either way. 900×600 is already committed to the strip's one-row layout by a prior, explicit owner choice (`hud.css:3918-3925`, *"this file chooses the fold and says so"*) and this document does not reopen that. |
 | Reorder chip priority so a badge-carrying chip is never among the ones silently dropped | every viewport, immediately, no structural change | none measurable — same chips, same widths, different order | Does not make the row fit; it only decides which chip yields when it does not. |
 | Restore a visible scroll affordance (native scrollbar, or an edge fade/chevron) whenever the row actually overflows | every viewport | a visual change to the strip's chrome | **This is issue #634's own question, already ruled on once.** #634 refused a scroll affordance "as the answer" — but that refusal predates both ruling 21 (which reduced, not removed, the overflow) and the ninth chip (`high-risk`, #703 ruling 4), so the state being refused then is measurably less bad than the state on `main` today. This document does not overturn a standing ruling; it names that the ground it was ruled on has moved, and leaves whether to revisit it to the owner. |
 

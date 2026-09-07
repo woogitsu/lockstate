@@ -192,6 +192,61 @@
      not as an alarm light. */
   --moss-300: #86b596;
   --moss-alpha-14: rgba(134, 181, 150, 0.14);
+  /* A rung *below* `--amber-300` rather than past it: the same warm family at
+     roughly two fifths of its saturation, for the state that has to read as
+     quieter than the tone that already means "urgent" everywhere it appears --
+     the owner's ruling of 2026-09-02 on issue #788, the risk roster's third
+     tone. It is the mirror image of `--crimson-300` below, which was added by
+     the same shape of ruling in the other direction, and the reason both are
+     raw ramp entries rather than alpha variants of amber is that a re-skin has
+     to be able to move them independently.
+     **Darkened by the owner's second ruling of 2026-09-02, on the same issue.**
+     A playtest measured `--badge-caution-fg` (this token, through
+     `--status-caution`) against `--badge-neutral-fg` (`--text-subtle`,
+     `--paper-400`, relative luminance 0.434) at **1.07:1** -- a "Medium" and
+     a "Minimal" risk badge painted the same muted tan-grey, failing WCAG's
+     3:1 non-text-contrast floor and the whole reason `'caution'` exists.
+     Hue and saturation are unchanged (40.3 -> 39.6 degrees, 29.9 -> 30.7 %);
+     only lightness moved, from 62.0 % to 30.0 %, chosen as the smallest drop
+     that clears 3:1 against `--paper-400` (3.38:1) *and* keeps a working
+     margin on both neighbours the ladder actually asserts: 3.17:1 against
+     `--status-success` and 3.89:1 against `--status-warning`. `tests/unit/
+     ui-design-tokens.test.ts` computes all three from this file rather than
+     pinning them, so none can rot back under 3:1 unnoticed.
+     **Given an opaque background of its own by the owner's third ruling,
+     2026-09-02, resolving the conflict the second ruling reported rather
+     than hid.** Clearing 3:1 against `--paper-400` forces this token's
+     relative luminance down to ~0.093 -- below the ~0.226 floor any
+     foreground needs for 4.5:1 text contrast on `--surface-raised`
+     (luminance 0.011) even against a fully transparent chip, so the
+     translucent 14 %-tint formula every other badge tone uses could not
+     reach 4.5:1 here at any alpha: the own-background contrast this token's
+     darkening cost -- 5.73:1 before, 2.13:1 with the old `--straw-alpha-14`
+     tint kept -- is fixed by giving `--badge-caution-bg` an *opaque* raw
+     ramp entry, `--straw-100` below, instead of a translucent one. `100`
+     follows `--paper-100`'s numbering (lower number, lighter colour) rather
+     than the "-alpha-NN" naming its five siblings use, because it no longer
+     is one: an alpha-14 name on a token holding no alpha would be exactly
+     the kind of literal-named-for-its-value drift this file's own header
+     rules out. Same hue and saturation as this token (39.6 degrees, 30.7 %),
+     lightness 82.0 % against this token's 30.0 %, chosen the same way as the
+     darkening above -- smallest change that clears its floor (4.5:1) with a
+     comparable margin (5.07:1, +12.7 % over the floor, matching this token's
+     own +12.7 % margin over 3:1 against `--paper-400`) -- so the badge reads
+     as one hue at two values rather than as an unrelated light chip. No
+     other raw ramp entry, alias or stylesheet changes: `--badge-caution-bg`
+     is repointed from `var(--straw-alpha-14)` to `var(--straw-100)` below,
+     and `.ui-badge[data-tone='caution']` in `primitives.css` already reads
+     only that alias, never the raw ramp directly, so the rule that paints
+     the chip is untouched and the other six tones' tokens and rules stay
+     byte-identical. `--straw-alpha-14` had exactly one consumer
+     (`--badge-caution-bg`) and is removed rather than left declared and
+     unused, which this file's own "uses only tokens that exist" contract
+     (`tests/unit/ui-design-tokens.test.ts`) would not have caught either
+     way -- that test guards a stylesheet reaching a token that is not
+     declared, not a token nothing reaches. */
+  --straw-300: #645435;
+  --straw-100: #dfd6c3;
   --amber-300: #e8b463;
   --amber-alpha-14: rgba(232, 180, 99, 0.14);
   --clay-300: #d4785c;
@@ -229,6 +284,7 @@
   --accent-contrast: var(--ink-900);
 
   --status-success: var(--moss-300);
+  --status-caution: var(--straw-300);
   --status-warning: var(--amber-300);
   --status-danger: var(--clay-300);
   --status-critical: var(--crimson-300);
@@ -240,6 +296,8 @@
   --badge-neutral-fg: var(--text-subtle);
   --badge-success-bg: var(--moss-alpha-14);
   --badge-success-fg: var(--status-success);
+  --badge-caution-bg: var(--straw-100);
+  --badge-caution-fg: var(--status-caution);
   --badge-warning-bg: var(--amber-alpha-14);
   --badge-warning-fg: var(--status-warning);
   --badge-danger-bg: var(--clay-alpha-14);
@@ -339,6 +397,19 @@
      the strip by hand any more -- the grid does it. Still a token rather than
      a literal because the 720px breakpoint overrides it. */
   --hud-strip-height: calc(48px * var(--ui-scale));
+  /* How much vertical room the zoom island in `.hud__corner` takes: one tap
+     target, its two hairline borders, and the gap above it. It is a token
+     rather than a literal in `hud.css` because two rules have to agree on the
+     same number and they are 150 lines apart -- the island's own box, and the
+     `max-height` the minimap square gives back so the corner's total height
+     does not move (#1023). When they disagreed, the corner grew from 440px to
+     502px against 482.8px of grid row and squeezed the alerts list from 76px
+     to 68px, which `ui-alerts-column.spec.ts` caught at 900x600 only.
+     Declared here rather than only in `hud.css` because
+     `tests/unit/ui-design-tokens.test.ts` requires every `var()` a component
+     stylesheet reads to exist in this file -- the same reason
+     `--hud-strip-height` above is here and then overridden locally. */
+  --hud-zoom-block: calc(var(--tap-target) + 2 * var(--hairline) + var(--space-2));
   /* The border-box width of every panel in the HUD's right rail, above the
      720px breakpoint where the rail stretches and its panels go full-width
      instead. The panels have to agree exactly or the column stops reading as

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS, unmetNeedCount } from '../../src/simulation/economy';
+import {
+  STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
+  STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
+  stateIncomeForPrisonerDayAt,
+  unmetNeedCount,
+} from '../../src/simulation/economy';
 import { NEED_IDS, NEED_SCALE, type NeedId } from '../../src/simulation/prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -39,6 +44,37 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * below is one a player can send -- `PurchaseMaterials`, `ZoneRoom`,
  * `PlaceObject`, `HireStaff`, `AdmitPrisoner` -- with `wallRoomPerimeter` the
  * one shortcut, exactly as `room-gated-needs.test.ts` builds its prison.
+ *
+ * ## The cost was suspended on 2026-09-03 and restored on 2026-09-04; the drive never moved
+ *
+ * Both directions are marked rather than overwritten
+ * (`docs/AGENT_WORKFLOW.md` §4). From 2026-09-03 this section read:
+ *
+ * > The owner ruled *"usuń na razie kary, zobaczymy jak pogram i ocenię
+ * > łatwość"* ("remove the penalties for now, we'll see how it plays and I'll
+ * > judge the ease") and
+ * > `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is `0` while they play.
+ * >
+ * > **What that changes here is the money and nothing else.** The finding
+ * > this file exists for -- that a prison a player could build walks into
+ * > unmet `hygiene` and `recreation` on its own, on measured days -- is a fact
+ * > about need decay and room gating, and every trajectory below is asserted
+ * > unchanged. What each day *pays* is now the flat rate, so each case asserts
+ * > that **and** what the same measured day would pay at ADR 0064's own `40`,
+ * > through `stateIncomeForPrisonerDayAt`. Nothing is deleted and no figure
+ * > this file measured is lost: the schedules that used to be the subject are
+ * > still run, against the same driven prison, at the rate the owner
+ * > suspended.
+ *
+ * **The owner restored the rate to `40` on 2026-09-04**, after the measurement
+ * they made the restoration conditional on -- four prisoners, then fifty; see
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s own docblock, which
+ * carries both rulings and the numbers. So the paid series and the priced
+ * series are the same series again, and the paragraph above is the record of
+ * why this file was written to survive that: the *drive* is the subject and
+ * the rate never was. Every need trajectory below is unchanged to the tenth of
+ * a permille across both rulings -- which is itself the evidence that the
+ * suspension and its reversal touched money and nothing else.
  */
 
 /** Distinct from every other seed in the suite, so no shared fixture can make these figures true by accident. */
@@ -222,7 +258,7 @@ const NEGLECTED = { prisoners: 8, guards: 1, shower: false, yard: false } as con
 const SERVED = { prisoners: 8, guards: 1, shower: true, yard: true } as const;
 
 describe('a staffed prison that leaves two needs unserved is paid less for every day it does', () => {
-  it('follows one prisoner`s hygiene and recreation across the line and charges the prison on the day each crosses', () => {
+  it('follows one prisoner`s hygiene and recreation across the line, and prices the day at each crossing', () => {
     const { days } = run(NEGLECTED);
     expect(days).toHaveLength(DAYS);
 
@@ -241,12 +277,35 @@ describe('a staffed prison that leaves two needs unserved is paid less for every
     expect(days.map((day) => day.watchedRecreation)).toEqual([234.15, 198.15, 162.15, 126.15, 90.15, 54.15, 18.15, 0, 0, 0]);
     expect(days.map((day) => day.watchedUnmetNeeds)).toEqual([0, 0, 0, 0, 1, 1, 2, 2, 2, 2]);
 
+    // **What the prison is paid for those days, at the `40` the owner restored
+    // on 2026-09-04**: eight places at 300 while both needs are served, at 260
+    // for the two days only `hygiene` is unmet, and at 220 once `recreation`
+    // is too. From 2026-09-03 to 2026-09-04 this asserted the flat
+    // `Array.from({ length: DAYS }, () => 2_400)` and a total of `24_000` --
+    // the rate the owner had suspended -- and that figure is kept here rather
+    // than lost (`docs/AGENT_WORKFLOW.md` §4: mark both directions). It is
+    // also still asserted below, as the number a prison meeting its needs is
+    // paid.
     expect(days.map((day) => day.grantMinorUnits)).toEqual([2_400, 2_400, 2_400, 2_400, 2_080, 2_080, 1_760, 1_760, 1_760, 1_760]);
-
-    // Ten days of the same eight cells: 20,800 where a prison meeting its
-    // needs is paid 24,000. Written as the total rather than as a percentage,
-    // because the total is what the treasury is short.
     expect(days.reduce((sum, day) => sum + day.grantMinorUnits, 0)).toBe(20_800);
+
+    // The same schedule priced off the *measured* unmet counts rather than
+    // written down again, at the literal `40` rather than at the constant.
+    // Ten days of the same eight cells are 20,800 where a prison meeting its
+    // needs is paid 24,000 -- written as the total rather than as a
+    // percentage, because the total is what the treasury is short. This is the
+    // half of the pair that stayed asserted right through the suspension, and
+    // it is why the assertion above needed only its figures moved back.
+    const atAdr0064Rate = days.map((day) => 8 * stateIncomeForPrisonerDayAt(40, day.watchedUnmetNeeds));
+    expect(atAdr0064Rate).toEqual([2_400, 2_400, 2_400, 2_400, 2_080, 2_080, 1_760, 1_760, 1_760, 1_760]);
+    expect(atAdr0064Rate.reduce((sum, grant) => sum + grant, 0)).toBe(20_800);
+
+    // And the two agree exactly, because the withheld rate is `40` again --
+    // which is the assertion that would catch the literal above and the
+    // constant drifting apart, at whatever the constant holds.
+    expect(days.map((day) => day.grantMinorUnits)).toEqual(
+      days.map((day) => 8 * stateIncomeForPrisonerDayAt(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS, day.watchedUnmetNeeds)),
+    );
   });
 
   it('and the neglect is real throughout, not a prison that had stopped simulating', () => {
@@ -288,15 +347,41 @@ describe('a prison that serves every need is paid exactly what it was paid befor
   });
 
   it('is worth 3,200 more over ten days than the same prison without the two rooms', () => {
-    const served = run(SERVED).days.reduce((sum, day) => sum + day.grantMinorUnits, 0);
-    const neglected = run(NEGLECTED).days.reduce((sum, day) => sum + day.grantMinorUnits, 0);
+    const servedDays = run(SERVED).days;
+    const neglectedDays = run(NEGLECTED).days;
+    const served = servedDays.reduce((sum, day) => sum + day.grantMinorUnits, 0);
+    const neglected = neglectedDays.reduce((sum, day) => sum + day.grantMinorUnits, 0);
 
-    // The incentive, stated as the number a player would weigh a build order
-    // against. `room.yard` needs no object at all, so half of this is the
+    // **The incentive is back, and this is the measurement of it.** From
+    // 2026-09-03 to 2026-09-04, with nothing withheld, the two prisons were
+    // paid the same and this asserted `toBe(0)` -- the two rooms returning
+    // nothing at all on the income line, which is what the owner judged by
+    // playing. That figure is kept here rather than lost
+    // (`docs/AGENT_WORKFLOW.md` §4: mark both directions), and what replaces
+    // it is the same number the assertion below prices at the literal `40`,
+    // now reached through the shipped constant.
+    //
+    // **What this figure does NOT establish is that the two rooms return it in
+    // a prison a player builds at scale.** This is a driven eight-prisoner
+    // prison whose rooms are reachable. At fifty prisoners, measured in play,
+    // a zoned 8x8 yard returned exactly nothing -- `recreation` 0 permille,
+    // unmet for 50 of 50, with the rate at `40` -- and the strongest candidate
+    // cause is that neither instrument builds a door
+    // (`tests/integration/dead-room-no-doorway.test.ts`). So this case pins
+    // the income rule, not a general claim about the yard incentive, and the
+    // difference between the two is the finding recorded in
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`'s docblock.
+    expect(served - neglected).toBe(3_200);
+
+    // The incentive at ADR 0064's own rate, stated as the number a player
+    // would weigh a build order against, and priced off the same measured
+    // unmet counts. `room.yard` needs no object at all, so half of this is the
     // return on zoning 16x8 of ground the prison already owns -- see the
     // `YARD` comment for why the rectangle is twice the authored minimum and
     // what it costs (nothing) to make it so.
-    expect(served - neglected).toBe(3_200);
+    const atRate = (days: readonly { readonly watchedUnmetNeeds: number }[]): number =>
+      days.reduce((sum, day) => sum + 8 * stateIncomeForPrisonerDayAt(40, day.watchedUnmetNeeds), 0);
+    expect(atRate(servedDays) - atRate(neglectedDays)).toBe(3_200);
   });
 });
 
@@ -341,8 +426,18 @@ describe('the readout beside the balance says what the boundary will actually pa
    *
    * So this is not an extra readout. It is the assertion that the readout the
    * player already has did not become a lie.
+   *
+   * **That is a promise about agreement, not about a figure**, which is why
+   * neither the suspension of the withheld rate nor its restoration touched
+   * this case's subject: the chip must say whatever the boundary will pay. It
+   * said `1_760` for the neglected prison at the `40` ADR 0064 shipped,
+   * `2_400` while the owner had the rate suspended from 2026-09-03, and
+   * `1_760` again since they restored it on 2026-09-04
+   * (`docs/AGENT_WORKFLOW.md` §4: mark both directions). The agreement is
+   * asserted first and against the system's own figure, so that it holds at
+   * every one of those rates; the figures follow it.
    */
-  it('reports the reduced figure through the real projection, not the undiminished rate', () => {
+  it('reports what the boundary will actually pay through the real projection, not a rate of its own', () => {
     const neglected = run(NEGLECTED).runtime;
     const served = run(SERVED).runtime;
 
@@ -350,6 +445,12 @@ describe('the readout beside the balance says what the boundary will actually pa
     // the whole day's payment. Both runtimes are past their tenth day, so what
     // is read is what tomorrow pays at today's conditions.
     const boundary = DAY_LENGTH_TICKS - 1;
+    expect(projectStatusCounts(neglected, boundary).stateIncomeAccruedTodayMinorUnits).toBe(
+      neglected.stateIncome.accruedThisDay(boundary),
+    );
+    expect(projectStatusCounts(served, boundary).stateIncomeAccruedTodayMinorUnits).toBe(
+      served.stateIncome.accruedThisDay(boundary),
+    );
     expect(projectStatusCounts(neglected, boundary).stateIncomeAccruedTodayMinorUnits).toBe(1_760);
     expect(projectStatusCounts(served, boundary).stateIncomeAccruedTodayMinorUnits).toBe(2_400);
 

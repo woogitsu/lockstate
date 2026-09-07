@@ -135,6 +135,7 @@
 }
 
 .ui-badge[data-tone='success']  { background: var(--badge-success-bg);  color: var(--badge-success-fg); }
+.ui-badge[data-tone='caution']  { background: var(--badge-caution-bg);  color: var(--badge-caution-fg); }
 .ui-badge[data-tone='warning']  { background: var(--badge-warning-bg);  color: var(--badge-warning-fg); }
 .ui-badge[data-tone='danger']   { background: var(--badge-danger-bg);   color: var(--badge-danger-fg); }
 .ui-badge[data-tone='critical'] { background: var(--badge-critical-bg); color: var(--badge-critical-fg); }
@@ -614,7 +615,110 @@
 .ui-action:disabled,
 .ui-action[aria-disabled='true'] { cursor: not-allowed; opacity: 0.5; }
 
-.ui-action__label { white-space: nowrap; }
+/*
+ * A LABEL THAT CANNOT FIT ITS BUTTON REFLOWS RATHER THAN PAINTING OVER THE
+ * NEXT CONTROL (issue #926).
+ *
+ * ## What this rule said until 2026-09-04, and what it cost
+ *
+ * `white-space: nowrap`, with `.ui-action` above declaring no `overflow` --
+ * so the UA default `visible` applied. Put beside `hud.css`'s
+ * `.hud-build__actions > .hud-build__arm { flex: 1 1 auto; min-width: 0 }`
+ * those three facts produce a defect none of them is: `min-width: 0` lets the
+ * button box shrink to whatever the row can spare, `nowrap` forbids the text
+ * from reflowing into that smaller box, and nothing clips the remainder, so
+ * the label rendered at its full intrinsic width from a narrower box and
+ * painted onto its neighbour.
+ *
+ * **ADR 0022's cure for the row's overflow had relocated the overflow into
+ * the label**, and the gate that watches the row could not see where it went:
+ * `BuildProbe.actionsOverflowPx` reads `button.getBoundingClientRect()`, the
+ * box `min-width: 0` guarantees fits.
+ *
+ * Measured on the assembled page at every viewport the browser suite visits,
+ * with `.hud-build__arm`'s label against its own button:
+ *
+ *   | viewport | state    | button | label | label past button | over `Remove` |
+ *   | -------- | -------- | ------ | ----- | ----------------- | ------------- |
+ *   | 1280x720 | arrival  |   76.4 |  87.9 |          **17.8** |       **9.8** |
+ *   | 1280x720 | armed    |   76.4 |  80.8 |          **14.2** |       **6.2** |
+ *   | 1280x720 | removing |  100.8 |  87.9 |           **5.5** |          -2.5 |
+ *   | 375x812  | any      |  171.4 |  87.9 |             -29.7 |         -37.7 |
+ *
+ * 1440x900, 1024x768 and 900x600 read identically to 1280x720 -- the rail is
+ * 264px at all four -- and `actionsOverflowPx` read **-12 in every one of
+ * those cells**, which is the whole finding about the gate.
+ *
+ * **A second instance, in the row this pattern was copied from.**
+ * `.hud-rooms__arm` ("Draw on map", 87.3 in a 98.7 button) painted **6.3px**
+ * outside itself at the same four viewports. A sweep of every laid-out
+ * `.ui-action` label across all five tabs and five viewports found exactly
+ * those two, which is why this is fixed in the primitive rather than in the
+ * Build panel.
+ *
+ * ## Why wrap and not clip
+ *
+ * `overflow: hidden; text-overflow: ellipsis` was measured, not reasoned
+ * about: it leaves the arm label **18.4px** of box for a twelve-character
+ * control name at the four narrow-rail viewports. That does not truncate the
+ * name, it erases it. The owner's ruling of 2026-09-01 on `.hud-rooms__note`
+ * -- the same three ingredients, one element over -- chose readability over
+ * containment for a *sentence*; a control's own name is not the place to
+ * reverse that.
+ *
+ * `min-width: 0` is what makes the wrap reachable, and it is load-bearing
+ * rather than defensive. Without it this span is a flex item with the default
+ * `min-width: auto`, so it cannot shrink below its min-content width -- and
+ * for a single unbreakable token that *is* the whole token, measured at 200.4
+ * in a 90.4 box, spilling 58px with `overflow-wrap: break-word` already set.
+ * The pair is the guard; neither half is on its own.
+ *
+ * `overflow-wrap: break-word` and not `anywhere`: `break-word` offers the
+ * intra-word break only when the line has no other opportunity, so an
+ * ordinary label still breaks at its spaces. `anywhere` measured identically
+ * in all forty cells of the run above -- Chromium preferred the space -- but
+ * it earns that by adding a break opportunity between every character and
+ * letting them compete in normal line breaking, which is a behaviour to
+ * depend on rather than a rule to state.
+ *
+ * `text-wrap: balance` was tried and **is not shipped**: it changed no figure
+ * in any cell (the label is 66.4 wide with and without it), and a declaration
+ * that reads as a promise and does nothing is what the 2026-09-01 ruling
+ * removed from `.hud-rooms__note`.
+ *
+ * ## What pays for the wrap
+ *
+ * Nothing, in height -- and that is not luck, it is `.ui-action`'s
+ * `min-height: var(--tap-target)` above. Two 15px lines are 30px inside a
+ * 44px button, so `.hud-build__actions`, which is `align-items: stretch`,
+ * stays 44px tall and no control below it moves.
+ *
+ * Three lines would not fit, and both halves of the pair were measured
+ * against that: `white-space: normal` **alone** put the arm label on three
+ * lines and grew both rows to 47px, and the shipped rule with `min-width: 0`
+ * on it takes the arm button to **92px** if the room is not there. Which is
+ * why `hud.css` gives the two actions rows the horizontal room -- half the
+ * `.ui-action` padding, 48px of a 238px row -- for the wrap to land on two
+ * lines. `tests/browser/ui-build-arm-label-fit.spec.ts` asserts the height
+ * as well as the fit, so a future label that needs a third line fails there
+ * rather than silently pushing the panel down.
+ *
+ * ## The pair is not invented here
+ *
+ * `.ui-row--wrap .ui-row__label` in this file is `white-space: normal;
+ * overflow-wrap: break-word` already, for a HUD row's label, with its own
+ * measurement of what the wrap costs the rows around it -- and `.ui-row__label`
+ * above it carries `flex: 1; min-width: 0`. So all three declarations of this
+ * rule already sit on one label in this file, and this is the same decision
+ * one primitive over rather than a new one. What `.ui-action__label` did
+ * differently, and what #926 cost, is that it had the `nowrap` and none of
+ * the rest.
+ */
+.ui-action__label {
+  white-space: normal;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
 
 /* ------------------------------------------------------------------ */
 /* Number field                                                        */

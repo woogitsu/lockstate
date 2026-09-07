@@ -57,7 +57,7 @@ reasonably form from the same commit, and only the first is true.
 **That last sentence stopped being true later the same day.** Decision 4 was
 also taken on 2026-09-01, by a separate ruling put to the owner after this
 document had already been accepted on the strength of the other three — see
-**"Amendment, 2026-09-01: decision 4 is taken"** at the foot of this document.
+**"Amendment, 2026-09-01: decision 4 is taken"** below in this document.
 The paragraph above is kept rather than corrected in place, because it is an
 accurate description of a real, if brief, state this document was in, and
 because the trap it names — treating "3 of 4" and "4 of 4" as interchangeable —
@@ -189,12 +189,18 @@ The alerts channel is two bands and one list, all fed by pure translator
 functions outside `src/ui/hud/` (`AGENTS.md` boundary 1 — the HUD may not
 import `src/simulation/**`):
 
-- **`.hud__refusal`** (`src/ui/hud/hud.ts:978-985`) — the most recent refusal,
+- **`.hud__refusal`** (`src/ui/hud/hud.ts:1163-1170`) — the most recent refusal,
   always laid out, never dismissed by a player gesture
   (`docs/HUD_PROJECTIONS.md` gap 34).
-- **`.hud__event`** (`src/ui/hud/hud.ts:1040-1067`) — the most recent
-  `simulation/event`, replaced unconditionally by whatever arrives next
-  (`applyEventNotice`, `hud.ts:1062-1067`, quoted below).
+- **`.hud__event`** (`src/ui/hud/hud.ts:1265-1272`) — the most recent
+  `simulation/event`. **Re-anchored 2026-09-06: "replaced unconditionally by
+  whatever arrives next" is the pre-amendment behavior this section describes
+  before the 2026-09-05 Amendment below reversed it** — `applyEventNotice`
+  is no longer the ~26-line function this row quotes; it is a two-line
+  delegate to a dwell/hold-ceiling state machine (`hud.ts:1333-1335`,
+  `event-band-dwell.ts`) that the Amendment's §1 already marks and explains.
+  This row is left as the historical record the Amendment points back to
+  rather than rewritten a second time.
 - **The alerts list** (`HudViewModel.alerts`, a flat `HudAlertViewModel[]`) —
   fed by three independent producers that share it without knowing about one
   another: `hudAlertsFromWorkerMessage` for refusals and protocol faults
@@ -333,8 +339,8 @@ codebase has decided that a stale notice is preferable to none.
 
 **Measured** (issue #700, this brief): a terminal outcome on `.hud__event`
 stands only until the next event of any kind, about **6.3 s at ×1 and 1.6 s at
-×4** in the largest prison driven for this pass. `applyEventNotice`
-(`src/ui/hud/hud.ts:1062-1067`) is unconditional:
+×4** in the largest prison driven for this pass. `applyEventNotice` was
+unconditional, at the coordinate and in the shape this finding is about:
 
 ```ts
 function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
@@ -344,7 +350,13 @@ function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
 }
 ```
 
-and the comment immediately above it (`hud.ts:1053-1061`) says there is
+**Re-anchored 2026-09-06: this is Finding 4's own diagnosis, kept as the
+historical record of the defect the 2026-09-05 Amendment below fixed — the
+function this fenced block quotes no longer exists in this shape**
+(`applyEventNotice` is now the two-line delegate at `hud.ts:1333-1335`; the
+dwell/hold-ceiling arbitration this finding says is missing is
+`event-band-dwell.ts`'s subject). The comment that used to stand immediately
+above it (previously `hud.ts:1053-1061`) said there was
 deliberately no arbitration to add one to: *"No arbitration and no source
 tracking, unlike `applySimulationRefusal` below: this band has exactly one
 producer, so whatever it replaces is always an older event rather than a
@@ -566,7 +578,9 @@ way the list's cap already does (`SEVERITY_EVICTION_ORDER`,
 `simulation-events.ts:344-348`) — and whichever answer is chosen slows down
 *every* other event's arrival on the one band a player watches without
 opening anything, which is the property #507 and #220 built that band to
-have in the first place (`hud.ts:987-1019`). This is squarely the
+have in the first place (`hud.ts:1172-1262`, re-anchored and now the larger
+docblock the 2026-09-05 Amendment grew around the same rationale). This is
+squarely the
 "playability" territory the standing mandate would otherwise leave to an
 agent's judgement, and this draft still declines it, on the brief's own
 instruction that this decision be put to the owner alongside the other three
@@ -584,8 +598,8 @@ record that did not just happen, not what it does with two that did.
 
 **Decided, later the same day.** The two paragraphs above are kept, unedited,
 as an accurate record of what was and was not true of this document until the
-ruling arrived — see **"Amendment, 2026-09-01: decision 4 is taken"** at the
-foot of this document for the ruling itself, the reasoning behind it, and what
+ruling arrived — see **"Amendment, 2026-09-01: decision 4 is taken"** below in
+this document for the ruling itself, the reasoning behind it, and what
 it does and does not settle.
 
 ## Consequences
@@ -855,3 +869,143 @@ run.
   this ruling added. It is recorded there rather than here because it needed
   no ruling to close, and this section exists to be honest about which of the
   two nearby questions the owner actually answered.
+
+## Amendment, 2026-09-05: the band lets go of its grid row — a hold ceiling above decision 4's floor
+
+> **Accepted, 2026-09-05, by the repository owner.** Asked, in these terms,
+> whether the reversal recorded below wanted a new ADR, an amendment here, or
+> nothing, the owner ruled: **an amendment to this document.** As with the
+> amendment above, nothing here is self-approved; the reasoning exists to carry
+> the ruling into the one place that can enforce it, not to stand in for it.
+>
+> *This amends the **"Amendment, 2026-09-01"** section's §7 — "What this
+> amendment does not decide" — by naming a third thing it did not decide and
+> deciding it. Decision 4's floor is untouched and still binding, decisions 1
+> through 3 are untouched, both live Open Questions bullets are untouched, and
+> `Status` remains **Accepted**. Old wording is quoted and pointed to rather
+> than overwritten, the form this corpus already uses.*
+>
+> **Two words were edited above, and this is the whole of it.** The Status
+> clause and the Decisions section each pointed at the 2026-09-01 amendment as
+> being *"at the foot of this document"*. Appending below it made that false,
+> so both now read *"below in this document"*. No record was altered — a
+> pointer that has stopped pointing is not a record of a past state, it is a
+> broken cross-reference, and this document's own discipline about staleness is
+> the reason to fix it rather than to leave it.
+
+### 1. The sentence that was reversed is not in this document
+
+It is in `src/ui/hud/hud.ts`, in the `.hud__event` docblock:
+
+> *"It does **not** auto-dismiss, for the reason the refusal band does not: a
+> message that clears itself on a timer is a race against how fast the player
+> reads. It is replaced by the next event or emptied when the session ends, and
+> it is in the log either way."*
+
+That paragraph now stands in the file **in the past tense and marked as the
+decision that was reversed** (`docs/AGENT_WORKFLOW.md` section 4), rather than
+rewritten out. It was written before this document had anything to say about
+the band's lifetime, and it is the only place in the tree that had.
+
+### 2. The gap this document had, and it is worth naming rather than papering over
+
+**This document reasons about the sentence throughout and never once about the
+row the band occupies.** That is checkable and was checked: of the 64
+occurrences of "row" in the 857 lines preceding this amendment, every one is a
+row of the alerts *list* — `createListRow`, the 88px label, the tap target, the
+eight-row cap, `SEVERITY_EVICTION_ORDER`. The strings `grid-area`, `hud__rail`
+and `hud__side` do not appear at all.
+
+So decision 4's amendment could set a **floor** — the shortest time a sentence
+may hold the line — and list two things it did not decide, without the
+**ceiling** being among them. Nobody had yet measured that holding the line
+costs anything. It does:
+
+| state, measured on the assembled page at 900×600 | `.hud__rail` | `.hud-rooms` body | `.hud-build` panel |
+|---|---|---|---|
+| no band | 482.8 | 291 | 336 (flush) |
+| one event band | 450.8 | 267 | 312 in a 336 fold |
+
+**32px off the rail and 24px off the panel in `.hud__side`, at every viewport**
+(410→386 at 1280×800, 350→326 at 1280×720, 394→370 at 375×812). The bands are
+three separate grid rows — `grid-template-areas: 'strip' 'unavailable' 'notice'
+'event' 'middle' 'tabs'` — so their cost is **additive**: a refusal and an event
+together take 64px, and the Rooms panel then clips on a prison with no rooms in
+it. Before this amendment there was exactly one path in `event-band-dwell.ts`
+to a released band, `simulation/stopped`; and above it `src/main.ts` republishes
+`HudViewModel.event` on every snapshot, so a release would have been undone up
+to twice a second anyway. **The band did not hold the row for a long time. It
+held it for the session.**
+
+### 3. The decision
+
+The band releases its row after **`EVENT_BAND_HOLD_CEILING_MS`**, and the
+number is derived rather than chosen. The longest sentence the band can carry is
+`'hud.alert.event.economy.construction-refused'`, twelve words; at 100 words per
+minute — half an ordinary silent reading rate, and the right half for a player
+whose eyes are on the prison — that is 7.2s, plus the 250ms this repository
+already calls seen (`SEEN_MS`) is 7.45s, and **8000 ms is the round number above
+it**. The constant's own docblock in `src/ui/hud/event-band-dwell.ts` carries
+the derivation, not this document.
+
+Floor and ceiling are two bounds on one object and are enforced at one entry
+point: `advanceEventBand` **releases a waiter before it expires an incumbent**,
+so a sentence that has been waiting for the line is never dropped by the same
+call that frees it. An ordinal guard (`EventBandDwellState.retired`) is what
+makes the release survive `main.ts`'s sticky republication; a timer alone would
+not have been enough, and that is a fact about this codebase rather than about
+the ruling.
+
+### 4. Why a reversal is admissible here at all, on this document's own terms
+
+The reversed paragraph's last clause is the reason: *"it is in the log either
+way"*. Decisions 1 through 3 are what made that clause load-bearing — the log
+counts repeats, dates them, and survives a reload. And the 2026-09-01 amendment
+already narrowed what the band is for: *"the band's job … is narrower: that a
+player looking at it sees the sentence exist"*. **Reading is the list's job.**
+A band that never lets go was buying a second reading surface with layout the
+list did not need it to spend.
+
+This is the whole of the argument, and it is offered as a record of why the
+owner's ruling is coherent with decisions 1 to 3 — not as the ruling.
+
+### 5. What it costs, and the owner ruled on the cost separately
+
+Below 720px `.hud__corner` is `display: none` (`hud.css`, the
+`@media (max-width: 720px)` block). **On a phone the alerts list is not on
+screen, so the band is the only surface an event has**, and a phone player who
+looks up more than eight seconds later now sees nothing where they used to see
+the last event.
+
+That was put to the owner on 2026-09-05 as a decision of its own, against two
+alternatives — a **width-gated expiry** (no ceiling below 720px) and **unhiding
+`.hud__corner` on phones**. **Ruling: leave it; the deferred mobile layout pass
+is the repair.** Recorded here so that a later reader finds a decision rather
+than an oversight.
+
+One thing that reader will also find, and it predates this amendment rather
+than being created by it: **`hud.css` contradicts itself about the phone three
+times.** Three docblocks in that file state that `.hud__corner` *"is no longer
+hidden below 720px"*, while the same file's `@media (max-width: 720px)` block
+still carries `display: none` — and that rule's own comment records the removal
+being **reverted** (#703 ruling 5, deferred to the mobile layout pass). **The
+rule is what ships.** It is named here because §5's cost is only true while the
+rule is what ships, and a reader who believed the docblocks would conclude this
+section is wrong.
+
+### 6. What this amendment does not decide
+
+- **Whether the ceiling reaches `.hud__refusal` or `.hud__unavailable`.** It
+  does not, and for the same reason §7 of the amendment above gives about the
+  floor: the owner was asked about `.hud__event`. Both other bands keep their
+  own lifetimes — a host refusal until the same action succeeds, a simulation
+  refusal until another replaces it or the session ends — and nothing in this
+  ruling reaches them. Note for anyone tempted to carry it across: **an ordinary
+  refusal does not raise the events band at all.** *"A wall on an occupied
+  tile"* raises `.hud__refusal` through `applySimulationRefusal`; only
+  `economy.construction-refused` and `economy.deliveries-refused` are events.
+- **Whether the mobile layout pass unhides `.hud__corner`.** §5 records that the
+  owner deferred the phone cost to that pass; the pass's own content is not
+  ruled on, here or anywhere.
+- **Anything about the alerts list.** The cap, the ordering, the acknowledgement
+  gesture and the dismissal story are exactly as decisions 1 to 3 left them.

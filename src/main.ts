@@ -39,6 +39,7 @@ import {
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerDetailViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -66,6 +67,7 @@ import { HeldGuardsReader } from './ui/simulation-held-guards';
 import { StaffRosterReader } from './ui/simulation-staff-roster';
 import { StaffCoverageReader } from './ui/simulation-staff-coverage';
 import { PrisonerRosterReader } from './ui/simulation-prisoner-roster';
+import { PrisonerDetailReader } from './ui/simulation-prisoner-detail';
 import { RegimeReader } from './ui/simulation-regime';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
@@ -106,6 +108,7 @@ import { DEFAULT_LOCALE } from './content/localization';
 import { defaultMessageCatalogEn } from './services/localization';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
+import { APP_SHELL_MESSAGE_KEY } from './ui/app-shell-messages';
 import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';
 import { createTelemetryPipeline } from './services/telemetry/pipeline';
 import { createCrashReporter } from './services/telemetry/crash-reporting';
@@ -367,6 +370,50 @@ function objectFootprintOf(definitionId: string): { readonly width: number; read
   return { width: definition.footprint.width, height: definition.footprint.height };
 }
 
+/**
+ * The page's one localizer.
+ *
+ * Module scope rather than local to `mountInterface`, because two consumers now
+ * need the *same instance*: the HUD and the save panel.
+ *
+ * **Three consumers, and the third is why this sits above the world scene
+ * rather than beside `mountInterface` where it used to.** A room's name is
+ * written on the map (the owner's ruling of 2026-09-06), and the scene is
+ * handed a function that formats it -- so `WorldSceneOptions.roomName` closes
+ * over this const. Phaser's `DOMContentLoaded` helper calls back
+ * *synchronously* when `document.readyState` is already `interactive`, which is
+ * exactly what a deferred module script sees, so `new Phaser.Game(...)` boots
+ * inside its own constructor. The scene's `update` still waits for a frame, so
+ * the old ordering happened to work -- and "happened to" is a temporal
+ * dead-zone throw one Phaser release away. Declaring it before the scene makes
+ * the ordering a property of this file instead. `SavePanel` used to
+ * default to a localizer of its own over the same catalog -- equivalent while
+ * `en` is the only locale, and not equivalent the moment a second ships, when a
+ * panel holding its own default-locale localizer would keep rendering English
+ * while the rest of the interface changed language. Issue #208 recorded that as
+ * a seam with a known end; this is the end.
+ */
+/*
+ * `defaultMessageCatalogEn`, not a catalog built here from content alone.
+ *
+ * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
+ * the game always has text offline." This localizer was not complete. It was
+ * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
+ * trusted-services layer contributes twelve more strings of its own
+ * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
+ * product names, save-slot counts, entitlement notices, challenge results and
+ * the telemetry consent prompt). None of them was in the running page's
+ * localizer, so any of them would have rendered as its own key.
+ *
+ * `defaultMessageCatalogEn` is content merged under those service strings, and
+ * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
+ * every declared key against -- so the gate was proving completeness of a
+ * catalog the application did not use. `src/services/entitlements/products.ts`
+ * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
+ * resolves, and before this line it would have painted the raw key.
+ */
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
 // `window.localStorage` itself, in a class field initializer, so a browser that
@@ -409,6 +456,33 @@ const worldScene = new WorldScene({
   // without disarming -- and one colour for every object rather than a table:
   // `PLANNED_OBJECT_TINT` says what it is and why it is not the room's.
   ...(objectTool === undefined ? {} : { objectTool, objectTint: (): number => PLANNED_OBJECT_TINT }),
+  /*
+   * The word written across a room's floor (the owner's ruling of 2026-09-06:
+   * *"Nazwa tekstem na mapie"*).
+   *
+   * Composed here and nowhere else, because this is the one place that holds
+   * both halves: `defaultRoomContentRegistry` says which room type a zoning
+   * numeric id is, and `localizer` says what that type is called in the
+   * player's language. The renderer is handed the finished text -- exactly the
+   * arrangement `roomTint` above documents for a colour, and for the stronger
+   * reason: a renderer that resolved `nameKey` itself would be a second
+   * localization site, and the second one is always the one that keeps
+   * rendering English after a locale change.
+   *
+   * **No string is authored here.** `nameKey` is the catalogue's own
+   * (`src/content/room-catalog.ts`), its text is
+   * `src/content/default-locale-en.ts`'s, and
+   * `tests/foundation/localization-key-completeness.test.ts` already resolves
+   * every declared key against the same merged catalogue this localizer holds.
+   * `undefined` for an id no catalogued room claims -- so an unnamed room is
+   * drawn with no name rather than with a word invented for it, which is the
+   * half of `AGENTS.md` reservation 4 that its 2026-09-04 release did not touch.
+   */
+  roomName: (zoningNumericId: number): string | undefined => {
+    const definition = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+    if (definition === undefined) return undefined;
+    return localizer.format(definition.nameKey);
+  },
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -969,11 +1043,12 @@ function roomCatalogue(): HudRoomsViewModel {
     rooms.push({
       roomId: definition.id,
       labelKey: definition.nameKey,
-      // The category's tint is defined for every catalogued room, so the
-      // fallback is unreachable; `zoningTint` answers `undefined` only for an
-      // unzoned tile or an id no room claims, and this loop is over the rooms
-      // themselves. `0` rather than a colour picked here, so an unreachable
-      // branch cannot quietly invent a legend entry.
+      // The room's own tint is defined for every catalogued room (ADR 0098
+      // option A keys the table by id), so the fallback is unreachable;
+      // `zoningTint` answers `undefined` only for an unzoned tile or an id no
+      // room claims, and this loop is over the rooms themselves. `0` rather
+      // than a colour picked here, so an unreachable branch cannot quietly
+      // invent a legend entry.
       tint: zoningTint(definition.numericId) ?? 0,
       // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
       // is on, so a room that authors no minimum has to have no property at
@@ -1063,38 +1138,6 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
 }
 
 /**
- * The page's one localizer.
- *
- * Module scope rather than local to `mountInterface`, because two consumers now
- * need the *same instance*: the HUD and the save panel. `SavePanel` used to
- * default to a localizer of its own over the same catalog -- equivalent while
- * `en` is the only locale, and not equivalent the moment a second ships, when a
- * panel holding its own default-locale localizer would keep rendering English
- * while the rest of the interface changed language. Issue #208 recorded that as
- * a seam with a known end; this is the end.
- */
-/*
- * `defaultMessageCatalogEn`, not a catalog built here from content alone.
- *
- * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
- * the game always has text offline." This localizer was not complete. It was
- * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
- * trusted-services layer contributes twelve more strings of its own
- * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
- * product names, save-slot counts, entitlement notices, challenge results and
- * the telemetry consent prompt). None of them was in the running page's
- * localizer, so any of them would have rendered as its own key.
- *
- * `defaultMessageCatalogEn` is content merged under those service strings, and
- * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
- * every declared key against -- so the gate was proving completeness of a
- * catalog the application did not use. `src/services/entitlements/products.ts`
- * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
- * resolves, and before this line it would have painted the raw key.
- */
-const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-
-/**
  * Without a worker there is no simulation and no session, so there is
  * genuinely nothing to save -- a save panel here would be a prop. What the
  * player is owed is being *told*, which the console message alone never did
@@ -1153,6 +1196,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * (`src/ui/simulation-projections.ts`: "a panel that is closed asks for
    * nothing"). `activeTab` is tracked from the `select-tab` intent rather than
    * read back off the HUD, because the HUD's shell state is chrome the HUD owns.
+   *
+   * **That paragraph is no longer true of this reader and is kept rather than
+   * rewritten, because it is the rule that was relaxed and why**
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   * Its reasoning is untouched -- a closed panel still asks for nothing -- and
+   * its premise moved: the `ROOMS` chip's badge is drawn off this readout by
+   * `projectStatusMetrics`, and the status strip is laid out on all five tabs,
+   * so there is no tab on which nobody is reading it. `refreshRoomNeeds` below
+   * carries the gate that was removed and what it costs. `activeTab` is still
+   * tracked, and four other readers below still gate on it.
    *
    * **On a cadence that already exists, not on a timer of its own.** Placed
    * objects change what a room has without changing any count -- a completed bed
@@ -1402,8 +1455,42 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * to resolve.
    */
   const prisonerRosterReader = client === undefined ? undefined : new PrisonerRosterReader(client);
+  /**
+   * The ninth reader on #104's channel, and the first that asks about **one**
+   * named thing rather than about a window (issue #895).
+   *
+   * Every reader above it asks a question with no subject -- who is in the
+   * prison, what is queued, how many guards are missing -- and gets whatever
+   * the projection's own window holds. This one carries an `EntityId` the
+   * *player* chose, off the roster row they pressed, so it is the first place in
+   * this file where the interface's own state decides what the worker is asked.
+   *
+   * It is also the cheapest read on the channel: `projectPrisonerDetail` is
+   * `O(1)` in the prison -- one liveness check, one index, six needs -- where
+   * the roster's is `O(window)` and the room list's is `O(instances)`. So the
+   * inspector costs one extra message per refresh beside the roster's, which is
+   * why it rides that same cadence rather than a slower one of its own.
+   *
+   * No lookup is handed to it, exactly as none is handed to the roster reader:
+   * every word it produces is a message key derived from an id the simulation
+   * published, and `src/content/simulation-message-keys.ts` is where those ids
+   * are labelled.
+   */
+  const prisonerDetailReader = client === undefined ? undefined : new PrisonerDetailReader(client);
   const regimeReader = client === undefined ? undefined : new RegimeReader(client);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
+  /**
+   * Which prisoner the player selected, as the host's own copy of the panel's
+   * chrome (issue #895).
+   *
+   * The Regime panel owns the selection -- it applies a press immediately,
+   * which is what a player sees -- and this is the half of it the panel cannot
+   * own: *what to ask the worker on every refresh*. It is written only by the
+   * `select-prisoner` intent and by the released case below, so the two copies
+   * cannot drift in any direction the player can see: a press sets both, and
+   * only this side can discover that the prisoner is gone.
+   */
+  let selectedPrisonerId: number | undefined;
 
   /**
    * Puts a readout on the view model, or takes it off.
@@ -1663,8 +1750,116 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       .catch(() => applyPrisonerRoster(undefined));
   };
 
+  /**
+   * Puts the selected prisoner on the view model, or takes them off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "this is what the prisoner's needs are" are different facts, and
+   * only the second is a statement about somebody (issue #895).
+   */
+  const applyPrisonerDetail = (next: HudPrisonerDetailViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.prisonerDetail === undefined) return;
+      const { prisonerDetail: _cleared, ...withoutDetail } = viewModel;
+      viewModel = withoutDetail;
+    } else {
+      viewModel = { ...viewModel, prisonerDetail: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  /**
+   * Asks about the prisoner the player selected, and stops when there is
+   * nobody to ask about (issue #895).
+   *
+   * Three guards rather than the usual two, and the third is the point: no
+   * reader, not on the Regime tab, **and nobody selected**. The last is what
+   * makes this readout cost the worker nothing in the ordinary case -- a player
+   * on the Regime tab who has pressed no row sends no message at all, which is
+   * the property `src/ui/simulation-projections.ts` calls "a panel that is
+   * closed asks for nothing", one row deeper.
+   */
+  const refreshPrisonerDetail = (): void => {
+    const prisonerId = selectedPrisonerId;
+    if (prisonerDetailReader === undefined || activeTab !== 'regime' || prisonerId === undefined) return;
+    void prisonerDetailReader
+      .read(prisonerId)
+      .then((read) => {
+        // "A read was already in flight" is not an answer, so it leaves what is
+        // on screen alone rather than blanking it -- the rule every reader in
+        // this file follows, spelled as a `kind` here because this reader has a
+        // third case the others do not.
+        if (read.kind === 'busy') return;
+        if (read.kind === 'released') {
+          /*
+           * The worker says there is no such live prisoner, which is the one
+           * answer that makes the player's own selection false.
+           *
+           * `projectPrisonerDetail` returns nothing for exactly one reason --
+           * `!entityStore.isAlive(entityId)` -- so this is a discharge or a
+           * release (#441) and not a transport failure. Both copies of the
+           * selection are dropped: this one, so the next refresh asks nothing,
+           * and the panel's, so the block leaves and the roster's one tab stop
+           * goes back to the top of the list instead of to a row that no longer
+           * exists.
+           *
+           * The block leaves **without a sentence**, and that is deliberate
+           * rather than unfinished: what would go there -- "this prisoner has
+           * been released" -- is a new player-facing sentence, which is
+           * `AGENTS.md`'s fourth exclusion and the owner's. A placeholder would
+           * be a promise the code does not keep; silence is merely less than
+           * the player deserves, and it is reported as owed rather than filled
+           * in here.
+           */
+          selectedPrisonerId = undefined;
+          applyPrisonerDetail(undefined);
+          hud?.clearPrisonerSelection();
+          return;
+        }
+        // And a late answer about somebody the player has since moved off is
+        // dropped here as well as in the panel. Two guards for one race, on
+        // purpose: this one stops a stale reply reaching the view model at all,
+        // and the panel's `entityId` check is what makes the *painted* block
+        // provably about the checked row.
+        if (read.detail.entityId !== selectedPrisonerId) return;
+        applyPrisonerDetail(read.detail);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // and the selection stays: a prisoner nothing is currently answering for
+      // is still the prisoner the player chose, and the next refresh asks again.
+      // Blanking the block matters here for the roster's reason one readout up
+      // -- six needs under somebody's name, with nothing answering for them, is
+      // a claim about a person.
+      .catch(() => applyPrisonerDetail(undefined));
+  };
+
+  /*
+   * **Asked for on every tab, and that changed on 2026-09-05**
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
+   *
+   * This read `if (roomNeedsReader === undefined || activeTab !== 'rooms')
+   * return;`, and `roomNeedsReader`'s header above still carries the argument
+   * for it in full -- *"a room list is `O(instances)` to build and nobody is
+   * reading it from the Build tab, which is the whole argument for the channel
+   * being a pull"*. That argument is kept rather than deleted because it is
+   * still exactly right about panels, and the premise it rests on is what
+   * stopped being true: **somebody now reads this from every tab.** The `ROOMS`
+   * chip's badge is drawn by `projectStatusMetrics` off this readout, and the
+   * status strip is laid out on all five tabs.
+   *
+   * What that cost, stated rather than implied. `RoomNeedsReader.read` spends
+   * at most `1 + ROOM_NEEDS_ROOMS_LIMIT` messages -- two today -- per drive, and
+   * the drive is the clock heartbeat (255 ms on the harness, ~300 ms in a
+   * browser; see `roomNeedsReader`'s header for both measurements). So a
+   * session that used to spend those two messages on one tab of five now spends
+   * them on all five. It cannot stack: `read()` returns `undefined` while one is
+   * in flight, so a slow worker throttles this rather than queueing behind it.
+   * The alternative -- asking only for the list on the other four tabs -- would
+   * buy back one message of the two and cost a second code path through the
+   * same view-model field, which is the drift `roomNeedsFromProjections` is one
+   * function for.
+   */
   const refreshRoomNeeds = (): void => {
-    if (roomNeedsReader === undefined || activeTab !== 'rooms') return;
+    if (roomNeedsReader === undefined) return;
     void roomNeedsReader
       .read()
       .then((next) => {
@@ -1817,6 +2012,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // screen. The list is the log; this is the notice, and it goes to a band
     // laid out at every viewport with no section to open -- which the alerts
     // list is not, at any viewport (#220).
+    //
+    // **"The same event" stopped being true of every event on 2026-09-05.**
+    // `EVENT_PRESENTATION.surfaces` in `src/ui/simulation-events.ts` now lets a
+    // member reach the log and not the band, and `rooms.zoned` -- the
+    // acknowledgement of a designation -- is the one that does, by the owner's
+    // ruling. This translator answers `undefined` for it, which is the same
+    // answer it gives for a restored record and means the same thing here: the
+    // field below is left exactly as it was, so a sentence the player is still
+    // reading keeps the line.
     const event = hudEventNoticeFromWorkerMessage(message);
     const nextAlerts = eventAlerts ?? alerts;
     if (
@@ -1882,6 +2086,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyStaffCoverage(undefined);
       applyRegime(undefined);
       applyPrisonerRoster(undefined);
+      /*
+       * The inspector comes off with them, and the *selection* comes off with
+       * it -- which is the one place this readout differs from the eight above
+       * (issue #895).
+       *
+       * A stopped session is not a released prisoner, so it is not
+       * `clearPrisonerSelection`'s case; but an `EntityId` names a slot in the
+       * `EntityStore` of *that* session, and the next session's store starts
+       * empty and hands out its own ids from index zero. Keeping the id across a
+       * stop would mean asking a new prison about a number that once meant
+       * somebody, which is the only way this id can come to name a different
+       * person -- see the `select-prisoner` intent for why it cannot happen
+       * within one session. The panel is told, so the checked row goes with it.
+       */
+      selectedPrisonerId = undefined;
+      applyPrisonerDetail(undefined);
+      hud?.clearPrisonerSelection();
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
@@ -1892,6 +2113,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       refreshStaffCoverage();
       refreshRegime();
       refreshPrisonerRoster();
+      refreshPrisonerDetail();
     }
   });
 
@@ -1967,6 +2189,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * whether a worker started, exactly like every other camera control.
      */
     onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    /*
+     * And the HUD's zoom pair, joined to the same camera on the same terms
+     * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
+     * scene was written and no control on the page named it; these buttons are
+     * that control, and `stepCameraZoom` is deliberately the *keyboard's* step
+     * through the keyboard's own code path, so pressing the button and pressing
+     * the key are one movement rather than two zooms that disagree.
+     *
+     * Passed unconditionally, exactly as `onMinimapNavigate` above is and for
+     * the reason it gives: `worldScene` exists from the top of this module
+     * whether or not a worker started, and zooming a camera is not something
+     * the simulation could refuse.
+     */
+    onCameraZoom: (direction) => {
+      worldScene.stepCameraZoom(direction);
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*
@@ -1983,11 +2221,29 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * on nothing is refreshing it. The panel clears its own copy when it is
          * hidden; this clears the view model, or the next publication would put
          * the stale one back.
+         *
+         * **The first sentence and the second direction stopped being true of
+         * the room readout on 2026-09-05** (#1006 finding 1) and both are kept,
+         * because every word of them still describes the four readouts below.
+         * The `ROOMS` chip reads this one on every tab, so no tab stops
+         * refreshing it and there is nothing to take off. The *first* direction
+         * is unchanged and is why the call below is still made here: arriving
+         * on the Rooms tab still asks at once rather than waiting a heartbeat
+         * for the panel's own lines.
          */
         case 'select-tab': {
           activeTab = intent.tab;
-          if (activeTab === 'rooms') refreshRoomNeeds();
-          else applyRoomNeeds(undefined);
+          /*
+           * **Asked for on arrival at every tab now, and never cleared on
+           * leaving** (#1006 finding 1). The paragraph above is the state this
+           * was in until 2026-09-05 and is kept for the reason
+           * `refreshRoomNeeds` keeps its own: leaving the Rooms tab used to
+           * mean nothing was refreshing the readout, so holding it would have
+           * been holding something stale. Nothing stops refreshing it now, so
+           * clearing it here would blank the `ROOMS` badge for one heartbeat on
+           * every tab change and put it straight back.
+           */
+          refreshRoomNeeds();
           // The build queue is the same arrangement one tab over: arriving asks
           // at once rather than waiting up to ~300ms in a browser for the next
           // clock heartbeat (255ms is the harness figure; see
@@ -2040,12 +2296,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           else applyRegime(undefined);
           if (activeTab === 'regime') refreshPrisonerRoster();
           else applyPrisonerRoster(undefined);
+          // And the third readout on that tab, on the same terms with one
+          // difference: it asks only if the player has selected somebody, so
+          // arriving on the tab with nothing selected sends no message
+          // (`refreshPrisonerDetail`'s third guard). The selection itself
+          // survives the trip -- it is the panel's chrome, and the Build
+          // panel's selected buildable survives a tab change too -- so coming
+          // back resumes the same question rather than making the player press
+          // the row again (issue #895).
+          if (activeTab === 'regime') refreshPrisonerDetail();
+          else applyPrisonerDetail(undefined);
           return;
         }
 
         // Chrome: the HUD has already applied it locally and there is nothing
         // for a host to do.
         case 'toggle-panel':
+          return;
+
+        /*
+         * Chrome, with the same shape as `select-tab` above: the panel has
+         * already applied it, and the half that lives out here is *what the
+         * host asks the worker for* (issue #895).
+         *
+         * Both directions, for `select-tab`'s reason. A press asks immediately
+         * rather than leaving the player looking at an empty block for up to
+         * about 300 ms in a browser (see `roomNeedsReader`'s header for that
+         * measurement), and a clearing press takes the answer off at once --
+         * the panel has already stopped drawing it, and leaving it on the view
+         * model would let the next publication put it back.
+         */
+        case 'select-prisoner':
+          selectedPrisonerId = intent.prisonerId;
+          if (selectedPrisonerId === undefined) applyPrisonerDetail(undefined);
+          else refreshPrisonerDetail();
           return;
 
         case 'arm-build-tool': {
@@ -2743,7 +3027,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * by pressing.
            */
           if (viewModel.counts.rooms === 0) {
-            throw new Error('This prison has no room to hold a prisoner, so nobody can be admitted into it.');
+            /*
+             * `HostRefusalError`, not a plain `Error`: the owner ruled a
+             * sentence for this refusal on 2026-09-03, so the reason now has
+             * one to name and the player is told what is missing instead of
+             * only that the press was refused. The message stays diagnostic
+             * English and still never reaches a player (ADR 0011) -- it is the
+             * *reason* that selects the sentence, in `hud/projection.ts`.
+             */
+            throw new HostRefusalError(
+              'no-room-to-hold-anybody',
+              'This prison has no room to hold a prisoner, so nobody can be admitted into it.',
+            );
           }
           sender.submit({
             type: 'AdmitPrisoner',
@@ -3070,6 +3365,19 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
  * no simulation state at all -- so there is nothing for it to wait on.
  */
 const appRoot = document.getElementById('app');
+/*
+ * The accessible name of the whole application, applied here rather than left
+ * as `index.html`'s own `aria-label` (issue: the app-shell label leak). The
+ * HTML shell loads before any `Localizer` exists, so a label baked into the
+ * markup can never pass through the catalogue or the pseudo-locale sweep that
+ * checks every other player-facing string -- `APP_SHELL_MESSAGE_KEY.label`'s
+ * own doc says so. `localizer` above is the page's first one, so this is the
+ * earliest point a translated label can exist at all; before it, a
+ * screen-reader user who opens the page hears whatever `<main>`'s implicit
+ * role announces with no name -- nothing read for the region itself -- rather
+ * than English standing in ahead of translation.
+ */
+if (appRoot !== null) appRoot.setAttribute('aria-label', localizer.format(APP_SHELL_MESSAGE_KEY.label));
 const mountedHud =
   appRoot === null
     ? undefined

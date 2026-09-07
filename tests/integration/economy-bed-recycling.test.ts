@@ -331,6 +331,37 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * control, which it has never been before, and the control's own case says
      * by how much and why.
      *
+     * **It is 26,305 since the owner's ruling of 2026-09-03, and this is the
+     * fourth move of this literal.** *"usuń na razie kary, zobaczymy jak
+     * pogram i ocenię łatwość"* ("remove the penalties for now, we'll see how
+     * it plays and I'll judge the ease") set
+     * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`, so every 40
+     * this prison was charged for an unmet `safety` comes back:
+     * `26,145 + 4 x 40 = 26,305`. **Four** of them, measured -- which is the
+     * first time this file has been able to say how many days of this run were
+     * actually charged, because the withholding was never separable from the
+     * balance before. The control below was charged five, and that one-day gap
+     * is the same accident of arrival ticks the table above sets out.
+     *
+     * **It is 26,145 again since the owner restored the withheld share to
+     * `40` on 2026-09-04, and this is the fifth move of this literal** -- the
+     * first that is a return rather than a step. `26,305 - 4 x 40 = 26,145`,
+     * the same four days' withholding the paragraph above counted, now
+     * charged again. The restoration was ruled conditional on a fifty-prisoner
+     * measurement and both measurements exist; the constant's own docblock
+     * carries them.
+     *
+     * **Every reading above is kept rather than replaced**, and the sequence
+     * is now 29,315 (the exploit), 26,395 (A(ii) closed the income half),
+     * 26,275 (ADR 0078's withholding moved it), 26,145 (the materials half
+     * closed too), 26,305 (the withholding suspended) and 26,145 (restored).
+     * The finding this file exists for is untouched by all six: the exploit no
+     * longer turns one plank into three paying residents. **That the sequence
+     * returns exactly to a value it already held is the strongest evidence
+     * here that the suspension was a switch and not a rewrite** -- nothing
+     * else in this fixture moved across either ruling, so the balance could
+     * come back to the digit.
+     *
      * Written as the literal it is, not as a subtraction or as the control's
      * balance read back, either of which the code under test could satisfy with
      * any pair of numbers.
@@ -375,6 +406,21 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * on the earlier side of a day boundary. The full derivation, with the
      * measured admission and crossing ticks for both arms, is on the case
      * above.
+     *
+     * **It is 26,435 since the owner's ruling of 2026-09-03**, which suspended
+     * the withheld share at `0`: `26,235 + 5 x 40 = 26,435`. Five 40s here
+     * against the other arm's four, so the *sentence* above about this arm
+     * being charged one more day's withholding than the recycled one is still
+     * exactly right -- it is the only part of the derivation the ruling leaves
+     * standing, and it is left standing rather than rewritten
+     * (`docs/AGENT_WORKFLOW.md` §4).
+     *
+     * **It is 26,235 again since the owner restored the withheld share to `40`
+     * on 2026-09-04**: `26,435 - 5 x 40 = 26,235`, the same five days. Both
+     * directions are marked rather than overwritten, and this arm returning to
+     * a value it already held while the other arm returns to one it already
+     * held is what makes the pair's relation below a measurement rather than
+     * two coincidences.
      */
     expect(runtime.treasury.balanceMinorUnits).toBe(26_235);
     /*
@@ -391,6 +437,22 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
      * by the withholding this arm pays and that one does not. **Recycling is
      * now strictly worse than playing it straight**, which is the plainest
      * statement this file has ever been able to make about the loop.
+     *
+     * **The ruling of 2026-09-03 did not touch this assertion, and that is
+     * the whole argument for having written it against production content.**
+     * With the withheld share at `0` the right-hand side is two planks and
+     * nothing else, both balances moved (by four 40s and five), and this line
+     * needed no edit: 130 either way. The relation keeps its sign and its
+     * meaning -- recycling is still strictly worse than playing it straight,
+     * now by the full price of the two planks rather than by 90 of it.
+     *
+     * **Nor did its restoration on 2026-09-04**, for the same reason and with
+     * the same evidence: both balances moved back, the right-hand side became
+     * `130 - 40` again, and the only edit this line needed was the other arm's
+     * literal moving with it. The gap is 90 once more. Two rulings in two days,
+     * in opposite directions, and this assertion was correct throughout --
+     * which is what a relation written against production content buys, stated
+     * where it was paid for.
      *
      * It is not a fixture supplying both sides of its own comparison
      * (`docs/TESTING.md`): the left-hand side is this arm's live balance, the

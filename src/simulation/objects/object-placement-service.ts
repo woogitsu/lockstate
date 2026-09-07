@@ -1,6 +1,6 @@
 import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../content/room-catalog';
 import type { ContentRegistry } from '../../content/registry';
-import { createBuildOrder, type BuildOrder } from '../construction/build-order';
+import { createBuildOrder, type BuildOrder, type BuildOrderLifecycleState } from '../construction/build-order';
 import { getBuildableDefinition, BUILDABLE_REGISTRY } from '../construction/definition';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { canBuildAt, type BuildabilityRequirement } from '../world/buildability';
@@ -268,6 +268,25 @@ export interface RemoveObjectOrderCancelled {
   readonly orderId: string;
   readonly objectId: string;
   readonly anchorTile: TilePosition;
+  /**
+   * The order's lifecycle state as it was **before** `cancelOrder` ran
+   * ([#988](https://github.com/matmaxalez/lockstate/issues/988)).
+   *
+   * It is on the outcome because it cannot be recovered from anywhere else
+   * once `remove` has returned: `ConstructionSystem.allOrders` hands out the
+   * live order objects and `cancelOrder` writes `'cancelled'` over exactly the
+   * field the two cancellation sentences are told apart by, so a handler that
+   * looked the order up afterwards would read `'cancelled'` for every press.
+   * `createConstructionCommandHandler`'s `CancelBuildOrder` branch solves the
+   * same problem the same way, one call earlier, and its comment argues it.
+   *
+   * **A state and not a sentence, and not a boolean.** The two sentences a
+   * cancellation can carry are chosen by `SimulationEventLog`'s exhaustive
+   * `switch` over `BuildOrderLifecycleState`, which is where a ninth state
+   * fails to compile until somebody has decided what the prison says about it;
+   * a boolean computed here would be a second, unguarded copy of that table.
+   */
+  readonly stateAtCancellation: BuildOrderLifecycleState;
 }
 
 export type RemoveObjectOutcome = RemoveObjectRemoved | RemoveObjectOrderCancelled | RemoveObjectRefusal;
@@ -387,6 +406,49 @@ export interface ExcessResidentRelocationNoticePort {
   announceRelocations(relocated: readonly { readonly entityId: number; readonly toInstanceId: string }[]): void;
 }
 
+/**
+ * What the player is told when a *standing* object is taken away
+ * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+ *
+ * **A structural port rather than `SimulationEventLog`**, exactly as
+ * `ObjectOrderSink` above is a port rather than `ConstructionSystem`: this
+ * module holds no sentence, imports nothing from `src/simulation/events/` and
+ * gains no dependency on the events channel. `SimulationEventLog` satisfies it
+ * as written, so the composition root passes the log itself rather than an
+ * adapter -- unlike `ExcessResidentRelocationNoticePort` above, which needs one
+ * because a relocation sentence names a prisoner and a room and this module
+ * knows about neither.
+ *
+ * ## Why the notice is raised here and not at the command handler
+ *
+ * **Because two sentences on one press have to arrive in the right order, and
+ * the band drops the loser rather than queueing it.** A removal can raise
+ * `prisoners.relocated` as well -- `relocateResidentsLeftWithoutAPlace` below,
+ * ADR 0076 decision A(i) -- and `admitToEventBand`
+ * (`src/ui/hud/event-band-dwell.ts`) gives an arriving `'warning'` the line
+ * immediately over an `'info'` incumbent and **discards the incumbent**. So a
+ * removal recorded *after* the relocation would paint the money sentence over
+ * *"{name} had nowhere to sleep and moved to {room}."* and lose it -- and lose
+ * it outright below 720px, where `hud.css` drops the alerts list that would
+ * otherwise still hold it.
+ *
+ * Recorded before the relocation, the same two sentences both reach the player:
+ * the `'warning'` takes the line, the `'info'` that arrives inside the 600 ms
+ * dwell floor does not outrank it and therefore **waits**, and
+ * `releaseEventBandFloor` puts it up when the floor lapses. That is the case
+ * ADR 0084 decision 4's waiting slot exists for.
+ *
+ * ## Why only this method calls it
+ *
+ * `onOrderReverted` below destroys spend too, and it must not raise this: it is
+ * the `Undo` route, and `construction.undone-spend-destroyed` already says so
+ * for that press (#927). Two sentences for one `Z` is what #932 refused. So the
+ * port is asked on the arm `RemoveObject` alone can reach.
+ */
+export interface RemovedObjectNoticePort {
+  recordObjectRemoved(tick: number): void;
+}
+
 /** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
 const DEFAULT_PLACEMENT_ORIENTATION: ObjectOrientation = 0;
 
@@ -407,6 +469,8 @@ export class ObjectPlacementService {
     private readonly residentRelocation?: ExcessResidentRelocationPort,
     /** ADR 0076 decision A(i)'s notice. Absent in a fixture; wired to the events channel in a real session. See `ExcessResidentRelocationNoticePort`. */
     private readonly relocationNotice?: ExcessResidentRelocationNoticePort,
+    /** #945's notice. Absent in a fixture; the session's `SimulationEventLog` in a real session. See `RemovedObjectNoticePort`. */
+    private readonly removalNotice?: RemovedObjectNoticePort,
   ) {}
 
   /**
@@ -585,6 +649,53 @@ export class ObjectPlacementService {
     const object = this.placedObjects.objectAt(tile);
     if (object !== undefined) {
       this.placedObjects.remove(object.placedObjectId);
+      /*
+       * And the player is told what that cost them
+       * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+       *
+       * **On this line and not at the command handler**, and not merged into
+       * the relocation notice two lines down: `RemovedObjectNoticePort` carries
+       * the whole argument, which is that the band discards an `'info'` a
+       * `'warning'` displaces, so the order of the two sentences a removal can
+       * raise decides whether the player reads both or one.
+       *
+       * **After the registry write, so the notice cannot outrun the fact.**
+       * `PlacedObjectRegistry.remove` answers `boolean` and this arm is only
+       * reached with an object in hand, so there is nothing to check -- but a
+       * sentence recorded before the row was dropped would be a claim about a
+       * removal that had not happened yet, which is the promise-the-code-does-
+       * not-keep `AGENTS.md`'s fourth exclusion reserves.
+       *
+       * **The pending-order arm below said nothing at all until
+       * [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+       * sentence that argued for the silence is kept rather than deleted,
+       * because half of it is still the reason that arm does not call this
+       * method.** It read:
+       *
+       * > The pending-order arm below records nothing: it refunds, and a
+       * > sentence about money that does not come back is false of it.
+       *
+       * The clause after the colon still holds, and it is why *this* notice is
+       * still raised on this arm alone. What does not follow from it is the
+       * clause before it. A press saying nothing does not leave the player
+       * reading nothing: `HudViewModel.event` is replaced by a newer event and
+       * by nothing else (`src/main.ts`), and `refusals.supersede` supersedes a
+       * *refusal*, so with the clock paused a cancellation pressed after a
+       * removal stood under *"the money it cost does not come back"* -- the
+       * removal's true sentence, false about the press it had come to stand
+       * over. Silence is not neutral on a band that holds one sentence.
+       *
+       * So the arm below now records the sentence that is true **of itself**,
+       * through the event `CancelBuildOrder` has recorded since #932 rather
+       * than through a new one: it reads the order's state before cancelling,
+       * carries it out on `RemoveObjectOrderCancelled.stateAtCancellation`, and
+       * `createSessionCommandHandler` hands that to
+       * `SimulationEventLog.recordBuildOrderCancelled`, whose `switch` answers
+       * *"the money it cost is refunded"* for the four states before the crew
+       * starts and *"anything already spent past the point of no return stays
+       * spent"* for `'in-progress'`. No new sentence was authored for this.
+       */
+      this.removalNotice?.recordObjectRemoved(tick);
       // Re-derived from the **anchor**, not from the pressed tile: containment
       // is a statement about the anchor (ADR 0028 decision 2), and a bed whose
       // second tile pokes out of the cell would otherwise re-derive whatever
@@ -604,8 +715,21 @@ export class ObjectPlacementService {
 
     const pending = this.orderBuildingObjectAt(tile);
     if (pending !== undefined) {
+      // Read **before** the cancellation, for the reason
+      // `createConstructionCommandHandler`'s `CancelBuildOrder` branch reads
+      // its own copy before calling the same method: `cancelOrder` writes
+      // `'cancelled'` onto the order, `allOrders()` handed out the live object,
+      // and the distinction the two sentences exist for is gone the moment it
+      // returns. See `RemoveObjectOrderCancelled.stateAtCancellation` (#988).
+      const stateAtCancellation = pending.order.state;
       this.orders.cancelOrder(pending.order.id);
-      return { kind: 'order-cancelled', orderId: pending.order.id, objectId: pending.objectId, anchorTile: pending.order.location };
+      return {
+        kind: 'order-cancelled',
+        orderId: pending.order.id,
+        objectId: pending.objectId,
+        anchorTile: pending.order.location,
+        stateAtCancellation,
+      };
     }
 
     const refusal: RemoveObjectRefusal = {

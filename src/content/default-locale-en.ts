@@ -167,6 +167,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.prisoners-without-bed': '{count} with no bed',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
+  /*
+   * How many of the rooms the chip above counts are not ready
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1),
+   * or nothing when they all are.
+   *
+   * **Authored under `AGENTS.md` reservation 4's partial release of
+   * 2026-09-04** -- *"the CHOICE OF WORDS is ours now; the requirement that a
+   * sentence be TRUE is not"* -- so each half is proved against the code that
+   * renders it rather than reasoned about.
+   *
+   * **`{count}`.** `HudRoomNeedsViewModel.unfinishedRooms`, and nothing derived
+   * from it: `roomNeedsFromProjections` (`src/ui/simulation-room-needs.ts`)
+   * increments it once per row whose `shortfallOf` is above zero, which is
+   * `requirementSummary.missingCapability + (access === 'no-way-in' ? 1 : 0)`
+   * -- the projection's own verdicts, read and not recomputed. It is therefore
+   * the same figure the Rooms panel's header prints as `hud.rooms.needs-count`'s
+   * `{unfinished}`, off the same view model, so the strip and the panel cannot
+   * disagree about it.
+   *
+   * **"not ready".** `hud.rooms.needs` below is *"Not ready"*, the words this
+   * repository already chose for a room that exists and cannot yet do the job it
+   * was designated for. The same words for the same fact, because this badge's
+   * whole purpose is to send a player to the panel that says more -- and a
+   * synonym on the way there would read as a second condition.
+   *
+   * **What it does not say, and that is the load-bearing part.** Not *why*: a
+   * missing bed and a missing door are both counted here and only the panel
+   * tells them apart. Not that the rest of the prison is fine -- the count is
+   * taken over the projection's default window of a hundred rooms
+   * (`HudRoomNeedsViewModel`'s own comment), so in a larger prison it can
+   * understate and can never overstate. And it is absent rather than `0`
+   * whenever nothing has been asked, because "nobody asked" and "every room is
+   * ready" are different facts; `roomsNotReadyBadge`
+   * (`src/ui/hud/projection.ts`) is where that is enforced.
+   */
+  'hud.status.rooms-not-ready': '{count} not ready',
   'hud.status.incidents': 'Incidents',
   'hud.status.coverage': 'Coverage',
   'hud.status.contraband': 'Contraband',
@@ -221,9 +257,27 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * "Materials" rather than "anything": a payday can still spend to -2,500,
    * so a sentence saying *nothing* can be bought would be false about the
    * prison even while it is true about every press the player can make. And
-   * *"until the state pays what it owes"* is the tail the three refusal
-   * sentences share, so the chip and the alert read as one rule rather than
+   * *"until the prison earns the money"* is the tail every sibling refusal
+   * sentence shares, so the chip and the alert read as one rule rather than
    * two.
+   *
+   * **The tail used to read *"until the state pays what it owes"* and that
+   * was measured false, which is why it is gone from all eight sentences that
+   * carried it** (`docs/research/2026-09-04-can-this-prison-fail.md` finding
+   * 1, issue #913). The state does not carry a debt to the prison: income is
+   * `StateIncomeSystem`, which credits
+   * `stateIncomeForCompletedDay(source)` at the last tick of each in-game day
+   * and returns before crediting anything when that sum is zero
+   * (`src/simulation/economy/income.ts`). The sum folds over
+   * `RoomInstanceRegistry.residentIdsWithExistingPlace()` -- prisoners holding
+   * a unit of residency capacity that currently exists -- so a prison with no
+   * furnished bed accrues nothing, is owed nothing, and waits for a payment
+   * that is not coming. Measured: `stateIncomeAccruedTodayMinorUnits` was `0`
+   * at all 29 samples of a floored prison holding nobody.
+   *
+   * So the tail now names the only thing that actually lifts the balance --
+   * the prison earning -- and this chip's second sentence says how earning
+   * works, because the tooltip is where there is room to say it.
    *
    * **This paragraph also named the build queue as spending past this rung,
    * to -2,000, and that stopped being true on 2026-09-01.** The owner's
@@ -234,7 +288,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * right word instead of "anything".
    */
   'hud.status.funds-before-deliveries-stop':
-    '{remaining} left before deliveries stop — past that, no materials can be ordered until the state pays what it owes.',
+    '{remaining} left before deliveries stop — past that, no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a bed.',
   /*
    * The same sentence once the remainder is nothing, in the tense that is then
    * true. `overdraftTone` paints the chip red at exactly this point and
@@ -246,9 +300,14 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `ProcurementSystem` does not cancel it. The second clause is what makes
    * that unambiguous, and it is the same clause the warning above and the
    * refusal alert below carry.
+   *
+   * Same tail and same closing sentence as the warning above, for the reason
+   * given there: the state holds no debt to the prison, so what lifts this is
+   * the prison earning, and this is one of the two places with room to say
+   * what earning takes.
    */
   'hud.status.funds-deliveries-stopped':
-    'Deliveries have stopped — no materials can be ordered until the state pays what it owes.',
+    'Deliveries have stopped — no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a bed.',
   /*
    * The chip's tooltip at the treasury floor itself -- `critical`, the ruling
    * on issue #768's third tone, one step past everything the sentence above
@@ -258,19 +317,56 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * nothing else**: that no further spending of *any* kind is possible right
    * now (not deliveries alone -- the sentence above already says that -- but
    * construction, hiring and even the wage payment the deliveries rung still
-   * lets through), and what lifts it. "Until the state pays what it owes" is
-   * kept as the tail rather than invented fresh, because it is the true
-   * mechanism (the per-prisoner-day grant, `src/simulation/economy/income.ts`)
-   * and it is what every sibling refusal sentence already says; a different
-   * tail here would read as a different escape hatch where there is only one.
+   * lets through), and what lifts it.
    *
-   * **This copy is owner-pending** (`AGENTS.md`'s fourth exclusion: a
-   * player-facing promise is not an agent's to finalise). Written to be the
-   * clearest available sentence rather than a placeholder, not to be the
-   * owner's last word on it.
+   * **This sentence was measured to be false and is rewritten, which is the
+   * one change here that was not a matter of taste** (issue #913,
+   * `docs/research/2026-09-04-can-this-prison-fail.md` finding 1). It read
+   * *"The treasury is exhausted -- nothing can be spent at all until the state
+   * pays what it owes."* Sixty guards hired on day 1 pins a prison at this
+   * floor by day 4, and it was held there across twelve samples and four
+   * paydays with `stateIncomeAccruedTodayMinorUnits: 0` at all 29 readings.
+   * The state owed that prison nothing, and the sentence named waiting as the
+   * way out when waiting is the one thing that cannot work.
+   *
+   * **What the three clauses now claim, and where each is true.**
+   *  - *"at its floor -- nothing can be spent at all"*: this key is chosen on
+   *    `atTreasuryFloor` (`src/ui/hud/projection.ts`), and at
+   *    `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` every rung of
+   *    `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS` refuses -- including `'wages'`,
+   *    the deepest, so even the payday that spends past the deliveries rung
+   *    pays nothing here (`src/simulation/economy/treasury.ts`).
+   *  - *"until the prison earns the money"*: `StateIncomeSystem.update` is the
+   *    prison's only positive inflow, in its own comment's words, and a
+   *    refund of a cancelled delivery is the prison's own money coming back
+   *    rather than income (`src/simulation/economy/income.ts`). `LoanBook`
+   *    exists and is not wired -- nothing in `src/` passes `loanTerms` -- so
+   *    there is no borrowing to name either.
+   *  - *"at the end of each day and only for prisoners who have a bed"*: the
+   *    day is paid on its last tick (`schedule.phaseTicks = DAY_LENGTH_TICKS
+   *    - 1`), and `stateIncomeForOccupiedPlaces` folds over
+   *    `residentIdsWithExistingPlace()`, which is a prisoner holding a unit of
+   *    residency capacity **that currently exists**. Residency capacity comes
+   *    only from an object declaring `'sleep-surface'` -- `object.bed` and
+   *    `object.medical-bed` (`src/simulation/objects/room-capacity.ts`) -- so
+   *    "has a bed" is the rule and not a paraphrase of it: an arrival still in
+   *    intake, a resident whose bed was taken away, and the second of two
+   *    residents over one bed are each unpaid.
+   *  - *"a prison housing nobody earns nothing"*: `update` returns without
+   *    crediting when the fold is zero, which is the state act A measured for
+   *    ten days with twenty-four prisoners in intake.
+   *
+   * No amount is quoted, deliberately: what a place pays is
+   * `stateIncomeForPrisonerDay`, which withholds per unmet need, and a figure
+   * in this sentence would go stale the day
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` moves off zero.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04
+   * (*"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*), so the voice is
+   * open to a unifying pass; the facts above are not.
    */
   'hud.status.funds-treasury-floor-exhausted':
-    'The treasury is exhausted — nothing can be spent at all until the state pays what it owes.',
+    'The treasury is at its floor — nothing can be spent at all until the prison earns the money. The state pays at the end of each day and only for prisoners who have a bed, so a prison housing nobody earns nothing.',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no
@@ -326,6 +422,49 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // so a nine-character label such as "Logistics" would put the bar at
   // x = -9.5 and fail the assertions in `tests/browser/ui-shell.spec.ts`.
   'hud.tab.rooms': 'Rooms',
+
+  /*
+   * The camera zoom, said out loud at last (issue #1023).
+   *
+   * `WorldScene` has zoomed on the wheel, on a pinch and on `+`/`-` since it
+   * was written, over a deliberate fifteen-fold range
+   * (`src/rendering/scene/world-scene.ts:68`, `ZOOM_BOUNDS = { min: 0.2, max: 3 }`,
+   * with the docblock above it naming the intent: *"far enough out to plan a
+   * wing, close enough in to see which way a prisoner is facing"*). Nothing on
+   * screen said so: measured on the assembled page at 1280x800 on `main` at
+   * `bd6fa32`, the string `zoom` did not occur anywhere in `document.body.innerHTML`,
+   * and the only sentence about moving the view is `hud.build.arm-hint`'s
+   * *"Two fingers, the middle button or the arrow keys still move the camera"*
+   * -- which names panning, is Build-tab only, and says nothing about zoom.
+   * The owner's standing brief is a game with no hidden features; a
+   * fifteen-fold zoom nobody is told about is one.
+   *
+   * **These three strings are authored here under `AGENTS.md` reservation 4 as
+   * partly released on 2026-09-04 -- the wording is ours, the truth is not --
+   * and each was checked against the code that renders it rather than assumed:**
+   *
+   * - `hud.zoom.in` / `hud.zoom.out` name what the two buttons do. The press
+   *   reaches `WorldScene.stepCameraZoom` (`src/rendering/scene/world-scene.ts`),
+   *   which calls the same `stepZoom` the keyboard does with
+   *   `KEYBOARD_ZOOM_STEP` (1.25) one way and its reciprocal the other, so "in"
+   *   raises `camera.zoom` and "out" lowers it. Neither string promises a
+   *   *range*, a step size or a key, because a control at the clamp
+   *   (`clampZoom`, `src/rendering/camera/coordinates.ts:88`) changes nothing
+   *   and a sentence claiming otherwise would be the false-promise defect the
+   *   reservation exists for. No key is named for a second reason: the bindings
+   *   are `Equal` and `Minus` by *code* (`src/input/bindings.ts:34-35`), which
+   *   is a different physical key on an AZERTY keyboard, and `AGENTS.md`
+   *   boundary 10 says this game supports both.
+   * - `hud.zoom.title` names the group and is the visible legend above the
+   *   pair, in the same arrangement `INTERFACE SCALE` uses one panel over
+   *   (`src/ui/display-scale.ts`) and for the reason that control records: a
+   *   bare glyph beside a game that has both an interface scale and a camera
+   *   zoom needs to say which one it is. "Zoom" is the camera's, and the
+   *   display-scale control already took "interface".
+   */
+  'hud.zoom.title': 'Zoom',
+  'hud.zoom.in': 'Zoom in',
+  'hud.zoom.out': 'Zoom out',
 
   'hud.minimap.title': 'Minimap',
   'hud.minimap.placeholder': 'Minimap is not available yet',
@@ -539,8 +678,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * construction tick, so the wall the player drew is still theirs and a
    * sentence saying it failed would be false.
    *
-   * **Why it shares the other four's tail.** *"Until the state pays what it
-   * owes"* is the same clause `hud.alert.refusal.purchase.insufficient-funds`
+   * **Why it shares the other four's tail.** *"Until the prison earns the
+   * money"* is the same clause `hud.alert.refusal.purchase.insufficient-funds`
    * and `hud.alert.refusal.hire.insufficient-funds` carry, so the three rungs
    * read as one ladder with three things stopping on it rather than as three
    * unrelated rules that happen to be about money. And no number: the rung is
@@ -564,7 +703,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * because the two now fire together.
    */
   'hud.alert.refusal.construction.materials-unfunded':
-    'The build queue is stalled — no more materials until the state pays what it owes.',
+    'The build queue is stalled — no more materials until the prison earns the money.',
   // `hire.insufficient-funds` describes the same condition as
   // `purchase.insufficient-funds` below and gets its own sentence, for the
   // reason the `zone.*` pair further down does: the treasury refuses a hire
@@ -626,7 +765,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // lists all four keys as owed a sentence per rung."*
   //
   // **The owner ruled on 2026-09-01 and the four keys now name what stops
-  // rather than the number they stop at.** The shape chosen is *"deliveries
+  // rather than the number they stop at.** The shape chosen was *"deliveries
   // are refused until the state pays what it owes"* over *"the state will not
   // pay past -1,250"*, and it is the shape rather than the digits that is
   // load-bearing: a sentence spelling out -1,250 would be a second copy of
@@ -649,7 +788,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   //
   // The rung-2 sentence that pairs with these -- a build queue stalled -- is
   // `hud.alert.refusal.construction.materials-unfunded` above, and it
-  // deliberately shares this one's *"until the state pays what it owes"*
+  // deliberately shares this one's *"until the prison earns the money"*
   // tail so the ladder reads as one thing rather than unrelated rules. It
   // stalled at -2,000 under ruling 19; the owner's ruling on #771
   // (2026-09-01, ADR 0017's equalisation amendment) moved it to the same
@@ -657,7 +796,24 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // naming what stops rather than the number was the right call two
   // paragraphs up -- this sentence needed no edit when the number under it
   // moved.
-  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the state pays what it owes.',
+  //
+  // **The tail moved on 2026-09-04, and the ruling above is what says it
+  // could.** Ruling 19's requirement is *name what stops, not the number it
+  // stops at*, and the words that carried it -- *"until the state pays what
+  // it owes"* -- were measured false: the state holds no debt to a prison
+  // that is not earning, because `StateIncomeSystem` credits nothing at all
+  // when `stateIncomeForCompletedDay` is zero, and that sum is a fold over
+  // prisoners holding a furnished bed
+  // (`src/simulation/economy/income.ts`; issue #913 and
+  // `docs/research/2026-09-04-can-this-prison-fail.md` finding 1, where a
+  // floored prison read `stateIncomeAccruedTodayMinorUnits: 0` at all 29
+  // samples). *"Until the prison earns the money"* names the same stop with
+  // no number in it and is true whether or not anybody is housed; the two
+  // chip tooltips at `hud.status.funds-*` above are where there is room to
+  // say what earning takes. Authored by an agent under the owner's release of
+  // 2026-09-04 (*"Wybierz sam a potem się ujednolici sposób pisania"*), so
+  // the wording is open to a unifying pass and the fact it rests on is not.
+  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — hiring is refused until the prison earns the money.',
   // ADR 0053: the only work a staff member can be sent to do today is a
   // security duty, so a role outside the security department is a wage with
   // nothing behind it. The sentence names the rule rather than the department
@@ -699,7 +855,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // refusal to `unprocurable` instead, *"because the prison is not short of
   // money for them and telling the player it is would be a sentence that is
   // false"* -- so the tail of this sentence is true on both routes.
-  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — deliveries are refused until the state pays what it owes.',
+  'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — deliveries are refused until the prison earns the money.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
   /*
@@ -828,7 +984,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * What a control says when it *works* (issue #749, the owner's ruling of
    * 2026-09-01).
    *
-   * These five are the first sentences on this channel about something the
+   * These are the first sentences on this channel about something the
    * *player* did, and they exist because four controls said nothing at all when
    * they succeeded: `docs/research/2026-09-01-what-act-six-never-reached.md` D2
    * measured Cancel on a queued build order, Cancel on a delivery, Undo and
@@ -855,34 +1011,183 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * the worst option"*, and it is why the second sentence exists at all rather
    * than the first being stretched to cover both.
    *
-   * **Only one of the four names a figure, and that is deliberate.**
+   * **Only the delivery names a figure, and that is deliberate.**
    * `ProcurementSystem.cancel` already answers `refundedMinorUnits`, so
    * `{total}` is nearly free; `ConstructionSystem.cancelOrder` answers `void`,
    * so the two order sentences cannot name an amount without plumbing the
-   * ruling declines. `{total}` is minor units, unconverted, exactly as the
+   * ruling declines -- and `PlacedObjectRegistry.remove` answers `boolean`, so
+   * #945's removal sentence at the end of this family cannot either.
+   * `{total}` is minor units, unconverted, exactly as the
    * unpaid-payday sentence above -- and it is the same word the Build panel's
    * own delivery row already uses for the same money (`hud.build.delivery`,
    * "{total} back").
    *
-   * **Neither history sentence names a count**, which is ruling 4: Undo and
+   * **No history sentence names a count**, which is ruling 4: Undo and
    * Redo each reverse a whole transaction, so a sentence naming one order would
    * be a small lie whenever a run of several moved. "The last change" is what
-   * UR3 says instead, and it is true of a run of one and of twelve.
+   * UR3 says instead, and it is true of a run of one and of twelve. That
+   * applies to #927's third history sentence below as well as to the two UR3
+   * gave.
    *
-   * A cancelled order that had already **finished** gets no sentence here.
-   * Neither of the two below is true of it -- the money did not come back and
-   * the materials are not gone, they went into the container (ADR 0076
-   * decision B) -- no control can reach that press, and inventing a third
-   * sentence for it would be exactly the promise-the-code-does-not-keep that
-   * `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
-   * `SimulationEventLog.recordBuildOrderCancelled`.
+   * **A cancelled order that had already finished got no sentence here until
+   * [#927](https://github.com/matmaxalez/lockstate/issues/927), and the
+   * paragraph that withheld it is kept below rather than deleted -- it is why
+   * the defect survived.** It read:
+   *
+   * > A cancelled order that had already **finished** gets no sentence here.
+   * > Neither of the two below is true of it -- the money did not come back and
+   * > the materials are not gone, they went into the container (ADR 0076
+   * > decision B) -- no control can reach that press, and inventing a third
+   * > sentence for it would be exactly the promise-the-code-does-not-keep that
+   * > `AGENTS.md`'s fourth exclusion reserves. Recorded as owed at
+   * > `SimulationEventLog.recordBuildOrderCancelled`.
+   *
+   * Both of its premises were dead when it was found:
+   *
+   * - **The materials are gone.** The owner's ruling of 2026-09-01 -- *"Taking
+   *   a finished object away returns nothing. Not its materials, not its
+   *   money."*, ADR 0076's amendment of that date -- withdrew decision B, and
+   *   `ConstructionSystem.cancelOrder` has followed it since: its
+   *   `destroysSpendOnCancel` arm drops a `'completed'` order's allocation
+   *   unreleased and unpaid.
+   * - **A control reaches that press.** It is `Z`.
+   *   `ConstructionSystem.undo()` cancels every order in the transaction
+   *   *"including a `completed` one"*, in its own comment. What is true is the
+   *   narrower claim about the queue *list*: `PENDING_BUILD_ORDER_STATES`
+   *   excludes `'completed'`, so no Build-panel row names a finished order.
+   *
+   * So the second sentence below **is** true of a finished order -- the money
+   * did not come back and the materials were destroyed, which is what *"anything
+   * already spent past the point of no return stays spent"* says -- and
+   * `recordBuildOrderCancelled` now records it for `'completed'` as well as for
+   * `'in-progress'`. Under the owner's own reasoning, *"silence about a loss is
+   * the worst option"*, the larger loss was the one getting no mention.
+   *
+   * **`undone-spend-destroyed` is the third sentence, and it is authored here
+   * rather than reused, under the 2026-09-04 release of `AGENTS.md`'s
+   * reservation 4** (*"the choice of words is ours; the requirement that a
+   * sentence be TRUE is not"*). Two things make it a new string rather than the
+   * one above raised on the Undo channel:
+   *
+   * - **The band shows one sentence.** `admitToEventBand`
+   *   (`src/ui/hud/event-band-dwell.ts`) gives an arriving `'warning'` the line
+   *   at once and *discards* the `'info'` it displaces, so raising both
+   *   `construction.undone` and `order-cancelled-underway` on one tick would
+   *   have painted only *"The order was cancelled…"*.
+   * - **"The order" is the singular the no-count ruling warns about.** An undo
+   *   reverses a whole transaction, so a drag of twelve walls is not *"the
+   *   order"*. *"The last change to the build queue"* is the phrase ruling 4
+   *   chose for exactly that reason, and this sentence keeps it.
+   *
+   * It is assembled from two clauses already approved rather than newly
+   * written, the way the pair above was assembled from the candidates in
+   * `docs/research/2026-09-01-copy-variants-for-the-owner.md` §5c: UR3's *"The
+   * last change to the build queue was undone"* joined by this family's em dash
+   * to CO3's *"anything already spent past the point of no return stays
+   * spent"*. **Verified true, not merely plausible**: the first clause is
+   * recorded only when `ConstructionSystem.undo()` answers `reversed: true`
+   * (`createConstructionCommandHandler`, the `Undo` branch), and the second only
+   * when that same answer carries `spendDestroyed`, which `undo()` sets from
+   * `destroysSpendOnCancel` over each order's state *before* `cancelOrder` runs
+   * -- the two states for which `cancelOrder` neither releases the allocation
+   * nor calls `refundSurplusOf`. The clause's hedge is what makes it true of a
+   * mixed transaction: what was *not* past that point still comes back.
+   *
+   * **It names no count and no figure**, which is both rulings kept:
+   * `ConstructionUndoSpendOutcome` is one bit, and `cancelOrder` still answers
+   * `void` so no amount is reachable here either.
    */
   'hud.alert.event.construction.order-cancelled': 'The order was cancelled — the money it cost is refunded.',
   'hud.alert.event.construction.order-cancelled-underway':
     'The order was cancelled. Anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.undone': 'The last change to the build queue was undone.',
+  'hud.alert.event.construction.undone-spend-destroyed':
+    'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',
   'hud.alert.event.construction.redone': 'The last change to the build queue was redone.',
   'hud.alert.event.economy.delivery-cancelled': 'The delivery was cancelled — {total} back.',
+
+  /*
+   * **A standing object taken away, and the money it cost gone with it**
+   * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
+   *
+   * The seventh sentence in this family and the first that is not about a build
+   * *order*. It exists because #945 measured `RemoveObject` on a finished bed
+   * destroying its 65 (`25,000 -> 24,935` on placement, `24,935 -> 24,935` on
+   * removal) with the sentence band **`hidden`** -- an absence rather than a
+   * collision -- and because #932, which made `Undo` and `CancelBuildOrder`
+   * state-aware about exactly this loss, does not reach this press:
+   * `ObjectPlacementService.remove`'s standing-object arm goes to
+   * `PlacedObjectRegistry.remove` and never to `ConstructionSystem.cancelOrder`.
+   *
+   * **Authored here rather than reused, under the owner's release of
+   * `AGENTS.md` reservation 4 on 2026-09-04** (*"the choice of words is ours;
+   * the requirement that a sentence be TRUE is not"*). The near-miss it was
+   * nearly built as is `hud.alert.event.construction.order-cancelled-underway`
+   * above -- *"The order was cancelled. Anything already spent past the point of
+   * no return stays spent."* -- and the reason it is a near-miss is the first
+   * clause and not the second: **a standing bed is not an order any more.** No
+   * order changed state at this press, `cancelOrder` was not called, and the
+   * order that built the bed stays `'completed'` (asserted in
+   * `tests/integration/object-removal-loop.test.ts`, *"refuses a second press on
+   * a tile whose object has already gone"*). Saying *"the order was cancelled"*
+   * would name a thing the player did not do -- the same singular-subject
+   * objection #927's weakest claim raised against reuse on the Undo channel.
+   *
+   * **Verified true, not merely plausible.** Both halves were opened:
+   *
+   * - *"The object was removed"* -- `createSessionCommandHandler`'s
+   *   `RemoveObject` branch records this only for
+   *   `RemoveObjectOutcome.kind === 'removed'`, the arm that has already dropped
+   *   the row from `PlacedObjectRegistry`. The `'order-cancelled'` arm, which
+   *   refunds, does not raise this key.
+   *
+   *   **That clause read *"records nothing here"* until
+   *   [#988](https://github.com/matmaxalez/lockstate/issues/988), and the
+   *   correction is to the word rather than to the proof.** It was written
+   *   about *this* key and is still true of it, but the arm it describes
+   *   recorded nothing **anywhere**, and on a band that holds one sentence a
+   *   press that says nothing keeps the last press's -- so this sentence,
+   *   true of its own press, stood over a refund and claimed its money was
+   *   destroyed. That arm now raises `construction.order-cancelled` above,
+   *   which leaves the proof of *this* sentence exactly as it was and takes
+   *   the false reading of it away.
+   * - *"the money it cost does not come back"* -- that arm removes the registry
+   *   row, re-derives the room's capacity and relocates whoever lost a place. It
+   *   holds no treasury and no container reference and writes to neither, which
+   *   is the owner's ruling of 2026-09-01: *"Taking a finished object away
+   *   returns nothing. Not its materials, not its money."* (ADR 0076's amendment
+   *   of that date). `tests/integration/economy-bed-recycling.test.ts` measures
+   *   it from the other side -- the next bed is bought at 65 like anybody
+   *   else's, and recycling is now strictly worse than playing it straight.
+   *
+   *   It is *"the money"* and not *"the materials"* because money is what the
+   *   player watches move: the object was built out of materials some deliveries
+   *   ago, and what the FUNDS badge showed leaving was 65. Neither comes back,
+   *   so the sentence is true of both readings and legible in only one.
+   *
+   * **It names no figure**, which is the ruling of 2026-09-01 kept on a third
+   * route. `PlacedObjectRegistry.remove` answers `boolean` and `PlacedObject`
+   * carries no price, so the amount is not reachable at the call site any more
+   * than it is through `cancelOrder`; a sentence saying *that* the money is gone
+   * without saying how much is within what exists. **And no count**, vacuously
+   * rather than by suppression: a removal is one press on one tile taking one
+   * object, so unlike Undo there is no transaction size to leak.
+   *
+   * **Why not the em dash plus *"stays spent"* the two loss sentences above
+   * use.** Those two are about a *cancellation*, where the hedge -- *"anything
+   * already spent past the point of no return"* -- is load-bearing, because some
+   * of what a mixed transaction spent does come back. Nothing about a standing
+   * object is hedged: all of it is past that point and none of it returns, so
+   * the plain inverse of `order-cancelled`'s *"the money it cost is refunded"*
+   * says more with less. The two read as a pair on purpose.
+   *
+   * It also matches the vocabulary the Build panel already uses for this exact
+   * press: `hud.build.remove-hint` says *"nothing comes back once the crew has
+   * started it. A finished one is not refunded."*, and *"the object"* is what
+   * every `hud.alert.refusal.place-object.*` and
+   * `hud.alert.refusal.remove-object.*` sentence calls the thing.
+   */
+  'hud.alert.event.objects.removed-spend-destroyed': 'The object was removed — the money it cost does not come back.',
 
   // ADR 0076 decision A(i)'s notice: a prisoner whose bed was taken away has
   // been moved to one that exists.
@@ -906,6 +1211,61 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // prison had nowhere to move -- and there must not be one until the owner
   // writes it.
   'hud.alert.event.prisoners.relocated': '{name} had nowhere to sleep and moved to {room}.',
+
+  /*
+   * The first thing this game says when a player gets something right (issue
+   * #966 site 2, from the acknowledgement census that issue and #960 carry:
+   * twenty event types, nineteen reachable, nine bad news, six undos, two
+   * recoveries, and no acknowledgement of anything anybody did).
+   *
+   * **Authored here rather than asked for, under `AGENTS.md` reservation 4's
+   * partial release of 2026-09-04** -- *"the CHOICE OF WORDS is ours now; the
+   * requirement that a sentence be TRUE is not"* -- so what follows is the
+   * proof of each clause against the code that renders it, which is what that
+   * release asks for in exchange.
+   *
+   * **`{room}`.** The room *type* that was designated, resolved from the room
+   * catalog's own `nameKey` -- `ZoneRoomAccepted.roomNameKey`, read in
+   * `RoomZoningService.zone` from the very definition that decided the
+   * request, and the same field `prisoners.relocated`'s `{room}` above
+   * resolves. It renders as "Cell", "Yard", "Canteen": the eighteen
+   * `room.*.name` entries at the top of this file. The instance the world
+   * registered carries `roomCatalogId: definition.id`, so the word and the
+   * type cannot disagree.
+   *
+   * **"designated".** The verb of the control the player pressed --
+   * `hud.rooms.confirm` is *"Designate {width} × {height}"* -- and the word
+   * this panel already uses for a room that exists but is not yet ready (see
+   * `hud.rooms.needs`: *"a room the player already designated"*). It is true
+   * at the moment this event is recorded: `zone` reaches its accepted outcome
+   * only after `SparseWorld.setZoning` has painted every tile of the rectangle
+   * with the definition's `numericId` and `RoomInstanceRegistry.register` has
+   * taken the instance, and the command handler records the event on that
+   * outcome.
+   *
+   * **And the full stop, which is the load-bearing part.** Two things the
+   * accepted outcome *knows* and this sentence must not say, both of them paid
+   * for already:
+   *
+   * - **Not that anybody can get in.** `ZoneRoomAccepted.enclosure` may read
+   *   `'sealed'` for a room with no doorway at all, which is
+   *   [#938](https://github.com/matmaxalez/lockstate/issues/938): the Rooms
+   *   panel's *"Walled in on every side"* renders identically for a reachable
+   *   room and a sealed box, and a prisoner in a doorless shower room measured
+   *   hygiene 0 of 255 with 162 route failures. So no clause here implies the
+   *   room will be *used*.
+   * - **Not that it works.** A registered instance has `residentCapacity: 0`
+   *   until an object stands in it, and every room type but `room.yard`
+   *   authors an `object` requirement -- which is why the needs readout
+   *   (`hud.rooms.needs-room`) exists at all. So no clause here promises
+   *   *function*, and none names what is still missing either: that is one
+   *   readout's job and it is already done.
+   *
+   * What is left is the narrow claim, which is also the one the player
+   * currently gets no word about: this designation was accepted and the world
+   * now holds this room.
+   */
+  'hud.alert.event.rooms.zoned': '{room} designated.',
 
   // The incident sentences (issue #555). Same family, same voice, written
   // against two constraints the two above did not have.
@@ -933,6 +1293,58 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.incidents.escape-attempt-opened': 'A prisoner is trying to break out.',
   'hud.alert.event.incidents.gang-retaliation-opened': 'Two gangs are settling a score.',
   'hud.alert.event.incidents.all-clear': 'The prison is under control again — no incident is still open.',
+  /*
+   * The same return to calm when the last thing to close **expired** rather
+   * than being handled -- issue #914's finding 4, and the row the sentence
+   * above was saying for both endings.
+   *
+   * **Measured, and it is why this key exists.**
+   * `docs/research/2026-09-04-does-anyone-answer-an-incident.md` played one
+   * prison shape twice. With six guards, **15 incidents out of 15** ended
+   * `'resolved'` with **zero injuries**. With none, **19 out of 19** ended
+   * `'lapsed'` with **114 prisoner-injuries and three escapes**. Both alert
+   * columns held the same rows, in the same order, saying *"The prison is
+   * under control again -- no incident is still open."* -- byte for byte,
+   * with the same `0 INCIDENTS Clear` chip beside them. The sentence is true
+   * about the incident *list* and it told the second prison it was fine.
+   *
+   * **Every clause is a property of the transition rather than a judgement.**
+   *  - *"No incident is still open"*: `reportAllClearIfCalm` emits only when
+   *    `IncidentLog.openIncidentCount` is zero, which is the same guard the
+   *    sentence above rides (`src/simulation/incidents/response-system.ts`).
+   *  - *"the last one"*: at most one row is emitted per return to calm, and it
+   *    is the terminal transition that emptied the log -- so two incidents
+   *    closing together produce one sentence, about that one.
+   *  - *"ran out of time instead of being contained"*: `lapse` is reached from
+   *    `tryDispatch` and from `advanceResponse` only through
+   *    `isPastDeadline`, i.e. `tick - startedAtTick > responseDeadlineTicks`.
+   *    It deliberately does **not** say nobody was sent: a `'notified'`
+   *    incident whose responders were still walking lapses too, which the
+   *    research reached in one press of Release, so *"no guard answered"*
+   *    would be false in a state a player can cause.
+   *  - *"everyone caught in it was hurt"*: `lapse` writes
+   *    `injuredEntityIds: [...incident.participantIds]` with no condition and
+   *    no roll, while the containment branch writes `[]`. Quantified over the
+   *    participants rather than counted because this localizer has no plural
+   *    rules -- the note at `hud.alert.event.incidents.riot-opened` above
+   *    states the rule -- and a lapsed escape attempt injures exactly one.
+   *
+   * **What it still does not say, and why that is not this key's to fix.** How
+   * many were hurt, who, and what was damaged: `IncidentOutcome` carries all
+   * three and the `hud/incidents` projection already renders them, but nothing
+   * under `src/ui/` requests that projection
+   * (`tests/foundation/projection-reachability-contract.test.ts` names it in
+   * `UNPAINTED_PROJECTION_IDS`), so there is no surface for a per-incident
+   * accounting to appear on. That is finding 2 of the same record and it is a
+   * panel rather than a sentence.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04
+   * (*"Wybierz sam a potem się ujednolici sposób pisania"*): the voice is open
+   * to their unifying pass, and each clause above is pinned to the code that
+   * makes it true.
+   */
+  'hud.alert.event.incidents.all-clear-after-lapse':
+    'No incident is still open — but the last one ran out of time instead of being contained, and everyone caught in it was hurt.',
 
   // The one sentence in this family about an incident *ending*, and the one
   // the five above made necessary: a successful escape and a contained attempt
@@ -1049,28 +1461,79 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * and the refund only applies to the second: a thing already built out of the
    * materials does not give them back.
    *
-   * **`remove-hint` IS FALSE AS OF 2026-08-31 AND NO REPLACEMENT IS WRITTEN
-   * HERE, BECAUSE COPY IS THE OWNER'S** (`AGENTS.md`'s fourth exclusion). The
-   * owner's ruling 20 -- *"Anulowanie zwraca pieniądze zamiast cegieł"* and
-   * *"Pieniądze dopóki ekipa nie zaczęła"*, recorded in
-   * [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
-   * amendment of that date -- makes a cancelled order give back **money**
-   * rather than materials, and give back **nothing** once the crew has started
-   * it. So *"its materials come back"* names the wrong currency, and the
-   * sentence has no clause at all for the case where nothing comes back. The
-   * second half, *"a finished one is not refunded"*, is still true.
+   * **`remove-hint` WAS FALSE FROM 2026-08-31 TO 2026-09-02, AND THE OWNER HAS
+   * NOW WRITTEN THE REPLACEMENT.** The sentence in place names all three
+   * outcomes the code actually has: money back before the crew starts, nothing
+   * back after, and nothing for a finished object.
    *
-   * It is left standing rather than deleted for the reason a wrong sentence
-   * beats no sentence on a control that takes something away: removing it would
-   * leave the *Remove* tool with nothing said about it at all. Reported to the
-   * owner with the branch that made it false.
+   * > **The account of the falsehood is kept, because the two days are the
+   * > finding.** It read: *"`remove-hint` IS FALSE AS OF 2026-08-31 AND NO
+   * > REPLACEMENT IS WRITTEN HERE, BECAUSE COPY IS THE OWNER'S"*, and it was
+   * > right on both counts. The owner's ruling 20 -- *"Anulowanie zwraca
+   * > pieniądze zamiast cegieł"* and *"Pieniądze dopóki ekipa nie zaczęła"*,
+   * > recorded in [ADR 0076](../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * > amendment of that date -- had made a cancelled order give back **money**
+   * > rather than materials, and **nothing** once the crew had started it. So
+   * > *"its materials come back"* named the wrong currency and the sentence had
+   * > no clause at all for the case where nothing comes back. Only the second
+   * > half, *"a finished one is not refunded"*, was true, and it survives into
+   * > the replacement unchanged.
+   * >
+   * > **What the two days cost, and what to do differently.** The wrong
+   * > sentence was left standing deliberately, on the reasoning that a wrong
+   * > sentence beats no sentence on a control that takes something away -- and
+   * > that reasoning is still defensible. What was missing is that being
+   * > *reported* is not being *asked*: the note said "Reported to the owner
+   * > with the branch that made it false" and no one put the replacement to
+   * > them as a decision to make. A playtest re-measured it live on 2026-09-02
+   * > (cancelling an `In Progress` order moved the treasury 23,400 -> 23,400,
+   * > exactly zero), it was put to the owner as a choice between three
+   * > wordings, and it was answered the same hour. **A false player-facing
+   * > sentence needs a question, not a record.**
    */
   'hud.build.remove': 'Remove',
   'hud.build.remove-active': 'Stop removing',
-  'hud.build.remove-hint': 'Press any tile of an object to take it away. One still being built is cancelled and its materials come back; a finished one is not refunded.',
+  'hud.build.remove-hint': 'Press any tile of an object to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded.',
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  /*
+   * The same hint for a buildable that stands on a **tile** rather than on an
+   * edge (issue #904).
+   *
+   * **The sentence above was shown for every row, and for two thirds of the
+   * catalogue it described the wrong gesture**: arming a Bed, a Toilet or a
+   * Storage Rack told the player to click a tile *edge* and to drag a *run*,
+   * and neither is how one is placed. `ObjectTool.place` is *"one press, one
+   * tile, one command"* -- it reports a single anchor tile and there is no drag
+   * route for it at all, the dragged-run producer being `BuildTool.attachOrders`
+   * and walls only (`src/ui/object-tool.ts`, `src/ui/hud/hud.ts`).
+   *
+   * **"Inside a designated room" is a refusal reason and not advice.**
+   * `ObjectPlacementService` asks `roomInstanceContaining` of the anchor tile
+   * and answers `'outside-room'` when there is none
+   * (`src/simulation/objects/object-placement-service.ts`), so a press on bare
+   * land is refused however good the tile looks. Containment is asked of the
+   * **anchor** only, which is why the sentence names the tile the player
+   * presses rather than the whole footprint: a bed whose second tile pokes out
+   * of the cell is legal, and a hint saying the object must fit inside the room
+   * would be false in exactly that case.
+   *
+   * "Designated" is the word `hud.rooms.arm-hint` and `hud.refusal.zone-room`
+   * already use for what the Rooms panel does, rather than a second verb for
+   * the same act.
+   *
+   * The camera clause is repeated verbatim from the sentence above rather than
+   * factored out: it is the same fact about the same armed pointer, and one
+   * sentence per armed state is what `paintArmed` renders -- see
+   * `src/ui/hud/build-panel.ts`, where the hint is one line either way so that
+   * the controls under it do not move.
+   *
+   * Authored by an agent under the owner's release of 2026-09-04
+   * (*"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*).
+   */
+  'hud.build.arm-hint-object':
+    'Click a tile inside a designated room to place it. One press, one object. Two fingers, the middle button or the arrow keys still move the camera.',
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
@@ -1081,6 +1544,46 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buy-quantity': 'Quantity',
   'hud.build.buy-submit': 'Buy {count} × {material} · {total}',
   'hud.build.buy-hint': 'Arrives while the clock runs, into the stock a build draws from.',
+  /*
+   * **The sentence a refused Buy press shows, and it is the owner's own.**
+   *
+   * Authored 2026-09-03. It was put to the owner as a clickable choice among
+   * four candidate wordings, and they chose this one; the value below is their
+   * chosen string verbatim, em dash included. No agent authored, shortened or
+   * re-punctuated any part of it -- `AGENTS.md`'s fourth exclusion reserves a
+   * player-facing sentence to the owner, and issue #772 reserved *this*
+   * sentence in those words: *"the half that is a decision, and so is not an
+   * agent's to take: what the control says"*.
+   *
+   * It closes the wording half of #772 on both controls that spend money. The
+   * mechanical half shipped in PR #799 (Buy) and PR #807 (Hire) and said so in
+   * its own comments -- *"this is the mechanical half only ... naming what
+   * stops and what would lift it is new player-facing copy"* -- so from this
+   * ruling the control both advises against the press *and* says what would
+   * lift it, which is the pair #772 asked for.
+   *
+   * `{amount}` is the **shortfall**: how much more money the prison needs
+   * before this press goes through, `charge - (balance - floor)`, from
+   * `AffordabilityVerdict.shortfallMinorUnits` (`src/ui/affordability.ts`).
+   * Deliberately not the price -- `hud.build.buy-submit` one line up already
+   * states that -- and not the balance, which `hud.status.funds` states. The
+   * three are three different numbers in the state a player meets this
+   * sentence in, which is what `tests/browser/ui-refusal-shortfall.spec.ts`
+   * measures rather than assumes.
+   *
+   * No currency, on `hud.build.buy-submit`'s own terms (#96 named none), and
+   * formatted through the same `formatNumber` every other money figure on this
+   * HUD goes through -- there is no second formatter.
+   *
+   * **`hud.security.hire-shortfall` carries this exact text**, because the
+   * owner ruled one sentence and there are two controls that spend money. Two
+   * keys and not one, on this file's standing rule for that -- *"a key here is
+   * a call site and never a string pool"*, argued at the four insolvency
+   * refusals below, with `hud.build.step-up` / `hud.rooms.step-up` as the
+   * precedent. `tests/unit/ui-hud-refusal-shortfall.test.ts` is what keeps the
+   * two identical.
+   */
+  'hud.build.buy-shortfall': 'Not enough money — you need {amount} more.',
   /*
    * The queue (#348, and the surface that finally gives `CancelBuildOrder` a
    * producer).
@@ -1135,10 +1638,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * model now carries three scalars for the reason above; the rest is
    * unaffected -- no material is named and the words are still not this
    * agent's own idea of the *subject*, only of the phrasing.
+   *
+   * **`queue-order` gained `· {total} back`, the owner's decision of
+   * 2026-09-02, in the same pattern `hud.build.delivery` already uses three
+   * lines below for the same money ("{count} × {material} · {total} back").**
+   * This is the whole of that decision's copy: no other wording changed, and
+   * `{total}` reads `0 back` when cancelling would give back nothing --
+   * deliberately, per the ruling, rather than hiding the row or the figure in
+   * that state. What `{total}` *is* -- `HudBuildOrderViewModel.cancelRefundMinorUnits`,
+   * read off `ConstructionSystem.previewCancelRefundMinorUnits` on the exact
+   * code path `CancelBuildOrder` pays through -- is argued at that method, not
+   * here; this comment is only the copy decision.
    */
   'hud.build.queue': 'Queued',
   'hud.build.queue-count': '{count} waiting · {started} being built',
-  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge}',
+  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge} · {total} back',
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
@@ -1287,7 +1801,34 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `hud.security.hire-unassigned` immediately below. The clamp sentence above
    * is left standing because it is still why the two are two keys.
    */
-  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages.',
+  /*
+   * **"including today" is the owner's ruling of 2026-09-03, and it exists
+   * because this sentence was false on the first press of a new game.**
+   * `src/simulation/staff/hiring.ts` says in its own words that "a guard
+   * engaged at any point during a day costs two days' wage for that day",
+   * so hiring one guard cost 160 on day one -- measured, 25,000 -> 24,920 at
+   * the press and -> 24,840 at tick 2,408, with `DAY_LENGTH_TICKS` 2,400 and
+   * no other command sent (issue #868). The sentence read as 80 today and 80
+   * tomorrow.
+   *
+   * Put to the owner as three shapes: pro-rate the charge so the old sentence
+   * becomes true, replace the sentence, or add the two words that make it
+   * true. They chose the third, which leaves the mechanic alone -- so this is
+   * a wording change and not a balance one, deliberately.
+   */
+  'hud.security.hire-hint': 'Costs {total} now and {wage} a day in wages, including today.',
+  /*
+   * The same sentence, on the other control that spends money, and byte-identical
+   * to `hud.build.buy-shortfall` above -- see that entry for the ruling, the date,
+   * and why there are two keys for one authored sentence.
+   *
+   * `{amount}` is the shortfall against what **one press** costs: the engagement
+   * fee `staffHireCostMinorUnits` charges, which is what `src/main.ts` judges a
+   * `hire-staff` press by. Not the daily wage the line above prices, and not the
+   * two added together -- a sentence that named tomorrow's bill would be telling
+   * the player they are short of money for a press the simulation accepts.
+   */
+  'hud.security.hire-shortfall': 'Not enough money — you need {amount} more.',
   /*
    * The half of the old hint that the owner's approved sentence displaced, back
    * as a key and a line of its own (issue #639 ruling 2, approved 2026-08-30).
@@ -1387,6 +1928,35 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.security.roster-wage-bill': '{total} a day',
   'hud.security.roster-dismiss': 'Dismiss',
+  /*
+   * The confirmation the armed dismiss control asks for (the owner's ruling of
+   * 2026-09-03 on issue #877, in their words and unedited).
+   *
+   * The ruling that supplied it also settled the mechanism, and it settled it
+   * with **both** options rather than one: asked whether a dismissal should get
+   * a settle window on the row or a confirmation step, the owner answered
+   * *"Jedno i drugie"* -- one and the other. So the row cannot be re-pointed
+   * under the player *and* the press that sacks somebody is the second one.
+   *
+   * **It does not fit the 900x600 clamp, and the box gives way rather than the
+   * sentence.** `@media (max-height: 700px)` in `src/ui/hud/hud.css` gives every
+   * `.hud-staff__note` `-webkit-line-clamp: 1`, and at that viewport this
+   * sentence is two lines -- the clause the clamp would cut is *"and they do not
+   * come back"*, which is the half that makes it a warning rather than a
+   * restatement of the button. `.hud-staff__dismiss-confirm` is exempted there,
+   * on exactly the terms `.hud-staff__hire-note` was exempted on when the same
+   * thing happened to the owner's hire sentence (issue #884): a whole clause or
+   * nothing, and the sentence is never the thing that is shortened to fit.
+   *
+   * `{name}` is filled with the row's own label, verbatim -- what the player
+   * read on the row they pressed. It is not a personal name, because a staff
+   * member has none: `HudStaffRosterRowViewModel` carries an entity id, a role
+   * key and a status key, so two guards doing the same thing render the same
+   * row and this sentence names them the same way. That is a real limit of the
+   * read model rather than of this string, it is reported as one, and no wording
+   * is invented here to paper over it.
+   */
+  'hud.security.roster-dismiss-confirm': 'Dismiss {name}? Their wage stops and they do not come back.',
   'hud.security.roster-hint': 'A dismissed staff member leaves the prison for good, and their wage stops.',
 
   // The Staff panel's coverage block (ADR 0048). `hud.security.coverage-summary`
@@ -1400,11 +1970,231 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage': 'Guard coverage',
   'hud.security.coverage-summary': '{assigned} of {required}',
   'hud.security.coverage-met': 'Covered',
-  'hud.security.coverage-met-hint': 'This prison has the guards it asks for.',
+  /*
+   * **The sentence the block says once its figures are level, and it no longer
+   * says the prison is finished hiring** (issue #941, authored here under the
+   * owner's partial release of `AGENTS.md` reservation 4 on 2026-09-04 -- the
+   * choice of words is ours, the requirement that it be true is not).
+   *
+   * **What it said until now, quoted rather than overwritten**
+   * (`docs/AGENT_WORKFLOW.md` §4): *"This prison has the guards it asks for."*
+   * That sentence was **true** and is the whole of why it had to go. The
+   * figures beside it are `assigned` against `required`, and `required` is
+   * `DeploymentSystem.requiredGuardCountFor` -- the posts a sector asks a
+   * player to fill. `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT`'s own
+   * docblock (`src/simulation/security/default-sector.ts`) says in words what
+   * that number leaves out: *"a prison of `n` prisoners needs `ceil(n / 8)`
+   * guards posted **plus** a reserve for `IncidentResponseSystem` to claim,
+   * and a player who hires exactly the requirement will watch every incident
+   * lapse."* So the badge, the pair of figures and that sentence all reported
+   * a met requirement, and nothing on the tab said the requirement is not the
+   * whole bill. Measured in the five-tester round of 2026-09-04: 17 residents,
+   * 4 guards, `3 of 3 / Covered / This prison has the guards it asks for.`
+   * beside `3 held · 1 free`, and 7 fights over in-game days 10-15 of which
+   * **7 lapsed and 0 were contained**.
+   *
+   * ## What makes the replacement true, opened rather than assumed
+   *
+   * `IncidentResponseSystem.claimableResponders`
+   * (`src/simulation/incidents/response-system.ts:499`) is the only path that
+   * puts a guard on an incident, and it draws from
+   * `claimableGuardIds(this.guards)` --
+   * `src/simulation/security/post-eligibility.ts:103`, which is
+   * `GuardRoster.unassignedGuardIds()` filtered to post-eligible roles. A
+   * guard `DeploymentSystem` has posted is `'travelling'` or `'on-post'`
+   * rather than `'unassigned'` (`src/simulation/security/guard-roster.ts:236`),
+   * so it is **never** in that pool. Hence *only* -- the exclusion is the half
+   * of this sentence that corrects the reading, and it holds in both
+   * directions: a held guard is never claimed, and the pool is exactly the
+   * free post-eligible ones.
+   *
+   * *"guards"* rather than *"staff"*, and that is a truth constraint rather
+   * than a register choice. The `{unassigned}` figure in
+   * `hud.security.held-summary` below is `hired - held` over the whole roster
+   * (`projectHeldGuards`, `src/simulation/presentation/guard-release-projection.ts:213`),
+   * so it counts a free nurse -- and `post-eligibility.ts` says so itself:
+   * *"A prison whose roster holds a nurse and no guard should read three
+   * staff, one of them unassigned, and nobody available to guard."* A sentence
+   * about *free staff* answering an incident would therefore be false; one
+   * about free **guards** is not.
+   *
+   * ## Why it quotes no number, which is the part a balance pass may want to change
+   *
+   * Because the number is not one number, and because choosing what to
+   * recommend is balance and `AGENTS.md` reserves that to the owner.
+   * `requiredResponderCount` is `max(1, ceil(severity * 0.5))`
+   * (`response-system.ts:345`), and every incident a session can currently
+   * open is severity 3 or worse: an assault is scaled into `1..5` and fires
+   * only at or above `DEFAULT_ASSAULT_POLICY.threshold` 0.65, so its floor is
+   * `round(0.65 * 5) = 3` and it asks for **two** -- which
+   * `ASSAULT_SEVERITY_CEILING`'s docblock states outright, *"A
+   * threshold-grazing assault is severity 3 and asks for two guards; the worst
+   * possible one is severity 5 and asks for three."* A riot or a gang
+   * retaliation fires at the same 0.65 on the full 0-10 scale, so severity 7
+   * and four responders, and an escape attempt at 0.6 wants three. So the
+   * honest reserve is between two and five and depends on what happens; a
+   * sentence naming one figure would be a promise for some prisons and a lie
+   * for others. This one states the **rule** the player cannot otherwise see,
+   * and leaves the size of the reserve to the requirement itself, which is
+   * issue #941's option 1 and the owner's to take.
+   *
+   * ## What it deliberately does not say
+   *
+   * Nothing about an outcome. `describeStaffCoverage`'s docblock refuses "a
+   * riot is coming" on measured grounds and PR #854 refused an owner's earlier
+   * wording for asserting that guards stop incidents -- guard presence is an
+   * amplifier and not a gate. This says who is *claimed* when an incident
+   * opens, which is a fact about the dispatch path, and it promises no
+   * containment: `claimableResponders` returning a set is not
+   * `advanceResponse` reaching `'resolved'`.
+   *
+   * Rendered with no parameter, exactly as its predecessor was: the covered
+   * rung's `hireCount` is `0`, so `paintCoverage` formats this key with no
+   * arguments and it must declare no placeholder.
+   *
+   * It is 34 characters against the 39 the sentence it replaces occupied, and
+   * that matters at one viewport: `.hud-staff__note` is clamped to a single
+   * line below `max-height: 700px`, where the box is 238px wide. Measured at
+   * 900x600, the old sentence was one 13px line in a 13px box and this one is
+   * shorter, so the clamp cuts neither -- `tests/browser/ui-staff-coverage-reserve.spec.ts`
+   * is where that is held at all five shipped viewports rather than argued.
+   *
+   * ## Widened on 2026-09-05, issue #989 -- everything above is kept as it
+   * stood, because it is the sentence that was replaced
+   *
+   * **It read *"Only free guards answer incidents."*, it was true, and it is
+   * still true. What retired it is that it named ONE consumer of the free pool
+   * and there are TWO.** `SearchSystem.assignQueuedOrders`
+   * (`src/simulation/contraband/search-system.ts`, by symbol for the reason
+   * two paragraphs down) staffs a contraband search from the same roster, and
+   * `SectorSearchDutySystem.update`
+   * (`src/simulation/contraband/sector-search-duty.ts`) will not even *order*
+   * a sweep unless that pool already holds `policy.requiredGuardCount` (`1`
+   * for `'sector'`, `DEFAULT_SEARCH_POLICY_BY_SCOPE` in
+   * `src/simulation/contraband/default-search-policies.ts`).
+   *
+   * **Both of those calls said `claimableGuardIds(this.guards)` -- *"the same
+   * call, on the same roster, as the responder claim"* -- until 2026-09-05,
+   * and issue #996 made that clause false while leaving the sentence on screen
+   * true.** They now read `claimableSearchGuardIds`, which is that pool less
+   * `INCIDENT_RESPONSE_GUARD_RESERVE`, so a search still needs free guards --
+   * it needs *more* of them than it did, one more than a response does. The
+   * enumeration this hint makes is untouched: two duties draw on the free
+   * pool, and the change is which slice of it one of them may take. The retired
+   * clause is left visible rather than overwritten because the rewritten
+   * sentence is the one a reader will check against the code. **Both of those
+   * are cited by symbol and not by line, and the second one is why**: this
+   * paragraph first read `sector-search-duty.ts:126`, and the docblock this
+   * change added to that same file moved the line to `:139` before the commit
+   * was written -- `docs/AGENT_WORKFLOW.md` §4's rot, inside one edit, by the
+   * hand making it. So a prison at
+   * exactly its posted requirement orders no sweep at all, and that system's
+   * own docblock says so in words: *"a prison that hires exactly its posted
+   * requirement never searches, and the first guard hired past that
+   * requirement is what makes contraband findable."* Measured over ~9 in-game
+   * days on one seed: 1 guard 0 discoveries, 2 guards (`2 of 2 · Covered`) 0
+   * discoveries, 3 guards finds.
+   *
+   * ## What makes the replacement true, clause by clause
+   *
+   * - ***"Incidents ... need free guards."*** `claimableResponders` above is
+   *   the only path onto an incident and returns `undefined` when
+   *   `claimableGuardIds` is shorter than `requiredResponderCount`, which is
+   *   `max(1, …)` and therefore never `0`.
+   * - ***"... and searches ..."*** the two call sites in the paragraph above.
+   *   The word is the one this game already puts on screen for it: the Staff
+   *   panel's own held-guards rows label a claim `Contraband Search` and a
+   *   phase `On Search` (`guard-claim` and `deployment-phase` in
+   *   `src/content/simulation-message-keys.ts`), so it is in the player's
+   *   vocabulary before this sentence uses it.
+   * - ***"... free guards."*** unchanged from #941 and proved there: a posted
+   *   guard is `'travelling'` or `'on-post'`, never `'unassigned'`, so it is
+   *   never in the pool; and *guards* rather than *staff* because
+   *   `claimableGuardIds` filters by post-eligible role.
+   * - **Plural, and indefinite.** *"need free guards"* is the generic plural
+   *   and promises no count, which the section above establishes is a truth
+   *   requirement rather than a style: the honest reserve runs from two (a
+   *   threshold-grazing assault) to five (a severity-10 riot) for incidents
+   *   and is one for a sector sweep, so *"need a free guard"* would be false
+   *   for most incidents this build can open.
+   *
+   * **What it gives up is the word *"only"*, and that is a real loss stated
+   * rather than glossed.** #941 argued that *"only"* is the half of its
+   * sentence that corrects the reading, and it was right. The exclusion now
+   * rides on *"free"* instead -- the requirement is stated as one a *free*
+   * guard satisfies, beside an `On duty` block printing `{held} held ·
+   * {unassigned} free` -- which says the same thing forwards and buys the room
+   * the second duty needs. It still promises no outcome: it says what a duty
+   * *draws on*, not that a response contains anything or that a sweep finds
+   * anything.
+   *
+   * **It is 40 characters against that sentence's 34, and the clamp was
+   * measured rather than estimated.** At 900x600, the one shipped viewport
+   * inside `hud.css`'s `-webkit-line-clamp: 1` band, the hint's box is 238px
+   * and this sentence renders at 227.7px in the resolved font (500 11px /
+   * 13.2px system-ui) -- so it fits on the one line, with less room to spare
+   * than its predecessor's 191.7px. The four wider viewports resolve
+   * `line-clamp: none` and are not the constraint. (The paragraph above says
+   * *"one 13px line in a 13px box"*: the box is 13.19px because the
+   * *line-height* is 13.2px; the font is 11px. Corrected here rather than
+   * above, because the sentence it is about is the retired one.)
+   * `tests/browser/ui-staff-coverage-reserve.spec.ts` holds the geometry at
+   * all five viewports and is what goes red if a later widening is authored
+   * without re-measuring.
+   */
+  'hud.security.coverage-met-hint': 'Incidents and searches need free guards.',
   'hud.security.coverage-short': 'Understaffed',
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',
   'hud.security.coverage-unguarded-hint': 'Nobody is on duty. Hire {count} to cover this population.',
+  /*
+   * The owner's chosen wording of 2026-09-03, verbatim, and it is on the
+   * unguarded rung only.
+   *
+   * **What makes it true, checked against the code rather than against the
+   * brief that asked for it.** `SAFETY_COVERAGE_PROVISION_MULTIPLIER` in
+   * `src/simulation/prisoners/needs.ts` is `{ covered: 1, understaffed: 0.5,
+   * unguarded: 0 }`, so `SafetyCoverageSystem` provisions **nothing** to
+   * every occupant of a sector on this rung while `NeedsDecaySystem` goes on
+   * subtracting `safety`'s 0.05 a tick from them -- a net -0.05, which is
+   * 4,080 ticks from full to `STATE_INCOME_UNMET_NEED_LEVEL` (255 - 51, over
+   * 0.05). Nothing else in `src/` puts `safety` back: `action.sleep` carried
+   * `safety: 0.2` and `action.yard-recreation` `safety: 0.1` and both were
+   * removed (issue #588) precisely so that coverage would be the only
+   * instrument. So "nobody ... is kept safe" is the whole of what an empty
+   * post does, stated at the granularity the simulation works at:
+   * `SafetyCoverageSystem.walk` resolves the rung **per sector** and
+   * provisions each of that sector's occupants at it.
+   *
+   * **What it deliberately does not say, and why that is not a hedge.** An
+   * earlier wording of the owner's -- *"so nothing stops an incident in this
+   * sector"* -- was refused with the measurements in #848 and PR #854, and
+   * the refusal is the reason this sentence is about safety and not about
+   * incidents. Guard presence is an **amplifier**, not a gate:
+   * `staffingShortfall` carries weight `0.3` against a `hotThreshold` of
+   * `0.65` and "a furnished prison sits at `0.164` at its worst and is still
+   * below the line with no guards at all"
+   * (`src/simulation/incidents/sector-risk.ts`), and
+   * `IncidentResponseSystem.claimableResponders` draws from a **prison-wide**
+   * pool with no sector term in the dispatch path at all. This sentence
+   * therefore stays inside what `describeStaffCoverage`'s own docblock
+   * refuses under the heading *"What it deliberately does not say"* -- it
+   * names a need that stops being provisioned, not a riot that is coming.
+   *
+   * **"this sector" is the simulation's noun and today it denotes the whole
+   * prison**, which is worth writing down here because it is the half of
+   * this sentence a player cannot yet check. Every session a player can start
+   * has exactly one sector, derived rather than drawn:
+   * `DEFAULT_SECURITY_SECTOR_ID` is `'security-sector.prison'` and its grade
+   * docblock calls `grade.general` *"the only defensible grade for a sector
+   * that covers the whole prison"*. So the sentence's extent and the prison's
+   * extent are the same tiles, and the sentence becomes *more* precise -- not
+   * less true -- on the day a player can draw a second sector. What it will
+   * need then is a per-sector readout to sit on; this block's figures are
+   * summed across sectors (`src/ui/simulation-staff-coverage.ts` argues why),
+   * and the rung it renders is reached only when nobody is posted anywhere.
+   */
+  'hud.security.coverage-unguarded-consequence': 'No guard is posted here, so nobody in this sector is kept safe.',
 
   // The Regime panel on the fifth tab (issue #451). Two blocks: what each
   // classification group's day allows at this tick, and who is in the prison.
@@ -1445,10 +2235,75 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.regime.roster-unnamed': 'Prisoner {id}',
   'hud.regime.roster-heading': 'Heading to {activity}',
   'hud.regime.roster-more': 'and {count} more',
-  // Not "No prisoners": an empty prison is the state every new game starts in
-  // and the Overview tab has the control that ends it, so the line says where
-  // to go rather than restating the count above it.
-  'hud.regime.roster-empty': 'Nobody has been admitted yet.',
+  // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
+  // and choosing it in their own words: *"No prisoners yet. Build a cell with a
+  // bed to take somebody in."* Two sentences in one string, as ruled -- the
+  // state, then the one thing a player can do about it -- and the same voice as
+  // `hud.security.coverage-unguarded-consequence` above, which that key's own
+  // comment records as *"the owner's chosen wording of 2026-09-03"* too.
+  //
+  // **This read "Nobody has been admitted yet." until that ruling, and the
+  // argument it carried is kept rather than overwritten**
+  // (`docs/AGENT_WORKFLOW.md` §4). It read: *"Not \"No prisoners\": an empty
+  // prison is the state every new game starts in and the Overview tab has the
+  // control that ends it, so the line says where to go rather than restating
+  // the count above it."* The ruling overrules its first half -- the sentence
+  // now opens on the exact words that argument refused -- and keeps its second:
+  // it still says where to go, and says it as an instruction rather than by
+  // naming a tab.
+  //
+  // **The state this sentence is not true of is a prison that emptied out**,
+  // and it does not have to be: `regime-panel.ts` draws this line only while
+  // `everAdmitted` is false (issue #506), so a prison that admitted people and
+  // has since discharged all of them draws no sentence here at all. That
+  // second state still has none, and authoring one is the owner's under
+  // `AGENTS.md`'s fourth exclusion -- the concern was put to them inside this
+  // option's own description before they chose it, and they chose it.
+  //
+  // **That second state now has its own sentence, ruled by the owner later the
+  // same day**: `hud.regime.roster-emptied` below. The paragraph above is kept
+  // rather than rewritten (`docs/AGENT_WORKFLOW.md` §4) because what it
+  // records is still exactly right about *this* key -- this sentence is true of
+  // one state only, and the fix was a second sentence rather than a wider
+  // claim in this one.
+  'hud.regime.roster-empty': 'No prisoners yet. Build a cell with a bed to take somebody in.',
+  // **The owner ruled this sentence on 2026-09-03**, shown it among candidates
+  // and choosing it in their own words: *"This prison is empty. Take somebody
+  // in to start again."* It is the sentence the key above has never been able
+  // to carry: a prison that admitted people and discharged all of them drew
+  // **no line at all** before this, because `regime-panel.ts` gated the box on
+  // `everAdmitted` being false and there was no true thing to put there.
+  //
+  // Same two-part shape as the key above, as ruled -- the state, then the one
+  // thing a player can do about it -- and it deliberately does *not* say
+  // "build a cell": in this state the cells already exist, which is the whole
+  // reason the other sentence could not be reused.
+  //
+  // **What the second half promises, and what makes the promise good.** "Take
+  // somebody in" is the Admit control, and two things had to be true before
+  // this sentence could ship. It has to exist wherever the player goes looking:
+  // it is on the **Overview** tab, which `hud-state.ts` makes the default, and
+  // `intake-panel.ts`'s own header records that placement as chosen so that
+  // "the control is the first thing a player sees rather than something to go
+  // looking for". And a press that cannot succeed has to *say so* rather than
+  // do nothing: since #869 it does -- `hud.refusal.admit-prisoner-no-room`
+  // reads *"Nobody was admitted -- this prison has no room to hold anybody."*
+  // Without that refusal this sentence would have been an instruction that can
+  // silently fail, which is precisely the class `AGENTS.md`'s fourth exclusion
+  // reserves to the owner, so it is recorded here as a dependency and not as a
+  // coincidence.
+  //
+  // **One thing this sentence does not solve, recorded rather than hidden.**
+  // The sentence is drawn on the **Regime** tab and the control it names is on
+  // **Overview**, so a player reads the instruction on one tab and carries it
+  // out on another. That is not new and not this ruling's doing -- the key
+  // above has the same shape, and the cell it tells a player to build is on the
+  // **Build** tab -- but under the owner's standing directive that the game be
+  // easy to play rather than a set of hidden features, a sentence that points
+  // at a control the player cannot see while reading it is worth naming. Filed
+  // rather than fixed here: fixing it means either moving a control or naming a
+  // tab in copy, and both are the owner's.
+  'hud.regime.roster-emptied': 'This prison is empty. Take somebody in to start again.',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
@@ -1489,13 +2344,29 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // słowa co host"* -- which is where the whole argument for the new wording
   // is written. `tests/unit/ui-simulation-alerts.test.ts` pins both the
   // equality and the words.
-  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — deliveries are refused until the state pays what it owes.',
-  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — hiring is refused until the state pays what it owes.',
+  'hud.refusal.purchase-materials-past-floor': 'Nothing was bought — deliveries are refused until the prison earns the money.',
+  'hud.refusal.hire-staff-past-floor': 'Nobody was hired — hiring is refused until the prison earns the money.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
+  /*
+   * **The owner's ruling of 2026-09-03.** Until it, a refused Admit said only
+   * the generic line above while the real reason went to `console.warn` --
+   * `src/main.ts` threw a plain `Error` whose message is diagnostic English
+   * that ADR 0011 says deliberately never reaches a player, so nothing on
+   * screen named the missing thing (issue #869, whose first filing prescribed
+   * the wrong fix and was corrected).
+   *
+   * Chosen over "there is no bed to put anybody in" and over "build a cell
+   * with a bed first": the first names the object rather than the state, and
+   * the second is an instruction where every other refusal here describes a
+   * state. **The em dash is this file's own punctuation for a refusal** and
+   * matches every sibling; the ruling was written with a hyphen only because
+   * the question that carried it was.
+   */
+  'hud.refusal.admit-prisoner-no-room': 'Nobody was admitted — this prison has no room to hold anybody.',
   'hud.refusal.cancel-build-order': 'The order is still queued — the request was refused.',
   // The money is the point, so the sentence leads with it: this line is painted
   // when the host refuses before submitting, which for a cancellation means
@@ -1539,7 +2410,49 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.too-small': 'Too small — this room needs at least {width} × {height} tiles.',
   'hud.rooms.enclosure': 'Enclosure',
   'hud.rooms.enclosure-none': 'Not evaluated yet',
-  'hud.rooms.enclosure-sealed': 'Walled in on every side',
+  /*
+   * What `roomPerimeterEnclosure` actually found, and the scope of it
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 2).
+   *
+   * **This read `'Walled in on every side'` and the words alone were the
+   * defect.** They are the pass half of a pass/fail pair, they sit two lines
+   * under `MUST BE ENCLOSED`, and a play-test on 2026-09-05 read the three
+   * together as "this room is finished" while the block directly above them
+   * said *"a door — nobody can get in"*. The clause the comment on
+   * `hud.alert.event.rooms.zoned` already carried -- that the panel's *"Walled
+   * in on every side"* renders identically for a reachable room and a sealed
+   * box (#938) -- was written down and shipped anyway, which is what makes this
+   * a rewrite rather than a note.
+   *
+   * **Authored under `AGENTS.md` reservation 4's partial release of
+   * 2026-09-04**, so each half is proved against the code that produces the
+   * value being rendered:
+   *
+   * - *"Walled in"* -- `RoomEnclosure`'s own definition
+   *   (`src/simulation/rooms/enclosure.ts`): *"`'sealed'` -- every perimeter
+   *   edge holds edge geometry"*, decided in `2 * (width + height)` edge reads
+   *   over the rectangle's own boundary. Unchanged in meaning from the sentence
+   *   this replaces.
+   * - *"not a door check"* -- `roomPerimeterEnclosure` reads
+   *   `RoomEdgeReader.getTopEdge`/`getLeftEdge` and **never** the door
+   *   registry. That is why `roomPerimeterAccess` beside it exists at all, and
+   *   that module says so in its own words: *"a `'sealed'` answer no longer
+   *   implies \"no way in\""*, because a completed door order writes
+   *   `DOOR_EDGE_NUMERIC_ID` into the same edge slot a wall order writes into.
+   *   So this line cannot tell a doorway from a wall, and now says so instead
+   *   of leaving the player to infer it.
+   *
+   * It deliberately does **not** say whether the room has a door. That answer
+   * is `hud.rooms.needs-doorway`'s, it is drawn in the block above this one,
+   * and it comes from a different function on a different signal -- putting a
+   * second copy of it here would be two verdicts to drift.
+   *
+   * MEASUREMENT PENDING -- see the browser case
+   * *"the enclosure readout is drawn whole rather than clipped"* in
+   * `tests/browser/ui-shell.spec.ts`, which is what actually holds this to the
+   * panel's width.
+   */
+  'hud.rooms.enclosure-sealed': 'Walled in — not a door check',
   'hud.rooms.enclosure-open': 'Open on at least one side',
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
@@ -1601,6 +2514,96 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // which is why the requirement counts as unmet. Substituted where the
   // object's own name would go, so the sentence still ends somewhere.
   'hud.rooms.needs-object-unknown': 'something this build cannot name',
+  /*
+   * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
+   * reservation 4** (issue #938), and every clause of it was proved against
+   * code opened for the purpose rather than reasoned about:
+   *
+   * - *"a door"* -- the projection publishes `access: 'no-way-in'` only from
+   *   `roomPerimeterAccess` (`src/simulation/rooms/enclosure.ts`), which
+   *   answers it only when every edge on the room's perimeter holds geometry
+   *   *and* `DoorRegistry.getByEdge` answers `undefined` for every one of
+   *   them. So there is no door in the wall line, and one is what the room is
+   *   short.
+   * - *"nobody can get in"* -- `src/simulation/navigation/traversal.ts`
+   *   states the rule: *"any non-zero value with no registered door is an
+   *   impassable wall"*, and *"a registered door decides the edge, whatever
+   *   value the edge layer holds ... that is the only reason a doorway is not
+   *   a wall"*. `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts`)
+   *   applies it in both of its passes -- it `continue`s past such an edge
+   *   when flood-filling a region and records no portal for it -- so no route
+   *   this repository can produce crosses that boundary, in either direction.
+   *
+   * What it deliberately does **not** say is that the room is reachable once
+   * a door exists: a doorway can open onto a corridor that is itself sealed,
+   * which is a region question this signal does not answer.
+   * `RoomPerimeterAccess`' own comment records that asymmetry, and it is why
+   * this sentence is only ever shown for `'no-way-in'`.
+   */
+  'hud.rooms.needs-doorway': 'a door — nobody can get in',
+  /*
+   * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
+   * reservation 4** (ADR 0028 phase 5; issues #997 and #1003). Four strings,
+   * and every clause of each was proved against code opened for the purpose:
+   *
+   * - *"At capacity"* -- the block is drawn with this header only for rooms the
+   *   HUD received in `HudRoomNeedsViewModel.atCapacity`, which
+   *   `src/ui/simulation-room-needs.ts`'s `fullestUseOf` fills only where a
+   *   capability has `inUse >= capacity` and `capacity > 0`. In that state
+   *   `RoomInstanceRegistry.claimUse` refuses the next claim -- *"if
+   *   (this.useOccupancyOf(instanceId, capability) >= ceiling) return false;"*
+   *   -- and `findAvailableForUse` skips the instance on the same comparison.
+   *   So the room is at a real ceiling that a real gate enforces, and not at a
+   *   readout's idea of one.
+   * - *"{room} at {x}, {y} is full"* -- `{room}` is the room type's own
+   *   `nameKey` and `{x}, {y}` its `anchorTile`, both the projection's, the
+   *   same pair `hud.rooms.needs-room` above already names a room by. *"is
+   *   full"* is a claim about a use prisoners are actually making, and that is
+   *   provable rather than assumed: the only writers of a use claim are
+   *   `claimUse` and `reinstateUseClaim`, both called by `ActionSystem` with
+   *   `action.requiredObjectCapability`, so a capability with a non-zero
+   *   `inUse` is one some action consumes -- and `inUse >= capacity >= 1`
+   *   makes `inUse` non-zero. A room reported here therefore has somebody in
+   *   it, doing the thing it is full for.
+   * - *"places in use: {inUse} of {capacity}"* -- `{capacity}` is
+   *   `RoomInstanceRegistry.concurrentUseCapacityFor`, which is the number
+   *   `claimUse` compares against, and `{inUse}` is `useOccupancyOf` scoped to
+   *   the same capability, which is the number it compares. Neither is
+   *   recomputed on this side of the boundary. *"places"* is this repository's
+   *   own word for the quantity (`residentsWithExistingPlace`,
+   *   `TILES_PER_OPEN_GROUND_PLACE`, and `src/simulation/economy/income.ts`
+   *   paying "per occupied place").
+   * - *"{full} of {total}"* -- `{full}` counts the rooms in the projected page
+   *   that are in the state above and `{total}` is
+   *   `RoomListViewModel.totals.instances`, every registered instance whatever
+   *   window was asked for. Exactly the mixture `hud.rooms.needs-count` above
+   *   already carries, for the same reason, and `HudRoomNeedsViewModel` states
+   *   it.
+   *
+   * What these deliberately do **not** say:
+   *
+   * - **Not that the room is full for everything.** A canteen's dining places
+   *   and its bench seating are separate ceilings, so *"is full"* is about the
+   *   one named on the line below and not about every use of the room. The
+   *   sentence names no use, rather than naming one: object capabilities are
+   *   simulation ids with no player-facing English anywhere in this tree, and
+   *   authoring twelve of them is a content decision this change does not take.
+   * - **Not that building more will help, and not how much more.** How many
+   *   shower heads fifty prisoners need is balance, reserved to the owner at
+   *   #997, and whether a room-served need should have a hard ceiling at all
+   *   rather than a queue with a visible wait is #1003 point 4's open question.
+   *   These four sentences report the ceiling; they recommend nothing.
+   * - **Not that this is why a need is unmet.** Nothing in the simulation
+   *   records a per-room refusal -- `ActionMetrics.unmetDemandCycles` and
+   *   `contendedSubstitutionCycles` are prison-wide and per-prisoner
+   *   respectively, and neither is projected anywhere -- so a sentence
+   *   asserting the causal link would be a claim this repository cannot
+   *   support. The player is given the two facts and draws it themselves.
+   */
+  'hud.rooms.at-capacity': 'At capacity',
+  'hud.rooms.at-capacity-count': '{full} of {total}',
+  'hud.rooms.at-capacity-room': '{room} at {x}, {y} is full',
+  'hud.rooms.at-capacity-places': 'places in use: {inUse} of {capacity}',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',
@@ -1796,6 +2799,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // in the status strip changes.
   'display.scale.region': 'Interface scale',
   'display.scale.cycle': 'Change the interface scale',
+
+  // The accessible name of `<main id="app">` -- the whole application, not one
+  // region of it, which is why the namespace is `app.` and not `hud.` or
+  // `brand.`. It used to be `aria-label="Lockstate game application"` baked
+  // into `index.html` itself: correct text, wrong home, because the HTML shell
+  // loads before any `Localizer` exists and that string never passed through
+  // this catalogue or the pseudo-locale sweep that checks it. `src/main.ts`
+  // now sets it here, on the same element, as soon as the localizer is built.
+  // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
+  'app.shell.label': 'Lockstate game application',
 };
 
 /**

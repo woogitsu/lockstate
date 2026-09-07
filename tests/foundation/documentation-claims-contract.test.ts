@@ -63,12 +63,56 @@ async function collectSourceFiles(directory: string): Promise<readonly string[]>
  */
 const POSITIVE_CONTROL = /\bexport\b/u;
 
-async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
-  const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
+/**
+ * Every subtree the walk must reach, asserted by name.
+ *
+ * **The count floor below is not enough, and this is why.** The guard used to
+ * be `files.length > 100` alone, and `src/` holds 372 `.ts` files -- so
+ * dropping the largest subtree, `src/simulation/` (178 files), leaves 194 and
+ * the floor still passes. Measured, not reasoned: with one line in
+ * `collectSourceFiles` skipping `simulation`, a planted
+ * `compressPayloadProbe()` returning `"gzip"` in
+ * `src/simulation/economy/income.ts` left *"compresses nothing"* **green with
+ * the offender in the tree**.
+ *
+ * A count cannot close that direction, because the number a partial walk
+ * returns is still a large number. The set of subtrees can, and it fails by
+ * name -- so the message says which subtree stopped being read rather than
+ * that a number got smaller.
+ *
+ * **Adding a directory under `src/` is meant to fail here.** That is the point:
+ * a new subtree is a new place a documentation claim can be contradicted, and
+ * this contract should not silently stop covering it. Add the name.
+ */
+const REQUIRED_SRC_SUBTREES = [
+  'content',
+  'input',
+  'persistence',
+  'rendering',
+  'services',
+  'shared',
+  'simulation',
+  'ui',
+] as const;
 
-  // Vacuity guard: an empty or failed walk would make every assertion below
-  // pass while reading nothing.
+async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
+  const src = path.join(repositoryRoot, 'src');
+  const files = await collectSourceFiles(src);
+
+  // Vacuity guard, first direction: an empty or failed walk would make every
+  // assertion below pass while reading nothing.
   expect(files.length, 'no TypeScript files found under src/; the walk is broken').toBeGreaterThan(100);
+
+  // Second direction, and the one a count cannot see: a walk that reached
+  // *some* of `src/`. See `REQUIRED_SRC_SUBTREES` above for the measurement.
+  const reached = new Set(
+    files.map((file) => path.relative(src, file).split(path.sep)[0]).filter((segment) => segment !== undefined),
+  );
+  const missing = REQUIRED_SRC_SUBTREES.filter((subtree) => !reached.has(subtree));
+  expect(
+    missing,
+    'the walk under src/ never reached these subtrees, so every claim below is unchecked for them -- either the walk is broken or a directory was renamed and this list was not',
+  ).toEqual([]);
 
   const matches: string[] = [];
   for (const file of files) {
@@ -440,6 +484,92 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
       expect(
         text.includes(`${word} integers`),
         `${claimant} does not say "${word} integers", but simulation/status-counts carries ${fieldCount}`,
+      ).toBe(true);
+    }
+  });
+
+  /**
+   * The two claims `docs/PRISONER_OPERATIONS.md` makes *about the size and
+   * shape of the action catalogue*, asserted against the catalogue.
+   *
+   * Both were false when this gate was written, and each was false in the way
+   * `docs/AGENT_WORKFLOW.md` §4 predicts: *"a sentence asserting an absence or
+   * a count rots first -- adding the thing it denies never touches the
+   * sentence denying it."*
+   *
+   * - The scope bullet's bold **10 candidate actions** was already one behind
+   *   its *own* prose, which enumerated an eleventh two lines below it, and
+   *   went two behind the code on 2026-09-03 when ADR 0093 appended
+   *   `action.carry`.
+   * - *"`action.free-association` is the catalogue's one entry with no need
+   *   effect"* stopped being true the same morning and for the same reason:
+   *   `action.carry` declares `needEffectsPerTick: {}` too, and `actions.ts`
+   *   says so in the carry's own comment -- *"the same property
+   *   `action.free-association` has, and for the same reason"*.
+   *
+   * Both are load-bearing rather than decorative. The count is the document's
+   * own statement of what "a representative slice" currently is, which is what
+   * an agent sizes a change against; and the second sentence is the *reason* an
+   * entry may be appended to a live catalogue at all -- a 0-score candidate can
+   * never displace one addressing a need -- so a reader who believes there is
+   * exactly one such entry will not go looking for the rule that makes the
+   * second one behave differently (`ActionSystem.planIdleSelection` puts the
+   * carry at rank 0 on a rule about the job board, not on its score).
+   *
+   * Counted from `DEFAULT_ACTIONS` rather than from a fixture, so the gate
+   * cannot be satisfied by a catalogue that happens to be the right size
+   * today.
+   */
+  it('agrees with DEFAULT_ACTIONS about how many candidate actions there are and how many serve no need', async () => {
+    const source = stripComments(
+      await readFile(path.join(repositoryRoot, 'src', 'simulation', 'prisoners', 'actions.ts'), 'utf8'),
+    );
+    const entries = [...source.matchAll(/\bid: '(action\.[a-z-]+)'[\s\S]*?needEffectsPerTick: \{([^}]*)\}/gu)].map(
+      (match) => ({ id: match[1]!, effects: match[2]!.trim() }),
+    );
+    expect(entries.length, 'no DEFAULT_ACTIONS entries parsed; the catalogue shape this gate reads has changed').toBeGreaterThan(5);
+
+    const doc = await readFile(path.join(repositoryRoot, 'docs', 'PRISONER_OPERATIONS.md'), 'utf8');
+    // Whitespace-collapsed because prose wraps, exactly as the status-counts
+    // gate above had to learn.
+    const flat = doc.replace(/\s+/gu, ' ');
+
+    expect(
+      flat.includes(`**${entries.length} candidate actions**`),
+      `docs/PRISONER_OPERATIONS.md does not say "**${entries.length} candidate actions**", but DEFAULT_ACTIONS holds ${entries.length}`,
+    ).toBe(true);
+
+    const serveNoNeed = entries.filter((entry) => entry.effects === '').map((entry) => entry.id);
+    expect(serveNoNeed.length, 'no entry declares an empty needEffectsPerTick; the second half of this gate is stale').toBeGreaterThan(0);
+    /*
+     * **A positive claim about the count, not a ban on the old sentence, and
+     * the first draft of this gate got that the wrong way round.** It asserted
+     * that the string *"catalogue's one entry with no need effect"* was
+     * ABSENT -- and then went red on the corrected document, because
+     * `docs/AGENT_WORKFLOW.md` §4 requires a correction to *quote* the sentence
+     * it corrects rather than overwrite it. A substring gate cannot tell a
+     * quotation from a live claim, so a gate written that way punishes the one
+     * habit this repository most wants. Asserting the *current* count is
+     * immune: the corrected paragraph states it, and a quotation of the old
+     * sentence beside it changes nothing.
+     */
+    const COUNT_WORDS: Readonly<Record<number, string>> = {
+      1: 'one entry with no need effect',
+      2: 'two entries with no need effect',
+      3: 'three entries with no need effect',
+      4: 'four entries with no need effect',
+      5: 'five entries with no need effect',
+    };
+    const phrase = COUNT_WORDS[serveNoNeed.length];
+    expect(phrase, `add ${serveNoNeed.length} to this gate's number-word table`).toBeDefined();
+    expect(
+      flat.includes(phrase!),
+      `docs/PRISONER_OPERATIONS.md does not say "${phrase!}", but DEFAULT_ACTIONS holds ${serveNoNeed.length}: ${serveNoNeed.join(', ')}`,
+    ).toBe(true);
+    for (const id of serveNoNeed) {
+      expect(
+        doc.includes(id),
+        `docs/PRISONER_OPERATIONS.md never names ${id}, which serves no need and is one of the entries the "no need effect" paragraph is about`,
       ).toBe(true);
     }
   });

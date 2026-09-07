@@ -74,6 +74,22 @@ import {
  * `RenderGuardSource.allGuardIds()` already answers the count.
  */
 
+/**
+ * ### The world's marker passes straight through
+ *
+ * `worldRevision` is read by the caller off `SparseWorld.drawnWorldRevision`
+ * and written into the header unexamined
+ * ([ADR 0099](../../../docs/adr/0099-how-the-renderer-learns-the-world-changed.md)
+ * decision 3). This file deliberately does not derive it, and the ADR's
+ * argument for that is worth keeping beside the code that would have been the
+ * natural place to sum something: neither `geometryRevision` nor
+ * `contentRevision` moves when a build order changes drawn phase, and
+ * `setOwned`/`setParcelOwned` move no counter at all, so a marker summed here
+ * over the chunks would be silent for two of the three things a player can
+ * see change -- and correct today by coincidence for the third, because
+ * buying land is a command and a command already marks the feed dirty.
+ */
+
 /** The narrow slice of `PrisonerOperationsRuntime` this reads. Structural, so a test needs no session. */
 export interface RenderActorSource {
   readonly entityStore: {
@@ -138,6 +154,7 @@ export interface RenderGuardSource {
 export function encodeRenderActorsKeyframe(
   source: RenderActorSource,
   ticksPerWallSecond: number,
+  worldRevision: number,
   guards?: RenderGuardSource,
 ): ArrayBuffer {
   if (!Number.isFinite(ticksPerWallSecond) || ticksPerWallSecond <= 0) {
@@ -156,7 +173,7 @@ export function encodeRenderActorsKeyframe(
   }
 
   const guardIds = guards?.allGuardIds() ?? [];
-  const writer = new RenderActorsKeyframeWriter(liveCount + guardIds.length);
+  const writer = new RenderActorsKeyframeWriter(liveCount + guardIds.length, worldRevision);
   // One reading, refilled per actor: the whole cost argument for this encoder
   // is that it allocates nothing per actor, and `WalkReading` is documented as
   // filled in place for that reason.

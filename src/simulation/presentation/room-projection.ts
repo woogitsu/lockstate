@@ -7,8 +7,9 @@ import type { SecurityGradeDefinition } from '../../content/security-grade-catal
 import { defaultSecurityGradeRegistry } from '../../content/security-grade-catalog';
 import type { EntityId } from '../entity/entity-store';
 import type { PlacedObject } from '../objects/placed-object';
-import { roomContains } from '../objects/room-capacity';
+import { roomBoundsOf, roomContains } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
+import { roomPerimeterAccess, type RoomDoorReader, type RoomEdgeReader, type RoomPerimeterAccess } from '../rooms/enclosure';
 import type { SecuritySectorDefinition } from '../security/sector';
 import {
   compareEntityIds,
@@ -86,6 +87,26 @@ export interface RoomProjectionOptions {
    * takes that path.
    */
   readonly placedObjects?: RoomObjectSource;
+  /**
+   * The two reads that answer whether anybody can get into a room (#938).
+   *
+   * **One option holding both, rather than two**, because neither is any use
+   * alone: `roomPerimeterAccess` needs the edge layers to know the perimeter
+   * is closed *and* the door registry to know whether one of those edges is a
+   * doorway, and a half-supplied pair would be a caller that had answered
+   * only the question that cannot distinguish the two cases. The type refuses
+   * it instead of the projection having to.
+   *
+   * **Optional, and its absence is silence rather than a guess**, exactly as
+   * `placedObjects`' is: without it `RoomListRowViewModel.access` is absent,
+   * which is "nobody told this projection about the walls" and not "the room
+   * has a way in". The worker supplies it (`worker/projection-catalog.ts`),
+   * so no session a player runs takes that path.
+   */
+  readonly perimeter?: {
+    readonly edges: RoomEdgeReader;
+    readonly doors: RoomDoorReader;
+  };
 }
 
 /**
@@ -211,17 +232,83 @@ export interface RoomOccupancyViewModel {
    * concurrent-use readout is a readout of that -- one number per thing the
    * room can be used for, not one number for the room.
    *
-   * The concurrent-use figure is **not projected at all yet**, and that is a
-   * gap rather than a decision: it is the Rooms tab readout ADR 0028 phase 5
-   * owes, along with "over capacity" -- which this shape still cannot say,
-   * because `free` clamps at zero and `utilization` clamps at 1. An
-   * over-capacity room therefore reads as full at 100 %, which is tolerable
-   * and is exactly what that phase is for.
+   * The concurrent-use figure is projected, and it is **not here**: it is
+   * `RoomListRowViewModel.concurrentUse`, one entry per capability, which is
+   * the shape the paragraph above says the answer has to take. This comment
+   * read *"The concurrent-use figure is **not projected at all yet**, and that
+   * is a gap rather than a decision: it is the Rooms tab readout ADR 0028
+   * phase 5 owes"* until that field landed; the sentence is kept rather than
+   * deleted because it is the reason the field is a sibling of this one rather
+   * than a reinterpretation of it.
+   *
+   * **"Over capacity" is a separate half and is still owed a surface, but not
+   * a projection field** -- and the sentence here used to say otherwise. It
+   * read *"along with 'over capacity' -- which this shape still cannot say,
+   * because `free` clamps at zero and `utilization` clamps at 1"*, and the
+   * clamping half is true while the conclusion is not: `current` and
+   * `capacity` are both published raw, so `current > capacity` is derivable
+   * from this view model by any reader. What no reader does is *say* it, which
+   * is a gap in the HUD and not in this shape. An over-capacity room still
+   * reads as full at 100 % in `free`/`utilization`.
    */
   readonly capacity: number;
   /** Absent for an instance whose resident capacity is zero -- a share of nothing has no meaning. */
   readonly utilization?: BoundedValue;
   readonly free: number;
+}
+
+/**
+ * How many actors may use one room at once **for one thing it can be used
+ * for**, and how many are doing so at the moment this was projected.
+ *
+ * ## Why this is not a field on `RoomOccupancyViewModel`
+ *
+ * That type's own comment forbids it twice over: `capacity` there is the
+ * *resident* ceiling, and projecting `RoomInstance.concurrentUseCapacity`
+ * beside it "would make a canteen read as a dormitory for its furniture". The
+ * second half is sharper -- `concurrentUseCapacity` is the summed footprint
+ * width of **every** object in the room and no gate reads it (issue #326), so
+ * a readout of that scalar is a readout of nothing enforced. The ceiling lives
+ * per capability, in `RoomInstance.concurrentUseCapacityByCapability`, and one
+ * number for the room cannot carry it: ADR 0028's worked canteen seats 6
+ * diners on 8 bench places while its scalar reads 14.
+ *
+ * So this is a **list**, one entry per capability the room supplies, and the
+ * scalar is still projected nowhere.
+ *
+ * ## Both numbers, and neither derived from the other
+ *
+ * `capacity` is `RoomInstanceRegistry.concurrentUseCapacityFor`'s answer --
+ * the same function `findAvailableForUse` and `claimUse` gate against, read
+ * rather than re-summed here, so a readout cannot disagree with the gate.
+ * `inUse` is `useOccupancyOf` scoped to the same capability, which is the
+ * count that gate compares against.
+ *
+ * **`inUse` may exceed `capacity`.** `claimUse` refuses above the ceiling, but
+ * `reinstateUseClaim` records a restored claim either way, and an object
+ * removed under a performing actor drops the ceiling beneath a claim that
+ * already stands (ADR 0028 decision 2: nobody is evicted). Neither figure is
+ * clamped here, for `RoomOccupancyViewModel.free`'s opposite reason: clamping
+ * is what makes an over-capacity room indistinguishable from a full one.
+ *
+ * ## The one ceiling this does not carry
+ *
+ * A room whose action names **no** capability -- `room.yard` and
+ * `action.yard-recreation` -- is bounded by its own ground rather than by its
+ * objects (`concurrentUseCapacityFor` case 1, ADR 0071), and that ceiling is
+ * keyed by no capability, so it has no entry here. It is deliberately left to
+ * a follow-up rather than approximated: the claims against it cannot be
+ * counted from this side, because `useOccupancyOf` with no capability counts
+ * *every* claim on the instance rather than only the capability-less ones, and
+ * narrowing it is a change in `RoomInstanceRegistry`.
+ */
+export interface RoomConcurrentUseViewModel {
+  /** The thing the room can be used for: an object capability (`'hygiene'`, `'dining'`). A stable simulation id, never rendered. */
+  readonly capability: string;
+  /** How many may use the room for it at once. `concurrentUseCapacityFor`'s answer. */
+  readonly capacity: number;
+  /** How many are using it for that right now. `useOccupancyOf`, scoped to the same capability. */
+  readonly inUse: number;
 }
 
 export interface RoomSecurityViewModel {
@@ -241,6 +328,55 @@ export interface RoomListRowViewModel {
   readonly anchorTile: TileViewModel;
   readonly occupancy: RoomOccupancyViewModel;
   readonly objectCapabilities: readonly string[];
+  /**
+   * The concurrent-use ceiling and the live count against it, one entry per
+   * capability, ascending by capability (ADR 0028 phase 5).
+   *
+   * **Keyed by the same list `objectCapabilities` above carries, in the same
+   * order**, because both come from `RoomInstance` and a second ordering rule
+   * here would be a second answer to "what can this room be used for".
+   *
+   * **Required, not optional, and empty is a real answer**: a room supplying
+   * no capability -- a bare rectangle, a yard -- has nothing to be used for
+   * through this rule and says so, rather than a producer being allowed to
+   * stay silent and a consumer defaulting the silence to "nothing". That is
+   * `HudRoomViewModel.objectRequirements`' recorded reason, applied here.
+   *
+   * **Cost:** per row, one `concurrentUseCapacityFor` and one `useOccupancyOf`
+   * per capability. The first walks the instance's own breakdown; the second
+   * walks the claims held on that one instance, which that room's own ceiling
+   * bounds. The shipped catalogue's deepest room supplies four capabilities.
+   */
+  readonly concurrentUse: readonly RoomConcurrentUseViewModel[];
+  /**
+   * Whether anything can cross this room's own boundary (#938).
+   *
+   * `'no-way-in'` is the state issue #938 measured: a room the game accepts,
+   * counts, and reports requirement-complete, that no prisoner can ever enter
+   * because every edge on its perimeter is a wall and none of them is a
+   * registered door. It is `RoomPerimeterAccess`' own vocabulary, carried
+   * whole rather than reduced to a boolean, because `'gap'` and `'doorway'`
+   * are different facts about the player's building and a consumer that wants
+   * only the warning can test one value.
+   *
+   * **Absent is a real state and is not `'doorway'`.** Two ways to get it,
+   * and both are "this projection was not told" rather than "the room is
+   * fine": the caller supplied no `RoomProjectionOptions.perimeter`, or the
+   * instance carries no rectangle to walk (`RoomInstance.width`/`height`
+   * undefined -- a row no zoning plane supports). Defaulting it either way
+   * would turn a question nobody asked into an answer, which is the invention
+   * `satisfyingQuantity`'s own comment refuses in the same shape.
+   *
+   * Not part of `requirementSummary`, and deliberately not a fourth
+   * `RoomRequirementDefinition['type']`: that vocabulary is closed at
+   * `src/simulation/rooms/definition.ts` and widening it is an architectural
+   * decision with an ADR's worth of consequences (issue #938 §6 option 1),
+   * beginning with the fact that a doorway cannot be checked where the other
+   * requirements are -- `zone` runs before any door order could exist. This
+   * is a *fact about the instance*, published beside the requirement verdict
+   * rather than inside it.
+   */
+  readonly access?: RoomPerimeterAccess;
   /** Counts over the catalog's `object` requirements only; the rest are `'not-evaluated'`. */
   readonly requirementSummary: {
     readonly total: number;
@@ -518,6 +654,30 @@ function projectSecurity(
   };
 }
 
+/**
+ * The room's own boundary, or nothing at all (#938).
+ *
+ * Two absences, and neither may be softened into an answer: no `perimeter`
+ * option means nobody asked, and an instance with no rectangle has no
+ * perimeter to walk.
+ *
+ * The rectangle is `roomBoundsOf`'s, not one assembled here. That function is
+ * this repository's single definition of "which tiles this instance occupies"
+ * -- `anchorTile` as the north-west corner plus the recorded `width`/`height`,
+ * `undefined` for an instance carrying no bounds or degenerate ones -- and it
+ * is what `roomContains` attributes objects through two functions below. A
+ * second assembly of the same three fields here would be a second definition
+ * of a room's extent, and the perimeter walk would be reading a different
+ * rectangle from the one the object count is attributed to.
+ */
+function projectAccess(instance: RoomInstance, options: RoomProjectionOptions): RoomPerimeterAccess | undefined {
+  const { perimeter } = options;
+  if (perimeter === undefined) return undefined;
+  const bounds = roomBoundsOf(instance);
+  if (bounds === undefined) return undefined;
+  return roomPerimeterAccess(perimeter.edges, perimeter.doors, bounds);
+}
+
 function projectRow(
   source: RoomProjectionSource,
   instance: RoomInstance,
@@ -545,6 +705,11 @@ function projectRow(
   }
 
   const security = projectSecurity(instance.instanceId, options, grades);
+  const access = projectAccess(instance, options);
+  // One sorted list, read twice: the capabilities the row publishes and the
+  // keys of the concurrent-use list are the same set in the same order, and
+  // sorting twice would be two chances to disagree.
+  const objectCapabilities = [...instance.objectCapabilities].sort(compareStableIds);
 
   return {
     instanceId: instance.instanceId,
@@ -552,7 +717,13 @@ function projectRow(
     ...(definition !== undefined ? { roomNameKey: definition.nameKey, category: definition.category } : {}),
     anchorTile: toTileViewModel(instance.anchorTile),
     occupancy: projectOccupancy(source, instance),
-    objectCapabilities: [...instance.objectCapabilities].sort(compareStableIds),
+    objectCapabilities,
+    concurrentUse: objectCapabilities.map((capability) => ({
+      capability,
+      capacity: source.roomInstances.concurrentUseCapacityFor(instance, capability),
+      inUse: source.roomInstances.useOccupancyOf(instance.instanceId, capability),
+    })),
+    ...(access !== undefined ? { access } : {}),
     requirementSummary: {
       total: requirements.length,
       objectRequirements,

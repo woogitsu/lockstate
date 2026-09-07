@@ -301,6 +301,19 @@ describe('what the toilet does and does not change in the running prison', () =>
       // `600 - 40` rather than as `560` so that the two facts stay separate: a
       // prison of one occupied place earns 600 over two days, and this one is
       // charged for one unmet need on one of them.
+      //
+      // **The second 40 was gone between the owner's ruling of 2026-09-03,
+      // which set `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`,
+      // and their restoration of it to `40` on 2026-09-04.** Both directions
+      // are marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4): for
+      // that one day this assertion read `25_000 - 65 - 40 + 600`, and the
+      // paragraph above stood unrewritten through it, because the `safety`
+      // crossing it derives is a fact about this fixture and did not move --
+      // only what the crossing costs did. Both rulings, and the two
+      // measurements the second was conditional on, are in that constant's
+      // docblock. The three facts stay separate for the reason they always
+      // did: a prison of one occupied place earns 600 over two days, one
+      // unmet need is charged on the second of them, and the charge is 40.
       expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 65 - 40 + 600 - 40);
     }
 

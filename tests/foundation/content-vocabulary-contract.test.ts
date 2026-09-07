@@ -23,7 +23,15 @@ import { SIMULATION_ENUM_GROUPS } from '../../src/content/simulation-message-key
  *
  * `src/content/object-catalog.ts:82`'s `object.desk` row had its
  * `capabilities: ['workstation']` changed to `['wrkstatoin-MUTANT']` -- a
- * plausible typo, in the dimension nothing checked. The 35 test files covering
+ * plausible typo, in the dimension nothing checked. **The pin above is
+ * `object-catalog.ts:82` because that is where the row was when the mutation
+ * was run (`489b0611`, 2026-08-26); the row is at `src/content/object-catalog.ts:103`
+ * today and has been since `bccdf58c`, the commit that added this file --
+ * corrected 2026-09-02.** The old number is kept because it is where the
+ * measurement was taken and the mutation is a dated record; the new one is
+ * beside it because a reader following the pin lands in a docblock about
+ * `capabilities` rather than on the row. Grep `object.desk` rather than
+ * either number. The 35 test files covering
  * `tests/foundation/` and every content and catalogue test returned a
  * **byte-identical** result to the unmutated baseline (`35 passed | 325
  * tests`), and `pnpm typecheck` passed, because `capabilities` is
@@ -135,7 +143,12 @@ const requiredNotDeclared = requiredCapabilities.filter((capability) => !declare
  * different and narrower statement -- see the file docblock.
  */
 const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
-  'delivery-access': "Declared by `object.loading-dock-door` and required by `room.delivery-bay`, so the containment join reads it; no action gates on it. `src/simulation/construction/definition.ts` states it directly -- the capability appears \"in no `DEFAULT_ACTIONS` entry and in no other room's requirements\" -- and names ADR 0017's procurement route as the system that would consume it. The same comment records that what a player places is \"a capability marker on three tiles, not a passage\": it gates nothing and `DoorRegistry` does not read it.",
+  // **The second half of this reason was falsified by ADR 0093 and is corrected
+  // in place; the entry stays**, because this list is about *action* gating and
+  // `action.carry` declares no `requiredObjectCapability` at all. It read: *"...
+  // and names ADR 0017's procurement route as the system that would consume
+  // it."* That system now exists.
+  'delivery-access': "Declared by `object.loading-dock-door` and required by `room.delivery-bay`, so the containment join reads it; no action gates on it, because `action.carry`'s target is the job board and it declares no `requiredObjectCapability` -- ADR 0093 decision 1: the job's own `available -> assigned` transition is the claim, so there is no room ceiling to read. It is **not** unread: `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`, `DELIVERY_BAY_CAPABILITY`) requires a bay to hold it before a delivery will land there. `src/simulation/construction/definition.ts` also records that what a player places is \"a capability marker on three tiles, not a passage\": it gates nothing and `DoorRegistry` does not read it.",
   // `food-preparation` left this list at #532 and its entry is removed rather
   // than reworded, which is what the stale-entry gate below asks for. **Both
   // directions, because the half of its reason that was not falsified is the
@@ -148,7 +161,10 @@ const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   // capability in `room.kitchen` -- and the meal-production half did not: the
   // action gains `hunger` directly and no meal exists as an item.
   'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, and no longer for the same reason as `food-preparation`, which `action.kitchen-work` now gates on (#532): that action names the two `food-preparation` objects and deliberately not the fridge, because one action consumes one capability (#326) and gating on a cold store would make it a work station. Nothing in the simulation produces or stores a meal as an object, which is the half of the old shared reason that is still true.',
-  'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. `src/simulation/construction/definition.ts` lists it among the capabilities that \"appear in no `DEFAULT_ACTIONS` entry and in no other room's requirements\", and names #99's salvage destination as what would consume it.",
+  // **Corrected the same way and for the same reason as `delivery-access`
+  // above.** It read: *"... and names #99's salvage destination as what would
+  // consume it."* #99 is still unbuilt; a different consumer arrived.
+  'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. Still in no `DEFAULT_ACTIONS` entry and in no other room's requirements, as `src/simulation/construction/definition.ts` says -- but read since ADR 0093 by `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`, `STORAGE_ROOM_CAPABILITY`), which requires a storeroom to hold it before it will be the destination of a carry. #99's salvage destination is still unbuilt.",
   'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
   'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
   seating: "Declared by `object.chair` and `object.bench`. Not gated on by any action, and the near miss is recorded in `src/simulation/construction/definition.ts`: a bench declares `'seating'` and `'recreation'` and **not** `'dining'`, so a canteen's dining capacity comes from its tables and its benches bound nothing. Whether a bench should carry `'dining'` is left open there deliberately (#326) and is a content decision, not this gate's to make.",
@@ -344,6 +360,16 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * `deriveSimulationMessageKey` call site names. Four namespaces have one --
    * `build-edge`, `build-order-state`, `intake-stage` and `guard-claim`.
    *
+   * **Read the assertion, not that sentence, and not the two corrections
+   * under it either -- added 2026-09-02.** All three are dated records of a
+   * measurement and every one of them is now behind the tree: the live
+   * figures are the ones the `toEqual` below asserts, 114 of 176 labels across
+   * 30 of the 42 namespaces, with 12 namespaces holding a call site. They are
+   * kept rather than rewritten because the *direction* each records is the
+   * point of the census and is what a reader checks -- but the numbers in the
+   * prose are unguarded by construction and the ones in the assertion are the
+   * only ones anything fails on.
+   *
    * **The counts moved by one, and the direction is the one this census is
    * for.** They read 151 of 171 until `action.free-association` was appended
    * to `DEFAULT_ACTIONS` and labelled `'Association'`
@@ -443,7 +469,21 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // one is an `additionalIds` member rather than a `DeploymentPhase` the
       // simulation stores, which is why the census counts a label the source
       // declaration does not declare.
-      labels: 176,
+      // 177 at ADR 0093: `action.carry` is one label added to the existing
+      // `action` namespace, so `namespaces` does not move. **The owner
+      // confirmed that label, "Errand", on 2026-09-03**, so it is settled
+      // copy and no longer provisional. **This comment read "**The label is a
+      // draft for the owner's review**, exactly as `action.kitchen-work`'s is"
+      // until then, and the reason it gave is unchanged** (marked in both
+      // directions, `docs/AGENT_WORKFLOW.md` §4): the reason was never about
+      // the word but about why an entry had to exist at all, which
+      // `src/content/simulation-message-keys.ts` states at that entry -- the
+      // group declares `form: 'definition-id-field'` over `DEFAULT_ACTIONS`
+      // and `tests/unit/simulation-message-keys.test.ts` requires a namespace
+      // to label exactly the ids its declaration declares, so an entry has to
+      // exist the moment the catalogue holds one. `action.kitchen-work`'s
+      // label is still a draft; only the carry's was ruled on.
+      labels: 177,
       // 11 on `main` before issue #533, which itself moved this line from 10;
       // #533 gives `deployment-phase` its first call site, so it is 12. The
       // Staff panel's roster block labels what each staff member is doing, and

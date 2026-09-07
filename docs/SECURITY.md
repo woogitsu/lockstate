@@ -110,9 +110,15 @@ that can be sent anywhere. [ADR 0053](./adr/0053-who-may-stand-a-security-post.m
 decides it and issue #456 is what it closes.
 
 The rule is read in exactly one place, `claimableGuardIds`
-(`src/simulation/security/post-eligibility.ts`), which `DeploymentSystem`,
-`IncidentResponseSystem` and `SearchSystem` each call where they used to call
-`GuardRoster.unassignedGuardIds()` directly. `GuardRoster` itself is unchanged:
+(`src/simulation/security/post-eligibility.ts`), which `DeploymentSystem` and
+`IncidentResponseSystem` call where they used to call
+`GuardRoster.unassignedGuardIds()` directly. **`SearchSystem` and
+`SectorSearchDutySystem` read a narrower pool since issue #996** —
+`claimableSearchGuardIds`, the same function's result less
+`INCIDENT_RESPONSE_GUARD_RESERVE` — so that a contraband sweep can never be the
+reason an incident has nobody to send. That is one *rule* in one place still:
+the reserve is applied in the same module, and neither search call site decides
+anything of its own. `GuardRoster` itself is unchanged:
 `unassignedGuardIds()` still answers who has no assignment, which is what the
 Staff panel's `unassigned` headcount is a count of.
 

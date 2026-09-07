@@ -1,7 +1,8 @@
-import type { TelemetryConsentGate } from './consent';
+import type { TelemetryCategory, TelemetryConsentGate } from './consent';
 import {
   type TelemetryAttributes,
   type TelemetryEnvelope,
+  type TelemetryEventDefinition,
   type TelemetryEventRegistry,
   defaultTelemetryEventRegistry,
   telemetryEnvelopeSchema,
@@ -57,20 +58,43 @@ import { redactAttributes } from './redaction';
  * arrivals at 60 per minute by default. Nothing on the tick or frame path
  * calls either one (ADR 0010).
  */
-export type TelemetryAdmissionRefusal =
+/**
+ * The refusals that do not depend on who is asking or on any stored state.
+ *
+ * Split out from `TelemetryAdmissionRefusal` because the *server* half of this
+ * pipeline can check exactly these four and cannot check the fifth. A
+ * Cloudflare Worker receiving a batch has no access to the browser storage a
+ * consent decision lives in, so consent is not a thing it can verify -- and
+ * `src/worker/telemetry-ingest.ts` says so in terms rather than substituting a
+ * gate that permits everything. Keeping the vocabulary in one place is what
+ * stops the two halves from drifting into two spellings of the same refusal.
+ */
+export type TelemetryEnvelopeRefusal =
   /** Not a valid `TelemetryEnvelope` at all. */
   | 'invalid-envelope'
   /** A name the registry does not carry, so no purpose sentence covers it. */
   | 'unknown-event'
   /** A registered name relabelled into a category the player did consent to. */
   | 'category-mismatch'
-  /** The player has not consented to this category, or has not decided at all. */
-  | 'no-consent'
   /** Attributes that `redactAttributes` would still change: they never went through it. */
   | 'unredacted';
 
+export type TelemetryAdmissionRefusal =
+  | TelemetryEnvelopeRefusal
+  /** The player has not consented to this category, or has not decided at all. */
+  | 'no-consent';
+
 export type TelemetryAdmissionVerdict =
   | { readonly admitted: true; readonly envelope: TelemetryEnvelope }
+  | { readonly admitted: false; readonly reason: TelemetryAdmissionRefusal; readonly detail?: string };
+
+export type TelemetryEnvelopeVerdict =
+  | {
+      readonly admitted: true;
+      readonly envelope: TelemetryEnvelope;
+      /** The registry's own row for this event. The receiver's copy, never the caller's claim. */
+      readonly definition: TelemetryEventDefinition;
+    }
   | { readonly admitted: false; readonly reason: TelemetryAdmissionRefusal; readonly detail?: string };
 
 export interface TelemetryAdmission {
@@ -104,45 +128,79 @@ function isAlreadyRedacted(attributes: TelemetryAttributes): boolean {
   return before.every((key) => Object.hasOwn(redacted, key) && redacted[key] === attributes[key]);
 }
 
+export interface EnvelopeAdmissionOptions {
+  readonly registry?: TelemetryEventRegistry;
+  /**
+   * Consent, when the caller has a decision to consult. Omitted by any caller
+   * that cannot -- and omitting it is the *only* way to skip the check, so a
+   * caller with no consent to check cannot accidentally supply a gate that
+   * answers `true` to everything.
+   *
+   * It sits fourth on purpose. See the ordering comment in the body.
+   */
+  readonly allows?: (category: TelemetryCategory) => boolean;
+}
+
+/**
+ * The single implementation of what makes an envelope admissible.
+ *
+ * Both halves of the pipeline call this one function: the browser sink through
+ * `consentGatedTelemetryAdmission` below, and the ingest endpoint through
+ * `src/worker/telemetry-ingest.ts`. Neither has a second copy of the checks,
+ * which matters more here than anywhere else in this subsystem -- a
+ * server-side check that drifts from the client-side one is a check nobody is
+ * running.
+ */
+export function admitTelemetryEnvelope(
+  candidate: unknown,
+  options: EnvelopeAdmissionOptions = {},
+): TelemetryEnvelopeVerdict {
+  const registry = options.registry ?? defaultTelemetryEventRegistry;
+  const parsed = telemetryEnvelopeSchema.safeParse(candidate);
+  if (!parsed.success) {
+    return {
+      admitted: false,
+      reason: 'invalid-envelope',
+      detail: parsed.error.issues
+        .map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
+        .join('; '),
+    };
+  }
+
+  const envelope = parsed.data as TelemetryEnvelope;
+  const definition = registry.get(envelope.name);
+  if (definition === undefined) {
+    return { admitted: false, reason: 'unknown-event', detail: envelope.name };
+  }
+  // Checked separately from consent, and this ordering is the reason:
+  // relabelling `diagnostic.unhandled-error` as `gameplay` on a player who
+  // consented to gameplay only would otherwise pass the consent check.
+  if (definition.category !== envelope.category) {
+    return {
+      admitted: false,
+      reason: 'category-mismatch',
+      detail: `${envelope.name} is registered as ${definition.category}, not ${envelope.category}`,
+    };
+  }
+  if (options.allows !== undefined && !options.allows(definition.category)) {
+    return { admitted: false, reason: 'no-consent', detail: definition.category };
+  }
+  if (!isAlreadyRedacted(envelope.attributes)) {
+    return { admitted: false, reason: 'unredacted' };
+  }
+
+  return { admitted: true, envelope, definition };
+}
+
 export function consentGatedTelemetryAdmission(options: ConsentGatedAdmissionOptions): TelemetryAdmission {
   const registry = options.registry ?? defaultTelemetryEventRegistry;
+  const allows = (category: TelemetryCategory): boolean => options.consent.allows(category);
 
   return {
     admit(candidate: unknown): TelemetryAdmissionVerdict {
-      const parsed = telemetryEnvelopeSchema.safeParse(candidate);
-      if (!parsed.success) {
-        return {
-          admitted: false,
-          reason: 'invalid-envelope',
-          detail: parsed.error.issues
-            .map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
-            .join('; '),
-        };
-      }
-
-      const envelope = parsed.data as TelemetryEnvelope;
-      const definition = registry.get(envelope.name);
-      if (definition === undefined) {
-        return { admitted: false, reason: 'unknown-event', detail: envelope.name };
-      }
-      // Checked separately from consent, and this ordering is the reason:
-      // relabelling `diagnostic.unhandled-error` as `gameplay` on a player who
-      // consented to gameplay only would otherwise pass the consent check.
-      if (definition.category !== envelope.category) {
-        return {
-          admitted: false,
-          reason: 'category-mismatch',
-          detail: `${envelope.name} is registered as ${definition.category}, not ${envelope.category}`,
-        };
-      }
-      if (!options.consent.allows(definition.category)) {
-        return { admitted: false, reason: 'no-consent', detail: definition.category };
-      }
-      if (!isAlreadyRedacted(envelope.attributes)) {
-        return { admitted: false, reason: 'unredacted' };
-      }
-
-      return { admitted: true, envelope };
+      const verdict = admitTelemetryEnvelope(candidate, { registry, allows });
+      if (!verdict.admitted) return verdict;
+      return { admitted: true, envelope: verdict.envelope };
     },
   };
 }

@@ -83,7 +83,7 @@
 -- the TRUNCATE sweep to `service_role`.
 
 begin;
-select plan(35);
+select plan(37);
 
 -- Alphabetical because the aggregates below order by privilege name:
 -- DELETE, INSERT, SELECT, UPDATE.
@@ -337,6 +337,33 @@ entitlement_events:SELECT$expected$, e'\r', ''),
   'service_role reaches exactly the four trusted-path privileges, and holds no table-level UPDATE anywhere'
 );
 
+-- The fourth role, and the reason it is here at all.
+--
+-- Every sweep in this file names its roles as LITERALS, so a role added by a
+-- later migration is invisible to all of them -- and that is not a
+-- hypothetical: `20260904090000_create_telemetry_events.sql` created
+-- `telemetry_ingest` and every assertion in this suite stayed green, measured
+-- on the run that added it. `docs/DEPLOYMENT.md`'s pre-merge checklist item 4
+-- anticipated exactly that ("that suite names its roles as literals and will
+-- not otherwise see one") and is why this section exists in the same change.
+--
+-- The role's whole purpose is that it reaches NO relation. It is the credential
+-- an unauthenticated public endpoint holds, so a table privilege on it is a
+-- table privilege behind that endpoint -- which is the substitution
+-- `service_role` would have been. Not even SELECT on the table it writes to:
+-- an append-only ingest that can read back what it wrote is a read path.
+select is(
+  (select string_agg(c.relname || ':' || p, e'\n' order by c.relname, p)
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     cross join unnest(array['DELETE', 'INSERT', 'SELECT', 'UPDATE']) as p
+    where n.nspname = 'public'
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
+      and has_table_privilege('telemetry_ingest', c.oid, p)),
+  null,
+  'the telemetry ingest role reaches no relation in public at all, including the table it appends to'
+);
+
 -- The verifier's write, which the sweep above cannot show because
 -- has_table_privilege() is false for a column-only grant.
 select is(
@@ -400,12 +427,12 @@ select is(
   (select string_agg(r.role || ':' || c.relname, ' ' order by r.role, c.relname)
      from pg_class c
      join pg_namespace n on n.oid = c.relnamespace
-     cross join unnest(array['anon', 'authenticated', 'service_role']) as r(role)
+     cross join unnest(array['anon', 'authenticated', 'service_role', 'telemetry_ingest']) as r(role)
     where n.nspname = 'public'
       and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
       and has_table_privilege(r.role, c.oid, 'TRUNCATE')),
   null,
-  'no Data API role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
+  'no Data API role and not the telemetry ingest role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
 );
 
 -- --- The rest of the ambient residue, and the default that regenerates it ---
@@ -464,7 +491,7 @@ select is(
      cross join lateral (select u.aclitem::text as item) as t
     where n.nspname = 'public'
       and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
-      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role')
+      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role', 'telemetry_ingest')
       and split_part(split_part(item, '=', 2), '/', 1)
             ~ (case when c.relkind = 'S' then '.' else '[^rawd]' end)),
   null,
@@ -502,7 +529,7 @@ select is(
      cross join lateral unnest(d.defaclacl) as u(aclitem)
      cross join lateral (select u.aclitem::text as item) as t
     where n.nspname = 'public'
-      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role')),
+      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role', 'telemetry_ingest')),
   null,
   'no default privilege in public grants a Data API role anything, so the next table does not arrive pre-exposed'
 );
@@ -534,7 +561,7 @@ select is(
      cross join lateral unnest(coalesce(c.relacl, '{}'::aclitem[])) as u(aclitem)
      cross join lateral (select u.aclitem::text as item) as t
     where c.relname in ('zz_future_table_probe', 'zz_future_sequence_probe')
-      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role')),
+      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role', 'telemetry_ingest')),
   null,
   'a table and a sequence created now arrive with no grant for any Data API role: the next migration starts closed'
 );
@@ -607,6 +634,26 @@ select is(
       and has_function_privilege('service_role', p.oid, 'EXECUTE')),
   'record_entitlement_event',
   'service_role may call exactly one RPC: the Z3 -> Z2 payment-webhook write path'
+);
+
+-- The telemetry ingest role's single entry point, and its only privilege of
+-- any kind anywhere in this schema. `record_telemetry_events` is SECURITY
+-- DEFINER, so the append runs as the table owner and this EXECUTE is the whole
+-- of what the credential behind an unauthenticated endpoint can do.
+--
+-- The negative half is asserted by the `service_role` sweep above, which does
+-- NOT name this function: a Worker wired with a `service_role` key -- the
+-- mistake `docs/DEPLOYMENT.md`'s checklist item 4 exists to prevent -- gets
+-- `42501` rather than a working ingest with too much authority. Suite 012
+-- drives both directions as the roles themselves.
+select is(
+  (select string_agg(p.proname, ' ' order by p.proname)
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and has_function_privilege('telemetry_ingest', p.oid, 'EXECUTE')),
+  'record_telemetry_events',
+  'the telemetry ingest role may call exactly one RPC: the append-only telemetry insert'
 );
 
 -- A grant to PUBLIC is invisible to the three sweeps above for the same

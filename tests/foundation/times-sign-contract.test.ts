@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 import { defaultMessageCatalogEn } from '../../src/services/localization/default-catalog';
@@ -302,8 +302,10 @@ const literalsWithLetterSign = sourceLiterals.filter(({ literal }) => usesLetter
  * get to it, and **not** that it is fine because it is old.
  */
 const ACCOUNTED_LETTER_SIGNS: Readonly<Record<string, string>> = {
-  'Environment sprite "${spriteId}" reads ${w}x${h} at (${x}, ${y}) from "${definition.assetId}", which is only ${entry.dimensionsPx.width}x${entry.dimensionsPx.height}.':
-    'Reaches no player. It is the message of a `RangeError` thrown by `planEnvironmentAtlas` (`src/rendering/assets/environment-atlas-plan.ts`) while packing source art, so it is read by whoever authored a sprite rectangle that does not fit its sheet, at build or boot time, in a console. `${w}x${h}` is pixel geometry in the idiom the art pipeline already writes -- `docs/ART_PIPELINE.md` and the catalogue both spell dimensions this way -- and the owner ruled about the sign a player reads, not about developer diagnostics.',
+  'Environment sprite "${spriteId}" reads ${w}x${h} at (${x}, ${y}) from "${assetId}", which is only ${entry.dimensionsPx.width}x${entry.dimensionsPx.height}.':
+    'Reaches no player. It is the message of a `RangeError` thrown by `planEnvironmentAtlas` (`src/rendering/assets/environment-atlas-plan.ts`) while packing source art, so it is read by whoever authored a sprite rectangle that does not fit its sheet, at build or boot time, in a console. `${w}x${h}` is pixel geometry in the idiom the art pipeline already writes -- `docs/ART_PIPELINE.md` and the catalogue both spell dimensions this way -- and the owner ruled about the sign a player reads, not about developer diagnostics. The literal text moved from `${definition.assetId}` to `${assetId}` on 2026-09-06 (ADR 0100) when the same rectangle gained a second, rendered-art branch and the local variable was factored out of the definition object; the message a developer reads is otherwise unchanged.',
+  'Toilet, rendered top-down and orthographic (ADR 0100), because the owner sheet only holds a combined toilet+sink column no crop fits a 1x1 tile. Drawn on object.toilet.':
+    'Reaches no player. This is `EnvironmentSpriteDefinition.note` (`src/rendering/assets/environment-sprites.ts`), which that field\'s own docstring says is "read by nothing; the reason a reviewer can check it" -- a code comment in string form, read in an editor or a diff, never rendered in the game. `1x1` is the tile-footprint idiom the object catalogue and `docs/ART_PIPELINE.md` already use for footprints, the same reason the accounted entry above gives for pixel geometry.',
 };
 
 describe('a hard-coded times sign under src/ is accounted for', () => {
@@ -341,6 +343,31 @@ describe('a hard-coded times sign under src/ is accounted for', () => {
   it('cannot pass vacuously on an empty walk or an empty lex', () => {
     expect(sourceFiles.length).toBeGreaterThan(200);
     expect(sourceLiterals.length).toBeGreaterThan(4000);
+
+    /*
+     * **Neither floor above closes a *partial* walk, and that is a third
+     * direction the docblock did not name.** `src/` holds 372 `.ts` files;
+     * `src/ui/` is 66 of them. Measured rather than reasoned: with one line in
+     * `collectTypeScriptFiles` skipping `ui`, a planted `'Speed 4x now'` in
+     * `src/ui/simulation-clock.ts` left this whole file **31 passed (31)** --
+     * both floors held (306 files, well over 4,000 literals) and the anchor
+     * literal that proves the lexer ran lives in `src/content/`, so it was
+     * still found. The owner's `×` ruling was enforced only for the
+     * directories the walk happened to reach.
+     *
+     * A count cannot see that, because a partial walk still returns a large
+     * number. The set of subtrees can, and it fails **by name**.
+     *
+     * **Adding a directory under `src/` is meant to fail here.** A new subtree
+     * is a new place a letter `x` can be used as a times sign, and this
+     * contract should not silently stop covering it. Add the name.
+     */
+    const required = ['content', 'input', 'persistence', 'rendering', 'services', 'shared', 'simulation', 'ui'];
+    const reached = new Set(sourceFiles.map((file) => relative(SOURCE_ROOT, file).split(sep)[0]));
+    expect(
+      required.filter((subtree) => !reached.has(subtree)),
+      'the walk under src/ never reached these subtrees, so no literal in them was checked for a letter times sign',
+    ).toEqual([]);
     // The stripper really ran: this sentence is in a comment in
     // `src/content/default-locale-en.ts` and must not survive into the scan.
     expect(sourceLiterals.some(({ literal }) => literal.includes('quietly harmonised'))).toBe(false);

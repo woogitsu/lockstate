@@ -303,12 +303,154 @@ export interface PrisonerDayGrantSource {
  * is explicit that the first was unanswerable while neglect cost a staffed
  * prison nothing -- *"fix the cost first, then the threshold has something true
  * to say"* -- so this is the cost, and the readout stays open.
+ *
+ * **This threshold was not what the owner suspended on 2026-09-03, and the
+ * suspension is over.** Both directions are marked rather than overwritten
+ * (`docs/AGENT_WORKFLOW.md` §4). From 2026-09-03 this paragraph read:
+ *
+ * > **This threshold is not what the owner suspended on 2026-09-03, and it
+ * > still decides something.** The ruling set
+ * > `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `0`, so an unmet
+ * > need costs a prison nothing for now -- which means the sentence above
+ * > about #477 describes the state of the game again, and is kept rather than
+ * > rewritten for that reason. What this level still does is define *which*
+ * > needs are unmet, and that is read by `isNeedUnmetForStateIncome` for the
+ * > HUD's need bar as well as by the money: the bar's `warning` tone means
+ * > this need is below this line, which is true at any withheld rate
+ * > including `0`.
+ *
+ * The owner restored the rate to `40` on 2026-09-04, so the sentence above
+ * about #477 -- *"fix the cost first, then the threshold has something true to
+ * say"* -- is once again a statement about a cost that exists, and the
+ * player-facing threshold it defers is once again open rather than moot. What
+ * this level does is unchanged by either ruling: it defines *which* needs are
+ * unmet, for `isNeedUnmetForStateIncome`, for the HUD's need bar and for the
+ * money, at any withheld rate including `0`.
  */
 export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
 
 /**
  * How much of one prisoner-day the state withholds for each of the six needs
  * the prison is leaving unmet, in the same minor units.
+ *
+ * ## Restored to `40` by the owner, 2026-09-04, after the measurement they asked for
+ *
+ * **The rate is `40`, so each of the six needs a prison leaves unmet costs it
+ * 40 of the 300 that place would otherwise pay.** The section headed
+ * *"Suspended at `0`"* is quoted below rather than deleted, because it is the
+ * rule that was relaxed and a reader needs to see what was given up
+ * (`docs/AGENT_WORKFLOW.md` §4: mark both directions, and `AGENTS.md`'s two
+ * released reservations are written the same way).
+ *
+ * **The suspension carried a condition, and the condition has been met.**
+ * Asked on 2026-09-04 whether the prison should ever be allowed to be in
+ * trouble, the owner ruled:
+ *
+ * > Zmierzcie to najpierw
+ *
+ * ("Measure it first.") That measurement was made at four prisoners, and shown
+ * its numbers the owner ruled the constant back to `40` **on condition that a
+ * fifty-prisoner prison was measured first**. Both measurements now exist:
+ * [the four-prisoner one](../../../docs/research/2026-09-04-what-pressure-there-is.md),
+ * merged on `main` as PR #971, and the fifty-prisoner one, which is
+ * `2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/` -- named
+ * without a rooted path because its branch is unmerged and
+ * `tests/foundation/documentation-links-contract.test.ts` fails on a dangling
+ * link. **Unlike the
+ * suspension, this ruling was made by choosing a presented option rather than
+ * in the owner's own words**, so there is no verbatim quotation of it to set
+ * beside *"usuń na razie kary"* below, and none is invented here.
+ *
+ * **The two measurements disagree, which is why the second was asked for, and
+ * the disagreement is not flattened here:**
+ *
+ * - At **four** prisoners the penalty cuts the daily gain by **71%**. The same
+ *   prison, five of six needs unmet on every prisoner, is paid 1,200 a day at
+ *   `0` and 400 a day at `40`; the treasury still rises, at +320 a day against
+ *   +1,120.
+ * - At **fifty** it cuts it by **27.7%** -- +14,440 a day becomes +10,440 --
+ *   because a prison built to the limit of the map settles at **two** unmet
+ *   needs rather than five. `hunger`, `sleep` and `bladder` are all served
+ *   above 855 permille there, so the schedule prices a place at 220 and not at
+ *   100. The four-prisoner composition did not survive at fifty.
+ * - Break-even, measured one hire at a time rather than divided, moves from
+ *   **187 -> 188** guards to **137 -> 138**, and the headroom over the
+ *   `ceil(n / 8)` the game asks for falls from **26.7x** to **19.6x**.
+ * - **The fifty-prisoner figures are the pessimistic end of a range and its
+ *   own note says so.** Neither playtest ever builds a door, and issue #938's
+ *   fix (`tests/integration/dead-room-no-doorway.test.ts`) is a controlled
+ *   measurement that a sealed room with no doorway is dead: two prisons
+ *   differing by one edge, `hygiene` at 254.8/255 with a door and **0**
+ *   without. The two needs priced at fifty are `hygiene` and `recreation`,
+ *   which is that signature exactly, so what was priced is a dead cell's
+ *   composition. A door can only *reduce* the unmet count, so a prison with
+ *   one earns more than 11,000 a day and breaks even above 137 guards. The
+ *   shipped-rate column is immune to all of it, because 300 a place is paid at
+ *   any composition.
+ *
+ * **One sentence of the suspension below was refuted by carrying this out, and
+ * it is the sentence about how cheap it would be.** *"Restoring the mechanic
+ * is `0` -> `40` on the line below and nothing else"* is false: the edit took
+ * nineteen test expectations across eight files with it, four of them in
+ * `tests/unit/economy-state-income.test.ts` itself, and that file's own block
+ * docblock now carries the count. The named block title
+ * *"the state withholds part of a prisoner-day for each need the prison leaves
+ * unmet"* had also stopped existing before the restoration was attempted --
+ * the block is *"what a prisoner-day pays, given how many needs are unmet and
+ * what one unmet need is worth"* -- which is `docs/AGENT_WORKFLOW.md` §4's
+ * warning about citing prose by anything but a quotation, committed inside the
+ * paragraph that was promising the edit would be free. What the suspension
+ * *did* get right is the half it was actually built for: the schedule stayed
+ * pinned through `stateIncomeForPrisonerDayAt`, that test needed no edit, and
+ * every one of the nineteen was a *figure* re-priced, never a property
+ * restored -- the mechanic was switched off, not removed, and every test that
+ * moved had kept its `40` figure in its own comment for this day.
+ *
+ * ### The suspension this ends, kept as it stood
+ *
+ * > ## Suspended at `0` by the owner, 2026-09-03 -- for now, and reversibly
+ * >
+ * > **The rate is `0`, so no unmet need costs a prison anything today.** The
+ * > owner was shown the measured effect of the shipped `40`: a fully served
+ * > prisoner was worth five times a neglected one, and over a twenty-day run a
+ * > prison took 1,196 a day where 2,700-3,600 was available -- about two
+ * > thirds of the grant withheld daily, with nothing on screen saying so.
+ * > Offered four ways to surface it, they chose none and ruled instead:
+ * >
+ * > > usuń na razie kary, zobaczymy jak pogram i ocenię łatwość
+ * >
+ * > ("remove the penalties for now, we'll see how it plays and I'll judge the
+ * > ease.") Recorded in their words with the date on it, per
+ * > `docs/AGENT_WORKFLOW.md` §3 -- and amended into
+ * > [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md),
+ * > whose `Status` is untouched because suspending a decision is not the same
+ * > act as withdrawing it.
+ * >
+ * > **"na razie" is "for now", and the shape of this change is that word.**
+ * > The ruling is an experiment the owner runs while playing, not a deletion
+ * > of the mechanic, so nothing here is deleted: the constant stays, every
+ * > reader of it stays, `stateIncomeForPrisonerDay`'s formula stays, and the
+ * > schedule is pinned by a test that is parameterised on this constant rather
+ * > than on the number it holds. **Restoring the mechanic is `0` -> `40` on
+ * > the line below and nothing else** -- and if that edit is made, the
+ * > assertions in `tests/unit/economy-state-income.test.ts` under *"the state
+ * > withholds part of a prisoner-day for each need the prison leaves unmet"*
+ * > re-price themselves from the constant and stay true without being touched.
+ *
+ * **The scope of the ruling is exactly this constant.** The question put to
+ * the owner was about the state-income withholding and nothing else, so wages
+ * ([`payroll.ts`](./payroll.ts)), build costs, the overdraft floor
+ * ([ADR 0083](../../../docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md))
+ * and the solitary sanction are all untouched by it.
+ *
+ * **What every paragraph below describes is the mechanic at `40`, which is
+ * the mechanic in force again.** They were left standing word for word
+ * through the suspension, because `40` was the number it suspended and a
+ * reader restoring it needed the reasoning that chose it
+ * (`docs/AGENT_WORKFLOW.md` §4: mark both directions). That is why the
+ * restoration needed nothing rewritten here below this line: this paragraph
+ * was written for the day it happened, and the only word of it that has gone
+ * stale is *"below"* meaning *"not yet true"*.
  *
  * **Directional, not a committed balance decision**, the standing convention
  * for a new rule's numbers here (`DEFAULT_SECTOR_RISK_POLICY` and
@@ -340,9 +482,33 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  *   it is why the withheld share is per *need* rather than per prison: the
  *   player is paid for each thing they fix, on the day they fix it.
  *
+ *   **This bullet is measured true at four prisoners and measured false at
+ *   fifty, and restoring the constant does not by itself fix that.** At four
+ *   an 8x8 yard on bare ground lifted the settled delta from +320 to +480,
+ *   which is `4 x 40` to the unit, with `recreation` at 949-996 permille. At
+ *   fifty the same zoning returned **exactly nothing** -- the delta stayed
+ *   +10,440, `recreation` read **0** permille and unmet for 50 of 50, and not
+ *   one prisoner performed `action.yard-recreation` at all. Both runs had the
+ *   rate at `40`. The measurement rules capacity out as a sufficient cause
+ *   (four rotating places among fifty would leave some reading non-zero, and
+ *   all fifty read exactly 0) and leaves reachability as the strongest
+ *   candidate: the cell in both instruments is walled on four sides with no
+ *   doorway, and `tests/integration/dead-room-no-doorway.test.ts` measures
+ *   that such a room is dead. **That is a separate finding and probably a
+ *   separate defect; it is recorded here and not fixed here**, because it is
+ *   this bullet that it contradicts. Numbers in
+ *   `2026-09-04-what-pressure-there-is-at-fifty.md` §6, in `docs/research/`
+ *   (unrooted, for the reason given above).
+ *
  * An integer, for `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`'s reason: it
  * multiplies into a balance a save carries and a determinism fingerprint
- * hashes, and `docs/DETERMINISM.md` makes no exception for money.
+ * hashes, and `docs/DETERMINISM.md` makes no exception for money. That is why
+ * the suspension **was** `0` and not a fraction or a multiplier: `0` is an
+ * integer, it left the arithmetic exact, and it made the withheld term vanish
+ * without changing the shape of the expression that computes it. The same
+ * requirement is why the restoration is `40` and not a proportion of anything:
+ * a save written before 2026-09-04 replays through this line, and an integer
+ * is what keeps that replay exact.
  */
 export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;
 
@@ -396,19 +562,75 @@ export function unmetNeedCount(needs: NeedsComponent, index: number): number {
 
 /**
  * What the state pays for one occupied place for one whole day, given how many
- * of its occupant's six needs are unmet.
+ * of its occupant's six needs are unmet **and what one unmet need is worth**.
  *
- * `Math.max(0, ...)` rather than the arithmetic alone: at the shipped rate and
- * withheld share the floor is 60 and the clamp never binds (pinned by test),
- * but a future rate below `6 x` the withheld share would otherwise bill the
- * prison for holding somebody, and `Treasury.credit` is not the place to
- * discover that.
+ * `Math.max(0, ...)` rather than the arithmetic alone: at the rate ADR 0064
+ * shipped -- 300 against a withheld 40 -- the floor is 60 and the clamp never
+ * binds (pinned by test), but a rate below `6 x` the withheld share would
+ * otherwise bill the prison for holding somebody, and `Treasury.credit` is not
+ * the place to discover that.
+ *
+ * ## Why the withheld rate is a parameter here and a constant one line below
+ *
+ * **Added 2026-09-03 because of the owner's ruling that day, and kept after
+ * they reversed it on 2026-09-04.** The paragraph that follows is left as it
+ * stood (`docs/AGENT_WORKFLOW.md` §4: mark both directions); the seam it
+ * describes is what made the suspension survivable, and deleting it the day
+ * the rate comes back would leave nothing to switch off through next time.
+ *
+ * > `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is suspended at `0`
+ * > while the owner plays and judges difficulty -- its own docblock carries
+ * > the ruling and the owner's words -- and a mechanism that costs nothing
+ * > cannot be observed through the shipped rate at all. Every property the
+ * > withholding has (linear in the count, one term per need, no interaction,
+ * > clamped at zero) would become unfalsifiable at `0`, and
+ * > `- withheld x unmetNeeds` would read as dead arithmetic to the next
+ * > person who edits this expression. So the rate is an argument here,
+ * > `tests/unit/economy-state-income.test.ts` drives it at `40` and at rates
+ * > the clamp does bind on, and the mechanic stays gated while it is switched
+ * > off.
+ *
+ * The shipped rate is `40` again, so the withholding *is* observable through
+ * it -- but two properties still are not, and they are the reason this
+ * parameter stays. The clamp (`Math.max(0, ...)`) does not bind at `40`, whose
+ * floor is 60, and never has; and a rate other than the shipped one is the
+ * only way to assert that one more unmet need costs *exactly the rate*
+ * rather than exactly 40. Both are pinned in that file at rates this constant
+ * has never held.
+ *
+ * **Nothing in `src/` calls this with a rate of its own, and nothing should.**
+ * A second withheld rate on a thread that owns none is exactly the duplicated
+ * balance number `isNeedUnmetForStateIncome` above exists to prevent. The one
+ * production caller is `stateIncomeForPrisonerDay` below, which supplies the
+ * shipped constant, so there is still exactly one withheld rate in the game.
  */
-export function stateIncomeForPrisonerDay(unmetNeeds: number): number {
+export function stateIncomeForPrisonerDayAt(withheldPerUnmetNeed: number, unmetNeeds: number): number {
   if (!Number.isSafeInteger(unmetNeeds) || unmetNeeds < 0 || unmetNeeds > NEED_IDS.length) {
     throw new RangeError('Unmet need count must be a whole number of needs.');
   }
-  return Math.max(0, STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS - STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS * unmetNeeds);
+  if (!Number.isSafeInteger(withheldPerUnmetNeed) || withheldPerUnmetNeed < 0) {
+    throw new RangeError('The withheld share of a prisoner-day must be a whole number of minor units, and not a debit.');
+  }
+  return Math.max(0, STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS - withheldPerUnmetNeed * unmetNeeds);
+}
+
+/**
+ * What the state pays for one occupied place for one whole day, at the shipped
+ * withheld rate.
+ *
+ * The whole simulation's one reader of
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`, and therefore the
+ * function every caller outside this module wants. **Its formula was unchanged
+ * by the 2026-09-03 ruling and is unchanged by its reversal on 2026-09-04.**
+ * From 2026-09-03 this said the rate it reads is `0`, *"so it pays the flat
+ * rate for every occupancy today, and it will price the whole schedule again
+ * the moment that constant moves, with no edit here"* -- and that is what
+ * happened (`docs/AGENT_WORKFLOW.md` §4: mark both directions). The rate it
+ * reads is `40`, so it prices `300, 260, 220, 180, 140, 100, 60`, and this
+ * function was not edited to make that so.
+ */
+export function stateIncomeForPrisonerDay(unmetNeeds: number): number {
+  return stateIncomeForPrisonerDayAt(STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS, unmetNeeds);
 }
 
 /**
@@ -560,6 +782,18 @@ export function stateIncomeAccruedByTick(dailyGrantMinorUnits: number, tick: num
  * The reasons are in `STATE_INCOME_UNMET_NEED_LEVEL` and
  * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`; what belongs here is
  * what it does to *this system*, which is almost nothing:
+ *
+ * **The 1,760 was suspended on 2026-09-03 and is back on 2026-09-04.** Both
+ * directions are marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4).
+ * From 2026-09-03 this paragraph read: *"The owner set the withheld share to
+ * `0` for now ... so those same eight cells earn 2,400 either way today."*
+ * The owner restored the withheld share to `40`
+ * (`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` carries both rulings and
+ * the measurements the second was conditional on), so the paragraph above
+ * describes the game again: eight cells earn 2,400 where the needs are met and
+ * 1,760 where no shower room and no yard have been built. Every bullet below
+ * was true of the change that introduced the reduction, of the change that
+ * suspended it and of this one: no new state, no RNG, no save-version bump.
  *
  * - **Still no state.** The reduction is read from `NeedsComponent`, which the
  *   save already carries in full, at the tick the day is settled. There is no

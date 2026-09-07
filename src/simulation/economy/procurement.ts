@@ -1,5 +1,6 @@
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../content/procurement-catalog';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import type { DeliveryCarryRoute } from '../operations/delivery-route';
 import type { Container } from '../operations/inventory';
 import type { SpendClass, Treasury } from './treasury';
 
@@ -26,18 +27,39 @@ export type PurchaseSpendClass = Extract<SpendClass, 'deliveries' | 'constructio
  *
  * #96 describes the whole loop as **money → purchase → delivery arrives at
  * the bay → carry jobs move it to the site → `ContainerMaterialsProvider`
- * consumes it.** This implements the first two arrows and the last one. The
- * physical route in the middle — `room.delivery-bay`, a carry job, a
+ * consumes it.** Since
+ * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) this class
+ * implements **all four arrows**, and the middle one is the `carryRoute`
+ * constructor parameter below: `update` hands a due delivery to
+ * `DeliveryCarryRoute.landAndRaiseCarry`, which lands it in the bay's own
+ * container and raises the carry to the storeroom, and falls back to the direct
+ * deposit only when that answers `false`.
+ *
+ * **This paragraph said the opposite, and it is corrected rather than
+ * overwritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions), because a
+ * reader who meets the old sentence somewhere else needs to know which half of
+ * it survived. It read: *"This implements the first two arrows and the last
+ * one. The physical route in the middle — `room.delivery-bay`, a carry job, a
  * construction site with a location — is **not** here, and the reason is a
  * fact rather than a preference: `room.delivery-bay` and
  * `object.loading-dock-door` are declared content that no session instantiates
  * (#141), so there is no bay to deliver to. Building one would mean deciding
  * where a new prison's bay sits and when a carry job is raised, which is
- * scenario design and logistics policy respectively.
+ * scenario design and logistics policy respectively. So a delivery lands
+ * directly in the container construction draws from, and that is scaffolding
+ * rather than the finished shape."*
  *
- * So a delivery lands directly in the container construction draws from, and
- * that is scaffolding rather than the finished shape. It is recorded here and
- * on #96 rather than left for a reader to discover from the absence of a bay.
+ * Every clause of that was true when it was written, and two of them are still
+ * true of a prison that has not built the route: the deposit really does go
+ * straight into the container construction draws from, and it really is
+ * `docs/OPERATIONS.md`'s second no-teleport exception. What changed is that the
+ * room *is* instantiated — a player zones it from the Rooms panel and furnishes
+ * it from the Build panel, watched through the interface in
+ * `docs/research/2026-09-03-does-the-errand-walk.md` — so *"there is no bay to
+ * deliver to"* is now a statement about one kind of prison rather than about
+ * the game, and the two questions the paragraph declined to answer were
+ * answered by ADR 0093 decision 2: the bay's anchor tile, and the tick a
+ * delivery comes due. `update`'s own comment carries what that costs a player.
  *
  * ## Ordering, because this writes simulation state
  *
@@ -153,6 +175,17 @@ export class ProcurementSystem implements SystemRegistration {
   public constructor(
     private readonly treasury: Treasury,
     private readonly destination: Container,
+    /**
+     * ADR 0017 decision 4's physical route, where the player has built one
+     * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 2).
+     *
+     * **Optional, and absent means today's behaviour exactly.** A fixture that
+     * stands up the economy alone has no rooms and no job board, and a session
+     * whose player has zoned no bay or no storeroom has no route either -- so
+     * the two cases are the same case, and `update` below asks the port and
+     * takes its answer rather than branching on whether it exists.
+     */
+    private readonly carryRoute?: DeliveryCarryRoute,
   ) {}
 
   /**
@@ -325,14 +358,39 @@ export class ProcurementSystem implements SystemRegistration {
    * non-integer quantity, and in both cases nothing is credited: the caller is
    * then holding goods it could not price, and must put them back rather than
    * destroy them.
+   *
+   * The pricing itself is `previewRefundMaterials`, called and then credited --
+   * so a caller that only needs to know what this *would* pay (the Build
+   * panel's queue row, ADR 0011's read-only side of the boundary) has the same
+   * arithmetic on offer without the side effect. See that method.
    */
   public refundMaterials(itemId: string, quantity: number): number {
+    const refundedMinorUnits = this.previewRefundMaterials(itemId, quantity);
+    if (refundedMinorUnits > 0) this.treasury.credit(refundedMinorUnits);
+    return refundedMinorUnits;
+  }
+
+  /**
+   * What `refundMaterials` would credit, without crediting it.
+   *
+   * The whole of `refundMaterials`'s pricing rule and none of its effect: `0`
+   * for an item the catalogue does not sell and for a non-positive or
+   * non-integer quantity, `unitPriceMinorUnits * quantity` otherwise. Pulled
+   * out rather than re-derived at the caller so the two can never disagree --
+   * a second formula here would be the exact hazard `AGENTS.md`'s "derive it
+   * from the same code path" rule exists to name.
+   *
+   * Its one caller today is `JustInTimeMaterialsService.previewAllocatedRefundMinorUnits`,
+   * which the Build panel's queue row reaches through
+   * `ConstructionSystem.previewCancelRefundMinorUnits` -- a projection-time
+   * question, never a command, so it must not move the treasury while it is
+   * being asked.
+   */
+  public previewRefundMaterials(itemId: string, quantity: number): number {
     if (!Number.isSafeInteger(quantity) || quantity <= 0) return 0;
     const material = procurableMaterial(itemId);
     if (material === undefined) return 0;
-    const refundedMinorUnits = material.unitPriceMinorUnits * quantity;
-    this.treasury.credit(refundedMinorUnits);
-    return refundedMinorUnits;
+    return material.unitPriceMinorUnits * quantity;
   }
 
   /** Deliveries not yet arrived, in the order they will arrive. */
@@ -352,6 +410,33 @@ export class ProcurementSystem implements SystemRegistration {
 
     this.pending = this.pending.filter((delivery) => delivery.arrivesAtTick > context.tick);
     for (const delivery of arrived) {
+      /*
+       * **The delivery lands in the bay and is carried to the storeroom
+       * wherever the player has built both, and lands in the construction
+       * container directly wherever they have not**
+       * ([ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 2,
+       * which is ADR 0017 decision 4's physical route).
+       *
+       * The direct deposit is what `docs/OPERATIONS.md` records as the second
+       * deliberate exception to the no-teleport rule and calls *scaffolding*.
+       * It stops being scaffolding on the first line below and stays the
+       * exception it is on the second -- and the fallback is the graceful one
+       * #600 itself prefers, for the three reasons `DeliveryBayCarryRoute`
+       * states: zero regression for every existing save, no stranded early
+       * prison, and no balance number ADR 0017 decision 5 reserves.
+       *
+       * **What this costs a player who has built the route, said plainly.**
+       * The materials no longer become available for construction at
+       * `arrivesAtTick`. They become available at `arrivesAtTick` plus a
+       * carrier's selection latency (up to one 20-tick reconsideration cycle,
+       * or up to the next `work` block), plus the walk to the bay, a dwell, the
+       * walk to the storeroom and a dwell -- at two ticks a tile plus up to 20
+       * per dwell. **Where the bay sits and where the storeroom sits therefore
+       * become a choice the player is making**, which is #600's *"construction
+       * time becomes a function of geometry"* arriving by the only route that
+       * makes it true.
+       */
+      if (this.carryRoute?.landAndRaiseCarry(delivery.orderId, delivery.itemId, delivery.quantity, context.tick) === true) continue;
       this.destination.deposit(delivery.itemId, delivery.quantity);
     }
   }

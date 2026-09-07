@@ -33,6 +33,14 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  * it -- and it is worth recording that the first id to take it was one of the
  * three #141 was worried about.
  *
+ * **One of those three is still here, not two, since `71617799`
+ * (2026-08-30) -- corrected 2026-09-02.** The paragraph above is kept because
+ * the dock door's graduation is exactly the exit it describes and nothing
+ * about that has changed. What changed is that `room.delivery-bay` took the
+ * same exit two ADRs later, leaving `room.storage-room` as the only one of
+ * #141's three that this file still holds a reason for. See
+ * `PROTECTED_BY_DECISION` below for why no assertion here noticed.
+ *
  * The measurement it also delivers is #141's own recommendation 1: turn
  * "declared but unconsumed" from something four agents rediscover into a
  * line of output. `#97`'s `'brick'`/`'item.brick'` split went unnoticed for
@@ -69,15 +77,58 @@ const ROOT = join(__dirname, '../..');
  * a defect**, not a cleanup -- which is what separates this list from the
  * one below it.
  *
- * Two entries, not three: `object.loading-dock-door` left with ADR 0028 phase
- * 4, which made it placeable. See the file docblock for why that strengthens
- * rather than weakens what #141 asked for. Both survivors are **rooms**, and
- * that is not a coincidence -- a room id has no import-time validator behind
- * it the way an object id named by a buildable now does, so this list is the
- * only thing standing between them and a sweep.
+ * **One entry, and the sentence above it used to say two.** Both corrections
+ * are marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4: *"a sentence
+ * asserting an absence or a count rots first"*), because each records a
+ * graduation that really happened:
+ *
+ * - *"Two entries, not three: `object.loading-dock-door` left with ADR 0028
+ *   phase 4, which made it placeable."* Still true. See the file docblock for
+ *   why that strengthens rather than weakens what #141 asked for.
+ * - `room.delivery-bay` left on 2026-08-30, in commit `71617799` (#610/#585),
+ *   by the weakened measure this file gates on: it gained a *test* consumer and
+ *   no `src/` consumer, so the stale-entry gate below required its row to go.
+ *   The count and the sentence *"Both survivors are **rooms**"* were not
+ *   updated with it, which is what this paragraph fixes -- and the id is
+ *   materially less protected than the sentence claimed for the two days that
+ *   followed, since a test naming a room is all that now stands between it and
+ *   a sweep. Its reason had read: *"ADR 0017 names it the intended physical
+ *   route for material procurement; #141 flags it explicitly as not to be
+ *   removed as dead content."* Every word of that is still true of ADR 0017
+ *   decision 4, and `tests/foundation/job-production-contract.test.ts`
+ *   measures how far the route is from existing.
+ *
+ * The survivor is a **room**, and that is not a coincidence -- a room id has no
+ * import-time validator behind it the way an object id named by a buildable now
+ * does, so this list is the only thing standing between it and a sweep.
+ *
+ * **Nothing here policed that, and that is the more useful half of the
+ * correction.** The first case below pins the *membership* of the two lists
+ * against the measured unconsumed set, and the exact figures it asserts count
+ * the two lists together -- so an entry moving between them, or out of both
+ * with the set, moves no number this file checks. A sentence in this docblock
+ * counting entries is therefore unguarded by construction, which is what
+ * `docs/AGENT_WORKFLOW.md` §4 says about a sentence that states a tally.
  */
 const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
-  'room.storage-room': 'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it; #141 flags it explicitly.',
+  /*
+   * **Empty, for the first time, and the entry that left is the point.**
+   *
+   * `'room.storage-room'` sat here with the reason *"ADR 0017 (destination for
+   * procured materials) and #99 (destination for dismantle salvage) both depend
+   * on it; #141 flags it explicitly."* Half of that has come true:
+   * [ADR 0093](../../docs/adr/0093-a-carry-is-an-action.md) decision 2 makes
+   * `ProcurementSystem` deliver into a `room.delivery-bay` and raise a carry to
+   * a `room.storage-room`, so `src/simulation/operations/delivery-route.ts`
+   * names the id and the room has a reader. #99's salvage destination is still
+   * ahead of it, which is a *second* consumer arriving later rather than a
+   * reason to keep the entry: this file's own stale-entry gate requires an
+   * entry to go when the id gains any reader.
+   *
+   * The reason is kept here rather than deleted because nothing about it was
+   * falsified -- it named the decision that would consume the room, and the
+   * decision consumed it.
+   */
 };
 
 /**
@@ -105,7 +156,15 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // is the room whose authored 2x2 minimum makes a rectangle `room.cell`
   // refuses legal -- which is how that test proves the minimum comes from
   // content rather than from a constant the service holds.
-  'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
+  // `room.garbage-room` left this list on ADR 0098 option A: `zoningTint`
+  // (`src/rendering/world/appearance.ts`) is now keyed by room id rather than
+  // by category, so its table carries every catalogued room's id as a literal
+  // key, this one included. Its entry is removed rather than reworded, which
+  // is what the stale-entry gate below asks for. Its read was: *"Declared with
+  // no reader anywhere; no build order, job, need or regime action names it."*
+  // Still true of build orders, jobs, needs and regime actions -- what changed
+  // is that the renderer now names the id to resolve its tint, which this
+  // gate counts as a reader regardless of what kind.
   // `room.kitchen` left this list at #532, and by the wide route rather than
   // the narrow one: `action.kitchen-work` names it in
   // `src/simulation/prisoners/actions.ts`, so both measures move. Its entry is
@@ -143,8 +202,12 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // why a wrong reason is as much a defect here as a missing entry -- the next
   // reader would have deleted that line on the strength of the admission path
   // alone.
-  'room.staff-room': 'Declared with no reader anywhere.',
-  'room.utility-room': 'Declared with no reader anywhere.',
+  // `room.staff-room` and `room.utility-room` left this list on the same ADR
+  // 0098 change and for the same reason immediately above: both are keys in
+  // `ZONING_TINT_BY_ROOM_ID` now, so both gained a `src/` reader in the same
+  // commit. Their reads were: *"Declared with no reader anywhere."* Both
+  // entries are removed rather than reworded, which is what the stale-entry
+  // gate below asks for.
 
   // Objects. All but one of these is required by some room definition, so
   // the catalogs agree; nothing places, builds or reads the object.
@@ -479,7 +542,32 @@ describe('every unconsumed content id is accounted for', () => {
       // named in `src/`), and no `src/` file gained a `'room.delivery-bay'`
       // literal -- `isOpenAreaRoom` reads an authored field off whatever id it
       // is handed and writes no id of its own.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 4, unconsumedBySrcOnly: 29 });
+      // 3 and 27, from 4 and 29: ADR 0093 decision 2 gives `room.storage-room`
+      // and `room.delivery-bay` their first `src/` readers in
+      // `src/simulation/operations/delivery-route.ts`, which names both ids as
+      // literals. `unconsumedBySrcAndTests` moves by one because only the
+      // storeroom still had an entry -- the bay had already graduated to a
+      // *test* consumer -- and `unconsumedBySrcOnly` moves by **two**, because
+      // that column counts what no `src/` file names and both rooms were in it.
+      // **This is the first time in this file's history that both columns have
+      // moved for the same change**, and it is the shape #141 asked for: a room
+      // a player could zone and furnish to no effect now does something.
+      //
+      // 0 and 20, from 3 and 27: ADR 0098 option A keys `zoningTint`
+      // (`src/rendering/world/appearance.ts`) by the room's own catalogue id
+      // rather than by category, so `ZONING_TINT_BY_ROOM_ID` names all eighteen
+      // room ids as literal keys -- the first time any `src/` file outside the
+      // catalog itself has named every room at once. `unconsumedBySrcAndTests`
+      // falls by exactly the three rooms that had no reader anywhere before
+      // this: `room.garbage-room`, `room.staff-room` and `room.utility-room`,
+      // whose entries are removed above rather than reworded, which is what
+      // this file's stale-entry gate asks for. `unconsumedBySrcOnly` falls by
+      // seven -- those three, plus four rooms that already had a *test*
+      // consumer but no `src/` one (so they held no entry to delete here):
+      // `room.holding-cell`, `room.infirmary`, `room.reception` and
+      // `room.security-office`. Every other room already had a `src/` reader
+      // before this change, which is why the fall is seven and not eighteen.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 0, unconsumedBySrcOnly: 20 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {
@@ -543,3 +631,4 @@ describe('every unconsumed content id is accounted for', () => {
     expect(stale, 'these ids now have a consumer: remove their entries').toEqual([]);
   });
 });
+

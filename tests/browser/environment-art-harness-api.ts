@@ -48,6 +48,45 @@ export interface HarnessWorldFixture {
   /** A tile carrying both a finished `wall-brick` build order and the wall it wrote. */
   readonly builtWallTileX: number;
   readonly builtWallTileY: number;
+  /**
+   * North-west tile of a finished `bed-wooden` order, standing on bare owned
+   * ground outside the zoned room.
+   *
+   * Outside the room on purpose: a bed drawn over floor art would be two art
+   * frames stacked, and the spec's comparison is between the bed and what the
+   * painter draws in its place, so the only thing that may change under the
+   * probe is the bed itself.
+   */
+  readonly bedTileX: number;
+  readonly bedTileY: number;
+  /**
+   * North-west (and only) tile of a finished `toilet-brick` order, standing on
+   * bare owned ground outside the zoned room, on the same footing as
+   * `bedTileX`/`bedTileY` and for the same reason: art drawn over floor art
+   * would be two frames stacked, and this is the first object from ADR 0100's
+   * second publishing lane, not the owner-sheet lane the bed uses.
+   */
+  readonly toiletTileX: number;
+  readonly toiletTileY: number;
+  /**
+   * North-west tile of a finished `bench-wooden` order, standing on bare
+   * owned ground outside the zoned room, on the same footing as
+   * `bedTileX`/`bedTileY`. The second object wired from ADR 0100's second
+   * publishing lane (#1020) sits beside it: `deskTileX`/`Y`, far enough apart
+   * that the two footprints do not touch.
+   *
+   * **A third pair, `storageRackTileX`/`Y`, stood here from 2026-09-06 to
+   * 2026-09-07** for `object.storage-rack`, which joined the fallback in the
+   * same #1020 pass and left it again the next day (#1059) once a playtest
+   * found its render illegible at every zoom -- see
+   * `environment-art.spec.ts`'s note on `RENDERED_OBJECT_CASES`. Removed
+   * along with the fixture structure that used it rather than left standing
+   * with nothing reading it.
+   */
+  readonly benchTileX: number;
+  readonly benchTileY: number;
+  readonly deskTileX: number;
+  readonly deskTileY: number;
 }
 
 export interface LockstateEnvironmentArtHarness {

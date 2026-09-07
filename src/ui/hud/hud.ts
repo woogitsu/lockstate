@@ -9,6 +9,7 @@ import {
 } from '../primitives/async-action';
 import { describeBy, element, eyebrowText, nextUiId, undescribeBy } from '../primitives/dom';
 import type { IconId } from '../primitives/icon';
+import { createIconButton } from '../primitives/icon-button';
 import { type CollapsibleSection, createCollapsibleSection } from '../primitives/collapsible-section';
 import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
@@ -48,7 +49,7 @@ import { hudAlertDismissLabel, hudAlertRowLabel } from './alert-row-label';
 import {
   EMPTY_EVENT_BAND_DWELL_STATE,
   admitToEventBand,
-  releaseEventBandFloor,
+  advanceEventBand,
   type EventBandDwellDecision,
   type EventBandDwellState,
 } from './event-band-dwell';
@@ -637,7 +638,34 @@ export type HudIntent =
       readonly armed: boolean;
       readonly roomId: string | undefined;
       readonly removing: boolean;
-    };
+    }
+  /**
+   * The player chose one prisoner to look at, or cleared their choice
+   * (issue #895).
+   *
+   * *Chrome*, exactly like the two arming intents above: the Regime panel has
+   * already applied it -- the row is checked and the inspector is waiting for an
+   * answer -- and it asks the simulation to change nothing, so it is never
+   * gated. Blocking it while a clock command was in flight would drop an
+   * interaction that costs the prison nothing.
+   *
+   * **An entity id and nothing else, and `undefined` is a value rather than an
+   * absent field.** The host turns an id into a `hud/prisoner-detail` request
+   * and `undefined` into "stop asking"; the HUD does not know that such a
+   * projection exists, and could not have minted the id -- it came *in*, on the
+   * roster view model, from the projection that names the window.
+   *
+   * **Why an id is a safe name for a person where a roster *offset* is not.**
+   * `src/ui/simulation-prisoner-roster.ts` refuses paging because `EntityStore`
+   * recycles an index behind a wrapping generation, so "page 3" would silently
+   * be a different three prisoners after a release. An `EntityId` is not that
+   * index: it packs the index *with* the generation, and ADR 0026 question 1's
+   * answer retires a slot at generation 4,095 rather than reissuing the id its
+   * first life carried. So this names the prisoner the player pressed or names
+   * nobody -- a state both the host and the panel handle -- and it can never
+   * quietly name somebody else.
+   */
+  | { readonly kind: 'select-prisoner'; readonly prisonerId: number | undefined };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -792,6 +820,34 @@ export interface MountHudOptions {
    */
   readonly onMinimapNavigate?: (point: { readonly fx: number; readonly fy: number }) => boolean;
   /**
+   * One zoom step, in the direction the player pressed (issue #1023).
+   *
+   * A plain callback rather than a port object, on exactly the grounds
+   * `onMinimapNavigate` above states: moving the camera is the renderer's, the
+   * HUD may not import `src/rendering/**`, and there is no shared mutable
+   * state for a port to carry -- one press, one call. In the running app the
+   * composition root hands this to `WorldScene.stepCameraZoom`, which takes the
+   * keyboard's own step through the keyboard's own code path, so a button and
+   * a key are the same movement.
+   *
+   * Not on the gated `dispatchCommand`/`dispatchShell` paths every other
+   * control here uses, and for the same reason a minimap click is not: zooming
+   * never reaches the simulation (`AGENTS.md` boundary 1), so there is nothing
+   * to gate and nothing for a host to refuse.
+   *
+   * **Returns nothing, deliberately, where `onMinimapNavigate` returns
+   * whether it worked.** That boolean exists because the minimap has a
+   * *sentence* to correct -- it says it is not available yet and has to stop
+   * once it demonstrably is. Zoom has no such sentence: the two buttons name a
+   * direction, and a press at the clamp changing nothing is what the keyboard
+   * already does. Reporting it would only let the HUD invent a claim about the
+   * bounds, which live in the renderer and are not the HUD's to state.
+   *
+   * Omitted, the buttons are laid out and do nothing at all -- the state of
+   * every harness in `tests/browser/` that does not pass it.
+   */
+  readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  /**
    * Receives every player action, and may be async.
    *
    * A *command* (`set-clock`) is gated: while one is in flight the transport
@@ -875,6 +931,22 @@ export interface HudHandle {
    * page after every attempt to obtain a worker, not only the transitions.
    */
   setUnavailable(notice: HudUnavailableNotice | undefined): void;
+  /**
+   * Tells the HUD that the prisoner the player selected is not in the prison
+   * any more (issue #895).
+   *
+   * Deliberately not part of `HudViewModel`, for the reason `setBuildTarget`
+   * above is not: the view model is snapshot-shaped, and this is an *event* --
+   * the one reply `hud/prisoner-detail` gives for a released prisoner, which
+   * `PrisonerDetailReader` answers as `'released'`. Folding it in would need a
+   * field that means "the last thing I asked about is gone", which the next
+   * snapshot would then have to carry or contradict.
+   *
+   * `HudViewModel.prisonerDetail` going absent is the *other* half and cannot
+   * stand in for this one: it covers nothing-asked, a read in flight and a
+   * failed read, none of which makes the player's choice false.
+   */
+  clearPrisonerSelection(): void;
   getState(): HudShellState;
   /** Applies a shell action programmatically -- restoring a saved UI state, or a test. */
   dispatch(action: HudShellAction): void;
@@ -932,7 +1004,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -993,7 +1082,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1084,7 +1190,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `@media (max-width: 720px)` block no longer hides `.hud__corner`, so the
    * alerts list is laid out with `offsetParent` non-null at 1920, 1440, 1280,
    * 900, 768, 721, 720, 600 and 375 CSS px -- measured on the real application
-   * at all nine. The bullets are kept because they are the record of why this
+   * at all nine.
+   *
+   * **THE `.hud__corner` HALF OF THAT SENTENCE IS FALSE AS OF 2026-09-05, AND
+   * IT IS KEPT RATHER THAN CORRECTED IN PLACE BECAUSE IT IS THE STATE THIS
+   * FILE ASSERTED IN THREE SEPARATE COMMENTS FOR FIVE DAYS.** `hud.css`'s
+   * `@media (max-width: 720px)` block *does* hide `.hud__corner`: the removal
+   * these lines record was attempted and reverted, and that file now carries
+   * the diagnosis the attempt produced -- the corner collides with the
+   * **stretched rail**, not with the tab bar -- and defers the fix to a mobile
+   * layout pass under the owner's steer that the desktop browser comes first.
+   * Re-measured on the assembled page at 375x812 while the zoom control was
+   * being added beside this corner (#1023): `.hud__corner` has a 0x0 box with
+   * `offsetParent === null`. So on a phone the alerts list is still not laid
+   * out at all, and this band is the only route the sentence has -- which is a
+   * stronger argument for the band than the one below it, not a weaker one.
+   * The `collapsedPanels` half is unchanged and still true.
+   *
+   * The bullets are kept because they are the record of why this
    * band exists, and **the band is not withdrawn**: a band shows one message
    * and replaces it, a list keeps several and scrolls back, and what the
    * escape sentence measured on 2026-08-31 is that the *band alone* loses a
@@ -1111,10 +1234,31 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `data-severity` attribute rather than by swapping class names, so the
    * band's identity in the DOM does not change under a player mid-sentence.
    *
-   * It does **not** auto-dismiss, for the reason the refusal band does not: a
+   * It did **not** auto-dismiss, for the reason the refusal band does not: a
    * message that clears itself on a timer is a race against how fast the
-   * player reads. It is replaced by the next event or emptied when the session
+   * player reads. It was replaced by the next event or emptied when the session
    * ends, and it is in the log either way.
+   *
+   * **That paragraph is past tense as of 2026-09-05 (#985), and it is left
+   * standing rather than rewritten because it is the decision that was
+   * reversed** (`docs/AGENT_WORKFLOW.md` section 4). Its last clause is why it
+   * could be: the sentence *is* in the log, and since ADR 0084's decisions 1 to
+   * 3 that log counts repeats, dates them and survives a reload. What the band
+   * does not say, and never said, is anything about the row it occupies -- and
+   * that row is `grid-area: event` on `.hud`, so a band held for the session
+   * costs the rail 32px and the panel in `.hud__side` 24px of it for the
+   * session too, measured on the assembled page at 900x600. So the band now
+   * lets go after `EVENT_BAND_HOLD_CEILING_MS`, which is derived from the
+   * longest sentence it can carry rather than chosen; that constant's docblock
+   * carries the measurement, the derivation and what the change costs a player
+   * on a phone.
+   *
+   * The reversal itself is a ruling rather than an implementation choice, and
+   * it is recorded where rulings are: **"Amendment, 2026-09-05: the band lets
+   * go of its grid row"** in
+   * [ADR 0084](../../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).
+   * That amendment also records the owner's separate ruling on the phone cost
+   * -- it stands, and the deferred mobile layout pass is its repair.
    */
   const eventText = element('span', { className: 'hud-event__text' });
   const eventNotice = element('div', {
@@ -1198,9 +1342,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * a held all-clear would sit in `EventBandDwellState.waiting` until the next
    * event of any kind -- which is the defect running the other way round.
    *
+   * **It now serves a second deadline as well, and deliberately stays one
+   * timer**: the hold ceiling that gives the grid row back (#985). Which of the
+   * two a firing is for is `advanceEventBand`'s decision and not this
+   * function's -- the same division this module already keeps, where
+   * `event-band-dwell.ts` holds the arithmetic and this holds the paint.
+   *
    * Re-armed rather than left running, because every decision carries the wake
    * it needs from the state it produced, and a stale timer would release a
-   * sentence the band has since moved past.
+   * sentence the band has since moved past. That re-arming is also what makes
+   * the ceiling survive a busy channel: the counts publication rebuilds the view
+   * model up to twice a second, each rebuild repaints the same sentence through
+   * `admitToEventBand`'s ordinal guard, and each repaint asks for what is *left*
+   * of the hold rather than restarting it, because `shownAt` does not move.
    */
   function applyEventBandDecision(decision: EventBandDwellDecision): void {
     eventBandDwell = decision.state;
@@ -1212,7 +1366,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     if (decision.wakeInMs === undefined) return;
     eventBandFloorTimer = setTimeout(() => {
       eventBandFloorTimer = undefined;
-      applyEventBandDecision(releaseEventBandFloor(eventBandDwell, hudNowMs()));
+      applyEventBandDecision(advanceEventBand(eventBandDwell, hudNowMs()));
     }, decision.wakeInMs);
   }
 
@@ -1511,7 +1665,76 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
   minimapPanel.body.append(minimapSurface, alertsSection.element);
 
-  const corner = element('div', { className: 'hud__corner', children: [minimapPanel.element] });
+  /*
+   * ---- the camera zoom, on screen (issue #1023) ----------------------
+   *
+   * `WorldScene` has zoomed over `ZOOM_BOUNDS` -- `{ min: 0.2, max: 3 }`, a
+   * deliberate fifteen-fold range with a docblock explaining the two ends --
+   * since it was written, on the wheel, on a pinch and on `+`/`-`, and until
+   * this block **no control anywhere in the DOM named it**. Measured on the
+   * assembled page at 1280x800 rather than inferred from this file: the
+   * substring `zoom` did not occur once in `document.body.innerHTML`, and the
+   * only sentence about moving the view is the Build panel's arm hint, which
+   * names panning. The owner's standing brief is a game with no hidden
+   * features; that was one.
+   *
+   * **In `.hud__corner` beside the minimap and NOT inside its panel**, which
+   * is the one layout decision here and is about what a collapse does. The
+   * minimap panel is collapsible and starts expanded; a zoom pair in its body
+   * would vanish with one press on `Collapse` and take the only visible
+   * mention of zoom in the game with it. As a sibling it survives that, and it
+   * is still in the corner a player looks in for the view controls, next to
+   * the surface that already moves the camera.
+   *
+   * The corner is a flex column with `justify-content: flex-end`, so this row
+   * sits directly above the minimap frame and the pair stays anchored to the
+   * bottom-left. `.hud__corner > *` already opts every child back into
+   * `pointer-events`, so this needs no rule of its own for that.
+   *
+   * `createIconButton` rather than hand-built buttons: it gives each one the
+   * `--tap-target` box `app-shell.spec.ts` measures at 1280x800 and 375x812,
+   * and it puts the label in `screenReaderText` as well as `title`, so the
+   * meaning never depends on a hover a touch player does not have.
+   */
+  const zoomLegend = eyebrowText(t(HUD_MESSAGE_KEY.zoomRegion), 'hud-zoom__legend');
+  // The group below already carries the same words as its accessible name, so
+  // exposing the visible copy too would have a screen reader read them twice --
+  // `createDisplayScaleControl`'s own arrangement, for its own reason.
+  zoomLegend.setAttribute('aria-hidden', 'true');
+  const zoomOut = createIconButton({
+    icon: 'zoom-out',
+    label: t(HUD_MESSAGE_KEY.zoomOut),
+    variant: 'bordered',
+    onActivate: () => {
+      options.onCameraZoom?.('out');
+    },
+  });
+  zoomOut.element.classList.add('hud-zoom__out');
+  const zoomIn = createIconButton({
+    icon: 'zoom-in',
+    label: t(HUD_MESSAGE_KEY.zoomIn),
+    variant: 'bordered',
+    onActivate: () => {
+      options.onCameraZoom?.('in');
+    },
+  });
+  zoomIn.element.classList.add('hud-zoom__in');
+  const zoomControl = element('div', {
+    className: 'hud-zoom',
+    attributes: {
+      role: 'group',
+      // Names the pair "zoom" rather than leaving two glyphs beside a game
+      // that also has an interface scale. The same word is on screen in the
+      // legend, so this is a machine-readable copy of a visible label rather
+      // than the only place the meaning exists.
+      'aria-label': t(HUD_MESSAGE_KEY.zoomRegion),
+    },
+    // Out before in, so the pair reads left to right the way a range does and
+    // the way the keys do on the row they are bound to.
+    children: [zoomLegend, zoomOut.element, zoomIn.element],
+  });
+
+  const corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
@@ -1742,14 +1965,29 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * The refusal line still says what did not happen, and it is on screen at
      * every viewport.
      *
-     * **No confirmation step**, and that is a decision rather than an omission.
-     * A dismissal cannot be undone -- it destroys an entity -- so a confirm
-     * would be defensible; but this repository has no confirmation primitive,
-     * inventing a modal here would be a UI pattern decided inside one panel, and
-     * the control the player is reaching for is the way *out* of a trap they
-     * cannot otherwise escape. `hud.security.roster-hint` states the
-     * consequence beside the button instead. A confirm step is worth proposing
-     * once there is a pattern for one.
+     * **There is a confirmation step now, and this paragraph used to say there
+     * was not.** It read: *"**No confirmation step**, and that is a decision
+     * rather than an omission. A dismissal cannot be undone -- it destroys an
+     * entity -- so a confirm would be defensible; but this repository has no
+     * confirmation primitive, inventing a modal here would be a UI pattern
+     * decided inside one panel, and the control the player is reaching for is
+     * the way *out* of a trap they cannot otherwise escape.
+     * `hud.security.roster-hint` states the consequence beside the button
+     * instead. A confirm step is worth proposing once there is a pattern for
+     * one."*
+     *
+     * It is quoted rather than deleted because the proposal it asked for is what
+     * happened: issue #877 measured the dismiss row firing at the wrong person 4
+     * times out of 4, and the owner ruled on 2026-09-03 that a dismissal gets
+     * both a settle window on the row and a confirmation step -- *"Jedno i
+     * drugie"* -- and supplied the sentence the confirmation says. Every
+     * constraint that paragraph named still binds and the step is built to them:
+     * no modal, no second control, and the press that gets a player out of the
+     * trap is the first of the two rather than a new one. It lives in the panel
+     * that owns the rows, because what it has to name is the row's own label --
+     * `staff-panel.ts`'s `paintDismissConfirmation` and `hud/dismiss-arming.ts`.
+     * Nothing on this side of the boundary changed: this handler is still handed
+     * a staff id by a press that has already been confirmed.
      */
     onDismiss: (intent) => {
       dispatchCommand({ kind: 'dismiss-staff', staffId: intent.staffId });
@@ -1778,11 +2016,23 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // ---- bottom-right regime panel (Regime tab) -----------------------
   /*
    * The fifth occupant of `.hud__side`, and the one that retires the last tab
-   * bound to no panel (issue #451). It issues no command and takes no
-   * selection, so it joins no busy group: everything it holds is a readout
-   * pulled while this tab is the one showing.
+   * bound to no panel (issue #451). It issues no command, so it joins no busy
+   * group: everything it holds is a readout pulled while this tab is the one
+   * showing.
+   *
+   * **"and takes no selection" was true until issue #895 and is corrected
+   * rather than deleted**, because the half that matters is unchanged: it takes
+   * one selection -- which prisoner the inspector is about -- and that
+   * selection is *chrome*, so it still issues no command and still joins no
+   * busy group. `runReported` rather than `dispatchCommand` is what says so
+   * below, exactly as it does for the two arming intents.
    */
-  const regimePanel: RegimePanel = createRegimePanel({ localizer });
+  const regimePanel: RegimePanel = createRegimePanel({
+    localizer,
+    onSelectPrisoner: (prisonerId) => {
+      runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
+    },
+  });
 
   const side = element('div', {
     className: 'hud__side',
@@ -2159,6 +2409,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // until this line; the panel decides whether a shut fold states it, and
     // this line decides nothing.
     staffPanel.setDailyWageBill(next.counts.dailyWageBillMinorUnits);
+    // And the two treasury figures the hire button's availability is judged
+    // against, on the terms `buildPanel.setTreasury` above is passed the same
+    // `next.counts` on: the panel decides whether the selected role is
+    // affordable -- through the same `pressAffordabilityVerdict` `src/main.ts`
+    // judges the `hire-staff` press with -- and this line decides nothing.
+    staffPanel.setTreasury(next.counts);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the
@@ -2174,6 +2430,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // turned into; the total is the projection's own count of the live
     // population, not the length of the window; this line decides nothing.
     regimePanel.setRoster(next.prisonerRoster);
+    // And the one prisoner the player selected, on identical terms (issue #895).
+    // The projection read the six needs off the store it owns and computed
+    // which of them the state is withholding grant over; the panel decides the
+    // tone and the order of the lines; this line decides nothing.
+    //
+    // After the roster deliberately, so that a snapshot carrying both leaves the
+    // checked row and the block below it agreeing about the same prisoner rather
+    // than one tick apart.
+    regimePanel.setPrisonerDetail(next.prisonerDetail);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
@@ -2194,6 +2459,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
+    clearPrisonerSelection: () => regimePanel.clearPrisonerSelection(),
     getState: () => state,
     dispatch: (action: HudShellAction) => {
       applyState(hudShellReducer(state, action));

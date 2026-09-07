@@ -8,6 +8,7 @@ import {
   Treasury,
   justInTimePurchaseOrderId,
 } from '../../src/simulation/economy';
+import { identifierSchema } from '../../src/simulation/protocol/types';
 import { Container } from '../../src/simulation/operations/inventory';
 
 /**
@@ -598,29 +599,35 @@ describe('the arithmetic ADR 0081 section 2 states', () => {
   });
 });
 
-describe('the one way a just-in-time purchase id can collide', () => {
-  it('treats a purchase that already stands as satisfied rather than as a shortfall, and recovers on the next tick', () => {
+describe('a cancel at the same tick used to make the next purchase look like a repeat (#861)', () => {
+  /*
+   * **This describe block read "the one way a just-in-time purchase id can
+   * collide" and asserted the collision as intended behaviour.** Its case is
+   * kept, at the same figures, and its conclusion is reversed -- because the
+   * case was right about the state and wrong about what is owed in it, and
+   * issue #861 is what that cost a player.
+   *
+   * The sentence it asserted was *"nothing is owed: the bricks are on the road
+   * under that id"*. The demand it handed the pass was six bricks against two
+   * on the road, so **four were owed**, and the test's own final assertion
+   * measured them being bought one tick later. It passed for as long as it did
+   * because a shortfall that arrives ten ticks late is invisible to a fixture
+   * that steps ten ticks -- and unbounded to a player who stays paused, which
+   * is the reading #861 arrived with.
+   */
+  it('buys what the queue is owed at that same tick, and does not spend twice doing it', () => {
     /*
-     * `duplicate-order` is the fourth outcome `ProcurementSystem.purchase` can
-     * answer, and the id scheme is built so that it means one thing:
-     * *this exact purchase already stands*. The state is narrow and it is
-     * constructed here rather than described, because the branch is otherwise
-     * unreachable and an unreachable branch that guesses is how a wrong
-     * sentence ships.
+     * How the state is reached, unchanged from the case this replaces: two
+     * purchases at one tick take `jit:7:item.brick:0` and `jit:7:item.brick:2`,
+     * since each raises the in-flight total. Cancelling the **first** puts the
+     * in-flight total back to 2 without freeing the id that names 2, so a
+     * third pass at the same tick composes `jit:7:item.brick:2` again.
      *
-     * How it is reached: two purchases at one tick take
-     * `jit:7:item.brick:0` and `jit:7:item.brick:2`, since each raises the
-     * in-flight total. Cancelling the **first** puts the in-flight total back
-     * to 2 without freeing the id that names 2 -- so a third pass at the same
-     * tick composes `jit:7:item.brick:2` again. (The same shape is what a
-     * session restored onto the tick it was saved at produces.)
-     *
-     * What must not happen: the pass reporting a shortfall. Nothing is owed
-     * and no money is missing -- the materials are on the road under that very
-     * id -- and a player told to find money they already spent is worse off
-     * than one told nothing. What does happen is that this pass buys nothing;
-     * the next tick composes a different id and buys normally, which is
-     * asserted rather than assumed.
+     * **Note whose collision this is**: `oneOrder` is `order-1` throughout, so
+     * all three passes are the *same build order*. That is why the build
+     * order's id is not the discriminator -- see `justInTimePurchaseOrderId` --
+     * and it is the reason this case is the sharpest one available rather than
+     * an exotic one.
      */
     const { treasury, service, procurement } = fixture();
 
@@ -635,15 +642,89 @@ describe('the one way a just-in-time purchase id can collide', () => {
     const afterCancel = treasury.balanceMinorUnits;
 
     const collided = service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 7);
-    expect(collided.unfunded, 'nothing is owed: the bricks are on the road under that id').toEqual([]);
-    expect(collided.unprocurable, 'and this is not a content problem either').toEqual([]);
-    expect(collided.purchased).toEqual([]);
-    expect(treasury.balanceMinorUnits).toBe(afterCancel);
 
-    // The next tick composes a different id, so the shortfall is bought.
-    expect(service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 8).purchased).toEqual([
+    expect(collided.purchased, 'six wanted, two on the road, so four are bought -- now, not next tick').toEqual([
       { itemId: BRICK, quantity: 4, costMinorUnits: 160 },
     ]);
+    expect(collided.unfunded, 'and nothing is short of money').toEqual([]);
+    expect(collided.unprocurable, 'nor is this a content problem').toEqual([]);
+    expect(treasury.balanceMinorUnits).toBe(afterCancel - 160);
+
+    /*
+     * The id the free-id search reached, asserted as a literal for the reason
+     * the case above asserts its ids as literals: the composer is the thing
+     * under test. `jit:7:item.brick:2` was taken, so the purchase carries the
+     * next id in the sequence.
+     */
+    expect(procurement.pendingDeliveries.map((delivery) => [delivery.orderId, delivery.quantity])).toEqual([
+      ['jit:7:item.brick:2', 2],
+      ['jit:7:item.brick:2/1', 4],
+    ]);
+    expect(justInTimePurchaseOrderId(7, BRICK, 2, 1)).toBe('jit:7:item.brick:2/1');
+    expect(justInTimePurchaseOrderId(7, BRICK, 2, 0), 'and an id that never collided is unchanged').toBe('jit:7:item.brick:2');
+
+    /*
+     * The other half, and the one that says the fix is not "buy again
+     * whenever an id is taken": the pass is run a fourth time at the same tick
+     * against the same demand, and the queue is now covered, so it buys
+     * nothing. The deficit subtraction is what stops a double buy; the id
+     * scheme never was.
+     */
+    const settled = service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 7);
+    expect(settled.purchased, 'six wanted, six on the road').toEqual([]);
+    expect(treasury.balanceMinorUnits).toBe(afterCancel - 160);
+    expect(procurement.pendingDeliveries).toHaveLength(2);
+  });
+
+  it('composes an id a save can hold and a `CancelMaterialPurchase` can name, at every attempt', () => {
+    /*
+     * **The trap this case exists for, found by reading the schema rather than
+     * by a red test.** A purchase order id is an `identifierSchema` in two
+     * places that both reach a player: `economySectionSchema`'s
+     * `procurement.pending[].orderId`, so an id that fails it cannot be
+     * **saved**, and `CancelMaterialPurchase.orderId`, so an id that fails it
+     * cannot be **cancelled**. The first draft of #861's fix suffixed with
+     * `#`, which that regex rejects -- it would have made the very session it
+     * repairs unsaveable, and the whole vitest suite was green on it, because
+     * nothing saved a session that had collided.
+     *
+     * Asserted against `identifierSchema` itself and never against a copy of
+     * its character set: a fixture that restated the regex would agree with a
+     * separator both halves got wrong (`docs/TESTING.md`).
+     */
+    expect(identifierSchema.safeParse(justInTimePurchaseOrderId(0, BRICK, 0)).success).toBe(true);
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      const composed = justInTimePurchaseOrderId(7, BRICK, 2, attempt);
+      expect(identifierSchema.safeParse(composed).success, `${composed} must be nameable by a command and a save`).toBe(true);
+    }
+    /* The negative control, so a schema that admitted anything would fail here. */
+    expect(identifierSchema.safeParse('jit:7:item.brick:2#1').success, 'the separator this case was written about').toBe(false);
+  });
+
+  it('leaves `ProcurementSystem`\'s duplicate refusal exactly where it was, for the caller it is written for', () => {
+    /*
+     * The guard #861's fix narrows is not removed, and this is the level it
+     * still stands at: `purchase` refuses an id that is already pending,
+     * whoever composed it. That is what protects the player's *Buy* press,
+     * whose `order-${crypto.randomUUID()}` id comes from the command
+     * (`src/main.ts`) and can genuinely arrive twice -- a route no id this
+     * service composes can reach any more.
+     *
+     * Asked of `ProcurementSystem` directly rather than through the service,
+     * because through the service it is now unreachable, which is the whole
+     * claim.
+     */
+    const { treasury, procurement } = fixture();
+
+    const first = procurement.purchase('order-from-a-press', BRICK, 2, 7, 'deliveries');
+    expect(first.ok).toBe(true);
+    const afterFirst = treasury.balanceMinorUnits;
+
+    const repeat = procurement.purchase('order-from-a-press', BRICK, 2, 7, 'deliveries');
+    expect(repeat.ok).toBe(false);
+    expect(repeat.ok ? undefined : repeat.reason).toBe('duplicate-order');
+    expect(treasury.balanceMinorUnits, 'and the refusal cost nothing').toBe(afterFirst);
+    expect(procurement.pendingDeliveries).toHaveLength(1);
   });
 });
 

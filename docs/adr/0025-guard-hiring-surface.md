@@ -87,15 +87,15 @@ panel are never laid out together, so the budget is not a constraint on this
 surface at any value.
 
 **Correction, 2026-08-30: the last clause of that sentence is false, and the
-class it belongs to is what to take from this.** `src/ui/primitives/icon.ts:68`
-holds
-
-```ts
-'M15.8 16.1h3.9',
-```
-
-— the fourth stroke of the `ui-scale` glyph, SVG path data and nothing whatever
-to do with a headroom figure. It arrived at `2a00f98` (#579, v0.0.212) on
+class it belongs to is what to take from this.** `'M15.8 16.1h3.9'`
+(verbatim in `src/ui/primitives/icon.ts`) — the fourth stroke of the
+`ui-scale` glyph, SVG path data and nothing whatever
+to do with a headroom figure. **Converted from a line citation
+(`icon.ts:68`, then re-anchored to `:79`) to this quotation, 2026-09-06, per
+`docs/AGENT_WORKFLOW.md` §4: this exact string is what the paragraph's whole
+argument rests on, and a quotation fails the moment the string does, where a
+line number would have kept resolving to whatever the string had become.**
+It arrived at `2a00f98` (#579, v0.0.212) on
 2026-08-29 with the interface-scale control; `git show
 cfab558:src/ui/primitives/icon.ts` returns no `3.9` at all, and `git log -S
 'h3.9' -- src/ui/primitives/icon.ts` names that one commit.
@@ -182,7 +182,7 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`src/ui/hud/hud.ts:270`) and `src/main.ts` turns it into
+emits a `HudIntent` (`src/ui/hud/hud.ts:322`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
 route and are the pattern this follows —
 `case 'place-build-order'` and `case 'purchase-materials'` in `src/main.ts`.

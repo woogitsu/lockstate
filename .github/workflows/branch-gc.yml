@@ -1,0 +1,762 @@
+name: Branch GC
+
+# Delete remote branches whose exact tip was merged through a pull request.
+#
+# ## Why a second branch-cleanup workflow exists, when delete-branches.yml is
+# ## already here
+#
+# THE TWO ANSWER DIFFERENT QUESTIONS, AND ONLY ONE OF THEM IS THE QUESTION THIS
+# REPOSITORY ACTUALLY HAS.
+#
+# `.github/workflows/delete-branches.yml` runs `deletebranches.sh`, whose safety
+# property is REACHABILITY: it deletes a branch when
+# `git merge-base --is-ancestor origin/<branch> origin/main` succeeds, on the
+# argument -- correct as far as it goes -- that deleting such a ref loses no
+# history, because `git log main` still reaches every commit the branch pointed
+# at.
+#
+# That argument is sound and its instrument no longer finds anything, because
+# this repository SQUASH-MERGES. A squash rewrites the branch's commits into one
+# new commit with a different tree-parent lineage, so the merged branch head is
+# provably NOT an ancestor of the commit that merged it. Measured against
+# `origin/main` at v0.0.388, over the 477 non-default remote branches then
+# present:
+#
+#     ancestors of origin/main                                    2
+#     head of a merged pull request, tip unmoved since the merge  363
+#
+# Those two sets do not overlap: every one of the 363 fails
+# `--is-ancestor`, and neither of the 2 has a merged pull request. So a dispatch
+# of delete-branches.yml today deletes 2 branches out of 365 that carry nothing
+# unique, prints `Nothing to delete` about the rest, and exits 0 -- which reads
+# to whoever dispatched it as "the cleanup is done".
+#
+# THE CORRECT SIGNAL FOR A SQUASHING REPOSITORY IS THE ONE THE MERGE ITSELF
+# RECORDS. `merged_at` on the pull request is set by GitHub when it performs the
+# merge, whatever strategy it used, and `head.sha` on that same pull request is
+# the exact commit it merged. A branch whose current tip equals a merged pull
+# request's `head.sha` is a branch whose entire content went in: not "is
+# reachable from main" -- squashing makes that false -- but "was merged, and
+# nothing has been pushed to it since". That is the property this workflow
+# checks, per branch, immediately before it deletes anything.
+#
+# This file does not modify or replace delete-branches.yml. That workflow is the
+# owner's to retire, and it is still the right tool for a repository that stops
+# squashing; the numbers above are the evidence for retiring it, not the act.
+#
+# ## Nothing is trusted except the API's own answer
+#
+# The `branches` input NARROWS what is considered. It never authorises anything.
+# Every branch that survives the narrowing is then verified from scratch against
+# the API in this job, and a branch named in the input that fails any check is
+# reported and skipped exactly as if it had never been named. The input exists so
+# that a cautious first run can be aimed at three branches instead of four
+# hundred; left empty, every remote branch is considered, which is not less safe
+# because the verification -- not the list -- is the gate.
+#
+# ## What it deliberately does not do
+#
+# It does not check that a branch is unreferenced by anything outside this
+# repository's pull requests -- a local clone, a stale worktree, another agent's
+# unpushed work rebased onto it. Nothing here can see those. `wip/*` is skipped
+# unconditionally for exactly that reason: those refs are pushed by
+# `scripts/wip-sweep.sh` for agents that may be running right now and hold work
+# that exists nowhere else, which is their whole purpose.
+#
+# It also does not verify that the merge was a GOOD one, or that the pull request
+# it names is about what its title says. A ref whose commit is preserved under
+# another name is all this can establish, and it is the whole of what "safe to
+# delete" means.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: 'Branches to consider, newline- or comma-separated. Empty considers every remote branch. This narrows the candidate set; it never authorises a deletion.'
+        required: false
+        type: string
+        default: ''
+      apply:
+        # FALSE IS THE DEFAULT BECAUSE THE OPERATION IS IRREVERSIBLE ON A SHARED
+        # REMOTE, and because the report a dry run produces is the thing a person
+        # needs before they can sensibly say yes. `deletebranches.sh` records the
+        # same reasoning from the other side: its first version deleted the moment
+        # it was invoked, and that was the defect rather than the convenience.
+        #
+        # A dry run is also the closest thing this mechanism has to a test. Its
+        # classification is computed by exactly the code path that deletes, over
+        # exactly the data the deletion would use, and it prints every verdict --
+        # so "run it, read the table, run it again with apply" is a verification
+        # step and not a formality.
+        description: 'Actually delete. Left false, the job reports what it would delete and deletes nothing.'
+        required: false
+        type: boolean
+        default: false
+
+# TWO SCOPES, AND A THIRD WOULD BE A DEFECT.
+#
+# `contents: write` is what deleting a ref requires. `pull-requests: read` is
+# what verifying one requires: this repository is private, so the pull request
+# list is not public, and a token without that scope can only be refused.
+#
+# THE COST OF GETTING THIS WRONG IS RECORDED RATHER THAN IMAGINED. Run 2 of
+# delete-branches.yml, on 2026-08-30, declared `contents: write` alone --
+# declaring a permissions block at all sets every scope it omits to `none` --
+# and its pull request lookup returned 403. That run failed instead of
+# proceeding, because the script treats the list as a precondition; the same
+# choice is made here, in `fail()` below. A verification step that cannot run is
+# not a verification step that passes.
+#
+# Nothing here opens, closes, comments on or edits a pull request, so `read` is
+# the whole of what the second scope needs to be.
+permissions:
+  contents: write
+  pull-requests: read
+
+# One dispatch at a time. Two concurrent runs would each classify against a
+# branch list the other is deleting from, and the loser would spend its run
+# reporting failures for refs that are already correctly gone. `false`, not
+# `true`: a run that is midway through deleting must finish and report what it
+# did, because that report is the audit record.
+concurrency:
+  group: branch-gc
+  cancel-in-progress: false
+
+jobs:
+  branch-gc:
+    # THE ONLY RUNNER LABEL THAT WORKS HERE, AND THE ONE THING ABOUT THIS FILE
+    # THAT IS NOT A FREE CHOICE.
+    #
+    # Every job in every workflow in this repository names this label, and every
+    # run that has ever succeeded ran on it. `ubuntu-latest` is not merely
+    # untested here: version.yml's first run and delete-branches.yml's first run
+    # each asked for it and each failed after four seconds with no step recorded
+    # and no log, which is the signature of a runner that was never provisioned.
+    # Moving version.yml to this label is what made it work, and moving
+    # delete-branches.yml to this label is what got its second run as far as
+    # executing a step at all. A new workflow written with `ubuntu-latest`
+    # inherits a four-second failure with nothing in the log to explain it.
+    #
+    # tests/foundation/ci-configuration-contract.test.ts carries the same
+    # argument against version.yml's `runs-on`, with the measurement.
+    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    timeout-minutes: 30
+
+    # NO CHECKOUT, AND NO ACTIONS AT ALL. That is a decision, not an omission,
+    # and it is the largest difference between this file and delete-branches.yml.
+    #
+    # Verification reads the pull request list and the branch list; deletion is
+    # `DELETE /repos/{owner}/{repo}/git/refs/heads/{branch}`. Both are HTTP, so
+    # nothing in this repository's tree is read and a checkout would buy nothing.
+    # What it would cost is specific: a clone carrying every one of ~478 refs
+    # onto a self-hosted runner whose workspace is REUSED between jobs and
+    # between runs, and -- for the deletion to work through git rather than the
+    # API -- a credential left in that workspace's git config by
+    # `persist-credentials: true`. delete-branches.yml needs both, because it
+    # deletes with `git push --delete`; this does not.
+    #
+    # So the token here lives in one step's environment and in no file. There is
+    # also no `git push --delete` to aim at the wrong ref: a mistake in the loop
+    # below can only issue a DELETE for a branch name the classifier returned,
+    # which is a name it read from the API and re-checked against an allowlist.
+    steps:
+      # WHY THIS JOB NOW NEEDS A CHECKOUT, having deliberately not had one.
+      #
+      # The first version of this workflow was pure API: `merged_at` and a
+      # matching `head.sha` are the whole of the merge question, and neither
+      # needs git history. The citation guard below asks a DIFFERENT question --
+      # does anything in `docs/` still cite a commit that only this branch
+      # publishes -- and that one cannot be answered without the graph.
+      #
+      # It is not a hypothetical. The trial batch of twenty the owner
+      # authorised on 2026-09-03 deleted `agent/403-save-generations`, and
+      # `documentation-commit-citation-contract` went red on
+      # `docs/adr/0063-what-a-refused-restore-says-and-whose-fault-it-is.md`,
+      # which cited an intermediate commit of #468's branch. Squash-merging
+      # puts one commit on `main` and leaves every intermediate commit on the
+      # branch and nowhere else, so a fully merged branch can still be the only
+      # publisher of a commit somebody wrote a sentence about. Measured over the
+      # whole corpus at that point: of 383 shas cited across `docs/`, 316 were
+      # reachable from `origin/main` and **28 only from a branch**.
+      #
+      # `fetch-depth: 0` because the guard reads `origin/main..origin/<branch>`
+      # for every candidate, and at the action's default depth of 1 there is no
+      # history to walk -- the same reason delete-branches.yml gives for its own
+      # full fetch.
+      #
+      # `persist-credentials: false`, unlike delete-branches.yml's checkout:
+      # this job deletes through the REST API with `github.token` and never with
+      # `git push`, so the credential has no reason to survive into a shell.
+      # tests/foundation/ci-configuration-contract.test.ts requires `false` of
+      # every checkout that does not state a reason for `true`, and this one has
+      # none.
+      - name: Checkout for the citation guard
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify every candidate against the API, then delete only what verified
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          # THE INPUTS ARRIVE THROUGH THE ENVIRONMENT, NEVER THROUGH `${{ }}`
+          # INSIDE THE SCRIPT BODY.
+          #
+          # `${{ inputs.branches }}` interpolated into the script would be
+          # textual substitution into a program by whoever dispatched the
+          # workflow -- and this is the one job in the repository holding
+          # `contents: write` with no branch protection anywhere to stop it (this
+          # repository has no protection rules at all: `main` itself is
+          # unprotected, which is why the default-branch guard below is a name
+          # comparison and not a reliance on the API refusing).
+          #
+          # Read from `os.environ`, the value is data. It cannot become code, and
+          # the `\A[A-Za-z0-9][A-Za-z0-9._/-]{0,254}\Z` allowlist in the script
+          # is the second lock on the same door: a name that does not match is
+          # skipped with a reason rather than sent anywhere.
+          BRANCH_GC_BRANCHES: ${{ inputs.branches }}
+          BRANCH_GC_APPLY: ${{ inputs.apply }}
+        run: |
+          python3 --version
+          python3 - <<'BRANCH_GC_PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          API = "https://api.github.com"
+          REPOSITORY = os.environ["GITHUB_REPOSITORY"]
+          TOKEN = os.environ["GITHUB_TOKEN"]
+          APPLY = os.environ.get("BRANCH_GC_APPLY", "false").strip().lower() == "true"
+          REQUESTED_RAW = os.environ.get("BRANCH_GC_BRANCHES", "")
+
+          # Conservative by design. Git's own ref rules are considerably wider
+          # than this, so a legal branch name can be rejected here -- and a
+          # rejected name is SKIPPED WITH A REASON, never deleted, so the cost of
+          # the narrowness is a branch left alive and reported. All 478 branch
+          # names present when this was written match it; the widest character
+          # any of them uses is the slash.
+          SAFE_NAME = re.compile(r"\A[A-Za-z0-9][A-Za-z0-9._/-]{0,254}\Z")
+
+          # Snapshots pushed by scripts/wip-sweep.sh for agents that may be
+          # running right now. They hold work that exists nowhere else.
+          PROTECTED_PREFIXES = ("wip/",)
+
+          # Between mutating calls. GitHub asks for a pause between writes to
+          # stay clear of its secondary rate limits, and a run deleting several
+          # hundred refs is exactly the shape that trips one. The primary limit
+          # is the other bound worth knowing: the workflow token gets 1,000
+          # requests per hour per repository, so a single dispatch cannot clear
+          # much more than that many branches however patient it is.
+          DELETE_PAUSE_SECONDS = 0.5
+          # The citation form documentation-commit-citation-contract.test.ts
+          # polices: a backtick span whose ENTIRE content is a hex run of
+          # abbreviated-to-full sha length. Kept identical to that file's own
+          # CITATION, because a guard recognising a different set of citations
+          # than the gate would let through exactly the deletions the gate then
+          # fails on.
+          CITATION = re.compile(r"`([0-9a-f]{7,40})`")
+          # Hexadecimal by coincidence, from the same file's NOT_A_COMMIT: an
+          # all-decimal run of eight or more is a migration timestamp, an
+          # Actions run id or a byte count; a trailing-f decimal is a C# float
+          # literal quoted out of decompiled source.
+          NOT_A_COMMIT = (re.compile(r"^\d{8,}$"), re.compile(r"^\d+f$"))
+
+
+          def fail(message):
+              """Abort. Never proceed with a verification input that did not load.
+
+              Every read below is a PRECONDITION rather than an optimisation: the
+              open pull request list is what protects an open pull request's head,
+              and the merged list is the only thing that authorises a deletion at
+              all. Carrying on with an empty list would turn this job from a
+              cleanup into a way to close every open pull request in the
+              repository. delete-branches.yml's run 2 failed here and failing was
+              correct.
+              """
+              print("::error::" + message)
+              sys.exit(1)
+
+
+          def request(path, method="GET"):
+              call = urllib.request.Request(API + path, method=method)
+              call.add_header("Authorization", "Bearer " + TOKEN)
+              call.add_header("Accept", "application/vnd.github+json")
+              call.add_header("X-GitHub-Api-Version", "2022-11-28")
+              with urllib.request.urlopen(call) as response:
+                  body = response.read()
+              return json.loads(body) if body else None
+
+
+          def read(path):
+              try:
+                  return request(path)
+              except urllib.error.HTTPError as error:
+                  detail = ""
+                  try:
+                      detail = " " + error.read().decode("utf-8", "replace")[:400]
+                  except OSError:
+                      pass
+                  hint = ""
+                  if error.code == 403 or error.code == 404:
+                      hint = (
+                          " A 403 or a 404 on a private repository with a token present"
+                          " usually means the token lacks the scope for this path;"
+                          " this workflow's permissions block must keep"
+                          " pull-requests: read."
+                      )
+                  fail("GET " + path + " failed: " + str(error.code) + hint + detail)
+              except urllib.error.URLError as error:
+                  fail("GET " + path + " could not be reached: " + str(error.reason))
+
+
+          def read_all(path):
+              """Every page of a paginated collection.
+
+              A collection that changes mid-walk can drop or duplicate an item,
+              and it is worth saying which way that cuts: a merged pull request
+              missed by the walk makes its branch classify as "no merged pull
+              request" and be SKIPPED. The failure mode of a racing read here is
+              a branch left alive, which is the direction to be wrong in.
+              """
+              items = []
+              page = 1
+              while True:
+                  joiner = "&" if "?" in path else "?"
+                  batch = read(path + joiner + "per_page=100&page=" + str(page))
+                  if not isinstance(batch, list):
+                      fail("GET " + path + " did not return a list.")
+                  items.extend(batch)
+                  if len(batch) < 100:
+                      return items
+                  page += 1
+                  if page > 200:
+                      fail("refusing to page past 20,000 items from " + path)
+
+
+          repository = read("/repos/" + REPOSITORY)
+          default_branch = repository.get("default_branch")
+          if not default_branch:
+              fail("the repository metadata names no default branch, so nothing below can protect it.")
+
+          branches = read_all("/repos/" + REPOSITORY + "/branches")
+          pulls = read_all("/repos/" + REPOSITORY + "/pulls?state=all")
+
+          if not branches:
+              fail("the branch list came back empty. That is not a repository state; it is a broken read.")
+          if not pulls:
+              fail("the pull request list came back empty, so nothing could be verified as merged.")
+
+          # ---------------------------------------------------------------------
+          # Index the pull requests.
+          #
+          # `merged_by_sha` is the authorising index and is keyed by BOTH the head
+          # ref and the head sha, because three head refs in this repository carry
+          # more than one merged pull request -- one of them nine. A branch is
+          # deletable when its current tip is the head sha of ANY merged pull
+          # request on that ref, which is the exactly-correct question: it asks
+          # whether THIS commit was merged, not whether the branch was ever merged
+          # and then separately whether its tip looks familiar.
+          #
+          # `merged_by_ref` exists only to write a better skip reason -- "the tip
+          # moved after the merge" rather than "no merged pull request" -- and
+          # authorises nothing.
+          # ---------------------------------------------------------------------
+          merged_by_sha = {}
+          merged_by_ref = {}
+          open_heads = set()
+          open_bases = set()
+
+          for pull in pulls:
+              head = pull.get("head") or {}
+              base = pull.get("base") or {}
+              ref = head.get("ref")
+              if not ref:
+                  continue
+
+              if pull.get("state") == "open":
+                  # Deliberately NOT filtered to same-repository heads. A fork
+                  # pull request whose head ref happens to match a branch name
+                  # here would over-protect that branch, and over-protection is
+                  # the safe error.
+                  open_heads.add(ref)
+                  if base.get("ref"):
+                      open_bases.add(base["ref"])
+                  continue
+
+              if not pull.get("merged_at"):
+                  continue
+
+              # The merged side IS filtered to this repository. `head.ref` on a
+              # fork pull request names a branch in the FORK, so matching it
+              # against a branch here would authorise a deletion on the strength
+              # of somebody else's ref name. `head.repo` is null when the fork
+              # has since been deleted, which is also not a match.
+              head_repository = head.get("repo") or {}
+              if head_repository.get("full_name") != REPOSITORY:
+                  continue
+
+              sha = head.get("sha")
+              if sha:
+                  merged_by_sha.setdefault((ref, sha), pull)
+
+              known = merged_by_ref.get(ref)
+              if known is None or (pull.get("merged_at") or "") > (known.get("merged_at") or ""):
+                  merged_by_ref[ref] = pull
+
+          if not merged_by_sha:
+              fail(
+                  "not one merged pull request in this repository has a head in this repository."
+                  " Nothing below could authorise a deletion, so this is a broken read or a"
+                  " broken index rather than a clean repository."
+              )
+
+          # ---------------------------------------------------------------------
+          # Narrow the candidate set. This filter cannot authorise anything; every
+          # survivor is verified from scratch below.
+          # ---------------------------------------------------------------------
+          requested = []
+          for token in re.split(r"[,\r\n]+", REQUESTED_RAW):
+              token = token.strip()
+              if token and token not in requested:
+                  requested.append(token)
+
+          by_name = {}
+          for branch in branches:
+              name = branch.get("name")
+              if name:
+                  by_name[name] = branch
+
+          if requested:
+              candidates = [by_name[name] for name in requested if name in by_name]
+              absent = [name for name in requested if name not in by_name]
+          else:
+              candidates = sorted(branches, key=lambda branch: branch["name"])
+              absent = []
+
+
+          def cited_shas():
+              """Every commit sha the corpus cites, mapped to where.
+
+              Read off the working tree rather than the API, because that is
+              what the gate reads and the two must agree.
+
+              **THIS SCANNED `docs/` ONLY UNTIL 2026-09-03, AND THAT NARROWING
+              CAUSED THE EXACT DAMAGE THIS GUARD EXISTS TO PREVENT.** The
+              reason given for it was: *"the gate scans source comments too,
+              but a comment naming a commit is code this branch cleanup does
+              not touch, and widening the scan here would make the guard refuse
+              branches for citations no deletion can break."* The second clause
+              is false, and the first is beside the point. A cleanup does not
+              need to touch the comment; it only needs to delete the branch
+              that publishes the commit the comment names. On 2026-09-03 a run
+              of this workflow deleted 338 branches and orphaned exactly one
+              citation -- in `tests/foundation/documentation-links-contract.test.ts`,
+              a *test comment*, which this function could not see.
+
+              So the walk now covers every directory the gate itself reads.
+              The cost is real and is the right trade: the guard will refuse
+              some branch whose only claim on life is a sha in a source
+              comment, and a reader who wants it gone has to repoint that
+              comment at the published squash first. That is one edit against
+              a citation nobody can resolve.
+              """
+              index = {}
+              for root in ("docs", "src", "tests", "scripts", "tooling", "benchmarks"):
+                  if not os.path.isdir(root):
+                      continue
+                  for directory, _, files in os.walk(root):
+                      for filename in files:
+                          if not filename.endswith((".md", ".ts", ".tsx", ".mjs", ".js", ".sql", ".css")):
+                              continue
+                          path = os.path.join(directory, filename)
+                          try:
+                              with open(path, encoding="utf-8") as handle:
+                                  contents = handle.read()
+                          except (OSError, UnicodeDecodeError):
+                              continue
+                          for match in CITATION.finditer(contents):
+                              token = match.group(1)
+                              if any(shape.match(token) for shape in NOT_A_COMMIT):
+                                  continue
+                              index.setdefault(token, path)
+              return index
+
+          CITED = cited_shas()
+          if not CITED:
+              fail(
+                  "no commit citation was found anywhere under docs/. That is not a"
+                  " documentation state in this repository; it means the scan or the"
+                  " checkout is broken, and the guard below would then protect nothing."
+              )
+
+          def cited_commit_only_this_branch_publishes(name):
+              """(sha, citing file) if deleting this branch would orphan a citation.
+
+              A commit is at risk when it is reachable from the branch, NOT
+              reachable from the default branch, and cited in the documentation.
+              Squash-merging is what makes that set non-empty for a fully merged
+              branch: the merge puts one new commit on the default branch and
+              leaves every commit of the branch itself unreachable from it.
+
+              Prefix-matched in the direction the citation form requires: a
+              citation is 7 to 40 hex characters and the commit is 40, so an
+              abbreviated citation matches when the full sha starts with it.
+              Deliberately NOT the other direction -- a 40-character citation
+              never matches a shorter commit id, because there is no such thing.
+              """
+              try:
+                  walk = subprocess.run(
+                      ["git", "rev-list", "origin/" + default_branch + "..origin/" + name],
+                      capture_output=True,
+                      text=True,
+                      timeout=120,
+                      check=False,
+                  )
+              except (OSError, subprocess.SubprocessError) as error:
+                  fail(
+                      "git rev-list failed for " + name + ": " + str(error) + "."
+                      " The guard cannot be skipped on an error, because an unanswered"
+                      " question here is the one that deletes a cited commit."
+                  )
+              if walk.returncode != 0:
+                  fail(
+                      "git rev-list origin/" + default_branch + "..origin/" + name
+                      + " exited " + str(walk.returncode) + ": " + walk.stderr.strip()[:300]
+                      + ". Refusing to continue: this is the read that protects a citation."
+                  )
+              for line in walk.stdout.split():
+                  for token, path in CITED.items():
+                      if line.startswith(token):
+                          return (line[:7], path)
+              return None
+
+          def classify(branch):
+              """(verdict, pull-or-None, reason) for one branch.
+
+              Order matters only for which reason gets reported; every guard is
+              checked against the API's own answer and none of them defers to the
+              input list.
+              """
+              name = branch.get("name") or ""
+              sha = ((branch.get("commit") or {}).get("sha")) or ""
+
+              if not sha:
+                  return ("skipped", None, "the API reported no tip commit for it, so nothing could be compared")
+              if name == default_branch:
+                  return ("skipped", None, "it is the default branch")
+              if branch.get("protected"):
+                  return ("skipped", None, "branch protection is enabled on it")
+              if name.startswith(PROTECTED_PREFIXES):
+                  return ("skipped", None, "it is a wip/ snapshot, which may hold work that exists nowhere else")
+              if not SAFE_NAME.match(name):
+                  return ("skipped", None, "its name falls outside the character allowlist this job will act on")
+              if name in open_heads:
+                  return ("skipped", None, "it is the head of an open pull request")
+              if name in open_bases:
+                  return ("skipped", None, "it is the base of an open pull request, which deleting would close")
+
+              merged = merged_by_sha.get((name, sha))
+              if merged is not None:
+                  # Merged is necessary and no longer sufficient. See the
+                  # checkout step's comment: a squash-merged branch can still be
+                  # the only publisher of a commit the documentation cites, and
+                  # deleting it turns that citation into one nobody -- CI
+                  # included -- can resolve.
+                  at_risk = cited_commit_only_this_branch_publishes(name)
+                  if at_risk is not None:
+                      return (
+                          "skipped",
+                          merged,
+                          "merged, but "
+                          + at_risk[1]
+                          + " cites "
+                          + at_risk[0]
+                          + ", which only this branch publishes -- deleting it would"
+                          " orphan that citation. Cite the published squash instead,"
+                          " then re-dispatch",
+                      )
+                  return ("deletable", merged, "")
+
+              latest = merged_by_ref.get(name)
+              if latest is None:
+                  return ("skipped", None, "no merged pull request in this repository has it as a head")
+
+              return (
+                  "skipped",
+                  latest,
+                  "its tip is "
+                  + sha[:7]
+                  + " but the last merged pull request on it merged "
+                  + ((latest.get("head") or {}).get("sha") or "?")[:7]
+                  + ", so something was pushed to it after the merge",
+              )
+
+
+          rows = []
+          deletable = []
+          for branch in candidates:
+              verdict, pull, reason = classify(branch)
+              rows.append(
+                  {
+                      "name": branch.get("name") or "",
+                      "sha": ((branch.get("commit") or {}).get("sha")) or "",
+                      "verdict": verdict,
+                      "reason": reason,
+                      "pull": None if pull is None else pull.get("number"),
+                      "merged_at": None if pull is None else pull.get("merged_at"),
+                  }
+              )
+              if verdict == "deletable":
+                  deletable.append(branch.get("name") or "")
+
+          # ---------------------------------------------------------------------
+          # Delete. Only names that came out of `classify` as deletable reach here,
+          # and the default-branch name is refused a second time on the way past --
+          # `main` is unprotected in this repository, so the one ref whose loss
+          # would be expensive has nothing but this code standing in front of it,
+          # and a guard that matters is worth stating twice.
+          # ---------------------------------------------------------------------
+          failures = []
+          by_row = {row["name"]: row for row in rows}
+
+          if APPLY:
+              for index, name in enumerate(deletable):
+                  row = by_row[name]
+                  if name == default_branch or not SAFE_NAME.match(name):
+                      row["verdict"] = "skipped"
+                      row["reason"] = "refused at the delete step: it is the default branch or fails the name allowlist"
+                      continue
+
+                  if index:
+                      time.sleep(DELETE_PAUSE_SECONDS)
+
+                  path = "/repos/" + REPOSITORY + "/git/refs/heads/" + urllib.parse.quote(name)
+                  try:
+                      request(path, method="DELETE")
+                      row["verdict"] = "deleted"
+                  except urllib.error.HTTPError as error:
+                      if error.code == 422:
+                          # The ref is already gone. Re-running a list from an
+                          # earlier report is an ordinary thing to do, and it is
+                          # not a failure -- `deletebranches.sh` used to abort on
+                          # exactly this under `set -e`.
+                          row["verdict"] = "already gone"
+                          row["reason"] = "the remote reports no such ref, so a previous run or a person removed it"
+                          continue
+                      body = ""
+                      try:
+                          body = error.read().decode("utf-8", "replace")[:200]
+                      except OSError:
+                          pass
+                      row["verdict"] = "FAILED"
+                      row["reason"] = "DELETE returned " + str(error.code) + " " + body
+                      failures.append(name)
+                      if error.code in (403, 429):
+                          # A rate limit or a revoked scope will not fix itself
+                          # inside this run, and grinding through four hundred
+                          # more identical failures buries the report. Stop, and
+                          # mark the remainder honestly rather than leaving them
+                          # reading as "would delete".
+                          for remaining in deletable[index + 1 :]:
+                              by_row[remaining]["verdict"] = "not attempted"
+                              by_row[remaining]["reason"] = (
+                                  "the run stopped after DELETE returned " + str(error.code) + " on " + name
+                              )
+                          break
+                  except urllib.error.URLError as error:
+                      row["verdict"] = "FAILED"
+                      row["reason"] = "DELETE could not be reached: " + str(error.reason)
+                      failures.append(name)
+                      break
+          else:
+              for name in deletable:
+                  by_row[name]["verdict"] = "would delete"
+
+          # ---------------------------------------------------------------------
+          # THE RUN IS THE AUDIT RECORD, so the table carries every branch that was
+          # considered and not only the ones that went. A deletion has to be
+          # reconstructible from it afterwards: the branch name, the pull request
+          # that merged it, when that merge happened, and the tip sha the ref
+          # carried when it was deleted -- which is the pull request's head sha, so
+          # `git fetch origin pull/<n>/head` recovers the commit.
+          # ---------------------------------------------------------------------
+          counts = {}
+          for row in rows:
+              counts[row["verdict"]] = counts.get(row["verdict"], 0) + 1
+
+          order = ["FAILED", "deleted", "would delete", "not attempted", "already gone", "skipped"]
+          rows.sort(key=lambda row: (order.index(row["verdict"]) if row["verdict"] in order else len(order), row["name"]))
+
+          out = []
+          out.append("# Branch GC")
+          out.append("")
+          out.append("- mode: **" + ("APPLY -- refs were deleted" if APPLY else "dry run -- nothing was deleted") + "**")
+          out.append("- repository default branch (never a candidate): `" + default_branch + "`")
+          out.append("- remote branches: " + str(len(branches)) + "; considered this run: " + str(len(rows)))
+          out.append(
+              "- candidate set: "
+              + ("narrowed to the " + str(len(requested)) + " name(s) given as input" if requested else "every remote branch")
+          )
+          out.append("")
+          for verdict in order:
+              if counts.get(verdict):
+                  out.append("- " + verdict + ": **" + str(counts[verdict]) + "**")
+          out.append("")
+
+          if absent:
+              out.append("## Requested but not present on the remote")
+              out.append("")
+              for name in absent:
+                  out.append("- `" + name + "`")
+              out.append("")
+
+          out.append("## Every branch considered")
+          out.append("")
+          out.append("| branch | verdict | pull request | merged at | tip | why |")
+          out.append("| --- | --- | --- | --- | --- | --- |")
+          for row in rows:
+              out.append(
+                  "| `"
+                  + row["name"]
+                  + "` | "
+                  + row["verdict"]
+                  + " | "
+                  + ("#" + str(row["pull"]) if row["pull"] else "--")
+                  + " | "
+                  + (row["merged_at"] or "--")
+                  + " | `"
+                  + row["sha"][:7]
+                  + "` | "
+                  + (row["reason"] or "tip is the merged head, nothing pushed since")
+                  + " |"
+              )
+          out.append("")
+
+          if not APPLY and deletable:
+              out.append(
+                  "Re-dispatch with **apply: true** to delete the "
+                  + str(len(deletable))
+                  + " branch(es) marked *would delete*. Every check above is recomputed on that run."
+              )
+              out.append("")
+
+          report = "\n".join(out)
+          print(report)
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write(report + "\n")
+
+          if failures:
+              # A run that could not perform a deletion it had authorised must go
+              # red. The table above says which, and why.
+              print("::error::" + str(len(failures)) + " deletion(s) failed: " + ", ".join(failures[:20]))
+              sys.exit(1)
+          BRANCH_GC_PY

@@ -29,9 +29,24 @@ export interface PrisonerGangReleasePort {
   removeMember(entityId: EntityId): void;
 }
 
-/** Dropping a departing prisoner from the job labour pool. `JobWorkerPool` satisfies it. */
-export interface PrisonerWorkerReleasePort {
-  unregister(entityId: EntityId): void;
+/**
+ * Ending a departing prisoner's errand. `ActionSystem` satisfies it through
+ * `endCarryOnDeparture`.
+ *
+ * **This replaced `PrisonerWorkerReleasePort`, whose one implementation was
+ * `JobWorkerPool.unregister`, when
+ * [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md) decision 4
+ * retired the pool.** The change is not cosmetic and the direction matters: a
+ * departing carrier used to be *dropped from a set*, which left the job they
+ * held `'assigned'` to an id that named nobody and a stock reservation nothing
+ * would release. It is now *the job that ends*, with a
+ * `CARRY_JOB_FAIL_REASONS` member of its own -- `'carrier-departed'` -- and the
+ * goods compensated under ADR 0037.
+ *
+ * Total, like every port on this list: a prisoner on no errand is a keyed miss.
+ */
+export interface PrisonerCarryReleasePort {
+  endCarryOnDeparture(entityId: EntityId): void;
 }
 
 /**
@@ -76,7 +91,7 @@ export interface PrisonerContrabandReleasePort {
  *
  * ## The four optional entries, and why they are optional rather than required
  *
- * `identity`, `gangs`, `jobWorkers` and `navigation` are session-level: they
+ * `identity`, `gangs`, `carry` and `navigation` are session-level: they
  * span prisoners and staff, or prisoners and haulage, and none of them is owned
  * by `PrisonerOperationsRuntime`. A fixture that stands up the prisoner slice
  * alone genuinely has none of them, exactly as `IntakeSystem`'s existing
@@ -84,6 +99,10 @@ export interface PrisonerContrabandReleasePort {
  * to leak. `exactOptionalPropertyTypes` is on, so an omitted key and an
  * explicit `undefined` are different things and neither can be a silently
  * skipped required store.
+ *
+ * **The third of those four used to be `jobWorkers`** and was the labour pool
+ * ADR 0093 decision 4 retired; `carry` is the errand port that replaced it, and
+ * it is optional for the identical reason.
  */
 export interface PrisonerReleaseSurfaces {
   readonly entityStore: EntityStore;
@@ -93,7 +112,7 @@ export interface PrisonerReleaseSurfaces {
   readonly navigation?: PrisonerRouteCancelPort;
   readonly identity?: PrisonerNameReleasePort;
   readonly gangs?: PrisonerGangReleasePort;
-  readonly jobWorkers?: PrisonerWorkerReleasePort;
+  readonly carry?: PrisonerCarryReleasePort;
   /**
    * The walk store, keyed by component *index* rather than by entity id
    * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
@@ -132,7 +151,10 @@ export interface PrisonerReleaseSurfaces {
  *    `RoomInstanceRegistry.releaseEntity` for why the cold state's two instance
  *    pointers are not a complete answer to where a prisoner is recorded.
  * 4. **The cold state itself**, once nothing else needs to read it.
- * 5. **Name, gang, labour pool, contraband** -- the four session-level stores.
+ * 5. **Name, gang, errand, contraband** -- the four session-level stores.
+ *    The errand step **ends the job rather than dropping the worker** (ADR
+ *    0093 decision 4), which is why it is `endCarryOnDeparture` and not an
+ *    `unregister`: see `PrisonerCarryReleasePort`.
  *    The contraband step needs the tick, which is why this function takes one;
  *    `departHolder` writes a movement-log entry, and an entry stamped with a
  *    tick the departure did not happen on would make the audit trail wrong
@@ -187,7 +209,7 @@ export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: Ent
 
   surfaces.identity?.release('prisoner', entityId);
   surfaces.gangs?.removeMember(entityId);
-  surfaces.jobWorkers?.unregister(entityId);
+  surfaces.carry?.endCarryOnDeparture(entityId);
   surfaces.contraband?.departHolder('prisoner', String(entityId), atTick);
 
   bitset.clear(index);

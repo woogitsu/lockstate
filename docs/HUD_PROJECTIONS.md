@@ -805,8 +805,8 @@ so a prison with one sector over-staffed and another short still reports a
 shortage. What stops being answerable then is *which* sector is short, which is a
 breakdown to add on the day a player can draw one.
 
-**Six** of the fifteen catalogued read models still have a route and nobody on
-the end of it: **nine are read, by nine modules.** Both numbers are stated
+**Five** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **ten are read, by ten modules.** Both numbers are stated
 because the difference between them is what made an earlier sentence wrong.
 An older one said ten, having counted reader *modules* rather than read models —
 `src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
@@ -823,11 +823,25 @@ to coincide at nine because `simulation-room-needs.ts` reads two models and
 than overwritten because the *shape* of the old sentence was right and only its
 arithmetic rotted — exactly what `docs/AGENT_WORKFLOW.md` §4 says a tally does.
 
-The nine with a reader are `hud/status-strip`, `hud/build-queue`,
+**And it read "**Six** … **nine are read, by nine modules**" until 2026-09-03,
+overtaken the same way by the reader under the roster.**
+`src/ui/simulation-prisoner-detail.ts` reads `hud/prisoner-detail` (issue #895,
+the inspector), which is +1 read and −1 unread, and the two counts stay
+coincidentally equal because it is one module asking for one id. The direction
+is marked rather than overwritten for the reason the correction above gives,
+and because this is the first of the five that #157 found *waiting on a
+selection model* to actually get a reader — the entry blocking it named "no
+selection state, no highlight and no inspector", and a panel-local selection
+answered two of those three. There is still no highlight: nothing in
+`src/rendering/` marks the selected prisoner in the world, and nothing anywhere
+maps a world position to an entity.
+
+The ten with a reader are `hud/status-strip`, `hud/build-queue`,
 `hud/pending-deliveries`, `hud/held-guards`, `hud/prisoner-population`,
-`hud/prisoner-roster`, `hud/room-list`, `hud/room-detail` and `hud/staff`; a
-`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The six without
-one are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
+`hud/prisoner-roster`, `hud/prisoner-detail`, `hud/room-list`, `hud/room-detail`
+and `hud/staff`; a
+`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The five without
+one are `hud/security`, `hud/contraband`,
 `hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
 last of which is worth naming rather than assumed read, because the world is
 plainly on screen: `SimulationSnapshotFeed` reaches it through
@@ -936,6 +950,19 @@ decision about what to build next.
    owner's, and so is still whether it should be this one. The second and third
    items above are untouched: nothing says what neglect is costing per day in
    the prison's own money, and nothing names the room that would fix it.
+
+   **The first item is now answered for a whole prisoner rather than for their
+   worst need (issue #895), and the sentence above that called it "already
+   projected" is what changed.** `PrisonerDetailViewModel.needs` was projected
+   and read by nobody; `src/ui/simulation-prisoner-detail.ts` reads it, and the
+   Regime panel draws all six needs of a selected prisoner with the same flag
+   per need. That matters to *this* gap specifically, because the state
+   withholds **per unmet need** — `unmetNeedCount` is the multiplier — so the
+   roster's single bar could only ever say whether that count was at least one,
+   and the inspector shows the count's composition. What is still owed is
+   unchanged and is unchanged deliberately: no threshold is decided, no need is
+   called critical, and neither the per-day money nor the room that would fix it
+   is anywhere on screen.
 8. **No need trend.** Only the current level exists; nothing records recent
    history, so a panel cannot show rising/falling.
 9. **No health, injury or medical status.** Incidents produce
@@ -995,7 +1022,11 @@ decision about what to build next.
     gives every one of them, and discharged within the same window (ADR
     0050 "What this does not decide"), and the Regime panel's roster-empty
     sentence, "Nobody has been admitted yet", was shown over that prison as
-    though nobody ever had been. `projectPrisonerRoster` now carries
+    though nobody ever had been. **That sentence reads "No prisoners yet.
+    Build a cell with a bed to take somebody in." since the owner's ruling of
+    2026-09-03**; the wording quoted above is what was measured and is kept as
+    the record, and the two states this gap is about are unmoved by the
+    change. `projectPrisonerRoster` now carries
     `everAdmitted` (`PrisonerOperationsRuntime.admittedCount > 0`,
     `prisoner-projection.ts`), read at the one door every real admission
     passes through, so the two states are distinguishable at the projection
@@ -1009,10 +1040,15 @@ decision about what to build next.
     for exactly as long as it takes to admit and discharge again in the
     restored session. And the panel itself still authors no sentence for the
     "fully discharged" state: `regime-panel.ts`'s `paintRoster` draws
-    neither the false "Nobody has been admitted yet" nor an invented
+    neither the empty-roster sentence, which is false of it, nor an invented
     replacement there, because the sentence that should replace it is a new
     player-facing string and `AGENTS.md`'s fourth exclusion keeps that the
-    owner's.
+    owner's. **The owner's ruling of 2026-09-03 settled the sentence for the
+    *never admitted* state and not this one** -- "No prisoners yet. Build a
+    cell with a bed to take somebody in." is false of a prison that emptied
+    out for one more reason than its predecessor was, because the cell it tells
+    the player to build is already standing. So this half of the gap is
+    unclosed and is owed to the owner as its own sentence.
 
 ### Rooms
 
@@ -1102,6 +1138,22 @@ decision about what to build next.
     `free` clamps at zero and `utilization` clamps at 1. Only the first has
     landed. The other two are changes to what the projection publishes, not to
     what the panel asks for.
+
+    **Two corrections to the paragraph above, 2026-09-05, and it is kept
+    because its list is what the phase is measured against.** First, the list
+    is short by one item: phase 5 also owes the **concurrent-use** figure, which
+    ADR 0028's phase 5 section names in the same breath and which
+    `room-projection.ts` recorded against itself as *"not projected at all
+    yet"*. That one has now landed — `RoomListRowViewModel.concurrentUse`
+    publishes one ceiling per capability with `useOccupancyOf`'s live count
+    against each, and the Rooms panel reads the full rooms out under an "At
+    capacity" header (#997, #1003). Second, *"`RoomOccupancyViewModel` still
+    cannot express"* over-capacity does not follow from the clamping it cites:
+    `current` and `capacity` are both published raw, so `current > capacity` is
+    derivable by any reader, and only `free` and `utilization` clamp. The gap
+    is a **surface**, not a field — which changes who owes it. So of the four
+    items, two have landed (the surface, the concurrent-use figure) and two have
+    not (the room-level verdict, an over-capacity readout).
 
     The per-requirement quantity is now *evaluated* but still not *read out*,
     and the sentence that stood here denied both halves — it read *"The
@@ -1270,7 +1322,12 @@ decision about what to build next.
     the income line: ADR 0017 decision 3, on decision 6's basis — the state
     pays per prisoner-day, accrued per occupied place — at 300 minor units a
     prisoner-day less what unmet needs withhold, credited once per in-game day
-    on its last tick. The second is a cancelled purchase's refund
+    on its last tick. **Unmet needs withhold nothing as of 2026-09-03**, the
+    repository owner having suspended the share at `0` while they play and
+    judge difficulty ([ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md)'s
+    amendment of that date carries their words); the clause is kept rather than
+    cut because the arithmetic it describes is unchanged and only its rate is
+    (`docs/AGENT_WORKFLOW.md` §4). The second is a cancelled purchase's refund
     (`ProcurementSystem.cancel`), which is not an income line and never was.
 
     **The third arrived with [ADR 0075](./adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
@@ -1587,7 +1644,11 @@ decision about what to build next.
     `RefusalReason` member, `construction.materials-unfunded`, a new
     `REFUSAL_LABEL_KEYS` entry and a new key,
     `hud.alert.refusal.construction.materials-unfunded`, reading *"The build
-    queue is stalled — no more materials until the state pays what it owes."*
+    queue is stalled — no more materials until the prison earns the money."*
+    (that tail read *"until the state pays what it owes"* until 2026-09-04,
+    when issue #913 measured the state owing nothing to a prison that is not
+    earning; ruling 19's requirement — name what stops, not the number it
+    stops at — is what the replacement keeps)
     `reportMaterialsFunding` records that instead of
     `purchase.insufficient-funds`, so rung 2's event no longer reports rung
     1's sentence. What is **still** owed is the other half: the sentence names

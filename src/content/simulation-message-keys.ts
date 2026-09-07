@@ -185,6 +185,36 @@ export const SIMULATION_ENUM_GROUPS = [
       // would say for laundry duty too, and `room.kitchen.name` names the
       // place rather than the activity).
       'action.kitchen-work': 'Kitchen Duty',
+      // Same rule again -- the cell says the job, not the place -- and **the
+      // owner confirmed this word on 2026-09-03**, shown it among candidates
+      // and answering *"Errand"*. So this label is settled copy: of the three
+      // sentences ADR 0093's *What is owed to the owner* reserves, it is the
+      // first to be settled, and the other two are still owed.
+      //
+      // **It read the same word marked as provisional until that
+      // confirmation, and what the marking said is kept rather than
+      // overwritten** (`docs/AGENT_WORKFLOW.md` §4). It read: *"**this is a
+      // draft for the owner's review, exactly as the line above it is.** ADR
+      // 0093's section *What is owed to the owner* names the carry's label as
+      // the first of three sentences it cannot write, and this file is not
+      // where that reservation can be honoured by omission: the group above
+      // declares `form: 'definition-id-field'` over `DEFAULT_ACTIONS`, and
+      // `tests/unit/simulation-message-keys.test.ts` requires each namespace
+      // to label *exactly* the ids its declaration declares. So an entry has
+      // to exist for `action.carry` the moment the catalogue holds it, and the
+      // choice is between a draft that is marked as one and a suite that
+      // cannot go green."* Every word of that is still true of the mechanism;
+      // what changed is that the entry is no longer provisional, so the string
+      // does not move and the marking does. The line above it --
+      // `action.kitchen-work` -- is still a draft, and the confirmation of
+      // this one says nothing about it.
+      //
+      // "Errand" rather than "Carrying" (a phase, and `action-phase` already
+      // labels three of those), "Haulage" (the trade, not the shift) or
+      // "Delivery Duty" (which names the *purchase* a player made, and a carry
+      // will not always be a delivery once other producers arrive). Those were
+      // the alternatives put to the owner beside the chosen word.
+      'action.carry': 'Errand',
     },
   },
   {

@@ -68,6 +68,17 @@ They came from a shared tree and from shared ADR *numbers*.
   tell it to scope its globs there or to the repository. A probe that globbed the
   scratchpad root once collected other agents' files and reported a file count
   that was not this repository's.
+- **The process table is shared too, and until now nothing here said so.**
+  Every agent gets its own worktree and its own scratchpad subdirectory; it
+  has never had its own port, and nothing above said the process table was
+  anyone's alone to clear. Measured 2026-09-06: a pass clearing a Playwright
+  port collision ran `pkill -f "bin/vite.js"` and killed dev servers on ports
+  **5353** and **5354** belonging to two other agents, not the one it meant to
+  free. One of those two recorded seven `net::ERR_CONNECTION_REFUSED` failures
+  it could not explain at the time; a re-run passed. **Kill only PIDs you
+  started, and when a port is busy pick another rather than clearing the
+  machine.** The only reason this one was diagnosable at all is that the agent
+  it hit reported the failures instead of writing them off as flaky.
 - **Assign ADR numbers centrally, after the drafts come back.** Two agents took
   `0034` within an hour, each having correctly enumerated the open pull requests
   first — the number is not reserved until it is in `docs/adr/README.md`. Have
@@ -75,6 +86,38 @@ They came from a shared tree and from shared ADR *numbers*.
   renumbered.
 - **Never `git add -A`, and never leave a scratch file under `tests/`.** A stray
   probe has broken `pnpm verify` collection more than once.
+- **`scripts/wip-sweep.sh` pushes COMMITTED work to the real branch, not to
+  `wip/` — so you cannot hold a commit back, and the session-start hook's
+  one-line description of it is misleading.** That hook says *"agent worktrees
+  snapshot to `wip/` every 3 min"*. The script's own header says what it
+  actually does: *"Committed work is pushed to the real branch; uncommitted
+  work goes to `wip/` so it never lands on a branch an agent is about to push
+  to itself."* Its gate is `[ -n "$upstream" ] && git push -q origin "$b"`, and
+  the only skip is a clean tree whose branch already equals its tracking ref.
+
+  Measured 2026-09-07, at a cost of one CI cycle. The integrator merged `main`
+  into an open pull request's branch **in a worktree and deliberately did not
+  push**: the base delta was documentation-only, and the `browser` job then
+  thirteen minutes into its run was the one job that would prove a new
+  `ci.yml` include-filter entry actually fetched its file instead of an LFS
+  pointer. Three minutes later the sweep pushed the merge commit, GitHub
+  cancelled the run, and CI restarted from zero — on a **single self-hosted
+  runner where jobs serialise**, which is what makes a cancelled thirteen-minute
+  job expensive rather than merely untidy.
+
+  **The sweep was right and the intent behind it is worth more than the run it
+  cost.** The same session watched it pay off: a re-anchor pass was killed
+  mid-flight by a container restart, and its branch survived complete because
+  it had been pushed. That is the guarantee this script exists to provide and
+  it does not depend on anyone complying.
+
+  So the rule is about *where you work*, not about the sweep: **if you need a
+  commit to stay local, work on a detached HEAD** — the sweep reads
+  `git branch --show-current`, which is empty for a detached head, and
+  `continue`s — **or delete the worktree before the next three-minute tick.**
+  And the cheaper habit, given CI is the scarce serialised resource here:
+  **merge the base branch in and push once BEFORE opening the pull request**,
+  rather than opening it and merging the base in afterwards.
 
 ---
 
@@ -84,24 +127,275 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
 
 - **`pnpm <script>` does not work in a worktree** whose `node_modules` is a
   symlink outside the project root — pnpm's pre-run check aborts with
-  `ERR_PNPM_UNSAFE_MODULES_DIR`. Four agents hit it independently. Call the
-  binaries the scripts wrap:
-  `node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false`,
-  `node /workspace/lockstate/node_modules/vitest/vitest.mjs run <files>`.
+  `ERR_PNPM_UNSAFE_MODULES_DIR`. Four agents hit it independently.
+  - **Run the script anyway, with the pre-run check switched off:**
+    `pnpm --config.verify-deps-before-run=false <script>`. Added 2026-09-07,
+    after a fifth and sixth agent hit the same wall. What aborts is
+    `runDepsStatusCheck`, not the script — so disabling that one check runs the
+    **real `package.json` script**, and the stack trace in the failure names
+    that function if you want to confirm it rather than take this on faith.
+    Measured in a fresh worktree on `typecheck`, `verify:benchmark` and
+    `verify:deployment`, all exit 0.
+  - **The advice this bullet used to give — call the binaries the scripts wrap,
+    `node …/typescript/bin/tsc -b --pretty false` and
+    `node …/vitest/vitest.mjs run <files>` — still works and is kept as a
+    fallback, but it is no longer the first thing to reach for**, because it
+    quietly invites the failure §3 and this section spend most of their length
+    warning about. A hand-assembled command line is a **hand-picked subset**:
+    it is how an agent ends up reporting a green measurement of something that
+    is not the gate. `pnpm verify` already omits `verify:benchmark`; `pnpm test`
+    already omits the browser suite; a binary invocation you typed yourself
+    omits whatever you forgot. Run the named script, and prefer it exactly
+    because you did not choose its contents.
   - **`git worktree add` does not create that symlink.** It creates no
     `node_modules` at all, and every import then fails to resolve in a way that
     looks like the branch is broken. Make it yourself, first thing:
     `ln -sfn /workspace/lockstate/node_modules <worktree>/node_modules`.
-  - **`git worktree add` does not run the Git LFS smudge filter either, and
-    this one does not announce itself.** A worktree gets LFS *pointer files*
-    where the main checkout has images:
-    `file public/assets/actors/actor.guard.base.idle.png` returns `ASCII text`
-    in a worktree and `PNG image data, 260 x 3104` in `/workspace/lockstate`.
-    Fix it first thing, beside the symlink: **`git lfs checkout`** in the
-    worktree (62 objects, 93 MB).
-    - **The session-start hook does not cover you.** It reports *"Git LFS
-      content looks present"*, which is true of the checkout it looked at and
-      false of every worktree made from it.
+  - **Git LFS: check which of your trees has the bytes, and do not assume the
+    direction. On 2026-09-04 it was the opposite of what this bullet said, in
+    both trees.** One command settles it and it is the same command either way:
+    `file public/assets/actors/actor.guard.base.idle.png`. `ASCII text` is a
+    pointer; `PNG image data, 260 x 3104` is the art.
+    **"One command settles it" is the half of that sentence a fourth container
+    falsified on 2026-09-05, and the sentence is kept because everything else
+    in it holds.** `file` still tells you whether the tree you are in has the
+    bytes; it cannot tell you *why not*, so it cannot tell you what the remedy
+    costs. Two of the states below both read `ASCII text` and their remedies
+    are a free local checkout and a 93 MB metered fetch. `git lfs version` and
+    `du -sh .git/lfs` are what separate them and they cost nothing.
+    - Measured that day, in a fresh `git worktree add` off `origin/main` and in
+      `/workspace/lockstate` side by side: **the worktree had the art and the
+      primary checkout had the pointers.** `git lfs ls-files` names 62 paths and
+      **0** of them were pointers in the worktree. `node
+      tooling/validate-runtime-atlas.mjs public/assets/actors` — which is what
+      `verify:assets` runs — printed *"Validated 10 clip atlases"* and exited 0
+      there, and exited 1 in the primary checkout with *"actor.staff.base.idle.png
+      is a Git LFS pointer, not image data"* and a line like it for every atlas.
+      `app-shell.spec.ts`'s art test therefore has its bytes in a worktree.
+    - **A THIRD STATE, measured 2026-09-05: NEITHER tree has the art, and the
+      `git lfs checkout` that fixes it is FREE.** `file` returns `ASCII text` in
+      a fresh worktree **and** in `/workspace/lockstate`; `git lfs ls-files`
+      names 62 paths and all 62 are pointers in both. So the two bullets above
+      have now each been the truth of one container and the falsehood of
+      another, which is the whole argument for running the `file` check instead
+      of reading either of them.
+      - **The remedy costs one second and no bandwidth**, which is the part
+        neither the bullets nor the session-start hook say and the part that
+        matters: `git lfs checkout` in the tree you are working in printed
+        `Checking out LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` in
+        **1.07s**. `0 B/s` is not a rounding artefact — **the objects are
+        already in `.git/lfs` (54 MB) and nothing is fetched.** Immediately
+        after it, `node tooling/validate-runtime-atlas.mjs public/assets/actors`
+        printed *"Validated 10 clip atlases"* and **exited 0**.
+      - **The session-start hook says the opposite about the cost**, and it is
+        the sentence to disbelieve: *"To get the real bytes: bash
+        scripts/provision-git-lfs.sh && git lfs pull (metered bandwidth -- that
+        is why this hook leaves it to you)."* `git lfs pull` would fetch;
+        `git lfs checkout` materialises what is already local. **Neither the
+        provisioning script nor the network is needed.** So `verify:assets` and
+        `app-shell.spec.ts`'s art test are one second away in any tree, and the
+        standing advice that they are an unfixable baseline in this container is
+        withdrawn.
+      - **The mechanism, which the bullet below quotes the keys of and not the
+        values of — and that is exactly how it got the direction wrong.**
+        `/etc/gitconfig` sets `smudge = git-lfs smudge --skip -- %f` and
+        `process = git-lfs filter-process --skip`. **`--skip` means no checkout
+        in this container smudges anything, `git worktree add` included.** Read
+        the values, not the key names.
+    - **A FOURTH STATE, measured 2026-09-05 in a different container on the
+      same day: git-lfs IS NOT INSTALLED, there is no `.git/lfs`, and
+      `git lfs checkout` is not a command that can be run at all.** The entry
+      above is left exactly as it stands, its withdrawal of the "unfixable
+      baseline" advice included, because it was measured and it was true of the
+      container it was measured in — and §4's rule about marking both
+      directions rather than overwriting is the whole reason this chain is
+      worth reading. What this adds is that its remedy is not available
+      everywhere. It does not take it back.
+
+      Measured on `main` at `75ecd7c` (v0.0.491), in `/workspace/lockstate` and
+      in a fresh `git worktree add` off `origin/main`, side by side:
+      - `git lfs version` prints `git: 'lfs' is not a git command.` and exits
+        1; `which git-lfs` finds nothing and exits 1.
+      - `du -sh .git/lfs` prints `No such file or directory`. **There is no
+        local object store**, so the 54 MB the entry above found already
+        present is not present here, and there would be nothing for
+        `git lfs checkout` to materialise even if the subcommand existed.
+      - `file public/assets/actors/actor.guard.base.idle.png` returns
+        `ASCII text` in **both** trees, and the file's first line is
+        `version https://git-lfs.github.com/spec/v1`.
+      - `node tooling/validate-runtime-atlas.mjs public/assets/actors` — what
+        `verify:assets` runs — exits 1 with
+        `actor.cook.base.idle.png is a Git LFS pointer, not image data` and a
+        line like it for every atlas.
+      - **The `file` check is still the advice, and by itself it is not
+        enough — which is the conclusion this chain has been reaching for and
+        the reason this entry exists at all.** `ASCII text` is *identical* in
+        state 3 and state 4 while the remedies are a free 1.07-second local
+        checkout and a package install plus a 93 MB metered fetch — **the
+        second half of which was priced without being run, and was measured at
+        2.45 s the same day; see the transition entry below.** Two more
+        commands separate them and both are instant: **`git lfs version`**
+        (is the client there at all?) and **`du -sh .git/lfs`** (are the
+        objects local?). Run those two beside `file` and you know which state
+        you are in; run `file` alone and you know the bytes are pointers with
+        no idea why, which is a guess dressed as a measurement.
+      - **The mechanism entry above does not describe this container either,
+        and the difference is not `--skip`.** There is no `/etc/gitconfig` here
+        at all — `cat /etc/gitconfig` prints `No such file or directory` — and
+        `git config --show-origin --get-regexp '^filter\.lfs\.'` exits 1 with
+        no output. **No LFS filter is configured in any scope**, so nothing was
+        skipped: the smudge filter does not exist and git wrote the pointer
+        blobs out verbatim. That is one more container's filesystem and not a
+        diagnosis, exactly as the entry above says of its own reading.
+      - **What is now unknown, said rather than papered over:** which of these
+        four states the next container is in, and why they differ at all.
+        Nothing in this repository sets any of it — `/etc/gitconfig` is not in
+        git, and neither is whether the image ships `git-lfs` — so **no
+        direction written here, this one included, can be trusted ahead of the
+        three commands above.**
+      - **In this container the session-start hook's sentence is the CORRECT
+        instruction rather than the one to disbelieve:** *"To get the real
+        bytes: bash scripts/provision-git-lfs.sh && git lfs pull (metered
+        bandwidth -- that is why this hook leaves it to you)."* It is the only
+        route to `verify:assets` and to `app-shell.spec.ts`'s art test here,
+        and the agent that measured this **did not run it** — installing a
+        package and spending 93 MB of somebody else's metered bandwidth is not
+        an agent's call, and the hook deliberately left it to a human. So the
+        assets gate is an unfixable baseline *in this container until a human
+        takes that route*, which is a fact about this container and not a
+        re-reversal of the withdrawal above.
+    - **ADDED LATER THE SAME DAY, AND IT IS THE STRONGEST THING IN THIS CHAIN:
+      a human took the provisioning route and THIS CONTAINER MOVED FROM THE
+      FOURTH STATE INTO THE THIRD.** Nothing above is withdrawn and the fourth
+      state was not wrong — it was measured, and it was the truth of this
+      container for the first hour of the session that recorded it. It is
+      history now in the same way the other three are, which is the whole
+      reason this chain keeps them.
+
+      **So the four states are not properties of a container. They are
+      properties of a moment**, and one `apt` install moved this one across a
+      boundary the chain had been treating as environmental. That is the
+      conclusion to carry, and it is a stronger version of the one the entry
+      above draws: `file` plus `git lfs version` plus `du -sh .git/lfs` is not
+      merely how you tell the states apart, it is **the only thing that stays
+      true, because the state can change under you inside one session.** A
+      direction you read at the top of a session may be false by the middle of
+      it, and that is not a stale document — it is a moving environment.
+      - **What the integrator measured**, in `/workspace/lockstate` on `main`,
+        in this order: `bash scripts/provision-git-lfs.sh` installed
+        `git-lfs/3.4.1 (GitHub; linux amd64; go 1.22.2)` from the distribution
+        archive, then `git lfs pull` took **2.45 s** wall clock, then `file`
+        returned `PNG image data, 260 x 3104, 8-bit/color RGBA, non-interlaced`
+        and `node tooling/validate-runtime-atlas.mjs public/assets/actors`
+        printed *"Validated 10 clip atlases"* and exited 0, and `.git/lfs` was
+        **54 MB**.
+      - **2.45 s is the measurement and no mechanism is offered for it.** Both
+        the brief that produced the entry above and the entry itself priced
+        this route as *"a package install plus a 93 MB metered fetch"*, and
+        that pricing is marked here rather than deleted because it is what two
+        readers believed. The install is real. The fetch was not slow enough to
+        have moved 93 MB over a metered link — and **why** is not established:
+        a proxy or an image-level cache is a guess, and §3's rule that a
+        measurement is not a diagnosis applies to a *fast* number exactly as it
+        applies to a slow one.
+      - **The transition is into the third state specifically, to the byte and
+        to the message.** `.git/lfs` is 54 MB and `git lfs checkout` in a tree
+        still holding pointers prints
+        `Checking out LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` — the
+        third state's own recorded figures. Three timings for that command are
+        now on record and none of them is worth pinning: **1.07 s**, **1.26 s**
+        and **0.464 s**, the last measured in a worktree whose working tree
+        then stayed clean under `git status` and whose
+        `validate-runtime-atlas.mjs` run printed *"Validated 10 clip atlases"*
+        and exited 0. So `verify:assets` and `app-shell.spec.ts`'s art test are
+        reachable from a worktree again, which is what the third state said and
+        what the fourth state could not do.
+      - **One thing is NOT the third state, and it is the half a reader would
+        assume:** `/etc/gitconfig` did not exist an hour earlier and exists
+        now, carrying `smudge = git-lfs smudge -- %f` and
+        `process = git-lfs filter-process` — **without `--skip`**, which is the
+        flag the third state's mechanism entry reads as the reason no checkout
+        smudges. So the prediction that entry would make here is wrong, and it
+        was tested rather than reasoned about: a `git worktree add` performed
+        **after** the install lands `PNG image data, 260 x 3104` and 459,767
+        bytes on disk — the size the pointer file declares — while a worktree
+        created **before** it still read `ASCII text` until `git lfs checkout`
+        was run in it. **A checkout's bytes depend on when the tree was
+        materialised, not only on which container it is in**, which is one more
+        reason a tree-by-tree `file` check beats every direction in this chain.
+      - **What is still unknown, and the list has not shrunk:** why the images
+        differ, whether `/etc/gitconfig` carries `--skip` or not in any given
+        one, and what `git lfs pull` actually costs on a link that is genuinely
+        metered. None of it is in git. **The three commands stay the answer,
+        and now they have to be re-run rather than remembered.**
+    - **A FIFTH STATE, measured 2026-09-06 in this container, and it is the
+      good one: git-lfs installed, `.git/lfs` already holding the bytes, and
+      the good state outliving the pass that bought it because the object
+      store is shared.** A pass earlier in this container ran `bash
+      scripts/provision-git-lfs.sh && git lfs pull`; that pull took **2
+      seconds**, not the ~93 MB this chain has priced the route at, and at
+      the moment it finished the six `assets/source/blender/*.blend` files
+      were still pointers — nothing at runtime reads them, so it cost nothing
+      that they were not among the bytes it fetched.
+      - **Because `.git/lfs` is shared with every worktree and with the
+        primary checkout, this outlives the pass that bought it.** In the
+        primary checkout afterwards, `git lfs checkout` printed `Checking out
+        LFS objects: 100% (62/62), 93 MB | 0 B/s, done.` — **`0 B/s`, nothing
+        fetched** — and `node tooling/validate-runtime-atlas.mjs
+        public/assets/actors` then printed *"Validated 10 clip atlases"* and
+        exited 0. Re-checked in this pass at `a2b3632b` (v0.0.507): the same
+        command still exits 0, `file` on `actor.guard.base.idle.png` still
+        returns `PNG image data, 260 x 3104`, and the six `.blend` files now
+        read `Zstandard compressed data` rather than pointer text — the
+        checkout above reached them too. A worktree cut fresh from
+        `origin/main` in this same container carries the same real bytes with
+        no `git lfs checkout` run in it at all: the shared store means a new
+        worktree does not start from pointers here.
+      - **So `verify:assets` and the browser art assertions run in this
+        container, and the standing note that they are an unfixable baseline
+        here is withdrawn — for this container, not as a repository fact.**
+        That is one more instance of the conclusion the "ADDED LATER" entry
+        above already drew: the state is a property of a moment, not of an
+        image, and this moment happens to be a good one rather than a cost.
+      - **`/etc/gitconfig` here carries no `--skip` on the smudge filter** —
+        `smudge = git-lfs smudge -- %f`, `process = git-lfs filter-process` —
+        matching the post-install container the "ADDED LATER" entry above
+        measured and differing from the state the "Why, and why it is not a
+        repository fact" entry below currently records for 2026-09-05
+        (`--skip`, in a different container). That is the other half of why
+        the fresh worktree above needed no extra command: the objects were
+        local **and** nothing in this container's filter configuration would
+        have skipped smudging them even if they had not been.
+    - **Why, and why it is not a repository fact.** `filter.lfs.smudge`,
+      `filter.lfs.process` and `filter.lfs.required` are set in
+      **`/etc/gitconfig`** — system scope, put there when git-lfs was installed
+      in the container image, and *not* by this repository. Its provisioning
+      script says so in its own header:
+      `DOES NOT TOUCH GIT FILTER CONFIGURATION.`
+      (verbatim in `scripts/provision-git-lfs.sh`). So a checkout in this container runs
+      the smudge filter, `git worktree add` included, and gets real bytes. The
+      primary checkout's working tree was materialised without that and nothing
+      has re-smudged it since — **and that half is false as of 2026-09-05: the
+      filters carry `--skip`, so no checkout in this container smudges and the
+      bytes come from `git lfs checkout` or not at all** — which is an
+      observation about one container's filesystem, not a diagnosis, and §3's rule about state this repository
+      cannot read back applies: `/etc/gitconfig` is not in git, so the next
+      image can move this in either direction. **That is exactly why the durable
+      advice is the `file` check and not a direction.**
+    - **This bullet said the reverse — *"`git worktree add` does not run the Git
+      LFS smudge filter either … A worktree gets LFS pointer files where the main
+      checkout has images"*, with `git lfs checkout` as the fix to run first
+      thing — and it is kept because the integrator repeated it in brief after
+      brief on 2026-09-04 and it cost agents work.** It was measured on
+      2026-08-27, when it was presumably true of that container. It is not an
+      error of reasoning; it is a bare direction outliving the environment that
+      produced it, which is what §4 is about. Running `git lfs checkout` in a
+      worktree is still harmless and still the fix when the `file` check says
+      pointer.
+    - **The session-start hook does not cover you**, in either direction. It
+      reports *"Git LFS content looks present"* about the checkout it looked at
+      and says nothing about any other tree — on 2026-09-04 that sentence was
+      false of the very checkout it ran in.
     - **Why it is worse than the symlink trap, which fails loudly:** a browser
       run in a worktree loses *every actor sprite* — ten atlases fail with
       `Failed to process file: image "…"` and
@@ -127,13 +421,15 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   not merely untested. A mutation there survives because nothing could observe
   it. The answer is to extract the decision into a pure function, not to report
   a survivor: that is how `orderPrisonsForDisplay` came to exist.
-- **The browser suite needs Git LFS content.** `public/assets/**` is pointer
-  text in a fresh container, so `pnpm test:browser` fails at atlas decode by
-  design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it runnable,
-  and an agent that must verify a browser change should do that rather than
-  push a guess. A worktree does not carry the blobs **on checkout** — but
-  running `git lfs pull` inside the worktree fetches them there, verified on
-  2026-08-28. The advice this bullet used to give, "work in the main checkout
+- **The browser suite needs Git LFS content.** `public/assets/**` may be pointer
+  text in a fresh container, and then `pnpm test:browser` fails at atlas decode
+  by design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it
+  runnable, and an agent that must verify a browser change should do that rather
+  than push a guess. Running `git lfs pull` inside a worktree fetches the blobs
+  there, verified on 2026-08-28. The sentence this bullet used to carry, *"A
+  worktree does not carry the blobs **on checkout**"*, was measured false on
+  2026-09-04 — see the LFS bullet under the 2026-08-27 mechanics above, and run
+  the `file` check rather than either version of this claim. The advice this bullet used to give, "work in the main checkout
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
@@ -184,6 +480,129 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   like a broken test file or a broken install. Omit the flag; the default
   reporter is fine. Recorded because the failure mode is expensive to diagnose
   and cheap to avoid.
+- **This container's clone is SHALLOW, which turns three of
+  `tests/foundation/`'s tests red on plain `main` and quietly breaks
+  `git log -S` as an answer to "was this ever here?"** Measured 2026-09-05 in a
+  fresh worktree off `origin/main` at `75ecd7c`, with nothing modified in it:
+  `git rev-list --count HEAD` is **374** and the root commit is `558fbad`,
+  dated **2026-09-03**, so the history simply stops a few days back;
+  `.git/shallow` exists in `/workspace/lockstate/.git`.
+  `tests/foundation/documentation-commit-citation-contract.test.ts` fails 3 of
+  its 8 — *"runs on a checkout deep enough to answer, and fails rather than
+  skipping when it is not"*, *"resolves every cited commit"* and *"cites only
+  commits this repository publishes, so CI reads the same history a reader
+  can"* — and it is **not a defect in the citations**: the first of the three
+  says so itself, at length, and names the remedy. Its message is worth having
+  here because the other two failures list dozens of `file:line -> sha` pairs
+  and read exactly like a documentation audit finding:
+  *"this checkout is shallow, so no citation can be resolved and every case
+  below would fail for a reason that is not about the citations […] This is
+  deliberately a failure and not a skip: a gate that passes on a checkout too
+  shallow to answer manufactures confidence, which is worse than having no
+  gate."*
+  CI is not in this state — `.github/workflows/ci.yml` sets `fetch-depth: 0` on
+  the `verify` job for this reason — so a red here is a container fact and the
+  pull request's own `verify` job is the gate that means something.
+  **Two consequences worth carrying.** First, `tests/foundation/` is the cheap
+  habit this document recommends and **its clean baseline in this container is
+  three short of green**: measured on plain `origin/main` at `75ecd7c`,
+  `3 failed | 488 passed (491)`, and the same three on a branch that adds a
+  contract of its own, `3 failed | 493 passed (496)`. The tally moves whenever
+  a test is added and the *three* does not; establish it in a clean worktree
+  before reading three reds as yours. Second, and more expensive:
+  **`git log -S` and `--diff-filter=A` cannot distinguish "never existed" from
+  "predates the graft"** here, and they answer confidently either way:
+  `--diff-filter=A` on a file older than the root commit names the release
+  commit nearest the graft as the commit that added it, which is simply
+  false. An integrator's *"`git
+  log -S` shows these were never added"* was checked against this and could not
+  be confirmed for anything before 2026-09-03. The way round it without paying
+  for history is the GitHub API: list the commits for a path with `until=`,
+  then read the file at one of those shas. `git fetch --unshallow` is the other
+  route and its cost is not known — 374 commits are 22.6 MiB of pack here, and
+  nobody has measured the whole history.
+  **A third command belongs on that list and it caught the agent who wrote the
+  two above out within the hour: `git branch -r --contains <sha>` answers
+  "nothing" and means "cannot say".**
+  `tests/foundation/documentation-commit-citation-contract.test.ts`'s third
+  failure lists `docs/adr/STATUS-QUEUE.md`'s citations of `c56e18bd` and
+  `24ef7aec` as commits *"on this disk and on no ref this repository
+  publishes"*, and that test's check is `--contains`. Both are plainly real
+  published history — `git log --oneline -1` on them gives #913's copy fix and
+  #897's merge commit — and `--contains` finds nothing for either because the
+  graft truncates the ancestry walk before it reaches them.
+  **The reason this is one cause and not two is a control, and it is worth
+  running before blaming a ref set:** with 200 remote-tracking branches against
+  origin's 198 heads — essentially all of them — `--contains` still returns 0
+  refs for both, while `829d3c11`, a commit *inside* the visible walk, is
+  contained by 21 and `git merge-base --is-ancestor 829d3c11 origin/main` exits
+  0. Same refs, same command, different answers, and what separates the two
+  cases is only whether the walk can reach.
+  **THAT CORRECTS A CLAIM THIS BULLET'S OWN AUTHOR PUBLISHED, and the wrong
+  figure is named rather than quietly dropped:** a commit message on
+  `docs/re-anchor-status-queue` attributed the third failure to the container
+  knowing *"16 of origin's 196 branches"* and called it *"a different container
+  artifact from the shallow depth"*. Both halves are wrong. `git branch -r`
+  returns **200** in the primary checkout and in every worktree — worktrees
+  share refs, so a per-tree ref set was never possible — and the cause is the
+  graft, the same one. The 16 was measured in this shared clone earlier the
+  same hour and is not reproducible; what it was counting is unknown, and the
+  useful lesson is that it was **reconciled instead of re-measured**, which is
+  how one number became a mechanism.
+  **So the generalisation, which is cheap and now has three instances:
+  `--contains`, `log -S` and `--diff-filter=A` all answer confidently and
+  wrongly when the walk cannot complete, and one command tells you before any
+  of them lies to you:** `git rev-parse --is-shallow-repository`. Run it once
+  at the start of any pass that will reason about history, and treat a `true`
+  as making every containment and every "when did this first appear" answer
+  **undecidable rather than negative**. `.git/shallow` lists the boundary
+  commits and `git log --oneline --max-parents=0` shows where the walk bottoms
+  out.
+  **What this does NOT license:** the three reds are still not a licence to
+  edit the citations they name, and the fix is not
+  `UNPUBLISHED_BY_ORIGIN`. The argument that settles it is that CI's `verify`
+  job runs at `fetch-depth: 0` and is green on the same file content, so the
+  citations resolve where anybody with a full clone reads them; that
+  allowlist's own comment says an entry *"preserves a citation nobody can
+  check"*, and these are checkable.
+  **Added 2026-09-06, and it corrects half of a sentence higher up in this
+  same bullet rather than the baseline itself.** "The tally moves whenever a
+  test is added and the *three* does not" is the sentence: both halves were
+  wrong within the day. The third of the three cases quoted above — *"cites
+  only commits this repository publishes, so CI reads the same history a
+  reader can"* — asserts `git rev-list --remotes=origin --tags` exceeds 500.
+  At 17:30 on 2026-09-05 that count was **381** and the case failed; by 21:15
+  the same day it was **2,946** and the case passed. **Nothing was fixed and
+  the clone is still shallow** — `git rev-parse --is-shallow-repository` was
+  `true` at both readings and `.git/shallow` was untouched. So the tally moved
+  from three failures to two with no test added and no citation touched,
+  which is exactly what the corrected sentence said could not happen.
+  The cause is a fetch, not a fix: one agent ran `git fetch origin
+  '+refs/heads/*:refs/remotes/origin/*' --prune`, which populated
+  remote-tracking refs for roughly 197 of origin's branches — and worktrees
+  share the object store and the refs with the primary checkout, the same
+  sharing this bullet's own `git branch -r` figures rest on, so one agent's
+  fetch moved the baseline for every agent in the container.
+  **Two wrong explanations were published before the right one, and both are
+  kept rather than replaced, because the point of this chain is showing how a
+  guess becomes a mechanism.** The integrator guessed *"today's merges
+  published enough refs"* — four merges cannot move a ref count by 2,565. The
+  agent who ran the fetch then wrote *"my fetch deepened the clone"* — it did
+  not; the clone was shallow before the fetch and is shallow after it, because
+  fetching branch tips is not fetching history depth.
+  **So the number to distrust here is not the count of failures, it is the
+  word "three."** Re-measured in this pass, in a clean worktree at `a2b3632b`
+  (v0.0.507): `git rev-list --remotes=origin --tags` returns **3,004** —
+  moved again, overnight, with nothing in this pass touching it — the clone
+  is still shallow (`.git/shallow` present, untouched since the prior
+  reading), and `node
+  /workspace/lockstate/node_modules/vitest/vitest.mjs run tests/foundation`
+  gives `Test Files  1 failed | 54 passed (55)`, `Tests  2 failed | 494
+  passed (496)`. **The ref count is a function of which refs have been
+  fetched, not a property of this repository, so it has to be measured on a
+  clean tree at the start of every pass rather than quoted from this
+  document** — the `2` in this paragraph is due to go stale exactly the way
+  the `3` above it did.
 - **Two tests sit close enough to their 5s budget that box load pushes them
   over, and neither is a flake to wave through.**
   `tests/foundation/comment-symbol-existence-contract.test.ts` (a
@@ -194,6 +613,34 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   alone. If you see them red, run them alone before concluding anything, and
   report what you saw rather than the word "flake": a label is not a diagnosis.
   What is genuinely worth fixing here is the margin, not the runs.
+  **Both halves of that pair are now false, on different dates, and the bullet
+  is kept rather than deleted because its last sentence was right and was what
+  eventually got acted on.** `comment-symbol-existence-contract.test.ts` stopped
+  being on a 5s budget on 2026-09-03: `51b65da1`, *"four whole-tree contracts
+  outgrew the global timeout, so a finding read as a hang (#872)"*, gave it and
+  three siblings an explicit 60,000 ms. So this bullet was already half wrong
+  the day after it was written, and an agent who read it on 2026-09-05 and went
+  looking for a 5s scan found a 60s one.
+  `prisoners-sentence.test.ts` stopped being on the list on 2026-09-05 (#1005),
+  and *"a bisection over an RNG stream"* was never what it did — it draws
+  60,000 sentences in a loop. The 2.0s that loop cost was not the draws and not
+  the sample size: it was **three `expect` calls per iteration, 180,000 of
+  them**, which is 99% of the test. The sibling test in the same file draws
+  30,000 sentences from the same function with no per-draw assertion and takes
+  **10 ms**. Collecting the violations and asserting once, with every draw and
+  every predicate unchanged, took it to 25 ms.
+  **The transferable part is the diagnosis, not the two names.** Before
+  concluding that a slow test is doing expensive work, price its assertions:
+  an `expect` in a hot loop costs about 11 microseconds whether or not anything
+  is wrong, so a loop with three of them and 60,000 iterations spends two
+  seconds proving nothing. Vitest reports it as *"Test timed out in 5000ms"*,
+  which points at the budget rather than at the loop.
+  **And measure against the budget each test actually has, not against 5,000.**
+  Twenty-odd tests here carry an explicit `it(..., 30_000)`-style argument, and
+  a sweep that ignores those ranks the wrong ones first: the slowest test in the
+  whole `vitest` suite in wall-clock, `prisoners-actor-tier-scale`'s 5,000-actor
+  tier at 3.6s, is at 12% of its budget and needs nothing, while
+  `prisoners-sentence` at 2.0s was at 43% of its and was the one that fell over.
 - **Three browser tests are the contention canaries, and the integrator who
   said otherwise was wrong.** `app-shell.spec.ts` *"every control can actually be
   pressed … (#88)"* (held-guard rows 2 and 3 never laid out), *"a pending delivery
@@ -244,6 +691,73 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   spinning on an already-idle machine on 2026-08-28 before one of them worked out
   why. Append `| grep -v "bash -c"`, or just run the check by hand between runs —
   the point is a decision, not a wait.
+  **Added 2026-09-04: two more belong on this list, and a third red in the same
+  file emphatically does not — it fails on an idle machine.** So the opening
+  sentence's tally is stale and is left rather than renumbered, per §4: the
+  count was never the finding, and *"three"* is the form §4 says rots first.
+  All of the below measured in this container on a worktree at `194f31f5`
+  (v0.0.468) with no `src/` change in it, so the application under test is
+  `origin/main`.
+  - **Two more contention canaries.** `app-shell.spec.ts` *"zones a room and
+    admits a prisoner with the keyboard alone (#411)"* and *"takes a room back
+    with the keyboard alone, through the same confirm control (#411)"*. Both
+    take `test.slow()`'s 180 s and both exceeded it, and both died inside the
+    shared `walkFocus` helper — one at its `page.keyboard.press`, one at the
+    `page.evaluate` that reads `document.activeElement` — which is **a walk
+    that ran out of budget mid-hop, not an assertion about focus landing
+    somewhere wrong.** Read *where* it stopped before reading it as a defect,
+    exactly as with the #88 sweep above. Nothing is hung and nothing is broken:
+    run with `--timeout 0`, the first of them **passes in 6.7 m** at load
+    average 9.6–10.4, with another agent's full browser suite and a `vitest`
+    run alongside it. What was not obtained is an idle run of these two, so
+    they are recorded here as failing under load and the precondition in the
+    paragraph above still applies to them.
+  - **`app-shell.spec.ts` *"no room type in the catalogue pushes the Rooms panel
+    past its fold (#529)"* was NOT contention, and it is no longer on this list
+    as a canary at all — the measurement below is kept because it is what
+    justifies the budget it now has.** It carried no `test.slow()`, so it got
+    `playwright.config.ts`'s bare `timeout: 60_000`, and it did not fit inside
+    it on this box at any load. **The same commit that measured that gave it
+    `test.slow()`**, which is where the entry stops being a canary and becomes
+    a budget: a test given 60 s that needs 108 s is a test that *cannot* pass,
+    and writing it down here instead of raising the budget would have been
+    documenting a defect rather than fixing one. `test.slow()` skips, disables
+    and quarantines nothing — the test still runs, still sweeps 18 rooms across
+    5 viewports, and a failure is still a failure; three of its siblings in this
+    same file already carry it and this was the odd one out. Measured on a genuinely idle machine — `ps`
+    clear of `[p]laywright/test/cli` and `[v]itest`, load average **1.55**:
+    `Test timeout of 60000ms exceeded` on `locator.click` at
+    `tests/browser/app-shell.spec.ts:5247`, the call log showing the row
+    *resolved*, *"visible, enabled and stable"* and *"done scrolling"* before
+    the budget ran out — so not a locator that stopped matching. **Same tree,
+    same idle box, `--timeout 180000`: `1 passed (1.9m)`, the test itself
+    1.8 m.** It needs roughly 108 s and is given 60, and no amount of idleness
+    will change that. Its own comment already carries the history:
+    `The first shape of this test did it the other way round and timed out at
+    sixty seconds.`
+    (verbatim in
+    `tests/browser/app-shell.spec.ts`)
+    — and the sweep is 18 rooms × 5 viewports, so the second shape bought a 5×
+    saving on clicks and still does not fit. **That attribution is deliberately
+    wrapped**, after `verbatim in`, because until 2026-09-04
+    `tests/foundation/adr-quotation-verbatim-contract.test.ts` could not match a
+    wrapped one and then silently checked nothing; the corpus now contains the
+    case, so the fix cannot regress unnoticed.
+    **Why `main` is not red on it:** the CI runner is much faster than this
+    container. `main`'s `browser` job at `198fc120` on 2026-09-04 was green
+    with *"Run the real-browser suite"* taking **14m07s for the whole suite**,
+    which is roughly what two of these tests cost here. So it is a property of
+    where it runs, like the others, and that is why it is listed — but the
+    entry to carry forward is *"too slow for its own budget on this
+    container"*, which is a different fact from contention and asks for a
+    different fix. That fix is a decision about `test.slow()` on the spec and
+    it is deliberately not taken here: recording a measurement and changing a
+    test's budget are separate acts, and the second belongs to whoever owns the
+    spec.
+  - `tests/unit/prisoners-sentence.test.ts` was checked against this list and
+    **is already on it** — see the bullet above about the two tests sitting
+    close to their 5 s budget. Re-measured alone on 2026-09-04 at load average
+    3.49: `7 passed`, `Duration 2.60s`. Nothing to add.
 - **A local browser run in the worktree you are editing is not a baseline.** Vite
   serves `src/**` live, so a run started before your edits reads them off disk as
   they land, and a "before" measurement taken that way is a measurement of the
@@ -305,6 +819,81 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   the moment it becomes plausible that an agent will need one. Two agents that
   each read "next free" off `main` will both write 0050.
 
+### What the 2026-09-02 session cost, in mechanics
+
+Three more, all paid for on the same day, all of them the same shape: a check
+that answers confidently and wrongly.
+
+- **A pull request whose head conflicts with its base gets NO `pull_request`
+  workflow run at all.** GitHub builds no merge ref for a conflicted head, so
+  the workflows that trigger on `pull_request` never fire — only the checks
+  that come from elsewhere (`claude`, `supabase`) appear on the commit. **It
+  reads as "CI has not started yet" and it means "this pull request has a
+  conflict."** Waiting is the wrong response and can be waited on forever. The
+  test is one request: read `mergeable_state`, and if it is `dirty`, merge the
+  base branch in and push — the run starts on the merge commit. Two pull
+  requests sat in that state before the mechanism was diagnosed.
+
+- **`origin/main` inside a worktree can be stale, and a merge against it looks
+  like a success.** Worktrees share the repository's refs, but nothing fetches
+  for you: `git merge origin/main` in a worktree whose last fetch predates a
+  merge silently merges the *older* `main`, prints a normal diffstat, and exits
+  0. The conflict you expected does not appear, which is the misleading part —
+  absence of conflict reads as "already up to date". Caught only by checking
+  that a file the newer `main` was supposed to bring (`docs/adr/0092-*.md`)
+  was actually in the tree; it was not. **`git fetch origin main` immediately
+  before any merge in a worktree**, and where a specific merge is expected in
+  the base, assert one of its files exists rather than trusting the exit code.
+
+- **A player-facing string can be absent from the locale file and still
+  present in the game.** `src/content/default-locale-en.ts` merges
+  `simulationEnumMessages()` — grep for `const derivedMessages =` rather than
+  for a line number, for the reason the paragraph below records — which computes
+  labels from the census
+  in `src/content/simulation-message-keys.ts` — so `grep` over the locale file
+  finds nothing for `risk-tier` while tier 2 renders as the literal text
+  `Medium`. A whole claim was built on that absence, put to the owner as a
+  question, and was wrong: the tier has a name and a screen reader reads it.
+  **For any "this string does not exist" claim, grep the census file too, and
+  confirm at the render site** — here `regime-panel.ts:650` passes
+  `t(readout.badgeKey)` and `status-badge.ts:64` assigns it to `textContent`.
+  A derived string is invisible to the search that would disprove the claim,
+  which makes this the worst case of §4's rule about sentences asserting an
+  absence.
+
+  **This bullet cited that merge as `:1808`, and the coordinate was false
+  within the day — so the bullet became an instance of §4's own rule about a
+  `file:line` into a live file.** It was correct when written (`f00c7d15`,
+  where `const derivedMessages = simulationEnumMessages();` genuinely sat at
+  line 1808) and became false at `f19b9ef2`, *"fix(hud): the Remove hint says
+  what cancelling actually gives back (#835)"*, which added fourteen lines of
+  locale above it and moved the merge to `:1822`. Nothing about the claim
+  changed; only the coordinate did. It is corrected to a **symbol** rather than
+  to `:1822`, because a second number rots on the next string anybody adds, and
+  the correction is kept beside the claim rather than overwriting it because
+  the *interval* — one day, one unrelated commit — is the finding. The cost was
+  paid: an agent brief built on `:1808` sent its reader to a comment about
+  keyboard shortcuts, which is as misleading as the absence this bullet warns
+  about. The two render-site citations in the same bullet were re-opened at
+  `98e05058` and both still hold.
+
+- **An agent that arms a monitor, a background command or a sleep-poll and
+  then stops calling tools has ended its turn, and nothing will wake it.**
+  Three agents did this on 2026-09-02 across four turns — one twice — each
+  time with a browser run in flight and each time reporting *"waiting for the
+  monitor to report before finishing"*. The monitor fired into a turn that no
+  longer existed. Two of the three had been told in their brief not to do it.
+  The mechanism is not subtle and is worth stating flatly: **a subagent's turn
+  ends with its last tool call; a background task completing does not start a
+  new one.** So a long-running command an agent needs the result of goes in
+  the **foreground**, in a single call with a high `timeout` (up to 600000 ms
+  is allowed), and is read in the same turn. A run that would exceed that is
+  narrowed with `--grep` rather than split across turns. Background tasks are
+  for the *coordinator*, whose session is woken by their completion; they are
+  a trap for the agents it dispatches. The cost of the four turns was not the
+  tokens — it was that each agent had to be resumed by hand, with the
+  instruction re-stated, before any work it had done became visible.
+
 ### Nothing may exist only in the container
 
 **Added 2026-08-29, after the owner named the failure mode this prevents.**
@@ -352,6 +941,23 @@ deliberate:
 The effect is a bounded loss window -- three minutes -- that does not depend on
 how many agents are running or on any of them behaving correctly. `wip/` refs
 are scratch: delete them once the branch they shadow has merged.
+
+**The check that catches a lost row is counting the rows you owe, not reading
+the diff.** Added 2026-09-05, twice in one day, on `docs/research/README.md` —
+a table with one append point, which is the structural conflict §2 already
+warns about. What is new is the *resolution*: the correct answer is always
+"keep every row", and a resolver cannot tell by inspection whether they have.
+Both times the merge was wrong in a way the diff looked fine for. Once an agent
+dropped a row while resolving; once one branch had pulled twenty-four drifted
+rows back *into* the table while `main` had extended the drifted region with a
+twenty-fifth, so git saw one side delete a block and the other grow it. **The
+move that settled it in seconds was arithmetic over the two parents**: the
+parents carried 93 and 84 rows, the union of their labels was 94, the resolved
+file had 94, and `comm -23` over the union reported nothing missing. **Do that
+before you read the hunks, not after** — and where a contract counts the same
+thing (`tests/foundation/research-index-contract.test.ts` fails on a record
+with no row and on a row outside the table), run it, because those are exactly
+the two ways such a merge goes wrong silently.
 
 ### Handovers between parallel agents
 

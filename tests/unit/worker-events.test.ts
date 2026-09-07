@@ -64,7 +64,7 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
  * snapshot is taken* -- twenty ticks short of the end -- so the restored
  * worker has to run the discharge itself for anything to be published at all.
  */
-function prisonAboutToRelease(): { snapshot: SessionSnapshotBundle; endTick: number } {
+function prisonAboutToRelease(): { snapshot: SessionSnapshotBundle; endTick: number; saidBefore: number } {
   const runtime = createNewSimulationRuntime(507);
   wallRoomPerimeter(runtime.world, CELL, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL }));
@@ -93,11 +93,33 @@ function prisonAboutToRelease(): { snapshot: SessionSnapshotBundle; endTick: num
   expect(runtime.kernel.tick, 'the snapshot must be taken before the sentence ends, or the worker has nothing left to do').toBeLessThan(endTick - 20);
 
   while (runtime.kernel.tick < endTick - 20) runtime.kernel.step();
+  /*
+   * **Narrowed to its subject on 2026-09-04 (#966 site 2), and the old line is
+   * quoted rather than deleted** (`docs/AGENT_WORKFLOW.md` section 4). It read:
+   *
+   * > expect(runtime.events.since(0), '...').toEqual([]);
+   *
+   * The whole log was the widest available net for "nobody has been released
+   * yet" while this fixture's own presses said nothing. The `ZoneRoom` above
+   * now says so, so a bare `[]` would assert that the fixture is mute rather
+   * than that the discharge has not happened -- and the message has always
+   * claimed the second.
+   */
   expect(
-    runtime.events.since(0),
+    runtime.events.since(0).filter((event) => event.type === 'prisoners.discharged'),
     'nothing may have been released before the snapshot, or this test would be watching the wrong event',
   ).toEqual([]);
-  return { snapshot: captureSessionSnapshot(runtime), endTick };
+  return {
+    snapshot: captureSessionSnapshot(runtime),
+    endTick,
+    /*
+     * How many records the save already holds, so the discharge's ordinal can
+     * be named without restating what the fixture pressed. It is not zero since
+     * #966 site 2: the `ZoneRoom` above says so, and ADR 0084 decision 4 has
+     * the restored session carry the log rather than start a fresh one.
+     */
+    saidBefore: runtime.events.count,
+  };
 }
 
 /** One worker on an injected clock, so tick-loop wakes are counted rather than timed. */
@@ -150,6 +172,20 @@ class Harness {
   public events(): readonly { readonly payload: { readonly tick: number; readonly event: { readonly sequence: number; readonly type: string; readonly count?: number } } }[] {
     return this.port.messages.filter((message) => message.kind === 'simulation/event');
   }
+
+  /**
+   * Only the discharges, which is what this file watches the worker publish.
+   *
+   * **Added on 2026-09-04 (#966 site 2).** A restore republishes the records
+   * the save carried (ADR 0084 decision 4), and the fixture's own `ZoneRoom`
+   * is now one of them -- so `events()` holds a publication this file has no
+   * opinion about, and counting it would make both cases below assertions
+   * about the fixture. Both properties they pin -- said once, and said on the
+   * wake it happened -- are properties of this list.
+   */
+  public discharges(): ReturnType<Harness['events']> {
+    return this.events().filter((message) => message.payload.event.type === 'prisoners.discharged');
+  }
 }
 
 describe('publishing what the prison did', () => {
@@ -170,14 +206,14 @@ describe('publishing what the prison did', () => {
     // backlog every wake would produce a message per wake here.
     harness.advance(120);
 
-    const published = harness.events();
+    const published = harness.discharges();
     expect(published.length, 'one prisoner left once, so the worker says so once').toBe(1);
     expect(published[0]?.payload.event).toMatchObject({ type: 'prisoners.discharged', count: 1 });
 
     // And it stays said-once as the session keeps running.
     harness.advance(200);
     expect(
-      harness.events().length,
+      harness.discharges().length,
       'the watermark must stop a published event being posted again on the next wake -- a band that repeats "somebody was released" sixty-six times a second is the firewall issue #104 named',
     ).toBe(1);
   });
@@ -194,17 +230,17 @@ describe('publishing what the prison did', () => {
      * publication must describe the tick the worker had actually reached, and
      * the event must carry the earlier tick it happened on.
      */
-    const { snapshot } = prisonAboutToRelease();
+    const { snapshot, saidBefore } = prisonAboutToRelease();
     const harness = new Harness(snapshot);
     harness.advance(120);
 
-    const published = harness.events();
+    const published = harness.discharges();
     expect(published.length).toBe(1);
     const message = published[0]!;
     expect(
       message.payload.event,
       'the event carries the tick it happened on, which is not the tick it was published at',
-    ).toMatchObject({ sequence: 1 });
+    ).toMatchObject({ sequence: saidBefore + 1 });
     expect(message.payload.tick).toBeGreaterThanOrEqual(0);
   });
 });
