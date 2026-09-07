@@ -74,25 +74,25 @@ export interface SectorRiskPolicy {
  *   six needs all decay unopposed — which is what
  *   `tests/integration/security-default-sector.test.ts`'s and
  *   `incident-trigger-reachability.test.ts`'s riot fixtures are actually made
- *   of.
- *
- *   **That sentence is kept and its last clause is no longer general**
- *   ([ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
- *   accepted 2026-09-07). A prisoner at intake stage
- *   `accommodation-assignment` now reaches every action that does not need a
- *   cell, so what decays unopposed for them is `sleep` and `bladder` in **any**
- *   prison, plus `hunger`, `hygiene` and `recreation` in a prison that has not
- *   built a canteen, a shower room or a recreation room, plus `safety` where
- *   the sector is unguarded. Measured on the second of the two fixtures named
- *   above: an over-admitted prison with none of those rooms is byte-identical
- *   before and after that decision, and one with all three, staffed to
- *   requirement, fell from 0.6513 to 0.3462 and now opens nothing at all. So
- *   the riot fixtures are still made of unhoused prisoners; they are made of
- *   unhoused prisoners **in prisons that built nothing for them**. So the bullet is kept rather than rewritten, and this paragraph is what
+ *   of. So the bullet is kept rather than rewritten, and this paragraph is what
  *   it does not yet say: **at these numbers, staffing is still the amplifier
  *   that decides, for every prison whose prisoners have somewhere to live.**
  *   Whether that is the balance wanted is #442's and ADR 0048's, not a thing to
  *   settle in this docblock.
+ *
+ *   **The sentence about the prisoner with no accommodation is kept and its
+ *   last clause is no longer general**
+ *   ([ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+ *   accepted 2026-09-07). Such a prisoner now reaches every action that does
+ *   not need a cell, so what decays unopposed for them is `sleep` and
+ *   `bladder` in **any** prison, plus `hunger`, `hygiene` and `recreation` in
+ *   a prison that has not built a canteen, a shower room or a recreation room,
+ *   plus `safety` where the sector is unguarded. Measured on the second of the
+ *   two fixtures named above: an over-admitted prison with none of those rooms
+ *   is byte-identical before and after that decision, and one with all three,
+ *   staffed to requirement, fell from 0.6513 to 0.3462 and now opens nothing
+ *   at all. So the riot fixtures are still made of unhoused prisoners; they
+ *   are made of unhoused prisoners **in prisons that built nothing for them**.
  *
  *   **And since
  *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
