@@ -547,11 +547,21 @@ export class ActionSystem implements SystemRegistration {
          * prisoner out of `'completed'`: `IntakeSystem` sends an
          * `'accommodation-assignment'` prisoner to `'failed'` on the tick the
          * prison holds no instance of any room type their classification group
-         * may be housed in -- reachable by un-zoning the last such room, which
-         * `RoomZoningService.unzone` permits when nobody lives in it. Before
-         * the widened gate an unhoused prisoner held no claim and stood in no
-         * action, so this cost nothing; now they can be eating in the canteen
-         * when it happens.
+         * may be housed in. Before the widened gate an unhoused prisoner held
+         * no claim and stood in no action, so this cost nothing; now they can
+         * be eating in the canteen when it happens.
+         *
+         * **How a player reaches that transition is read rather than driven**,
+         * and is recorded as such: `RoomZoningService.unzone` refuses only on
+         * an instance with a live *use* claim or with residents it cannot
+         * relocate, so the last housing room of a group can be un-zoned while
+         * an unhoused prisoner of that group is eating somewhere else. No
+         * fixture in this repository drives that sequence end to end, and the
+         * unit case that covers this branch writes the stage by hand and says
+         * so. The guard is here anyway, because the failure it prevents is
+         * silent -- a seat held for the rest of the session by a prisoner
+         * `update` will never look at again -- and because it costs one
+         * comparison on the path of every prisoner still in intake.
          *
          * Left alone, the `continue` below would be the one exit from
          * `performing` that forgot to release, against `releaseUseClaim`'s own
