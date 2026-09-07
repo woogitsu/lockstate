@@ -33,7 +33,52 @@
 
 ## Status
 
-**Proposed, 2026-09-07. Not self-approved.**
+**Accepted by the owner on 2026-09-07, together with option 1 — the per-room
+alpha — against a summary rather than against this document's full text.**
+
+Asked which of the four options below to take, given that "move the palette" is
+arithmetically powerless and that raising the flat alpha needs ≈0.34, the owner
+chose:
+
+    Alfa per pokój — podnieś tylko te 8
+
+("Per-room alpha — raise only those eight.")
+
+**THE DISCLOSURE, BECAUSE A RULING MUST NOT BE MISTAKEN FOR A READING.** The
+decision was taken against a summary written by the integrator, and the option
+carried its own consequence statement, reproduced here verbatim beside the
+answer — the same disclosure ADR 0075, 0076, 0097, 0098, 0099 and 0100 carry:
+
+> Łatka istnieje i jest zmierzona: Holding Cell wraca ciepły, faktura podłogi
+> nadal czytelna, dziesięć pozostałych pokoi bez zmiany. Powodem nie jest
+> czytelność — tę niesie nazwa — tylko obietnica, którą kod składa wprost: że
+> swatch w panelu i mapa się zgadzają. Koszt: tabela odległości w ADR 0098
+> przestaje obowiązywać dla 108 z 153 par i trzeba to w 0098 odnotować.
+
+("The patch exists and is measured: Holding Cell comes back warm, the floor
+texture stays legible, the other ten rooms are unchanged. The reason is not
+legibility — the name carries that — but the promise the code makes outright:
+that the panel swatch and the map agree. The cost: ADR 0098's distance table
+stops holding for 108 of 153 pairs and that has to be recorded in 0098.")
+
+**So the requirement this document settles on is the one that was accepted**:
+not that colour should name a room — ADR 0098 already ruled it cannot and gave
+that job to the drawn name — but that a painted tint must read as *some*
+application of its own assigned colour, because `src/ui/hud/view-model.ts`
+promises the catalogue row and the map agree without a legend.
+
+**What the acceptance obliges, and what it does not.** It obliges the per-room
+alpha and it obliges ADR 0098 to record that its shared-alpha pairwise table no
+longer holds for 108 of 153 pairs. It does **not** move ADR 0097's or ADR
+0098's `Status`, it does not reopen ADR 0098's decision 3, and it does not make
+colour an identification channel. The implementing change is a separate branch
+and carries its own gate; **this document approves nothing about how that code
+is written.**
+
+> **Superseded 2026-09-07 by the paragraphs above; kept rather than
+> overwritten, per `docs/AGENT_WORKFLOW.md` §4, because a reader should see
+> that this document was drafted as a question and refused to answer itself.**
+> It read: **Proposed, 2026-09-07. Not self-approved.**
 
 The question below is the owner's to settle: whether a zoning tint that blends
 to *less* colour than the untinted floor it is painted on is a defect, or the
