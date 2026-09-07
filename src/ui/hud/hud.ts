@@ -1688,8 +1688,17 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *
    * The corner is a flex column with `justify-content: flex-end`, so this row
    * sits directly above the minimap frame and the pair stays anchored to the
-   * bottom-left. `.hud__corner > *` already opts every child back into
-   * `pointer-events`, so this needs no rule of its own for that.
+   * bottom-left.
+   *
+   * **`pointer-events` for `zoomOut`/`zoomIn` is granted by name, not by this
+   * element opting in wholesale (#1054).** `.hud__corner > *` used to opt
+   * every child of the corner into `pointer-events: auto`, which is what let
+   * a press on this pair's own blank background -- its padding, the gap
+   * beside the legend -- reach nothing, silently, the same defect the corner
+   * comment above `.hud-minimap` had. `hud.css`'s "every interactive island
+   * opts back in" block now names `.hud-zoom__out` and `.hud-zoom__in`
+   * directly instead, and this island's own background is chrome the world
+   * receives a press through.
    *
    * `createIconButton` rather than hand-built buttons: it gives each one the
    * `--tap-target` box `app-shell.spec.ts` measures at 1280x800 and 375x812,
