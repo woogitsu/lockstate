@@ -143,11 +143,38 @@ if (tint !== undefined) {
 Weaker over art. The tint is what says *which* room this is, and
 that has to survive; at its full strength it also washes the floor
 out until the texture underneath stops reading as a floor.
-const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;
+`zoningTintAlphaOverArt` is the flat `ZONING_TINT_ALPHA_OVER_ART`
+for most rooms and a room-specific, raised alpha for the eight
+whose hue would otherwise blend to *less* colour than the bare
+floor (ADR 0101, issue #1061) -- see that function's own docblock
+in `../world/appearance.ts`.
+const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : zoningTintAlphaOverArt(sample.zoning);
 graphics.fillStyle(tint, alpha);
 graphics.fillRect(localX * TILE_SIZE_PX, localY * TILE_SIZE_PX, TILE_SIZE_PX, TILE_SIZE_PX);
 }`
-(verbatim in `src/rendering/phaser/tile-layer.ts`), instrumented in a real
+(verbatim in `src/rendering/phaser/tile-layer.ts`)
+
+> **THE BLOCK ABOVE IS THE POST-DECISION CODE, AND THE ONE THIS DIAGNOSIS WAS
+> MADE AGAINST IS DESCRIBED RATHER THAN QUOTED — a document that mandates a
+> change cannot go on quoting the code the change removes.** Read at
+> `712175fe`, the alpha selection was a single flat constant: the ternary chose
+> between `ZONING_TINT_ALPHA` and `ZONING_TINT_ALPHA_OVER_ART` with nothing
+> per-room about it, and the comment above it named only the
+> weaker-over-art reason. Implementing this document's own accepted decision
+> replaced that constant with the `zoningTintAlphaOverArt(sample.zoning)` call
+> shown above.
+>
+> **It is described and not quoted because `adr-quotation-verbatim-contract`
+> has no historical exemption by design**: every `(verbatim in <path>)`
+> attribution must resolve byte-for-byte against the named file, and an
+> attribution given any other shape is separately reported as one the pattern
+> cannot match. So a stale quotation cannot be marked and kept here the way
+> `docs/AGENT_WORKFLOW.md` §4 keeps stale prose — the only truthful options are
+> to update it or to describe it, and this note does both. That is the same
+> resolution #1043, #1056 and #1063 reached when a gate that reads by position
+> collided with the rule that asks for the old text to be kept.
+
+The draw call was instrumented in a real
 browser to print the right tint for every tile. **The pipeline is correct.**
 What is wrong is the arithmetic at line 363 itself, for eight of eighteen
 rooms.

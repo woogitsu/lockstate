@@ -261,11 +261,17 @@ format.
 This is the part #1018 and #1021 could not reach from a screenshot pair, and it
 decides whether the issue's cheapest option is a fix or a rearrangement.
 
-**The composite is exact.** ARITHMETIC. Both tints are painted over the same
-floor art at the same alpha —
+**The composite is exact, as of the commit this Context section was written
+against.** ARITHMETIC. Both tints were painted over the same floor art at the
+same alpha —
 
 `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;`
-(verbatim in `src/rendering/phaser/tile-layer.ts`)
+(that line stood in `src/rendering/phaser/tile-layer.ts` on the commit this
+Context section was cut from; it does not any more, which is exactly the
+subject of the Amendment below decision 3 -- ADR 0101, accepted 2026-09-07,
+raises this alpha per room for eight of the eighteen tints, and the line
+today reads `zoningTintAlphaOverArt(sample.zoning)` in the branch it used to
+name directly.)
 
 — so the base cancels and the difference between two tinted tiles is exactly
 `α × |t₁ − t₂|` per channel, with
@@ -527,6 +533,73 @@ was already argued down from 0.28 for a stated reason —
 says which room this is, which the same comment then explains is keyed by the
 room's category. Raising the alpha again undoes the decision that made the floor
 art worth drawing.
+
+### Amendment, 2026-09-07: the shared-alpha identity this decision's table rests on no longer holds for 108 of 153 pairs
+
+*This amends decision 3 above as a recorded consequence, not a reopening of
+it. Status is untouched: this ADR remains **Accepted**, and this section does
+not touch decision 3's own conclusion — keying by id is still necessary and
+still not sufficient on its own, the respacing still stands, and identity
+still needs the second channel decision 3 hands to the name. What changes is
+narrower: one identity decision 3's arithmetic depends on is no longer true
+for every pair, and `docs/AGENT_WORKFLOW.md` §4's rule is to mark that rather
+than to quietly leave the arithmetic reading as if it still covered all
+eighteen tints.*
+
+**What this records.** Issue #1061 found, and a separate document worked out
+in full rather than inside this one, that eight of the eighteen room-id tints
+above blend to *less* colour over `env.floor.institutional` than painting no
+tint at all — the floor's own art leans blue by roughly 26.5 units, and a
+partial-alpha blend of a hue near that lean's complement desaturates toward
+the floor rather than shifting toward the tint. The requirement that a
+painted tint read as some visible application of its own colour, and the
+decision to close that gap with a per-room alpha rather than a flat raise or
+a palette move, were both settled there rather than here — this document does
+not restate that reasoning or its own status, only what it costs this
+decision's own table. The implementation lives at
+`zoningTintAlphaOverArt` (`src/rendering/world/appearance.ts`), called from
+`TileLayer.paintChunk` (`src/rendering/phaser/tile-layer.ts`) in place of the
+flat `ZONING_TINT_ALPHA_OVER_ART` wherever floor art is present, and raises
+exactly `room.cell`, `room.holding-cell`, `room.solitary-cell`,
+`room.reception`, `room.kitchen`, `room.canteen`, `room.garbage-room` and
+`room.utility-room` — the other ten keep the flat 0.14 this decision's table
+was built on, unchanged.
+
+**What this decision's own identity assumed, quoted rather than paraphrased
+so the amendment is checkable against it:**
+
+> so the base cancels and the difference between two tinted tiles is exactly
+> `α × |t₁ − t₂|` per channel
+
+(Context §2, quoting `tile-layer.ts`'s alpha line). That identity holds only
+when both tints in a pair are painted at the same `α`. Eight of today's
+eighteen room-id tints are no longer painted at the shared `ZONING_TINT_ALPHA_
+OVER_ART` — they are painted at their own, individually raised alpha instead.
+
+**The count, ARITHMETIC.** Of the `C(18, 2) = 153` pairs among today's
+eighteen room-id tints, `C(10, 2) = 45` sit entirely among the ten rooms left
+untouched — for those 45, the shared-alpha identity above still holds exactly
+as decision 3 stated it, and decision 3's own headline numbers (today's worst
+pair at **4.06**, respaced-evenly at **6.02**) are still correct **for the
+pairs they were always about**, because both are computed at the flat alpha
+and neither named a raised room. The remaining **108 of 153 pairs (70.6%)**
+each name at least one raised room, and for those the identity's premise is
+false: the two tints in the pair are no longer painted at one shared `α`, so
+`α × |t₁ − t₂|` is not their on-screen distance. **This is a count of which
+pairs the *method* stops covering, not a claim that any of the 108 numbers
+becomes qualitatively wrong** — a raised alpha moves a tint further from the
+floor's base and, for most pairs, further from every other tint too, so the
+untouched arithmetic is more often an underestimate of the true distance than
+an overestimate. Nobody has re-derived all 108 by the raised method; this
+amendment records that the table no longer covers them, not what their
+correct values are.
+
+**What is not reopened.** Decision 3's conclusion — keying by id closes the
+seven collisions and leaves a palette too crowded to read on its own, so
+identity needs a second channel — does not depend on which alpha is shared,
+only on the *existence* of a shared one at the point decision 3 was accepted.
+Nothing above changes that conclusion, and nothing above proposes a different
+one.
 
 ### 4. What is *not* required
 

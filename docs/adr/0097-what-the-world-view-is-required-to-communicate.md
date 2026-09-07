@@ -162,11 +162,37 @@ paints from three inputs and no more:
    on nothing except whether the zoning id names a known room. Its own docblock
    says so at `:152-154` — *"One floor for every category today."*
 
-2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:358-363`, at one
-   of two alphas depending only on whether art is under it:
+2. **The zoning tint**, at `src/rendering/phaser/tile-layer.ts:358-363`, at the
+   time this was written one of two alphas depending only on whether art is
+   under it:
 
    `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA_OVER_ART;`
+   (that line stood in `src/rendering/phaser/tile-layer.ts` on the commit this
+   document was cut from; it does not any more.)
+
+   **Amended 2026-09-07, kept above rather than rewritten per
+   `docs/AGENT_WORKFLOW.md` §4: "one of two alphas" stopped being literally
+   true the day this line changed, and this document must not restate ADR
+   0101's own status to explain why -- only cite it.** ADR 0101 obliges a
+   per-room alpha over floor art for eight of the eighteen room-id tints,
+   because `env.floor.institutional`'s own colour leans toward several of
+   those tints' complements strongly enough that the flat 0.14 blend read as
+   *less* coloured than the bare floor. The line today is —
+
+   `const alpha = floors[localY * size + localX] === undefined ? ZONING_TINT_ALPHA : zoningTintAlphaOverArt(sample.zoning);`
    (verbatim in `src/rendering/phaser/tile-layer.ts`)
+
+   — so "one of two alphas" is now one of up to five in the shipped table
+   (the flat `ZONING_TINT_ALPHA_OVER_ART`, three further per-room values
+   between it and the cap, and `ZONING_TINT_ALPHA` itself, where the per-room
+   search lands for four of the eight raised rooms); see `zoningTintAlphaOverArt`
+   (`src/rendering/world/appearance.ts`) for the per-room table and
+   `docs/adr/0098-what-says-which-room-this-is.md`'s own amendment for what
+   this costs that document's pairwise-distance table. **This document's own
+   decision 3 — the tint's channel belongs to identity, the boundary's to
+   condition — is untouched by any of it**: which alpha a given room's tint is
+   painted at is beneath that allocation, not a change to it, exactly as the
+   paragraph below already says about which *table* the tint reads.
 
    and resolved, at the time this was written, through a table keyed by the
    room's **category**:

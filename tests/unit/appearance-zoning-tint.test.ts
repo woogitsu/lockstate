@@ -57,6 +57,23 @@ describe('zoningTint: one tint per room type', () => {
    * the worst (most easily confused) pair the shipped palette produces, so a
    * future edit to the table cannot quietly re-crowd the hues without this
    * test moving.
+   *
+   * **Marked, not overwritten, per `docs/AGENT_WORKFLOW.md` §4: the premise
+   * of this test -- "both tints are painted over the same floor at the same
+   * alpha" -- is no longer true of what `TileLayer` actually paints, for any
+   * pair naming one of eight rooms.** ADR 0101 (accepted 2026-09-07, option
+   * 1) raises `room.cell`, `room.holding-cell`, `room.solitary-cell`,
+   * `room.reception`, `room.kitchen`, `room.canteen`, `room.garbage-room` and
+   * `room.utility-room` to a room-specific alpha via
+   * `zoningTintAlphaOverArt` (`src/rendering/world/appearance.ts`), over
+   * floor art specifically. This test still deliberately reads
+   * `ZONING_TINT_ALPHA_OVER_ART` -- the flat constant -- because its subject
+   * is the *palette's own design identity* (does the even 20-degree spacing
+   * the table's docblock claims still hold), not what actually reaches the
+   * screen. `tests/unit/appearance-zoning-tint-legibility.test.ts` and
+   * `docs/adr/0098-what-says-which-room-this-is.md`'s amendment are what
+   * cover the real, per-room-alpha paint step and its cost to this test's
+   * own 108-of-153-pairs coverage.
    */
   it('spaces the worst pair at 6.02 effective units, matching the ADR-recommended even spacing', () => {
     const channel = (rgb: number, shift: number): number => (rgb >> shift) & 0xff;
