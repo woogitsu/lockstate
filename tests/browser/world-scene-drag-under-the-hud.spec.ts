@@ -8,10 +8,20 @@ import { TILE, armBuildable, calibrate, installTee, openApp, sentCommands, tab }
  * ## The defect this gate exists for
  *
  * `.hud` is `pointer-events: none`, but `hud.css`'s *"Every interactive island
- * opts back in"* rule restores `auto` on `.hud-strip`, `.hud__corner > *`,
- * `.hud__aside > *`, `.hud__side > *` and `.hud-tabs__inner`. Those islands sit
- * over the map, and Phaser 4 listens for `mousemove`/`mouseup` **on the game
- * canvas** (`node_modules/phaser/src/input/mouse/MouseManager.js`,
+ * opts back in"* rule restores `auto` on `.hud-strip`, `.hud__aside > *`,
+ * `.hud__side > *` and `.hud-tabs__inner` -- whole panels, each one a scroll
+ * container at the panel's own root. **`.hud__corner > *` was in this list
+ * until issue #1054**, which found the cost of opting a whole panel in when it
+ * is not itself a scroll container: blank chrome (a panel's own header, its
+ * title) swallowed a press with no handler behind it, and nothing here caught
+ * it because this file only ever drags across the rail and the tab bar, never
+ * the corner. `.hud__corner`'s two panels now opt in only their real controls,
+ * by name, in the rule directly beneath the one this comment used to describe
+ * -- see `tests/browser/hud-corner-chrome-passthrough.spec.ts` for that gate.
+ * This file needed no change to its assertions for it: every island the runs
+ * below drag under is still one of the four still opted in whole. Those
+ * islands sit over the map, and Phaser 4 listens for `mousemove`/`mouseup`
+ * **on the game canvas** (`node_modules/phaser/src/input/mouse/MouseManager.js`,
  * `startListeners`), so a drag that crosses one stops being delivered: the last
  * move the canvas heard is the last move `extendBuild` saw, and `commitBuild`
  * then places the run as it stood there. Issue #878 measured a four-segment run
