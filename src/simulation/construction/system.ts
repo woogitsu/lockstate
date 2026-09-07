@@ -1007,8 +1007,8 @@ export class ConstructionSystem implements SystemRegistration {
        * cost. Selling the shelf while a delivery for the same item was still
        * refundable would prefer the weaker figure for no reason.
        */
-      sink.refundSurplusDeliveries(itemId, demanded);
       sink.refundSurplusStock(itemId, demanded, requiredByItemId.get(itemId)!);
+      sink.refundSurplusDeliveries(itemId, demanded);
     }
   }
 
