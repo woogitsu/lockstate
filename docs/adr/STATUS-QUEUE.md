@@ -12366,7 +12366,7 @@ TREE RATHER THAN BY ADJUSTING THE PREVIOUS ANCHOR'S NUMBERS.** The previous
 anchor's own count (above, already corrected in place by `343d876b` for
 0101's reservation before this pass ever opened): **40 `Proposed`, 52
 `Accepted`, 92 documents with a status**, 93 numbered rows, **Next free
-number: 0102**. This pass re-read every one of the 94 files on disk at
+number: 0103**. This pass re-read every one of the 94 files on disk at
 `ebdcb317` by the established method — the first non-blank line under each
 document's own `## Status` heading or `- Status:` bullet, `0013` counted
 separately as always because its own status line is split (`Accepted for
@@ -12376,11 +12376,26 @@ rows — only `Accepted` and the two row counts move, by exactly one each,
 because ADR 0101 is the sole document this window added to disk and it
 arrived already `Accepted` (established two paragraphs above). `Proposed`
 is unchanged at 40 because nothing that was `Proposed` flipped and nothing
-new arrived in that column. **Next free number: 0102** is unchanged and was
+new arrived in that column. **Next free number: 0103** is unchanged and was
 already corrected in place by `343d876b`, ahead of this pass, for the reason
 its own kept blockquote in the previous anchor's account gives; this pass
 re-verified it rather than trusting the earlier fix, against
 `docs/adr/README.md`'s current line directly.
+
+> **BOTH "NEXT FREE NUMBER" READINGS IN THE PARAGRAPH ABOVE READ 0102 AT
+> `ebdcb317`, AND BOTH READINGS WERE CORRECT THEN — EDITED HERE, 2026-09-07,
+> BECAUSE ADR 0102'S DRAFT ADDS ITS ROW TO `docs/adr/README.md`.** That is
+> what reserves a number (`AGENTS.md`), so the index moved to 0103 and both
+> restatements above move with it — edited in place rather than
+> marked-and-kept, for the identical reason the blockquote further below
+> gives for the 0101 → 0102 move: `adr-status-queue-anchor-contract` reads a
+> restatement as **live** by its position relative to the anchor's own dated
+> pass, not by whether the sentence around it reads as history, so a
+> kept-but-stale "0102" here is exactly the mutation that gate exists to
+> catch — even though both sentences are genuinely, and still, describing
+> `ebdcb317`'s own tree. Nothing else in either sentence moves: the row and
+> status counts above are this pass's own re-derivation at `ebdcb317` and are
+> untouched by a reservation made on a later, unrelated branch.
 
 Cross-checked against `docs/adr/README.md` directly: `grep -cE
 '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40** against **54**
@@ -12614,7 +12629,7 @@ repair.
 **THE FOUR COUNTING SITES, RE-DERIVED RATHER THAN CARRIED FORWARD, BECAUSE
 ADR 0098'S FLIP CHANGES A COLUMN.** The previous anchor's own count (above):
 **41 `Proposed`, 51 `Accepted`, 92 documents with a status**, 93 numbered rows,
-**Next free number: 0102**. No ADR was added or removed from disk in this
+**Next free number: 0103**. No ADR was added or removed from disk in this
 window — #1056 changes a status, not a row count — so only the `Proposed`/
 `Accepted` split moves: **40 `Proposed`, 52 `Accepted`, 92 documents with a
 status**, 93 numbered rows unchanged.
@@ -12628,6 +12643,14 @@ status**, 93 numbered rows unchanged.
 > exists to catch. The row count and the `Proposed`/`Accepted` split above are
 > untouched: an ADR drafted as `Proposed` adds one row and one `Proposed`, and
 > those two figures are re-derived by the branch that lands it, not here.
+>
+> **A SECOND EDIT TO THE SAME NUMBER, 2026-09-07, FOR THE IDENTICAL REASON.**
+> ADR 0102's draft now adds its own row, so the index moves again, 0102 →
+> 0103, and this site's restatement is edited a second time rather than
+> marked-and-kept, for the same reason the paragraph above already gives —
+> the gate reads position, not whether the sentence is describing an older
+> commit's tree. Nothing else at this site moves: it is still, and only, a
+> record of what `#1056`'s status flip changed at the anchor commit.
 Cross-checked against `docs/adr/README.md` directly: `grep -cE
 '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40** against **52**
 `Accepted`. §2 is unmoved at nine entries — no merge in this window touched
