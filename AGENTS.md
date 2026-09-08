@@ -252,6 +252,33 @@ outward-facing or unrevertable, which is the whole reason:
    them; `5a761322` cut the first by making the work smaller rather than the
    budget bigger, which stays the method.
 
+   **THAT SENTENCE IS WRONG ABOUT THE NUMBER AND ABOUT THREE OF THE FOUR, AND
+   THE RUN THAT PROVED IT IS THE ONE THIS RELEASE MADE POSSIBLE.** Run
+   34215508642's `browser` job, the first on this pool ever allowed to reach the
+   end, finished in **41.3 minutes: 422 passed, 1 failed.** The one failure is
+   `#331`, at `app-shell.spec.ts:6119` on `page.setViewportSize`, still
+   `Test timeout of 180000ms exceeded` — and still over the cap *after* option C
+   cut it from 174 s to 132 s locally. The other three all passed, comfortably:
+   `#88` in **2.5 m**, `zones a room and admits a prisoner (#411)` in **2.4 m**,
+   `takes a room back (#411)` in **2.6 m**. So did
+   `a pending delivery is on the panel with the fold shut (#285, #703)`, in
+   **22.7 s**, which an earlier partial run had recorded as a red at 23.6 s.
+
+   **Where the wrong claim came from, because the mistake is instructive.** All
+   five "reds" were read off a job that was *cancelled at test 46 of 420* while
+   the pool was saturated. A starved partial run is not a sample of a finished
+   one, and four of its five failures did not survive the job being allowed to
+   finish. The estimate built on the same partial run — that the remaining 374
+   tests were "on the order of a hundred minutes" — was out by 2.4 times.
+
+   **The release still bought exactly what it was for**, and rather more than
+   the sentence above claimed: not "the job now reports four failures" but "the
+   job now reports at all", and what it reported is that this tree has **one**
+   browser failure rather than five. The suite needs 41.3 minutes on this pool
+   against 13 on the retired one — **3.2 times**, not the ~6 the `verify` step
+   shows, so the slowdown is not one uniform factor either.
+
+
    **What was declined by not being asked.** Routing `browser` back to the
    faster pool is not available from this file: every job's `labels` in the API
    is the identical `runs-on` list `[self-hosted, Linux, X64, wsl2, woogitsu]`,

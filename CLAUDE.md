@@ -74,6 +74,13 @@ choosing it.** Four browser specs exhaust `test.slow()`'s own 180-second
 per-test cap and fail rather than cancel; a larger job budget lets the job
 report them instead of dying mid-suite. It does not make them pass.
 
+**THAT PARAGRAPH IS WRONG AND THE CORRECTION IS IN `AGENTS.md`.** The first
+`browser` job ever allowed to finish on this pool (run 34215508642) reported
+**422 passed, 1 failed in 41.3 minutes**. Only `#331` exhausts the per-test
+cap; `#88` and both `#411` specs pass in 2.4-2.6 m. The four-red picture came
+from a job cancelled at test 46 of 420 on a saturated pool, and a starved
+partial run is not a sample of a finished one.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

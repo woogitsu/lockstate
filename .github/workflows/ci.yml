@@ -487,6 +487,26 @@ jobs:
     # comment below, which anticipated exactly this and whose request it
     # discharges as a side effect.
     #
+    # **"FOUR SPECS" WAS WRONG, AND THE FIRST FINISHED RUN IS WHAT SAID SO.**
+    # Run 34215508642 -- the first `browser` job on this pool ever allowed to
+    # reach the end, which is what this line bought -- finished in **41.3
+    # minutes: 422 passed, 1 failed**. Only `#331` exhausts the cap, still, at
+    # `app-shell.spec.ts:6119` on `page.setViewportSize`. `#88` passed in 2.5 m
+    # and both `#411` specs in 2.4 m and 2.6 m; so did `a pending delivery is on
+    # the panel with the fold shut`, in 22.7 s, which the earlier partial run
+    # had recorded red at 23.6 s.
+    #
+    # The four-red picture was read off a job **cancelled at test 46 of 420**
+    # while the pool was saturated, and four of those five did not survive the
+    # job being allowed to finish. Kept rather than overwritten because the
+    # paragraph above is the reasoning the owner authorised, and because "a
+    # starved partial run is not a sample of a finished one" is the lesson.
+    #
+    # The suite needs 41.3 minutes here against 13 on the retired pool -- **3.2
+    # times**, where the `verify` step above shows ~6. The slowdown is not one
+    # uniform factor, so 90 is right for this job and says nothing about any
+    # other budget.
+    #
     # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
     # a job, not a step, not the runner selectors, not `deploy.yml`.
     timeout-minutes: 90
