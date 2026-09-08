@@ -703,6 +703,15 @@ climbing. The `n × 40` exactness in §1 is much stronger — eight populations,
 yard placements, an exact integer identity in every row — and I would defend
 that one against a re-run.
 
+**Both halves of that paragraph were tested on 2026-09-08 and the paragraph is
+kept rather than corrected, because one half held and the other did not.** The
+finer grid was run — 70, 74, 78, 82, 86, 90, 94, 98 — and the unmet count
+climbs (0, 0, 0, 3, 8, 12, 16, 18) rather than jumping, so the slope survives on
+the axis it was claimed on. **On the supply axis it is a step**: the same
+prison at n=90 goes from 12 short to 0 on **one** extra place. The `n × 40`
+identity was re-run at `491fcdce` (v0.0.541) and came back byte-identical, so the defence
+offered above was not needed. See [§9](#9-added-2026-09-08--the-slope-or-step-claim-re-measured-it-is-a-slope-on-the-axis-it-was-measured-on-and-a-step-on-the-axis-a-player-moves).
+
 ---
 
 ## 8. What was not measured, and why
@@ -780,3 +789,202 @@ prison it says it built — `refusals.count === 0`, the bed count its geometry
 promises, the intake filling the cell, and the readout tick being a day
 boundary — so a run that passes is a run whose printed table can be trusted, and
 a run that fails printed a table about some other prison.
+
+---
+
+## 9. ADDED 2026-09-08 — the slope-or-step claim, re-measured. It is a slope on the axis it was measured on and a **step** on the axis a player moves
+
+**Nothing above is withdrawn and no figure above moved.** Every act A, B and G
+table in this record was re-run on `origin/main` at `491fcdce` (v0.0.541) — 57
+releases after the `1ad2189a` (v0.0.483) this record was written on — and each
+came back **byte-identical**, load average 8.07 to 15.17 across the three runs.
+What this section adds is the measurement [§7](#7-what-this-record-does-not-claim)
+asked for and did not run, and one of its two answers reads the other way from
+the sentence it tests.
+
+[§7](#7-what-this-record-does-not-claim) names this record's weakest claim in
+these words:
+
+> That the boundary is a *slope* rather than a *step* rests on six populations
+> from one seed on the wide cell (0, 0, 0, 1, 12, 20 unmet at 50..100). Six
+> points and one seed is thin for a shape claim. What would change my mind: the
+> same sweep on two more seeds, or a finer grid between 70 and 90, showing the
+> unmet count jumping rather than climbing.
+
+Act O ran the seed arm for `hygiene` (#1003) and neither arm had ever been run
+for `recreation`. **Act U runs the finer grid, and adds a second axis that is
+not the seed at all.** A shape read off one trajectory can be a property of that
+trajectory; re-running the same sweep under a different `SEED` asks *"is it this
+trajectory"* rather than *"is it this mechanism"*. The mechanism has a supply
+side and a demand side — `4 places × 600 ticks ÷ a 100-tick dwell` against `n`
+prisoners each losing 36 levels a day — so act U sweeps **both**: population at
+four times act G's resolution, and then **places at a fixed population**, which
+is the axis a player actually controls, because what a player varies is how much
+ground they zone.
+
+```
+pnpm --config.verify-deps-before-run=false exec vitest run \
+  --config tests/research/vitest.research.config.ts -t "slope or step"
+```
+
+41–49 s, load average 6.90–9.94. Both sub-acts are in the same instrument this
+record's appendix says to extend rather than rebuild.
+
+### 9.1 MEASURED — on the demand axis the slope holds, at four times the resolution
+
+**Act U1**, the same wide-cell prison, the same seed, the same one 8×8 yard at
+the door, guards at `max(7, ceil(n / 8))` exactly as act G hires them:
+
+```
+=== ACT U1: 21x10 cell, a hundred beds, one 8x8 yard at the door, 20 days ===
+  n | recreation permille min/med/max | unmet rec | recovered | n x 40 | (n-unmet) x 40 | visits/day | yard perform | yard travel
+ 70 |  229/ 696/ 999                |  0 of  70 |      2800 |   2800 |           2800 |         20 |        40716 |      171280
+ 74 |  221/ 692/ 999                |  0 of  74 |      2960 |   2960 |           2960 |         21 |        42296 |      183560
+ 78 |  221/ 692/ 999                |  0 of  78 |      3120 |   3120 |           3120 |         21 |        41596 |      190320
+ 82 |  145/ 646/ 999                |  3 of  82 |      3160 |   3280 |           3160 |         21 |        41596 |      201880
+ 86 |  128/ 646/ 999                |  8 of  86 |      3120 |   3440 |           3120 |         21 |        41496 |      214280
+ 90 |   82/ 577/ 999                | 12 of  90 |      3120 |   3600 |           3120 |         21 |        42196 |      223160
+ 94 |    4/ 577/ 999                | 16 of  94 |      3120 |   3760 |           3120 |         21 |        42196 |      235560
+ 98 |    4/ 569/ 999                | 18 of  98 |      3200 |   3920 |           3200 |         21 |        41596 |      250600
+```
+
+Interleaved with act G's rows, the unmet series over 50..100 is
+
+**0, 0, 0, 0, 0, 1, 3, 8, 12, 16, 18, 20** at n = 50, 60, 70, 74, 78, 80, 82,
+86, 90, 94, 98, 100.
+
+**It climbs. It does not jump**, and the finer grid puts three new points inside
+the interval act G could only bridge. `recovered = (n − unmet) × 40` is again
+exact in every row. **The knee is between 78 and 80**, not "about 70" as
+[§1.2](#12-measured--past-fifty-the-boundary-is-a-slope-and-not-a-step)
+estimated from a four-point grid — 78 is the last population with nobody short.
+
+**The number that is actually flat is the one no column of act G shows.** Read
+`(n − unmet)`, the count of prisoners one 8×8 keeps above the line: **79, 78,
+78, 78, 80, 80** at n = 82, 86, 90, 94, 98, 100. One 8×8 yard serves **about 78
+to 80 people and then stops**, and every prisoner past that is short. So the
+slope in the *unmet* column is the arithmetic of a saturated supply and not a
+gradual degradation of service: the yard is not getting worse, it is full.
+
+### 9.2 MEASURED — on the supply axis it is a step, and the remedy §4 recommends costs twice the ground it needs
+
+**Act U2.** Population, seed, cell, guards and day count all fixed; the only
+thing that moves is the yard's width, and therefore
+`floor(width × 8 / TILES_PER_OPEN_GROUND_PLACE)`.
+
+```
+=== ACT U2 [n=90]: the same prison, one at-the-door yard, its ground widened one place at a time ===
+  no yard at all: grant 19800 over 90 places, recreation  unmet for 90 of 90  permille min=   0 median=   0 max=   0
+  yard | places | recreation permille min/med/max | unmet rec | recovered | (n-unmet) x 40 | visits/day | peak use | perform | travel
+   8x8 |      4 |   82/ 577/ 999                | 12 of  90 |      3120 |           3120 |         21 |  4 of  4 |   42196 |  223160
+  10x8 |      5 |  221/ 706/ 999                |  0 of  90 |      3600 |           3600 |         26 |  5 of  5 |   51295 |  219920
+  12x8 |      6 |  286/ 710/ 999                |  0 of  90 |      3600 |           3600 |         29 |  6 of  6 |   57994 |  207960
+  14x8 |      7 |  505/ 851/ 999                |  0 of  90 |      3600 |           3600 |         34 |  7 of  7 |   68253 |  212440
+  16x8 |      8 |  362/ 795/ 998                |  0 of  90 |      3600 |           3600 |         39 |  8 of  8 |   78400 |  195920
+  18x8 |      9 |  364/ 823/ 999                |  0 of  90 |      3600 |           3600 |         45 |  9 of  9 |   90216 |  180560
+  20x8 |     10 |  569/ 851/ 998                |  0 of  90 |      3600 |           3600 |         50 | 10 of 10 |   99800 |  179640
+  22x8 |     11 |  569/ 851/ 998                |  0 of  90 |      3600 |           3600 |         55 | 11 of 11 |  109500 |  176360
+  24x8 |     12 |  696/ 926/ 999                |  0 of  90 |      3600 |           3600 |         60 | 12 of 12 |  119579 |  192800
+
+=== ACT U2 [n=100]: the same prison, one at-the-door yard, its ground widened one place at a time ===
+  no yard at all: grant 22000 over 100 places, recreation  unmet for 100 of 100  permille min=   0 median=   0 max=   0
+  yard | places | recreation permille min/med/max | unmet rec | recovered | (n-unmet) x 40 | visits/day | peak use | perform | travel
+   8x8 |      4 |    0/ 569/ 999                | 20 of 100 |      3200 |           3200 |         21 |  4 of  4 |   41596 |  256240
+  10x8 |      5 |  145/ 669/ 999                |  3 of 100 |      3880 |           3880 |         26 |  5 of  5 |   52895 |  242520
+  12x8 |      6 |  364/ 785/ 999                |  0 of 100 |      4000 |           4000 |         31 |  6 of  6 |   60874 |  244080
+  14x8 |      7 |  362/ 710/ 999                |  0 of 100 |      4000 |           4000 |         34 |  7 of  7 |   67693 |  228440
+  16x8 |      8 |  428/ 652/ 998                |  0 of 100 |      4000 |           4000 |         39 |  8 of  8 |   77200 |  229040
+  18x8 |      9 |  362/ 795/ 998                |  0 of 100 |      4000 |           4000 |         44 |  9 of  9 |   88100 |  217480
+  20x8 |     10 |  364/ 823/ 999                |  0 of 100 |      4000 |           4000 |         50 | 10 of 10 |  100174 |  201320
+  22x8 |     11 |  512/ 851/ 998                |  0 of 100 |      4000 |           4000 |         55 | 11 of 11 |  109800 |  197240
+  24x8 |     12 |  569/ 851/ 998                |  0 of 100 |      4000 |           4000 |         60 | 12 of 12 |  119500 |  196680
+```
+
+**At n=90, one place removes the entire shortfall: 12 short at four places, 0 at
+five.** Sixteen tiles of ground — the difference between an 8×8 and a 10×8 —
+takes the grant from 22,920 to 23,400 and holds it flat for the seven wider
+yards after it. At n=100 the same edge is two places wide: 20 short, then 3,
+then 0 at six places, flat from there to twelve.
+
+**So the boundary is not one shape, it is two readings of one saturation
+surface**, and which one you see depends on which variable you move:
+
+| axis moved | what is fixed | shape |
+| --- | --- | --- |
+| population, 4 places | the yard | **slope** — 0, 0, 0, 1, 3, 8, 12, 16, 18, 20 over n = 50..100 |
+| places, n = 90 | the population | **step** — 12, then 0, and 0 for every wider yard |
+| places, n = 100 | the population | **step** — 20, 3, 0, and 0 for every wider yard |
+
+[§1.2](#12-measured--past-fifty-the-boundary-is-a-slope-and-not-a-step)'s
+sentence *"there is no tick at which the yard stops working"* is true of the
+population axis and **false of the decision a player is making**, where there is
+exactly one tick and it is worth the whole shortfall. That is the half of the
+shape claim this section marks rather than deletes.
+
+**And it re-prices [§4](#4-measured--more-yard-does-fix-it-and-it-costs-nothing).**
+That act sampled one 8×8 (4 places) against two 8×8s (8 places) at a hundred
+prisoners and concluded *"one extra 8×8 is enough"*, with nothing measured in
+between. It is enough; it is **twice the ground the job needs**. A single 12×8 at
+the door — 96 tiles against the pair's 128 — reaches the same 4,000, and because
+it is one rectangle at the door rather than a second one on the north strip it
+also avoids the travel bill §4 measured for the far pair: **244,080 travelling
+ticks against 827,148**. The rule of thumb §4 offers, *"one 8×8 per fifty
+prisoners"*, survives as a safe rounding; the measured rate is **one place per
+about 19 prisoners**, or 16 tiles of open ground per 19 people.
+
+### 9.3 The control: the production constant mutated, and both sweeps watched moving
+
+`docs/AGENT_WORKFLOW.md` §3 requires a test to be watched going red before it
+proves anything. This instrument is not a gate — its only assertions are that
+the prison it built is the prison it says it built — so what is owed instead is
+evidence that its tables read the mechanism they name rather than something
+correlated with it. `TILES_PER_OPEN_GROUND_PLACE` was set from `16` to `8` in
+`src/simulation/prisoners/room-instance-registry.ts:222`, act U re-run, and the
+constant put back (`git diff` on `src/` is empty on this branch):
+
+```
+ 70 |  569/ 851/ 998                |  0 of  70 |      2800 |   2800 |           2800 |         40 |        79900 |      138720
+ 82 |  364/ 795/ 999                |  0 of  82 |      3280 |   3280 |           3280 |         40 |        80216 |      165600
+ 90 |  362/ 795/ 998                |  0 of  90 |      3600 |   3600 |           3600 |         39 |        78400 |      195920
+ 98 |  428/ 652/ 998                |  0 of  98 |      3920 |   3920 |           3920 |         39 |        77000 |      223960
+   8x8 |      8 |  362/ 795/ 998                |  0 of  90 |      3600 |           3600 |         39 |  8 of  8 |   78400 |  195920
+  24x8 |     24 |  794/ 989/ 999                |  0 of  90 |      3600 |           3600 |        111 | 24 of 24 |  222580 |  191880
+```
+
+Every row of U1's tail goes to **0 short** and the whole `n × 40` is recovered
+at 98 prisoners, because the same 8×8 rectangle now derives 8 places instead of
+4. Two things follow, and the second is the stronger:
+
+- The chain the tables attribute the result to — `TILES_PER_OPEN_GROUND_PLACE`
+  → `openGroundCapacityOf` → `concurrentUseCapacityFor` →
+  `findAvailableForUse` / `claimUse` — is the chain that moves them.
+- **The mutated `8x8 | 8 places` row is byte-identical to the unmutated
+  `16x8 | 8 places` row** — `362/795/998`, 0 of 90, 78,400 performing, 195,920
+  travelling, 39 visits a day. Same ceiling integer, same trajectory, different
+  rectangle. So what the prisoner meets is the **integer**, not the ground: the
+  floor area is only how the player buys it.
+
+### 9.4 What this section does not claim
+
+- **It does not run a second seed either**, so [§7](#7-what-this-record-does-not-claim)'s
+  seed arm is still owed for `recreation`. The second axis here is a substitute
+  for it and not a discharge of it: it establishes that the saturation is a
+  property of the supply/demand arithmetic rather than of one command order,
+  which is what a seed sweep is usually asked to rule out — but a seed sweep
+  would rule out more.
+- **The step's exact width is one seed's answer.** That five places suffice at
+  n=90 and six at n=100 are two integers off one trajectory; that the transition
+  is one or two places wide rather than gradual is the claim, and it is the
+  claim two populations agree on.
+- **`(n − unmet)` saturating at 78–80 is a twenty-day reading.** #1003's act N
+  found sixty days was not long enough for `hygiene` to converge; nothing here
+  checks whether the recreation tail is settled at day 20, and the grant series
+  in [§1](#1-measured--the-recovered-income-is-n--40-at-every-population-the-issue-names)
+  being flat for fifteen days at n=50 is evidence about n=50 and not about n=90.
+- **My weakest claim, and what would change my mind.** That the step is the
+  reading a *player* gets. It rests on the assumption that a player varies
+  ground and not population, which is a claim about how the game is played and
+  nothing here measures it — intake is also a player action, and a player who
+  keeps admitting into a fixed prison is walking the slope. What would change my
+  mind: a play-test note showing players treat population as the lever. What
+  would not: another headless sweep, which cannot see who is holding the mouse.
