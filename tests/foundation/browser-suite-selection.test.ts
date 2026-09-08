@@ -4,6 +4,7 @@ import {
   DEFAULT_BROWSER_SUITE_NAME,
   selectBrowserSuite,
 } from '../browser/browser-suites';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Which browser gate `tests/browser/run-suite.ts` runs, driven directly.
@@ -28,10 +29,7 @@ describe('browser suite selection', () => {
   it('runs the dev-server suite when nothing names one', () => {
     const result = selectBrowserSuite([]);
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) {
-      return;
-    }
+    expectOk(result, 'the selection made by an empty argument list');
     expect(result.selection.suite.name).toBe(DEFAULT_BROWSER_SUITE_NAME);
     expect(result.selection.suite.config).toBe('tests/browser/playwright.config.ts');
     expect(result.selection.forwarded).toEqual([]);
@@ -41,10 +39,7 @@ describe('browser suite selection', () => {
     for (const argv of [['--suite', 'artifact'], ['--suite=artifact']]) {
       const result = selectBrowserSuite(argv);
 
-      expect(result.ok, `\`${argv.join(' ')}\` was refused`).toBe(true);
-      if (!result.ok) {
-        continue;
-      }
+      expectOk(result, `the selection made by \`${argv.join(' ')}\``);
       expect(result.selection.suite.config).toBe(
         'tests/browser/playwright.artifact.config.ts',
       );
@@ -61,10 +56,7 @@ describe('browser suite selection', () => {
       '--reporter=line',
     ]);
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) {
-      return;
-    }
+    expectOk(result, 'the selection made with arguments on both sides of the flag');
     // Order matters: `--grep boots` is one flag and its value, and a parser
     // that collected arguments into a set or sorted them would separate them.
     expect(result.selection.forwarded).toEqual(['--grep', 'boots', '--reporter=line']);
@@ -121,7 +113,7 @@ describe('browser suite selection', () => {
 
     for (const suite of BROWSER_SUITES) {
       const result = selectBrowserSuite(['--suite', suite.name]);
-      expect(result.ok, `the registry lists ${suite.name} but selection refuses it`).toBe(true);
+      expectOk(result, `the selection of the registered suite ${suite.name}`);
     }
   });
 });

@@ -17,6 +17,7 @@ import {
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { type SaveMessage, describeRestoredScope } from '../../src/ui/save-panel';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The panel maps a scope to a message key and its parameters since issue
@@ -213,7 +214,7 @@ describe('both restore paths report the bundle they were given', () => {
     // the legacy shape and store it through the ordinary write path, so it is
     // only accepted if it is genuinely schema- and checksum-valid. Hand-writing
     // an envelope would test the fixture rather than the path.
-    expect((await controller.createPrison('prison-legacy', 'Old Wing')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-legacy', 'Old Wing'), 'the legacy prison');
 
     const current = await repository.loadCurrent('prison-legacy');
     if (!current.ok) throw new Error('the fresh prison must be readable for this test to be meaningful');
@@ -227,7 +228,7 @@ describe('both restore paths report the bundle they were given', () => {
     } as unknown as { payload: never; checksum: string };
     legacy.checksum = computeSaveChecksum(legacy.payload);
 
-    expect((await repository.save('prison-legacy', legacy as unknown as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save('prison-legacy', legacy as unknown as SaveEnvelope), 'the legacy generation written through the ordinary path');
 
     const outcome = await controller.loadPrison('prison-legacy');
     if (!outcome.ok) throw new Error(`the legacy save must load for this test to be meaningful: ${outcome.reason}`);

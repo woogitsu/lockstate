@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
 import { projectPendingDeliveries, type PendingDeliverySource } from '../../src/simulation/presentation';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The read model behind the Build panel's delivery rows, and the command it
@@ -46,7 +47,7 @@ const shuffled: PendingDeliverySource = {
 describe('projectPendingDeliveries', () => {
   it('carries every field a row needs, from a real purchase through the real system', () => {
     const runtime = createNewSimulationRuntime(5);
-    expect(runtime.procurement.purchase('buy-1', 'item.brick', 3, 0, 'deliveries').ok).toBe(true);
+    expectOk(runtime.procurement.purchase('buy-1', 'item.brick', 3, 0, 'deliveries'), 'the three bricks the projected row describes');
 
     const view = projectPendingDeliveries(runtime.procurement);
 

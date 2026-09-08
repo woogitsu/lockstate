@@ -17,6 +17,7 @@ import {
 import { identifierSchema } from '../../src/simulation/protocol/types';
 import type { JsonValue } from '../../src/shared/json';
 import { type FieldPerturbation, fieldPerturbations, perturbField } from '../helpers/field-sensitivity';
+import { expectOk } from '../helpers/expect-ok';
 
 const NOW = 1_700_000_000_000;
 
@@ -129,7 +130,7 @@ describe('challenge definition authentication', () => {
       },
     });
 
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the definition whose signature verifies');
     // Kept, and never as the proof. This compares the function's output to the
     // function's own output, so it holds for *any* function of the definition
     // -- including one that discards `limits`, both allow-lists, `configHash`

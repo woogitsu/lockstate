@@ -10,6 +10,7 @@ import {
 } from '../../src/simulation/economy';
 import { identifierSchema } from '../../src/simulation/protocol/types';
 import { Container } from '../../src/simulation/operations/inventory';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The deficit arithmetic behind ADR 0017 decision 7, on its own (#627).
@@ -105,7 +106,7 @@ describe('what a just-in-time pass buys', () => {
      */
     const { stock, service } = fixture();
     stock.deposit(BRICK, 6);
-    expect(stock.reserve(BRICK, 4).ok).toBe(true);
+    expectOk(stock.reserve(BRICK, 4), "the carry job's claim on four of the six bricks");
 
     expect(service.procureForPendingOrders(oneOrder(need(BRICK, 8)), 0).purchased).toEqual([
       { itemId: BRICK, quantity: 6, costMinorUnits: 240 },
@@ -638,7 +639,7 @@ describe('a cancel at the same tick used to make the next purchase look like a r
       'jit:7:item.brick:2',
     ]);
 
-    expect(procurement.cancel('jit:7:item.brick:0').ok).toBe(true);
+    expectOk(procurement.cancel('jit:7:item.brick:0'), "the first brick order's cancellation");
     const afterCancel = treasury.balanceMinorUnits;
 
     const collided = service.procureForPendingOrders(oneOrder(need(BRICK, 6)), 7);
@@ -717,7 +718,7 @@ describe('a cancel at the same tick used to make the next purchase look like a r
     const { treasury, procurement } = fixture();
 
     const first = procurement.purchase('order-from-a-press', BRICK, 2, 7, 'deliveries');
-    expect(first.ok).toBe(true);
+    expectOk(first, 'the first purchase under the pressed order id');
     const afterFirst = treasury.balanceMinorUnits;
 
     const repeat = procurement.purchase('order-from-a-press', BRICK, 2, 7, 'deliveries');
@@ -815,7 +816,7 @@ describe('what a cancelled order can sell back off the shelf', () => {
      */
     const { stock, service, treasury } = fixture();
     stock.deposit(BRICK, 4);
-    expect(stock.reserve(BRICK, 4).ok).toBe(true);
+    expectOk(stock.reserve(BRICK, 4), "the carry job's claim on all four bricks");
     const balanceBefore = treasury.balanceMinorUnits;
 
     expect(service.refundSurplusStock(BRICK, 0, 4)).toBe(0);
@@ -839,8 +840,8 @@ describe('what a cancelled order can sell back off the shelf', () => {
      */
     const { stock, service, treasury, procurement } = fixture();
     stock.deposit(BRICK, 6);
-    expect(stock.reserve(BRICK, 4).ok, 'a carry job has claimed four of them').toBe(true);
-    expect(procurement.purchase('jit:probe', BRICK, 10, 0, 'construction').ok).toBe(true);
+    expectOk(stock.reserve(BRICK, 4), "the carry job's claim on four of the six on the shelf");
+    expectOk(procurement.purchase('jit:probe', BRICK, 10, 0, 'construction'), 'the ten further bricks put on the road');
     const balanceBefore = treasury.balanceMinorUnits;
 
     expect(service.refundSurplusStock(BRICK, 0, 4)).toBe(80);

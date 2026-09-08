@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { exactPixelAspectMatchesFootprint } from '../../tooling/validate-rendered-art-catalog.mjs';
+import { expectOk } from '../helpers/expect-ok';
 
 const root = resolve(import.meta.dirname, '..', '..');
 
@@ -145,7 +146,7 @@ describe('environment render aspect invariant (recomputed, not trusted)', () => 
     // check would wrongly accept it. This must still be rejected.
     expect(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 358, height: 256 }).ok).toBe(false);
     expect(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 358, height: 255.71428571 }).ok).toBe(false);
-    expect(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 1792, height: 1280 }).ok).toBe(true);
+    expectOk(exactPixelAspectMatchesFootprint({ width: 1.4, height: 1 }, { width: 1792, height: 1280 }), 'the exactly-7:5 pixel size');
   });
 
   it('rejects a footprint that is not an exact multiple of 1/20 of a tile', () => {
