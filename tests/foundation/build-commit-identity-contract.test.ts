@@ -151,10 +151,17 @@ describe('a build stamps the commit it was made from', () => {
       encoding: 'utf8',
     }).stdout.trim();
 
+    // `{7,}` rather than `{7}`, and the difference is the whole of #1094:
+    // `--short=7` asks for *at least* seven, and git returns more when seven
+    // are ambiguous. This guard read `{7}` and was therefore not a guard at
+    // all but a second assertion, one that failed on `8a35167b` -- a commit
+    // sharing `8a35167` with `8a351679a5be...` -- and took `main` red with it.
+    // What this line is for is catching an empty string from a checkout git
+    // cannot read; the length is not its business.
     expect(
       headShort,
       'git could not resolve HEAD in this checkout, so the comparison below would be against an empty string.',
-    ).toMatch(/^[0-9a-f]{7}$/u);
+    ).toMatch(/^[0-9a-f]{7,}$/u);
 
     expect(
       resolveWith({ GITHUB_SHA: AMBIENT }),
@@ -164,7 +171,27 @@ describe('a build stamps the commit it was made from', () => {
     expect(
       resolveWith({}),
       `${RESOLVER} no longer falls back to \`git rev-parse\` with no variable set. That is the local-build path, and \`lockstate-<version>-unknown\` on the badge is what losing it looks like.`,
-    ).toBe(headShort);
+      // Sliced, because that is now the resolver's contract on both branches
+      // rather than an accident of how long git felt like being. Comparing
+      // against the raw `headShort` would re-assert the defect.
+    ).toBe(headShort.slice(0, 7));
+
+    // The contract stated directly, rather than only as a comparison: seven
+    // characters, whichever branch answered.
+    //
+    // **Where this case is weak, and it is worth knowing before trusting it.**
+    // Both assertions above have teeth only when HEAD's seven-character
+    // prefix is ambiguous in this repository -- on any other commit git
+    // returns seven from `--short=7` unprompted, the slice is a no-op, and
+    // removing it again would go unnoticed here. That is a property of HEAD
+    // on the day the suite runs, not of the code under test, and this file
+    // cannot fix it: `shortCommit` reads `HEAD` and takes no argument. What
+    // would make it a real guard is a resolver that accepts a revision, at
+    // which point this could pin `8a35167ba0ae...` and assert seven forever.
+    expect(
+      resolveWith({}),
+      `${RESOLVER}'s \`git\` branch returned an abbreviation that is not seven characters. \`--short=7\` is a minimum and git lengthens it when seven are ambiguous, so this branch must slice like the ambient one above -- otherwise a local build and a CI build of the same commit stamp different strings.`,
+    ).toMatch(/^[0-9a-f]{7}$/u);
   });
 
   it('has the imported resolver agree with the child process, so this file measures the real one', () => {

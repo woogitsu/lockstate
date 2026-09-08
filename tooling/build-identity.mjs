@@ -99,11 +99,28 @@ export function shortCommit() {
     // `cwd` is pinned to the repository root: a Vite config is executed from a
     // rewritten temporary file, so the working directory is not something to
     // assume.
+    //
+    // **`--short=7` is a minimum, not a length, and this path used to return
+    // git's answer untouched.** Git lengthens an abbreviation whenever seven
+    // characters are ambiguous in this repository, so this returned eight for
+    // some commits and seven for the rest -- while the ambient branch above
+    // has always sliced to exactly seven. `8a35167b` is a real instance:
+    // `8a351679a5be...` and `8a35167ba0ae...` share the prefix `8a35167`, and
+    // that commit turned `main` red on 2026-09-08 through
+    // `tests/foundation/build-commit-identity-contract.test.ts`.
+    //
+    // Sliced, so the two branches answer the same shape. The property worth
+    // having is that a local build and a CI build **of the same commit** stamp
+    // the same string: CI always takes the ambient branch, so seven is what
+    // ships, and an unsliced local build disagreed with it on exactly the
+    // commits where the id matters most to get right.
     return execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], {
       cwd: fileURLToPath(repositoryRoot),
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
+    })
+      .trim()
+      .slice(0, 7);
   } catch {
     return '';
   }
