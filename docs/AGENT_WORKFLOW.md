@@ -873,6 +873,12 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     one the test was written against. The rasteriser itself is one
     `gl.getParameter(gl.RENDERER)` away in any Playwright page, with
     `WEBGL_debug_renderer_info` for the unmasked string.
+  - **And before any of that, check the job was CANCELLED rather than failing.**
+    A `browser` job killed on `timeout-minutes` prints its reds and their
+    durations in the same format a finished one uses, and none of them mean
+    what they look like. On 2026-09-08 five specs read off such a job produced
+    four wrong conclusions; §3's *"a truncated run is not a sample of a
+    finished one"* carries the numbers and the one-word tell.
   - **Not fixed here, deliberately.** Raising `test.slow()`'s cap, or the 90 s
     poll, would move a budget without anyone having decided which budget is
     wrong — and this document's own rule is not to raise a timeout until you
@@ -1114,6 +1120,65 @@ close them before the branch is called done.
   I do not know what it costs" is a complete and useful report.** Words like
   *defect*, *incident*, *regression*, *users affected* are claims about cause
   and impact, and each needs its own evidence.
+- **A truncated run is not a sample of a finished one.** Measured 2026-09-08,
+  after this session drew four wrong conclusions from one partial `browser` job
+  and wrote them into two contract files, two issues, several commit messages
+  and a scheduled check-in before a run was finally allowed to finish. The
+  job was not failing tests, it was being **cancelled** on `timeout-minutes:
+  30`: run 34196112204's `browser` job reached **test 46 of 420** in 29.4
+  minutes and was killed there with five specs red, and all five were then
+  treated as facts about the tree. Run 34215508642, the first on this pool ever
+  allowed to reach the end, reported **1 failed, 422 passed (41.3m)** — and
+  **four of the five had passed**: *"every control can actually be pressed …
+  (#88)"* in **2.5 m**, both `#411` keyboard specs in **2.4 m** and **2.6 m**,
+  and *"a pending delivery is on the panel with the fold shut … (#285, #703)"*
+  in **22.7 s**. Only `#331` was real. **A partial run's failures are not a
+  subset of the real failures**, because whatever truncated the run is also what
+  produced them: the same 46 tests took **29.4 minutes** on the cancelled job's
+  host and **21.1** on the finished job's, both `linux-*`, both answering the
+  identical `runs-on` list.
+  **The rate is a second error with a second cause, and the correction first
+  published for it is wrong too — so it is corrected here rather than
+  repeated.** The estimate was *"the remaining 374 are around a hundred
+  minutes at that rate"* (`fcba5607`), taken from tests 26–46 of the partial
+  run at 9.8–35 s each, and it was reported as out by **2.4×** — a figure that
+  compares an estimate of the **remainder** against the **whole** suite's 41.3
+  minutes.
+  Against what it actually estimated it is out by **5×**: tests 47–423 of the
+  finished run took **20.2 minutes**. And truncation is barely the cause. The
+  same method applied to the *finished* run's own tests 26–46 predicts **81
+  minutes** against that same 20.2 — still **4×** out — because the suite is
+  front-loaded: `app-shell.spec.ts` sorts first and carries the slow specs, so
+  tests 47–423 average **3.2 s** against the first 46's **27.5 s**. So the
+  sharper rule is that **a prefix is not a sample of a suite whether or not the
+  run was cut short.** Letting the job finish corrected the failure list; it
+  would still have left the rate wrong by four times, because only running the
+  rest of a suite corrects a rate.
+- **A duration recorded against a test in a cancelled job is not a duration to
+  completion, and that is the half that made the wrong answer look rigorous.**
+  Four of the five reds above sat at `test.slow()`'s 180 s cap and one did not:
+  *"a pending delivery is on the panel with the fold shut … (#285, #703)"*, red
+  at **23.6 s** against the 60 s a spec gets by default
+  (`tests/browser/playwright.config.ts:155`). Issue #1084 recorded the same
+  spec passing locally on untouched `main` in **31.8 s** and argued from the
+  pair that it *"failed faster than it passes"*, which *"rules out"* the slow
+  pool. The arithmetic is real and the inference is empty: **a test torn down
+  with its job also stops early**, so 23.6 s is when the job died and not when
+  the test gave up. On the finished run it passed in **22.7 s**, and #1084 is
+  closed as not planned. **A number that appears to rule out the obvious
+  explanation deserves more suspicion than one that confirms it, not less** —
+  here the obvious explanation was the slow pool, and it was the right one.
+  **The tell was one word in the job's own step list, and the workflow had
+  predicted it in advance.** `.github/workflows/ci.yml` gates *"Upload the
+  browser suite's failure evidence"* on `if: failure()`, which is **false for a
+  cancellation**, so on the partial run that step reads **skipped** and neither
+  the trace nor `error-context.md` was ever uploaded. Every one of the five
+  failures was therefore reasoned about from a title and a duration with the
+  failure message never read — and that step's own comment already said this
+  would happen: *"a job that starts timing out at the thirty-minute mark
+  instead needs `if: always()` and a re-read of this comment."* **Reasoning
+  about a failure whose message you have not read is the thing to notice**,
+  before any theory about the failure is worth building.
 - **Ask about state this repository cannot read.** Cloudflare and Supabase
   dashboard settings, whether a custom domain is attached and to what, whether
   a deploy is switched off, who is actually using the thing — none of it is in
