@@ -216,7 +216,9 @@ same past state and are unindented prose rather than a quotation for the same
 reason: nothing here still claims to be verbatim.
 
 `ZONING_TINT_BY_CATEGORY` was at `src/rendering/world/appearance.ts:85`, keyed
-by `RoomCategory` rather than by room id. The floor underneath could not
+by `RoomCategory` rather than by room id, and no longer exists at all:
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) is what
+option A put in its place. The floor underneath could not
 make up the difference, because there is one floor:
 
 `return 'env.floor.institutional';`
@@ -299,8 +301,10 @@ fixing the keying without respacing the hues would leave the worst pair exactly
 where it is.
 
 **Why: the palette spends one dimension and leaves two unspent.** VERIFIED,
-read, converting each row of `ZONING_TINT_BY_CATEGORY` to HSV: ten of the eleven
-sit at **exactly** `s = 0.62, v = 0.82`, and only `administration` (`0x8f97a3`)
+read, converting each row of `ZONING_TINT_BY_CATEGORY` — the eleven-row table
+this section measures, removed by this document's own option A — to HSV: ten of
+the eleven sit at **exactly** `s = 0.62, v = 0.82`, and only `administration`
+(`0x8f97a3`)
 departs, at `s = 0.12, v = 0.64`. The whole discriminating dimension is **hue**,
 and `operations` at 39° against `food` at 25° is a 14° gap on a wheel whose mean
 gap is 36°.

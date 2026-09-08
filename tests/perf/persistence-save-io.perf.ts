@@ -31,6 +31,7 @@ import {
   summarize,
   type DurationStats,
 } from './measure';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Measurement harness for issue #19's open performance requirement:
@@ -367,7 +368,7 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
 
     it('produces a schema-valid, checksum-verified envelope from the real runtime', () => {
       const decoded = decodeSaveEnvelope(fixture.envelope);
-      expect(decoded.ok).toBe(true);
+      expectOk(decoded, "decoding the real runtime's envelope");
       expect(fixture.envelope.payload.world.chunks.length).toBeGreaterThan(0);
       expect(fixture.envelope.payload.construction.orders.length).toBe(tier.buildOrders);
       expect(fixture.envelope.payload.entities?.capacity).toBeGreaterThan(0);
@@ -390,7 +391,7 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         // One more save than the window keeps, so retention has actually pruned.
         for (let revision = 1; revision <= DEFAULT_KEEP_GENERATIONS + 1; revision += 1) {
           const result = await repository.save(PRISON_ID, fixture.envelope);
-          expect(result.ok).toBe(true);
+          expectOk(result, `the save at revision ${String(revision)}`);
         }
         const [metadata] = await repository.list();
         const generationIds = metadata?.generationIds ?? [];
@@ -478,7 +479,7 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
 
       buildReports.push({ tierId: tier.id, snapshotOnly, envelopeBuild, decodeOnly, stringifyOnly });
       expect(built).toBeDefined();
-      expect(decodeSaveEnvelope(built).ok).toBe(true);
+      expectOk(decodeSaveEnvelope(built), 'decoding the envelope just built');
     });
 
     it('measures save()/loadCurrent() against the in-memory store', async () => {
@@ -499,10 +500,10 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         const repository = new PrisonSaveRepository(handle.store);
         await repository.create({ prisonId: PRISON_ID, gameVersion: GAME_VERSION });
         const saved = await repository.save(PRISON_ID, snapshotEnvelope(fixture.runtime, 7));
-        expect(saved.ok).toBe(true);
+        expectOk(saved, 'the snapshot save');
 
         const loaded = await repository.loadCurrent(PRISON_ID);
-        expect(loaded.ok).toBe(true);
+        expectOk(loaded, "PRISON_ID's current generation");
         if (!loaded.ok) return;
         expect(loaded.envelope.checksum).toBe(fixture.envelope.checksum);
         expect(estimateSaveEnvelopeByteSize(loaded.envelope)).toBe(

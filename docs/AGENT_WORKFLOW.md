@@ -758,6 +758,127 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     **is already on it** — see the bullet above about the two tests sitting
     close to their 5 s budget. Re-measured alone on 2026-09-04 at load average
     3.49: `7 passed`, `Duration 2.60s`. Nothing to add.
+- **THE `#331` CANARY ABOVE NAMES THE WRONG FILE, AND WHAT IT NAMES THE RIGHT
+  ONE FOR IS THE WRONG PHASE OF THE TEST.** Measured 2026-09-08 for issue
+  #1008, which asked for a repetition count on `main` that nobody had taken.
+  Both halves below are corrections to sentences in this document, so both are
+  marked rather than overwritten (§4).
+  - **The file.** The title the canary bullet quotes — *"the Rooms panel says
+    what a zoned room is missing, and says nothing when nothing is (#331)"* —
+    is `tests/browser/app-shell.spec.ts`'s, not `tests/browser/ui-shell.spec.ts`'s.
+    `git log -S` on that string returns `3389f29c` for `app-shell.spec.ts` and
+    **nothing at all** for `ui-shell.spec.ts`, so the string has never been in
+    the file the bullet attributes it to. `ui-shell.spec.ts` does carry a
+    same-issue twin, *"says what a designated room is missing, and says nothing
+    when nothing is (#331)"*, and that one is not a canary and never was: it ran
+    twelve times in the count below and finished in **0.7–1.3 s** every time,
+    against a test that takes minutes. The two are told apart by their titles —
+    *zoned* against *designated* — which is a thin distinction to hang a
+    citation on, so cite the file.
+  - **The count, on untouched `origin/main`.** Worktree at `491fcdce`
+    (v0.0.541), `git lfs checkout` done, twelve repeats of the `app-shell`
+    test in one invocation with no retry wrapper: **7 passed, 5 failed**. So it
+    is neither "always" nor "randomly". The durations run
+    `2.3, 2.2, 2.2, 2.4, 2.7, 2.7, 2.7` minutes and then `3.0, 3.0, 3.0, 3.0,
+    3.0` — the last five being `test.slow()`'s 180 s cap, reported as
+    `Test timeout of 180000ms exceeded`. Load average over the passing window
+    was median **5.0**; over the failing window, median **11.0**, because
+    another agent's suite started partway through. Nothing else changed: same
+    process, same tree, same command.
+  - **Where it dies moves, which is the signature of a budget rather than of a
+    wait.** Across those five: three at the crew poll in
+    `wallRectanglesFromTheKeyboard`, one at a `page.keyboard.press` in the
+    ordering loop, one inside `focusIs` under `hopTo`. The same shape the #88
+    sweep shows above.
+  - **And the crew is not what it is waiting for, which reverses what the
+    canary bullet above says about all three of them.** That bullet's reason is
+    *"All three wait on the simulation to produce something, so they are the
+    first to give up when the machine is busy"* — as far as this pass can tell
+    that holds for the other two, and it is false of this one. Instrumented
+    runs on the same tree print the split — two `console.log`s at the ends of
+    the ordering loop and a one-second in-page sampler over the crew poll, in a
+    second throwaway worktree, none of it committed. Typing the thirty-two build orders
+    through the keyboard costs **138–164 s** across five runs of the 180 s budget; the crew
+    phase then starts with 2–16 s left and the poll that reports the failure
+    has a 90 s budget it never gets to spend. Sampled once a second inside that
+    remnant, the crew lays **20 segments in 15.0 s — 0.75 s each — and the HUD's
+    day progress moves 6% → 57% of `DAY_LENGTH_TICKS`, which is 81.5 ticks per
+    second against ×4's 80.** The simulation worker is running at *exactly* its
+    nominal speed on a box at load 9. So `data-queued` stopping at some number
+    short of the perimeter is the residue of a budget already spent elsewhere,
+    not a crew that stalled, and "the crew never finished the N wall segments"
+    is a true sentence pointing at the wrong subject.
+  - **And the trace says which call spends it, which no reading of the code
+    would have.** `trace: 'retain-on-failure'` is already on in
+    `tests/browser/playwright.config.ts`, so every failing run leaves a
+    `trace.zip` whose `.trace` file is JSONL with a `before`/`after` pair per
+    API call — unzip it and sum by `apiName` rather than guessing. One failing
+    run at load ~9: **407 `keyboard.press` calls, mean 221 ms, median 207 ms,
+    worst 939 ms, 90.1 s in total** — half the whole test budget in one API
+    call — beside 43 `keyboard.type` at 270 ms (11.6 s), 113 `page.evaluate`
+    at 129 ms (14.5 s), 11 clicks at 870 ms and 6 `mouse.move` at 989 ms. The
+    file's own recorded figures for this page are ~57 ms a press and ~50 ms an
+    evaluate, so this host is about **four times** the machine those were taken
+    on, uniformly. That uniformity is why the helper's choice of the keyboard
+    over the pointer is still the right one here and is not what to reopen.
+  - **The environment difference this container HAS, measured.** Four cores
+    (`nproc`, and `navigator.hardwareConcurrency` agrees) and no GPU:
+    Chromium's unmasked WebGL renderer is
+    `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)),
+    SwiftShader driver)`, a software rasteriser. One single-worker Playwright
+    test saturates the box on its own — `ps -eo pcpu,args --sort=-pcpu` during
+    a run puts the browser's `--type=gpu-process` at **261–296% CPU** while the
+    renderer process sits at ~20%, and load average holds 3.6–4.6 with no
+    other agent's suite running — checked with `ps`, whose top four entries
+    were all this run's own processes. Every `page.keyboard.press` and
+    `page.evaluate` queues
+    behind that renderer's main thread, which is why the keyboard route and
+    not the simulation is what runs out of budget.
+  - **The environment difference CI has is NOT readable from here, and the
+    Actions API looks as though it answers this and does not.** A job's
+    `labels` array in the jobs API is the `runs-on` list the *workflow asked
+    for*, not the runner's own label set: every job on `main` reports
+    `["self-hosted","Linux","X64","wsl2","woogitsu"]` whichever machine it
+    landed on. So it cannot say whether any runner has a GPU, and a reading
+    that it can is how PR #1073's comment came to say the old pool "carried an
+    `nvidia-gtx1070` label" — PR #1071's own text has that label as one of the
+    two terms the retired pool **cannot** satisfy, and #1071 states in terms
+    that the new pool's labels are "not verifiable from this repository". Treat
+    runner hardware as owner-only state (§3).
+  - **What the API does say, and it is enough to explain a green `main` beside
+    a red pull request with no diff between them: one `runs-on` list is
+    satisfied by machines that differ by more than 3×.** The green browser job
+    ran on runner `woogitsu-wsl-DOM-NEW-02` — job `101857042955`, `main` at
+    `59049c07`, **420 passed in 13.0 m**, with this test itself at **46.6 s**.
+    The job that hit the 30-minute cap after 32 of 420 tests ran on
+    `woogitsu-linux-09` — job `101909314164`, on a branch whose entire diff is
+    shell scripts — and this test there exceeded its 180 s cap. Same requested
+    labels, same commit family, different machine.
+  - **The commands, so the count can be retaken.** `git worktree add <dir>
+    origin/main --detach`,
+    `ln -sfn /workspace/lockstate/node_modules <dir>/node_modules`,
+    `git lfs checkout`, then
+    `LOCKSTATE_BROWSER_TEST_PORT=<free port> node_modules/.bin/playwright test
+    --config tests/browser/playwright.config.ts -g "Rooms panel says what a
+    zoned room is missing" --repeat-each=12`. The port matters: the config
+    refuses to reuse a server, so two agents on 5183 collide. Going through
+    `playwright` rather than `tests/browser/run-suite.ts` was deliberate here
+    and is the one thing to change if you want the gate rather than the
+    measurement — the wrapper adds the `net::ERR_NETWORK_CHANGED` re-run, and a
+    count of failures wants no retry in it at all.
+  - **What to run before concluding anything about a browser timeout here.**
+    `nproc`, `cut -d' ' -f1-3 /proc/loadavg`, and
+    `ps -eo pcpu,args --sort=-pcpu | head -4` — if a `--type=gpu-process` is
+    near 300% you are on a software rasteriser and the wall clock is not the
+    one the test was written against. The rasteriser itself is one
+    `gl.getParameter(gl.RENDERER)` away in any Playwright page, with
+    `WEBGL_debug_renderer_info` for the unmasked string.
+  - **Not fixed here, deliberately.** Raising `test.slow()`'s cap, or the 90 s
+    poll, would move a budget without anyone having decided which budget is
+    wrong — and this document's own rule is not to raise a timeout until you
+    know what the test is waiting on. Now that it is known, the decision is
+    whose cost to cut: the keyboard route's 138–164 s, the perimeter's
+    thirty-two segments, or the budget. #1008 carries the options.
 - **A local browser run in the worktree you are editing is not a baseline.** Vite
   serves `src/**` live, so a run started before your edits reads them off disk as
   they land, and a "before" measurement taken that way is a measurement of the

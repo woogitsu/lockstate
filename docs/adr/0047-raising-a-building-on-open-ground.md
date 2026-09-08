@@ -347,6 +347,14 @@ went through: `ZoneRoomRefusalReason` → `ZONE_REFUSAL_REASONS` → `RefusalRea
 `Readonly<Record<…>>`, so the member does not compile until every layer has
 decided what the player is told.
 
+(**The chain is real and its last hop's name never existed.** The
+`Readonly<Record<RefusalReason, LocalizationKey>>` this arrow means is
+`REFUSAL_LABEL_KEYS`, `src/ui/simulation-alerts.ts:34`; the first three hops
+are exactly as written. A reader who greps the old name in lower case lands on
+`refusalMessageKey` in `src/ui/hud/projection.ts`, which is **not** this hop —
+that one is keyed by an `actionId` and a host refusal, a different path with a
+similar name. Marked rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4.)
+
 **Name: `no-floor`.** Adjectival and about what the player must *do*, matching
 `unowned-land` and `below-minimum-size` rather than the mechanism. `not-indoors`
 was the alternative and is rejected because "indoors" is the conclusion, not the

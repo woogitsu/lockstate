@@ -419,11 +419,35 @@ assigned to. #352 itself is only reachable through a scenario or a restored save
 Three things follow, and the second is the one the owner may want to overrule.
 
 1. **The gap is recorded as a tripwire rather than a caveat.**
-   `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` in `app-shell.spec.ts` names the
+   `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` — a name that no longer exists,
+   and a tripwire that did not fire the way this sentence says; read the
+   correction below before quoting it — in `app-shell.spec.ts` names the
    three controls with the measurement above, and the sweep fails the moment
    anything registers a sector for a new session — the same direction
    `AWAITING_PRODUCER` fails in, and for the same reason: a record of
    unreachability must not outlive the fact.
+
+   **Corrected 2026-09-08, in both directions, because the interesting half is
+   not the rename.** The constant is now
+   `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD`, declared at
+   `tests/browser/app-shell.spec.ts:2266`; the spec quotes the old name and
+   the old reasoning in place at `:2150` rather than deleting them, which is
+   the shape this correction copies. **The tripwire's stated condition was
+   met and the sweep did not fail.** ADR 0036 registers a sector for every new
+   session — `2926c54a`, the commit this document's own Update names — which is
+   exactly the event this point says the sweep fails on. What happened instead
+   is what the spec records in its own words: *"the reason had to be
+   rewritten"*, and *"What it did **not** do is fail the assertion below"*.
+   The three `Release` rows stayed unreachable on a *weaker* reason after ADR
+   0036, and on a stronger one again after #533 (`a8a446ed`): the sweep now
+   hires three guards at every viewport, but it runs with the clock paused and
+   `DeploymentSystem.assignUnassignedGuards` is called only from that system's
+   `update`, so nothing holds them. So the entry is still a tripwire and it is
+   a tripwire on a different fact — a change that let a hire hold a guard
+   off-tick would lay a row out and fail the sweep's accounting assertion. The
+   sentence above is kept because it is what a reader of this decision has
+   been holding since 2026-08-26, and because the gap between "a tripwire
+   fires" and "a tripwire fails a test" is the thing worth having recorded.
 2. **Shipping the surface anyway is a judgement, and it is the owner's.** The
    argument for it: the command, the service, the read model and the panel are
    what a sector registration turns into a working feature, and the alternative —

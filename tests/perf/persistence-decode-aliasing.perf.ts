@@ -4,6 +4,7 @@ import { isJsonValue } from '../../src/shared/json';
 import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
 import { buildPrisonFixture, PRISON_SIZE_TIERS } from './fixtures/prison-fixture';
 import { environmentSummary, formatBytes, formatMs, jsonByteSize, measureSync, renderTable } from './measure';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Evidence for one decision, kept after the decision was made because it is
@@ -72,7 +73,7 @@ describe('decode-path detachment: what the copy costs, and what a shared-schema 
 
       // Correctness invariants only.
       expect(commands.length).toBe(tier.pendingCommands);
-      expect(decodeSaveEnvelope(serialized).ok).toBe(true);
+      expectOk(decodeSaveEnvelope(serialized), 'decoding the serialized envelope');
 
       const samples = Math.max(3, tier.samples);
       rows.push({

@@ -10,6 +10,7 @@ import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-chan
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
 import { LoopbackWorker } from '../helpers/loopback-worker';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #149: a second load in the same tab, through the composition that
@@ -158,8 +159,8 @@ describe('a second session in the same tab (#149)', () => {
   it('loads a second prison through the host that already created one', async () => {
     const { controller, repository, workers } = buildFixture();
 
-    expect((await controller.createPrison(PRISON_A, 'A')).ok).toBe(true);
-    expect((await controller.createPrison(PRISON_B, 'B')).ok).toBe(true);
+    expectOk(await controller.createPrison(PRISON_A, 'A'), 'the creation of PRISON_A');
+    expectOk(await controller.createPrison(PRISON_B, 'B'), 'the creation of PRISON_B');
 
     const outcome = await controller.loadPrison(PRISON_A);
 
@@ -220,8 +221,8 @@ describe('a second session in the same tab (#149)', () => {
   it('still demotes and recovers across the fresh workers', async () => {
     const { controller, repository, workers } = buildFixture();
     await repository.create({ prisonId: PRISON_A, gameVersion: 'test-version' });
-    expect((await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 4242))).ok).toBe(true);
-    expect((await repository.save(PRISON_A, unrestorableEnvelope(PRISON_A, 2))).ok).toBe(true);
+    expectOk(await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 4242)), 'the good generation 1');
+    expectOk(await repository.save(PRISON_A, unrestorableEnvelope(PRISON_A, 2)), 'the unrestorable generation 2');
 
     const outcome = await controller.loadPrison(PRISON_A);
 
@@ -245,8 +246,8 @@ describe('a second session in the same tab (#149)', () => {
     // long after boot.
     const { controller, repository, workerUnavailableReports } = buildFixture({ failWorkerAfter: 1 });
     await repository.create({ prisonId: PRISON_A, gameVersion: 'test-version' });
-    expect((await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 1))).ok).toBe(true);
-    expect((await controller.createPrison(PRISON_B, 'B')).ok).toBe(true);
+    expectOk(await repository.save(PRISON_A, goodEnvelope(PRISON_A, 1, 1)), 'the good generation 1');
+    expectOk(await controller.createPrison(PRISON_B, 'B'), 'the creation of PRISON_B');
 
     await expect(controller.loadPrison(PRISON_A)).rejects.toThrow(
       /The simulation worker for this session could not be started: Worker construction is blocked\./,

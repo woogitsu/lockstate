@@ -6,6 +6,7 @@ import { decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/s
 import { InProcessSessionHost } from '../../src/persistence/session/runtime-host';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The seed a session was played at, through the save (issue #412, ADR 0038 §4).
@@ -73,7 +74,7 @@ describe('the master seed a session was played at', () => {
     const { controller, repository } = buildFixture(store, CREATED_AT_SEED);
 
     const created = await controller.createPrison(PRISON_ID);
-    expect(created.ok).toBe(true);
+    expectOk(created, 'the creation of PRISON_ID');
 
     expect(await decodedCurrentPayload(repository)).toMatchObject({ masterSeed: CREATED_AT_SEED });
   });
@@ -86,14 +87,14 @@ describe('the master seed a session was played at', () => {
     // somebody else's run.
     const store = new MemoryLocalSaveStore();
     const author = buildFixture(store, CREATED_AT_SEED);
-    expect((await author.controller.createPrison(PRISON_ID)).ok).toBe(true);
+    expectOk(await author.controller.createPrison(PRISON_ID), "the author's creation of PRISON_ID");
 
     const reader = buildFixture(store, A_DIFFERENT_SEED_THE_LOADING_HOST_PREFERS);
     const loaded = await reader.controller.loadPrison(PRISON_ID);
-    expect(loaded.ok).toBe(true);
+    expectOk(loaded, "the reader's load of PRISON_ID");
 
     reader.controller.markDirty();
-    expect((await reader.controller.saveNow()).ok).toBe(true);
+    expectOk(await reader.controller.saveNow(), "the reader's save");
 
     expect(await decodedCurrentPayload(reader.repository)).toMatchObject({ masterSeed: CREATED_AT_SEED });
   });
@@ -101,7 +102,7 @@ describe('the master seed a session was played at', () => {
   it('is what a restored runtime reports, so no production restore takes the `= 0` default', async () => {
     const store = new MemoryLocalSaveStore();
     const { controller, repository } = buildFixture(store, CREATED_AT_SEED);
-    expect((await controller.createPrison(PRISON_ID)).ok).toBe(true);
+    expectOk(await controller.createPrison(PRISON_ID), 'the creation of PRISON_ID');
 
     // Restored with **no** seed argument, which is what both production restore
     // paths do (`state-machine.ts` and `runtime-host.ts` each call
