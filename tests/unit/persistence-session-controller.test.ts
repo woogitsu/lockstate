@@ -7,6 +7,7 @@ import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { expectOk } from '../helpers/expect-ok';
 
 function buildController(options: { readonly autosaveIntervalMs?: number; readonly store?: MemoryLocalSaveStore } = {}) {
   const store = options.store ?? new MemoryLocalSaveStore();
@@ -26,7 +27,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     const { controller, repository } = buildController();
 
     const result = await controller.createPrison('prison-1', 'Alcatraz');
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the creation of prison-1');
 
     const session = controller.getActiveSession();
     expect(session?.prisonId).toBe('prison-1');
@@ -35,7 +36,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     // Durable before the player does anything -- a crash right after "New prison"
     // must not leave a slot with no readable generation.
     const loaded = await repository.loadCurrent('prison-1');
-    expect(loaded.ok).toBe(true);
+    expectOk(loaded, "prison-1's current generation");
   });
 
   it('lists created prisons through the repository', async () => {
@@ -56,13 +57,13 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     const tickBeforeSave = runtime.kernel.tick;
     expect(tickBeforeSave).toBe(25);
 
-    expect((await controller.saveNow()).ok).toBe(true);
+    expectOk(await controller.saveNow(), 'the save');
 
     controller.closeSession();
     expect(controller.getActiveSession()).toBeUndefined();
 
     const outcome = await controller.loadPrison('prison-1');
-    expect(outcome.ok).toBe(true);
+    expectOk(outcome, 'the reload of prison-1 after closing the session');
     expect(host.getRuntime()!.kernel.tick).toBe(tickBeforeSave);
   });
 
@@ -88,9 +89,10 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     await controller.saveNow();
     controller.closeSession();
 
+    // `expectOk` narrows, so the `if (!outcome.ok) return;` that used to sit
+    // here is gone rather than kept: it existed only to satisfy the compiler.
     const outcome = await controller.loadPrison('prison-1');
-    expect(outcome.ok).toBe(true);
-    if (!outcome.ok) return;
+    expectOk(outcome, 'the reload of prison-1 carrying its construction orders');
 
     // Message keys since #226; the text they resolve to is pinned in
     // `tests/unit/restored-scope.test.ts` against the bundled catalog.
@@ -161,7 +163,7 @@ describe('SessionController: durable failure evidence', () => {
     expect(controller.getLastSaveResult()).toBe(result);
 
     // The pre-failure generation is still loadable -- a failed write never destroys it.
-    expect((await repository.loadCurrent('prison-1')).ok).toBe(true);
+    expectOk(await repository.loadCurrent('prison-1'), "prison-1's current generation");
   });
 
   it('reports a missing prison and a prison with no readable generation distinctly', async () => {
@@ -333,7 +335,7 @@ describe('SessionController: export/import through schema validation', () => {
     const throughFile: unknown = JSON.parse(JSON.stringify(exported));
     await controller.createPrison('target-prison');
     const imported = await controller.importInto('target-prison', throughFile);
-    expect(imported.ok).toBe(true);
+    expectOk(imported, 'the import into target-prison');
   });
 
   it('rejects a corrupt import before anything reaches storage', async () => {
@@ -427,13 +429,13 @@ describe('SessionController: a failed createPrison leaves no slot behind (#65)',
     await expect(controller.createPrison('prison-doomed')).rejects.toThrow(/did not reply/);
 
     expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-keep']);
-    expect((await repository.loadCurrent('prison-keep')).ok).toBe(true);
+    expectOk(await repository.loadCurrent('prison-keep'), "prison-keep's current generation");
   });
 
   it('still creates normally when nothing fails', async () => {
     const { repository, controller } = controllerWith(new InProcessSessionHost());
 
-    expect((await controller.createPrison('prison-1')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-1'), 'the creation of prison-1');
     expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-1']);
     expect((await repository.list())[0]!.generationIds).toHaveLength(1);
   });
@@ -486,7 +488,7 @@ describe('SessionController: a save that decodes but cannot be restored is demot
     // Through the ordinary write path, so the save is stored only if it is
     // genuinely schema- and checksum-valid.
     const written = await repository.save(prisonId, broken as unknown as SaveEnvelope);
-    expect(written.ok).toBe(true);
+    expectOk(written, 'the write of the deliberately broken generation');
   }
 
   it('demotes the unrestorable generation, loads the previous one and reports the load as recovered', async () => {
