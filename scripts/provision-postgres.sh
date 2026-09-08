@@ -29,6 +29,24 @@
 # IDEMPOTENT. Every step checks before it acts, so a re-run does no apt work,
 # leaves a running cluster alone and exits in well under a second.
 #
+# AND THAT SENTENCE WAS FALSE WITHOUT ROOT UNTIL 2026-09-07, WHICH IS THE WHOLE
+# OF THE FIX BELOW. The elevation block used to be the FIRST thing that ran and
+# a hard `fail`, so a machine with PostgreSQL installed, pgTAP present, the
+# cluster online and the role already usable -- a machine with nothing left to
+# do -- still exited with "needs root or passwordless sudo to install and start
+# PostgreSQL". It never reached a single one of the checks the paragraph above
+# promises. Measured on the woogitsu-linux pool, where the runner user has no
+# passwordless sudo: that is job 101846181533's failure at step 12, and it is
+# what turned `main` red on 2026-09-07 (recorded in #1071's own commit).
+#
+# Elevation is therefore LAZY now. Detecting what is installed, reading the
+# cluster's status, and the self-check that proves what `verify:sql` actually
+# needs are all unprivileged and always were; only three things are not --
+# installing packages, creating or starting the cluster, and creating a role.
+# The script fails at the first of those it genuinely has to do, naming it,
+# rather than at the door. A fully provisioned machine now succeeds with no
+# elevation at all, which is exactly the state a repaired runner should be in.
+#
 # Usage:
 #   scripts/provision-postgres.sh
 #
@@ -41,17 +59,37 @@ set -euo pipefail
 log() { echo "[provision-postgres] $*"; }
 fail() { echo "[provision-postgres] ERROR: $*" >&2; exit 1; }
 
-# Package installation and cluster control need root. The CI runner has
-# passwordless sudo; remote containers already run as root. Anything else is
-# a hard failure with an actionable message rather than a silent skip.
+# Package installation, cluster control and `psql` as the postgres superuser
+# need root. The CI runner used to have passwordless sudo and the new pool does
+# not; remote containers already run as root. When there is neither, this is no
+# longer a failure at the door -- see the header. `as_root` and `as_postgres`
+# become the failure itself, so the script gets exactly as far as it can and
+# then says which privileged step it could not take.
+needs_elevation() {
+  fail "this shell has neither root nor passwordless sudo, so it cannot ${1}.
+[provision-postgres] Everything this script can do unprivileged is already done; what is left is a step that installs a package, controls the cluster or creates a role.
+[provision-postgres] This repository cannot fix that -- it is the machine's state. Either grant the runner user passwordless sudo, or pre-provision the host so this script has nothing left to do: install postgresql-${MAJOR:-<major>}, postgresql-client-${MAJOR:-<major>} and postgresql-${MAJOR:-<major>}-pgtap, start the ${MAJOR:-<major>}/main cluster, and create a LOGIN SUPERUSER role named after the user the job runs as ($(id -un))."
+}
+
+# `ELEVATION` exists because `needs_elevation` ends in `exit`, and an `exit`
+# inside `$( ... || true )` kills the SUBSHELL and hands its status to the
+# assignment rather than being caught by the `|| true` -- so the one probe below
+# that runs in a substitution has to ask this variable instead of finding out by
+# calling. Measured while writing this: without the guard the script died with
+# status 1, at the right place, printing NOTHING, because that substitution also
+# carries `2>/dev/null`. A silent exit is worse than the failure it replaced.
 if [ "$(id -u)" -eq 0 ]; then
+  ELEVATION=root
   as_root() { "$@"; }
   as_postgres() { su -s /bin/sh postgres -c "$1"; }
 elif sudo -n true >/dev/null 2>&1; then
+  ELEVATION=sudo
   as_root() { sudo -n "$@"; }
   as_postgres() { sudo -n -u postgres sh -c "$1"; }
 else
-  fail "needs root or passwordless sudo to install and start PostgreSQL"
+  ELEVATION=none
+  as_root() { needs_elevation "run: $*"; }
+  as_postgres() { needs_elevation "run this as the postgres superuser: $1"; }
 fi
 
 # Refreshing the package lists is the one expensive step, so it happens at
@@ -170,11 +208,34 @@ ROLE="${LOCKSTATE_DB_ROLE:-$(id -un)}"
 if [ -n "${DATABASE_URL:-}" ]; then
   log "DATABASE_URL is set; leaving roles alone (verify:sql will use that connection)"
 else
-  role_attributes="$(as_postgres "psql -X -tAc \"select rolsuper, rolcanlogin from pg_roles where rolname = '${ROLE}'\"" 2>/dev/null || true)"
+  # Asked over this user's OWN connection first, which needs no elevation: if
+  # they can log in and are a superuser, the role step has nothing to do and a
+  # host with no passwordless sudo gets past here. Only when that comes back
+  # short is `as_postgres` reached, and on such a host that is the point the
+  # script correctly refuses.
+  #
+  # Guarded on the role being this user's, because `LOCKSTATE_DB_ROLE` can name
+  # somebody else's and `current_user` would then answer about the wrong one.
+  own_is_usable=false
+  if [ "$ROLE" = "$(id -un)" ] \
+    && [ "$(psql -X -tAc 'select rolsuper from pg_roles where rolname = current_user' -d postgres 2>/dev/null || true)" = "t" ]; then
+    own_is_usable=true
+  fi
+
+  if [ "$own_is_usable" = true ]; then
+    log "role ${ROLE} already usable"
+    role_attributes="t|t"
+  elif [ "$ELEVATION" = none ]; then
+    # Asked here rather than by calling `as_postgres` inside the substitution
+    # below -- see the ELEVATION comment above for what that costs.
+    needs_elevation "create or repair the login role ${ROLE}"
+  else
+    role_attributes="$(as_postgres "psql -X -tAc \"select rolsuper, rolcanlogin from pg_roles where rolname = '${ROLE}'\"" 2>/dev/null || true)"
+  fi
   case "$role_attributes" in
     "") log "creating login role ${ROLE}"
         as_postgres "psql -X -q -c \"create role \\\"${ROLE}\\\" login superuser createdb\"" ;;
-    "t|t") log "role ${ROLE} already usable" ;;
+    "t|t") [ "$own_is_usable" = true ] || log "role ${ROLE} already usable" ;;
     *)  log "repairing role ${ROLE} (was ${role_attributes})"
         as_postgres "psql -X -q -c \"alter role \\\"${ROLE}\\\" with login superuser createdb\"" ;;
   esac
