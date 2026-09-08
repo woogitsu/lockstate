@@ -80,6 +80,49 @@ export interface SectorRiskPolicy {
  *   Whether that is the balance wanted is #442's and ADR 0048's, not a thing to
  *   settle in this docblock.
  *
+ *   **The sentence about the prisoner with no accommodation is kept and its
+ *   last clause is no longer general**
+ *   ([ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+ *   accepted 2026-09-07). Such a prisoner now reaches every action that does
+ *   not need a cell, so what decays unopposed for them is `sleep` and
+ *   `bladder` in **any** prison, plus `hunger`, `hygiene` and `recreation` in
+ *   a prison that has not built a canteen, a shower room or a recreation room,
+ *   plus `safety` where the sector is unguarded. Measured on the second of the
+ *   two fixtures named above: an over-admitted prison with none of those rooms
+ *   is byte-identical before and after that decision, and one with all three,
+ *   staffed to requirement, fell from 0.6513 to 0.3462 and stopped rioting.
+ *
+ *   **The two sentences that followed are corrected rather than overwritten,
+ *   because they are what four files repeated and a reader may be holding.**
+ *   They said the amenity-rich prison "now opens nothing at all", and that
+ *   "the riot fixtures are still made of unhoused prisoners; they are made of
+ *   unhoused prisoners **in prisons that built nothing for them**". Both
+ *   over-generalise one fixture, in two different directions, and both were
+ *   measured on 2026-09-07 against this tree with
+ *   `../prisoners/action-system.ts` alone reverted to `558ece5f`:
+ *
+ *   - *Nothing at all* was a property of one seed. Over 40 consecutive seeds
+ *     the same prison one guard short opens assaults on 19 of them, up to 10
+ *     in a run. Riots are what stopped; incidents are not.
+ *   - *Now* was a property of sixteen prisoners. Add a seventeenth and it
+ *     riots again -- once, where the reverted tree opens five -- because
+ *     `DEFAULT_SECTOR_PRISONERS_PER_GUARD` is 8, so occupant 17 takes
+ *     `required` from 2 to 3 and one guard's `staffingShortfall` from 1/2 to
+ *     2/3, which is 0.05 on a row that had 0.0305 of headroom under
+ *     `hotThreshold`. Staffed to requirement the boundary is 96 prisoners
+ *     rather than 32, and by 32 on one guard the riot count is identical
+ *     before and after.
+ *   - The prison that built the rooms is therefore not exempt, it is
+ *     **provisioned for a population**, and the provisioning is what decides:
+ *     hold 96 prisoners and their twelve guards and raise only the canteen
+ *     and the shower room (`'dining'` 6 to 12, `'hygiene'` 2 to 6) and the
+ *     score falls 0.6435 to 0.5158 and the riots go 3 to 0.
+ *
+ *   So what this decision moved is the population a built prison rides out,
+ *   not the existence of the content
+ *   (`tests/integration/incident-trigger-reachability.test.ts`, "and it starts
+ *   rioting again one prisoner later").
+ *
  *   **And since
  *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
  *   that staffed row is no longer free, without this weight moving at all.** What an unmet need costs a prison that never riots is on

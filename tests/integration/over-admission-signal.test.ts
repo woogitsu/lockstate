@@ -51,6 +51,41 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * route. `records no refusal` below pins the acceptance rather than leaving it
  * to be quietly changed by a later reading of the same issue.
  *
+ * **The paragraph above is left as it stands, and the sentence in the middle
+ * of it is now conditional rather than general.**
+ * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
+ * -- accepted by the owner on 2026-09-07 -- lets a prisoner waiting for a bed
+ * eat, wash and take recreation, and its own Consequences section asks
+ * whoever revisits this file to re-read exactly this reasoning. Re-read, and
+ * measured on `incident-trigger-reachability.test.ts`'s own ladder over 30,000
+ * ticks: an over-admitted prison that has built **nothing** for a bedless
+ * prisoner is unaffected -- byte-identical incidents before and after -- and
+ * one that has built a canteen, a shower room and a yard and is staffed to
+ * requirement **stops rioting**, where it produced three riots and ten
+ * assaults.
+ *
+ * **The paragraph above said "now produces no incidents at all" and closed
+ * "so over-admission is ... now a route only through a prison that has not
+ * built the rooms", and both are withdrawn.** They are quoted here rather
+ * than deleted because three files beside this one carried the same sentence.
+ * Re-measured on the same ladder on 2026-09-07, against this tree with
+ * `src/simulation/prisoners/action-system.ts` alone reverted to `558ece5f`:
+ * the assaults do not stop (over 40 consecutive seeds that prison opens
+ * assaults on 19 of them; the empty log belonged to seed `0x0cc0`), and the
+ * riots stop only up to a population. Sixteen prisoners on one guard: 4 riots
+ * before, 0 after. Seventeen: 5 before, 1 after -- occupant 17 takes the
+ * sector's `required` from 2 to 3, `DEFAULT_SECTOR_PRISONERS_PER_GUARD` being
+ * 8. Thirty-two: 5 before and 5 after, no incident removed at all. So
+ * over-admission is still a route into the incident content through a prison
+ * that built the rooms too, once it has admitted more people than the rooms
+ * were built for.
+ *
+ * **What this file asserts is untouched by that**, which is why nothing below
+ * moved: every expectation here is about the admission being accepted and the
+ * panel saying so, and none of them is about an incident. The decision the
+ * paragraph records is the owner's and the change to its premise is a balance
+ * question for them, not a sentence for this file to settle.
+ *
  * ## The assertion that would have caught the defect, and the one that would not
  *
  * "Eleven are at Cell Assignment" was already true before this change, and the
