@@ -12365,8 +12365,10 @@ readable together (which, per the paragraph above, is true again by
 TREE RATHER THAN BY ADJUSTING THE PREVIOUS ANCHOR'S NUMBERS.** The previous
 anchor's own count (above, already corrected in place by `343d876b` for
 0101's reservation before this pass ever opened): **40 `Proposed`, 52
-`Accepted`, 92 documents with a status**, 93 numbered rows, **Next free
-number: 0103**. This pass re-read every one of the 94 files on disk at
+`Accepted`, 92 documents with a status**, 93 numbered rows, and a next-free
+line this sentence no longer restates — described rather than restated on
+2026-09-08, for the reason the third entry of the blockquote below gives.
+This pass re-read every one of the 94 files on disk at
 `ebdcb317` by the established method — the first non-blank line under each
 document's own `## Status` heading or `- Status:` bullet, `0013` counted
 separately as always because its own status line is split (`Accepted for
@@ -12376,11 +12378,20 @@ rows — only `Accepted` and the two row counts move, by exactly one each,
 because ADR 0101 is the sole document this window added to disk and it
 arrived already `Accepted` (established two paragraphs above). `Proposed`
 is unchanged at 40 because nothing that was `Proposed` flipped and nothing
-new arrived in that column. **Next free number: 0103** is unchanged and was
-already corrected in place by `343d876b`, ahead of this pass, for the reason
-its own kept blockquote in the previous anchor's account gives; this pass
-re-verified it rather than trusting the earlier fix, against
-`docs/adr/README.md`'s current line directly.
+new arrived in that column. The index's own next-free line read **0102** at
+`ebdcb317` and **0101** at `1e7c63c7`, both ends opened with `git show
+<sha>:docs/adr/README.md` rather than inferred from this file — so it moved
+by one *inside* this window, when ADR 0101's row landed at `bb1f8fc4`.
+**Until 2026-09-08 this sentence restated a next-free number of 0103 and
+called it unchanged — paraphrased rather than quoted here, because the gate
+reading these restatements has no exemption for a quotation of one and would
+read the old text as a live claim — and "unchanged" was true of this file's
+own two restatements rather than of the index**: `343d876b` had already moved both to 0102 ahead of this pass,
+for the reason its own kept blockquote in the previous anchor's account
+gives, and this pass re-verified them against `docs/adr/README.md`'s line
+directly rather than trusting the earlier fix. Corrected and described
+rather than restated, for the reason the third entry of the blockquote below
+gives.
 
 > **BOTH "NEXT FREE NUMBER" READINGS IN THE PARAGRAPH ABOVE READ 0102 AT
 > `ebdcb317`, AND BOTH READINGS WERE CORRECT THEN — EDITED HERE, 2026-09-07,
@@ -12396,6 +12407,27 @@ re-verified it rather than trusting the earlier fix, against
 > `ebdcb317`'s own tree. Nothing else in either sentence moves: the row and
 > status counts above are this pass's own re-derivation at `ebdcb317` and are
 > untouched by a reservation made on a later, unrelated branch.
+>
+> **A THIRD EDIT WAS OWED HERE ON 2026-09-08 AND IS DELIBERATELY NOT MADE.**
+> ADR 0103's promotion adds its row to `docs/adr/README.md` on
+> `adr/gangs-and-grudges`, which is what reserves a number, so the index moves
+> 0103 → 0104 and both sentences above would have had to move a third time to
+> keep this gate green. They do not, and the reason is what the first two
+> edits had already cost: `docs/adr/README.md` read **0102** at `ebdcb317` and
+> **0101** at `1e7c63c7`, so a dated re-derivation of `ebdcb317`'s own tree
+> had come to state a number no tree in its window ever carried — and the
+> second sentence called that number *unchanged* across a window in which the
+> index moved by one. **So both are described instead of restated**: they now
+> say what their own trees held, and the single live restatement this gate
+> reads sits in this branch's own section immediately below. `343d876b`
+> reached the same resolution for two sentences of exactly this shape and said
+> why in its own commit message: *"They are DESCRIBED instead of restated --
+> the resolution this repository already reached twice, at #1043 and again at
+> #1056, when a gate that reads by position collided with a rule that asks for
+> the old text to be kept."* **Both directions are marked rather than one
+> overwritten** (`docs/AGENT_WORKFLOW.md` §4): the two paragraphs above are
+> the record of the two edits, and the sentences they describe now carry the
+> values those edits moved them away from.
 
 Cross-checked against `docs/adr/README.md` directly: `grep -cE
 '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40** against **54**
@@ -12440,6 +12472,295 @@ check every anchor since `c00b641` has named as its own weakest claim and
 carries the same limit: a citation phrased in a form the grep did not
 anticipate — a relative markdown link, a bare quoted symbol with no path at
 all — is the one shape of miss this method cannot rule out by construction.
+
+## 3. What ADR 0103's promotion moved in this file on 2026-09-08, by a branch that deliberately does not move the anchor
+
+**Not an anchor pass, and that is said first because every other `## 3.`
+section in this file is one.** This section is written by
+`adr/gangs-and-grudges`, the branch that promotes ADR 0103 out of the `drafts`
+subdirectory it was drafted into, numbers it, and takes its row in
+`docs/adr/README.md`. It re-derives the four counting sites by counting the
+tree, records what reserving **0104** did to this file's live restatements,
+and says which of its numbers describe `main` and which describe this branch.
+It opens no delta window, re-aims no citation and moves no anchor.
+
+**It also sits below the `ebdcb317` pass rather than above it, which is
+forced rather than chosen.** `adr-status-queue-anchor-contract` classifies a
+"Next free number" restatement as **live** by its position relative to the
+last dated pass-marker naming the header's own anchor commit — the dated
+opening of the `ebdcb317` pass above — so material inserted at the top of
+this descending block would be classified as *history* and the gate
+would have nothing live to check. The newest four sections of this file run
+newest-first (v0.0.534, v0.0.528, v0.0.521, v0.0.511); this one is newer than
+all of them and is written one position lower, for that mechanical reason and
+no editorial one.
+
+**WHY THE ANCHOR STAYS AT `ebdcb317`, MEASURED RATHER THAN PREFERRED.**
+`package.json` ships **0.0.541** at `fece2499` — `main`'s tip as this branch
+merged it, and what `git merge-base origin/main HEAD` returns — against the
+header's anchor at v0.0.534, so the gate's budget reads **SEVEN of the ten
+releases it allows, inside it by three**. Nothing is being asked for, and the
+window is not this branch's to read: `git log --oneline --first-parent
+ebdcb317..fece2499` holds **fourteen** pull-request merges and **seven**
+`chore(release)` commits (v0.0.535 through v0.0.541), and no pass in this file
+has opened any of them. Re-pointing the anchor at `fece2499` would assert
+exactly that reading, which is the refusal the `ebdcb317` pass above already
+wrote in its own words — *"re-pointing the anchor to a commit this pass never
+read would assert work that was not done"* — and this branch adds a second
+instance of it rather than a new rule. The gate's own docblock says the
+number is *"a bound on unreviewed history rather than a demand for
+freshness"*, and that is the reading taken here.
+
+**The spend reads seven rather than fifteen for a reason worth stating,
+because the two figures look reconcilable and are not.** The last **eight** of
+those fourteen merges carry no `chore(release)` commit behind them yet:
+`package.json` ships 0.0.541 at `491fcdce` (`chore(release): v0.0.541`), still
+0.0.541 at `adb9ed00`, and still 0.0.541 at `fece2499` — each read with `git
+show <sha>:package.json` rather than inferred from the log. So the budget,
+which counts releases and not merges, is three clear of its limit while
+fourteen merges sit unread, and **the next anchor pass inherits fourteen
+merges rather than the six the last one had.** That is the budget's design
+and not a loophole this branch found, but a reader planning that pass should
+size it from the merge count and not from the spend.
+
+**THE FOUR LIVE "VERIFIED AT" CLAIMS NEEDED NOTHING, WHICH IS THE OTHER HALF
+OF THE ANCHOR DECISION.** That gate also requires every live *verified at* to
+name the header's anchor commit, and there are exactly **four**, each naming
+`ebdcb317` and each therefore still warranted where it stands: §5's ADR 0013
+§§5-6 entry (*"Both absences were re-verified at"*), the two chains the
+`ebdcb317` pass extended (*"Updated to 're-verified at `ebdcb317`'"*, twice),
+and §6's citation inventory for `ui-hud-messages.test.ts:270-276`
+(*"byte-identical throughout, re-verified at"*). Two more name `54418b6` and
+`4cc8a12f` and are exempt because they sit inside the past-tense wrapper that
+gate's `HISTORICAL_CLAIM` pattern recognises. Counted by replicating all four
+of the contract's regexes over this file rather than by grepping for the
+phrase, and **quoted rather than cited by line, because a `file:line` into
+this file is the least durable citation available** (`docs/AGENT_WORKFLOW.md`
+§4). **Had the anchor moved, all four would have had to be re-verified against a
+new tree or wrapped as history**, and they are not four
+cheap sentences: two are the readings themselves — a SQL-and-directory check
+for ADR 0013's two absences, a byte-comparison of a test's cited span for the
+HUD-message one — and the other two are the `ebdcb317` pass's own record of
+having extended those readings, which cannot honestly be moved without
+redoing them. That cost is why this was decided rather than defaulted.
+
+**THE FOUR COUNTING SITES, RE-DERIVED BY COUNTING THE ACTUAL `docs/adr/` TREE
+RATHER THAN BY ADJUSTING THE PREVIOUS ANCHOR'S NUMBERS**, which is this
+file's own method, followed here to the letter: the first non-blank line under
+each document's own `## Status` heading or `- Status:` bullet; `0013` held
+apart as always, because its own status line is split (`Accepted for §§1-4,
+which are enforced in SQL. §§5-6 remain Proposed and unimplemented.`) rather
+than one keyword; and the **first** status keyword on the line taken rather
+than a substring test. On this branch's tree, with 96 `NNNN-*.md` files in
+`docs/adr/`:
+
+- **41 `Proposed`** — 40 at `ebdcb317`, plus ADR 0103, which arrives
+  `Proposed. Not self-approved.`
+- **54 `Accepted`** — 53 at `ebdcb317`, plus ADR 0102, which reached `main`
+  already `Accepted by the owner on 2026-09-07, with one addition.`, read
+  at `002cb781` (#1069, the merge that landed it) and not only on this tree,
+  because whether it was ever outstanding matters to §2 below.
+- **95 documents with a status** with `0013` apart; **96** if `0013` is
+  counted by its own leading keyword, which is the convention the `0b8af9f8`
+  pass used and the three passes after it did not. Both readings are stated
+  because the figure is only comparable inside one of them.
+- **96 linked rows in `docs/adr/README.md`, plus the unlinked, file-less
+  `0018` row, for 97 numbered rows**, and **Next free number: 0104**.
+
+**THE METHOD WAS CONTROLLED AGAINST THE PREVIOUS ANCHOR'S PUBLISHED FIGURES
+BEFORE ANY OF IT WAS TRUSTED HERE.** Run unchanged over the `ebdcb317` tree it
+returns **40 `Proposed`, 53 `Accepted`, 93 documents with a status** — the
+three figures that pass published, to the unit. So the status columns above
+are this file's own count continued rather than a new one. **The trap in them
+is named because it is easy to fall into and gives a plausible wrong answer**:
+six documents carry both keywords in one status line — **0042, 0046, 0061,
+0062, 0091** and **0103**, each of the shape `Proposed. Not accepted…` — so a
+substring test scores each of them in both columns and returns 47 and 60
+instead of 41 and 54. `0013` is the only genuinely split status in the corpus,
+and it is the only one held apart.
+
+**THE DELTA RECONCILES, AND ONE OF THE FOUR LABELS DOES NOT — IN THAT ORDER,
+BECAUSE THE COUNT WINS AND THE STORY LOSES.** `Proposed` +1 is ADR 0103;
+`Accepted` +1 is ADR 0102; the row counts +2 are those same two documents,
+one from `main` and one from this branch. **Where this count and the last
+three passes disagree is the row figure, and the disagreement is a definition
+rather than an arithmetic error.** The `ebdcb317` pass published *"94 numbered
+rows"*, which is exactly the number of **linked** rows on that tree, while
+this file's own definition of the figure — *"92 linked plus the unlinked
+file-less `0018`"* — counts one more. Measured at four trees with `grep -cE
+'^\|\s*\*{0,2}\[?0[0-9]{3}' docs/adr/README.md` and its linked-only variant:
+`0b8af9f8` **91 linked / 92 numbered** (published 91 and 92, agreeing),
+`4cc8a12f` **93 / 94** (published 92 and 93), `1e7c63c7` **93 / 94**,
+`ebdcb317` **94 / 95** (published 94). So the published figure has tracked the
+linked count since `4cc8a12f` while the sentence defining it counts `0018`
+too, and **the figure comparable with this branch's 97 is 95, not 94.** The
+delta is +2 under either reading, which is why the reconciliation holds while
+the label does not.
+
+**AND "DOCUMENTS WITH A STATUS" IS THE SAME TRAP IN THE OTHER DIRECTION,
+WHICH IS WHY BOTH READINGS ARE GIVEN ABOVE.** 93 at `ebdcb317` against 96 here
+reads as +3 and would break the reconciliation — but 93 holds `0013` apart and
+96 counts it, and mixing the two conventions is the whole of the discrepancy.
+Inside either convention it is +2: 93 → 95 with `0013` apart, 94 → 96 with
+`0013` counted. **A delta that only reconciles once both of its ends are
+counted the same way is not a delta**, and this is the second of the four
+counting sites in this one pass whose two ends had to be re-counted the same
+way before the delta meant anything.
+
+**WHICH NUMBERS DESCRIBE `main` AND WHICH DESCRIBE THIS BRANCH, BECAUSE ADR
+0103 IS NOT ON `main`.** Its row is on `adr/gangs-and-grudges` and nowhere
+else. This file has held that shape before and the rule is stated in the ADR
+0101 blockquote below — *"The branch drafting ADR 0101 adds its row to
+`docs/adr/README.md`, which is what reserves a number, so the index moved to
+0102 and this restatement moved with it"*. On `main` at `fece2499` the same
+method returns **40 `Proposed`, 54 `Accepted`, 94 documents with a status**
+(`0013` apart), **95 linked rows plus `0018` for 96 numbered rows**, and a
+next-free line reading **0103** — described rather than restated in this
+sentence, because this gate reads a restatement as a claim about the tree it
+sits in and cannot tell one about `main` from one about this branch. Every
+figure in the list above is one higher in the `Proposed`, document and row
+columns, and 0104 rather than 0103, purely
+because this branch's own row exists — so **the 0104 restatement above is a
+claim about this tree and not about `main`**, and it becomes a claim about
+`main` when this branch merges and not before.
+
+**THE THREE LIVE RESTATEMENTS THIS RESERVATION FALSIFIED, AND WHY NONE OF
+THEM WAS EDITED TO 0104.** Reserving 0104 turned the gate red on three
+restatements still reading 0103 — two in the `ebdcb317` pass's own
+counting paragraph above, one in the `4cc8a12f` pass's further down — and all
+three are **described rather than restated**, each with a dated third entry
+appended to the blockquote its site already carried. The reason is not taste:
+those three sentences had already been edited twice each to keep this
+positional gate green, and by this reservation the `ebdcb317` pair stated a
+next-free number no tree in their own window ever carried, while calling it
+*unchanged* across a window in which `docs/adr/README.md` moved 0101 → 0102.
+A third edit would have deepened that. **`343d876b` had already reached this
+resolution for two sentences of the same shape**, in its own words: *"They
+are DESCRIBED instead of restated -- the resolution this repository already
+reached twice, at #1043 and again at #1056, when a gate that reads by
+position collided with a rule that asks for the old text to be kept."* So the
+count of live restatements in this file goes from three to **one**, and the
+one that remains is the counting site above — the newest material in the file,
+which is where a reader drafting an ADR should be copying from anyway.
+**What this does not do is silence the scan**: **43** restatements remain in
+this file, 42 of them kept history the gate reads and exempts, and the
+mutation that gate was built for — a live restatement quietly changed to a wrong
+number — still fails it on the one live site.
+
+**§2 IS UNMOVED AT NINE ENTRIES, AND ADR 0103 IS DELIBERATELY NOT FILED AS A
+TENTH.** §2's rule is *"any commit that adds an outstanding ADR adds an entry
+here in the same commit"*, and ADR 0103 is outstanding, so the decision not to
+file is the one that needs the argument rather than the other way round. Three
+things carry it. **First, there is no gap of the kind §2 exists to name**:
+that section's own worked case is ADR 0029, which *"sat `Proposed` on `main`
+for a day while that code was already shipping"*, and ADR 0103 ships nothing —
+its own words are that it *"authors no production code, seeds no gang, adds no
+locale key, and changes no player-visible string"*, and `addGrudge` still has
+no caller anywhere in `src/`: `grep -rn addGrudge src/` returns one line, its
+own declaration at `src/simulation/incidents/gangs.ts:86`, checked here rather
+than taken from that document's Context 1. **Second, the one decision inside it that was the owner's has already been
+taken**: they ruled on the grudge producer on 2026-09-08 and then closed the
+fork that ruling left, so what remains open is seven numbered questions that
+are this document's own and unaccepted, which is what §5's first bullet and
+§3's opening count rather than what §2 files. **Third, none of the seven is a
+player-visible promise** — the one branch that would have been, a new
+`SIMULATION_EVENT_TYPES` member and locale key announcing an adjudication, is
+the branch the owner declined, and that document's Open Question 1 records
+both the declining and what it forecloses. **So the streak this file tracks
+extends rather than breaks**: last stated at **eleven** (for ADR 0099 and ADR
+0100), untouched by ADR 0101 and ADR 0102 because both arrived `Accepted` and
+so had nothing to wait for, and **twelve** with ADR 0103. The streak counts
+arrivals, not the current outstanding population, which is this file's own
+distinction.
+
+**§1 IS UNMOVED TOO, AND THE OWNER'S THIRD RULING OF 2026-09-08 IS WHY THAT IS
+WORTH SAYING RATHER THAN ASSUMING.** §1 records status **flips**, each as the
+pair the suite requires — the `Status` line in the ADR and that ADR's row in
+the index — and ADR 0103's status does not flip: it is `Proposed` in the
+document and `Proposed, 2026-09-08. Not self-approved` in its new index row,
+which is the pair agreeing rather than moving. What the owner ruled is
+narrower than a status and is recorded where it belongs, in that document's
+own Status section, in the language they chose it in: *"Czytanie A: „zapisana
+na kanale alertów"*, reading A, *"recorded on the alerts channel"*. **It
+settles Decision 2, including 2.3, and not the document**, and the ADR states
+the cost the option carried in the text the owner read: under reading A the
+ruling's third clause constrains nothing today, because `openIncident` is
+said there to record every assault unconditionally. **That last clause is
+quoted from that document and is not re-verified here** — `openIncident` is a
+private method of `IncidentTriggerSystem` with **four** call sites in its own
+file (`src/simulation/incidents/trigger-system.ts:490` declares it; `:367`,
+`:436`, `:507` and `:532` call it), and reading
+whether every assault path reaches it is that document's work rather than
+this file's. **A ruling on one decision inside a `Proposed`
+document is neither a flip for §1 nor a queue entry for §2**, and writing it
+into either would have made this file assert something the corpus does not
+say.
+
+**A CORRECTION TO THE BRIEF THIS BRANCH WAS DISPATCHED WITH, IN BOTH
+DIRECTIONS, BECAUSE `docs/AGENT_WORKFLOW.md` §3 asks for exactly this.** The
+brief carried **two** failing tests in `tests/foundation/`; the tree it was
+dispatched against fails **one**. `documentation-links-contract` passes: the
+five citations of the `drafts` subdirectory under `docs/adr/` that it named
+were already rewritten as prose in the same uncommitted work, and `git status`
+shows that directory gone, which is correct — it held that one document and git
+does not track an empty one. **Written here as prose for the same reason**: a
+rooted path to it in this sentence fails that same contract, which is how this
+section learned the rule rather than by reading it — the first run of
+`tests/foundation/` after this section was drafted failed on exactly that,
+with `docs/adr/STATUS-QUEUE.md` named as the citing file.
+The brief also carried **six** open questions in ADR 0103 and **93 → 96** for
+documents with a status; measured, that document numbers **eight** open
+questions of which one is marked answered by the owner, so **seven** are
+outstanding, and the document delta is +2 rather than +3 once both ends are
+counted the same way. Every other figure the brief carried — the anchor
+line, the single pass-marker naming it, the three live restatements it placed
+at `:12368`, `:12379` and `:12632`, the four live `verified at` claims and the
+two exempt ones, `Proposed` 40 → 41, `Accepted` 53 → 54 — reproduced exactly,
+each checked by replicating the contract's own patterns rather than by
+trusting the coordinates. **Those three line numbers are given as what the
+brief carried and not as citations**: this section's own insertions have
+already moved them, which is the reason the paragraphs above quote sentences
+instead.
+
+**A DEFECT IN A FILE THIS BRANCH MAY NOT EDIT, HANDED OVER RATHER THAN LEFT
+UNSAID.** ADR 0103's own Status section still ends with *"Whether this
+document should be numbered and moved out of the `drafts` subdirectory is
+answered under "Promotion, decided rather than deferred" below, and the answer
+measured on this pass is not yet."* — a live sentence, outside every kept
+blockquote in that file, made false by the promotion committed alongside this
+section. That document's Promotion section is explicitly marked as kept
+unedited and needs nothing; this sentence is not marked and contradicts the
+document's own opening, which states that it *"has moved out of the `drafts`
+subdirectory"*. It is named here because the integrator owns the gap between
+one agent's surface and another's (`docs/AGENT_WORKFLOW.md` §2), and because
+reading a file's own headings against each other is the check that finds this
+class and no diff does (§4).
+
+**The gates, run on this branch's tree and reported as numbers rather than as
+"green".** `tsc -p tsconfig.json --noEmit` clean;
+`adr-status-queue-anchor-contract` 8 of 8; the whole of `tests/foundation/`
+530 of 530 across 57 files, where the dispatching tree ran 529 of 530; and
+the full `vitest run`, **4895 passed and 3 skipped across 417 files**. Two of
+those runs went red on this section's own text before they went green, and
+both are recorded rather than smoothed away: quoting the `ebdcb317` pass's
+dated opening reproduced its pass-marker and moved the gate's live boundary
+into this section, and a rooted path to the subdirectory ADR 0103 was
+promoted out of failed `documentation-links-contract`, which named this file
+as the citing one. **A gate that only ever
+passes proves nothing about itself**, and these two are this section's own
+red-then-green evidence that both contracts read what they claim to read.
+
+**The weakest claim in this section, named.** *"No live sentence elsewhere in
+§§1-6 is falsified by `Proposed` moving 40 → 41 and `Accepted` 53 → 54"* rests
+on a grep for tally shapes over everything at or after this file's own live
+boundary, plus a reading of the newest link in each of the three places that
+count `Proposed` — §3's opening ends *"STILL FORTY at `0e614c71`"*, which is
+dated and therefore still true, and §6's `income.ts` bullet says in its own
+words that the file *"still carries no count at all"*. A tally written in a
+shape that grep did not anticipate — a spelled-out number inside a sentence
+about something else — is the one form of miss this method cannot rule out,
+and it is the same limit every anchor pass since `c00b641` has named as its
+own weakest claim.
 
 ## 3. What the anchor pass of 2026-09-07 opened at three clear of the limit: eight merges, seven citations moved on one file, two ADRs' own status text falsified by the window, and one self-citation found broken from long before it
 
@@ -12629,7 +12950,11 @@ repair.
 **THE FOUR COUNTING SITES, RE-DERIVED RATHER THAN CARRIED FORWARD, BECAUSE
 ADR 0098'S FLIP CHANGES A COLUMN.** The previous anchor's own count (above):
 **41 `Proposed`, 51 `Accepted`, 92 documents with a status**, 93 numbered rows,
-**Next free number: 0103**. No ADR was added or removed from disk in this
+and a next-free line this sentence no longer restates: `docs/adr/README.md`
+carried **0101** at `4cc8a12f`, the commit this pass was taken at, opened with
+`git show 4cc8a12f:docs/adr/README.md` rather than inferred. Described rather
+than restated on 2026-09-08, for the reason the third entry of the blockquote
+below gives. No ADR was added or removed from disk in this
 window — #1056 changes a status, not a row count — so only the `Proposed`/
 `Accepted` split moves: **40 `Proposed`, 52 `Accepted`, 92 documents with a
 status**, 93 numbered rows unchanged.
@@ -12651,6 +12976,16 @@ status**, 93 numbered rows unchanged.
 > the gate reads position, not whether the sentence is describing an older
 > commit's tree. Nothing else at this site moves: it is still, and only, a
 > record of what `#1056`'s status flip changed at the anchor commit.
+>
+> **A THIRD EDIT WAS OWED ON 2026-09-08 AND THE SENTENCE IS DESCRIBED
+> INSTEAD.** ADR 0103's promotion reserves 0104, so this site would have moved
+> 0103 → 0104: a third move in two days, on a sentence whose whole subject is
+> what an older anchor counted. `docs/adr/README.md` read **0101** at
+> `4cc8a12f` and that value is restored above, with the two paragraphs of this
+> blockquote left standing as the record of the two edits that took it to 0102
+> and then to 0103. The live restatement the gate reads now sits once, in this
+> branch's own section further up this file, where the reasoning for ending
+> the churn at all three sites is written out.
 Cross-checked against `docs/adr/README.md` directly: `grep -cE
 '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **40** against **52**
 `Accepted`. §2 is unmoved at nine entries — no merge in this window touched
