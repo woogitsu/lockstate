@@ -13,6 +13,7 @@ import { captureSessionSnapshot, type SessionSnapshotBundle } from '../../src/si
 import { decodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../../src/simulation/entity/entity-codec';
 import { EntityStore } from '../../src/simulation/entity/entity-store';
 import v1InProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #103, proven where the two halves meet: a real
@@ -292,7 +293,7 @@ describe('a save that decodes and cannot be restored, end to end', () => {
     const { controller, repository } = await buildFixture();
     // The only generation is unrestorable, so there is nothing to recover to
     // and the load must report that -- immediately.
-    expect((await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope), 'the unrestorable generation 1');
 
     vi.useFakeTimers();
     try {
@@ -308,8 +309,8 @@ describe('a save that decodes and cannot be restored, end to end', () => {
 
   it('demotes the unrestorable generation, restores the previous one on the same worker, and reports the fallback', async () => {
     const { controller, repository, worker } = await buildFixture();
-    expect((await repository.save(PRISON_ID, envelopeWithSeed(4242, 1))).ok).toBe(true);
-    expect((await repository.save(PRISON_ID, unrestorableEnvelope(2) as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, envelopeWithSeed(4242, 1)), 'the seeded generation 1');
+    expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(2) as SaveEnvelope), 'the unrestorable generation 2');
 
     vi.useFakeTimers();
     let outcome;
@@ -341,8 +342,8 @@ describe('a save that decodes and cannot be restored, end to end', () => {
    */
   it('loads the prison even when retiring the generation it refused fails, and says that it failed', async () => {
     const { controller, repository, store } = await buildFixture();
-    expect((await repository.save(PRISON_ID, envelopeWithSeed(4242, 1))).ok).toBe(true);
-    expect((await repository.save(PRISON_ID, unrestorableEnvelope(2) as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, envelopeWithSeed(4242, 1)), 'the seeded generation 1');
+    expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(2) as SaveEnvelope), 'the unrestorable generation 2');
 
     // The walk itself only reads; the first write it attempts is the
     // retirement, once gen-1 has restored.
@@ -370,7 +371,7 @@ describe('a save that decodes and cannot be restored, end to end', () => {
 
   it('keeps the prison itself, so the player is told their saves are unreadable rather than finding it gone', async () => {
     const { controller, repository } = await buildFixture();
-    expect((await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope), 'the unrestorable generation 1');
 
     expect(await controller.loadPrison(PRISON_ID)).toEqual({ ok: false, reason: 'no-valid-generation' });
 
@@ -419,7 +420,7 @@ describe('a deterministic refusal costs no generation at all', () => {
     // its own so a surviving record identifies itself rather than being
     // vouched for by a counter.
     for (const revision of [1, 2, 3]) {
-      expect((await repository.save(PRISON_ID, unrestorableEnvelope(revision) as SaveEnvelope)).ok).toBe(true);
+      expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(revision) as SaveEnvelope), `the unrestorable generation ${String(revision)}`);
     }
 
     vi.useFakeTimers();
@@ -590,8 +591,8 @@ describe('a fault in our own restore code costs no generation, and is not called
    */
   it('leaves the generation it could not judge on disk even after a different one restores and retirement runs', async () => {
     const { controller, repository, store } = await buildFixture();
-    expect((await repository.save(PRISON_ID, restorableEnvelope(1))).ok).toBe(true);
-    expect((await repository.save(PRISON_ID, codeFaultEnvelope(2))).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(1)), 'the restorable generation 1');
+    expectOk(await repository.save(PRISON_ID, codeFaultEnvelope(2)), 'the code-fault generation 2');
 
     vi.useFakeTimers();
     let outcome;
@@ -633,7 +634,7 @@ describe('a fault in our own restore code costs no generation, and is not called
   it('says the load failed rather than that every copy failed validation, and keeps all three saves', async () => {
     const { controller, repository, store } = await buildFixture();
     for (const revision of [1, 2, 3]) {
-      expect((await repository.save(PRISON_ID, codeFaultEnvelope(revision))).ok).toBe(true);
+      expectOk(await repository.save(PRISON_ID, codeFaultEnvelope(revision)), `the code-fault generation ${String(revision)}`);
     }
 
     vi.useFakeTimers();
@@ -683,7 +684,7 @@ describe('a fault in our own restore code costs no generation, and is not called
    */
   it('reports our defect to the main thread as internal-error carrying the declared reason', async () => {
     const { controller, repository, worker } = await buildFixture();
-    expect((await repository.save(PRISON_ID, codeFaultEnvelope(1))).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, codeFaultEnvelope(1)), 'the code-fault generation 1');
 
     vi.useFakeTimers();
     try {
@@ -711,7 +712,7 @@ describe('a fault in our own restore code costs no generation, and is not called
    */
   it('still reports a declared refusal as a recoverable snapshot-incompatible with its own reason', async () => {
     const { controller, repository, worker } = await buildFixture();
-    expect((await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope), 'the unrestorable generation 1');
 
     vi.useFakeTimers();
     try {
@@ -762,7 +763,7 @@ describe('an import costs the player no generation of their own until it has res
     // own so a surviving record identifies itself rather than being vouched
     // for by a counter.
     for (const revision of [1, 2, 3]) {
-      expect((await repository.save(PRISON_ID, restorableEnvelope(revision))).ok).toBe(true);
+      expectOk(await repository.save(PRISON_ID, restorableEnvelope(revision)), `the restorable generation ${String(revision)}`);
     }
 
     for (const revision of [4, 5, 6]) {
@@ -811,7 +812,7 @@ describe('an import costs the player no generation of their own until it has res
   it('still retires the oldest generation once an imported save has actually restored', async () => {
     const { controller, repository, store } = await buildFixture();
     for (const revision of [1, 2, 3]) {
-      expect((await repository.save(PRISON_ID, restorableEnvelope(revision))).ok).toBe(true);
+      expectOk(await repository.save(PRISON_ID, restorableEnvelope(revision)), `the restorable generation ${String(revision)}`);
     }
     expect(await repository.importSave(PRISON_ID, restorableEnvelope(7))).toMatchObject({ ok: true, generationId: 'gen-4' });
 
@@ -874,7 +875,7 @@ describe('a save only another build can read is kept, not deleted', () => {
     readonly bytesBefore: string;
   }> {
     const { controller, repository, store } = await buildFixture();
-    expect((await repository.save(PRISON_ID, restorableEnvelope(1))).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(1)), 'the restorable generation 1');
     expect(await repository.importSave(PRISON_ID, v1WithWrittenPrefix(5_001))).toEqual({
       ok: true,
       generationId: 'gen-2',
@@ -940,7 +941,7 @@ describe('a save only another build can read is kept, not deleted', () => {
     const { repository, store } = await loadPastAWiderLedger();
 
     for (const revision of [3, 4, 5]) {
-      expect((await repository.save(PRISON_ID, restorableEnvelope(revision))).ok).toBe(true);
+      expectOk(await repository.save(PRISON_ID, restorableEnvelope(revision)), `the restorable generation ${String(revision)}`);
     }
 
     const [metadata] = await repository.list();
@@ -1014,9 +1015,9 @@ describe('a save only another build can read is kept, not deleted', () => {
    */
   it('still deletes a damaged generation while keeping an unreadable one from the same walk', async () => {
     const { controller, repository, store } = await buildFixture();
-    expect((await repository.save(PRISON_ID, restorableEnvelope(1))).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(1)), 'the restorable generation 1');
     expect(await repository.importSave(PRISON_ID, v1WithWrittenPrefix(5_001))).toMatchObject({ generationId: 'gen-2' });
-    expect((await repository.save(PRISON_ID, unrestorableEnvelope(3) as SaveEnvelope)).ok).toBe(true);
+    expectOk(await repository.save(PRISON_ID, unrestorableEnvelope(3) as SaveEnvelope), 'the unrestorable generation 3');
 
     vi.useFakeTimers();
     try {

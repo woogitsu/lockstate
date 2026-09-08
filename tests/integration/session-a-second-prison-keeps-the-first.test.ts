@@ -11,6 +11,7 @@ import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-ses
 import type { SimulationClient } from '../../src/simulation/worker/client';
 import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-channel';
 import { LoopbackWorker } from '../helpers/loopback-worker';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #943: **asking for a second prison silently destroyed the first one's
@@ -174,12 +175,12 @@ describe('a second prison keeps the first one (#943)', () => {
     const tickBefore = play(host, 137);
 
     expect(controller.hasPendingAutosave()).toBe(false);
-    expect((await controller.loadPrison('prison-a')).ok).toBe(true);
+    expectOk(await controller.loadPrison('prison-a'), 'the load of prison-a');
 
     // `docs/research/2026-09-04-does-a-prison-come-back.md` measured 2,461
     // ticks discarded by one Load press with zero dialogs. This is the half of
     // that a save can answer: the prison the player was in is on disk.
-    expect((await controller.loadPrison('prison-b')).ok).toBe(true);
+    expectOk(await controller.loadPrison('prison-b'), 'the load of prison-b');
     expect(liveTick(host)).toBe(tickBefore);
   });
 
@@ -206,7 +207,7 @@ describe('a second prison keeps the first one (#943)', () => {
     // A wedged worker must not leave the player unable to start a session that
     // works -- ADR 0096's "zawsze musi istnieć droga powrotu".
     const created = await controller.createPrison('prison-b', 'B');
-    expect(created.ok).toBe(true);
+    expectOk(created, 'the creation of prison-b while prison-a was live');
     expect(controller.getActiveSession()?.prisonId).toBe('prison-b');
 
     expect(controller.getLastOutgoingCapture()).toMatchObject({
@@ -214,7 +215,7 @@ describe('a second prison keeps the first one (#943)', () => {
       result: { ok: false, error: { message: expect.stringMatching(/did not reply/) } },
     });
     // The prison that could not be captured still has the generation it had.
-    expect((await repository.loadCurrent('prison-a')).ok).toBe(true);
+    expectOk(await repository.loadCurrent('prison-a'), "prison-a's current generation");
   });
 });
 
@@ -247,12 +248,12 @@ describe('loading the prison that is already live does not save it first (#943)'
 
     await controller.createPrison('prison-a', 'A');
     play(host, 50);
-    expect((await controller.saveNow()).ok).toBe(true);
+    expectOk(await controller.saveNow(), 'the save');
     const windowBefore = (await repository.list())[0]?.generationIds ?? [];
     play(host, 70);
     expect(liveTick(host)).toBe(120);
 
-    expect((await controller.loadPrison('prison-a')).ok).toBe(true);
+    expectOk(await controller.loadPrison('prison-a'), 'the load of prison-a');
 
     // The panel offers exactly one Load per prison and it gives the newest
     // generation (`docs/research/2026-09-04-does-a-prison-come-back.md` §3.1),
@@ -274,7 +275,7 @@ describe('loading the prison that is already live does not save it first (#943)'
     // refuses it -- the shape `session-restore-failure.test.ts` and
     // `session-second-load.test.ts` both use, for the same reason: those
     // semantic checks are exactly the saves `save-schema.ts` cannot judge.
-    expect((await repository.save('prison-a', unrestorableEnvelope('prison-a', 2))).ok).toBe(true);
+    expectOk(await repository.save('prison-a', unrestorableEnvelope('prison-a', 2)), 'the unrestorable generation 2');
     play(host, 200);
 
     const outcome = await controller.loadPrison('prison-a');
@@ -296,7 +297,7 @@ describe('loading the prison that is already live does not save it first (#943)'
 
     await controller.createPrison('prison-a', 'A');
     play(host, 40);
-    expect((await controller.saveNow()).ok).toBe(true);
+    expectOk(await controller.saveNow(), 'the save');
     const exported = await controller.exportActive();
     expect(exported).toBeDefined();
     const throughFile: unknown = JSON.parse(JSON.stringify(exported));
@@ -309,8 +310,8 @@ describe('loading the prison that is already live does not save it first (#943)'
     // control has.
     play(host, 300);
     expect(liveTick(host)).toBe(340);
-    expect((await controller.importInto('prison-a', throughFile)).ok).toBe(true);
-    expect((await controller.loadPrison('prison-a')).ok).toBe(true);
+    expectOk(await controller.importInto('prison-a', throughFile), 'the import into prison-a');
+    expectOk(await controller.loadPrison('prison-a'), 'the load of prison-a');
 
     expect(liveTick(host)).toBe(40);
     expect(controller.getLastOutgoingCapture()).toBeUndefined();
@@ -351,8 +352,8 @@ describe('a second prison keeps the first one through the real worker compositio
       generateMasterSeed: () => seeds.shift() ?? -1,
     });
 
-    expect((await controller.createPrison('prison-a', 'A')).ok).toBe(true);
-    expect((await controller.createPrison('prison-b', 'B')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-a', 'A'), 'the creation of prison-a');
+    expectOk(await controller.createPrison('prison-b', 'B'), 'the creation of prison-b');
 
     const [slotA] = (await repository.list()).filter((slot) => slot.prisonId === 'prison-a');
     expect(slotA?.generationIds).toEqual(['gen-1', 'gen-2']);
@@ -363,7 +364,7 @@ describe('a second prison keeps the first one through the real worker compositio
     // replacement's world and filed it under prison A -- a save that loads,
     // reports success, and is the wrong prison.
     const loaded = await repository.loadCurrent('prison-a');
-    expect(loaded.ok).toBe(true);
+    expectOk(loaded, "prison-a's current generation");
     if (!loaded.ok) return;
     expect(loaded.generationId).toBe('gen-2');
     expect((loaded.envelope.payload as unknown as { readonly masterSeed?: number }).masterSeed).toBe(SEED_A);

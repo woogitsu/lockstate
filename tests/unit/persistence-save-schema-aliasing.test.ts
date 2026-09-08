@@ -8,6 +8,7 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * These tests pin that a parsed payload's interior is detached from both the
@@ -75,7 +76,7 @@ describe('decodeSaveEnvelope: nothing in the result is reachable from the input'
     const input = JSON.parse(JSON.stringify(envelope)) as SaveEnvelope;
 
     const decoded = decodeSaveEnvelope(input);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'decoding the round-tripped envelope (first alias case)');
     if (!decoded.ok) return;
 
     // Identity, not equality: equal contents were never the question.
@@ -96,7 +97,7 @@ describe('decodeSaveEnvelope: nothing in the result is reachable from the input'
     const input = JSON.parse(JSON.stringify(envelope)) as SaveEnvelope;
 
     const decoded = decodeSaveEnvelope(input);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'decoding the round-tripped envelope (second alias case)');
     if (!decoded.ok) return;
     expect(decoded.value.checksum).toBe(computeSaveChecksum(decoded.value.payload as JsonValue));
 
@@ -115,7 +116,7 @@ describe('decodeSaveEnvelope: nothing in the result is reachable from the input'
     const input = JSON.parse(JSON.stringify(envelope)) as SaveEnvelope;
 
     const decoded = decodeSaveEnvelope(input);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'decoding the round-tripped envelope (third alias case)');
     if (!decoded.ok) return;
 
     (input.payload.world as { chunkSize: number }).chunkSize = 8;

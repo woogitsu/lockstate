@@ -20,6 +20,7 @@ import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-ses
 import { captureSessionSystems } from '../../src/simulation/runtime/session-systems';
 import freshPrisonFixture from '../fixtures/persistence/save-v1-fresh-prison.json';
 import inProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
+import { expectOk } from '../helpers/expect-ok';
 
 const FIXTURES = [
   { name: 'fresh prison', fixture: freshPrisonFixture },
@@ -39,8 +40,8 @@ describe('save envelope: checked-in V1 fixtures', () => {
     it(`decodes the "${name}" fixture identically before and after a JSON round trip`, () => {
       const direct = decodeSaveEnvelope(fixture);
       const roundTripped = decodeSaveEnvelope(JSON.parse(JSON.stringify(fixture)) as unknown);
-      expect(direct.ok).toBe(true);
-      expect(roundTripped.ok).toBe(true);
+      expectOk(direct, 'decoding the fixture directly');
+      expectOk(roundTripped, 'decoding the fixture after a JSON round trip');
       if (!direct.ok || !roundTripped.ok) return;
       expect(roundTripped.value).toStrictEqual(direct.value);
     });
@@ -50,7 +51,7 @@ describe('save envelope: checked-in V1 fixtures', () => {
       // must never rewrite it in place, or a later test would be asserting
       // against a fixture this test had already upgraded.
       const before = JSON.stringify(fixture);
-      expect(decodeSaveEnvelope(fixture).ok).toBe(true);
+      expectOk(decodeSaveEnvelope(fixture), 'decoding the fixture');
       expect(JSON.stringify(fixture)).toBe(before);
       expect(fixture.saveSchemaVersion).toBe(1);
     });
@@ -207,7 +208,7 @@ describe('trusted save envelopes', () => {
   it('trusts the output of decodeSaveEnvelope, which is a fresh value rather than the caller’s object', () => {
     const input = JSON.parse(JSON.stringify(freshPrisonFixture)) as SaveEnvelopeV1;
     const decoded = decodeSaveEnvelope(input);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'decoding the fresh-prison fixture');
     if (!decoded.ok) return;
     expect(decoded.value).not.toBe(input);
     expect(isTrustedSaveEnvelope(decoded.value)).toBe(true);
@@ -242,7 +243,7 @@ describe('trusted save envelopes', () => {
     expect(() => {
       (envelope as unknown as { checksum: string }).checksum = '0'.repeat(16);
     }).toThrow(TypeError);
-    expect(decodeSaveEnvelope(envelope).ok).toBe(true);
+    expectOk(decodeSaveEnvelope(envelope), 'decoding the envelope');
   });
 });
 

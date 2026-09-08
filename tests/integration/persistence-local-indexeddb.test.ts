@@ -8,6 +8,7 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Exercises the real `IndexedDbLocalSaveStore` against `fake-indexeddb` — a
@@ -60,7 +61,7 @@ describe('IndexedDbLocalSaveStore (fake-indexeddb)', () => {
 
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', displayName: 'Cell Block A' });
     const saveResult = await repo.save('prison-1', buildEnvelope(1));
-    expect(saveResult.ok).toBe(true);
+    expectOk(saveResult, 'the first save into real IndexedDB');
 
     expect(await repo.list()).toMatchObject([{ prisonId: 'prison-1', displayName: 'Cell Block A' }]);
 
@@ -128,7 +129,7 @@ describe('IndexedDbLocalSaveStore (fake-indexeddb)', () => {
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
     await repo.save('prison-1', buildEnvelope(1));
     const secondSave = await repo.save('prison-1', buildEnvelope(2));
-    expect(secondSave.ok).toBe(true);
+    expectOk(secondSave, 'the second save into real IndexedDB');
     const corruptGenerationId = secondSave.ok ? secondSave.generationId : undefined;
 
     await store.runTransaction('readwrite', async (tx) => {
