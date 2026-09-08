@@ -6,6 +6,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { CONSTRUCTION_MATERIALS_CONTAINER_ID, createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * `ConstructionSystem.previewCancelRefundMinorUnits`, the figure the Build
@@ -253,10 +254,10 @@ describe('previewCancelRefundMinorUnits, the states a full session cannot easily
 
     const container = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
     container.deposit(brick, 1);
-    expect(
-      runtime.procurement.purchase('jit:m6-probe', brick, 2, runtime.kernel.tick, 'construction').ok,
-      'two bricks on the road, bought at the same catalogue price the shelf would sell at',
-    ).toBe(true);
+    expectOk(
+      runtime.procurement.purchase('jit:m6-probe', brick, 2, runtime.kernel.tick, 'construction'),
+      'the two-brick delivery put on the road at the price the shelf would sell at',
+    );
     expect(runtime.procurement.pendingDeliveries).toHaveLength(1);
 
     const balanceBefore = runtime.treasury.balanceMinorUnits;
