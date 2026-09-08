@@ -251,9 +251,26 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     // Exact, deterministic measurements (one seed, one command order, no RNG
     // on this path) -- pinned so a re-baseline has to explain the new numbers.
     expect(none.lowestHunger).toEqual([178.5, 178.5, 178.5, 178.5, 178.5, 178.5]);
-    // 173.5 in the fifth slot until issue #588's hire; see `watched`.
-    expect(small.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 176.5, 178.5]);
-    expect(large.lowestHunger).toEqual([177.5, 176.5, 177.5, 176.5, 176.5, 178.5]);
+    /*
+     * **173.5 in the fifth slot until issue #588's hire; see `watched`. Both
+     * canteen shapes moved again with
+     * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md).**
+     * All six prisoners here are housed, so what that decision reaches is the
+     * *window before* each of them is: an arrival at intake stage
+     * `accommodation-assignment` is now considered by `ActionSystem` and asks
+     * for a canteen seat it previously could not ask for, so the six reach
+     * their first meals in a slightly different order.
+     *
+     * **A first attempt at this note claimed `none` and `large` were both
+     * unchanged, and the run refuted half of it** -- `large`'s sixth slot moved
+     * from 178.5 to 176.5 too. The correction is kept rather than smoothed
+     * because it is the useful half: `none` is the shape with **no canteen at
+     * all**, and it is the only one that did not move by a single level, which
+     * is what says the whole effect is contention for a seat rather than
+     * anything about the decision reaching a housed prisoner's day.
+     */
+    expect(small.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 173.5, 176.5]);
+    expect(large.lowestHunger).toEqual([177.5, 176.5, 177.5, 176.5, 176.5, 176.5]);
   });
 
   it('finds the real effect is travel time, not capacity: `large` travels more and finishes lower than `small`', () => {
@@ -292,8 +309,12 @@ describe('canteen-wasted-walk: no canteen vs a too-small canteen vs a canteen th
     expect(large.travellingPhaseTicks).toBe(8_140);
     // 2,098,577 until issue #588's hire; see `watched`.
     expect(none.hungerDeficitLevelTicks).toBe(2_096_320);
-    expect(small.hungerDeficitLevelTicks).toBe(2_221_400);
-    expect(large.hungerDeficitLevelTicks).toBe(2_233_320);
+    // 2,221,400 and 2,233,320 until ADR 0102, for the reason the case above
+    // gives: the two shapes that have a canteen moved, by 1,700 and 8,760
+    // level-ticks out of 2.2 million, and the shape with no canteen did not
+    // move at all.
+    expect(small.hungerDeficitLevelTicks).toBe(2_223_100);
+    expect(large.hungerDeficitLevelTicks).toBe(2_242_080);
   });
 
   it('produces the identical loop on a second run of each shape, so nothing here is nondeterministic', () => {

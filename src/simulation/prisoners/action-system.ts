@@ -31,6 +31,51 @@ function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
 }
 
 /**
+ * The intake stages at which a prisoner has a day at all --
+ * [ADR 0102](../../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md)
+ * decision 1, accepted by the owner on 2026-09-07, in the owner's own words
+ * *"ADR: nieulokowany ma móc jeść i się myć"* ("an unhoused prisoner must be
+ * able to eat and wash").
+ *
+ * **`update` used to admit `'completed'` alone, and that one line was issue
+ * #1064.** A prisoner the prison has classified but not yet housed sat outside
+ * this system entirely -- not routed to a narrower set of legal actions, not
+ * given a fallback, never considered -- while `NeedsDecaySystem` decayed all
+ * six of their needs from the tick they were admitted. `IntakeSystem`'s
+ * `'accommodation-assignment'` stage retries with no timeout for as long as no
+ * instance of their target room type is free, so "not yet housed" is not a
+ * transient: measured on one bed and two admissions, the second prisoner's
+ * hunger reached 0 at about tick 4,900 and stayed there for the rest of the
+ * run.
+ *
+ * **What is in, and what is deliberately not.**
+ *
+ * - `'accommodation-assignment'` is in. It is exactly "classified, has a real
+ *   target room type, waiting for an instance of it to free up", which is the
+ *   population the owner's ruling names.
+ * - `'queued'`, `'reception'` and `'classification'` stay out, and not as a
+ *   matter of degree: `classificationGroupIndex` is written *during* the
+ *   `classification` stage, and `planIdleSelection` resolves a regime schedule
+ *   from it, so admitting those three would need a timetable to resolve
+ *   against a group that does not exist yet.
+ * - `'failed'` stays out. ADR 0102 decision 1 **recommends** including it, on
+ *   `PrisonerDischargeSystem`'s `SENTENCE_BEARING_STAGES` precedent, and the
+ *   Status section of that document is equally explicit that the owner's
+ *   acceptance *"does not decide `failed`'s inclusion (Decision §1's
+ *   recommendation stays a recommendation)"*. So it is left where the owner
+ *   left it, and open question 2 of that document is where it is decided.
+ *
+ * A `Set` of indices rather than a list of stage names compared one at a time:
+ * `intakeStage` stores the index, this is read once per live prisoner per
+ * tick, and building it from `intakeStageIndex` keeps the single spelling of
+ * each stage that `components.ts` owns.
+ */
+const ACTION_ELIGIBLE_INTAKE_STAGE_INDICES: ReadonlySet<number> = new Set([
+  intakeStageIndex('accommodation-assignment'),
+  intakeStageIndex('completed'),
+]);
+
+/**
  * One prisoner and how badly they want what they are about to ask for -- the
  * shape both reordered passes of `ActionSystem.update` sort.
  *
@@ -490,9 +535,54 @@ export class ActionSystem implements SystemRegistration {
 
     for (const entityId of this.query.execute()) {
       const index = this.store.getIndex(entityId);
-      if (this.records.intakeStage[index] !== intakeStageIndex('completed')) continue;
-
       const phase = ACTION_PHASES[this.currentAction.phase[index]!]!;
+
+      if (!ACTION_ELIGIBLE_INTAKE_STAGE_INDICES.has(this.records.intakeStage[index]!)) {
+        /*
+         * **A prisoner who leaves the eligible set mid-action, which is a
+         * fourth exit ADR 0102 creates and does not itself name.**
+         *
+         * There is exactly one such transition, because the set is
+         * `{'accommodation-assignment', 'completed'}` and nothing moves a
+         * prisoner out of `'completed'`: `IntakeSystem` sends an
+         * `'accommodation-assignment'` prisoner to `'failed'` on the tick the
+         * prison holds no instance of any room type their classification group
+         * may be housed in. Before the widened gate an unhoused prisoner held
+         * no claim and stood in no action, so this cost nothing; now they can
+         * be eating in the canteen when it happens.
+         *
+         * **How a player reaches that transition is read rather than driven**,
+         * and is recorded as such: `RoomZoningService.unzone` refuses only on
+         * an instance with a live *use* claim or with residents it cannot
+         * relocate, so the last housing room of a group can be un-zoned while
+         * an unhoused prisoner of that group is eating somewhere else. No
+         * fixture in this repository drives that sequence end to end, and the
+         * unit case that covers this branch writes the stage by hand and says
+         * so. The guard is here anyway, because the failure it prevents is
+         * silent -- a seat held for the rest of the session by a prisoner
+         * `update` will never look at again -- and because it costs one
+         * comparison on the path of every prisoner still in intake.
+         *
+         * Left alone, the `continue` below would be the one exit from
+         * `performing` that forgot to release, against `releaseUseClaim`'s own
+         * "one release site per exit, asked unconditionally" argument -- and
+         * the seat would be held by a prisoner nothing will ever look at
+         * again, for the rest of the session.
+         *
+         * `phase === 'idle'` covers every prisoner still inside the intake
+         * pipeline and every `'failed'` record that never began anything, so
+         * the ordinary case pays one comparison and writes nothing.
+         *
+         * No `unmetDemandCycles`, following `continuePerforming`'s own
+         * convention: this is bookkeeping that can no longer be read back
+         * rather than a demand the prison refused. And no carry is possible
+         * here -- `planIdleSelection` refuses every `'work'` action to a
+         * prisoner at `'accommodation-assignment'` (ADR 0102 decision 2), so
+         * the only action such a prisoner can be holding targets a room.
+         */
+        if (phase !== 'idle') this.abandonActionOnIneligibleStage(entityId, index);
+        continue;
+      }
 
       if (phase === 'performing') {
         this.continuePerforming(entityId, index, context.tick);
@@ -749,6 +839,28 @@ export class ActionSystem implements SystemRegistration {
   private releaseUseClaim(entityId: number): void {
     const targetInstanceId = this.coldState.getActionTarget(entityId);
     if (targetInstanceId !== undefined) this.roomInstances.releaseUse(targetInstanceId, entityId);
+  }
+
+  /**
+   * Gives back everything a prisoner was holding when their intake stage left
+   * the set `update` will look at again -- the exit ADR 0102's widened gate
+   * creates. The call site carries the argument for why it exists; this is the
+   * four statements, in the order the other exits use them.
+   *
+   * `cancelWalk` and `abandonRoute` are both total on a prisoner who was
+   * `performing` rather than `travelling` (no walk, no outstanding request),
+   * and `releaseUseClaim` is total on one who was `travelling` (ADR 0029
+   * decision 2: a traveller holds no claim). So the two phases share one path
+   * rather than branching, exactly as `releaseUseClaim` argues for being
+   * ungated on `target.kind`: the case that most needs the release is the case
+   * a branch would skip.
+   */
+  private abandonActionOnIneligibleStage(entityId: number, index: number): void {
+    this.locomotion.cancelWalk(index);
+    this.abandonRoute(entityId);
+    this.releaseUseClaim(entityId);
+    this.currentAction.phase[index] = phaseIndex('idle');
+    this.coldState.setActionTarget(entityId, undefined);
   }
 
   /**
@@ -1247,11 +1359,40 @@ export class ActionSystem implements SystemRegistration {
      * still shift `providedIndex` and the substitution counters for every
      * prisoner in every work block, in every prison that has never seen a job.
      */
+    /*
+     * **Work is refused to a prisoner still waiting for a bed, explicitly, and
+     * that is ADR 0102 decision 2 declining to answer a question rather than
+     * answering it.**
+     *
+     * The rest of that decision is a *structural* boundary and needs no list:
+     * `prisonProvides`'s `own-accommodation` branch already answers `false`
+     * for a prisoner `getAccommodation` has nothing for, so sleep, the in-cell
+     * meal, the toilet and free association stay unreachable with no code
+     * here. `action.laundry-work`, `action.kitchen-work` and `action.carry`
+     * are the three that would slip through it: none of them needs a cell, so
+     * the structural test admits them by default. Whether an unhoused prisoner
+     * should hold a job -- do they get paid the same way, does an assignment
+     * wait for them the way a bed does, does a work block mean anything before
+     * a regime is settled -- is a separate document's question, and ADR 0102
+     * requires the implementing pass to close it rather than let it be
+     * answered by omission.
+     *
+     * Keyed on the intake stage and not on "has no accommodation": a *housed*
+     * resident whose bed is taken away is
+     * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+     * population, at stage `'completed'`, and nothing here is meant to change
+     * what they may do.
+     */
+    const awaitingAccommodation = this.records.intakeStage[index] === intakeStageIndex('accommodation-assignment');
     const carryEligible = CARRY_ACTION !== undefined
+      && !awaitingAccommodation
       && isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories)
       && this.carryAvailableFor(entityId);
     const legalActions = DEFAULT_ACTIONS.filter(
-      (action) => isActionCategoryAllowed(action, block.allowedCategories) && (action !== CARRY_ACTION || carryEligible),
+      (action) =>
+        isActionCategoryAllowed(action, block.allowedCategories)
+        && (action !== CARRY_ACTION || carryEligible)
+        && !(awaitingAccommodation && action.category === 'work'),
     );
     const ranked = rankActions(this.needs, index, legalActions);
     // `needUrgency` split in two (issue #435), so that one walk over
