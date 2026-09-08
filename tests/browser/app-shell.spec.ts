@@ -919,6 +919,18 @@ const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
  * stops `#331` being the first test to run out on an ordinary CI host; it does
  * not make the keyboard route cheap.
  *
+ * **The last clause held for four days and no longer does, and the paragraph
+ * is kept because its first clause is the part that was tested and failed.**
+ * `5a761322` was not enough: the first `browser` job on this runner pool ever
+ * allowed to finish (run 34215508642, `422 passed, 1 failed`) had this test
+ * exceed the 180 s cap with the smaller rooms already in place. What the
+ * route's cost turned out to be made of is two things this constant cannot
+ * touch -- Shift's own key events, and the number of pixels a software
+ * rasteriser repaints between one press and the next -- and both are now cut,
+ * by `withTabKey` and by `WallOrderOptions.orderAt`. The rooms are still 3x3
+ * and the perimeter is still 23: this constant is not withdrawn, it is simply
+ * no longer the only cut in the test.
+ *
  * ### Why only the one caller uses it
  *
  * The other `wallRectanglesFromTheKeyboard` callers wall a **single** cell --
@@ -1661,10 +1673,73 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  * their length is a fact about the page's document order and says nothing
  * about the route under test.
  *
- * What it does not buy is a cheaper press. See `#1008`.
+ * **"What it does not buy is a cheaper press" is how this block used to end,
+ * and half of it is now false -- marked rather than deleted, because the
+ * other half is still the thing to understand.** A *backwards* press did get
+ * cheaper: `withTabKey` below holds Shift down across a run instead of tapping
+ * it once per hop, which takes a `Shift+Tab` hop from four key events to two
+ * and, measured on the container `#1008` is about, from 222 ms to 155 ms. A
+ * *forwards* press costs exactly what it always did, and what every press
+ * queues behind is still the renderer's frame -- which is what the sentence
+ * was really about and is what `WallOrderOptions.orderAt` reaches instead.
  */
 async function shiftTabTo(page: Page, description: string, target: FocusTarget): Promise<number> {
   return walkFocus(page, 'Shift+Tab', description, target);
+}
+
+/**
+ * Runs a sequence of hops with `Shift` held down across the run, rather than
+ * tapped once per hop.
+ *
+ * ### Why this is a cut and not a trick
+ *
+ * `page.keyboard.press('Shift+Tab')` dispatches **four** key events -- Shift
+ * down, Tab down, Tab up, Shift up -- where `press('Tab')` dispatches two, and
+ * on this page every one of them queues behind the renderer's frame. So a
+ * backwards hop costs about twice a forwards one of the same length, which is
+ * not a fact about the tab order at all.
+ *
+ * Both sides measured on the container `#1008` is about -- four cores, no GPU,
+ * Chromium rasterising WebGL through SwiftShader, one worker:
+ *
+ *  - **From the CI trace of the failing run** (run 34215508642, the first
+ *    `browser` job on that pool ever allowed to finish): 140 `Tab` presses at a
+ *    mean of **154 ms** beside 131 `Shift+Tab` at **267 ms**, in one test.
+ *  - **From a probe on the assembled page**, 40 presses of each back to back at
+ *    1280x800 with a prison loaded: `Tab` **164 ms**, `Shift+Tab` **222 ms**,
+ *    and `Tab` with Shift held down across the run **155 ms** -- i.e. a held
+ *    run costs what a forwards hop costs.
+ *
+ * ### Why no assertion moves
+ *
+ * The page cannot tell the difference where it matters: every `Tab` keydown
+ * still carries `shiftKey: true`, focus still travels one stop per tap, and the
+ * hop counts `walkFocus` discovers and `#411` bounds are unchanged. What is no
+ * longer repeated is Shift's own down/up between taps -- and **nothing under
+ * `src/` reads `shiftKey`, listens for the Shift key, or names it at all**,
+ * checked by grep across the tree, so there is nothing there to observe the
+ * difference. It is also what a hand does: a player reaching backwards through
+ * a form holds Shift and taps Tab.
+ *
+ * `Tab` runs go through here too and hold nothing, so both directions stay one
+ * code path.
+ */
+async function withTabKey<T>(
+  page: Page,
+  key: 'Tab' | 'Shift+Tab',
+  body: (tap: () => Promise<void>) => Promise<T>,
+): Promise<T> {
+  const tap = async (): Promise<void> => page.keyboard.press('Tab');
+  if (key === 'Tab') return body(tap);
+  await page.keyboard.down('Shift');
+  try {
+    return await body(tap);
+  } finally {
+    // Released whatever happened, including on the throw below: a modifier
+    // left down would reach the caller's next press as a chord it never asked
+    // for, and the failure would land somewhere else entirely.
+    await page.keyboard.up('Shift');
+  }
 }
 
 async function walkFocus(
@@ -1673,19 +1748,25 @@ async function walkFocus(
   description: string,
   target: FocusTarget,
 ): Promise<number> {
-  for (let presses = 1; presses <= MAX_TAB_PRESSES_PER_HOP; presses += 1) {
-    await page.keyboard.press(key);
-    const reached = await page.evaluate(
-      ({ selector, text }) => {
-        const active = document.activeElement;
-        if (!(active instanceof HTMLElement)) return false;
-        if (!active.matches(selector)) return false;
-        return text === null || (active.textContent ?? '').trim() === text;
-      },
-      { selector: target.selector, text: target.text ?? null },
-    );
-    if (reached) return presses;
-  }
+  const reached = await withTabKey(page, key, async (tap) => {
+    for (let presses = 1; presses <= MAX_TAB_PRESSES_PER_HOP; presses += 1) {
+      await tap();
+      const landed = await page.evaluate(
+        ({ selector, text }) => {
+          const active = document.activeElement;
+          if (!(active instanceof HTMLElement)) return false;
+          if (!active.matches(selector)) return false;
+          return text === null || (active.textContent ?? '').trim() === text;
+        },
+        { selector: target.selector, text: target.text ?? null },
+      );
+      if (landed) return presses;
+    }
+    return undefined;
+  });
+  if (reached !== undefined) return reached;
+  // Outside the held run, so the control this names is read with no modifier
+  // down and the message says what a reader would see.
   throw new Error(
     `${MAX_TAB_PRESSES_PER_HOP} ${key} presses never reached ${description} (${target.selector}${
       target.text === undefined ? '' : ` labelled "${target.text}"`
@@ -1891,6 +1972,54 @@ function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallS
 const BUILD_TILE_X_FIELD = '.hud-build__coords > .ui-number:nth-child(1) .ui-number__input';
 const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-number__input';
 
+interface WallOrderOptions {
+  /**
+   * A viewport to type the orders at, restored before this returns.
+   *
+   * ### What it is for
+   *
+   * Every `keyboard.press`, `page.evaluate` and `getAttribute` in this helper
+   * queues behind the renderer's frame, and on a host with no GPU that frame
+   * is a software rasteriser painting the whole viewport. So the cost of the
+   * route is a function of the canvas's area, which no caller had a way to
+   * say anything about.
+   *
+   * Measured on the container `#1008` is about -- four cores, Chromium
+   * rasterising WebGL through SwiftShader -- with the assembled page up and a
+   * prison loaded, 40 presses of each in one run, 1280x800 then 640x480 then
+   * 1280x800 again so drift is visible:
+   *
+   * | | `Tab` | `Shift+Tab` | `page.evaluate` |
+   * | --- | --- | --- | --- |
+   * | 1280x800 (canvas 1280x800) | 164 ms | 222 ms | 115 ms |
+   * | 640x480 (canvas 640x480) | **28 ms** | **30 ms** | **22 ms** |
+   * | 1280x800 again | 180 ms | 397 ms | 173 ms |
+   *
+   * A third of the pixels, about a sixth of the cost -- superlinear, which is
+   * what leaving a saturated rasteriser looks like rather than a proportion.
+   * The third row is the control and it is also the warning: it is worse than
+   * the first, because another agent's suite started during the run. Treat the
+   * ratio as the finding and none of the absolutes as a figure.
+   *
+   * ### Why it costs no coverage
+   *
+   * This helper asserts nothing about layout, geometry or a viewport. It
+   * asserts that the catalogue arrived with `wall-brick` selected, that the
+   * buy control offers the bricks the perimeter needs, that nothing was
+   * refused, that the worker received one order per segment, that the clock
+   * reached x4, and that the crew finished -- and it types the orders as
+   * **tile** coordinates, which no viewport can move. The rectangles it walls
+   * were discovered by the caller before this ran and are not touched here.
+   *
+   * The caller names the size, so a spec whose subject *is* the keyboard route
+   * keeps the viewport it was written against: `#411`'s two keyboard-only
+   * specs and `#703` do not pass this and do not move. Asked for by name for
+   * the same reason `SMALL_ROOM_DRAG_DELTAS_PX` and
+   * `chooseRoomTypeFromTheKeyboard`'s `backwards` are.
+   */
+  readonly orderAt?: { readonly width: number; readonly height: number };
+}
+
 /**
  * Builds the walls these rectangles need, through the application, with the
  * keyboard alone -- and leaves the session paused, as a new one arrives.
@@ -1921,6 +2050,11 @@ const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-num
  * ~64 s of clicking against ~3 s of typing. One helper, the cheaper route, and
  * the route the panel's own hint calls "the keyboard route".
  *
+ * The third caller does pass `orderAt`, which is a statement about the
+ * *viewport* and not about the route: see `WallOrderOptions` for what a
+ * software rasteriser charges per pixel and why a spec whose subject is the
+ * keyboard route must not ask for it.
+ *
  * **The `~3 s` is a per-press figure multiplied as though a segment were one
  * press, and a segment is four or fourteen hops.** Measured on this container
  * on 2026-09-08, instrumented at the two ends of the order loop below: the 32
@@ -1947,6 +2081,25 @@ const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-num
  * crew has never been what this helper waits on.
  */
 async function wallRectanglesFromTheKeyboard(
+  page: Page,
+  rectangles: readonly TileRectangle[],
+  options: WallOrderOptions = {},
+): Promise<readonly WallSegment[]> {
+  const orderAt = options.orderAt;
+  if (orderAt === undefined) return orderWallRectangles(page, rectangles);
+  const entered = page.viewportSize();
+  await page.setViewportSize({ width: orderAt.width, height: orderAt.height });
+  try {
+    return await orderWallRectangles(page, rectangles);
+  } finally {
+    // Restored on the way out however this ended, so a caller inherits the
+    // viewport it had and a failure's snapshot is taken at the size the caller
+    // is reasoning about rather than at the one the orders were typed at.
+    if (entered !== null) await page.setViewportSize(entered);
+  }
+}
+
+async function orderWallRectangles(
   page: Page,
   rectangles: readonly TileRectangle[],
 ): Promise<readonly WallSegment[]> {
@@ -2071,6 +2224,23 @@ async function wallRectanglesFromTheKeyboard(
    * measured off the HUD's own day progress at 81.5 ticks per second.
    * `docs/AGENT_WORKFLOW.md` carries the pass and the options.
    *
+   * **THE 407 PRESSES ARE NOT ONE PRICE, AND SPLITTING THEM IS WHERE THE
+   * REMAINING CUT CAME FROM.** The same trace, read by key rather than by
+   * count: **140 `Tab` at a mean of 154 ms beside 131 `Shift+Tab` at 267 ms**,
+   * and 33 `Control+a` at 256 ms. A backwards hop is not slower because it is
+   * backwards -- it is slower because `press('Shift+Tab')` dispatches four key
+   * events where `press('Tab')` dispatches two, and every one of them queues
+   * behind the same frame. `withTabKey` holds the modifier down across a run
+   * instead, which is what a hand does and what the page cannot tell apart.
+   *
+   * And the frame itself is a *size*, which nothing here had treated as
+   * anything but a constant: at 640x480 the same presses cost 28 ms and 30 ms
+   * against 164 ms and 222 ms at 1280x800, on the same page in the same run.
+   * `WallOrderOptions.orderAt` is that, offered to the one caller whose
+   * subject is not the keyboard route. Neither of those is a cheaper press in
+   * the sense this block meant -- the renderer is still what a press waits
+   * for -- and both are fewer things for it to wait on.
+   *
    * So each *kind* of hop is discovered once, with the walk, and repeated
    * blindly after that -- then checked. The check is not decoration: if the
    * count no longer lands on the control, the walk runs again and re-learns
@@ -2082,7 +2252,12 @@ async function wallRectanglesFromTheKeyboard(
   const hopTo = async (name: string, key: 'Tab' | 'Shift+Tab', target: FocusTarget): Promise<void> => {
     const learned = strides.get(name);
     if (learned !== undefined) {
-      for (let press = 0; press < learned; press += 1) await page.keyboard.press(key);
+      // One held run for the whole stride, then the check outside it -- see
+      // `withTabKey` for what that is worth on a backwards hop and why the
+      // page cannot tell.
+      await withTabKey(page, key, async (tap) => {
+        for (let press = 0; press < learned; press += 1) await tap();
+      });
       if (await focusIs(page, target)) return;
     }
     strides.set(name, await walkFocus(page, key, name, target));
@@ -6116,7 +6291,21 @@ test.describe('the assembled application', () => {
     // below would be refused `overlaps-existing-room`.
     expect(secondCell, 'both room drags found the same rectangle').not.toEqual(firstCell);
 
-    await wallRectanglesFromTheKeyboard(page, [firstCell, secondCell]);
+    /*
+     * Typed at the phone viewport, and restored to 1280x800 before the drag
+     * below -- see `WallOrderOptions.orderAt` for the measurement and for why
+     * this is the one caller that asks for it.
+     *
+     * 375x812 is not an arbitrary small box: it is one of the two viewports
+     * the block above just asserted the empty readout at, and one of the three
+     * the block below asserts the filled one at. Nothing between here and
+     * there is measured in pixels, and the two things that are -- the
+     * rectangle this drag has to land on again, and the fold assertions at the
+     * end -- both happen at 1280x800 with the viewport back.
+     */
+    await wallRectanglesFromTheKeyboard(page, [firstCell, secondCell], {
+      orderAt: { width: 375, height: 812 },
+    });
 
     // ---- two cells zoned, and nothing standing in either -------------
     await page.locator('.ui-tab[data-tab="rooms"]').click();
