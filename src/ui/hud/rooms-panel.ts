@@ -249,6 +249,18 @@ export interface RoomsPanel {
    * they draw no block for different reasons -- see `HudRoomNeedsViewModel`.
    */
   setRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
+  /**
+   * Puts the panel's tool down, as `Escape` on the world asks (issue #959).
+   *
+   * The Build panel's `standDown` in every respect that matters, including
+   * doing nothing when the panel is holding nothing. What it does **not**
+   * touch is the pending rectangle: a drag that has been released is a
+   * proposal the player still has a Confirm button for, and taking it away
+   * would make one key undo a decision they made with the pointer. Leaving
+   * the tab does take it, and for a reason that does not apply here -- the
+   * Confirm would be off screen.
+   */
+  standDown(): void;
   setVisible(visible: boolean): void;
 }
 
@@ -2061,6 +2073,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     setRoomNeeds(next: HudRoomNeedsViewModel | undefined): void {
       needs = next;
       paintNeeds();
+    },
+    standDown(): void {
+      // The arming half of `setVisible(false)` below, and only that half: see
+      // the handle's own note on why the pending rectangle stays.
+      if (!armed) return;
+      armed = false;
+      removing = false;
+      options.onArm(false, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
+      paintActions();
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

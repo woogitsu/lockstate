@@ -2,7 +2,12 @@ import Phaser from 'phaser';
 import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
-import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../../src/rendering/build/edge-picking';
+import type {
+  BuildToolPort,
+  EdgeTarget,
+  EditHistoryPort,
+  ToolStandDownPort,
+} from '../../src/rendering/build/edge-picking';
 import type { ObjectToolPort, RoomToolPort, TileRect } from '../../src/rendering/build/area-picking';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
@@ -194,11 +199,35 @@ const objectTool: ObjectToolPort = {
   },
 };
 
+/**
+ * An arming owner that records the request **and acts on it** (#959).
+ *
+ * Both halves are deliberate, and the second is what the other doubles in
+ * this file do not do. `standDownRequests` is the report the scene owes --
+ * one press, one request, and nothing at all while a gesture was there to
+ * abandon instead. Clearing the three flags is this double standing in for
+ * `src/main.ts`, which turns the same request into two panels' arming
+ * (`HudHandle.standToolsDown`); without it the spec could only assert that a
+ * message was sent and never that the world stopped belonging to the tool,
+ * which is the half issue #959 measured in funds.
+ */
+let standDownRequests = 0;
+
+const toolStandDown: ToolStandDownPort = {
+  standDown: () => {
+    standDownRequests += 1;
+    buildArmed = false;
+    objectArmed = false;
+    roomArmed = false;
+  },
+};
+
 const scene = new WorldScene({
   feed,
   keyValueStore: memoryStore(),
   buildTool,
   editHistory,
+  toolStandDown,
   roomTool,
   objectTool,
   // No atlas library: the harness asserts nothing about art, and loading one
@@ -293,6 +322,8 @@ const harness: LockstateWorldSceneHarness = {
   armBuildTool: (armed) => {
     buildArmed = armed;
   },
+  standDownRequests: () => standDownRequests,
+  isAnyToolArmed: () => buildArmed || objectArmed || roomArmed,
   placedRuns: () => placed.map((run) => run.map(toHarnessEdge)),
   historyRequests: () => [...historyRequests],
   clearHistoryRequests: () => {

@@ -319,6 +319,34 @@ export interface HudEditHistorySource {
   attachHistory(request: (direction: HudHistoryDirection) => void): void;
 }
 
+/**
+ * The world's "put the tool down" key, as the HUD is willing to know it
+ * (issue #959).
+ *
+ * The same shape as `HudWorldBuildSource` and `HudEditHistorySource`, and a
+ * source rather than a callback the HUD hands out for the same reason: the
+ * thing that carries this exists before the HUD does.
+ *
+ * **It carries no direction, no tool and no id, and that is the contract
+ * rather than an omission.** The renderer knows a key was pressed on the
+ * world; which tool is in the player's hand is *this* module's own state,
+ * held on whichever panel armed it. A source that named a tool would be the
+ * renderer answering a question the HUD is the only place that can, and the
+ * two would then be able to disagree about which pointer the player is
+ * holding -- which is the class of defect #550 and #689 are both instances
+ * of.
+ *
+ * Unlike `attachOrders` and `attachHistory` this dispatches **no intent**.
+ * Arming is chrome (`tool-arming.ts`: *"The pair is chrome, not simulation
+ * state"*), so putting a tool down issues no command, can be refused by
+ * nothing, and needs no gate -- it repaints two panels and tells the host
+ * through the `onArm` callback those panels already own.
+ */
+export interface HudToolStandDownSource {
+  /** Points the "put the tool down" report at the HUD. Called once, at mount. */
+  attachStandDown(request: () => void): void;
+}
+
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
@@ -760,6 +788,21 @@ export interface MountHudOptions {
    * started, because `src/main.ts` builds no build tool for one either.
    */
   readonly editHistory?: HudEditHistorySource;
+  /**
+   * The world's `Escape`, as far as *arming* is concerned (issue #959).
+   *
+   * Supplied, the HUD attaches to it once at mount and a press with no
+   * gesture to abandon stands both map tools down -- the same transition
+   * leaving a tab already makes, reaching the same `onArm` report and the same
+   * repaint, so a player who presses the key and a player who switches tabs
+   * end up in one state rather than two.
+   *
+   * Omitted, nothing at all happens and the HUD never hears about the key:
+   * the state of every harness in `tests/browser/` and of a page whose
+   * `Worker` never started, because `src/main.ts` builds no build tool for one
+   * either.
+   */
+  readonly toolStandDown?: HudToolStandDownSource;
   /**
    * The world's room gesture, routed into the HUD's own intent path (ADR 0022).
    *
@@ -2118,6 +2161,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   options.editHistory?.attachHistory((direction) => {
     dispatchCommand({ kind: direction });
+  });
+
+  /**
+   * `Escape`, once there is no gesture left for it to take (issue #959).
+   *
+   * **Both panels, unconditionally, and neither asked first.** One key means
+   * "put down whatever I am holding", and at most one of the two tools is
+   * ever armed -- they are armed from panels on different tabs and
+   * `setVisible(false)` disarms the panel's tool as it leaves -- so standing
+   * both down is exactly as safe as standing the armed one down, and it needs
+   * no arbitration that could be wrong. Each panel's `standDown` returns
+   * immediately when it is holding nothing.
+   *
+   * **No `dispatchCommand`, deliberately**, unlike the three attachments
+   * above. Nothing is asked of the simulation: this is the same chrome
+   * transition the arm control itself performs, so there is no command to
+   * refuse and no control for a refusal to land on.
+   */
+  options.toolStandDown?.attachStandDown(() => {
+    buildPanel.standDown();
+    roomsPanel.standDown();
   });
 
   /**

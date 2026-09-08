@@ -17,6 +17,7 @@ import {
   type BuildToolPort,
   type EdgeTarget,
   type EditHistoryPort,
+  type ToolStandDownPort,
   type WorldPoint,
   edgeRunFromDrag,
   edgeTargetsEqual,
@@ -133,6 +134,16 @@ export interface WorldSceneOptions {
    * no build tool either.
    */
   readonly editHistory?: EditHistoryPort;
+
+  /**
+   * Where "put the tool down" goes (issue #959).
+   *
+   * The scene recognises the key and reports what was asked for; it does not
+   * know which panel armed which tool, for the same reason it does not know
+   * what a build order is. Absent, `Escape` cancels a gesture in progress and
+   * changes no arming -- the behaviour every release before #959 had.
+   */
+  readonly toolStandDown?: ToolStandDownPort;
 
   /**
    * Where a room-designation gesture goes (ADR 0022).
@@ -254,6 +265,7 @@ export class WorldScene extends Phaser.Scene {
 
   private readonly buildTool: BuildToolPort | undefined;
   private readonly editHistory: EditHistoryPort | undefined;
+  private readonly toolStandDown: ToolStandDownPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
   private readonly roomTint: (() => number | undefined) | undefined;
   private readonly roomName: ((zoningNumericId: number) => string | undefined) | undefined;
@@ -316,6 +328,7 @@ export class WorldScene extends Phaser.Scene {
     this.feed = options.feed;
     this.buildTool = options.buildTool;
     this.editHistory = options.editHistory;
+    this.toolStandDown = options.toolStandDown;
     this.roomTool = options.roomTool;
     this.roomTint = options.roomTint;
     this.roomName = options.roomName;
@@ -795,13 +808,41 @@ export class WorldScene extends Phaser.Scene {
         case 'camera.zoom.out':
           this.stepZoom(1 / KEYBOARD_ZOOM_STEP);
           break;
-        case 'build.cancel':
-          // One key, all three gestures. At most one of them has anything in
-          // progress -- the tools are armed from panels on different tabs
-          // and leaving a tab disarms its tool -- and each is a no-op with
-          // nothing to abandon, so `Escape` cannot cancel the wrong one.
+        case 'build.cancel': {
+          /*
+           * One key, two states, in an order the player can predict (#959).
+           *
+           * **The gesture first.** All three of them: at most one has
+           * anything in progress -- the tools are armed from panels on
+           * different tabs and leaving a tab disarms its tool -- and each is
+           * a no-op with nothing to abandon, so `Escape` cannot cancel the
+           * wrong one.
+           *
+           * **Then the tool, on a press that found no gesture.** Until #959
+           * this case stopped at the line above, so `Escape` cleared a
+           * half-drawn run and never touched the arming: the tool stayed
+           * live, the press said nothing, and the next drag on what the
+           * player believed was a disarmed world laid walls. Measured by
+           * playing -- two accepted `PlaceBuildOrder`s and 160 off the funds
+           * chip, with the clock paused.
+           *
+           * The ordering is the whole decision, and it is why this is not one
+           * more call beside the three above. A half-drawn run and an armed
+           * tool are two different states; a key that cleared both at once
+           * would take the tool away from a player who only wanted their
+           * crooked run back, on a control they cannot get back without
+           * finding the panel. So the first press costs the gesture and
+           * leaves the tool in their hand, and a second press -- or a first
+           * one with nothing drawn -- puts it down.
+           *
+           * Read *before* the cancel, because the cancel is what makes it
+           * false.
+           */
+          const abandoned = this.gestureInProgress();
           this.cancelAllGestures();
+          if (!abandoned) this.toolStandDown?.standDown();
           break;
+        }
         /*
          * Reported, not performed. Undo reverses a *simulation* transaction --
          * the orders a gesture placed -- and `src/rendering/` may not submit a
@@ -1183,6 +1224,29 @@ export class WorldScene extends Phaser.Scene {
     this.cancelBuild();
     this.cancelObject();
     this.cancelArea();
+  }
+
+  /**
+   * Whether a pointer currently owns one of the three gestures (#959).
+   *
+   * The same condition each `cancel*` early-returns on, asked once and from
+   * the outside -- so `build.cancel` can tell "this press took a half-drawn
+   * run" from "this press found nothing to take" without any of the three
+   * having to report back. Making the three return a boolean was the
+   * alternative and was rejected: `blur` and the pinch branch call them for
+   * their effect and would then be discarding a value, and a `cancel` that
+   * answers a question is a second contract on a function whose whole job is
+   * to leave no trace.
+   *
+   * A *hover ghost* is deliberately not a gesture here. `buildSegments` holds
+   * one edge while an armed tool merely previews under the cursor, with no
+   * pointer id, and treating that as something to abandon would put the
+   * player's first `Escape` into a state they cannot see: the preview would
+   * go and the panel would still say the tool is on, which is exactly the
+   * disagreement #200 wrote its hover assertion to prevent.
+   */
+  private gestureInProgress(): boolean {
+    return this.buildPointerId !== undefined || this.objectPointerId !== undefined || this.areaPointerId !== undefined;
   }
 
   /**

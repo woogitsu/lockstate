@@ -181,3 +181,78 @@ describe('BuildTool edit history', () => {
     expect(() => tool.redo()).not.toThrow();
   });
 });
+
+/**
+ * The third port on the same object (#959), and the two properties that make
+ * routing through it safe.
+ *
+ * `Escape` with no gesture left to abandon is a request to put the armed tool
+ * down. It leaves the renderer through this class because the routing is
+ * identical to the gesture's and the undo keys' -- but unlike those two it is
+ * *about* arming, which is the state this object holds a mirror of, so the two
+ * ways it could be written wrong are both about that mirror: consulting it, or
+ * writing to it.
+ */
+describe('BuildTool stand down (#959)', () => {
+  function standDownTool(): { readonly tool: BuildTool; readonly requests: { count: number } } {
+    const requests = { count: 0 };
+    const tool = new BuildTool();
+    tool.attachStandDown(() => {
+      requests.count += 1;
+    });
+    return { tool, requests };
+  }
+
+  it('reports one request per call', () => {
+    const { tool, requests } = standDownTool();
+
+    tool.standDown();
+    tool.standDown();
+
+    expect(requests.count).toBe(2);
+  });
+
+  it('reports whether or not the tool is armed', () => {
+    /*
+     * Consulting the mirror is the first way to get this wrong. `armed` here
+     * is a copy of the Build panel's flag, kept in step from `src/main.ts`;
+     * a forward gated on it would make `Escape` work only while the two
+     * agreed, and the case where they do not is exactly the case a player
+     * needs the key for. `undo` is unconditional for a weaker version of the
+     * same reason and the assertion beside it is this one's sibling.
+     */
+    const { tool, requests } = standDownTool();
+    expect(tool.isArmed()).toBe(false);
+
+    tool.standDown();
+
+    expect(requests.count).toBe(1);
+  });
+
+  it('does not disarm itself, because the panel is the only writer of that flag', () => {
+    /*
+     * Writing to the mirror is the second way. A tool that cleared its own
+     * `armed` would be a second writer: the request would then be satisfied
+     * here and never reach the Build panel, whose arm control would go on
+     * reading "Stop placing" over a tool that had stopped -- the world and the
+     * panel disagreeing about who owns the pointer, which is the class of
+     * defect #550 and #689 are both instances of. The disarm comes back
+     * through `setArmed`, like every other arming change.
+     */
+    const { tool } = standDownTool();
+    tool.setArmed(true, 'wall-brick');
+
+    tool.standDown();
+
+    expect(tool.isArmed()).toBe(true);
+  });
+
+  it('drops a request rather than throwing when nothing is attached yet', () => {
+    // The same real state `place` and `undo` have: the tool is built at boot
+    // and the HUD attaches at mount. A throw here would take the scene's key
+    // handler down.
+    const tool = new BuildTool();
+
+    expect(() => tool.standDown()).not.toThrow();
+  });
+});
