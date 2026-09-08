@@ -54,6 +54,26 @@ and refuted the brief. **That is the third time this file's paraphrase has cost
 something, and the second time in the direction of believing a permission was
 broader or narrower than it is.** `AGENTS.md` carries the full reading.
 
+**A FIFTH RELEASE LANDED ON 2026-09-08, AND IT IS THE THIRD INSIDE
+RESERVATION 3 — the first of them that is not about art.** The owner
+authorised raising the `browser` job's own `timeout-minutes` from 30 to 90 in
+`.github/workflows/ci.yml`, and nothing else in that file: not `verify`'s 30,
+not `assets`'s 20, not the evidence upload's `if: failure()`, not the runner
+selectors. It was released because the job stopped finishing — the same 420-test
+suite ran 13m 00s green on one runner pool and was cancelled at 29m 44s having
+reached 46 tests on another, with the same six-fold slowdown measurable on
+`pnpm verify` outside Chromium entirely.
+
+**Its provenance is weaker than the two before it and `AGENTS.md` says so.**
+The 2026-09-06 and 2026-09-07 releases quote words the owner typed; this one
+quotes the label of a clickable option this session wrote and the owner chose.
+Read the full entry before treating it as a precedent for anything.
+
+**And it is necessary, not sufficient — which the owner was told before
+choosing it.** Four browser specs exhaust `test.slow()`'s own 180-second
+per-test cap and fail rather than cancel; a larger job budget lets the job
+report them instead of dying mid-suite. It does not make them pass.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

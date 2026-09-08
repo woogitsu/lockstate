@@ -215,6 +215,49 @@ outward-facing or unrevertable, which is the whole reason:
    **`public/_headers`, `wrangler.jsonc`, `deploy.yml` and both dashboards are
    untouched by this**, and the sentence above about dashboards not being
    readable from here still holds for all of them.
+
+   **A THIRD RELEASE INSIDE THE SAME RESERVATION, 2026-09-08 — ONE NUMBER ON
+   ONE LINE, AND IT IS THE FIRST THAT IS NOT ABOUT ART.** The `browser` job
+   stopped finishing: measured from the Actions API, the step *"Run the
+   real-browser suite"* took **13m 00s and passed all 420 tests** on runner
+   `woogitsu-wsl-DOM-NEW-02` (run 34155439633, 2026-09-07 20:22Z) and was
+   **cancelled at 29m 44s having reached 46 of 420** on `woogitsu-linux-06`
+   (run 34196112204, 2026-09-08 06:56Z). The same slowdown is visible outside
+   this job and outside Chromium — `verify`'s *"Verify project"* step is 17s on
+   `woogitsu-wsl-DOM-NEW-03` and 102s on `woogitsu-linux-01` — with `assets` as
+   the control, since it ran on the `linux-*` pool in both and moved 11s to
+   14s. The owner was shown that and chose, from four clickable options, the
+   one labelled:
+
+   > Podnieść `timeout-minutes` do ~90
+
+   ("Raise `timeout-minutes` to ~90.")
+
+   **What the release covers, exactly.** The `browser` job's own
+   `timeout-minutes`, 30 → 90, and nothing else in the file: not `verify`'s 30,
+   not `assets`'s 20, not a job, not a step, not the evidence upload's
+   `if: failure()`, not the runner selectors, not `deploy.yml`.
+
+   **The provenance is weaker than the two releases above and is recorded as
+   such.** Those quote words the owner typed. This quotes the label of an
+   option this session wrote and the owner clicked — their decision, not their
+   sentence. The distinction matters here because the same session authored the
+   option and then acted on it.
+
+   **The option said, before they chose it, that it is necessary and not
+   sufficient**, and that disclosure is part of what was authorised: four specs
+   exhaust `test.slow()`'s own 180s per-test cap on this pool and fail rather
+   than cancel, so a bigger job budget lets the job *report* them instead of
+   being killed mid-suite. It does not turn them green. Issue #1008 carries
+   them; `5a761322` cut the first by making the work smaller rather than the
+   budget bigger, which stays the method.
+
+   **What was declined by not being asked.** Routing `browser` back to the
+   faster pool is not available from this file: every job's `labels` in the API
+   is the identical `runs-on` list `[self-hosted, Linux, X64, wsl2, woogitsu]`,
+   so `runs-on` cannot tell the two pools apart until a label exists on the
+   runner side, which is host configuration and outside this repository
+   entirely.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
