@@ -3809,7 +3809,7 @@
  * every shape the shipped catalogue can produce** -- which is what makes the
  * catalogue's donation above a sufficient figure rather than a figure that fits
  * one prison. `ui-shell.spec.ts` asserts both halves through
- * `RoomsNeedsProbe.needsItemRows`: one row for three object chips, two when a
+ * `RoomsProbe.needsItemRows`: one row for three object chips, two when a
  * doorway sentence is among them. `data-kind` is set by `rooms-panel.ts` beside
  * the sentence, for the reason recorded there.
  */
