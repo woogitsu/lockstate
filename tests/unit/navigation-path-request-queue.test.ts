@@ -170,7 +170,13 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
       for (let tick = 0; tick < 30 && queue.size() > 0; tick += 1) {
         outcomes.push(...queue.processTick({ tick, workBudget: 5, world, doors, graph, routeCache, flowFieldCache }));
       }
-      return outcomes.map((o) => ({ id: o.id, ok: o.result.ok, usedFlowField: o.usedFlowField }));
+      // `o.result` in full, not `o.result.ok`. Until 2026-09-08 this projection
+      // kept only the success flag, so "and results" in the title asserted
+      // nothing about the routes: a `totalCost` that drifted by a nonce on
+      // every `findRoute` call left this test green while five of its
+      // navigation siblings -- including `navigation-system.test.ts`'s own
+      // determinism test, which keeps costs -- went red on it.
+      return outcomes.map((o) => ({ id: o.id, result: o.result, usedFlowField: o.usedFlowField }));
     };
 
     expect(runOnce()).toEqual(runOnce());
