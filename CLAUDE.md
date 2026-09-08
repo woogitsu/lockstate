@@ -74,6 +74,36 @@ choosing it.** Four browser specs exhaust `test.slow()`'s own 180-second
 per-test cap and fail rather than cancel; a larger job budget lets the job
 report them instead of dying mid-suite. It does not make them pass.
 
+**THAT PARAGRAPH IS WRONG AND THE CORRECTION IS IN `AGENTS.md`.** The first
+`browser` job ever allowed to finish on this pool (run 34215508642) reported
+**422 passed, 1 failed in 41.3 minutes**. Only `#331` exhausts the per-test
+cap; `#88` and both `#411` specs pass in 2.4-2.6 m. The four-red picture came
+from a job cancelled at test 46 of 420 on a saturated pool, and a starved
+partial run is not a sample of a finished one. `AGENTS.md` carries five further
+corrections to that entry's figures, including that the runner is
+`woogitsu-linux-03` rather than `woogitsu-host-03` (the log path shows the
+install directory, the API shows the name) and that the slowdown is about **4x**
+rather than the 6 quoted from three hand-picked samples.
+
+**AND THE ONE FAILURE THAT PARAGRAPH KEPT IS WRONG TOO, BOTH HALVES OF IT.**
+`#331` is **intermittent** rather than a standing red: the second finished
+`browser` run (34251663361), on the same unmodified base commit, reported
+**`423 passed (39.5m)`** with `#331` among them -- red on `woogitsu-linux-02`,
+green on `woogitsu-linux-03`. And `app-shell.spec.ts:6119` is where the clock
+stopped, not where the time went: the retained trace prices that call at
+**0.12 s** and puts **69%** of the 180 s in the keyboard wall-ordering loop
+much earlier. Finishing a job once settles its failure list once.
+
+**AND THE HOST READING THAT PARAGRAPH INVITES IS WRONG TOO — `AGENTS.md`
+CARRIES THE SEVENTH CORRECTION AND THE CLOSE.** A fourth run went green on
+`woogitsu-linux-02`, the host of both reds, so the host is not the variable;
+the fastest suite of the four (35.6m) is the one where `#331` came closest to
+the cap, so load is not either. Read out of the logs, `#331` sat **at or over
+its 3.0-minute cap on three of the four runs** while its neighbours held
+1.5-2.7m and the file moved under 3% — the variance was the test's own.
+**#1093 fixed it** (merged `8a35167b`): `#331` **1.5m** on the next finished
+run, `app-shell.spec.ts` 21.3m → 18.6m.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

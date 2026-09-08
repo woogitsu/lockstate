@@ -487,6 +487,53 @@ jobs:
     # comment below, which anticipated exactly this and whose request it
     # discharges as a side effect.
     #
+    # **"FOUR SPECS" WAS WRONG, AND THE FIRST FINISHED RUN IS WHAT SAID SO.**
+    # Run 34215508642 -- the first `browser` job on this pool ever allowed to
+    # reach the end, which is what this line bought -- finished in **41.3
+    # minutes: 422 passed, 1 failed**. Only `#331` exhausts the cap, still, at
+    # `app-shell.spec.ts:6119` on `page.setViewportSize`. `#88` passed in 2.5 m
+    # and both `#411` specs in 2.4 m and 2.6 m; so did `a pending delivery is on
+    # the panel with the fold shut`, in 22.7 s, which the earlier partial run
+    # had recorded red at 23.6 s.
+    #
+    # The four-red picture was read off a job **cancelled at test 46 of 420**
+    # while the pool was saturated, and four of those five did not survive the
+    # job being allowed to finish. Kept rather than overwritten because the
+    # paragraph above is the reasoning the owner authorised, and because "a
+    # starved partial run is not a sample of a finished one" is the lesson.
+    #
+    # The suite needs 41.3 minutes here against 13 on the retired pool -- **3.2
+    # times**, where the `verify` step above shows ~6. The slowdown is not one
+    # uniform factor, so 90 is right for this job and says nothing about any
+    # other budget.
+    #
+    # **"~6" IS THE WORST-CASE PICK AND THE HONEST FIGURE IS ABOUT 4.** It came
+    # from three hand-chosen samples -- 17s against 102-142s -- taking the
+    # extremes of both. Over n=40 and n=30 samples of that same step the ranges
+    # are 15-23s on the retired pool and 51-142s, median ~75s, here. The two
+    # numbers in this comment that are actually load-bearing for the budget are
+    # unaffected: 41.3 minutes measured on this pool, against a 90-minute cap.
+    # Issue #1089 carries the audit.
+    #
+    # **AND "ONLY `#331`, STILL" IS WRONG TWICE.** Run 34251663361, the second
+    # `browser` job allowed to finish, ran the same suite on the same
+    # unmodified base commit and reported **423 passed (39.5m)** -- `#331`
+    # among them. It is **intermittent on this pool**, red on
+    # `woogitsu-linux-02` and green on `woogitsu-linux-03`. And `:6119` on
+    # `page.setViewportSize` is where the clock stopped, not where the time
+    # went: the retained trace prices that call at 0.12 s and puts 69% of the
+    # 180 s in the keyboard wall-ordering loop (PR #1093). Neither moves this
+    # budget, which is measured whole-suite at 41.3 and 39.5 minutes.
+    #
+    # **AND THE HOST IS NOT THE VARIABLE EITHER -- CLOSED BY #1093.** A fourth
+    # run went green on `woogitsu-linux-02`, the host of both reds, and the
+    # fastest suite of the four (35.6m) is the one that came closest to the
+    # cap. Per-test, `#331` sat at or over its 3.0-minute cap on three of the
+    # four while its neighbours held 1.5-2.7m: the variance was the test's
+    # own. #1093 cut it and merged as `8a35167b` -- `#331` **1.5m** on the
+    # next finished run, `app-shell.spec.ts` 21.3m -> 18.6m, suite 35.6m.
+    # This budget is unaffected and stays at 90.
+    #
     # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
     # a job, not a step, not the runner selectors, not `deploy.yml`.
     timeout-minutes: 90
