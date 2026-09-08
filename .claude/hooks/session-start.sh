@@ -112,6 +112,70 @@ if ! bash "${PROJECT_DIR}/scripts/provision-postgres.sh"; then
   log "WARNING: postgres provisioning failed; pnpm verify:sql will not run"
 fi
 
+# --- git history (for pnpm verify) ------------------------------------
+# A remote container clones SHALLOW, and that breaks `pnpm verify` -- which is
+# the one thing the header of this file says the hook exists to make runnable.
+#
+# WHAT IT COSTS TO LEAVE ALONE, MEASURED ON 2026-09-07 IN A CONTAINER THIS HOOK
+# HAD JUST FINISHED PROVISIONING: `.git/shallow` present, `git rev-list --count
+# HEAD` 192, no tags at all, and `git rev-list --remotes=origin --tags` 254.
+# `tests/foundation/documentation-commit-citation-contract.test.ts` needs that
+# last number above 500 -- it is the vacuity guard on "cites only commits this
+# repository publishes", because with almost no published commits in hand every
+# citation in the corpus reads as unpublished -- so three of its cases fail with
+# `expected 254 to be greater than 500` and a diff listing the whole corpus.
+# That is `pnpm test` red, and therefore `pnpm verify` red, on an untouched
+# container for a reason that has nothing to do with the tree under test.
+#
+# The test says so itself, in its own failure message: "Either this checkout is
+# shallow (see the first case) ... `git fetch origin` first." It is written to
+# fail loudly rather than skip, deliberately (see `.github/workflows/ci.yml`'s
+# `fetch-depth: 0` comment, which says a gate that skips itself on a shallow
+# clone "would never run where it matters").
+#
+# WHY THIS ONE IS FIXED RATHER THAN REPORTED, WHICH IS THE OPPOSITE OF THE TWO
+# BELOW. The section below skips Git LFS and the Playwright browsers on cost --
+# metered bandwidth and ~280 MiB -- and reports the gap instead. That argument
+# does not reach history. `.github/workflows/ci.yml` measured the same fetch
+# this runs:
+#
+#   git fetch --unshallow   over https   wall 2.180 s,
+#                                        pack 7863 -> 8315 objects,
+#                                        6.99 -> 7.78 MiB
+#
+# Two seconds and under a megabyte, because this repository's bulk is the ~55 MB
+# of art in Git LFS and that never enters the git pack. Three orders of
+# magnitude below either skipped step, against a gate that is otherwise red.
+#
+# Idempotent like every other step here: `.git/shallow` is the condition, and
+# `--unshallow` on a complete clone is an error rather than a no-op, so the
+# check is not decoration. A failure is a WARNING and not a hook failure, on the
+# same reasoning the postgres step gives: a container that cannot reach the
+# network still runs typecheck, build and every test but these three.
+HISTORY_IS_COMPLETE=1
+
+ensure_full_history() {
+  if [ ! -f "${PROJECT_DIR}/.git/shallow" ]; then
+    return 0
+  fi
+
+  log "deepening a shallow clone -- pnpm verify reads history and fails without it"
+  # `--tags` for parity with CI: `actions/checkout` at `fetch-depth: 0` fetches
+  # them, and the count the gate reads is over `--remotes=origin --tags` both.
+  if git -C "$PROJECT_DIR" fetch --unshallow --tags origin >/dev/null 2>&1; then
+    log "  history complete: $(git -C "$PROJECT_DIR" rev-list --count HEAD) commits on HEAD," \
+        "$(git -C "$PROJECT_DIR" rev-list --remotes=origin --tags 2>/dev/null | wc -l) reachable from origin refs and tags"
+  else
+    HISTORY_IS_COMPLETE=0
+    log "WARNING: could not deepen the clone. Three cases in"
+    log "  tests/foundation/documentation-commit-citation-contract.test.ts will fail"
+    log "  with 'expected <n> to be greater than 500', and pnpm verify with them."
+    log "  That is this container, not the tree. Retry: git fetch --unshallow --tags origin"
+  fi
+}
+
+ensure_full_history
+
 # --- What this hook did not provision ---------------------------------
 # CI runs scripts/provision-git-lfs.sh (assets, browser jobs) and
 # scripts/provision-playwright-browsers.sh (browser job); this hook runs
@@ -152,8 +216,20 @@ report_unprovisioned() {
     log "  To install: bash scripts/provision-playwright-browsers.sh (~280 MiB)."
   fi
 
-  log "Everything else -- pnpm typecheck, pnpm test, pnpm build, pnpm verify,"
-  log "  pnpm verify:sql -- is provisioned and expected to pass."
+  # Conditional, because this sentence was FALSE for as long as it stood
+  # unconditionally: a shallow clone made `pnpm test` and `pnpm verify` red
+  # while this line said they were expected to pass, which is the same defect
+  # issue #138 recorded for the LFS gap and the same one this whole section
+  # exists to stop. It is kept rather than deleted, and now it has to earn
+  # itself.
+  if [ "$HISTORY_IS_COMPLETE" = "1" ]; then
+    log "Everything else -- pnpm typecheck, pnpm test, pnpm build, pnpm verify,"
+    log "  pnpm verify:sql -- is provisioned and expected to pass."
+  else
+    log "Everything else -- pnpm typecheck, pnpm build, pnpm verify:sql -- is"
+    log "  provisioned and expected to pass. pnpm test and pnpm verify are NOT:"
+    log "  see the shallow-clone warning above."
+  fi
 }
 
 report_unprovisioned
