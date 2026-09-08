@@ -4,6 +4,7 @@ import type { RouteContext } from '../../src/simulation/navigation/route-context
 import { findRoute } from '../../src/simulation/navigation/router';
 import { flatSearchCost } from '../helpers/navigation-flat-search';
 import { buildFixtureGraph, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The flat oracle itself now lives in `tests/helpers/navigation-flat-search.ts`,
@@ -26,13 +27,13 @@ describe('findRoute vs. a naive flat full-map search (correctness oracle)', () =
 
     const guardRoute = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
     const guardFlatCost = flatSearchCost(world, doors, LEFT_TILE, RIGHT_TILE, GUARD, BOUNDS);
-    expect(guardRoute.ok).toBe(true);
-    expect(guardRoute.ok && guardRoute.route.totalCost).toBe(guardFlatCost);
+    expectOk(guardRoute, "the guard's route across the two rooms");
+    expect(guardRoute.route.totalCost).toBe(guardFlatCost);
 
     const staffRoute = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, MEDICAL_STAFF);
     const staffFlatCost = flatSearchCost(world, doors, LEFT_TILE, RIGHT_TILE, MEDICAL_STAFF, BOUNDS);
-    expect(staffRoute.ok).toBe(true);
-    expect(staffRoute.ok && staffRoute.route.totalCost).toBe(staffFlatCost);
+    expectOk(staffRoute, "the medical staff's route across the two rooms");
+    expect(staffRoute.route.totalCost).toBe(staffFlatCost);
   });
 
   it('agrees with the flat search that a permission-lacking actor has no valid route, while physical connectivity still exists', () => {

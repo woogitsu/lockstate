@@ -25,6 +25,7 @@ import {
   selectPluralForm,
   selectSupportedLocale,
 } from '../../src/services/localization';
+import { expectOk } from '../helpers/expect-ok';
 
 const englishCatalog = buildMessageCatalog('en', {
   'ui.start': 'Start',
@@ -94,8 +95,7 @@ describe('message catalogs', () => {
 
   it('loads and normalizes a valid catalog', async () => {
     const result = await loadMessageCatalog({ load: async () => brazilianCatalog }, 'pt-br');
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expectOk(result, 'the Brazilian catalog');
     expect(result.catalog.locale).toBe('pt-BR');
   });
 });

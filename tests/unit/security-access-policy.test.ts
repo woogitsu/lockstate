@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildFixtureGraph, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 import { findRoute } from '../../src/simulation/navigation/router';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { resolveEscortedPrisonerRouteContext, resolvePrisonerRouteContext, resolveStaffRouteContext } from '../../src/simulation/security/access-policy';
@@ -48,6 +49,6 @@ describe('resolveEscortedPrisonerRouteContext: borrows the escort\'s access, not
     expect(escorted).toEqual({ role: 'prisoner', securityClearance: 4, permissions: ['medical-wing'] });
 
     expect(findRoute(world, doors, graph, from, to, unescorted).ok).toBe(false);
-    expect(findRoute(world, doors, graph, from, to, escorted).ok).toBe(true);
+    expectOk(findRoute(world, doors, graph, from, to, escorted), "the escorted prisoner's route through the medical-wing door");
   });
 });

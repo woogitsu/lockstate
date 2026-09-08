@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, MAX_UI_SCALE, MIN_UI_SCALE, UI_SCALE_STEPS, isUiScaleEnlarged, nextUiScaleStep, snapUiScaleToStep, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { expectOk } from '../helpers/expect-ok';
 
 class MemoryStore implements KeyValueStore {
   private readonly values = new Map<string, string>();
@@ -307,7 +308,7 @@ describe('semantic input', () => {
     expect(loadInputSettings(store)).toEqual(DEFAULT_INPUT_SETTINGS);
 
     const accepted = remapAndPersistKeyboardBinding(store, DEFAULT_INPUT_SETTINGS, 1, 'KeyJ');
-    expect(accepted.ok).toBe(true);
+    expectOk(accepted, 'the conflict-free remap to KeyJ');
     expect(loadInputSettings(store).keyboardBindings[1]).toMatchObject({ action: 'camera.down', code: 'KeyJ' });
   });
 });
@@ -352,7 +353,7 @@ describe('settings survive a store that refuses to work', () => {
     // The remap itself succeeded; only persistence failed. Reporting failure
     // here would make a player think the key did not change, when it did.
     const result = remapAndPersistKeyboardBinding(new ThrowingStore(), DEFAULT_INPUT_SETTINGS, 0, 'KeyJ');
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the remap whose write the store refused');
   });
 
   it('resolves a usable store when the localStorage getter itself throws', () => {
