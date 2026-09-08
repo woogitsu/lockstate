@@ -384,6 +384,15 @@ identically on every run.*
 **Decided.** `RoomInstanceRegistry.getSnapshot` still emits residency only, no
 save-schema key is added, and `SAVE_ENVELOPE_VERSION` does not move.
 
+(**`SAVE_ENVELOPE_VERSION` never existed, on this date or any other.** The
+constant this decision means is `SAVE_SCHEMA_VERSION`,
+`src/persistence/save-schema.ts:36`, which was already declared and already
+`5` in the tree this document was written against — so the sentence above is
+true and only its name is wrong. Marked rather than overwritten, per
+`docs/AGENT_WORKFLOW.md` §4: the decision is untouched, and
+[ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+decision 4 inherited the same misspelling from this line.)
+
 A use claim is a pure function of two values the save already carries:
 `CurrentActionComponent.phase` and the cold state's
 `currentActionTargetInstanceId`. Persisting it would put a derived value in the
