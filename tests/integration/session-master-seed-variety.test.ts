@@ -3,6 +3,7 @@ import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { InProcessSessionHost } from '../../src/persistence/session/runtime-host';
 import { SessionController } from '../../src/persistence/session/session-controller';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #479: every prison anyone has ever played was seeded at 0, because
@@ -60,10 +61,10 @@ describe('a new prison draws its own masterSeed (#479)', () => {
       generateMasterSeed: generateMasterSeedLikeProduction,
     });
 
-    expect((await controller.createPrison('prison-one')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-one'), 'the creation of prison-one');
     const payloadOne = await decodedPayload(repository, 'prison-one');
 
-    expect((await controller.createPrison('prison-two')).ok).toBe(true);
+    expectOk(await controller.createPrison('prison-two'), 'the creation of prison-two');
     const payloadTwo = await decodedPayload(repository, 'prison-two');
 
     expect(payloadOne.masterSeed).not.toBe(payloadTwo.masterSeed);
@@ -92,8 +93,8 @@ describe('a new prison draws its own masterSeed (#479)', () => {
       generateMasterSeed: generateMasterSeedLikeProduction,
     });
 
-    expect((await controllerA.createPrison('prison')).ok).toBe(true);
-    expect((await controllerB.createPrison('prison')).ok).toBe(true);
+    expectOk(await controllerA.createPrison('prison'), "controller A's prison");
+    expectOk(await controllerB.createPrison('prison'), "controller B's prison");
 
     const payloadA = await decodedPayload(repositoryA, 'prison');
     const payloadB = await decodedPayload(repositoryB, 'prison');

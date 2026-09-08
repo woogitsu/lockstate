@@ -7,6 +7,7 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
 import v1InProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
+import { expectOk } from '../helpers/expect-ok';
 
 function buildEnvelope(revision: number, tick = revision): SaveEnvelope {
   const world = new SparseWorld(32);
@@ -444,8 +445,7 @@ describe('PrisonSaveRepository: export/import', () => {
     expect(result).toEqual({ ok: true, generationId: 'imported-1', migrated: true });
 
     const loaded = await repo.loadCurrent('prison-1');
-    expect(loaded.ok).toBe(true);
-    if (!loaded.ok) return;
+    expectOk(loaded, "prison-1's current generation after the v1 import");
     expect(loaded.envelope.saveSchemaVersion).toBe(buildEnvelope(1).saveSchemaVersion);
     // The migrated payload, not the V1 one: `revision` crosses unchanged and
     // the entity ledger is the current shape.
