@@ -28,6 +28,13 @@
 > whole foundation suite stays green — measured below under "The gates". This
 > is a deviation from the brief and it is named here rather than buried in a
 > report.
+>
+> **RE-DECIDED 2026-09-08, after the owner ruled on the producer, and the
+> answer did not change.** The placement above was a mechanical consequence of
+> a brief; the question of whether this document is now *ready* to be numbered
+> is a different one and is answered under "Promotion, decided rather than
+> deferred" below, with a 252-head remote sweep behind the number and a
+> substantive reason for the delay that is not the number.
 
 ## Status
 
@@ -42,22 +49,71 @@ whether the game should have gangs at all, they answered:
 
 ("Yes, but the ADR first.")
 
-**THE DISCLOSURE, BECAUSE A RULING MUST NOT BE MISTAKEN FOR A READING.** That
-answer was given to a *question* — should prisons have gangs — and not against
-this document's Context, Decision, Cost or Open Questions, none of which
-existed when it was given. It settles the product question issue #979 named as
-the owner's (*"Whether prisons should have gangs at all"*) in the affirmative
-and settles nothing else. Every "how" below — what a gang is, how many there
-are, where membership comes from, what produces a grudge, what the territory
-amplifier is for, and what the first retaliation does to a prison — is this
-document's, and is unaccepted until the owner reads it. The same disclosure
-several ADRs in this corpus carry, for the same reason.
+**A SECOND RULING LANDED ON 2026-09-08, AND IT IS THE ONE THIS DOCUMENT WAS
+WRITTEN WITH OPEN.** The question put to the owner was how a grudge between two
+prisoners comes to exist. From a set of clickable options they chose:
+
+> A grudge forms from an adjudicated assault between members of different gangs — one the player was actually shown.
+
+**How that sentence reached this document, stated because provenance is the
+thing a later reader cannot reconstruct.** It was relayed to this pass by the
+integrating session as the owner's ruling of 2026-09-08, in English, as the
+text of the option they clicked. It is **not** text the owner typed into this
+repository, and no other words are attributed to them here. Where the two
+earlier rulings above and in `AGENTS.md` are quoted in Polish because that is
+what the owner wrote, this one is quoted in English because that is what they
+chose; the difference is recorded rather than smoothed over.
+
+**That ruling is the whole of the owner's input on the producer, and it settles
+one of this document's seven decisions.** Decision 2 below is now theirs.
+Decisions 1 and 3 to 7 are unchanged and remain this document's, unaccepted.
+
+**THE DISCLOSURE, BECAUSE A RULING MUST NOT BE MISTAKEN FOR A READING.** The
+first answer was given to a *question* — should prisons have gangs — and not
+against this document's Context, Decision, Cost or Open Questions, none of
+which existed when it was given. It settles the product question issue #979
+named as the owner's (*"Whether prisons should have gangs at all"*) in the
+affirmative and settles nothing else.
+
+**The paragraph above used to continue with a list, and one entry of that list
+is now false. It is corrected rather than overwritten, per
+`docs/AGENT_WORKFLOW.md` §4.** It read:
+
+> Every "how" below — what a gang is, how many there are, where membership
+> comes from, what produces a grudge, what the territory amplifier is for, and
+> what the first retaliation does to a prison — is this document's, and is
+> unaccepted until the owner reads it.
+
+*"what produces a grudge"* is the entry that moved: as of the second ruling it
+is the owner's and not this document's. The other five are untouched and the
+sentence holds for them. The same disclosure several ADRs in this corpus carry,
+for the same reason.
+
+**What the second ruling does NOT settle, said plainly because the temptation
+is to read a ruling as wider than it is.** It names no weight, no number of
+gangs, no membership rule, no territory rule, and no guard on the trigger. It
+does not say what happens to a grudge that is never acted on, and it does not
+say whether a gang retaliation should itself produce a grudge. Those are open
+questions below, numbered, and this document does not read the ruling onto any
+of them.
+
+**And one of its three terms has no referent in this repository.** Context 14
+is the finding and it is the most important thing in this document: *"one the
+player was actually shown"* names a state nothing records and, under its
+strongest reading, a state the determinism contract forbids the simulation from
+reading. Decision 2 presents the closest implementable reading and names the
+gap rather than quietly redefining the owner's words; Open Question 1 is the
+fork the owner has to close.
 
 **What this draft does NOT do.** It authors no production code, seeds no gang,
 adds no locale key, and changes no player-visible string. `AGENTS.md`'s fourth
 reservation covers the *promise*, not the wording, and the sentence at issue
 here already exists; this document's business with it is to say what would make
 it true, not to rewrite it.
+
+**Whether this document should be numbered and moved out of `docs/adr/drafts/`
+is answered under "Promotion, decided rather than deferred" below, and the
+answer measured on this pass is not yet.**
 
 ## Claim tiers used below
 
@@ -76,6 +132,20 @@ it true, not to rewrite it.
 Issue #979 was written against v0.0.467 and several of its anchors have since
 moved; where one has, both numbers are given, because a reader checking the
 issue against this document deserves to see which of us moved.
+
+**Re-anchored for the ruling pass at `98e88f34` (v0.0.541)** — this branch with
+`origin/main` at `adb9ed00` merged into it, which is the tree every claim added
+on 2026-09-08 was read against and the tree the gates below were run on. **The
+Context 1 to 11 anchors were re-opened on it rather than carried forward, and
+every one still lands on the line it names**: `gangs.ts` at `:26`, `:37`,
+`:52`, `:71`, `:82`, `:86`, `:87`, `:89`, `:96` and `:140`; `trigger-system.ts`
+at `:262`, `:450`, `:492`, `:523`, `:524`, `:525`, `:529`, `:531`, `:538` and
+`:546`; `response-system.ts` at `:218`, `:326`, `:327`, `:328` and `:329`;
+`flashpoint.ts` at `:343`. Nothing in Context 1 to 11 needed correcting for
+drift. That is stated because the alternative — assuming a week-old anchor
+still holds — is the failure `adr-quotation-verbatim-contract.test.ts` exists
+to catch, and an anchor it cannot catch is one this document has to check by
+hand.
 
 ---
 
@@ -315,7 +385,7 @@ three conditions `docs/PERSISTENCE.md` sets and
 `src/persistence/save-schema.ts:182-200` works through for two precedents, but
 it is still a reviewed edit rather than free.
 
-### 9. The assault already carries everything a grudge producer needs — VERIFIED, read
+### 9. The assault already carries everything a grudge producer needs — VERIFIED, read — HEADING CORRECTED 2026-09-08: the *record* does, the *seam* does not
 
 - An assault names exactly two participants
   (`ASSAULT_PARTICIPANT_COUNT = 2`, `src/simulation/incidents/flashpoint.ts:343`)
@@ -341,6 +411,18 @@ So the issue's proposal — *"the natural producer is an existing incident: an
 assault whose two participants belong to different gangs"* — lands on a seam
 that already exists, is already tested, and already has a second occupant. It
 is the cheapest correct place, and Decision §2 takes it.
+
+**CORRECTED 2026-09-08. This section's heading says the assault "already
+carries everything a grudge producer needs", and that is true of the *record*
+and false of the *seam*.** The bullet above calls `onAssaultAdjudicated` a port
+*"of exactly the shape a second consumer needs"*, and Context 13 point 3 shows
+it is not: its shape is `(entityId: EntityId, tick: number) => void`
+(`src/simulation/incidents/response-system.ts:218`) and it is handed only
+`incident.instigatorId` (`:329`), so the second participant — the one a
+directional grudge needs — never crosses it. The heading and the bullet are
+kept because the *pattern* claim they make is sound and is what a second port
+should copy; what was wrong was the word "shape", and the correction is one line
+of signature rather than a different design.
 
 ### 10. Nothing in the incident tree draws random numbers, and this decision keeps it that way — VERIFIED
 
@@ -374,13 +456,316 @@ retaliation's severity is 6, not the 7 an earlier brief assumed, and it is 6
 *because* the threshold is 0.6. Context §5 re-derives that here rather than
 relying on it.
 
+### 12. Term 1 of the ruling — what an "assault" is, and whether its record names both prisoners — VERIFIED, read
+
+**It does, and the worry that it might not is closed rather than carried.** An
+assault is an `IncidentType` opened by `IncidentTriggerSystem.tryOpenAssault`
+(`src/simulation/incidents/trigger-system.ts:402`), and the record it opens
+carries three things a grudge producer needs:
+
+- **Exactly two participants.**
+  `export const ASSAULT_PARTICIPANT_COUNT = 2;` (verbatim in
+  `src/simulation/incidents/flashpoint.ts`), at `:343`, sliced off the ranked
+  flashpoints at `src/simulation/incidents/trigger-system.ts:434` and sorted
+  into the list at `:441`.
+- **One of the two named separately.** `instigatorId: worst.entityId,`
+  (verbatim in `src/simulation/incidents/trigger-system.ts`), at `:450`.
+- **Both survive onto the read model.** `readonly instigatorId?: EntityId;`
+  (verbatim in `src/simulation/incidents/incident.ts`) — the field is declared
+  on `IncidentRecord` at `:102` and again on `OpenIncidentInput` at `:142`, and
+  `toRecord` copies it at `:131`.
+
+So the victim is derivable: it is the participant that is not the instigator,
+of a list that is exactly two long. **A grudge between two named prisoners
+therefore does not need a new field on the incident**, and this document does
+not ask for one.
+
+**What the code refuses to say, and the ruling's word "between" invites.**
+`instigatorId` is not a finding of fault, and the field's own docblock says so
+in terms: *"Not a culprit field in the sense issue #80's design question means:
+`scoreAssaultPressure` ranks by whose needs and holdings are worst, not by who
+struck first"* (`src/simulation/incidents/incident.ts:95-97`). The comment at
+the write site says the same thing from the other end — *"`worst` is
+`ranked[0]` -- the entity `scoreAssaultPressure` finds a reason for -- not a
+struck-first determination"*
+(`src/simulation/incidents/trigger-system.ts:444-449`) — and two more modules
+say it independently: an assault's participants are *"who was in it"*, and
+*"Distinguishing an aggressor from a victim is adjudication, which is issue
+#80's and needs a command type"*
+(`src/simulation/incidents/flashpoint.ts:336-341`);
+`buildDisciplinaryIndex` charges **both** participants the same points and
+gives the same reason (`src/simulation/prisoners/disciplinary-record.ts:145-155`).
+
+**Why that matters to this decision rather than being a nicety.** A grudge is
+*directional* — the key is `` `${offendedGangId}->${offendingGangId}` ``
+(`src/simulation/incidents/gangs.ts:82`) and `addGrudge` throws on a
+self-grudge (`:87`) — so a producer must pick a direction, and the only
+directional signal on the record is a field three modules say is not about
+culpability. **The ruling's "between" is symmetric and the model is not.** This
+is not a reason to refuse the ruling; it is the one thing an implementer has to
+choose that the ruling does not choose for them, and it is Open Question 2.
+
+### 13. Term 2 of the ruling — "adjudicated" has a referent, and it is narrower than the word — VERIFIED, read
+
+**There is an adjudication step, it has one door, and it is already the seam
+Context 9 identified.** `IncidentResponseSystem.adjudicateAssaultIfAny` is a
+single private method whose docblock states why it is single: *"The one thing
+both terminal transitions below do identically, so the two call sites cannot
+drift about which incidents earn a sanction or which participant it lands on"*
+(`src/simulation/incidents/response-system.ts:326`).
+
+What it takes as input:
+`if (incident.type !== 'assault' || incident.instigatorId === undefined) return;`
+(verbatim in `src/simulation/incidents/response-system.ts`), at `:328`.
+
+What it leaves behind:
+`this.onAssaultAdjudicated(incident.instigatorId, tick);` (verbatim in
+`src/simulation/incidents/response-system.ts`), at `:329`, against a port
+declared
+`private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},`
+(verbatim in `src/simulation/incidents/response-system.ts`), at `:218`. In a
+real session that port is
+`prisoners.imposeSolitarySanction(entityId, tick)`
+(`src/simulation/runtime/new-session.ts:1430-1432`), carried out by
+`SanctionSystem` (`src/simulation/prisoners/sanction-system.ts`), whose own
+comment records that the sanction *"is the only state
+`PrisonerOperationsRuntime.imposeSolitarySanction` writes"*
+(`src/simulation/prisoners/sanction-system.ts:66`).
+
+**Four properties of that step, each of which bears on the ruling:**
+
+1. **It is not a hearing.** There is no evidence stage, no command, no
+   contested finding and no player input. "Adjudicated" here means *the
+   incident reached a terminal state and the instigator was sent to solitary*,
+   and nothing more. `src/simulation/prisoners/disciplinary-record.ts:154-155`
+   and `src/simulation/incidents/flashpoint.ts:341` both say the adjudication
+   issue #80 asks for — the one that identifies a culprit — *"needs a command
+   type"* and does not exist.
+2. **It fires on both terminal transitions, including the one where nobody
+   came.** `this.adjudicateAssaultIfAny(incident, tick);` (verbatim in
+   `src/simulation/incidents/response-system.ts`) appears twice — at `:711`,
+   inside `lapse`, and at `:899`, in the `'resolved'` branch of
+   `advanceResponse`. A lapse is
+   an incident that ran out its `responseDeadlineTicks: 600` with no guard on
+   it. **So "an adjudicated assault" includes assaults the prison ignored**,
+   which is the majority case in a prison at the one-guard floor Context 5
+   prices.
+3. **It carries the instigator and nothing else.** Not the victim, not the
+   participant list, not the incident. A grudge producer hanging off this seam
+   needs both prisoners, so **the port has to be widened or a second port added
+   beside it** — the smallest correct change is to pass the `IncidentRecord`,
+   which the method already holds. That is Consequences below, and it is the
+   one change to existing code the ruling itself forces.
+4. **It is already tested end to end.** `tests/integration/assault-sanction-loop.test.ts`
+   drives a real kernel through it, which is why this document names that
+   fixture for the measurement rather than inventing one.
+
+**So term 2 is implementable as written, with one caveat the owner should
+see**: if "adjudicated" was meant to imply *someone looked into it*, nothing in
+this repository does that, and the nearest thing that exists is "the incident
+ended and the instigator went to solitary". This document reads it as the
+latter, because that is what the code has, and says so here rather than in a
+footnote.
+
+### 14. Term 3 of the ruling — "one the player was actually shown" has no referent, and its strongest reading is forbidden — VERIFIED, read
+
+**This is the finding this document exists to return.** *"Was actually shown"*
+is not a state anything in this repository records, and the reason is
+architectural rather than an omission somebody can patch.
+
+**(a) What a player is actually shown about an assault, in full.** One
+sentence, once, when it opens:
+`'hud.alert.event.incidents.assault-opened': 'A fight has broken out between two prisoners.',`
+(verbatim in `src/content/default-locale-en.ts`), at `:1292`, graded
+`severity: 'warning'` and `surfaces: 'band-and-log'`
+(`src/ui/simulation-events.ts:522-526`). It is **recorded** unconditionally: the
+one door every producer goes through calls
+`this.events.recordIncidentOpened(input.type, input.participantIds.length, tick);`
+(verbatim in `src/simulation/incidents/trigger-system.ts`), at `:492`, and the
+only guard on the other side is
+`if (!Number.isSafeInteger(participantCount) || participantCount < 1) return;`
+(verbatim in `src/simulation/events/event-log.ts`), at `:566`, which an
+assault's two participants always clear. **Every assault that opens is recorded
+on the alerts channel.**
+
+**Recorded is not the same as delivered, and the gap is small but real.** The
+buffer trims to `MAX_BUFFERED_SIMULATION_EVENTS` on append
+(`src/simulation/events/event-log.ts:871-874`) and the publisher reads it on a
+timer, so a burst of more than that many events between two publications would
+drop the oldest before anyone saw them. Nothing in this repository has measured
+that happening, and the dwell module's own event-spacing runs — 64 events in
+200,000 ticks, 54 in 90,000 (`src/ui/hud/event-band-dwell.ts:25-26`) — are two
+orders of magnitude away from it. It is named because reading A below is stated
+as "the log holds a record", and a reader is owed the one case in which the log
+holds one and the player still saw nothing.
+
+**(b) The row names nobody, and the panel that would is not built.** The wire
+payload is the envelope and the literal —
+`type: z.literal('incidents.assault-opened'),` (verbatim in
+`src/simulation/protocol/types.ts`), at `:2039` — because the channel
+deliberately carries no identity: *"No incident id, no sector id: the channel
+carries no identity"* (`src/simulation/protocol/types.ts:1998`). The place a
+player would look one up does not exist: `hud/incidents` and
+`hud/incident-detail` are both listed in `UNPAINTED_PROJECTION_IDS`
+(`tests/foundation/projection-reachability-contract.test.ts:363-366`), and
+`grep -rn "hud/incidents" src/ui/ src/main.ts` returns nothing on this tree.
+`participantEntityIds` is projected
+(`src/simulation/presentation/incident-projection.ts:112`, written at `:263`)
+and has no reader anywhere in `src/`. **So a player is told that a fight
+happened and is never told who was in it.**
+
+**(c) The adjudication — the moment the ruling names — is announced by
+nothing.** `SIMULATION_EVENT_TYPES`
+(`src/simulation/protocol/types.ts:1713-1735`) is the closed list of everything
+the prison can say, and **no member of it is a sanction, a finding, a solitary
+term or an adjudication** — a count is deliberately not given, because the
+durable claim is about the subject and a tally beside a closed list is the
+shape `docs/AGENT_WORKFLOW.md` §4 names as rotting first. The only
+solitary-related locale
+key in the catalogue is the room's name,
+`'room.solitary-cell.name'` (`src/content/default-locale-en.ts:28`). The two
+terminal-incident sentences that do exist — `incidents.all-clear` and
+`incidents.all-clear-after-lapse` — are about *the prison* returning to calm
+and fire only when nothing at all is open
+(`src/simulation/incidents/response-system.ts:316-324`). **So under a reading
+of the ruling where "shown" attaches to the adjudication, the ruling is not
+implementable at all today**: the player has never been shown an adjudication,
+of any incident, in any prison.
+
+**(d) Nothing records that a sentence reached a screen, and this repository has
+already measured a sentence that did not.** The dwell module's own docblock
+says what the band is for and what went wrong without it: the band's job is
+*"that a player who is looking at it sees the sentence exist, which is exactly
+what the escape sentence did not do: written three times, painted zero times"*
+(`src/ui/hud/event-band-dwell.ts:47-50`). Written three times, painted zero
+times **is** the gap between "published" and "shown", measured, in this
+codebase, on a different sentence.
+
+**(e) The simulation is forbidden from reading publication, and that is a
+contract rather than a preference.** The watermark that knows what has been
+published lives outside the kernel — `private _publishedEventSequence = 0;`
+(verbatim in `src/simulation/worker/state-machine.ts`), at `:307`, read at
+`const pending = this._runtime.events.since(this._publishedEventSequence);`
+(verbatim in `src/simulation/worker/state-machine.ts`), at `:717` — and
+`SimulationEventLog`'s class comment says why it is there and not in the log:
+*"a publication is driven by wall-clock time, so a tick that behaved
+differently because a publication had happened would make the simulation depend
+on how fast the machine ran"* (`src/simulation/events/event-log.ts:75-77`).
+`tests/determinism/status-counts-publication.test.ts` is the gate, and its
+header states the failure in the exact words this ruling risks: *"then the mere
+act of showing a player a number would change the simulation, and it would do
+so only in the running app, never in a headless replay"*
+(`tests/determinism/status-counts-publication.test.ts:25-27`).
+
+**(f) The one fact about the player's attention that does reach the kernel, and
+what it actually is.** A dismissal. `export const dismissAlertSchema = z.object({`
+(verbatim in `src/simulation/protocol/commands.ts`), at `:583`, applied from
+the command queue at `src/simulation/runtime/session-commands.ts:919` into
+`public dismiss(fromSequence: number, throughSequence: number): number {`
+(verbatim in `src/simulation/events/event-log.ts`), at `:269`. Its far end is
+documented as exactly the thing the ruling asks for: *"`throughSequence` is the
+newest arrival the player had actually seen when they pressed"*
+(`src/simulation/events/event-log.ts:240-241`). It is deterministic because it
+arrives as a command, not as a publication.
+
+**But it is an acknowledgement, not a display, and three properties make it a
+poor proxy for one.** It requires the player to press *Clear this alert*, which
+most will never do. It retires a **run** of arrivals that say the same thing
+(`simulationEventIdentity`), and because the assault row carries no payload
+(b above) *every* assault in the buffer collapses into one run — so one press
+would mark every assault the player had ever been told about, not one. And the
+log holds at most sixty-four records
+(`MAX_BUFFERED_SIMULATION_EVENTS = 64`, `src/simulation/events/event-log.ts:33`)
+while the list holds eight rows chosen by severity, which the log's own comment
+contrasts: *"the alerts list keeps eight rows chosen by severity, this keeps
+sixty-four records chosen by age, and only the second of those is in the save
+because only the second of those is in the worker"*
+(`src/simulation/events/event-log.ts:129-132`).
+
+**(g) Nothing in the simulation reads the event log back.** `since` has exactly
+one caller, the publisher at `src/simulation/worker/state-machine.ts:717`; the
+log's other public methods are its `record*` writers, a snapshot pair, a count
+and `dismiss`, and not one of them answers a question about a past event. A producer that consulted the log to ask *"was this announced?"*
+would be the **first** simulation reader of it, inverting a sink into a source.
+That is not forbidden, and it is not free either: it is a new coupling between
+the incident tree and the announcement channel, and it is named here so that
+whoever writes it knows they are the first.
+
+### 15. A correction to this document's own weakest claim, in the direction that saves the mechanism — ARITHMETIC
+
+**The earlier pass named Decision 6's dependence on `high-risk` arrivals as its
+weakest claim and said it had not been chased down. It has now been chased down
+on the constants, and the claim as written is too pessimistic.**
+
+`classificationGroupIdForTier` is
+`return riskTier >= 3 ? 'high-risk' : 'general-population';` (verbatim in
+`src/simulation/prisoners/classification.ts`), at `:59`. At **intake**
+(`classifyPrisoner`, `:82-90`) the score is a long-sentence bonus of at most 1
+plus `min(2, priorIncidents)`, then a screening draw of `-1 | 0 | +1`. So an
+arrival admitted with `priorIncidents: 0` maxes out at `1 + 0 + 1 = 2` and
+**can never be `high-risk` at intake** — which is what
+`tests/integration/assault-sanction-loop.test.ts:33` observed for its own
+fixture and what the earlier pass generalised from.
+
+**What the earlier pass missed is that intake is not the only writer.** ADR
+0032's `reviewClassification` recomputes the tier absolutely, every
+`CLASSIFICATION_REVIEW_INTERVAL_TICKS = 24_000`
+(`src/simulation/prisoners/classification.ts:105`), from
+`sentence + intakeHistory + findings + cleanConduct`
+(`src/simulation/prisoners/classification.ts:213`), where
+`const findings = Math.min(MAX_FINDINGS_TERM, Math.max(0, disciplinary.points));`
+(verbatim in `src/simulation/prisoners/classification.ts`), at `:196`, and
+`MAX_FINDINGS_TERM = 3` (`:127`). `ClassificationReviewSystem` writes the result
+back —
+`this.records.classificationGroupIndex[index] = nextGroupIndex;` (verbatim in
+`src/simulation/prisoners/classification-review-system.ts`), at `:385`, beside
+`riskTier` at `:384`.
+
+The arithmetic, off constants that were opened. A prisoner in **one lapsed
+assault** is charged two points by
+`export const DISCIPLINARY_POINTS_BY_INCIDENT_TYPE: Readonly<Record<IncidentType, number>> = {
+  assault: 2,`
+(verbatim in `src/simulation/prisoners/disciplinary-record.ts`), at `:46-47`, plus
+`export const LAPSED_INCIDENT_SURCHARGE_POINTS = 1;` (verbatim in
+`src/simulation/prisoners/disciplinary-record.ts`), at `:58` — three points,
+and `buildDisciplinaryIndex` charges **both** participants. At the next review,
+with a sentence at or over `LONG_SENTENCE_THRESHOLD_TICKS = 200_000` (`:41`) and
+no clean-conduct credit yet accrued, the score is `1 + 0 + 3 - 0 = 4`, clamped
+to tier 3. **`high-risk` is therefore reachable from `priorIncidents: 0` after
+one lapsed assault and one review**, on a fixture whose own comment says its
+arrivals are *"deterministically `general-population`"* at intake.
+
+**Two consequences, and the second is the one that damages Decision 6.**
+
+1. The mechanism is **not** inert for want of `high-risk` prisoners. It
+   bootstraps off exactly the incident the ruling names as the grudge's cause.
+2. **Decision 6 assigns membership "at intake", and the population that
+   actually becomes `high-risk` becomes so long after intake.** A membership
+   rule evaluated once, at admission, would therefore never see them. That is a
+   defect in Decision 6's *timing* rather than in its criterion, and it is
+   marked here rather than silently repaired because Decision 6 is not what the
+   owner ruled on. Open Question 5.
+
+**This is ARITHMETIC, not a run, and the distinction is load-bearing.** It shows
+tier 3 is *reachable*; it does not show how often a prison reaches it, whether
+a review lands before the prisoner is discharged, or whether clean-conduct
+credit claws the tier back before a second assault. Only the measurement below
+settles that, and item 1 of Fixture A is written to ask it.
+
 ---
 
 ## Decision
 
-Nothing here is accepted. Each numbered item is a question this document
-answers so the owner can disagree with a specific sentence rather than with a
-direction.
+**Item 2 is the owner's ruling of 2026-09-08 and is not this document's to
+accept or withdraw. Items 1 and 3 to 7 are this document's, and none of them is
+accepted.** Each is written so the owner can disagree with a specific sentence
+rather than with a direction.
+
+**This preamble read "Nothing here is accepted" until the ruling arrived, and
+that sentence is kept here rather than deleted** (`docs/AGENT_WORKFLOW.md` §4):
+it was true of every item when it was written, and it is now true of six of the
+seven. The one it stopped being true of is the one a reader most needs to see
+move.
 
 ### 1. What a gang is: a claim on territory, not a badge on a prisoner
 
@@ -409,50 +794,122 @@ out keeps the `.strict()` definition schema untouched (Context §8) and keeps
 this decision clear of `AGENTS.md`'s fourth reservation entirely. If gang names
 are wanted later they are a separate decision with a separate cost.
 
-### 2. Where a grudge comes from: an assault the player already watched
+### 2. Where a grudge comes from — THE OWNER'S RULING OF 2026-09-08, and what it rests on
 
-**A grudge is written when an adjudicated assault's instigator and victim
-belong to different gangs, and at no other time.**
+**The ruling, quoted, and it is the whole of the owner's input on this
+question:**
 
-The producer hangs off `adjudicateAssaultIfAny`
-(`src/simulation/incidents/response-system.ts:327-330`) through a second
-injected port beside `onAssaultAdjudicated`, taking the incident's
-`instigatorId` and the other participant. Concretely: the offending gang is the
-instigator's, the offended gang is the victim's, and
+> A grudge forms from an adjudicated assault between members of different gangs — one the player was actually shown.
+
+Relayed to this pass by the integrating session as the text of the option the
+owner chose on 2026-09-08; not text they typed into this repository. Status
+above carries the provenance in full.
+
+**Two of the ruling's three terms have referents in this repository and one does
+not.** Context 12, 13 and 14 are the evidence, and the reading below is built on
+them rather than on the words alone.
+
+#### 2.1 What the ruling confirms, and what this document had already argued
+
+The producer is the seam Context 9 named and Decision 2 already proposed:
+`adjudicateAssaultIfAny` (`src/simulation/incidents/response-system.ts:327`),
+the one door both terminal transitions of an assault go through. The offending
+gang is the instigator's, the offended gang is the other participant's, and
 `addGrudge(offendedGangId, offendingGangId, weight)` is called only when both
 lookups return a gang and the two differ.
 
-**Why adjudication rather than the moment the assault opens.** The incident is
-terminal there — resolved or lapsed — so the grudge is recorded *after* the
-player has seen the assault run its course, and the sector's single open-incident
-slot is free (Context §4). Writing it at open would create a grudge that could
-in principle be acted on while the assault it came from is still being
-contained, which reads as two incidents about one event.
+**The ruling settles this against the alternatives, and they are now rejected by
+the owner rather than by this document** — recorded under "Alternatives the
+owner's ruling rejects" below, kept rather than deleted because they will be
+proposed again.
 
-**Why not a die roll, a timer, or a scheduled injection.** Three reasons, in
-descending strength:
+#### 2.2 The sentence in this document that the ruling makes false, corrected in both directions
 
-1. It keeps the incident tree free of RNG (Context §10), which is the property
+**This section's heading read "Where a grudge comes from: an assault the player
+already watched", and its second paragraph opened "Why adjudication rather than
+the moment the assault opens" with this reasoning:**
+
+> The incident is terminal there — resolved or lapsed — so the grudge is
+> recorded *after* the player has seen the assault run its course, and the
+> sector's single open-incident slot is free (Context §4).
+
+**"After the player has seen the assault run its course" was asserted and never
+checked, and Context 14 establishes it is not true of this codebase.** A player
+is shown one sentence when an assault *opens* and nothing whatever when it
+reaches a terminal state; there is no event, no locale key and no panel for an
+adjudication (Context 14c). The old wording is kept above rather than
+overwritten because it is exactly the shape `docs/AGENT_WORKFLOW.md` §4 warns
+about — a plausible sentence about a player's experience, written from the
+simulation's side, with nothing opened on the UI side to support it.
+
+**The correction runs in the other direction too, and it is the more useful
+half.** The *conclusion* — adjudicate rather than open — survives, on the two
+reasons that were checked: the sector's single open-incident slot is free at a
+terminal transition (Context 4), and the seam already exists with a second
+occupant (Context 9). It is the *player-facing* reason that was wrong, and it
+was the reason this document leaned on hardest.
+
+#### 2.3 "One the player was actually shown": three readings, and what each costs
+
+Context 14 establishes that no state anywhere records that a sentence reached a
+screen. So the clause has to be read, and there are exactly three readings this
+codebase admits.
+
+| reading | what it would select | implementable? | what it costs |
+| --- | --- | --- | --- |
+| **A — announced** | assaults for which `SimulationEventLog` holds an `incidents.assault-opened` record | yes, and already true of every assault | nothing, and it filters nothing: `openIncident` records unconditionally (Context 14a) |
+| **B — displayed** | assaults whose row was painted on the player's screen | **no** | the fact lives on the main thread; reading it in the kernel is what `tests/determinism/status-counts-publication.test.ts` exists to forbid (Context 14e) |
+| **C — acknowledged** | assaults whose alert row the player pressed *Clear this alert* on | yes, via `DismissAlert` | grudges depend on housekeeping most players never do, and one press marks every assault in the buffer because the row carries no identity (Context 14f) |
+
+**This document implements reading A and says so plainly rather than presenting
+it as the ruling.** A is the only one that is both implementable and not
+perverse. It is also the reading under which the ruling's third clause
+**constrains nothing today**, because every assault that opens is announced —
+and that is stated here, in the Decision, rather than buried, because a reader
+who takes the clause to be doing work would be wrong.
+
+**What A buys despite filtering nothing.** It ties the grudge to the announced
+event rather than to the incident record, so the day announcement becomes
+conditional — a quieter channel, a per-severity filter, a player-set mute — the
+grudge follows the sentence instead of silently decoupling from it. That is a
+guarantee about the *future* shape of the channel, not about today's prison, and
+it is worth having for that reason alone.
+
+**What A does not buy, and what the owner may have meant.** If the intent was
+that a player should be able to *connect* the retaliation to the fight that
+caused it, reading A does not deliver it and no reading available today does:
+the assault row names nobody (Context 14b), the incidents panel is unbuilt, and
+the retaliation's own sentence takes no parameters (Context 7). **Delivering
+that intent needs a new player-visible sentence** — most plainly, an
+announcement at adjudication naming what the prison decided — and that is a new
+member of `SIMULATION_EVENT_TYPES`, a new schema, a new locale key and a new
+row definition. Under `AGENTS.md`'s fourth reservation the *wording* of such a
+sentence has been ours since 2026-09-04; the requirement that it be true is not,
+and neither is the decision to add one. **Open Question 1 is that fork and it is
+the owner's.**
+
+#### 2.4 Why not a die roll, a timer, or a scheduled injection
+
+Unchanged from the earlier draft, and now reinforced rather than argued, because
+the owner ruled the same way. Three reasons, in descending strength:
+
+1. It keeps the incident tree free of RNG (Context 10), which is the property
    the whole subsystem was built to have.
-2. It makes retaliation *legible*: the player can point at the assault that
-   caused it. An injected event cannot be pointed at, and the difficulty
-   framing issue #979 makes — that this is the one incident type that is
-   *social* rather than another reading of the same two pressure terms — is
-   only true if the social event has a social cause.
-3. It costs no new state. The alternative producers considered and rejected
-   are recorded in Open Question 3.
+2. It makes retaliation *legible* — with the limit 2.3 names: legible to a
+   player who is watching the alerts channel, not to one who wants to know
+   which two prisoners were involved, because the channel never says.
+3. It costs no new state.
 
-**Weight: one assault, one grudge unit, and the unit is a decision the owner
-should see rather than a constant an implementer picks.** From Context §3, a
-retaliation needs `grudge ≥ 0.4`. So a weight of `0.4` makes every
-cross-gang assault produce a retaliation; `0.2` makes it every second one;
-`0.15` every third. **This document recommends `0.2`** — two cross-gang
-assaults buy one retaliation — on the reasoning that one is indistinguishable
-from "an assault sometimes escalates" and three is far enough away that a
-player would never connect the two events. It is a directional default in the
-same sense `retaliationThreshold` calls itself one
-(`src/simulation/incidents/trigger-system.ts:261`), and it is named here so a
-balance pass has something specific to disagree with.
+#### 2.5 Weight: unchanged, still a recommendation, still the number a balance pass moves first
+
+The ruling names no weight. From Context 3, a retaliation needs `grudge ≥ 0.4`,
+so `0.4` makes every cross-gang assault produce a retaliation, `0.2` every
+second and `0.15` every third. **This document continues to recommend `0.2`** —
+two cross-gang assaults buy one retaliation — on the reasoning that one is
+indistinguishable from "an assault sometimes escalates" and three is far enough
+away that a player would never connect the two events. It is a directional
+default in the same sense `retaliationThreshold` calls itself one
+(`src/simulation/incidents/trigger-system.ts:261`). Open Question 6.
 
 **"Two assaults" means two in the SAME direction, and this is the part an
 implementer will get wrong.** Grudges are keyed
@@ -463,8 +920,12 @@ neither reaches 0.4. At weight 0.2 a prison whose cross-gang assaults alternate
 direction never retaliates at all. That is arguably correct — a score that is
 already even is not a score to settle — but it is a consequence of the
 directional key rather than a decision anyone took, so it is named here and
-carried into the measurement below (item 5 asks for the whole ledger, not just
-the incident).
+carried into the measurement below.
+
+**And the direction itself is not settled by the ruling.** Context 12 showed
+`instigatorId` is the worst-ranked flashpoint and three modules say it is not a
+finding of fault. "Between members of different gangs" is symmetric; the ledger
+is not. Open Question 2.
 
 ### 3. The territory amplifier stays, and the reason is now stated rather than assumed
 
@@ -517,8 +978,10 @@ untouched.
 ### 5. What this decision does not touch
 
 - **No new RNG stream.** Membership assignment (Decision §6) is deterministic.
-- **No new locale key and no changed string.** The one sentence involved
-  already exists and this document does not edit it.
+- **No new locale key and no changed string** — **under Decision 2.3's reading
+  A.** The one sentence involved already exists and this document does not edit
+  it. **Open Question 1's branch (b) would add one**, and that is why the
+  question is the owner's: it is a new promise, not a new wording.
 - **No change to `retaliationThreshold`, to the severity formula, to
   `lockdownSeverityThreshold`, or to any response policy constant.** Context §5
   prices what those produce; changing them is a balance decision this document
@@ -530,9 +993,9 @@ untouched.
   describes standing *"raised by successful retaliation, lowered when a gang's
   own incident is contained"* (`src/simulation/incidents/gangs.ts:21`), which
   is a second mechanism with its own consequences and no reader anywhere;
-  adding it here would be scope this document has not priced. Open Question 4.
+  adding it here would be scope this document has not priced. Open Question 7.
 
-### 6. Membership: assigned at intake, deterministically, from the classification the prison already draws
+### 6. Membership: assigned at intake, deterministically, from the classification the prison already draws — TIMING CORRECTED 2026-09-08, in this section
 
 **A prisoner joins a gang at admission, by a rule over state intake already
 computes, and not by a new random draw.**
@@ -554,10 +1017,34 @@ Two properties this buys, both of which matter more than the rule's elegance:
   already see and already influences**, so "why is my prison full of gang
   members" has an answer the player can act on.
 
-**This is the weakest of the six decisions and is flagged as such**, see "The
-weakest claim in this document, named". A defensible alternative — every
+**This is the weakest of the six decisions this document still owns and is
+flagged as such**, see "The weakest claim in this document, named". A defensible alternative — every
 arrival joins a gang, so the mechanism does not depend on high-risk arrivals
-being reachable at all — is Open Question 2.
+being reachable at all — is Open Question 4.
+
+**CORRECTED 2026-09-08, AND THE CORRECTION RUNS BOTH WAYS. The paragraph above
+is kept exactly as it stood.** Context 15 measured the constants this rule
+depends on and found two things the earlier pass had not.
+
+*In this rule's favour, and against the fear that named it weakest:*
+`high-risk` **is** reachable from `priorIncidents: 0`. It is reached through
+`reviewClassification`, not at the gate — one lapsed assault charges both
+participants three disciplinary points, which is the `MAX_FINDINGS_TERM` cap,
+and the next review scores `1 + 0 + 3 - 0 = 4` and clamps to tier 3. So the
+mechanism is not inert for want of high-risk prisoners, and it bootstraps off
+the very incident the owner's ruling names as the grudge's cause.
+
+*Against this rule as written:* **that population becomes `high-risk` long after
+intake, and this rule is evaluated at intake, so it would never see them.** The
+criterion survives; the *timing* does not. A membership rule that reads
+`classificationGroupIndex` once, at admission, assigns nobody in a prison whose
+high-risk prisoners are made rather than admitted. The repair is to evaluate
+membership wherever the tier is written — `ClassificationReviewSystem` already
+writes both fields at
+`src/simulation/prisoners/classification-review-system.ts:384-385` — but that is
+a second write site, a second determinism question and a decision this document
+has not priced. **Open Question 5**, and it is the one an implementer hits
+first.
 
 ### 7. Why this is Lockstate's mechanism and not a copied one
 
@@ -583,9 +1070,14 @@ can check against the code above rather than as an assertion:**
    debt that is created by one identifiable event and discharged by one
    identifiable event. That is closer to the incident ledger this repository
    already has than to a relationship matrix.
-2. **The producer is an incident the player already watched, not a hidden
-   sampler.** Decision §2. There is no gang-activity roll anywhere; Context §10
-   is why there cannot be one without a deliberate decision.
+2. **The producer is an incident the prison announced to the player, not a
+   hidden sampler.** Decision §2. There is no gang-activity roll anywhere;
+   Context §10 is why there cannot be one without a deliberate decision.
+   **This clause read "an incident the player already watched" and is corrected
+   in place with the old wording kept**: Context 14 established that
+   "announced" is what the code delivers and "watched" is what nothing records.
+   The structural difference from the genre is unaffected — a sampler announces
+   nothing at all — which is why the item survives its own correction.
 3. **Territory is a *sector* claim reusing the security sector the prison
    already derives** (Context §3), not a drawn or painted gang zone. Gangs
    inherit the geometry ADR 0036 already established for staffing and
@@ -605,6 +1097,122 @@ above — the single-use directional grudge, the assault as its sole producer,
 the reused security sector as territory, and classification as membership — are
 this repository's own answers, each derived from a module that already existed
 here.
+
+---
+
+## Alternatives the owner's ruling rejects
+
+**These were rejected by this document before 2026-09-08 and are rejected by the
+owner's ruling now.** They are kept rather than deleted for the reason
+`AGENTS.md` keeps a released reservation's original paragraph: a reader needs to
+see what was given up, and every one of these will be proposed again.
+
+**Each is priced in what it would have cost, not merely named.**
+
+1. **A scheduled or random injection** — "gangs act up every N ticks", or a
+   per-sample draw on a new RNG stream.
+   *What it would have cost:* a seventh named RNG stream, which
+   `src/simulation/runtime/new-session.ts:471-478` sets out as a
+   save-compatibility question in full, and the loss of the property Context 10
+   establishes — that nothing in `src/simulation/incidents/` draws a random
+   number. *What it would have bought:* a retaliation reachable in a prison that
+   has never had a fight, which is the one thing the ruling's producer cannot
+   deliver. **Rejected by the ruling**, which makes the assault the cause.
+2. **Contraband seizure** — a find on a prisoner raises their gang's grudge.
+   *The obvious objection to it is wrong, so the real one is given instead.*
+   Attribution is **not** the problem: `ContrabandHolderKind` includes
+   `'prisoner'` (`src/simulation/contraband/item.ts:12`), so an item taken off a
+   prisoner already names one and `getGangOf` would map it to a gang. The
+   problem is that a seizure is a wrong done by the **prison**, not by another
+   gang, so it has no `offendingGangId` to key a directional grudge against —
+   the model in `src/simulation/incidents/gangs.ts` cannot express "this gang
+   resents the warden". *What it would have cost:* either a second kind of
+   grievance with its own reader, or arbitrarily blaming a rival, which is a
+   lie the player could catch. **Rejected by the ruling**, which names an
+   assault between members of different gangs.
+3. **Cell-sharing friction** — `rateCellSharing` is the authored metric for two
+   prisoners who go together badly. *What it would have cost:* nothing to
+   build and nothing to observe — ADR 0061's open question 4 already records
+   that no fixture builds a shared cell, so it would fire nowhere.
+   **Rejected by the ruling**, and it was already inert.
+4. **Writing the grudge when the assault opens rather than when it is
+   adjudicated.** Not previously listed as an alternative because this document
+   had already chosen against it; the ruling's word *"adjudicated"* now closes
+   it. *What it would have cost:* a grudge that can be acted on while the
+   assault it came from is still being contained, which reads as two incidents
+   about one event — and the sector's single open-incident slot makes that a
+   real ordering, not a stylistic worry (Context 4).
+
+**One alternative the ruling does NOT reject, because it is not a producer:**
+announcing the adjudication. Decision 2.3 sets out why it is the thing that
+would deliver what the ruling's third clause appears to want, and Open Question
+1 puts it to the owner. Adding it would not change what causes a grudge; it
+would change what the player is told about the cause.
+
+---
+
+## Consequences
+
+**Re-derived from the ruling rather than from the earlier draft's Decision, and
+split three ways: what must exist, what does not exist today, and what the first
+change touches.**
+
+### What must exist in code before a grudge can form
+
+1. **Two gangs, registered, both claiming the one watched sector.** Nothing in
+   `src/` calls `GangRegistry.register` (Context 1) and a gang with no territory
+   is structurally inert (Context 2).
+2. **Members on both sides of a cross-gang assault.** `getGangOf` must answer
+   for both participants and answer differently. Nothing in `src/` calls
+   `addMember` (Context 1).
+3. **A grudge writer.** `addGrudge` has no caller in `src/` at all (Context 1),
+   and Context 3's arithmetic makes it the decisive one: with no grudge,
+   `resolveRetaliationRisk` returns `0` at `src/simulation/incidents/gangs.ts:140`
+   and every downstream gate is unreachable.
+4. **Both participants at the adjudication seam.** The port carries only the
+   instigator (Context 13, point 3), so the seam cannot today name the second
+   prisoner a directional grudge needs.
+
+### What does not exist today, listed so nobody re-discovers it
+
+- **No producer of any kind**: zero calls to `register`, `addMember` or
+  `addGrudge` outside `loadSnapshot` (Context 1).
+- **No way for the adjudication seam to name the victim** (Context 13).
+- **No record anywhere that a sentence reached a player**, and a determinism
+  contract that forbids the kernel from reading publication (Context 14d, 14e).
+- **No announcement of an adjudication**, of any incident, in any prison
+  (Context 14c).
+- **No panel that names an assault's participants**: `hud/incidents` and
+  `hud/incident-detail` are both unpainted (Context 14b).
+- **No guard against a retaliation with an empty participant list** (Context 6),
+  which is the one defect in existing code this document asks to close.
+
+### What a first implementation would touch
+
+Six files, and the list is deliberately short because the ruling lands on a seam
+that already exists.
+
+| file | change | why |
+| --- | --- | --- |
+| `src/simulation/incidents/response-system.ts` | widen `onAssaultAdjudicated`, or add a second port beside it, so the adjudication carries both participants rather than only the instigator | Context 13, point 3 — the ruling cannot be implemented without it |
+| `src/simulation/runtime/new-session.ts` | seed two gangs at session creation; wire the grudge producer to the widened port | Decision 1 and 2 |
+| `src/simulation/incidents/trigger-system.ts` | one guard clause: skip a pair unless both `membersOf` are non-empty | Decision 4, Context 6 |
+| the membership write site | assign membership from `classificationGroupIndex` — and Context 15 says this is **not** `intake-system.ts` alone | Decision 6 as corrected; Open Question 5 |
+| `tests/unit/incident-trigger.test.ts` | give members to the two fixtures that today assert on memberless gangs | Decision 4; the assertions are untouched |
+| a new integration test | the measurement below, red-then-green | `docs/AGENT_WORKFLOW.md` §3 |
+
+**What it does not touch, and this is the part worth checking against the four
+reservations.** No `wrangler.jsonc`, no Worker, no `supabase/migrations/`, no
+`public/_headers`, no `deploy.yml` and no dashboard. **No locale key and no
+player-visible string**, under reading A — the one sentence involved
+(`'Two gangs are settling a score.'`) already exists and this document does not
+edit it. **Under Open Question 1's other branch it does touch a string**, which
+is precisely why that question is the owner's and not an implementer's.
+
+**No save-format move.** The registry's four collections are already persisted
+(Context 8) and Decision 1 adds no field to the `.strict()` definition schema.
+
+**No new RNG stream** (Context 10, Decision 5).
 
 ---
 
@@ -634,19 +1242,34 @@ this document and it is priced here rather than discovered in play.
 
 ### What it costs in code
 
+**Consequences above answers the same question per file and this list answers it
+per change; they are deliberately not two independent tallies, because two lists
+of the same facts is the shape `docs/AGENT_WORKFLOW.md` §4 names as rotting
+first.** Where they could disagree, Consequences is the one derived from the
+ruling and wins.
+
 - One guard clause in `tryOpenRetaliation` (Decision §4).
 - One injected port beside `onAssaultAdjudicated`, on the pattern that port's
-  own docblock argues for (Context §9).
+  own docblock argues for (Context §9). **CORRECTED 2026-09-08, and the bullet
+  is kept because the correction is one an implementer would otherwise make at
+  the keyboard:** a port *of the same shape* is not enough. `onAssaultAdjudicated`
+  is `(entityId: EntityId, tick: number) => void`
+  (`src/simulation/incidents/response-system.ts:218`) and a directional grudge
+  needs both participants, so the new port must carry the record or the pair —
+  Context 13, point 3.
 - Two `register` calls and a membership rule at session creation.
 - Extending two existing unit-test fixtures that today assert on memberless
   gangs (Decision §4).
 - **No new module, no new system, no new message kind, no new locale key, no
-  RNG stream, and no save-format version bump** (Context §8, §10).
+  RNG stream, and no save-format version bump** (Context §8, §10) — **under
+  Decision 2.3's reading A only.** Open Question 1's other branch adds a
+  `SIMULATION_EVENT_TYPES` member, a schema, a locale key, a row definition and
+  a census label, which is a different order of change and is the owner's.
 
 ### What it costs in save format
 
 Nothing, under Decision §1. The registry's four collections are already
-persisted (Context §8) and no field is added. If Open Question 5's `nameKey`
+persisted (Context §8) and no field is added. If Open Question 8's `nameKey`
 is ever taken, that is an optional field against a `.strict()` schema and
 carries the review cost `src/persistence/save-schema.ts:182-200` describes.
 
@@ -720,6 +1343,36 @@ never been watched failing proves nothing here.
 guard hired, which is the smallest change that lets a response mount and would
 be the only way to observe the prison-wide lockdown this document prices.
 
+### Three items the owner's ruling adds — 2026-09-08
+
+Numbered separately so a reader can see which of this measurement is the
+ruling's and which was already owed.
+
+6. **The tick each of entities 2 and 7 reaches `high-risk`, if either does, and
+   the score `reviewClassification` gave them.** Context 15's arithmetic says a
+   lapsed assault plus one review is enough; item 1 of Fixture A asks which
+   gang they are in at tick 13,650, which is *before* any such review could
+   have run on a finding from that assault. **The two items answer different
+   questions and both are needed**: item 1 asks whether the ruling's producer
+   can fire at all in this fixture, and this one asks whether the population it
+   needs exists later. If neither prisoner ever reaches tier 3, Decision 6's
+   criterion is what is wrong; if they reach it only after discharge, its
+   timing is.
+7. **Whether the assault at tick 13,650 produced a grudge, and in which
+   direction.** The instigator is entity 2 (REPORTED from that fixture's own
+   comment) and the participants are `[2, 7]`. Report the ledger key that was
+   written, so that Open Question 2's direction choice is visible in a run
+   rather than argued from the docblocks.
+8. **The `incidents.assault-opened` record that assault produced** — its
+   ordinal and its tick — beside the incident's own `startedAtTick`. This is
+   the item that tests Decision 2.3's reading A end to end: reading A asserts
+   that every assault that opens is announced, and a run that shows an assault
+   with no record against it would falsify the one reading this document was
+   able to implement. **It is expected to be vacuous** — Context 14a says the
+   announcement is unconditional — and it is asked for anyway, because a
+   vacuous check that was run is worth more than an unchecked inference, and
+   this is the inference the whole of Decision 2.3 rests on.
+
 ---
 
 ## The gates this draft was run against
@@ -752,107 +1405,272 @@ Documentation-only change. Run in this worktree at `491fcdce` (v0.0.541):
   refuses because `.github/workflows/version.yml` bumps the patch on every push
   and a bare number is therefore false as soon as it merges.
 
+**The ruling pass, run in this worktree at `98e88f34` (v0.0.541):**
+
+- `tsc -p tsconfig.json --noEmit` — clean, exit 0, before and after this
+  document changed. Documentation-only, so this is a statement that nothing was
+  touched rather than a statement about the edit.
+- `vitest run tests/foundation/` — **57 files, 526 tests, all passing**, taken
+  as a baseline before any edit and again with every change above in place. The
+  two counts are given because they are the same: this pass added no
+  documentation contract and broke none.
+- **Three real defects in the new material were caught by that suite on its
+  first run and are recorded rather than quietly fixed**, exactly as the three
+  above were. Two attributions were written `(both verbatim in ...)` over a
+  single quotation span — *"both"* counts the spans bound to the attribution,
+  not the occurrences in the file, and the gate reported *"binds 1 quotations,
+  and the wording promises 2"* for each. One quotation, `assault: 2,`, was
+  refused as *"too short to be evidence of anything"* at eleven normalized
+  characters against a floor of twelve, and was replaced with the declaration
+  line above it so the value is quoted in context. **All three were mistakes
+  about the gate rather than about the code**, which is the useful thing to
+  record: the gate caught a claim that was checking nothing.
+- **The verbatim gate was watched failing on the *new* material rather than
+  assumed to be reading it.** Mutating one character of one of this pass's own
+  quotations — `private _publishedEventSequence = 0;` to `= 1;` — turned
+  `adr-quotation-verbatim-contract.test.ts` from **18 passed** to
+  **1 failed | 17 passed**, naming that quotation, and restoring the character
+  turned it back to **18 passed**. Both outputs were obtained;
+  `docs/AGENT_WORKFLOW.md` §3 asks for both.
+- **The mutation this pass wanted and did not take.** The stronger form is to
+  mutate the *source* and watch the document's gate fail, which is what proves
+  the comparison runs against the live file rather than against a cached copy.
+  It was attempted on `src/simulation/worker/state-machine.ts` and refused:
+  `src/` is not this pass's surface. The weaker form above was taken instead
+  and the difference is named rather than glossed — what was demonstrated is
+  that the gate reads this document, not that it re-reads that file.
+
 ---
 
 ## The weakest claim in this document, named
 
-**Decision §6's membership rule assumes `high-risk` arrivals actually occur in
-a prison a player builds, and this document did not verify that they do.**
+**The weakest claim is now Decision 2.3's: that reading A is what the owner
+meant by *"one the player was actually shown"*.**
 
-The rule ties gang membership to a classification group produced by a draw on
-`prisoners.classification`, and the fixture this document names for its own
-measurement states in its own comment that its admissions *"never reach the
-`>= 3` high-risk floor -- every arrival here is deterministically
-`general-population`"* (`tests/integration/assault-sanction-loop.test.ts:33`).
-If that is typical rather than a property of that fixture's
-`priorIncidents: 0` and long sentence, then **Decision §6 seeds two gangs with
-no members in ordinary play**, Decision §4's guard then correctly refuses every
-retaliation, and this whole mechanism ships as inert as the one it replaces —
-the exact failure issue #979 exists to close, reproduced one layer up.
+Everything else in this document is a statement about code that was opened.
+That one is a statement about an intention, and the evidence cuts against it:
+"actually" is an emphatic word, and a reading under which the clause selects
+every assault and excludes none is not obviously what an emphatic word is for.
+The honest position is that **reading A is the only implementable reading that
+is not perverse, not that it is the intended one** — and Decision 2.3 says so
+in those terms rather than presenting the choice as settled.
 
-This was not chased down because `src/simulation/prisoners/` is another agent's
-surface on this pass, and a claim about how often a tier is drawn needs a run
-rather than a reading. **The measurement above is written to catch it**: item 1
-of Fixture A asks for the gang of entities 2 and 7 and says in terms that "they
-are in no gang" is the finding rather than a reason to change fixtures. Until
-that number exists, Decision §6 should be read as the *shape* of a membership
-rule with its threshold unset, and Open Question 2 carries the alternative that
-does not depend on the tier at all.
+**What would change my mind about it, and it is one sentence from the owner.**
+If they say the point was that a player should be able to connect the
+retaliation to the fight, then reading A is wrong, the producer is unchanged but
+incomplete, and Open Question 1's second branch — announce the adjudication —
+becomes the work. If they say the point was that a grudge must not come out of
+nowhere the player could not have seen, reading A is exactly right and the
+clause is a guarantee about the channel's future rather than a filter on today's
+prison.
 
-Two claims that are **not** the weakest, said so a reader does not have to
-guess where the confidence is: Context §3's arithmetic and Context §5's are
-computations over constants that were opened, and either can be re-derived in a
-minute from the quoted lines.
+**The previous weakest claim, kept and marked, because it moved rather than
+vanished.** It read:
+
+> **Decision §6's membership rule assumes `high-risk` arrivals actually occur in
+> a prison a player builds, and this document did not verify that they do.**
+> [...] This was not chased down because `src/simulation/prisoners/` is another
+> agent's surface on this pass, and a claim about how often a tier is drawn
+> needs a run rather than a reading.
+
+**It has now been chased down on the constants and it is half wrong in each
+direction** — Context 15 and the correction under Decision 6. `high-risk` is
+reachable from `priorIncidents: 0`, so the fear that named it is unfounded; but
+it is reached at *review* rather than at intake, so the rule's timing is wrong
+in a way the earlier pass did not suspect. It is no longer the weakest claim
+because it is no longer a claim about something unmeasured; it is a measured
+defect with a named repair.
+
+**Three claims that are NOT weak, said so a reader does not have to guess where
+the confidence is.** Context 3's and Context 5's arithmetic are computations
+over constants that were opened and either can be re-derived in a minute from
+the quoted lines. **Context 14 is the strongest thing in this document**: every
+one of its six parts is a file that was opened, and two of them are gates that
+would fail if it were wrong — `adr-quotation-verbatim-contract.test.ts` on the
+quotations, and `status-counts-publication.test.ts` on the determinism claim
+itself.
 
 ---
 
 ## What would change my mind
 
-- **A run showing that ordinary admissions never classify `high-risk`.** That
-  falsifies Decision §6 as written, not the direction; the fix is Open
-  Question 2's rule, and the document should be corrected rather than left
-  standing.
-- **The owner wanting retaliation to be reachable without a prior assault.**
-  Decision §2 makes the assault the sole producer, which means a peaceful
-  prison never sees a gang retaliation at all. That is defensible — and it is
-  also exactly the property someone asking for *"random incidents"* might not
-  want. If they want it reachable independently, the producer has to change and
-  Open Question 3's alternatives become the decision.
-- **A second sector arriving before this ships.** Decision §3's acceptance of
-  the always-on amplifier is contingent on there being one sector; two sectors
-  make the dampened branch reachable as a computation and its dead-at-threshold
-  arithmetic worth revisiting rather than merely recording.
+**Rewritten 2026-09-08. This section used to be about which producer to pick;
+the owner has picked one, so it is now about whether the one they picked can be
+built as they described it.** The earlier version is not reproduced, because
+every one of its four bullets survives below in a form the ruling reshaped
+rather than contradicted, and a verbatim copy would be four paragraphs a reader
+has to diff by hand.
+
+- **The owner saying the point of *"actually shown"* was legibility rather than
+  provenance.** This is the one that would change the most. Decision 2.3's
+  reading A would then be too weak, the producer would be unchanged but the
+  work would not be finished without an announcement at adjudication, and that
+  is a new player-visible sentence — the owner's, not an implementer's.
+  See Open Question 1.
+- **A run showing `high-risk` is never reached in ordinary play**, despite
+  Context 15's arithmetic saying it is reachable. Arithmetic shows a path
+  exists; it does not show a prison walks it. That falsifies Decision 6's
+  criterion rather than its timing, and Open Question 4's every-arrival rule
+  becomes the answer.
+- **A run showing the review never lands before discharge.** The mirror of the
+  above and the more likely failure: Context 15's path needs one lapsed assault
+  *and* a review at `CLASSIFICATION_REVIEW_INTERVAL_TICKS` while the prisoner is
+  still in custody. If sentences in ordinary play are short relative to that,
+  the path is real and nobody ever walks it.
+- **A second sector arriving before this ships.** Decision 3's acceptance of the
+  always-on amplifier is contingent on there being one sector; two sectors make
+  the dampened branch reachable as a computation and its dead-at-threshold
+  arithmetic worth revisiting rather than merely recording. The ruling does not
+  touch this.
 - **Evidence that a prison-wide lockdown on the first retaliation is
   unplayable.** Cost above prices it and does not judge it. A playtest finding
   it ruinous would not change the mechanism but would move
   `lockdownSeverityThreshold` or the severity formula into scope, which this
-  document deliberately excluded.
+  document deliberately excluded — and the ruling does not touch that either.
+- **Anything showing the assault record can name an aggressor.** Context 12
+  rests on three modules saying `instigatorId` is not a finding of fault. If
+  issue #80's command type ever lands and a real adjudication names a culprit,
+  Open Question 2 answers itself and the grudge's direction stops being a
+  choice.
+
+---
+
+## Promotion, decided rather than deferred
+
+**Should this document move out of `docs/adr/drafts/`, take a number and get a
+row in `docs/adr/README.md`? Measured on this pass: not yet, and the condition
+that would flip it is one sentence long.**
+
+**The number is not the obstacle, and it was swept rather than assumed.**
+`git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune`, then
+`git ls-remote --refs --heads origin` (**252 heads**) with
+`git ls-tree --name-only <head> -- docs/adr/` read out of every one of them and
+**all 252 readable**. The highest four-digit prefix on any head was **0102**;
+nothing at 0103 or above appeared on any of them. Highest on disk in this
+checkout is also 0102, and `docs/adr/README.md`'s stated line already reads
+`Next free number: 0103`. **All three answers agree, which is the configuration
+that file calls the lucky one rather than the normal one.** `0095` is still held
+and still not on disk, on `measure/893-coverage-and-response-draw-from-one-pool`
+— the same head the index's chain has named at every sweep since 2026-09-05,
+and it has not moved at this one either.
+
+**The obstacle is substantive.** A numbered ADR with a row in the index asserts
+that a decision has been taken. Decision 2 — the section the owner's ruling
+lands on — cannot yet be stated in a form the code supports, because its third
+term admits three readings and this document had to pick one on its own
+authority (Decision 2.3). Numbering the document would put a row in the index
+saying *what a gang is and how a grudge forms* is settled while the sentence
+that settles it has a fork in it. `AGENTS.md`'s fourth reservation is about
+promises the code does not keep; an index row is a promise of a smaller kind and
+this one is not yet keepable.
+
+**The procedural reason points the same way and is the weaker of the two**, said
+so a reader does not mistake it for the argument: `AGENTS.md` states that *"ADR
+numbers are assigned centrally, after drafts return"*, and this draft is
+returning.
+
+**The condition that flips it.** Open Question 1 answered by the owner —
+either branch. Once "one the player was actually shown" has a reading, Decision
+2 can be stated flat, and promotion is one commit: rename to
+`0103-what-a-gang-is-and-how-a-grudge-forms.md` (or whatever number is free
+then, re-swept, because this sweep will be stale), retitle the heading to
+`# ADR 0103: …`, add the row to `docs/adr/README.md` with `Proposed` in the
+Status column to match this document's own, and move the `Next free number`
+line to 0104. **The five assertions in
+`tests/foundation/adr-numbering-contract.test.ts` that a draft in this directory
+fails are all satisfied by exactly those edits**, and the reason the draft is
+skipped today was re-verified on this tree rather than carried forward: the
+test's file walk reads `ADR_ROOT` one level deep and filters each entry on
+`statSync(join(ADR_ROOT, entry)).isFile()` (verbatim in
+`tests/foundation/adr-numbering-contract.test.ts`), at `:186`, so a
+subdirectory is skipped before any filename rule is applied.
+
+**What the draft does NOT escape by sitting in a subdirectory**, said because
+the reverse would be the comfortable assumption: `collectMarkdownFiles`
+recurses (`tests/foundation/adr-quotation-verbatim-contract.test.ts:239-246`),
+so every quotation in this file is compared against the source it names, and the
+links, source-anchor, version-claim and commit-citation contracts all read it
+too. The only checks it is outside are the numbering, index-row and
+status-keyword ones — which is exactly the set that needs a number to mean
+anything.
 
 ---
 
 ## Open questions
 
-1. **Should a gang retaliation's participants be restricted the way a riot's
-   are?** `IncidentLog` indexes open participants for `'riot'` only, and says
-   why in its own words: reading the riot's authored action restrictions onto
-   `'gang-retaliation'` *"would be a content decision with no measurement
-   behind it"* (`src/simulation/incidents/incident.ts:225-229`). This document
-   does not take it, so a retaliation's participants carry on with their day
-   while the incident is open. That is the same open question ADR 0057 left,
-   now reachable for a second incident type.
-2. **Should every arrival join a gang, rather than only `high-risk` ones?** The
-   alternative to Decision §6, and it is the one that does not depend on tier
-   reachability at all. Its cost is that gang membership stops being something
-   the player influences, which is what recommended against it; its benefit is
-   that the mechanism cannot ship inert. The weakest-claim section above is why
-   this is a real question rather than a courtesy.
-3. **Rejected grudge producers, recorded because they will be proposed again.**
-   (a) *A scheduled or random injection* — refused on Context §10 and on
-   legibility. (b) *Contraband seizure* — and the obvious objection to it is
-   wrong, so the real one is given instead. Attribution is **not** the problem:
-   `ContrabandHolderKind` includes `'prisoner'`
-   (`src/simulation/contraband/item.ts:12`), so an item taken off a prisoner
-   already names one, and `getGangOf` would map it to a gang. The problem is
-   that a seizure is a wrong done by the **prison**, not by another gang, so it
-   has no `offendingGangId` to key a directional grudge against — the model in
-   `src/simulation/incidents/gangs.ts` cannot express "this gang resents the
-   warden". Making it fit would mean either a second kind of grievance or
-   arbitrarily blaming a rival, and both are larger decisions than this one. (c) *Cell-sharing friction* — `rateCellSharing` is the
-   authored metric for two prisoners who go together badly, and ADR 0061's open
-   question 4 already records that no fixture builds a shared cell, so it would
-   fire nowhere.
-4. **Does a successful retaliation move gang reputation?** Decision §5 leaves
-   `adjustReputation` unwritten. Its own docblock describes the intent
-   (`src/simulation/incidents/gangs.ts:21`), and nothing anywhere reads
-   reputation back — so writing it would create a second subsystem with no
-   reader, which is the class of defect this document is closing.
-5. **Do gangs ever need names?** Not for this decision (Context §7: the alert
-   takes no parameters). It becomes a question the first time a gang id would
-   reach a player — a roster column, an incident detail panel — and it is then
-   an optional `nameKey` on `GangDefinition` plus a locale key, which is
-   `AGENTS.md`'s fourth reservation's territory and this document's
-   deliberately is not.
-6. **What weight should one cross-gang assault carry?** Decision §2 recommends
-   `0.2` and shows the arithmetic that makes `0.4`, `0.2` and `0.15` mean "every
-   assault", "every second" and "every third". This is the one number in the
-   document a balance pass would move first.
+**Renumbered 2026-09-08 when the ruling closed the producer question.** Two are
+new and are the ruling's own residue; one — the old question 3, "rejected grudge
+producers" — is no longer a question and has been promoted into "Alternatives
+the owner's ruling rejects" above, where it is marked as rejected by the owner
+rather than by this document. The rest are the earlier draft's, unchanged in
+substance and moved only in number. **The old numbering is given beside each so
+a reader holding the earlier draft can follow.**
+
+1. **Which reading of *"one the player was actually shown"* did the owner mean,
+   and should the prison announce an adjudication? — NEW, and it is the one
+   question this document cannot answer for itself.** Decision 2.3 sets out the
+   three readings and takes A, because B is forbidden by the determinism
+   contract and C depends on a gesture. The fork is: **(a)** A is right, the
+   clause is a guarantee about the channel rather than a filter, and the work is
+   as Consequences describes it; or **(b)** the point was that a player should be
+   able to *connect* the retaliation to the fight, in which case the work also
+   includes a new member of `SIMULATION_EVENT_TYPES` announcing what the prison
+   decided about an assault — a new schema, a new locale key, a new row
+   definition and a new census label. **(b) is a player-visible sentence, so it
+   is the owner's under `AGENTS.md`'s fourth reservation** — the wording has
+   been ours since 2026-09-04, the decision to make the promise at all has not.
+2. **Which of the two prisoners is the offender? — NEW.** The grudge ledger is
+   directional (`src/simulation/incidents/gangs.ts:82`) and the ruling's
+   "between" is symmetric. The only directional signal on an assault record is
+   `instigatorId`, which three modules independently say is not a finding of
+   fault (Context 12). Three answers are available and none is obviously right:
+   treat the instigator's gang as the offender; write **both** directions at
+   half weight, so an even score stays even and a one-sided prison escalates;
+   or write nothing until issue #80's real adjudication exists. The second is
+   this document's instinct and it is deliberately not a recommendation,
+   because it doubles the ledger writes and nobody has measured what that does
+   to the cadence.
+3. **Should a gang retaliation's participants be restricted the way a riot's
+   are?** *(was open question 1.)* `IncidentLog` indexes open participants for
+   `'riot'` only, and says why in its own words: reading the riot's authored
+   action restrictions onto `'gang-retaliation'` *"would be a content decision
+   with no measurement behind it"* (`src/simulation/incidents/incident.ts:227-228`).
+   This document does not take it, so a retaliation's participants carry on with
+   their day while the incident is open. That is the same open question ADR 0057
+   left, now reachable for a second incident type.
+4. **Should every arrival join a gang, rather than only `high-risk` ones?**
+   *(was open question 2.)* The alternative to Decision 6's criterion. Its cost
+   is that gang membership stops being something the player influences; its
+   benefit is that the mechanism cannot ship inert. **Context 15 weakened the
+   case for it without removing it**: `high-risk` turns out to be reachable, so
+   "the mechanism cannot ship inert" is no longer the decisive argument it was
+   when this question was written.
+5. **When is membership assigned — at intake, or wherever the tier is written?
+   — NEW, and it is the question an implementer hits first.** Decision 6 says
+   intake; Context 15 shows the population that actually becomes `high-risk`
+   becomes so at review, long after intake, and that
+   `ClassificationReviewSystem` writes both `riskTier` and
+   `classificationGroupIndex` at
+   `src/simulation/prisoners/classification-review-system.ts:384-385`. Assigning
+   at both sites is the obvious repair and it is a second write site with its
+   own determinism question; assigning *only* at review means a prison's first
+   gang members appear after its first review interval, which is a real
+   pacing decision rather than a detail.
+6. **What weight should one cross-gang assault carry?** *(was open question 6.)*
+   Decision 2.5 recommends `0.2` and shows the arithmetic that makes `0.4`,
+   `0.2` and `0.15` mean "every assault", "every second" and "every third". This
+   is the one number in the document a balance pass would move first, and the
+   ruling does not name it.
+7. **Does a successful retaliation move gang reputation?** *(was open question
+   4.)* Decision 5 leaves `adjustReputation` unwritten. Its own docblock
+   describes the intent (`src/simulation/incidents/gangs.ts:21`), and nothing
+   anywhere reads reputation back — so writing it would create a second
+   subsystem with no reader, which is the class of defect this document is
+   closing.
+8. **Do gangs ever need names?** *(was open question 5.)* Not for this decision
+   (Context 7: the alert takes no parameters). It becomes a question the first
+   time a gang id would reach a player — a roster column, an incident detail
+   panel — and it is then an optional `nameKey` on `GangDefinition` plus a
+   locale key. **Open Question 1's branch (b) is the first thing that would
+   make it live**, because a sentence about what the prison decided is a
+   sentence that might want to say who it decided about.
