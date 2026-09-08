@@ -36,9 +36,10 @@ import { stripComments } from '../helpers/canonical-iteration';
  *
  * ## What it reads
  *
- * Every backticked token in two corpora — every **comment** under `src/` and
- * `tests/`, and every **guide** at the top level of `docs/` — where the token
- * is one of two shapes that are unambiguously repository vocabulary:
+ * Every backticked token in three corpora — every **comment** in a `.ts` file
+ * under `src/` and `tests/`, every **guide** at the top level of `docs/`, and
+ * every **comment** in a `.css` file under `src/` and `tests/` — where the
+ * token is one of two shapes that are unambiguously repository vocabulary:
  *
  * - a **member path** whose root is PascalCase (`Foo.bar`, `Foo.bar.baz`), and
  * - a **screaming constant** of three or more segments
@@ -314,10 +315,21 @@ import { stripComments } from '../helpers/canonical-iteration';
  * `ui-shell.spec.ts:4668` and `:4804` do make the assertion the comment
  * claims. `stripComments` handles a CSS block comment unchanged (the same
  * delimiters) and no CSS file in the
- * tree contains a bare `//`, so the extension costs one line. **It is not
- * taken here because the one-token correction it needs is in `src/ui/`, which
- * another agent held while this landed** — it is reported instead, with the
- * red above reproducible by adding `'.css'` to both walks.
+ * tree contains a bare `//`, so the extension costs one line.
+ *
+ * **That boundary is closed, and this paragraph is what closed it.** It read
+ * *"It is not taken here because the one-token correction it needs is in
+ * `src/ui/`, which another agent held while this landed — it is reported
+ * instead, with the red above reproducible by adding `'.css'` to both walks."*
+ * Both halves are spent: the third `it(...)` below walks the stylesheets,
+ * `src/ui/hud/hud.css:3812` now cites `RoomsProbe.needsItemRows`, and the
+ * reproduction was taken in that order — the scan added first and run red
+ * against the unfixed comment, then the token corrected. The clause is
+ * corrected rather than deleted because it is the reason this measurement sat
+ * unspent for a day, and because the sentence at the top of this docblock is
+ * accurate only from this commit onward. What the extension deliberately does
+ * **not** do is let a stylesheet donate vocabulary — the third `it(...)`
+ * carries that reason.
  */
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -699,6 +711,82 @@ describe('a comment that names a symbol names one that exists', () => {
     expect(
       unresolved,
       'a guide names a symbol that does not exist. Rename it to the real one, or -- if it is genuinely gone -- say so in the same paragraph, as this tree already does in code',
+    ).toEqual([]);
+  }, 60_000);
+
+  /**
+   * The third corpus: the stylesheets under `src/` and `tests/`.
+   *
+   * The header's third boundary is what this closes. `collectFiles(src,
+   * ['.ts'])` is what kept `src/ui/tokens.css` and the `hud.css` comments #991
+   * lists out of the scan -- not the two-segment rule -- and the sentence at
+   * the top of this file, *"every comment under `src/` and `tests/`"*, was
+   * therefore an overstatement rather than a claim. It is one now.
+   *
+   * **A stylesheet donates no vocabulary.** The `.ts` walk above builds the
+   * vocabulary and this one only spends it, which is deliberate and not an
+   * economy: CSS custom-property names and class names are `kebab-case`, so
+   * `IDENTIFIER` would take `hud` and `rooms` out of `--hud-rooms-gap` and seed
+   * the set with lowercase fragments that vouch for prose no code declares.
+   * Every rule this file rests on -- a vocabulary from **stripped code**, a
+   * corpus of **comments only** -- is kept exactly as the two scans above have
+   * it.
+   *
+   * `stripComments` needs no CSS mode: a CSS block comment has the same
+   * delimiters as a TypeScript one. It does treat a bare `//` as a line
+   * comment, which CSS does not have; no stylesheet in the tree contains one
+   * today (measured), and the failure direction is safe either way -- a
+   * mistaken `//` blanks the rest of that line out of the *scanned* text, which
+   * can only lose a citation, never invent one.
+   */
+  it('resolves every member path and screaming constant cited in the stylesheets', async () => {
+    const vocabularyFiles = [
+      ...(await collectFiles(path.join(repositoryRoot, 'src'), ['.ts'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'tests'), ['.ts'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'scripts'), ['.ts', '.mjs', '.js'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'benchmarks'), ['.ts'])),
+    ];
+    const sources = new Map<string, string>();
+    for (const file of vocabularyFiles) {
+      if (file === SELF) continue;
+      sources.set(path.relative(repositoryRoot, file), await readFile(file, 'utf8'));
+    }
+    const { vocabulary } = scanCorpus(sources);
+    expect(vocabulary.size, 'the identifier scan produced almost nothing; the stripper or the regex is broken').toBeGreaterThan(12_000);
+
+    const stylesheets = [
+      ...(await collectFiles(path.join(repositoryRoot, 'src'), ['.css'])),
+      ...(await collectFiles(path.join(repositoryRoot, 'tests'), ['.css'])),
+    ].sort();
+
+    // Vacuity guard: the stylesheet walk found the corpus. Five files at
+    // v0.0.541, so this is the same ~65% of actual the floors above are set at.
+    expect(stylesheets.length, 'the stylesheet walk is broken; src/ and tests/ hold no CSS').toBeGreaterThan(3);
+
+    let commentCharacters = 0;
+    let citationsChecked = 0;
+    const unresolved: string[] = [];
+    for (const file of stylesheets) {
+      const source = await readFile(file, 'utf8');
+      const comments = commentTextOf(source, stripComments(source));
+      commentCharacters += comments.replace(/[ \n]/gu, '').length;
+      citationsChecked += citationsIn(comments).length;
+      for (const citation of unresolvedCitations(comments, vocabulary)) {
+        unresolved.push(`${path.relative(repositoryRoot, file)}:${citation.line} cites \`${citation.token}\`, and \`${citation.token.split('.')[0]!}\` is declared nowhere in the repository`);
+      }
+    }
+
+    // Measured on this tree: 188,507 characters and 20 citations. (The header's
+    // 188,512 was taken before the correction below it -- `RoomsNeedsProbe` is
+    // five characters longer than `RoomsProbe`, and that is the whole
+    // difference.) The floors are below both, and a walk that read the code
+    // instead of the comments would clear neither.
+    expect(commentCharacters, 'almost no stylesheet comment text was extracted; the comment/code difference is inverted or empty').toBeGreaterThan(120_000);
+    expect(citationsChecked, 'almost no citations matched; the token shapes no longer fit the stylesheets').toBeGreaterThan(12);
+
+    expect(
+      unresolved,
+      'a stylesheet comment names a symbol that does not exist. Rename it to the real one, or -- if it is genuinely gone -- say so in the same comment, as this tree already does in code',
     ).toEqual([]);
   }, 60_000);
 
