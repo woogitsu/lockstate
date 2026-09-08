@@ -1,9 +1,15 @@
-import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../rendering/build/edge-picking';
+import type {
+  BuildToolPort,
+  EdgeTarget,
+  EditHistoryPort,
+  ToolStandDownPort,
+} from '../rendering/build/edge-picking';
 import type {
   BuildPanelTarget,
   HudBuildOrder,
   HudEditHistorySource,
   HudHistoryDirection,
+  HudToolStandDownSource,
   HudWorldBuildSource,
 } from './hud';
 
@@ -49,6 +55,25 @@ import type {
  * consulted by it -- while the routing is identical, so a second class would
  * duplicate `attachOrders` and the argument for it.
  *
+ * ### And `Escape`'s arming half (#959)
+ *
+ * A third port, `ToolStandDownPort`, on the same argument one more time. It
+ * reads oddly at first that the *build* tool carries a request that also puts
+ * the **room** tool down, so the reason is worth stating: this class routes,
+ * it does not decide. `standDown` consults none of `armed`, `definitionId` or
+ * the segment buffer -- exactly as `undo` consults none of them -- and its
+ * destination is the HUD, which is the only layer that knows which panel
+ * armed which tool. A fourth class holding one forwarded call would duplicate
+ * `attachOrders`, the after-mount attachment dance, and the argument for both.
+ *
+ * **This class never disarms itself here**, and that is deliberate. `armed`
+ * on this object is a mirror of the Build panel's flag, kept in step by
+ * `setArmed` from `src/main.ts`'s `arm-build-tool` handler; a tool that
+ * cleared its own copy would be a second writer, and the panel's arm control
+ * would go on saying "Stop placing" over a tool that had stopped. The request
+ * goes to the panel, and the panel's answer comes back through the same
+ * `setArmed` every other arming change uses.
+ *
  * What undo reverses is the simulation's last transaction, which may be an
  * order this tool never saw: the Build panel's numeric route places one too.
  * The tool routes the request; it does not claim to own the history.
@@ -59,7 +84,15 @@ import type {
  * shape of the defect #225 removed from the drag.
  */
 
-export class BuildTool implements BuildToolPort, EditHistoryPort, HudWorldBuildSource, HudEditHistorySource {
+export class BuildTool
+  implements
+    BuildToolPort,
+    EditHistoryPort,
+    ToolStandDownPort,
+    HudWorldBuildSource,
+    HudEditHistorySource,
+    HudToolStandDownSource
+{
   private armed = false;
   private definitionId: string | undefined;
 
@@ -91,6 +124,12 @@ export class BuildTool implements BuildToolPort, EditHistoryPort, HudWorldBuildS
    */
   private history: ((direction: HudHistoryDirection) => void) | undefined;
 
+  /**
+   * Where "put the tool down" goes (#959), attached after mounting exactly as
+   * `history` is and for the same reason.
+   */
+  private disarmRequest: (() => void) | undefined;
+
   /** Points finished gestures at the mounted HUD's intent path. */
   public attachOrders(place: (order: HudBuildOrder) => void): void {
     this.orders = place;
@@ -99,6 +138,28 @@ export class BuildTool implements BuildToolPort, EditHistoryPort, HudWorldBuildS
   /** Points the world's undo and redo keys at the same path (#261). */
   public attachHistory(request: (direction: HudHistoryDirection) => void): void {
     this.history = request;
+  }
+
+  /** Points the world's "put the tool down" key at the same path (#959). */
+  public attachStandDown(request: () => void): void {
+    this.disarmRequest = request;
+  }
+
+  /**
+   * The player asked for the armed tool to be put down (#959).
+   *
+   * Unconditional, exactly as `undo` is, and for a stronger version of the
+   * same reason: whether anything is armed is the *panel's* state, and this
+   * object's `armed` is only a mirror of it. Reading the mirror to decide
+   * whether to forward would make `Escape` work only while the two agreed.
+   *
+   * Unattached, the request is dropped -- the honest behaviour for a page
+   * with a world and no interface, and unreachable in the running
+   * application, where `src/main.ts` mounts the HUD synchronously during
+   * module evaluation and no key event can be dispatched before that.
+   */
+  public standDown(): void {
+    this.disarmRequest?.();
   }
 
   /** Points the live readout at the mounted panel. */

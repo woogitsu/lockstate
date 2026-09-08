@@ -151,6 +151,26 @@ export interface LockstateWorldSceneHarness {
    * gesture, so arming is a harness flag rather than a rebuild.
    */
   armBuildTool(armed: boolean): void;
+  /**
+   * How many times the scene has asked the arming owner to put the tool down
+   * (issue #959).
+   *
+   * A count rather than a boolean, because the two failures this spec has to
+   * tell apart are "never asked" and "asked when a gesture was there to
+   * abandon instead" -- the ordering `Escape` now has, where the first press
+   * takes the half-drawn run and only a press with nothing in progress
+   * reaches the arming.
+   */
+  standDownRequests(): number;
+  /**
+   * Whether any of the three tool doubles is still armed.
+   *
+   * The doubles' own flags, read back: the harness's `standDown` clears them
+   * exactly as `src/main.ts` clears the panels', so this is the harness
+   * standing in for the arm control's `data-armed`, which no page without a
+   * HUD has.
+   */
+  isAnyToolArmed(): boolean;
   /** Runs the tool has been asked to place. `Escape` must leave this empty. */
   placedRuns(): readonly (readonly HarnessEdge[])[];
   /**

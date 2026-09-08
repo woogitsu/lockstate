@@ -256,6 +256,15 @@ export interface BuildPanel {
    * be translated into on its way from `hud.ts` to this panel.
    */
   setTreasury(counts: HudCountsViewModel): void;
+  /**
+   * Puts the panel's tool down, as `Escape` on the world asks (issue #959).
+   *
+   * Exactly the transition leaving the tab already makes -- both flags off,
+   * repaint, one `onArm(false, ...)` report -- rather than a second answer to
+   * "what does a disarmed Build panel look like". A press that finds the
+   * panel holding nothing does nothing at all.
+   */
+  standDown(): void;
   setVisible(visible: boolean): void;
 }
 
@@ -2807,6 +2816,28 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // string comparison the engine makes either way; the reason the old
       // sentence gave is gone, and the conclusion is not.
       paintBuyTotal();
+    },
+    standDown(): void {
+      /*
+       * The world's `Escape`, with no gesture left for it to take (#959).
+       *
+       * **The same three lines `setVisible(false)` runs below, and the same
+       * guard**, because "the tool is put down" has one meaning on this panel
+       * and a second copy of it is how #689 came to be shipped twice. What
+       * differs is only what else goes: leaving the tab also drops the queue
+       * and the deliveries, because nothing refreshes them from another tab.
+       * The player is still looking at this panel, so those stay.
+       *
+       * `removing` goes with `armed`, for `toggleRemovalMode`'s reason: a
+       * panel whose "Remove" was still latched would hand back a pointer that
+       * deletes, on a press the player made to hold nothing.
+       */
+      if (!armed) return;
+      armed = false;
+      removing = false;
+      paintArmed();
+      paintBuy();
+      options.onArm(false, selectedId, false);
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

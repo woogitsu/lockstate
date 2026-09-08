@@ -434,6 +434,22 @@ const worldScene = new WorldScene({
   // Spread rather than passed as `undefined`, because `exactOptionalPropertyTypes`
   // is on.
   ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool }),
+  /*
+   * The same object a third time (#959): `Escape` with no gesture left to
+   * abandon is a request to put the armed tool down, and it leaves the
+   * renderer through the seam the gesture and the undo keys already use. The
+   * tool forwards it; the HUD decides what "the armed tool" currently is,
+   * because the panels are the only place that knows.
+   *
+   * A spread of its own rather than a third key inside the one above, and the
+   * reason is worth naming because it is a constraint on this file rather
+   * than a preference: `tests/foundation/composition-root-contract.test.ts`
+   * asserts the literal text `{ buildTool, editHistory: buildTool }` appears
+   * here, so folding a key into that object would fail a gate for a reformat
+   * rather than for a missing wiring -- the exact failure mode that file's own
+   * header warns about (#206). One seam, one line.
+   */
+  ...(buildTool === undefined ? {} : { toolStandDown: buildTool }),
   // The area tool and the colour to preview a pending room in. The tint is a
   // function rather than a value because the player can change the selected
   // room type without disarming, and the scene reads it on every paint --
@@ -2157,6 +2173,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * is on, so an absent tool has to be an absent property.
      */
     ...(tool === undefined ? {} : { worldBuild: tool, editHistory: tool }),
+    /*
+     * The arming half of `Escape` (#959), on a line of its own for the reason
+     * the scene's own `toolStandDown` argument is: the composition-root gate
+     * pins the text of the object above.
+     */
+    ...(tool === undefined ? {} : { toolStandDown: tool }),
     /*
      * The world's room gesture, joined to the Rooms panel's confirm step (ADR
      * 0022, amended).

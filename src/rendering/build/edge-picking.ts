@@ -278,3 +278,37 @@ export interface EditHistoryPort {
   /** The player asked for the last thing they undid to be reapplied. */
   redo(): void;
 }
+
+/**
+ * What the renderer needs from whoever owns *arming* (issue #959).
+ *
+ * A **third** port beside `BuildToolPort` and `EditHistoryPort`, and a
+ * separate one for the reason `EditHistoryPort` is separate: it answers a
+ * different question. `BuildToolPort` is *asked* whether the world pointer
+ * builds and is handed the gesture it drew; this is *told* that the player
+ * has put the tool down, and it is not the build tool's alone -- one press of
+ * `Escape` means "put down whatever I am holding", and which of the three
+ * tools that is lives in the HUD, on whichever panel armed it.
+ *
+ * So the scene names no tool here, deliberately. It has three ports and a
+ * documented arbitration between them (`isBuildArmed`/`isObjectArmed`/
+ * `isRoomArmed`), and a scene that chose which one to stand down would be
+ * running that arbitration a second time, in a place where being wrong means
+ * the player's pointer stays taken. The composition root already holds the
+ * one answer.
+ *
+ * Absent, `Escape` does exactly what it did before this port existed: it
+ * abandons whatever gesture is in progress and leaves the arming alone. That
+ * is the state of every harness that supplies no arming owner.
+ */
+export interface ToolStandDownPort {
+  /**
+   * The player asked for the armed tool to be put down.
+   *
+   * Unconditional, and asked even when nothing is armed -- for the reason
+   * `BuildTool.undo` is unconditional. Whether anything was armed is the
+   * HUD's own state, and a scene that filtered on its own read of it would
+   * make the key work only when the renderer and the panel happened to agree.
+   */
+  standDown(): void;
+}
