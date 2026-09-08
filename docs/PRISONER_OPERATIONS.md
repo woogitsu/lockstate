@@ -1332,7 +1332,7 @@ actual session, scenario or `AdmitPrisoner` command still has to ask for one.
 **Where an arrival stands.** Nothing here derives a reception point, so the
 tile an admitted prisoner is placed on comes from the caller:
 `admitPrisoner`'s `originTile`, carried by `AdmitPrisoner` as `x`/`y` and
-filled by `src/main.ts` from the same `STARTING_ORIGIN_TILE` the Build
+filled by `src/main.ts` from the same `NEW_PRISON_ORIGIN_TILE` the Build
 panel's numeric fields start at -- the middle of the one chunk a new prison
 owns. A reception room, a door the arrival walks through, or any other
 derived arrival point would be a feature to build rather than a default to

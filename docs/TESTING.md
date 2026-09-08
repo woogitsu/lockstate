@@ -270,10 +270,14 @@ catches it. The code that makes the first arm green lives in
 ### Comments are not executed, and one shape of them is now gated
 
 `tests/foundation/comment-symbol-existence-contract.test.ts` reads every
-backticked **member path** (`Foo.bar`) and **three-segment screaming constant**
+backticked **member path** (`RoomInstanceRegistry.residentIds`) and
+**three-segment screaming constant**
 (`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`) in every comment under
-`src/` and `tests/`, and fails when the name resolves to nothing in the
-repository's code. Issue #543 is the reason: a comment in module A stating a
+`src/` and `tests/` **and in every guide at the top level of `docs/`**, and
+fails when the name resolves to nothing in the repository's code. The guides
+are read as a second corpus with its own floors; `docs/adr/` and
+`docs/research/` are deliberately not read, for the reason the contract's own
+docblock measures. Issue #543 is the reason: a comment in module A stating a
 fact about module B has no test tying the two together, and this repository has
 paid for it repeatedly — a comment that was false for 51 releases sent two
 agents hunting a fixed defect.
