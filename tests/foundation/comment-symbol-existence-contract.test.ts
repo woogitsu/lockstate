@@ -84,16 +84,40 @@ import { stripComments } from '../helpers/canonical-iteration';
  * - **the guides: 28 files, 1,086,638 characters of prose, 513 citations
  *   parsed, 0 unresolved** after the four corrections #991 forced.
  * - **`docs/adr/` and `docs/research/`: 213 files, 7,011,027 characters, 1,978
- *   citations parsed, 53 unresolved across 32 distinct tokens.** They are
- *   `ThoughtDefOf.SleptOnGround`, `BedUtility.GetSleepingSlotsCount`,
- *   `MAXIMUM_SIZE_64` and `LUXURY_BED_SINGLE` (other games, in competitive
- *   research), `PLANNED_PROJECTION_IDS` (an audit *proposing* a list that does
- *   not exist), `ZzProbeThing.zzMember` and `NoSuchThing.doesNotExist` (this
- *   gate's own fixtures, quoted in a report about it), and a tail of names
- *   ADRs record as deleted. **Not one of the 53 is a defect**, which is why
- *   #991's estimate that extending to `docs/**` was "the cheap half and it
- *   closes miss 1 outright" is the half of that issue this file does not
- *   follow: it closes miss 1, and it is not cheap.
+ *   citations parsed, 53 unresolved across 32 distinct tokens.** All 53 were
+ *   opened and classified, because the first draft of this bullet asserted
+ *   "not one of them is a defect" from a sample and that was wrong:
+ *   - **27** are another game's code, cited correctly in competitive research
+ *     — `ThoughtDefOf.SleptOnGround`, `BedUtility.GetSleepingSlotsCount`,
+ *     `RoomType.isSatisfactory`, `MAXIMUM_SIZE_64` and its siblings,
+ *     `LUXURY_BED_SINGLE`, `GenericGameSettings.instance.disableGameOver`.
+ *   - **2** are this gate's own fixtures, quoted in a report about this gate
+ *     (`ZzProbeThing.zzMember`, `NoSuchThing.doesNotExist`).
+ *   - **4** are names deliberately proposed and said not to exist
+ *     (`PLANNED_PROJECTION_IDS`, `LOCKSTATE_REQUIRE_BLENDER`,
+ *     `DEFAULT_TILE_CHUNK_SIZE` twice, the last as *"still not shipped"*).
+ *   - **10** are deletion records and dated measurements that were true when
+ *     written (`JobWorkerPool.register`, `ZONING_TINT_BY_CATEGORY` *"was at"*).
+ *   - **10 are this gate's own class, and they are real.**
+ *     `docs/adr/0012:179` cites `JobRegistry.loadSnapshot` with a `file:line`
+ *     beside it and the class is `JobBoard`; `docs/adr/0034:422` says
+ *     `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` *"names the three controls"*
+ *     in the present tense and `tests/browser/app-shell.spec.ts:2150` says
+ *     *"This constant **was**"* that, now `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD`
+ *     at `:2266`; `docs/adr/0097:634` calls `ZONING_TINT_BY_CATEGORY`
+ *     *"load-bearing for both decisions"* and
+ *     `tests/unit/appearance-zoning-tint.test.ts:11` says it *"no longer
+ *     exists"* and is `ZONING_TINT_BY_ROOM_ID`; `SAVE_ENVELOPE_VERSION` names
+ *     nothing at all and two ADRs decide that it *"does not move"*.
+ *
+ *   **So the records are not clean, and the reason they are still out of scope
+ *   is the 27 rather than the 53**: no prefix or root exclusion can cover
+ *   another game's constant table, so gating them needs an allowlist of
+ *   sentences, which is the one thing this file refuses. The 10 are a finding
+ *   for their own issue, not an argument for widening the walk. And #991's
+ *   estimate that extending to `docs/**` was "the cheap half" is still the
+ *   half of that issue this file does not follow — for a better reason than
+ *   the first draft had.
  *
  * A guide needs no extraction, which is the one mechanical difference between
  * the corpora: the whole Markdown file is prose, so it is handed to
