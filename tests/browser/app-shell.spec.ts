@@ -886,6 +886,51 @@ async function dragOnWorld(page: Page): Promise<void> {
 const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
 
 /**
+ * The side a caller uses when the *number of wall segments* is what it is
+ * paying for, rather than the rectangle.
+ *
+ * 128px is the second entry above, so this is a preference and not a new
+ * pixel figure: `tileSpanOfGesture` makes it a 3x3 room where 192px makes a
+ * 4x4 one, and `drawRoomRectangle` asserts that against the panel either way.
+ *
+ * ### Why a smaller room is worth a constant of its own
+ *
+ * `perimeterSegments` is a perimeter, so it grows with the side and the orders
+ * grow with it: two 4x4 cells a tile apart are **32** segments and two 3x3
+ * cells are **23** (12 + 12, less the one they share when the second lands on
+ * the first's south row -- measured, `6,11 3x3` and `8,14 3x3` at 1280x800).
+ * Each of those orders is fourteen or four keyboard hops through a page whose
+ * renderer every press queues behind, which is the cost `#1008` measured and
+ * `wallRectanglesFromTheKeyboard` records above: on a host without a GPU an
+ * order costs ~3.1 s, so nine fewer of them is ~28 s of a 180 s test.
+ *
+ * **Measured on this container, 2026-09-08, `-g "#331"` with one worker and
+ * nothing else running.** The whole test, end to end, as Playwright reports
+ * it: **174 s at 4x4 against `test.slow()`'s 180 s cap, and 132 s at 3x3.** The
+ * wall phase alone is 139.3 s and 100.4 s of that, with the order loop 99.0 s
+ * and 67.9 s -- the crew is 30.0 s and 22.2 s and was never the wait. Six
+ * seconds of margin becomes forty-eight.
+ *
+ * ### What it does not buy back
+ *
+ * The margin, not the cost. A press still costs what the renderer costs, and a
+ * host slow enough to spend 180 s on 23 orders would fail this the same way --
+ * see `#1008`, which is about the budget and stays open for it. This constant
+ * stops `#331` being the first test to run out on an ordinary CI host; it does
+ * not make the keyboard route cheap.
+ *
+ * ### Why only the one caller uses it
+ *
+ * The other `wallRectanglesFromTheKeyboard` callers wall a **single** cell --
+ * 16 segments at 4x4 -- and the two other `dragRectangleOnWorld` callers never
+ * build walls at all and run at 375x812, where what a drag can find is a
+ * different question (see `wholeSquare`'s note). Nothing is gained by making
+ * their rectangles smaller and their measurements would move, so
+ * `ROOM_DRAG_DELTAS_PX` stays the default and this is asked for by name.
+ */
+const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
+
+/**
  * The panel's arrival height, per viewport, so "the phone was not fixed by
  * moving the desktop" is a number rather than a hope.
  *
@@ -1162,7 +1207,12 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
  */
 async function dragRectangleOnWorld(
   page: Page,
-  options: { readonly minY?: number; readonly wholeSquare?: boolean } = {},
+  options: {
+    readonly minY?: number;
+    readonly wholeSquare?: boolean;
+    /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
+    readonly deltas?: readonly number[];
+  } = {},
 ): Promise<WorldDragGesture | null> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
@@ -1214,7 +1264,7 @@ async function dragRectangleOnWorld(
     {
       width: viewport.width,
       height: viewport.height,
-      deltas: [...ROOM_DRAG_DELTAS_PX],
+      deltas: [...(options.deltas ?? ROOM_DRAG_DELTAS_PX)],
       minY: options.minY ?? 8,
       wholeSquare: options.wholeSquare ?? false,
       step: BARE_SQUARE_SAMPLE_STEP_PX,
@@ -1370,11 +1420,20 @@ function describeTileRectangle(rectangle: TileRectangle): string {
 async function drawRoomRectangle(
   page: Page,
   what: string,
-  options: { readonly roomCatalogId: string; readonly minY?: number; readonly clearOf?: readonly TileRectangle[] },
+  options: {
+    readonly roomCatalogId: string;
+    readonly minY?: number;
+    readonly clearOf?: readonly TileRectangle[];
+    /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
+    readonly deltas?: readonly number[];
+  },
 ): Promise<{ readonly rectangle: TileRectangle; readonly gesture: WorldDragGesture }> {
+  const deltas = options.deltas ?? ROOM_DRAG_DELTAS_PX;
   const gesture = await dragRectangleOnWorld(page, {
+    deltas: [...deltas],
     // Every drag through this helper is one half of a pair: a probe that
-    // decides where thirty wall segments go, and the real drag that has to land
+    // decides where a perimeter's worth of wall segments go, and the real drag
+    // that has to land
     // on the same tiles once they are up. `wholeSquare` is what stops a HUD
     // island that grew in between from moving the second one -- see
     // `dragRectangleOnWorld`'s own note for the 3.8px this was measured at.
@@ -1384,7 +1443,7 @@ async function drawRoomRectangle(
   if (gesture === null) {
     throw new Error(
       `${what}: no square of bare world to draw a room in, from y=${String(options.minY ?? 8)} down` +
-        ` (deltas ${ROOM_DRAG_DELTAS_PX.join(', ')}px at ${JSON.stringify(page.viewportSize())})`,
+        ` (deltas ${deltas.join(', ')}px at ${JSON.stringify(page.viewportSize())})`,
     );
   }
 
@@ -1723,10 +1782,21 @@ interface WallSegment {
  * helper below has to think in north and west.
  *
  * Deduplicated across rectangles, because two rooms that share a boundary share
- * the stored edge: the Rooms panel's second drag lands directly below the first
- * and the two overlap on two segments, and ordering a wall twice on one edge is
- * an order that builds nothing while the crew is busy. Deduplicating is also
- * what makes the count this returns the number the build queue will show.
+ * the stored edge: the Rooms panel's second drag lands directly below the first,
+ * and ordering a wall twice on one edge is an order that builds nothing while
+ * the crew is busy. Deduplicating is also what makes the count this returns the
+ * number the build queue will show.
+ *
+ * **That sentence read "the two overlap on two segments", and how many they
+ * overlap on is a property of where the drags land rather than of this
+ * function.** Measured at 1280x800 on 2026-09-08, both readings taken from the
+ * `#331` spec's own two drags: at 4x4 they land `6,11` and `12,15`, share no
+ * edge at all, and this returns **32**; at 3x3 they land `6,11` and `8,14`, the
+ * second's north row *is* the first's south row, and they share exactly **one**
+ * -- `8,14 north` -- for **23**. So the dedupe is load-bearing at one size and
+ * idle at the other, and neither number is a constant a reader should carry.
+ * The claim is corrected rather than deleted because the *reason* to dedupe is
+ * unchanged: nothing here may assume the drags stay clear of each other.
  *
  * North first, then west, so the edge chooser is pressed twice for a whole
  * prison rather than once per segment.
@@ -1801,6 +1871,18 @@ const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-num
  * ~64 s of clicking against ~3 s of typing. One helper, the cheaper route, and
  * the route the panel's own hint calls "the keyboard route".
  *
+ * **The `~3 s` is a per-press figure multiplied as though a segment were one
+ * press, and a segment is four or fourteen hops.** Measured on this container
+ * on 2026-09-08, instrumented at the two ends of the order loop below: the 32
+ * segments of the `#331` spec cost **99.0 s**, or ~3.1 s each -- thirty times
+ * the number this paragraph gives for thirty of them. The comparison it was
+ * making survives, because the pointer route's presses scale by the same hop
+ * count and cost ~870 ms each on this host (#1008): the keyboard is still the
+ * cheaper route by roughly four to one, and that ratio is the part worth
+ * keeping. What the wrong absolute figure hid is that this loop, not the crew,
+ * is where `test.slow()`'s allowance goes -- which is what
+ * `SMALL_ROOM_DRAG_DELTAS_PX` exists for.
+ *
  * ### What it costs, measured
  *
  * `wall-brick` is `workRequired: 50` and `ConstructionSystem` advances **one**
@@ -1808,7 +1890,11 @@ const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-num
  * scheduled ticks -- 60 kernel ticks, 3 s of wall time at x1 and 0.75 s at x4.
  * That is why this presses *Fast forward* twice: at x1 a thirty-segment prison
  * would spend 90 s inside a 60 s test budget. It is the player's own control,
- * pressed for the reason a player presses it.
+ * pressed for the reason a player presses it. Measured at x4 with the clock
+ * actually running, the crew's own phase is **30.0 s for 32 segments and
+ * 22.2 s for 23** -- 0.94 s and 0.97 s a segment against the 0.75 s predicted
+ * above, so the prediction is right to within the poll's own sampling and the
+ * crew has never been what this helper waits on.
  */
 async function wallRectanglesFromTheKeyboard(
   page: Page,
@@ -5720,9 +5806,19 @@ test.describe('the assembled application', () => {
     page,
   }) => {
     // Slow, and the ADR is the reason: two `enclosed` cells cannot be zoned
-    // until their thirty wall segments are built, and this test measures the
-    // readout for *two* rooms because two are what make it report more needs
-    // than it has rows for. See the keyboard specs below for the arithmetic.
+    // until their wall segments are built -- 23 of them, because both drags ask
+    // for `SMALL_ROOM_DRAG_DELTAS_PX` and 3x3 cells are what this test can
+    // afford; see that constant for the 174 s -> 132 s this bought. It measures
+    // the readout for *two* rooms because two are what make it report more
+    // needs than it has rows for, and two 3x3 cells still do: what the panel
+    // reports is `room.cell`'s two missing objects per room, which its
+    // authored requirements decide and its size does not. See the keyboard
+    // specs below for the arithmetic.
+    //
+    // **"their thirty wall segments" was the count before this, and it was
+    // wrong in both directions at once**: the perimeter of two 4x4 cells is 32
+    // and never was 30, and it is 23 now. Recorded because thirty is the number
+    // three other comments in this file were written against.
     test.slow();
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
@@ -5868,6 +5964,7 @@ test.describe('the assembled application', () => {
     await page.locator('.hud-rooms__arm').click();
     const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
       roomCatalogId: 'room.cell',
+      deltas: SMALL_ROOM_DRAG_DELTAS_PX,
     });
     const firstCell = firstProbe.rectangle;
     await page.locator('.hud-rooms__cancel').click();
@@ -5880,6 +5977,7 @@ test.describe('the assembled application', () => {
         roomCatalogId: 'room.cell',
         minY: secondCellFloor,
         clearOf: [firstCell],
+        deltas: SMALL_ROOM_DRAG_DELTAS_PX,
       })
     ).rectangle;
     await page.locator('.hud-rooms__cancel').click();
@@ -5895,7 +5993,12 @@ test.describe('the assembled application', () => {
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
     expect(
-      (await drawRoomRectangle(page, 'the drag for the first cell', { roomCatalogId: 'room.cell' })).rectangle,
+      (
+        await drawRoomRectangle(page, 'the drag for the first cell', {
+          roomCatalogId: 'room.cell',
+          deltas: SMALL_ROOM_DRAG_DELTAS_PX,
+        })
+      ).rectangle,
       'the drag no longer lands on the rectangle its walls were built around',
     ).toEqual(firstCell);
     await page.locator('.hud-rooms__confirm').click();
@@ -5965,6 +6068,7 @@ test.describe('the assembled application', () => {
           roomCatalogId: 'room.cell',
           minY: secondCellFloor,
           clearOf: [firstCell],
+          deltas: SMALL_ROOM_DRAG_DELTAS_PX,
         })
       ).rectangle,
       'the second drag no longer lands on the rectangle its walls were built around',
