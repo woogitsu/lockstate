@@ -12,6 +12,7 @@ import {
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
+import { expectOk } from '../helpers/expect-ok';
 
 class MockPort implements MessagePortLike {
   public messages: any[] = [];
@@ -336,7 +337,7 @@ describe('publishing the clock while it runs', () => {
     expect(reports.length).toBeGreaterThan(0);
     for (const report of reports) {
       const decoded = decodeWorkerToMainMessage(report);
-      expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+      expectOk(decoded, `the unsolicited clock-state report at tick ${String(report.payload.tick)}`);
     }
   });
 

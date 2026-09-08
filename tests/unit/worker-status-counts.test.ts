@@ -21,6 +21,7 @@ import { projectStatusCounts, statusCountsEqual } from '../../src/simulation/wor
 import type { SimulationStatusCounts } from '../../src/simulation/protocol/types';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The longest string `counts.contrabandNameKey` can carry, read off the real
@@ -393,7 +394,7 @@ describe('publishing the status counts', () => {
     expect(publications.length).toBeGreaterThan(1);
     for (const publication of publications) {
       const decoded = decodeWorkerToMainMessage(publication);
-      expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+      expectOk(decoded, `the status-counts publication stamped tick ${String(publication.payload.tick)}`);
     }
   });
 
@@ -612,7 +613,7 @@ describe('publishing the status counts', () => {
     const published = harness.publications()[1];
     expect(published?.payload.refusal).toBeDefined();
     const decoded = decodeWorkerToMainMessage(published);
-    expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+    expectOk(decoded, 'the status-counts publication once it carries a refusal');
   });
 
   test('publishes nothing once the session has stopped', () => {
@@ -952,7 +953,7 @@ describe('statusCountsSchema.conditions: the bound is enforced at decode, not on
 
     const [published] = harness.publications();
     if (published === undefined) throw new Error('the fixture must have produced at least one publication to attack');
-    expect(decodeWorkerToMainMessage(published).ok, 'the unmodified publication must itself be valid').toBe(true);
+    expectOk(decodeWorkerToMainMessage(published), 'the unmodified publication this case builds its attack from');
 
     const overfilled = {
       ...published,

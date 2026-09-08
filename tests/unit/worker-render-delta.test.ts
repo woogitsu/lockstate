@@ -30,6 +30,7 @@ import {
   RENDER_ACTOR_POPULATION_PRISONER,
 } from '../../src/simulation/protocol/render-actors-payload';
 import { readRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * The worker's half of ADR 0040 slice 1: when a `simulation/delta` goes out,
@@ -220,7 +221,7 @@ describe('the worker publishes a render delta', () => {
     const [delta] = harness.deltas();
     expect(delta).toBeDefined();
     const decoded = decodeWorkerToMainMessage(delta!);
-    expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+    expectOk(decoded, 'the first render-delta envelope the worker published');
 
     // A publication, not a reply. `deltaMessageSchema` is built from
     // `requestEnvelopeFields` and is `.strict()`, so a `replyTo` would be
@@ -350,7 +351,7 @@ describe('the worker publishes a render delta', () => {
     expect(deltas.length).toBeGreaterThan(3);
     for (const delta of deltas) {
       const decoded = decodeWorkerToMainMessage(delta);
-      expect(decoded.ok, decoded.ok ? '' : `${String(delta.payload.baseTick)} -> ${String(delta.payload.tick)}: ${JSON.stringify(decoded.error)}`).toBe(true);
+      expectOk(decoded, `the delta published from tick ${String(delta.payload.baseTick)} to ${String(delta.payload.tick)}`);
     }
   });
 
