@@ -13,6 +13,7 @@ import {
   type ProtocolDecodeErrorCode,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol';
+import { expectOk } from '../helpers/expect-ok';
 
 const requestEnvelope = {
   protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -561,7 +562,7 @@ describe('simulation worker protocol', () => {
     });
 
     const accepted = decodeWorkerToMainMessage(withRefusal({ sequence: 3, tick: 9, reason: 'build.unowned-land' }));
-    expect(accepted.ok, accepted.ok ? '' : JSON.stringify(accepted.error)).toBe(true);
+    expectOk(accepted, 'the status-counts publication that carries a refusal');
 
     // Absent is valid and is what a session that has refused nothing sends.
     const withoutRefusal = decodeWorkerToMainMessage({
@@ -569,13 +570,13 @@ describe('simulation worker protocol', () => {
       kind: 'simulation/status-counts',
       payload: { tick: 12, schemaVersion: 1, counts },
     });
-    expect(withoutRefusal.ok, withoutRefusal.ok ? '' : JSON.stringify(withoutRefusal.error)).toBe(true);
+    expectOk(withoutRefusal, 'the publication a session that has refused nothing sends');
 
     // Every declared reason is accepted, so the enum on the wire and the
     // reasons the two systems produce cannot drift apart silently.
     for (const reason of REFUSAL_REASONS) {
       const decoded = decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: 0, reason }));
-      expect(decoded.ok, `${reason} was rejected by the decoder`).toBe(true);
+      expectOk(decoded, `the wire form of the declared reason ${reason}`);
     }
 
     // A reason nobody declared. This is the case that matters: the mapping

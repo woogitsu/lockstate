@@ -17,6 +17,7 @@ import {
 import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
 import { SimulationWorkerStateMachine, type MessagePortLike } from '../../src/simulation/worker/state-machine';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Every declared projection really answers, over the real state machine.
@@ -183,7 +184,7 @@ describe('every declared projection has a publish route the worker really answer
       // structured-clone safety `docs/HUD_PROJECTIONS.md` contract 1 promises,
       // checked rather than trusted.
       const decoded = decodeWorkerToMainMessage(reply);
-      expect(decoded.ok, `${projectionId} produced a payload the protocol refuses: ${JSON.stringify((decoded as { error?: unknown }).error)}`).toBe(true);
+      expectOk(decoded, `${projectionId}'s reply on the wire`);
 
       if (paged) {
         expect(reply.payload.page, `${projectionId} is paged and must report the window it built`).toEqual({
