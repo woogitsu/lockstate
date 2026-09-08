@@ -4,6 +4,8 @@ import type { SimulationEvent } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import type { PurchaseCancelOutcome } from '../../src/simulation/economy';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * **What a control says when it works** (issue
@@ -286,8 +288,8 @@ describe('a cancelled delivery says so, and names what came back', () => {
     const dispatchTick = session.runtime.kernel.tick;
     session.send({ type: 'CancelMaterialPurchase', orderId: 'buy-1' });
 
-    const outcome = cancelSpy.mock.results[0]?.value as { ok: boolean; refundedMinorUnits?: number };
-    expect(outcome.ok, 'the cancellation has to have succeeded for this case to mean anything').toBe(true);
+    const outcome = cancelSpy.mock.results[0]?.value as PurchaseCancelOutcome;
+    expectOk(outcome, 'the cancellation whose figure the rest of this case reads');
     expect(outcome.refundedMinorUnits, 'three bricks at 40').toBe(THREE_BRICKS);
 
     expect(session.said()).toEqual([
