@@ -61,7 +61,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * | | prisoners who never showered | prisoners who reached hygiene 0.0 | worst final hygiene | shower ticks, lowest .. highest |
  * | --- | --- | --- | --- | --- |
  * | *before*, ascending index | **2** (p22, p23) | 8 | **0.0** (six of them) | 0 .. 480 |
- * | after, by need urgency | 0 | **0** | **166.4** | 240 .. 400 |
+ * | after, by need urgency, as first measured | 0 | **0** | **166.4** | 240 .. 400 |
+ * | the same row today | 0 | **0** | **171.6** | 216 .. 360 |
  *
  * The two highest-index prisoners went from **0 showers in 40,000 ticks** to
  * six each, and the lowest hygiene any prisoner touched at any tick went from
@@ -69,6 +70,15 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * *more* showers in total, because ordering the arrivals also stops two
  * prisoners walking to the same last free head and one of them wasting the trip
  * (`unmetDemandCycles` 1,364 -> 978, `actionsCompleted` 8,758 -> 9,114).
+ *
+ * **The second "after" row is added rather than the first being overwritten,
+ * and the reason it is needed at all is a rot this file had already grown.**
+ * The first row is the run as it stood when the fairness ordering landed; ADR
+ * 0059, issue #588's hire and ADR 0102 each moved it afterwards, and each time
+ * the figures inside the cases below were re-measured while this table was
+ * not. Nothing about the *claim* moved in any of them -- both columns that
+ * carry it are still 0 -- which is exactly why nobody noticed, and is why the
+ * history is kept in the table rather than in a paragraph saying it changed.
  *
  * ## What this file is careful not to be
  *
@@ -327,7 +337,23 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * **Both of the assertions under it are unchanged and are still what this
      * literal is for.**
      */
-    expect(run.showerTicksByDay[23]).toEqual([0, 0, 36, 0, 0, 36, 36, 0, 72, 36, 0, 0, 36, 0, 0, 72, 0]);
+    /*
+     * **Re-measured for
+     * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+     * which moved every figure in this file and improved the one that
+     * mattered.** All 24 prisoners here are housed -- the dormitory has 24
+     * beds -- so this file has no unhoused population for that decision to
+     * reach. What it reaches is the *window before* each of them is housed:
+     * `ActionSystem` now considers a prisoner at intake stage
+     * `accommodation-assignment`, and every arrival sits there for at least
+     * one of `IntakeSystem`'s scheduled ticks, so 24 arrivals now contend for
+     * two shower heads before they have a cell and the whole schedule
+     * staggers differently from there. The array read
+     * `[0, 0, 36, 0, 0, 36, 36, 0, 72, 36, 0, 0, 36, 0, 0, 72, 0]` before it.
+     * **Both of the assertions under it are unchanged and are still what this
+     * literal is for.**
+     */
+    expect(run.showerTicksByDay[23]).toEqual([0, 0, 0, 0, 0, 36, 36, 36, 0, 0, 72, 36, 36, 0, 36, 0, 0]);
     expect(run.showerTicks[23], 'the last prisoner scanned took no shower at all before #434').toBeGreaterThan(0);
     expect(run.showerTicks[22], 'and neither did the one before them').toBeGreaterThan(0);
 
@@ -353,19 +379,25 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
      * below is where that is asserted.
      *
      * **The sentence that stood here said they stay "well above a third of
-     * `NEED_MAX`", and that is no longer true.** The worst floor is 24.4 of
-     * 255 -- a tenth, not a third -- and it fell there with issue #588's
-     * hire (see `watched`): three guards walking to and standing on the
-     * arrival tile change how 24 prisoners route to a two-head shower room,
-     * and one of them now cuts it much finer than before. The claim is
-     * narrowed to what is measured rather than kept at a level the run does
-     * not support: **nobody reaches the floor**, and the run is much closer to
-     * it than it was.
+     * `NEED_MAX`", and that stopped being true with issue #588's hire.** The
+     * worst floor fell to 24.4 of 255 -- a tenth, not a third -- because three
+     * guards walking to and standing on the arrival tile changed how 24
+     * prisoners route to a two-head shower room. That paragraph is kept rather
+     * than deleted, because the figure it corrected is the one below.
+     *
+     * **ADR 0102 moved it back up, to 97.2, and that direction is worth
+     * marking too.** More prisoners now compete for the two heads -- every
+     * arrival's pre-housing window is added to the contention -- and the
+     * schedule that comes out of it leaves the worst-served prisoner better
+     * off rather than worse, which is the opposite of what more contention
+     * would suggest and is why it is a measured figure rather than a reasoned
+     * one. The claim itself stays exactly where it was narrowed to:
+     * **nobody reaches the floor.**
      */
-    // 24.4 since issue #588's hire; 90.4 and 125.2 since ADR 0059, against
-    // 96.8 and 166.4 before that.
-    expect(Math.min(...run.lowestHygiene)).toBe(24.4);
-    expect(Math.min(...run.finalHygiene)).toBe(125.2);
+    // 97.2 and 171.6 since ADR 0102; 24.4 and 125.2 since issue #588's hire;
+    // 90.4 and 125.2 since ADR 0059, against 96.8 and 166.4 before that.
+    expect(Math.min(...run.lowestHygiene)).toBe(97.2);
+    expect(Math.min(...run.finalHygiene)).toBe(171.6);
     for (const [n, hygiene] of run.lowestHygiene.entries()) {
       expect(hygiene, `prisoner ${n} was left to reach the hygiene floor`).toBeGreaterThan(0);
     }
@@ -386,13 +418,16 @@ describe('twenty-four prisoners and a shower room with two heads', () => {
     // With the ceiling above what the population ever asks for, the spread that
     // the two-head run is about is gone: every prisoner washes as often as the
     // regime lets them and nobody is refused.
-    // 612 / 756 / 186.4 since issue #588's hire (see `watched`); 612 / 828 /
-    // 185 since ADR 0059, against 760 / 1,000 / 203.6 before that. The number
-    // this test is actually for -- the least-washed prisoner in an eight-head
-    // room against the best-washed in a two-head one -- did not move at all.
-    expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(612);
-    expect(Math.max(...control.showerTicks)).toBe(756);
-    expect(Math.min(...control.lowestHygiene)).toBe(186.4);
+    // 576 / 792 / 185.2 since ADR 0102 (see the re-measurement note in the
+    // case above); 612 / 756 / 186.4 since issue #588's hire (see `watched`);
+    // 612 / 828 / 185 since ADR 0059, against 760 / 1,000 / 203.6 before that.
+    // The number this test is actually for -- the least-washed prisoner in an
+    // eight-head room against the best-washed in a two-head one -- is still a
+    // clear win and is asserted as the comparison on the last line rather than
+    // as either literal.
+    expect(Math.min(...control.showerTicks), 'the least-washed prisoner here beats the best-washed one in the two-head run').toBe(576);
+    expect(Math.max(...control.showerTicks)).toBe(792);
+    expect(Math.min(...control.lowestHygiene)).toBe(185.2);
     expect(Math.min(...control.showerTicks)).toBeGreaterThan(Math.max(...watchedTwoHead.showerTicks));
   }, 30_000);
 
