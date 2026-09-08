@@ -101,7 +101,7 @@ The four steps below describe the lifecycle in that shape:
    `job.failReason`.
 3. **Performing** (`continuePerforming`): a fixed dwell -- five ticks, held as
    `minDurationTicks` on the `action.carry` row of the action catalogue
-   (`src/simulation/prisoners/actions.ts:407`) since ADR 0093 moved it there --
+   (`src/simulation/prisoners/actions.ts:406-408`) since ADR 0093 moved it there --
    at each leg's destination, then `withdrawReserved` (pickup) or `deposit`
    (dropoff) -- the only points where a job actually touches inventory.
    Both container lookups here are **lenient**, and a missing container fails

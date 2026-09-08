@@ -95,6 +95,11 @@ import { stripComments } from '../helpers/canonical-iteration';
  *   closes miss 1 outright" is the half of that issue this file does not
  *   follow: it closes miss 1, and it is not cheap.
  *
+ * A guide needs no extraction, which is the one mechanical difference between
+ * the corpora: the whole Markdown file is prose, so it is handed to
+ * `citationsIn` directly. Nothing in a guide enters the vocabulary either way,
+ * so the self-vouching rule below holds over it unchanged.
+ *
  * Comments are extracted by taking the difference between a file and
  * `stripComments(file)`. That helper is the repository's single pinned
  * scanner: `tests/foundation/comment-stripping-contract.test.ts` holds it in
@@ -315,6 +320,22 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  *   a textual check rather than a tidy-up: any file that quotes a
  *   non-existent symbol inside a string literal silently widens the
  *   vocabulary. This is the only such file in the tree today.
+ *
+ * **The last sentence above is false and is kept rather than corrected,
+ * because it is the claim and the measurement that refutes it is the point.**
+ * Measured at v0.0.541 while #991 was being worked: the only file whose
+ * *stripped* text contains `JobSystem` is
+ * `tests/unit/simulation-message-keys.test.ts:184`, where the name sits inside
+ * a single-quoted justification sentence in an exemption table. `JobSystem` is
+ * a class ADR 0093 deleted -- `src/simulation/prisoners/actions.ts:392` says
+ * so in its own words, *"neither the constant nor the system exists any
+ * longer"* -- so a second file is silently vouching for a second dead name,
+ * and `docs/OPERATIONS.md`'s *"`JobSystem.beginLeg` re-requests routing on the
+ * next scheduled tick"* resolves through it.
+ * That citation is stale and this gate cannot see it. The limit is therefore
+ * wider than one file and grows with every prose sentence written into a
+ * string literal; closing it needs a string-aware vocabulary, which
+ * `stripComments` is not and which is a decision rather than a patch.
  */
 const SELF = path.join(repositoryRoot, 'tests', 'foundation', 'comment-symbol-existence-contract.test.ts');
 
