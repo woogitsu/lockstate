@@ -1638,9 +1638,9 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  * walking, over 205 presses**.
  *
  * Four of its hops were most of that, because they cross the HUD rather than a
- * form -- and the HUD's tab bar is the last thing in the document, so forwards
- * from a panel to a tab is nearly a lap. Both directions, measured at 1280x800
- * on the same runs:
+ * form -- and the tab bar is the **last child of `.hud`**
+ * (`src/ui/hud/hud.ts:2228`), so forwards from a panel to a tab is nearly a lap
+ * of the page. Both directions, measured at 1280x800 on the same runs:
  *
  * | Hop | `Tab` | `Shift+Tab` |
  * | --- | --- | --- |
@@ -6601,8 +6601,9 @@ test.describe('the assembled application', () => {
 
     // ---- the Rooms tab, and what the room is for ----------------------
     // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
-    // transport's *Pause*, and the tab bar is the last thing in the document,
-    // so forwards is 24 presses and backwards is 4 (`shiftTabTo`).
+    // transport's *Pause*, and the tab bar is the last child of `.hud`
+    // (`src/ui/hud/hud.ts:2228`), so forwards is 24 presses and backwards is 4.
+    // `shiftTabTo` carries the table and the argument.
     await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
@@ -6874,7 +6875,7 @@ test.describe('the assembled application', () => {
 
     // Backwards, for the reason the test above gives at the same point: the
     // wall helper leaves the keyboard on *Pause* and the tab bar is the last
-    // thing in the document, so this is 4 presses instead of 24.
+    // child of `.hud`, so this is 4 presses instead of 24.
     await shiftTabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
