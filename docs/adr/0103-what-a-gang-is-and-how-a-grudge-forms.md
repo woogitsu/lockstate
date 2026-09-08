@@ -1,4 +1,36 @@
-# ADR DRAFT: What a gang is, and how a grudge forms
+# ADR 0103: What a gang is, and how a grudge forms
+
+> **NUMBERED AND PROMOTED 2026-09-08, ON THE CONDITION THIS DOCUMENT SET
+> ITSELF.** "Promotion, decided rather than deferred" below said the obstacle
+> was substantive rather than the number, and named the one thing that would
+> flip it: *"Open Question 1 answered by the owner — either branch."* The owner
+> answered it the same day, choosing reading A (recorded in Status), so
+> Decision 2 can be stated flat and this document has moved out of
+> the `drafts` subdirectory it was written into, taken **0103**, and taken its row in
+> `docs/adr/README.md`. **That subdirectory no longer exists**: it held this
+> file and nothing else, so moving the file emptied it and git does not track
+> an empty directory. Every mention of it below is therefore written as prose
+> rather than as a rooted path, deliberately — `documentation-links-contract`
+> resolves rooted paths against disk and a historical narrative must not leave
+> five dangling ones behind.
+>
+> **Its Status is still `Proposed`**: the owner ruled on
+> the producer and on the reading, not on the document.
+>
+> **The number was re-swept rather than carried forward, because the earlier
+> sweep said it would be stale.** `git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune`,
+> then `git ls-remote --refs --heads origin` (**250 heads**, down from 252
+> because branches have since been merged and pruned) with
+> `git ls-tree --name-only <head> -- docs/adr/` read out of every one of them.
+> The highest four-digit prefix on any head was **0102**; nothing at 0103 or
+> above appeared anywhere. Highest on disk is also 0102 and the index's prior
+> line already read `Next free number: 0103`. **All three agree**, which is the
+> configuration `docs/adr/README.md` calls lucky rather than normal.
+>
+> **The paragraph below is kept rather than deleted, because it is the record
+> of why this file sat one directory down for a day**, and `docs/AGENT_WORKFLOW.md`
+> §4 asks for both directions. Every claim in it was true when written and the
+> first sentence is now false.
 
 > **This document carries no number, deliberately.** `AGENTS.md` states that
 > ADR numbers are assigned centrally after drafts return and that *"A number is
@@ -8,7 +40,7 @@
 > directory without argument, exactly as every numbered ADR in this corpus
 > pre-committed before it.
 >
-> **WHY IT IS IN `docs/adr/drafts/` AND NOT DIRECTLY IN `docs/adr/`, MEASURED
+> **WHY IT WAS IN A `drafts` SUBDIRECTORY AND NOT DIRECTLY IN `docs/adr/`, MEASURED
 > RATHER THAN PREFERRED.** The brief that commissioned this document asked for
 > it at `DRAFT-what-a-gang-is-and-how-a-grudge-forms.md` directly inside
 > `docs/adr/` **and** asked
@@ -64,9 +96,34 @@ earlier rulings above and in `AGENTS.md` are quoted in Polish because that is
 what the owner wrote, this one is quoted in English because that is what they
 chose; the difference is recorded rather than smoothed over.
 
-**That ruling is the whole of the owner's input on the producer, and it settles
-one of this document's seven decisions.** Decision 2 below is now theirs.
-Decisions 1 and 3 to 7 are unchanged and remain this document's, unaccepted.
+**A THIRD RULING LANDED ON 2026-09-08, AND IT CLOSES THE FORK THE SECOND ONE
+LEFT.** Decision 2.3 found that *"one the player was actually shown"* has no
+referent in this codebase and admits exactly three readings, took reading A on
+its own authority, and put the fork to the owner as Open Question 1. It was put
+to them as three clickable options — reading A; announcing the adjudication as
+a new player-visible sentence; or striking the clause from the rule. They chose
+**reading A**, described in the option they clicked as:
+
+> Czytanie A: „zapisana na kanale alertów"
+
+("Reading A: 'recorded on the alerts channel'.")
+
+**What that ratifies, and what it deliberately does not.** Decision 2.3 stops
+being this document's choice and becomes the owner's, so Decision 2 can now be
+stated flat — which is what promoted this file out of that subdirectory. The
+option carried its own cost in the text the owner read, and the cost is
+restated here rather than left in the option: **under reading A the ruling's
+third clause constrains nothing today**, because `openIncident` records every
+assault unconditionally. The owner chose it knowing that. What they did **not**
+choose is the other branch — announcing an adjudication — so no new member of
+`SIMULATION_EVENT_TYPES`, no new locale key and no new player-visible sentence
+is authorised by anything here, and `AGENTS.md`'s fourth reservation is
+untouched.
+
+**That ruling is the whole of the owner's input on the producer, and together
+the two settle one of this document's seven decisions.** Decision 2 below,
+including 2.3, is now theirs. Decisions 1 and 3 to 7 are unchanged and remain
+this document's, unaccepted.
 
 **THE DISCLOSURE, BECAUSE A RULING MUST NOT BE MISTAKEN FOR A READING.** The
 first answer was given to a *question* — should prisons have gangs — and not
@@ -111,7 +168,7 @@ reservation covers the *promise*, not the wording, and the sentence at issue
 here already exists; this document's business with it is to say what would make
 it true, not to rewrite it.
 
-**Whether this document should be numbered and moved out of `docs/adr/drafts/`
+**Whether this document should be numbered and moved out of the `drafts` subdirectory
 is answered under "Promotion, decided rather than deferred" below, and the
 answer measured on this pass is not yet.**
 
@@ -861,6 +918,15 @@ codebase admits.
 | **B — displayed** | assaults whose row was painted on the player's screen | **no** | the fact lives on the main thread; reading it in the kernel is what `tests/determinism/status-counts-publication.test.ts` exists to forbid (Context 14e) |
 | **C — acknowledged** | assaults whose alert row the player pressed *Clear this alert* on | yes, via `DismissAlert` | grudges depend on housekeeping most players never do, and one press marks every assault in the buffer because the row carries no identity (Context 14f) |
 
+**READING A IS THE OWNER'S, RULED 2026-09-08.** The paragraph below is kept
+exactly as it stood, because it is the argument that was put to them and the
+reasoning they ratified rather than a claim this document has to withdraw. What
+changes is only its standing: the sentence *"This document implements reading A
+and says so plainly rather than presenting it as the ruling"* was accurate for
+one day and is now superseded — reading A **is** the ruling, quoted in Status.
+The cost the paragraph names, that A filters nothing today, was in the option
+the owner read.
+
 **This document implements reading A and says so plainly rather than presenting
 it as the ruling.** A is the only one that is both implementable and not
 perverse. It is also the reading under which the ruling's third clause
@@ -887,6 +953,13 @@ row definition. Under `AGENTS.md`'s fourth reservation the *wording* of such a
 sentence has been ours since 2026-09-04; the requirement that it be true is not,
 and neither is the decision to add one. **Open Question 1 is that fork and it is
 the owner's.**
+
+**They took it, and they took the other side of it: reading A, not the
+announcement.** So the paragraph above describes work that is **not**
+authorised, rather than work that is pending. It is kept because it is the
+price of reading A and a reader should be able to see what was declined; if the
+intent ever changes, it is the sentence to come back to, and it needs a fresh
+ruling rather than this one.
 
 #### 2.4 Why not a die roll, a timer, or a scheduled injection
 
@@ -1444,6 +1517,20 @@ Documentation-only change. Run in this worktree at `491fcdce` (v0.0.541):
 
 ## The weakest claim in this document, named
 
+**THAT CLAIM IS NO LONGER THIS DOCUMENT'S TO MAKE, AND THE ONE SENTENCE IT
+ASKED FOR ARRIVED.** The owner ruled on 2026-09-08 that reading A is the
+reading (Status). The section is kept whole rather than rewritten, because the
+argument it makes is the argument they ruled on, and because "what would change
+my mind" below turns out to have named the resolution correctly: it said one
+sentence from the owner would settle it, and one did.
+
+**So the weakest claim in this document is now the one below it** — Decision
+6's membership *timing*, which the ruling does not touch and which Context 15
+left half wrong in each direction. Everything about the producer is now either
+code that was opened or a ruling that was quoted.
+
+**The claim as it stood, on the day before the ruling:**
+
 **The weakest claim is now Decision 2.3's: that reading A is what the owner
 meant by *"one the player was actually shown"*.**
 
@@ -1535,9 +1622,28 @@ has to diff by hand.
 
 ---
 
-## Promotion, decided rather than deferred
+## Promotion, decided rather than deferred — AND THEN TAKEN
 
-**Should this document move out of `docs/adr/drafts/`, take a number and get a
+**SPENT 2026-09-08.** This section said not yet and named its own condition:
+*"Open Question 1 answered by the owner — either branch."* It was answered the
+same day (reading A, quoted in Status), so the document is numbered **0103**,
+sits in `docs/adr/`, and has its row in `docs/adr/README.md` with `Proposed` in
+the Status column to match its own. The five assertions in
+`tests/foundation/adr-numbering-contract.test.ts` that a draft in the
+subdirectory was outside are now in force over this file, and they pass.
+
+**The number was re-swept, because this section said the sweep would be stale
+and it was — by two heads.** 250 remote heads rather than 252; highest
+four-digit prefix on any head still **0102**, nothing at 0103 or above; disk
+and the index's prior line agree. `0095` is still held on
+`measure/893-coverage-and-response-draw-from-one-pool` and this pass did not
+re-derive its holder either.
+
+**The section below is kept unedited**, because its reasoning is why the file
+waited a day and `docs/AGENT_WORKFLOW.md` §4 asks for both directions. Its
+first sentence is now false; every measurement in it was true when taken.
+
+**Should this document move out of the `drafts` subdirectory, take a number and get a
 row in `docs/adr/README.md`? Measured on this pass: not yet, and the condition
 that would flip it is one sentence long.**
 
@@ -1606,19 +1712,32 @@ rather than by this document. The rest are the earlier draft's, unchanged in
 substance and moved only in number. **The old numbering is given beside each so
 a reader holding the earlier draft can follow.**
 
-1. **Which reading of *"one the player was actually shown"* did the owner mean,
-   and should the prison announce an adjudication? — NEW, and it is the one
-   question this document cannot answer for itself.** Decision 2.3 sets out the
-   three readings and takes A, because B is forbidden by the determinism
-   contract and C depends on a gesture. The fork is: **(a)** A is right, the
-   clause is a guarantee about the channel rather than a filter, and the work is
-   as Consequences describes it; or **(b)** the point was that a player should be
-   able to *connect* the retaliation to the fight, in which case the work also
-   includes a new member of `SIMULATION_EVENT_TYPES` announcing what the prison
-   decided about an assault — a new schema, a new locale key, a new row
-   definition and a new census label. **(b) is a player-visible sentence, so it
-   is the owner's under `AGENTS.md`'s fourth reservation** — the wording has
-   been ours since 2026-09-04, the decision to make the promise at all has not.
+1. **ANSWERED BY THE OWNER, 2026-09-08: branch (a), reading A.** *(Kept in
+   place rather than deleted, and kept at number 1, because it is the question
+   that promoted this document and because the branch they declined is the one
+   a later reader will want to find.)* The question as it stood:
+
+   > **Which reading of *"one the player was actually shown"* did the owner
+   > mean, and should the prison announce an adjudication? — NEW, and it is the
+   > one question this document cannot answer for itself.** Decision 2.3 sets
+   > out the three readings and takes A, because B is forbidden by the
+   > determinism contract and C depends on a gesture. The fork is: **(a)** A is
+   > right, the clause is a guarantee about the channel rather than a filter,
+   > and the work is as Consequences describes it; or **(b)** the point was
+   > that a player should be able to *connect* the retaliation to the fight, in
+   > which case the work also includes a new member of `SIMULATION_EVENT_TYPES`
+   > announcing what the prison decided about an assault — a new schema, a new
+   > locale key, a new row definition and a new census label. **(b) is a
+   > player-visible sentence, so it is the owner's under `AGENTS.md`'s fourth
+   > reservation** — the wording has been ours since 2026-09-04, the decision
+   > to make the promise at all has not.
+
+   The answer is (a). Status quotes the option they chose. **What it forecloses
+   is worth stating as plainly as what it authorises**: there is no announcement
+   at adjudication, so a player still cannot connect a retaliation to the fight
+   that caused it, and nothing in this document may be read as licensing a
+   sentence that would let them. That is a live limitation of the accepted
+   design, not an oversight, and reopening it needs a fresh ruling.
 2. **Which of the two prisoners is the offender? — NEW.** The grudge ledger is
    directional (`src/simulation/incidents/gangs.ts:82`) and the ruling's
    "between" is symmetric. The only directional signal on an assault record is
