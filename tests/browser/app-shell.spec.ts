@@ -1627,6 +1627,41 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  *
  * It is deliberately the same function with the same bound, so a control that
  * is unreachable in one direction fails the same way in the other.
+ *
+ * ### Which way round a *between-panel* hop goes is a budget, not a claim
+ *
+ * The paragraph above is about one form. The same arithmetic decides the cost
+ * of the two `#411` keyboard-only specs, and there it is most of the test:
+ * measured on this container on 2026-09-08 with one worker, a press and the
+ * `page.evaluate` that follows it cost **~250 ms together** on the assembled
+ * page, and `zones a room and admits a prisoner` spent **52.4 s of 98.6 s
+ * walking, over 205 presses**.
+ *
+ * Four of its hops were most of that, because they cross the HUD rather than a
+ * form -- and the tab bar is the **last child of `.hud`**
+ * (`src/ui/hud/hud.ts:2228`), so forwards from a panel to a tab is nearly a lap
+ * of the page. Both directions, measured at 1280x800 on the same runs:
+ *
+ * | Hop | `Tab` | `Shift+Tab` |
+ * | --- | --- | --- |
+ * | the Pause control -> the Rooms tab | 24 | **4** |
+ * | the Rooms tab -> the room catalogue | 20 | **6** |
+ * | the Play control -> the Overview tab | 33 | **7** |
+ * | the Overview tab -> the Admit control | 22 | **1** |
+ * | the Play control -> the removal toggle (`takes a room back`) | 32 | **8** |
+ * | the removal toggle -> the coordinates disclosure (same) | 25 | **15** |
+ *
+ * **No assertion moves when one of those turns round**, and that is why these
+ * six and not others. #411's bound is `MAX_TAB_PRESSES_PER_HOP`, which this
+ * function shares; the *tighter* bound the spec places is on the typed route --
+ * the disclosure, the four fields, the form control and the confirm control --
+ * and every one of those is still walked forwards, including the exact `1` the
+ * spec asserts for the disclosure. The spec says so itself where it lists
+ * `routeHops`: the hops *between* panels are deliberately unbounded, because
+ * their length is a fact about the page's document order and says nothing
+ * about the route under test.
+ *
+ * What it does not buy is a cheaper press. See `#1008`.
  */
 async function shiftTabTo(page: Page, description: string, target: FocusTarget): Promise<number> {
   return walkFocus(page, 'Shift+Tab', description, target);
@@ -1697,9 +1732,24 @@ async function typeCoordinate(
  * the catalogue, which is not a fact about the keyboard route. What is
  * reported, and what the callers bound, is the `Tab` cost -- because that is
  * the number the roving tab stop changed.
+ *
+ * `backwards` asks for the walk *in* to be `Shift+Tab`, and it is a preference
+ * about cost rather than a different claim: the group is one tab stop either
+ * way, so the roving stop is what focus lands on from either side and the
+ * arrows below are unchanged. Measured at 1280x800 on 2026-09-08, from the
+ * Rooms tab: **20 presses forwards, 6 backwards** -- see `shiftTabTo` for the
+ * table and for why turning a between-panel hop round costs no assertion. It
+ * is off by default so the third caller, `every command hands the keyboard
+ * back to the control that issued it`, keeps the numbers its own comment
+ * records.
  */
-async function chooseRoomTypeFromTheKeyboard(page: Page, roomId: string): Promise<number> {
-  const presses = await tabTo(page, 'the room catalogue', { selector: '.hud-rooms__rows [data-room]' });
+async function chooseRoomTypeFromTheKeyboard(
+  page: Page,
+  roomId: string,
+  options: { readonly backwards?: boolean } = {},
+): Promise<number> {
+  const reach = options.backwards === true ? shiftTabTo : tabTo;
+  const presses = await reach(page, 'the room catalogue', { selector: '.hud-rooms__rows [data-room]' });
   const rowCount = await page.locator('.hud-rooms__rows [data-room]').count();
   const focusedRoom = async (): Promise<string> =>
     page.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.['room'] ?? '');
@@ -2889,6 +2939,86 @@ test.describe('the assembled application', () => {
     // CI runner would fail it for being slow rather than for finding anything,
     // which is the worst kind of red. `test.slow()` triples the budget; it
     // does not make the test do less.
+    /*
+     * ---- where the three minutes actually go, measured (#1008) -------------
+     *
+     * The paragraph above says 14-28 s, and the dismissal loop below says
+     * 2.9 m against 3.0 m on a box running other suites. Both are kept; this is
+     * the third reading and it is the one that was taken apart, because #1008
+     * needed to know whether there is a phase here to cut. **There is not.**
+     *
+     * Measured on the container #1008 is about -- four cores, no GPU, Chromium
+     * rasterising WebGL through SwiftShader, one worker, nothing else of this
+     * suite running -- on 2026-09-08, with a timestamp at every phase boundary
+     * of this test and then removed again. Seconds, per viewport, in the order
+     * the loop visits them:
+     *
+     * | Phase | 1280x720 | 1440x900 | 1024x768 | 900x600 | 375x812 | all |
+     * | --- | --- | --- | --- | --- | --- | --- |
+     * | the resize itself | 0.2 | 0.3 | 0.2 | 0.2 | 0.1 | 1.0 |
+     * | five tabs, five sweeps | 2.8 | 3.8 | 2.5 | 2.4 | 0.8 | 12.3 |
+     * | the save panel from Build | 0.6 | 0.8 | 0.5 | 0.4 | 0.2 | 2.5 |
+     * | folded rail, headers, box chain | 0.3 | 0.3 | 0.3 | 0.3 | 0.1 | 1.3 |
+     * | the coordinates expanded | 0.9 | 1.1 | 0.7 | 0.5 | 0.2 | 3.4 |
+     * | the wheel gesture | 0.9 | 1.2 | 0.7 | 0.5 | 0.3 | 3.6 |
+     * | the buy row | 1.5 | 2.1 | 1.3 | 0.9 | 0.5 | 6.3 |
+     * | the queue fold | 1.6 | 2.8 | 1.3 | 1.0 | 0.5 | 7.2 |
+     * | the Rooms typed route | 1.8 | 2.5 | 1.4 | 1.1 | 0.8 | 7.6 |
+     * | arm, then a real world drag | 2.7 | 3.8 | 2.3 | 2.1 | 1.5 | 12.4 |
+     * | a room pending, then cancel | 0.7 | 1.0 | 0.6 | 0.7 | 0.4 | 3.4 |
+     * | the Security tab | 0.9 | 0.9 | 0.5 | 0.5 | 0.4 | 3.2 |
+     * | three hires | 1.9 | 2.4 | 1.5 | 1.1 | 0.8 | 7.7 |
+     * | the roster fold | 0.7 | 0.4 | 0.3 | 0.2 | 0.1 | 1.7 |
+     * | the payroll sweep | 0.2 | 0.3 | 0.2 | 0.1 | 0.1 | 0.9 |
+     * | three dismissals | 4.0 | 5.5 | 3.7 | 2.5 | 1.1 | 16.8 |
+     * | **the viewport, end to end** | **21.6** | **29.2** | **18.0** | **14.3** | **7.6** | **90.7** |
+     *
+     * Plus 16.2 s of setup before the loop: **106.9 s end to end**.
+     *
+     * **Two things that table says which no single figure can.** The cost is
+     * spread -- the largest phase is 19 % of the loop and every individual
+     * state is a few seconds -- and it scales with the viewport's *area*
+     * rather than with anything this test does: 29.2 s at 1440x900 against
+     * 7.6 s at 375x812 for identical work, because every Playwright action
+     * here queues behind a frame SwiftShader rasterises on the CPU. The same
+     * commit, same container, run again while other agents' suites were
+     * live: **151.7 s**. So what puts this test at the cap on a CI runner is
+     * the host, and the 42 % spread between those two runs is wider than any
+     * phase a cut could remove.
+     *
+     * **What was considered and refused, so that it is not proposed again.**
+     *
+     *  - *A viewport, or a tab.* That is the coverage, not the cost:
+     *    `HUD_LAYOUT_VIEWPORTS` exists because #88 was invisible at 1440x900
+     *    and fatal at 1280x720.
+     *  - *Hiring once for the whole sweep instead of once per viewport*, which
+     *    is the biggest saving the table offers: the hires and dismissals are
+     *    24.5 s of it, and doing them once would leave about 5 s -- an
+     *    arithmetic estimate off the table above, not a measurement of a
+     *    changed test. It is refused because the accounting assertion at the
+     *    foot of this loop is **per viewport**: hiring is the gesture that lays
+     *    the roster's `Dismiss` controls out at all, and pressing them is the
+     *    only way to empty it again. Doing it once would prove `Dismiss` works
+     *    at one viewport and certify it at five.
+     *  - *Three setup orders instead of six.* The comment that asks for six
+     *    gives a reason ADR 0051's paused drain has since retired, so this
+     *    looked free. It is worth ~4 s, and the queue's depth is the state five
+     *    viewports' worth of recorded pixel figures were measured in --
+     *    `.hud-build[data-queued]` pays for the queue block out of the
+     *    catalogue's floor, and this file quotes those numbers to 0.1px. Four
+     *    seconds is not worth invalidating them.
+     *  - *A smaller square for the drag* (`SMALL_ROOM_DRAG_DELTAS_PX`). The arm
+     *    and the drag together are 12.4 s and the drag alone 7.5 s of that; the
+     *    split between the one `evaluate` that aims it and the fifteen pointer
+     *    events that make it was **not measured**, so the saving is unknown and
+     *    bounded above by 7.5 s across five viewports. Not taken.
+     *
+     * The two `#411` keyboard specs below *were* cut, in the same pass on the
+     * same day, and the difference is the useful part: half of each of them was
+     * walking focus, which is a *route*, and a route has a cheaper direction.
+     * This test presses a pointer at a *state* it has to be in, five times over
+     * at five sizes, and there is no cheaper direction to take.
+     */
     test.slow();
 
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -6373,6 +6503,39 @@ test.describe('the assembled application', () => {
      * (~1.5 ms on a blank page: it is the renderer's frame, not Playwright),
      * which puts the ten orders alone at ~30 s. Measured end to end at ~65 s.
      *
+     * **THE ~65 s WAS TAKEN ON A HOST THIS PARAGRAPH DOES NOT NAME, AND ON THE
+     * ONE `#1008` IS ABOUT IT IS BOTH TOO SMALL AND ABOUT THE WRONG THING.**
+     * Both readings are kept, because the ratio between them is what a reader
+     * needs -- see `wallRectanglesFromTheKeyboard`, which makes the same
+     * correction about the same two figures. Measured on that container -- four
+     * cores, no GPU, Chromium rasterising WebGL through SwiftShader, one worker
+     * -- on 2026-09-08, instrumented at every phase boundary of this test and
+     * then removed again:
+     *
+     * | | before | after |
+     * | --- | --- | --- |
+     * | `Tab`/`Shift+Tab` presses | 205 | **124** |
+     * | time inside those presses | 52.4 s | -- |
+     * | the ten wall orders | 28.5 s | unchanged |
+     * | the crew, at x4 | 10.3 s | unchanged |
+     * | whole test, instrumented | 98.6 s | -- |
+     * | whole test, three repeats | 1.7 / 1.7 / 1.6 m | **1.4 / 1.4 / 1.3 m** |
+     *
+     * So the sentence above is right about *where* the work is and wrong about
+     * what a press costs: here a press and the `page.evaluate` that reads where
+     * it landed are **~250 ms together**, not ~130 ms, and walking focus is
+     * more of this test than the walls and the crew put together. The repeats
+     * are un-instrumented and are the honest comparison; the two blocks ran
+     * back to back at load average 3.4 and 1.7 respectively, and the same
+     * commit measured twice on this box can differ by 40 % (see `#88` above),
+     * so read the *press counts* as the durable number and the minutes as the
+     * effect they had on this host on this day.
+     *
+     * Four hops are the whole of the difference, and every one of them crosses
+     * the HUD rather than walking the typed route -- so `shiftTabTo` takes them
+     * the short way round: 99 presses become 18. That table, and the argument
+     * that no assertion moves, is on `shiftTabTo`.
+     *
      * It is not a timeout raised over a flaky assertion. Nothing below is
      * weakened, nothing polls for longer, and the wall-building itself is
      * asserted at every step -- the purchase, the order count the worker
@@ -6384,9 +6547,21 @@ test.describe('the assembled application', () => {
     await openApp(page);
 
     const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
-    const hops: { target: string; presses: number }[] = [];
+    const hops: { target: string; presses: number; backwards?: boolean }[] = [];
     const hop = async (description: string, target: FocusTarget): Promise<void> => {
       hops.push({ target: description, presses: await tabTo(page, description, target) });
+    };
+    /*
+     * The same hop the short way round, recorded the same way.
+     *
+     * Only ever used for a hop *between* panels, which is the set this test
+     * deliberately does not bound -- see `routeHops` at the foot of the test
+     * for why, and `shiftTabTo` for the measured table. Every hop on the typed
+     * route stays forwards, so the numbers this test asserts are the numbers
+     * it asserted before.
+     */
+    const hopBack = async (description: string, target: FocusTarget): Promise<void> => {
+      hops.push({ target: description, presses: await shiftTabTo(page, description, target), backwards: true });
     };
 
     // Pre-state: nothing is zoned and nobody is admitted, so the two numbers
@@ -6425,7 +6600,11 @@ test.describe('the assembled application', () => {
     await wallRectanglesFromTheKeyboard(page, [cell]);
 
     // ---- the Rooms tab, and what the room is for ----------------------
-    await hop('the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
+    // transport's *Pause*, and the tab bar is the last child of `.hud`
+    // (`src/ui/hud/hud.ts:2228`), so forwards is 24 presses and backwards is 4.
+    // `shiftTabTo` carries the table and the argument.
+    await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
@@ -6441,7 +6620,8 @@ test.describe('the assembled application', () => {
      */
     hops.push({
       target: 'the room catalogue',
-      presses: await chooseRoomTypeFromTheKeyboard(page, 'room.cell'),
+      presses: await chooseRoomTypeFromTheKeyboard(page, 'room.cell', { backwards: true }),
+      backwards: true,
     });
     await expect(page.locator('.hud-rooms__list [data-room="room.cell"]')).toHaveAttribute(
       'data-selected',
@@ -6497,9 +6677,12 @@ test.describe('the assembled application', () => {
     await expect(metric('rooms'), 'no room reached the worker from the typed rectangle').toHaveText('1');
 
     // ---- and the loop the room unblocks -------------------------------
-    await hop('the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    // Both backwards, and these two were the most expensive hops in the test:
+    // 33 presses forwards from the transport to the tab bar and 22 more from
+    // the tab bar down to the Admit control, against 7 and 1 the other way.
+    await hopBack('the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
     await page.keyboard.press('Enter');
-    await hop('the Admit control', { selector: '.hud-intake__admit' });
+    await hopBack('the Admit control', { selector: '.hud-intake__admit' });
     await page.keyboard.press('Enter');
     await expect(metric('prisoners'), 'the admission was refused, so the loop is still broken').toHaveText(
       '1',
@@ -6537,7 +6720,12 @@ test.describe('the assembled application', () => {
       'the form control',
       'the confirm control',
     ]);
-    const summary = hops.map((entry) => `${entry.target}: ${entry.presses}`).join(', ');
+    // The direction is printed, because half of these hops are `Shift+Tab`
+    // now and a bare number beside a message that says "Tab presses" would
+    // read as the wrong thing at the one moment anybody reads it.
+    const summary = hops
+      .map((entry) => `${entry.target}: ${entry.presses}${entry.backwards === true ? ' back' : ''}`)
+      .join(', ');
     expect(
       hops.filter((entry) => routeHops.has(entry.target) && entry.presses > 20).map((entry) => entry.target),
       `a control on the typed route took more than 20 Tab presses to reach (${summary})`,
@@ -6610,7 +6798,14 @@ test.describe('the assembled application', () => {
     page,
   }) => {
     // Slow for the reason the test above is, and the same ten wall segments
-    // behind it: see that comment.
+    // behind it: see that comment, which also carries the measurement of where
+    // the budget goes and the correction to the ~130 ms a press was said to
+    // cost. This test's own numbers on the same container on 2026-09-08:
+    // **221 `Tab`/`Shift+Tab` presses before and 153 after**, 56.3 s of the
+    // 104.3 s instrumented run spent inside them, and three un-instrumented
+    // repeats of each version back to back -- **1.7 / 1.7 / 1.8 m before,
+    // 1.5 / 1.5 / 1.5 m after**. Two hops are most of it and both are
+    // between-panel walks turned round (`shiftTabTo`).
     test.slow();
     await page.setViewportSize({ width: 1280, height: 800 });
     await installTrustedPointerTripwire(page);
@@ -6634,9 +6829,22 @@ test.describe('the assembled application', () => {
      */
     const cell: TileRectangle = { x: 6, y: 6, width: 2, height: 3 };
 
-    /** Type one rectangle and confirm it, whichever mode the panel is in. */
-    const typeRectangleAndConfirm = async (): Promise<void> => {
-      await tabTo(page, 'the coordinates disclosure', {
+    /**
+     * Type one rectangle and confirm it, whichever mode the panel is in.
+     *
+     * `reachBackwards` is which way the *first* hop of the pair goes, and it is
+     * a cost rather than a claim (`shiftTabTo` carries the table). This helper
+     * is called twice from two different places: the first time from the chosen
+     * room type, where the disclosure is the very next tab stop, and the second
+     * from the removal toggle at the other end of the panel, where forwards is
+     * 25 presses and backwards is 15. Nothing after that first hop changes
+     * direction -- the four fields, the form control and the confirm control
+     * are walked forwards both times.
+     */
+    const typeRectangleAndConfirm = async (
+      options: { readonly reachBackwards?: boolean } = {},
+    ): Promise<void> => {
+      await (options.reachBackwards === true ? shiftTabTo : tabTo)(page, 'the coordinates disclosure', {
         selector: '.hud-rooms__coordinates > .ui-section__header',
       });
       if ((await page.locator('.hud-rooms__coordinates').getAttribute('data-collapsed')) === 'true') {
@@ -6665,10 +6873,13 @@ test.describe('the assembled application', () => {
 
     await wallRectanglesFromTheKeyboard(page, [cell]);
 
-    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    // Backwards, for the reason the test above gives at the same point: the
+    // wall helper leaves the keyboard on *Pause* and the tab bar is the last
+    // child of `.hud`, so this is 4 presses instead of 24.
+    await shiftTabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
-    await chooseRoomTypeFromTheKeyboard(page, 'room.cell');
+    await chooseRoomTypeFromTheKeyboard(page, 'room.cell', { backwards: true });
 
     await typeRectangleAndConfirm();
     await tabTo(page, 'the Play control', {
@@ -6679,10 +6890,11 @@ test.describe('the assembled application', () => {
     await expect(metric('rooms'), 'no room reached the worker from the typed rectangle').toHaveText('1');
 
     // ---- and back out again -------------------------------------------
-    await tabTo(page, 'the removal toggle', { selector: '.hud-rooms__remove' });
+    // Backwards from the transport, 8 presses against 32.
+    await shiftTabTo(page, 'the removal toggle', { selector: '.hud-rooms__remove' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms__remove')).toHaveAttribute('aria-pressed', 'true');
-    await typeRectangleAndConfirm();
+    await typeRectangleAndConfirm({ reachBackwards: true });
     await expect(metric('rooms'), 'the typed rectangle never reached UnzoneRoom').toHaveText('0');
 
     expect(
