@@ -14,6 +14,7 @@ import {
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #89, through the loop issue #96 decided: **money buys materials,
@@ -257,7 +258,7 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const before = runtime.treasury.balanceMinorUnits;
 
     const outcome = runtime.procurement.purchase('buy-1', 'item.brick', 5, 0, 'deliveries');
-    expect(outcome.ok).toBe(true);
+    expectOk(outcome, 'the five bricks bought before the refund');
     const spent = before - runtime.treasury.balanceMinorUnits;
     expect(spent, 'the fixture must actually have spent something').toBeGreaterThan(0);
 

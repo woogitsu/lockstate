@@ -9,6 +9,7 @@ import type { RouteResult } from '../../src/simulation/navigation/route';
 import { findRoute } from '../../src/simulation/navigation/router';
 import { flatSearchCost } from '../helpers/navigation-flat-search';
 import { buildFixtureGraph, buildRingFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * ADR 0007 justifies flow-field sharing by asserting the shared plan is the
@@ -128,8 +129,8 @@ describe('a shared RegionFlowField is the plan findRoute computes, not merely on
 
     const throughB = findRoute(viaB.world, viaB.doors, graphViaB, origin, destination, PLAIN);
     const throughC = findRoute(viaC.world, viaC.doors, graphViaC, origin, destination, PLAIN);
-    expect(throughB.ok && throughC.ok).toBe(true);
-    if (!throughB.ok || !throughC.ok) return;
+    expectOk(throughB, 'the route the ring leaves open through B');
+    expectOk(throughC, 'the route the ring leaves open through C');
 
     // Independently: a flat full-map Dijkstra that knows nothing of regions or
     // portals agrees on both costs, so neither number comes from the code under

@@ -7,6 +7,7 @@ import { RouteCache } from '../../src/simulation/navigation/route-cache';
 import type { SearchStats } from '../../src/simulation/navigation/local-search';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { buildCellBlockFixture, buildFixtureGraph, buildSingleDoorFixture, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 const LEFT_TILE = { x: tileCoordinate(1), y: tileCoordinate(1) };
 const RIGHT_TILE = { x: tileCoordinate(6), y: tileCoordinate(1) };
@@ -32,7 +33,7 @@ describe('findRoute: optional SearchStats work-unit counting', () => {
     const graph = buildFixtureGraph(world, doors, [chunkA, chunkB]);
 
     const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the guard route asked for with no stats object');
   });
 
   it('charges expansions for both the permission-aware and physical-fallback region passes on a permission-denied result', () => {
@@ -53,7 +54,7 @@ describe('findRoute: optional SearchStats work-unit counting', () => {
 
     const stats: SearchStats = { expansions: 0 };
     const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD, stats);
-    expect(result.ok).toBe(true);
+    expectOk(result, 'the guard route whose expansions are counted');
 
     // Origin and destination are 5 tiles apart plus a door crossing -- local search alone
     // must expand more than the handful of regions in the tiny two-room fixture.

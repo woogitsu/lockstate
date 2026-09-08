@@ -24,6 +24,7 @@ import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coor
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { RefusalLog } from '../../src/simulation/refusals';
 import { SimulationEventLog } from '../../src/simulation/events/event-log';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * Issue #74: completing a build order must change the world.
@@ -573,8 +574,7 @@ describe('a build order with an edge survives the save envelope', () => {
     // a load actually takes. Round-tripped through JSON first, because that
     // is what IndexedDB gives back.
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
-    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
-    if (!decoded.ok) return;
+    expectOk(decoded, 'the round-tripped envelope carrying the wall edge');
 
     expect(decoded.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(decoded.migrated).toBe(false); // written at the current version, so nothing had to be upgraded
@@ -594,7 +594,7 @@ describe('a build order with an edge survives the save envelope', () => {
     expect(envelope.payload.construction.orders[0]).not.toHaveProperty('edge');
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'the round-tripped envelope that carries no edge');
   });
 
   it('rejects an edge the world has no slot for', () => {
@@ -674,8 +674,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
-    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
-    if (!decoded.ok) return;
+    expectOk(decoded, 'the round-tripped envelope carrying the open gesture');
 
     expect(decoded.migrated).toBe(false);
     expect(decoded.value.payload.construction.undoStack).toEqual([['wall-a']]);
@@ -705,7 +704,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(snapshot).not.toHaveProperty('currentTransactionId');
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope(envelopeInput(snapshot)))) as unknown);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'the round-tripped envelope written with nothing left open');
   });
 
   it('emits the buffer with no id when the gesture has none, rather than a key holding undefined', () => {
@@ -722,7 +721,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(snapshot).not.toHaveProperty('currentTransactionId');
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope(envelopeInput(snapshot)))) as unknown);
-    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
+    expectOk(decoded, 'the round-tripped envelope whose buffer carries no gesture id');
   });
 
   it('still loads a save written before the open gesture was persisted, with no migration step', () => {
@@ -763,7 +762,7 @@ describe('the build gesture that is still open survives the save envelope', () =
     expect(construction.getOrder('wall-b')?.state).toBe('approved');
 
     const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
-    expect(decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown).ok).toBe(true);
+    expectOk(decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown), 'the envelope written back after the legacy undo');
   });
 });
 

@@ -12,6 +12,7 @@ import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
 import { EMPTY_HUD_VIEW_MODEL } from '../../src/ui/hud/view-model';
 import { SimulationEventLog } from '../../src/simulation/events';
+import { expectOk } from '../helpers/expect-ok';
 
 /**
  * **What every reader of the balance does with a negative one.**
@@ -146,8 +147,7 @@ describe('the status channel carries a negative balance instead of refusing the 
       },
     });
 
-    expect(decoded.ok ? null : decoded.error.code).toBe(null);
-    expect(decoded.ok).toBe(true);
+    expectOk(decoded, 'the status-counts message carrying the negative balance');
     /*
      * The fifteen other figures, walked rather than assumed. This is the half
      * of the old assertion that was the finding: the block is `.strict()`, so

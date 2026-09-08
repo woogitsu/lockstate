@@ -9,6 +9,7 @@ import {
 import { findRoute } from '../../src/simulation/navigation/router';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { buildCellBlockFixture, buildFixtureGraph } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 const GUARD: RouteContext = { role: 'guard', securityClearance: 5 };
 const PRISONER: RouteContext = { role: 'prisoner', securityClearance: 0 };
@@ -28,11 +29,11 @@ describe('computeRegionFlowField / findRouteUsingFlowField: reference comparison
       const viaFullSearch = findRoute(fixture.world, fixture.doors, graph, cellTile, canteenEntry, GUARD);
 
       if (viaFullSearch.ok) {
-        expect(viaField).toBeDefined();
-        expect(viaField?.ok).toBe(true);
-        if (viaField?.ok) {
-          expect(viaField.route.totalCost).toBe(viaFullSearch.route.totalCost);
-        }
+        // `findRouteUsingFlowField` answers `RouteResult | undefined`, so
+        // definedness is asserted first and `expectOk` narrows what is left.
+        expect(viaField, 'the field must cover a cell the full search reaches').toBeDefined();
+        expectOk(viaField!, 'the flow-field route from this cell');
+        expect(viaField.route.totalCost).toBe(viaFullSearch.route.totalCost);
         comparedCount += 1;
       }
     }

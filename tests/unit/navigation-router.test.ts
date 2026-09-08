@@ -4,6 +4,7 @@ import { DoorRegistry } from '../../src/simulation/navigation/door';
 import { findRoute } from '../../src/simulation/navigation/router';
 import type { RouteContext } from '../../src/simulation/navigation/route-context';
 import { buildFixtureGraph, buildSingleDoorFixture, buildTwoRoomFixture } from '../helpers/navigation-fixture';
+import { expectOk } from '../helpers/expect-ok';
 
 const LEFT_TILE = { x: tileCoordinate(1), y: tileCoordinate(1) };
 const RIGHT_TILE = { x: tileCoordinate(6), y: tileCoordinate(1) };
@@ -19,8 +20,7 @@ describe('findRoute: cross-chunk portals and multiple route alternatives', () =>
 
     const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expectOk(result, 'the cleared route through the gated door');
     expect(result.route.segments.length).toBeGreaterThanOrEqual(2);
     const doorIdsCrossed = result.route.segments.map((s) => s.enteredViaDoorId).filter((id) => id !== undefined);
     expect(doorIdsCrossed).toEqual(['door-clearance']);
@@ -34,8 +34,7 @@ describe('findRoute: cross-chunk portals and multiple route alternatives', () =>
 
     const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, MEDICAL_STAFF);
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expectOk(result, "the medical staff's route through the other door");
     const doorIdsCrossed = result.route.segments.map((s) => s.enteredViaDoorId).filter((id) => id !== undefined);
     expect(doorIdsCrossed).toEqual(['door-medical']);
   });
@@ -80,7 +79,7 @@ describe('findRoute: door state and emergency override', () => {
 
     const cleared: RouteContext = { role: 'guard', securityClearance: 5, emergencyOverride: true };
     const cleared_result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, cleared);
-    expect(cleared_result.ok).toBe(true);
+    expectOk(cleared_result, 'the cleared route under the same emergency override');
   });
 });
 
@@ -159,8 +158,7 @@ describe('findRoute: local search stays bounded to the resolved regions', () => 
     const graph = buildFixtureGraph(world, doors, [chunkA, chunkB]);
 
     const result = findRoute(world, doors, graph, LEFT_TILE, RIGHT_TILE, GUARD);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expectOk(result, 'the guard route that never needs the side room');
 
     const sideRoomTile = { x: tileCoordinate(6), y: tileCoordinate(2) };
     const visitedTiles = result.route.segments.flatMap((segment) => segment.waypoints);
