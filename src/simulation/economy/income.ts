@@ -500,6 +500,41 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  *   `2026-09-04-what-pressure-there-is-at-fifty.md` §6, in `docs/research/`
  *   (unrooted, for the reason given above).
  *
+ *   **THAT CANDIDATE WAS CONFIRMED ON 2026-09-05, SO THE BULLET ABOVE IS KEPT
+ *   AND ITS ATTRIBUTION IS WITHDRAWN.** The paragraph is left standing rather
+ *   than rewritten because "measured false at fifty" is what four other
+ *   sentences in this repository were written against, and a reader arriving
+ *   at one of them needs to see which half fell.
+ *
+ *   The half that fell is *fifty*. Same fixture, same fifty prisoners, one
+ *   edge different: with the cell walled shut the yard performs **0** ticks
+ *   and the run records **11,558** `routeFailures`; with a doorway it performs
+ *   **29,043**, records **0** route failures, and `recreation` is unmet for
+ *   **0 of 50**. The population was never the subject.
+ *
+ *   The half that stands is that a yard has a ceiling, and this bullet's
+ *   parenthesis guessed its shape wrong. It reads "four rotating places among
+ *   fifty would leave some reading non-zero" as if four were a *contention*
+ *   number; four is the yard's actual capacity, and it is not read from any
+ *   object. `action.yard-recreation` declares no `requiredObjectCapability`
+ *   (`../prisoners/actions.ts:165`), so `concurrentUseCapacityFor` short-
+ *   circuits on the undefined capability (`../prisoners/room-instance-registry.ts:610`)
+ *   to `openGroundCapacityOf`, which is
+ *   `max(1, floor(width * height / TILES_PER_OPEN_GROUND_PLACE))` at `:341`
+ *   with the constant `16` at `:222` -- so an 8x8 yard is **4 places**, from
+ *   floor area rather than from furniture (ADR 0071, issue #532).
+ *
+ *   Where it actually breaks, measured over populations rather than seeds:
+ *   one 8x8 yard holds **78 to 80** prisoners above the threshold and no
+ *   more, with the knee between 78 and 82 rather than "around seventy". On
+ *   the axis a *player* moves it is a step, not a slope: at ninety prisoners
+ *   a **single** extra place -- sixteen tiles of ground -- takes the shortfall
+ *   from twelve to zero. Full numbers, both axes and the mutation that
+ *   confirms the capacity rule, in
+ *   `docs/research/2026-09-05-where-the-yard-incentive-breaks.md`; this
+ *   reference exists partly so that `grep` from this file reaches that note,
+ *   which it did not for three days after the note withdrew this bullet.
+ *
  * An integer, for `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`'s reason: it
  * multiplies into a balance a save carries and a determinism fingerprint
  * hashes, and `docs/DETERMINISM.md` makes no exception for money. That is why

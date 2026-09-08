@@ -1666,3 +1666,118 @@ describe('#1004 act T -- what the two regimes actually differ by, derived from t
     }
   });
 });
+
+// ===========================================================================
+// #997 -- the slope-or-step claim this file named as its own weakest
+// ===========================================================================
+
+/**
+ * The finer population grid, and the supply grid beside it.
+ *
+ * `docs/research/2026-09-05-where-the-yard-incentive-breaks.md` §7 names its
+ * own weakest claim in these words:
+ *
+ * > That the boundary is a *slope* rather than a *step* rests on six
+ * > populations from one seed on the wide cell (0, 0, 0, 1, 12, 20 unmet at
+ * > 50..100). Six points and one seed is thin for a shape claim. What would
+ * > change my mind: the same sweep on two more seeds, or a finer grid between
+ * > 70 and 90, showing the unmet count jumping rather than climbing.
+ *
+ * Act O ran the seed arm for **`hygiene`** (#1003) and nothing has ever run
+ * either arm for `recreation`. This act runs the *finer grid*, which is the
+ * half that varies what the game varies: act G samples 70, 80, 90 and 100 and
+ * the whole of the shape claim lives between those four points.
+ *
+ * **Two axes, and neither is the seed.** A shape read off one trajectory can
+ * be a property of that trajectory, and re-running the same sweep with a
+ * different `SEED` answers "is it this trajectory" rather than "is it this
+ * mechanism". The mechanism has a supply side and a demand side --
+ * `4 places x 600 ticks / 100 ticks a visit` against `n` prisoners falling
+ * 36 levels a day -- so the second axis here is **supply at a fixed
+ * population**: the same n=90 prison with the yard's ground widened one place
+ * at a time. If the boundary is a slope, both sweeps cross it smoothly; if it
+ * is a step, at least one of them jumps.
+ */
+const FINE_POPULATIONS = [70, 74, 78, 82, 86, 90, 94, 98] as const;
+
+/**
+ * Yard widths at the fixed population, and the places each derives.
+ *
+ * `openGroundCapacityOf` is `floor(width * height / TILES_PER_OPEN_GROUND_PLACE)`
+ * with the height fixed at 8 by `yardAtTheDoor`, so a width of `w` is `w / 2`
+ * places: 8 -> 4, 10 -> 5, ... 24 -> 12. `WIDE_CELL` starts at x=6 and the
+ * chunk is 32 wide, so 24 is the widest rectangle that fits beside it -- which
+ * is the same 24 act C's wide remedy 2 uses.
+ */
+const FINE_YARD_WIDTHS = [8, 10, 12, 14, 16, 18, 20, 22, 24] as const;
+
+/**
+ * The two populations the supply axis is swept at.
+ *
+ * **90** is the point act G reads 12 short at: inside its own tail, with room
+ * to move in both directions. **100** is the point act C priced the remedy at
+ * — it measured one 8x8 (4 places) against two 8x8s (8 places) and concluded
+ * *"one extra 8x8 is enough"*, having sampled nothing in between. Sweeping the
+ * same axis one place at a time at the same population is what says whether
+ * that remedy is the cheapest one or merely the first one tried.
+ */
+const SUPPLY_SWEEP_POPULATIONS = [90, 100] as const;
+
+describe('#997 act U -- slope or step, on a finer grid and on the supply axis', () => {
+  it('sweeps n = 70..98 in fours, and then yard places 4..12 at n=90 and n=100', () => {
+    print('');
+    print(`=== ACT U1: 21x10 cell, a hundred beds, one 8x8 yard at the door, ${String(DAYS)} days ===`);
+    print('  Act G samples 70, 80, 90, 100 and reads 0, 1, 12, 20 short. This is the same prison on the same seed at');
+    print('  70, 74, 78, 82, 86, 90, 94, 98 -- four times the resolution over the interval where its shape claim lives.');
+    print('  n | recreation permille min/med/max | unmet rec | recovered | n x 40 | (n-unmet) x 40 | visits/day | yard perform | yard travel');
+    for (const population of FINE_POPULATIONS) {
+      const guards = Math.max(GUARDS, Math.ceil(population / 8));
+      const withYard = measure({ prisoners: population, yards: 1, yardPlacement: 'at-the-door', wideCell: true, guards }, DAYS);
+      const without = measure({ prisoners: population, yards: 0, wideCell: true, guards }, DAYS);
+      // Act G's guard, for act G's reason: above fifty this prison loses an
+      // occupied place or two over twenty days, and a row whose occupancy is
+      // short of its `n` is not a row about `n` prisoners.
+      expect(withYard.occupiedPlaces, 'the intake must very nearly fill the cell').toBeGreaterThanOrEqual(population - 3);
+      const recreation = withYard.needs.recreation;
+      const recovered = withYard.settledGrant - without.settledGrant;
+      const visits = withYard.visits['action.yard-recreation'] ?? 0;
+      print(
+        `${String(population).padStart(3)} | ${String(recreation.minPermille).padStart(4)}/${String(recreation.medianPermille).padStart(4)}/${String(recreation.maxPermille).padStart(4)}` +
+        `                | ${String(recreation.unmet).padStart(2)} of ${String(withYard.occupiedPlaces).padStart(3)} | ` +
+        `${String(recovered).padStart(9)} | ${String(population * 40).padStart(6)} | ` +
+        `${String((withYard.occupiedPlaces - recreation.unmet) * 40).padStart(14)} | ${String(Math.round(visits / DAYS)).padStart(10)} | ` +
+        `${String(withYard.performingTicks['action.yard-recreation'] ?? 0).padStart(12)} | ${String(withYard.travellingTicks['action.yard-recreation'] ?? 0).padStart(11)}`,
+      );
+      print(`      guards ${String(guards)}; occupied ${String(withYard.occupiedPlaces)} of ${String(population)}; grant ${String(without.settledGrant)} -> ${String(withYard.settledGrant)}`);
+      print(`      recreation by classification group [group, housed, unmet]: ${JSON.stringify(withYard.recreationByGroup)}`);
+      print(`      with-yard unmet histogram ${JSON.stringify(withYard.unmetHistogram)}   metrics ${JSON.stringify(withYard.metrics)}`);
+    }
+
+    for (const population of SUPPLY_SWEEP_POPULATIONS) {
+      print('');
+      print(`=== ACT U2 [n=${String(population)}]: the same prison, one at-the-door yard, its ground widened one place at a time ===`);
+      print('  The supply axis rather than the demand axis: the population, the seed, the cell, the guards and the day count');
+      print('  are all fixed, and the only thing that moves is `floor(width * 8 / 16)` -- the ceiling `concurrentUseCapacityFor`');
+      print('  derives for an action naming no object capability.');
+      const supplyGuards = Math.max(GUARDS, Math.ceil(population / 8));
+      const supplyBaseline = measure({ prisoners: population, yards: 0, wideCell: true, guards: supplyGuards }, DAYS);
+      print(`  no yard at all: grant ${String(supplyBaseline.settledGrant)} over ${String(supplyBaseline.occupiedPlaces)} places, ${needLine('recreation', supplyBaseline.needs.recreation, supplyBaseline.occupiedPlaces).trim()}`);
+      print('  yard | places | recreation permille min/med/max | unmet rec | recovered | (n-unmet) x 40 | visits/day | peak use | perform | travel');
+      for (const width of FINE_YARD_WIDTHS) {
+        const run = measure({ prisoners: population, yards: 1, yardPlacement: 'at-the-door', yardWidth: width, wideCell: true, guards: supplyGuards }, DAYS);
+        expect(run.occupiedPlaces, 'the intake must very nearly fill the cell').toBeGreaterThanOrEqual(population - 3);
+        const recreation = run.needs.recreation;
+        const visits = run.visits['action.yard-recreation'] ?? 0;
+        print(
+          `${String(width).padStart(4)}x8 | ${String(run.yardCapacity).padStart(6)} | ` +
+          `${String(recreation.minPermille).padStart(4)}/${String(recreation.medianPermille).padStart(4)}/${String(recreation.maxPermille).padStart(4)}` +
+          `                | ${String(recreation.unmet).padStart(2)} of ${String(run.occupiedPlaces).padStart(3)} | ` +
+          `${String(run.settledGrant - supplyBaseline.settledGrant).padStart(9)} | ${String((run.occupiedPlaces - recreation.unmet) * 40).padStart(14)} | ` +
+          `${String(Math.round(visits / DAYS)).padStart(10)} | ${String(run.peakYardUse).padStart(2)} of ${String(run.yardCapacity).padStart(2)} | ` +
+          `${String(run.performingTicks['action.yard-recreation'] ?? 0).padStart(7)} | ${String(run.travellingTicks['action.yard-recreation'] ?? 0).padStart(7)}`,
+        );
+        print(`         histogram ${JSON.stringify(run.unmetHistogram)}   grant ${String(run.settledGrant)}   metrics ${JSON.stringify(run.metrics)}`);
+      }
+    }
+  });
+});
