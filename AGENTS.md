@@ -278,6 +278,36 @@ outward-facing or unrevertable, which is the whole reason:
    against 13 on the retired one — **3.2 times**, not the ~6 the `verify` step
    shows, so the slowdown is not one uniform factor either.
 
+   **FIVE MORE CORRECTIONS TO THIS ENTRY, 2026-09-08, FROM AN AUDIT OF EVERY
+   WORKFLOW'S HOST ASSUMPTIONS (issue #1089).** They are listed because four of
+   the five are figures this entry states.
+
+   1. **The runner is `woogitsu-linux-03`, not `woogitsu-host-03`.**
+      `woogitsu-host-03` is the runner's *install directory* in the log path
+      (`/home/matma/actions-runner/woogitsu-host-03/_work/...`); the API's
+      `runner_name` is `woogitsu-linux-03`. **This session had already
+      corrected exactly this confusion once today, on PR #1073, and then made
+      it again** — the log path is the more visible of the two and the API
+      field is the authoritative one.
+   2. **The slowdown is about 4x, not the 6 quoted above.** That figure came
+      from three hand-picked samples, 17s against 102-142s, and it took the
+      extremes of both. Over n=40 WSL and n=30 linux samples of the same
+      "Verify project" step the ranges are **15-23s** and **51-142s, median
+      ~75s**. The browser suite's own ratio is 3.2x. There is no single factor.
+   3. **The `assets` control is weaker than this entry presents it.** Both of
+      its samples -- 11s and 14s -- were taken on `linux-*`, so it shows that
+      the same pool is stable day to day, which is worth something, and it does
+      **not** isolate the pool change, which is what it was offered as. The
+      audit reports `assets` at 4-6s on the retired pool, i.e. it slowed too;
+      that figure is the audit's and is not re-derived here.
+   4. **The pool is at least twelve hosts**, `01`-`06` and `08`-`12` observed,
+      not the ten this entry implies.
+   5. **A root cause this entry did not have**: the new hosts have **no
+      passwordless sudo**. `scripts/provision-postgres.sh` says so out loud on
+      `woogitsu-linux-11` -- *"needs root or passwordless sudo"* -- which is
+      also why several provisioning scripts can no longer repair a host they
+      previously could.
+
 
    **What was declined by not being asked.** Routing `browser` back to the
    faster pool is not available from this file: every job's `labels` in the API

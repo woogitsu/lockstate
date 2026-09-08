@@ -79,7 +79,11 @@ report them instead of dying mid-suite. It does not make them pass.
 **422 passed, 1 failed in 41.3 minutes**. Only `#331` exhausts the per-test
 cap; `#88` and both `#411` specs pass in 2.4-2.6 m. The four-red picture came
 from a job cancelled at test 46 of 420 on a saturated pool, and a starved
-partial run is not a sample of a finished one.
+partial run is not a sample of a finished one. `AGENTS.md` carries five further
+corrections to that entry's figures, including that the runner is
+`woogitsu-linux-03` rather than `woogitsu-host-03` (the log path shows the
+install directory, the API shows the name) and that the slowdown is about **4x**
+rather than the 6 quoted from three hand-picked samples.
 
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of

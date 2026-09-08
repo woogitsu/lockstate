@@ -507,6 +507,14 @@ jobs:
     # uniform factor, so 90 is right for this job and says nothing about any
     # other budget.
     #
+    # **"~6" IS THE WORST-CASE PICK AND THE HONEST FIGURE IS ABOUT 4.** It came
+    # from three hand-chosen samples -- 17s against 102-142s -- taking the
+    # extremes of both. Over n=40 and n=30 samples of that same step the ranges
+    # are 15-23s on the retired pool and 51-142s, median ~75s, here. The two
+    # numbers in this comment that are actually load-bearing for the budget are
+    # unaffected: 41.3 minutes measured on this pool, against a 90-minute cap.
+    # Issue #1089 carries the audit.
+    #
     # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
     # a job, not a step, not the runner selectors, not `deploy.yml`.
     timeout-minutes: 90
