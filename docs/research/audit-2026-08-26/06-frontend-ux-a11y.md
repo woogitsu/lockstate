@@ -169,9 +169,23 @@ already call a coincidence.
 
 ### UXA-06 — Zoning colour is the only carrier of room identity on the map (High, CONFIRMED)
 
-`ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:79-91`) assigns one hue to each of
+`ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:79-91`) — which no longer exists;
+see the note below — assigns one hue to each of
 eleven room categories, drawn at `ZONING_TINT_ALPHA = 0.28` (`:93`). Nothing else on the map
-distinguishes a zone: no label, no hatch, no icon, no border style. `src/ui/primitives/status-badge.ts`
+distinguishes a zone: no label, no hatch, no icon, no border style.
+
+(**Both anchors were exact on 2026-08-26 and two of the three facts have since moved. Marked
+2026-09-08; the finding is untouched.** `ZONING_TINT_BY_CATEGORY` no longer exists —
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) replaced it at `6ae68237` on
+2026-09-06 with eighteen rows keyed by room id, which closes the seven-way collision this
+finding measures but not its headline. `ZONING_TINT_ALPHA` is still exactly `0.28`, now at
+`src/rendering/world/appearance.ts:139`; what a zoned tile with floor art under it is drawn at
+is the weaker `ZONING_TINT_ALPHA_OVER_ART = 0.14`, and for eight of the eighteen rooms a
+per-room alpha between the two since ADR 0101. And *"no label"* is overtaken: room names are
+drawn on the map as text (`src/rendering/world/room-labels.ts`,
+`src/rendering/phaser/room-label-layer.ts`), on the owner's ruling of 2026-09-06 recorded in
+ADR 0098 decision 1 — so colour is no longer the only carrier, which is what this finding
+asked for.) `src/ui/primitives/status-badge.ts`
 gets this exactly right for the HUD ("the tone is an *addition* to the text, never a replacement");
 the renderer has no equivalent rule.
 

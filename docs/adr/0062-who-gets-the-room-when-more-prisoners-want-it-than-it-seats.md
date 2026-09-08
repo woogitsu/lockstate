@@ -218,6 +218,12 @@ from or reordered; no `Map` or `Set` is walked. **ADR 0029 decision 6 is
 untouched and `SAVE_ENVELOPE_VERSION` does not move** — which is what
 distinguishes this from alternatives C and D below.
 
+(**`SAVE_ENVELOPE_VERSION` never existed**, here or in ADR 0029, which is
+where this sentence took the name from. The constant is `SAVE_SCHEMA_VERSION`,
+`src/persistence/save-schema.ts:36`, already declared and already `5` on the
+day this was written. The decision is untouched and the wrong name is kept
+rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4.)
+
 ## Alternatives, with their real costs
 
 **Aggregate misery — `needsPressure`, the mean deficit over all six needs

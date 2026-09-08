@@ -362,7 +362,13 @@ tracking, unlike `applySimulationRefusal` below: this band has exactly one
 producer, so whatever it replaces is always an older event rather than a
 sentence of another class."* That was true and sufficient until two events of
 the *same* class could collide inside one tick, which #700's own investigation
-(issue comment, 2026-08-31) found is exactly what happens for a lapsed escape:
+(issue comment, 2026-08-31) found is exactly what happens for a lapsed escape
+(**the quoted comment's `EventLog` is this repository's `SimulationEventLog`** —
+`src/simulation/events/event-log.ts:201`, the method at `:825`, and
+`src/ui/hud/hud.ts:1299` is the same citation spelled right. The quotation
+below is left exactly as it was written, because a quotation of somebody
+else's sentence is not ours to correct; there is no `EventLog`, and there
+never was one):
 
 > `EventLog.recordIncidentsAllClear`... is deliberately unguarded... it
 > records [an all-clear] only on a terminal transition that leaves

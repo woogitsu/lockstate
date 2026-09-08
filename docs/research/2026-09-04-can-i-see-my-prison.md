@@ -399,7 +399,10 @@ notches out. Three things a player needs are all legible at that distance:
 
 **Where "what a place is" stops working is *which* place.** The tint is keyed by
 the room's **category**, not its type — `ZONING_TINT_BY_CATEGORY`,
-`appearance.ts:84-96`, eleven entries — while `room-catalog.ts` declares
+`appearance.ts:84-96`, eleven entries; that table no longer exists, and
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) replaced it
+at `6ae68237` on 2026-09-06, with eighteen rows keyed by room id — while
+`room-catalog.ts` declares
 **eighteen** room types. So a Cell and a Holding Cell are one blue
 (`room-catalog.ts:92,98`, both `housing`); a Kitchen and a Canteen are one
 orange (`:115,122`); a Shower Room and a Laundry one cyan (`:128,133`); a Yard

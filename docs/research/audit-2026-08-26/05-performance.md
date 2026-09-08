@@ -401,7 +401,10 @@ requests are enqueued and resolved.
 - `IncidentLog.openIncidents()` = `[...this.openIds].sort().map(toRecord)`
   (`src/simulation/incidents/incident.ts:177-179`) — copy, sort, and a fresh record object per
   open incident, on every `ResponseSystem.update` (every 10 ticks) and every status-counts
-  publication.
+  publication. (**`ResponseSystem` did not exist on the day this was written either**: the class
+  is `IncidentResponseSystem`, `src/simulation/incidents/response-system.ts:92`, and it was at
+  `:71` in the tree this audit read. The audit's shorthand is marked rather than overwritten —
+  it is used twice in this bullet pair — per `docs/AGENT_WORKFLOW.md` §4. Marked 2026-09-08.)
 
 **Fix.** Maintain a sorted-by-id index of unassigned guards as a side effect of the phase
 transitions that are already centralised in the roster, and return a stable readonly view of

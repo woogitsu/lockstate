@@ -408,8 +408,11 @@ prison runs: occupancy, need satisfaction, concurrent-use pressure, and
 is left for this decision after #1020 lands.
 
 **#1021 — 18 room types share 11 category tints.** MEASURED and VERIFIED in that
-issue: `ZONING_TINT_BY_CATEGORY` has 11 rows and `src/content/room-catalog.ts`
-defines 18 rooms (VERIFIED by count: `roomCategorySchema` at
+issue: `ZONING_TINT_BY_CATEGORY` — which no longer exists;
+`ZONING_TINT_BY_ROOM_ID` (`src/rendering/world/appearance.ts:118`) replaced it
+on 2026-09-06 at `6ae68237`, with 18 rows keyed by room id — has 11 rows and
+`src/content/room-catalog.ts` defines 18 rooms (VERIFIED by count:
+`roomCategorySchema` at
 `src/content/room-catalog.ts:9-21` enumerates eleven categories, and eighteen
 distinct `id: 'room.*'` literals appear in that file), so twelve room types
 collapse onto six tints and seven room types are drawn identically to another.
@@ -631,12 +634,45 @@ and the two issues would each be reasonable and jointly unaffordable.
 
 **Option A forecloses part of #1021 too, and this is the collision the brief
 asked to be named.** Both issues aim at the same 14%-alpha wash over the same
-floor. `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:85`) is
-load-bearing for both decisions. Decision 3 above resolves the collision *in
+floor. `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:85`) — a
+constant that no longer exists, and the paragraph below is what survives its
+going — is load-bearing for both decisions. Decision 3 above resolves the
+collision *in
 this document's favour* by moving condition to the boundary and leaving the
 tint to identity — but that is a recommendation, not a settled split, and if
 the owner prefers condition on the floor then #1021 must be told before it
 chooses, because its cheapest option becomes unavailable.
+
+**Read this before acting on the paragraph above. Checked 2026-09-08: both
+decisions survive the move, and it is the last sentence that is spent rather
+than the claim.** The table is now `ZONING_TINT_BY_ROOM_ID`
+(`src/rendering/world/appearance.ts:118`), keyed by the room's own catalogue id
+with 18 rows instead of 11 — #1021's cheapest direction, taken as
+[ADR 0098](./0098-what-says-which-room-this-is.md) option A at `6ae68237` on
+2026-09-06, the day after this document was accepted. Three consequences, and
+only the third changes what a reader should do:
+
+- **Decision 3 holds, and holds harder than when it was written.** ADR 0098 §4
+  says so from the other side — *"This document accepts that allocation"* — and
+  its Context §2 is an argument for decision 3 that this document did not have.
+  The hue budget this paragraph prices as fully consumed is now measurably
+  spent: eighteen hues at an even 20° spacing, worst pair 6.02 effective units,
+  against the eleven that shared one dimension unevenly before.
+- **The alpha budget has since been spent too, which this paragraph did not
+  foresee.** *"The tint is a hue washed over a photographic floor at 14%
+  alpha"* is now the floor of a per-room range rather than the whole of it:
+  ADR 0101, accepted on 2026-09-07 and landed at `551c9804`, raises eight of
+  the eighteen rooms above
+  `ZONING_TINT_ALPHA_OVER_ART` towards a cap of `ZONING_TINT_ALPHA`, because at
+  a flat 0.14 those eight blended to *less* colour than the untinted floor. So
+  hue and alpha are both carrying identity now, and an option that modulates
+  either to say "ready" is spending a budget with less left in it than this
+  paragraph priced.
+- **The last sentence can no longer be acted on.** #1021 has chosen. Telling it
+  "before it chooses" is not available; if the owner now prefers condition on
+  the floor, the cost is reopening two accepted ADRs and the shipped table they
+  landed, which is a different and larger decision from the one this paragraph
+  offers.
 
 **Option C forecloses nothing in the renderer** and, if taken, would make A's
 mark less necessary rather than more: a prison whose people visibly move
