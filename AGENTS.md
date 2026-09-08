@@ -271,6 +271,23 @@ outward-facing or unrevertable, which is the whole reason:
    finish. The estimate built on the same partial run — that the remaining 374
    tests were "on the order of a hundred minutes" — was out by 2.4 times.
 
+   **THAT LAST SENTENCE IS WRONG TWICE, AND THE SECOND WAY IS THE INTERESTING
+   ONE.** It compares an estimate of the **remainder** against the **whole**
+   suite's 41.3 minutes, which are different quantities. Tests 47–423 of the
+   finished run took **20.2 minutes**, so the estimate was out by **5 times**,
+   not 2.4.
+
+   And the cause is not mainly the truncation this paragraph blames. **The
+   suite is front-loaded**: tests 47–423 average **3.2 s** against the first
+   46's **27.5 s**, so the same rate method applied to the *finished* run's own
+   tests 26–46 still predicts 81 minutes against the real 20.2 — out by 4 times
+   with no truncation involved at all. Finishing the job fixes the **failure
+   list** and barely touches the **rate**. Those are two separate mistakes and
+   this entry had merged them: a truncated run is not a sample of a finished
+   one, *and* a prefix is not a sample of a suite. `docs/AGENT_WORKFLOW.md` §3
+   carries both, separately, and the second was found only because that pass
+   re-derived the arithmetic instead of taking this paragraph's word for it.
+
    **The release still bought exactly what it was for**, and rather more than
    the sentence above claimed: not "the job now reports four failures" but "the
    job now reports at all", and what it reported is that this tree has **one**
