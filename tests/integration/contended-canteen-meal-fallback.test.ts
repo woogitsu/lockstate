@@ -285,13 +285,30 @@ describe('six prisoners and a canteen that seats three', () => {
      * columns held is the strongest available statement that the hire did not
      * disturb the subject.
      */
+    /*
+     * **Re-measured a fourth time for
+     * [ADR 0102](../../docs/adr/0102-what-a-prisoner-without-a-bed-may-still-do.md),
+     * and two rows of five columns moved.** All six prisoners here are housed
+     * within the first few hundred ticks, so this file has no unhoused
+     * population for that decision to reach -- what it does reach is the
+     * *window before* each of them is housed. `ActionSystem` now considers a
+     * prisoner at intake stage `accommodation-assignment`, and `IntakeSystem`
+     * holds every arrival there for at least one of its own scheduled ticks,
+     * so six arrivals now spend a reconsideration cycle or two competing for a
+     * canteen seat before they have a cell. The effect is the same *shape* as
+     * issue #588's hire: **`sleep`, `eat-meal` and `eat-in-cell` are unchanged
+     * in all six rows** -- the split between the two meals, which is what this
+     * file is about, did not move by a single tick -- and only `use-toilet`
+     * and `free-association` shifted, in rows 4 and 6, by 12 and 16 ticks
+     * respectively.
+     */
     expect(run.perPrisoner).toEqual([
       { 'action.sleep': 3_000, 'action.eat-meal': 224, 'action.eat-in-cell': 220, 'action.use-toilet': 716, 'action.free-association': 3_904 },
       { 'action.sleep': 3_000, 'action.eat-meal': 308, 'action.eat-in-cell': 208, 'action.use-toilet': 704, 'action.free-association': 3_948 },
       { 'action.sleep': 3_000, 'action.eat-meal': 240, 'action.eat-in-cell': 240, 'action.use-toilet': 732, 'action.free-association': 3_908 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 104, 'action.eat-in-cell': 416, 'action.use-toilet': 744, 'action.free-association': 3_900 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 104, 'action.eat-in-cell': 416, 'action.use-toilet': 732, 'action.free-association': 3_912 },
       { 'action.sleep': 3_000, 'action.eat-meal': 336, 'action.eat-in-cell': 224, 'action.use-toilet': 712, 'action.free-association': 3_964 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 336, 'action.eat-in-cell': 224, 'action.use-toilet': 696, 'action.free-association': 3_980 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 336, 'action.eat-in-cell': 224, 'action.use-toilet': 712, 'action.free-association': 3_964 },
     ]);
 
     // Stated as properties as well as counts, so the intent survives a
@@ -366,9 +383,22 @@ describe('six prisoners and a canteen that seats three', () => {
      * ticks apart from where they used to. Every other figure in this file
      * moved for the same reason and the meal columns did not move at all.
      */
-    expect(run.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 176.5, 178.5]);
+    /*
+     * **Re-measured for ADR 0102, and the bound goes back from 5 to 3** -- a
+     * tightening rather than a relaxation, which is why it is taken here
+     * rather than argued for. Two of the six floors moved and both moved
+     * down: index 4 from 176.5 to 173.5 and index 5 from 178.5 to 176.5. The
+     * cause is the one the row above names -- every arrival now spends its
+     * pre-housing window competing for the same three seats, so the six reach
+     * their first meals in a slightly different order -- and the effect on
+     * this bound is that the floors close up rather than spread out. Prisoner
+     * 5, last in the old ascending-index order, still holds the **best** floor
+     * of the six, which is the assertion below and the exact opposite of
+     * #434's signature.
+     */
+    expect(run.lowestHunger).toEqual([174.5, 173.5, 174.5, 173.5, 173.5, 176.5]);
     const spread = Math.max(...run.lowestHunger) - Math.min(...run.lowestHunger);
-    expect(spread, 'the hunger floors have spread out again, which is what #434 removed').toBeLessThanOrEqual(5);
+    expect(spread, 'the hunger floors have spread out again, which is what #434 removed').toBeLessThanOrEqual(3);
     expect(
       run.lowestHunger[5],
       'the last prisoner in the old ascending-index scan is worst off again, which is the #434 defect returning',
