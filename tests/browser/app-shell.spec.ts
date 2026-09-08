@@ -1910,6 +1910,31 @@ async function wallRectanglesFromTheKeyboard(
    * At fourteen presses per segment that is the difference between ~1 s and
    * ~2.1 s a wall, and this loop runs it ten to thirty times.
    *
+   * **THOSE TWO FIGURES ARE PROPERTIES OF THE HOST THEY WERE TAKEN ON, AND
+   * THIS FILE DOES NOT SAY WHICH -- ON A HOST WITHOUT A GPU THEY ARE OUT BY
+   * TWO TO FOUR TIMES.** Both readings are kept rather than one overwritten,
+   * because the ratio between them is the useful part. Measured 2026-09-08 on
+   * `origin/main` for issue #1008, instrumented at the two ends of this loop:
+   * ordering the thirty-two segments of the `#331` spec's two cells cost
+   * **138-164 s** across five runs, against the ~67 s the worst case above
+   * predicts. The Playwright trace of one of them -- `retain-on-failure` keeps
+   * one for every red run -- puts **407 `keyboard.press` calls at a mean of
+   * 221 ms and a median of 207 ms**, or 90.1 s of a 180 s test in that one
+   * call, beside 113 `page.evaluate` at 129 ms.
+   *
+   * That container has four cores and no GPU: Chromium rasterises WebGL
+   * through SwiftShader, and its GPU process takes ~280% CPU while a single
+   * test runs. So a press costs what the renderer it queues behind costs,
+   * which is a property of the machine rather than of this loop -- and a
+   * pointer press there costs ~870 ms against this route's 221 ms, so the
+   * choice of the keyboard above is still the cheaper one and is not what to
+   * reopen. What the slowdown does reach is the budget: on such a host this
+   * helper spends the whole of `test.slow()`'s allowance before the crew is
+   * asked to build anything, and the poll at the end of it then reports a crew
+   * that is in fact laying a segment every 0.75 s -- x4's nominal rate exactly,
+   * measured off the HUD's own day progress at 81.5 ticks per second.
+   * `docs/AGENT_WORKFLOW.md` carries the pass and the options.
+   *
    * So each *kind* of hop is discovered once, with the walk, and repeated
    * blindly after that -- then checked. The check is not decoration: if the
    * count no longer lands on the control, the walk runs again and re-learns
