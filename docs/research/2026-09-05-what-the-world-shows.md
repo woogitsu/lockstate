@@ -546,7 +546,11 @@ The same 6×6 brick enclosure, built four times in four fresh prisons and
 designated **Cell** (category `housing`), **Kitchen** (`food`), **Solitary
 Cell** (`security`) and **Classroom** (`education`) — the four widest-apart
 hues in `ZONING_TINT_BY_CATEGORY` (`src/rendering/world/appearance.ts:84`):
-`0x4f7fd0`, `0xd0854f`, `0xd05a4f`, `0x9a4fd0`. No objects, no people, so the
+`0x4f7fd0`, `0xd0854f`, `0xd05a4f`, `0x9a4fd0`. (**That table no longer
+exists** — `ZONING_TINT_BY_ROOM_ID`, `src/rendering/world/appearance.ts:118`,
+replaced it at `6ae68237` on 2026-09-06 — so none of the four values above is
+the hue drawn for those rooms today. Marked 2026-09-08; the act itself is
+untouched.) No objects, no people, so the
 floor is all there is to read. Screenshots:
 `2026-09-05-what-the-world-shows/act6-cell.png`, `act6-kitchen.png`,
 `act6-solitary.png`, `act6-classroom.png`, each with an `-x2`.

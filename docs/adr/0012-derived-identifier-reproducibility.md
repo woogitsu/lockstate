@@ -176,7 +176,10 @@ module doc, and `tests/determinism/` gains a pin for it.
   of the shipped payload — which is now **three** payload versions and not two:
   `:981` for V3, `:1011` for V4 and `:1076` for V5. What keeps it harmless
   is therefore not the exception but explicit compensation on the restore side:
-  `JobRegistry.loadSnapshot` clears `pathRequestId` for a `'travelling'` job
+  `JobRegistry.loadSnapshot` — a name that never existed in this repository;
+  the class is and always was `JobBoard`
+  (`src/simulation/operations/job.ts:121`) — clears `pathRequestId` for a
+  `'travelling'` job
   (`src/simulation/operations/job.ts:162`) and `GuardRoster.loadSnapshot` does
   the same for a `'travelling'` guard
   (`src/simulation/security/guard-roster.ts:198`), so no restored session
@@ -196,7 +199,32 @@ module doc, and `tests/determinism/` gains a pin for it.
   [ADR 0015](./0015-actor-identity-allocation.md)'s amendment of 2026-08-27
   found the identical V3/V4-versus-V5 drift in its own citations of these same
   schemas, independently — two ADRs describing one file, both stopped counting
-  at V4.) Whether the taxonomy should now move
+  at V4.
+
+  **Re-read 2026-09-08: the name above did not exist on the day it was written
+  either.** `JobRegistry.loadSnapshot` entered this bullet at `16aa2e2d` —
+  whose own subject is *"Correct twelve ADRs that state something about the
+  codebase that is false"* — and `job.ts` declared `JobBoard` in that same
+  tree. The name is marked rather than overwritten for the reason
+  `docs/AGENT_WORKFLOW.md` §4 gives, and because a correction pass is where it
+  came from.
+
+  **Both greps above were re-run and the load-bearing one still holds.**
+  `restored.pathRequestId = undefined` returns exactly two, `job.ts:284` and
+  `guard-roster.ts:281`. The looser `pathRequestId = undefined` now returns
+  **three** rather than four — `job-system.ts` was deleted with
+  `JobWorkerPool` at `cd41a1d6` (ADR 0093 decision 4), so one of the two live
+  clears it used to find is gone and the remaining one is
+  `guard-roster.ts:194`. The `restored.` prefix is more load-bearing than
+  before, not less.
+
+  **All six anchors in this bullet have drifted again and are deliberately not
+  re-anchored here.** Measured on the same date: both restore-side clears are
+  where the grep above puts them, `job.ts:284` and `guard-roster.ts:281`, not
+  at `:162` and `:198`, and the four `save-schema.ts` anchors have moved with
+  them. Re-anchoring six citations is its own pass with its own numbers; this
+  correction is about the name, and the grep two sentences up is what
+  re-derives the pair meanwhile.) Whether the taxonomy should now move
   these to category 1, and what that obliges, is left open rather than settled
   here; the acceptance above did not take it either.
 - Future gameplay systems get a decision to follow instead of a precedent to
