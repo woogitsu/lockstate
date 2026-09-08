@@ -454,7 +454,42 @@ jobs:
     #    happened to leave behind.
     needs: assets
     runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
-    timeout-minutes: 30
+    # RAISED FROM 30 TO 90 ON 2026-09-08, BY THE OWNER, AND ONLY THIS LINE.
+    #
+    # This job stopped finishing. Measured from the Actions API rather than
+    # from a feeling, on two runs of the same suite eleven hours apart:
+    #
+    #   run 34155439633, `main` @ 59049c07, runner `woogitsu-wsl-DOM-NEW-02`
+    #     step "Run the real-browser suite" 20:22:07 -> 20:35:07 = 13m 00s,
+    #     success, all 420 tests.
+    #   run 34196112204, `1d8094a1`,        runner `woogitsu-linux-06`
+    #     step "Run the real-browser suite" 06:56:45 -> 07:26:29 = 29m 44s,
+    #     CANCELLED, having reached 46 of 420.
+    #
+    # The same slowdown is visible outside this job and outside Chromium, which
+    # is what rules out the suite as its cause: `verify`'s own "Verify project"
+    # step is 17s on `woogitsu-wsl-DOM-NEW-03` and 102s on `woogitsu-linux-01`,
+    # the same `pnpm verify` on the same tree. Control: `assets` ran on the
+    # `linux-*` pool in BOTH runs and took 11s and 14s -- where the pool did not
+    # change, the time did not change.
+    #
+    # So 30 minutes was calibrated against a machine roughly six times faster
+    # than the pool this job now lands on, and at that ratio the 13-minute suite
+    # needs about 78. Ninety is that with room, not a number chosen to make
+    # today's run fit.
+    #
+    # **This does not by itself make the job green, and the owner authorised it
+    # knowing that.** Four specs exhaust `test.slow()`'s own 180s per-test cap
+    # on this pool and fail rather than cancel; issue #1008 carries them and
+    # `5a761322` cut the first (`#331`, 174s -> 132s, by making the work smaller
+    # rather than the budget bigger). What the raise buys is that the job now
+    # *reports* them instead of being killed mid-suite -- see the evidence-upload
+    # comment below, which anticipated exactly this and whose request it
+    # discharges as a side effect.
+    #
+    # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
+    # a job, not a step, not the runner selectors, not `deploy.yml`.
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -782,6 +817,23 @@ jobs:
       # budget, so this covers them; a job that starts timing out at the
       # thirty-minute mark instead needs `if: always()` and a re-read of this
       # comment.
+      #
+      # **THAT LAST SENTENCE CAME TRUE ON 2026-09-08, AND THIS COMMENT IS WHY
+      # THE BUDGET WAS RAISED RATHER THAN THE CONDITION.** The job did start
+      # timing out at the thirty-minute mark, it did upload nothing, and the
+      # cost was concrete: one of the five reds that day --
+      # `a pending delivery is on the panel with the fold shut (#285, #703)`,
+      # dead at 23.6s -- is the one failure NOT explained by a spent budget,
+      # and its message is unrecoverable because this step was skipped. The
+      # timeout is 90 now, so a run that reaches the end *fails* rather than
+      # being cancelled, `failure()` is true, and the evidence uploads: the
+      # request this paragraph made is discharged without touching the
+      # condition. It is not discharged for a job cancelled some other way --
+      # the concurrency group still supersedes runs, and those still upload
+      # nothing. Changing `failure()` to `always()` is a second change to a
+      # file reserved to the owner and was NOT authorised on 2026-09-08; it
+      # stays here as the open question it has been since this comment was
+      # written.
       #
       # The name carries `run_attempt` as well as `run_id` because a re-run of
       # a failed job reuses the run id, and v4 refuses to overwrite an
