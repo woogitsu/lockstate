@@ -125,15 +125,24 @@ describe('the queue row pays what it shows, at every state it can be read in', (
     expect(movedBy, 'nothing at all, and the row said so before the press').toBe(0);
   });
 
-  it('the other zero case: materials landed, still `materials-pending`, nothing on the road to turn around', () => {
+  it('materials landed, still `materials-pending`, nothing on the road: the sell-back arm, and the row knows it', () => {
     /*
-     * The sharp edge `economy-cancel-what-comes-back.test.ts` documents by
-     * name: same state label as the money case above, different payout,
+     * **This case read `.toBe(0)` and was titled "the other zero case" until
+     * the sell-back of #717 landed, and the change of figure is the whole of
+     * what the owner signed on 2026-09-02.** The sharp edge
+     * `economy-cancel-what-comes-back.test.ts` documents by name: same state
+     * label as the money case above, and until the ruling a different payout,
      * because the bricks are already on the shelf and there is no delivery
-     * left for `refundSurplusDeliveries` to cancel. A row that read `state`
-     * alone could not tell this case apart from the first one; this file
-     * reads the row's own figure instead, which already knows the
-     * difference.
+     * left for `refundSurplusDeliveries` to cancel. `refundSurplusStock` is
+     * the arm that answers that press now, at the catalogue price and bounded
+     * by the order's own requirement, so the two adjacent windows finally
+     * answer alike.
+     *
+     * It stays in this file rather than moving to the sell-back's own suite
+     * because what it proves here is not the payout but the **agreement**:
+     * `previewCancelRefundMinorUnits` has to reach the stock arm too, or the
+     * row would name 0 beside a press that pays 80 -- which is exactly what
+     * this assertion caught when the two branches were merged.
      */
     const runtime = session();
     dispatch(runtime, [placeWall('order-a', 3, 3)]);
@@ -142,7 +151,7 @@ describe('the queue row pays what it shows, at every state it can be read in', (
     expect(runtime.procurement.pendingDeliveries, 'nothing left on the road for this item').toHaveLength(0);
 
     const movedBy = expectRowPaysWhatItShows(runtime, 'order-a', 'materials-pending');
-    expect(movedBy, 'nothing -- the row does not promise money that already turned into bricks').toBe(0);
+    expect(movedBy, 'the catalogue value of the two bricks the cancellation leaves surplus').toBe(WALL_COST);
   });
 
   it('the money case at `assigned`: the catalogue value of the material it is holding', () => {

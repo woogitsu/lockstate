@@ -1024,6 +1024,105 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(0);
   });
 
+  it('refunds the money for a materials-pending order whose bricks have already landed', () => {
+    /*
+     * **The window ruling 20's `materials-pending` row reaches and the
+     * implementation did not, until #717.** `ProcurementSystem` runs on every
+     * tick and `ConstructionSystem` on every tenth
+     * (`schedule.intervalTicks: 10`), so a delivery that lands is unloaded
+     * into the container up to ten ticks before the order that demanded it is
+     * offered to `tryAllocate`. For those ten ticks the order is still
+     * `'materials-pending'`, its `materialsAllocated` is still empty, and its
+     * money is neither in the treasury nor in a delivery on the road: it is
+     * two bricks on the shelf.
+     *
+     * `refundSurplusOf` used to answer that press with
+     * `refundSurplusDeliveries` alone, which cancels *deliveries* -- and there
+     * is no delivery left to cancel. So the press gave back **nothing**,
+     * measured: `balance=24920 brick=2`. That is #717's title, verbatim, in the
+     * one window it is still true in, and it is the currency inversion ruling
+     * 20 exists to remove -- cancel a tick earlier and the whole 80 comes back,
+     * cancel ten ticks later (`'assigned'`, the case below) and the whole 80
+     * comes back, and in between the player is handed bricks.
+     */
+    const session = createSession();
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place the wall');
+    session.runUntil(
+      () =>
+        session.runtime.procurement.pendingDeliveries.length === 0 &&
+        session.stateOf('order-wall-1') === 'materials-pending',
+      'wait for the bricks to land while the order is still waiting on them',
+    );
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'on the shelf, and allocated to nothing').toBe(
+      WALL_REQUIREMENT.quantity,
+    );
+    expect(session.runtime.construction.getOrder('order-wall-1')?.materialsAllocated).toEqual([]);
+
+    session.cancel('order-wall-1', 'cancel in the landed-but-unallocated window');
+    expect(session.stateOf('order-wall-1')).toBe('cancelled');
+    expect(session.runtime.treasury.balanceMinorUnits, 'money, and the whole 80 of it').toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+    );
+    expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
+    expect(
+      session.stock(WALL_REQUIREMENT.itemId),
+      'money instead of bricks: the bricks go with the money, exactly as they do at assigned',
+    ).toBe(0);
+
+    session.run(PROCUREMENT_DELIVERY_DELAY_TICKS + 40, 'and nothing buys them back');
+    expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+  });
+
+  it('takes only the cancelled order\'s own bricks out of a stockpile the player bought', () => {
+    /*
+     * **The bound on the case above, and the reason it is the order's own
+     * requirement rather than the whole surplus.** A player who pressed *Buy*
+     * for ten bricks chose to hold them (#687 drew exactly that distinction on
+     * the delivery side, through `isJustInTimePurchaseOrderId`), and a wall
+     * placed against that shelf buys nothing at all -- `unclaimedOf` counts
+     * held stock, so its shortfall is zero. Selling the whole surplus back
+     * would liquidate the stockpile on one cancel press.
+     *
+     * The figure this pins is not invented here: it is the one ruling 20
+     * already gives the *same gesture ten ticks later*. Measured on `main`
+     * before #717 -- buy ten, land them, place a wall, wait for `'assigned'`,
+     * cancel -- the container goes 10 -> 8 and the balance 24,600 -> 24,680.
+     * The case below is that gesture pressed in the earlier window and it must
+     * land on the same two numbers, because "which of two adjacent states you
+     * happened to press in" is not a rule a player could predict.
+     */
+    const session = createSession();
+    const stockpile = 10;
+    session.buy('buy-1', WALL_REQUIREMENT.itemId, stockpile, 'buy ten bricks by hand');
+    session.runUntil(
+      () => session.runtime.procurement.pendingDeliveries.length === 0,
+      'wait for the stockpile to land',
+    );
+    const afterStockpile = session.runtime.treasury.balanceMinorUnits;
+    expect(session.stock(WALL_REQUIREMENT.itemId)).toBe(stockpile);
+
+    session.place('order-wall-1', WALL, 4, 6, 'build-1', 'place a wall against the stockpile');
+    expect(
+      session.runtime.procurement.pendingDeliveries,
+      'it bought nothing: the shelf already covers it',
+    ).toHaveLength(0);
+    session.runUntil(
+      () => session.stateOf('order-wall-1') === 'materials-pending',
+      'wait for it to reach materials-pending with the shelf still full',
+    );
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'still nothing allocated').toBe(stockpile);
+
+    session.cancel('order-wall-1', 'cancel against a full shelf');
+    expect(session.runtime.treasury.balanceMinorUnits, 'one wall\'s worth, not ten bricks\' worth').toBe(
+      afterStockpile + wallCost,
+    );
+    expect(session.creditSpy.mock.calls.map(([amount]) => amount)).toEqual([wallCost]);
+    expect(session.stock(WALL_REQUIREMENT.itemId), 'and the other eight are still the player\'s').toBe(
+      stockpile - WALL_REQUIREMENT.quantity,
+    );
+  });
+
   it('refunds the money for an assigned order and does not put its bricks back on the shelf', () => {
     /*
      * The state where the money is no longer money: the delivery landed, and

@@ -374,6 +374,114 @@ export interface ConstructionProcurementSink {
   refundSurplusDeliveries(itemId: string, demandedQuantity: number): number;
 
   /**
+   * Sells back the `itemId` a cancelled order's demand left sitting on the
+   * shelf, and answers what that credited (issue #717).
+   *
+   * **The other half of `refundSurplusDeliveries`, and the reason it is a
+   * second method rather than a wider one is the currency.** That method
+   * refunds a delivery at its own recorded `paidMinorUnits`, which is what
+   * closes the buy-low-cancel-high trade; this one sells stock, which carries
+   * no such record -- the goods are fungible with everything else the
+   * container holds -- so it can only be valued at the catalogue price, the
+   * same figure `refundAllocatedMaterials` uses and for the same reason. Two
+   * prices means two methods, and the caller runs them in that order so that
+   * a recorded price is always preferred to a catalogue one.
+   *
+   * **The window it exists for.** `ProcurementSystem` is scheduled every tick
+   * and `ConstructionSystem` every tenth, so a just-in-time delivery is
+   * unloaded into the container up to ten ticks before the order that demanded
+   * it is offered to `tryAllocate`. In that window the order is still
+   * `'materials-pending'`, holds no allocation, and has no delivery in flight:
+   * its money is neither in the treasury, nor on the road, nor in the order.
+   * Ruling 20's `'materials-pending'` row promises money there, and without
+   * this the press gave back nothing at all and left the bricks -- #717's
+   * *"returns bricks, never money"*, in the one window that sentence was still
+   * true in.
+   *
+   * ## The two bounds, and why both are needed
+   *
+   * `demandedQuantity` is what the *rest* of the queue still wants, read after
+   * the cancellation, exactly as `refundSurplusDeliveries` reads it: nothing a
+   * remaining order still needs may be sold, or the next scheduled pass buys
+   * it straight back.
+   *
+   * `limit` is the **cancelled order's own requirement** for this item, and it
+   * is what keeps a cancel press from liquidating a stockpile the player chose
+   * to hold. A wall placed against ten hand-bought bricks buys nothing at all
+   * -- `procureForPendingOrders` counts held stock as supply -- so its
+   * cancellation must give back one wall's worth and leave the other eight
+   * where they are. It is the same figure ruling 20 hands the *same gesture
+   * ten ticks later*, when the order has reached `'assigned'` and
+   * `refundAllocatedMaterials` prices the allocation it is holding; the two
+   * adjacent states have to answer alike, because "which window you pressed
+   * in" is not a rule a player could have predicted.
+   *
+   * ## THIS TAKES A QUESTION ADR 0076 NAMED AND DID NOT TAKE
+   *
+   * **The heading read "Unsigned, and it must not merge before the owner
+   * rules" until 2026-09-02, and it is marked rather than deleted because the
+   * refusal is the record of the escalation working: an agent built the
+   * remedy, recognised it could not land it, and said so.** The owner ruled on
+   * that date and the ruling is recorded in ADR 0076's own amendment.
+   * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)'s
+   * amendment of 2026-08-31 enumerates the three places an order's money can
+   * be, and its case 3 is exactly this window: *"In stock in the container.
+   * The goods arrived, the order had not yet allocated them […] A player who
+   * cancels in this window keeps the material and does not get the money, and
+   * that is a real asymmetry rather than an oversight."* The same amendment
+   * then names the remedy and declines it: *"**Not decided either: whether
+   * surplus stock can be sold back.** Case 3 above […] closes only if a prison
+   * can sell material back to the catalogue. That is a new economic surface
+   * and a price question (ADR 0017 decision 5 reserves prices with the rest of
+   * #29), so it is named and not taken."*
+   *
+   * **The owner took it on 2026-09-02, and took the broad reading with this
+   * measurement in front of them.** They were offered three readings -- a
+   * narrow sell-back bounded by what *this order's demand* actually bought, the
+   * broad one bounded by the cancelled order's own requirement, and leaving the
+   * asymmetry standing -- and chose the broad one knowing it is a general
+   * material-to-money channel. So the paragraph below is not a warning about
+   * something nobody weighed; it is the priced consequence of a signed
+   * decision, and ADR 0076 records the same thing at the decision's own level.
+   *
+   * This method takes it. What it does **not** take is the price question --
+   * it invents no magnitude and uses the catalogue figure
+   * `refundAllocatedMaterials` already uses, and ADR 0081's own principle is
+   * that *"a rule is not a magnitude"*. What it **does** take is the economic
+   * surface, and the cost is measured rather than argued:
+   * `tests/integration/economy-cancel-into-the-overdraft.test.ts`'s last case
+   * plays *place a wall against a shelf you already hold, then cancel it* and
+   * gets **80 minor units for two bricks, per gesture, with no clock wait and
+   * no crew** -- repeatable until the shelf is empty. So this is not only the
+   * window #717 measured; it is a general material-to-money channel, and it
+   * dissolves [ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)'s
+   * locked position for any prison holding bricks.
+   *
+   * **The narrow version is not available without a save-format decision.**
+   * Selling back only what *this order's own demand* caused to be bought needs
+   * per-order purchase provenance, and nothing records it:
+   * `procureForPendingOrders` buys the deficit, so an order placed against a
+   * full container costs nothing at all. That would be a persisted field, and
+   * ADR 0076's amendment states *"No save format moves"* as a property of
+   * ruling 20.
+   *
+   * ## What it will not do
+   *
+   * It never touches reserved stock -- `Container.availableOf` nets
+   * reservations off, so material a carry job has claimed is not surplus -- and
+   * a line the catalogue cannot price is left on the shelf rather than
+   * destroyed, which is `refundAllocatedMaterials`' rule for the same case. The
+   * unpriced line is answered **before** anything is withdrawn, so nothing is
+   * ever put back: a `Container.deposit` outside `src/simulation/operations/`
+   * is an exception `docs/OPERATIONS.md`'s no-teleport rule has to name, and
+   * this port does not need one.
+   *
+   * It must not throw, for the reason every other method on this port must
+   * not: it is reached from a command dispatch and from `undo()`.
+   */
+  refundSurplusStock(itemId: string, demandedQuantity: number, limit: number): number;
+
+  /**
    * What `refundSurplusDeliveries` would pay, for the same `itemId` and
    * `demandedQuantity`, without cancelling anything.
    *
@@ -409,6 +517,42 @@ export interface ConstructionProcurementSink {
    * not: a projection request must not fault a `hud/build-queue` read.
    */
   previewSurplusRefundMinorUnits(itemId: string, demandedQuantity: number): number;
+
+  /**
+   * What `refundSurplusStock` would pay, for the same three arguments, without
+   * selling anything.
+   *
+   * ## Why the delivery preview is not enough on its own
+   *
+   * `cancelOrder` runs the two refund arms in order -- deliveries first, stock
+   * second -- and the second one reads what the first one left behind: a
+   * cancelled delivery is no longer in flight, so `heldOrInFlightOf` shrinks
+   * and the surplus the stock arm is allowed to sell shrinks with it. A
+   * preview that priced the stock arm against the *pre-cancellation* supply
+   * would over-promise by exactly the quantity the delivery arm is about to
+   * take off the road, which is the one case where the Build panel's row would
+   * name a number the press does not pay.
+   *
+   * So an implementation must run the delivery selection first, over its own
+   * copy, and price the stock against what that leaves -- the same sequence
+   * `ConstructionSystem.refundSurplusOf` performs for real, shared with
+   * `previewSurplusRefundMinorUnits` rather than restated beside it.
+   *
+   * ## What it is bounded by
+   *
+   * The same three bounds `refundSurplusStock` clamps to and for the same
+   * reasons: the surplus left after the delivery arm, `limit` -- the cancelled
+   * order's own requirement -- and the stock actually available on the shelf
+   * with reservations netted off.
+   *
+   * `0` for a `limit` that is not a positive safe integer, for an item the
+   * catalogue cannot price, and whenever the clamp lands at or below zero:
+   * every case `refundSurplusStock` itself answers `0` for.
+   *
+   * It must not throw, for the reason every other method on this port must
+   * not: a projection request must not fault a `hud/build-queue` read.
+   */
+  previewSurplusStockRefundMinorUnits(itemId: string, demandedQuantity: number, limit: number): number;
 
   /**
    * What `refundAllocatedMaterials` would credit for `allocations`, without
