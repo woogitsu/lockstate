@@ -85,6 +85,15 @@ corrections to that entry's figures, including that the runner is
 install directory, the API shows the name) and that the slowdown is about **4x**
 rather than the 6 quoted from three hand-picked samples.
 
+**AND THE ONE FAILURE THAT PARAGRAPH KEPT IS WRONG TOO, BOTH HALVES OF IT.**
+`#331` is **intermittent** rather than a standing red: the second finished
+`browser` run (34251663361), on the same unmodified base commit, reported
+**`423 passed (39.5m)`** with `#331` among them -- red on `woogitsu-linux-02`,
+green on `woogitsu-linux-03`. And `app-shell.spec.ts:6119` is where the clock
+stopped, not where the time went: the retained trace prices that call at
+**0.12 s** and puts **69%** of the 180 s in the keyboard wall-ordering loop
+much earlier. Finishing a job once settles its failure list once.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

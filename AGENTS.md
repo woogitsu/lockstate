@@ -325,6 +325,34 @@ outward-facing or unrevertable, which is the whole reason:
       also why several provisioning scripts can no longer repair a host they
       previously could.
 
+   **A SIXTH CORRECTION, 2026-09-08 17:35Z, AND IT IS TO THE ONE FAILURE THIS
+   ENTRY KEPT.** Both halves of *"the one failure is `#331`, at
+   `app-shell.spec.ts:6119` on `page.setViewportSize`"* are wrong, in different
+   ways, and both were found before this entry merged.
+
+   1. **`#331` is intermittent on this pool, not a standing red.** Run
+      34251663361's `browser` job -- the second ever allowed to finish, on the
+      *unmodified* base commit `97058984`, `#331`'s own code identical to the
+      run above -- came back **`423 passed (39.5m)`**. Two finished runs, one
+      red on `woogitsu-linux-02` (41m20s) and one green on `woogitsu-linux-03`
+      (39m31s). So *"still over the cap"* holds for one host on one run and not
+      for the pool, and **"a finished run is not a sample of a pool" is the
+      same lesson as this entry's own, one level up**: it was written as though
+      finishing the job had settled the failure list, when finishing it once
+      settles it once.
+   2. **`:6119` is where the clock stopped, not where the time went.** The
+      failing run's retained trace, laid out step by step (PR #1093):
+      `page.setViewportSize` at that line **started at 179.8 s and took
+      0.12 s**, and the click after it also completed. 124.4 s of the 180 --
+      **69%** -- went to the keyboard wall-ordering loop far earlier in the
+      test. Playwright attributes a test timeout to whatever call is in flight
+      when the budget runs out, and every reading of that coordinate as a
+      location of *cost*, this entry's included, was reading a timestamp as a
+      diagnosis.
+
+   Neither correction touches the 90-minute budget, which is measured against a
+   whole-suite 41.3 and 39.5 minutes and is right on both.
+
 
    **What was declined by not being asked.** Routing `browser` back to the
    faster pool is not available from this file: every job's `labels` in the API

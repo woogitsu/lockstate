@@ -515,6 +515,16 @@ jobs:
     # unaffected: 41.3 minutes measured on this pool, against a 90-minute cap.
     # Issue #1089 carries the audit.
     #
+    # **AND "ONLY `#331`, STILL" IS WRONG TWICE.** Run 34251663361, the second
+    # `browser` job allowed to finish, ran the same suite on the same
+    # unmodified base commit and reported **423 passed (39.5m)** -- `#331`
+    # among them. It is **intermittent on this pool**, red on
+    # `woogitsu-linux-02` and green on `woogitsu-linux-03`. And `:6119` on
+    # `page.setViewportSize` is where the clock stopped, not where the time
+    # went: the retained trace prices that call at 0.12 s and puts 69% of the
+    # 180 s in the keyboard wall-ordering loop (PR #1093). Neither moves this
+    # budget, which is measured whole-suite at 41.3 and 39.5 minutes.
+    #
     # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
     # a job, not a step, not the runner selectors, not `deploy.yml`.
     timeout-minutes: 90
