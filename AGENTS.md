@@ -353,6 +353,46 @@ outward-facing or unrevertable, which is the whole reason:
    Neither correction touches the 90-minute budget, which is measured against a
    whole-suite 41.3 and 39.5 minutes and is right on both.
 
+   **A SEVENTH, AND IT CORRECTS THE SIXTH'S FRAMING RATHER THAN ITS FACTS —
+   THEN CLOSES THE ENTRY, BECAUSE #1093 MERGED AND SETTLED IT.** Both sentences
+   above are true and the pair of runs it names invites a reading that is not:
+   that the host is the variable. It is not.
+
+   Two more `browser` jobs finished, and the pass/fail split stopped tracking
+   the host on the first of them: run 34251254994 went **green on
+   `woogitsu-linux-02`**, the host of both reds. Nor does it track machine load
+   — that run was the **fastest whole suite of the four** (35.6m) and is also
+   the one where `#331` came closest to the cap. So the durations of the test
+   itself were read out of each log, against neighbours that share the file and
+   the helper. `#331`'s code is byte-identical across all four:
+
+   | run | host | suite | **`#331`** | `#411` zones | `#411` back | handback | `#703` | |
+   | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+   | 34215508642 | linux-02 | 41.3m | **>3.0m** | 2.4m | 2.6m | 2.7m | 2.2m | RED |
+   | 34251663361 | linux-03 | 39.5m | **2.1m** | 1.5m | 2.2m | 2.5m | 2.3m | green |
+   | 34252025170 | linux-02 | 42.0m | **>3.0m** | 1.9m | 2.1m | 2.6m | 2.0m | RED |
+   | 34251254994 | linux-02 | 35.6m | **3.0m** | 1.7m | 2.2m | 2.2m | 1.9m | green |
+
+   **The variance is the test's own, not the machine's.** Between the two green
+   runs `#331` moved 2.1m → 3.0m, **+43%**, while no neighbour moved more than
+   15% and `Slow test file: app-shell.spec.ts` moved 21.3m → 20.7m, under 3%.
+   And the right statement is sharper than "intermittent": `#331` recorded
+   **at or over its 3.0-minute cap on three of the four**, so the one
+   comfortable pass is the outlier and a green on it certified nothing.
+
+   **Settled by the fix, on the fifth finished run.** `#1093` cut the keyboard
+   wall-ordering loop — `withTabKey` holding Shift across a run of hops, and an
+   `orderAt` viewport for the one caller whose subject is not the keyboard
+   route — and merged as `8a35167b`. Its own `browser` job (run 34257095253,
+   `423 passed`, 35.6m): **`#331` 1.5m**, against 3.0m and worse before.
+   Neighbours 1.7 / 1.8 / 2.1 / 1.8m and the file 21.3m → **18.6m**, because
+   `withTabKey` reaches every focus walk in it. The margin against the cap is
+   90 s where it was seconds or nothing.
+
+   That also settles `#1093`'s own stated weakest claim — that a 375x812 order
+   loop exploits a software rasteriser CI's pool might not have, and so might
+   buy less there. It bought the same factor on the pool as in the container.
+
 
    **What was declined by not being asked.** Routing `browser` back to the
    faster pool is not available from this file: every job's `labels` in the API

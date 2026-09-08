@@ -94,6 +94,16 @@ stopped, not where the time went: the retained trace prices that call at
 **0.12 s** and puts **69%** of the 180 s in the keyboard wall-ordering loop
 much earlier. Finishing a job once settles its failure list once.
 
+**AND THE HOST READING THAT PARAGRAPH INVITES IS WRONG TOO — `AGENTS.md`
+CARRIES THE SEVENTH CORRECTION AND THE CLOSE.** A fourth run went green on
+`woogitsu-linux-02`, the host of both reds, so the host is not the variable;
+the fastest suite of the four (35.6m) is the one where `#331` came closest to
+the cap, so load is not either. Read out of the logs, `#331` sat **at or over
+its 3.0-minute cap on three of the four runs** while its neighbours held
+1.5-2.7m and the file moved under 3% — the variance was the test's own.
+**#1093 fixed it** (merged `8a35167b`): `#331` **1.5m** on the next finished
+run, `app-shell.spec.ts` 21.3m → 18.6m.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

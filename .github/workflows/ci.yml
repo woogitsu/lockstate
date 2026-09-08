@@ -525,6 +525,15 @@ jobs:
     # 180 s in the keyboard wall-ordering loop (PR #1093). Neither moves this
     # budget, which is measured whole-suite at 41.3 and 39.5 minutes.
     #
+    # **AND THE HOST IS NOT THE VARIABLE EITHER -- CLOSED BY #1093.** A fourth
+    # run went green on `woogitsu-linux-02`, the host of both reds, and the
+    # fastest suite of the four (35.6m) is the one that came closest to the
+    # cap. Per-test, `#331` sat at or over its 3.0-minute cap on three of the
+    # four while its neighbours held 1.5-2.7m: the variance was the test's
+    # own. #1093 cut it and merged as `8a35167b` -- `#331` **1.5m** on the
+    # next finished run, `app-shell.spec.ts` 21.3m -> 18.6m, suite 35.6m.
+    # This budget is unaffected and stays at 90.
+    #
     # Nothing else in this file moved: not `verify`'s 30, not `assets`'s 20, not
     # a job, not a step, not the runner selectors, not `deploy.yml`.
     timeout-minutes: 90
