@@ -70,6 +70,32 @@
 
 ## Status
 
+**Accepted by the owner on 2026-09-08 — all seven decisions.** Put to them as
+three clickable options after the ruling on reading A had been recorded, they
+chose the one labelled:
+
+> Przyjmij wszystkie siedem decyzji
+
+("Accept all seven decisions.")
+
+**Given against a summary, not against these 1,700 lines, and that is
+disclosed rather than glossed.** The option they read carried three things: that
+Decision 2 was already theirs and decisions 1 and 3 to 7 were the document's and
+unaccepted; that the open questions could stay open, *"ADR 0102 was accepted
+exactly that way, with the toilet question added"*; and that accepting unblocks
+implementation — the gang registry, the grudge ledger, `gang-retaliation`. It
+also said in as many words that this *"requires you to take decisions 1 and 3–7
+on trust or read them"*. They took it.
+
+**What the acceptance does not do.** It answers none of the seven questions
+still open below, authorises no player-visible sentence (the branch that would
+have needed one is the branch they declined on reading A), and moves no other
+document's status.
+
+**The `Proposed` record below is kept exactly as it stood**, per
+`docs/AGENT_WORKFLOW.md` §4 and the precedent ADR 0098 and ADR 0101 set: the
+acceptance is recorded above it rather than by overwriting it.
+
 **Proposed. Not self-approved.** Nothing in this document is accepted, and the
 agent that wrote it does not accept it. `AGENTS.md` reserves acceptance to the
 owner and `docs/AGENT_WORKFLOW.md` §3 repeats it (*"never self-approve one"*).
@@ -162,15 +188,28 @@ reading. Decision 2 presents the closest implementable reading and names the
 gap rather than quietly redefining the owner's words; Open Question 1 is the
 fork the owner has to close.
 
-**What this draft does NOT do.** It authors no production code, seeds no gang,
+**What this document does NOT do** *(it said "this draft", and it is not one any more)*. It authors no production code, seeds no gang,
 adds no locale key, and changes no player-visible string. `AGENTS.md`'s fourth
 reservation covers the *promise*, not the wording, and the sentence at issue
 here already exists; this document's business with it is to say what would make
 it true, not to rewrite it.
 
-**Whether this document should be numbered and moved out of the `drafts` subdirectory
-is answered under "Promotion, decided rather than deferred" below, and the
-answer measured on this pass is not yet.**
+**SPENT, AND THE SENTENCE IS KEPT BECAUSE IT WAS THE LAST LIVE ONE STILL
+SAYING OTHERWISE.** It read:
+
+> **Whether this document should be numbered and moved out of the `drafts`
+> subdirectory is answered under "Promotion, decided rather than deferred"
+> below, and the answer measured on this pass is not yet.**
+
+The answer is no longer "not yet": the owner closed Open Question 1 the same
+day, this document is **0103**, and it sits in `docs/adr/` with its row in the
+index. **It was missed on the promotion pass** — the Promotion section below is
+marked as kept-unedited and needed nothing, but this restatement of it was
+outside every kept blockquote and went on making a live claim that the
+document's own opening contradicts. Found by the pass that re-derived
+`STATUS-QUEUE.md`, and recorded here rather than quietly deleted, because a
+document that carries its own history has to carry the places where the history
+was applied unevenly.
 
 ## Claim tiers used below
 
