@@ -2821,9 +2821,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       /*
        * The world's `Escape`, with no gesture left for it to take (#959).
        *
-       * **The same three lines `setVisible(false)` runs below, and the same
-       * guard**, because "the tool is put down" has one meaning on this panel
-       * and a second copy of it is how #689 came to be shipped twice. What
+       * **The same five lines `setVisible(false)` runs below, and the same
+       * guard**, because "the tool is put down" has one meaning on this panel,
+       * and a transition written twice is how #689 came to be shipped twice. What
        * differs is only what else goes: leaving the tab also drops the queue
        * and the deliveries, because nothing refreshes them from another tab.
        * The player is still looking at this panel, so those stay.
