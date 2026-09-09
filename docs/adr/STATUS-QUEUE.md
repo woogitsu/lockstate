@@ -1613,6 +1613,48 @@ the third window since the release to author copy**, after #917's eight and the
 previous window's two, and neither filed a §2 row and neither owes one, for the
 reason the count paragraph above gives.
 
+> **BOTH COORDINATES IN THIS PARAGRAPH AND ONE OF ITS TWO QUOTATIONS WERE FALSE
+> AT `e5fbe9d9`, AND THIS IS THE ONE PLACE IN THIS FILE WHERE THAT COSTS THE
+> OWNER SOMETHING DIRECTLY.** `AGENTS.md`'s partial release of reservation 4
+> says every string authored under it is recorded *"so the harmonising pass is
+> one reading rather than an excavation"*, and this paragraph is that record.
+> **A record whose coordinate does not resolve is the excavation.**
+>
+> - **`src/content/default-locale-en.ts:1917` never held
+>   `hud.security.coverage-met-hint`, at either end of this window.** It is a
+>   HUD-badge comment at `3399b1f9` and a severance comment at `e5fbe9d9`. The
+>   key is at **`:2145`** and **`:2175`**, found by
+>   `grep -n "'hud.security.coverage-met-hint'"` at both anchors.
+> - **And its quoted sentence is no longer the one that ships.** The value at
+>   both ends is *"Incidents and searches need free guards."*, not *"Only free
+>   guards answer incidents."* `git log -S` puts the change before this window
+>   opened — `377f17f6` (#941, *"the covered coverage rung stops asserting the
+>   prison is done hiring"*) and `f466d022` (#989), and
+>   `git merge-base --is-ancestor f466d022 3399b1f9` returns true. **So the
+>   record was true about #955 and stopped being true about the game, and no
+>   delta pass in this chain could report it**, because the falsifying commits
+>   are older than every window since.
+> - **`:2273` for `hud.rooms.needs-doorway` is wrong too, and so is every other
+>   coordinate this file gives for a string authored under reservation 4.** Not
+>   flagged — measured, because one wrong number in a paragraph is a reason to
+>   open its neighbour rather than to trust it. `:2273` is a comment at both
+>   ends; the key is at **`:2543`** and **`:2573`**, its quoted value *"a door —
+>   nobody can get in"* unchanged. The pair in the other findability paragraph
+>   below fails the same way: `:1026` resolves to **`:1104`**/**`:1134`** and
+>   `:1100` to **`:1190`**/**`:1220`**. **Four coordinates, four wrong, one of
+>   the four quoting a sentence the game no longer shows** — so the failure is
+>   the record's format rather than one careless number, and the count is the
+>   argument for fixing the format.
+>
+> **The sentence above is kept exactly as written** — it is a true statement
+> about what #955 and #980 authored, and rewriting it would destroy the record
+> reservation 4 asks for. What it needed was a successor, which is this block.
+> **The general form, which is worth more than the two fixes:** a findability
+> record ages in two independent ways — the coordinate drifts, and the string
+> itself gets edited by a later change that has no reason to look here — and
+> only the second one makes the record actively misleading to the person it was
+> written for.
+
 **THE TWO LIVE "re-verified at" CLAIMS WERE RE-RUN AND RE-DATED, NOT CONVERTED TO
 PAST TENSE — and for the first time one of them came back changed.** §3's pair
 of absences in `supabase/migrations/` is the finding above, re-dated to this
@@ -1900,7 +1942,24 @@ stays spent."* (`src/content/default-locale-en.ts:1026`) — and #951 added
 `hud.alert.event.objects.removed-spend-destroyed` — *"The object was removed —
 the money it cost does not come back."* (`:1100`). Each is backed by a new
 `SIMULATION_EVENT_TYPES` member whose docblock argues why the sentence is true
-of the code that raises it, which is the *verify-then-write* half of that
+of the code that raises it — **and the first of the two coordinates is wrong at
+both ends of this window, in the same way and for a different reason than the
+`:1917` case above**: `src/content/default-locale-en.ts:1026` is a doc-comment
+about `Redo` reversing a whole transaction at `3399b1f9` and at `e5fbe9d9`
+alike, while `hud.alert.event.construction.undone-spend-destroyed` sits at
+**`:1104`** and **`:1134`** (`grep -n` on the key at both anchors). Unlike
+`:1917`, **the quoted sentence itself is still exactly what ships**, so this one
+is a bad coordinate over a true record rather than a record that has stopped
+being true — which is the milder of the two failures and is worth telling apart
+from it. `git log -S` on this file's citation text puts `:1026` as written once,
+at `de88526a` (the v0.0.465 anchor), and never re-derived since; `git blame`
+puts the key at `:1104`/`:1105` from `889ff5f9`/#927 onward, so **it appears
+never to have sat at `:1026` at all.** Its neighbour `:1100` for
+`hud.alert.event.objects.removed-spend-destroyed` is wrong the same way — the
+key is at **`:1190`** and **`:1220`**, its quoted sentence unchanged — which
+makes **four of four** such coordinates in this file wrong and is why the block
+above treats the format rather than the numbers. The old numbers are kept above
+rather than overwritten. That is the *verify-then-write* half of that
 release rather than the choose-the-words half. **This is the second window since
 the release to author copy**, after #917's eight, and neither filed a §2 row and
 neither owes one, for the reason the count paragraph above gives.
@@ -8636,7 +8695,21 @@ settled, items 2 and 3 as still owed.
    count does. `src/ui/simulation-prisoner-detail.ts:192` and
    `src/ui/hud/regime-panel.ts:738` were both re-opened at this anchor and both
    hold, on files this window did not touch, and the grep's own figures still
-   read **seventeen** hits in **six** files. **Dated rather than merely reported**, per that document's rule that a
+   read **seventeen** hits in **six** files.
+
+   > **RE-OPENED AT `e5fbe9d9`: THE COORDINATE MOVED AND THE CLAUSE ABOUT
+   > UNTOUCHED FILES IS FALSE — AND THE QUOTATION THIS ENTRY ADDED IS WHY
+   > NEITHER MATTERED.** `src/ui/simulation-prisoner-detail.ts` **is** a member
+   > of this window: one hunk, `@@ -63,0 +64,11 @@` read at `-U0`, +11, the file's
+   > own ADR 0103 self-correction note, documentation rather than behaviour. So `'hud/prisoner-detail'`'s request moves `:192` →
+   > **`:203`** (`grep -n "'hud/prisoner-detail'"` at both anchors, 192 and 203;
+   > the +11 agrees and is reported after the search). The sentence above is
+   > kept: *"on files this window did not touch"* was true of `3399b1f9`'s
+   > window and is not of this one. **The durable half this entry added two
+   > anchors ago needed no edit at all** — the verbatim
+   > `const prisonerDetailReader = …` line is bound by
+   > `adr-quotation-verbatim-contract` and is unchanged — which is the second
+   > time in this pass that a quotation outlived the number beside it. **Dated rather than merely reported**, per that document's rule that a
    pass establish *when* a claim went false: the sentence was written at
    `6261cc89` (the v0.0.417 anchor, #883, 2026-09-03 12:58 UTC), and
    `git grep -c prisoner-detail 6261cc89 -- src/ui src/main.ts` returns nothing
@@ -8658,9 +8731,31 @@ settled, items 2 and 3 as still owed.
 
    **The entry's price is unchanged by the correction, and item 3 below still
    asks the owner exactly what it asked.** Verified rather than assumed:
-   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1910`) carries the
+   `HudPrisonerDetailViewModel` (`src/ui/hud/view-model.ts:1954`) carries the
    entity id, the name, the standing label, the classification group, the risk
    tier and all six needs — and **no current action**, deliberately.
+
+   **A FIFTH MOVE AT `e5fbe9d9`, AND THE FIRST ONE THAT CORRECTS THE AIM RATHER
+   THAN THE OFFSET — WHICH IS WHY THE NEW NUMBER IS NOT THE ONE THE DELTA
+   PREDICTS.** `#1106`'s `staffUnassigned` field adds thirty lines to
+   `src/ui/hud/view-model.ts` at old `:156`, above everything this entry cites,
+   so the pure offset takes `:1910` to **`:1940`** and that number was derived
+   and then rejected. **`:1940` is not the declaration and neither was `:1910`.**
+   Read at both ends, `:1910` at `3399b1f9` and `:1940` at `e5fbe9d9` are the
+   same doc-comment line — *"`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`
+   multiplies), so a prisoner"* — twelve lines above
+   `export interface HudPrisonerDetailViewModel {`, which sits at `:1922` and
+   `:1954`. **So four of the five corrections in this entry's history moved a
+   number that was pointing into the docblock rather than at the subject**, and
+   each one preserved the miss by construction, because an offset applied to a
+   wrong coordinate returns a wrong coordinate. Corrected to `:1954`, the
+   declaration itself, found by
+   `grep -n 'export interface HudPrisonerDetailViewModel'` at both ends rather
+   than by adding thirty to anything. **The old numbers are kept above** and the
+   quotation added two anchors ago is still what makes the number checkable —
+   what this reading adds is that a quotation also makes a *misaimed* number
+   visible, which is a second thing it buys that the anchor adding it did not
+   claim.
 
    **AND THAT NUMBER MOVED AGAIN IN ONE WINDOW: `:1840` at `829d3c11`, `:1849`
    here.** The previous anchor corrected it from `:1806` to `:1840` and wrote,
@@ -14348,7 +14443,10 @@ one direction.
   **And decision 4, the single change it asks of existing code, is not there.**
   It reads *"**`tryOpenRetaliation` gains one guard: skip the pair unless both**"*
   members lists are non-empty
-  (`docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md:1069`).
+  (`docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md:1134`, `:1069` at
+  `3399b1f9` — the ADR gained a 46-line `IMPLEMENTED 2026-09-09` block above
+  it in this window; found by
+  `grep -n 'gains one guard'`, not by offsetting the hunk).
   `src/simulation/incidents/trigger-system.ts:525-532` has exactly one guard,
   `:529`'s `if (risk < this.retaliationThreshold) continue;`, and then `:531`
   builds `participants` from both `membersOf` calls straight into
@@ -14369,6 +14467,58 @@ one direction.
   `trigger-system.ts:525-532` is unchanged. That is an argument that 0103
   differs from both 0098 and 0101 in exactly the way §2 exists to catch, and it
   is put to the owner rather than answered.
+
+  > **CLOSED AT `e5fbe9d9`: EVERY ABSENCE THIS ENTRY NAMED IS GONE, AND THE
+  > ENTRY IS KEPT ABOVE RATHER THAN DELETED BECAUSE IT IS THE ONLY RECORD OF
+  > WHAT THE GAP WAS.** `338b053b`, inside `ee0292de`/#1108 and inside this
+  > window, implements ADR 0103. Each of the three absences was re-run rather
+  > than inherited:
+  >
+  > - **"No producer of any kind"** — false now. `gangs.register(...)` at
+  >   `src/simulation/incidents/default-gangs.ts:81`,
+  >   `gangs.addGrudge(...)` at `:186`, and `gangs.addMember(gangId, entityId)`
+  >   at `src/simulation/runtime/new-session.ts:651`. Found by grepping every
+  >   `.ts` under `src/` at both anchors for `.addMember(`, `.addGrudge(` and
+  >   `.register(`: at `3399b1f9` the only hits on the registry are `:123` and
+  >   `:124` of `gangs.ts`, both inside `loadSnapshot`, exactly as this entry
+  >   says; at `e5fbe9d9` there are three more and none of them is a restore
+  >   path.
+  > - **`new-session.ts:543` and "nothing populates it"** — the coordinate
+  >   moves to **`:546`** (`grep -n 'new GangRegistry();'`, 543 → 546) and the
+  >   clause is false: the same file now writes to that registry.
+  > - **Decision 4's missing guard** — present. The ADR asked that
+  >   *"`tryOpenRetaliation` gains one guard: skip the pair unless both"*
+  >   members lists are non-empty, and
+  >   `src/simulation/incidents/trigger-system.ts:563` is
+  >   `if (offendedMembers.length === 0 || offendingMembers.length === 0) continue;`,
+  >   **both sides**, which is what the ADR asked for rather than one of them.
+  >   The cited span widens with the implementation, `:525-532` → **`:537-566`**.
+  >
+  > **The player-facing half this entry escalated is answered in the code that
+  > landed it, not by this file.** This entry declined to price the missing
+  > guard because *"the ADR names a prison-wide lockdown, a severity-≥6 danger
+  > alert and a player-facing sentence, against an empty participant list —
+  > which is `AGENTS.md`'s fourth reservation"*. The guard's own comment states
+  > the same three consequences and the same reservation, and names the
+  > mechanism this entry did not have: `releasePrisoner` drops a departing
+  > prisoner's membership, so **a gang can be emptied between the tick a grudge
+  > is recorded and the tick it is acted on**. That is the reservation reached
+  > from inside the mechanism rather than escalated out of it.
+  >
+  > **And the §2 question above is moot rather than answered.** It asked
+  > whether 0103 differs from 0098 and 0101 because *"the decision and its
+  > implementation are not readable together on any tree"*. They are readable
+  > together at `e5fbe9d9`, so the condition the question rested on is gone and
+  > **nothing is put to the owner by this bullet any more.** The two premises
+  > it named are both now false and are marked rather than rewritten:
+  > `3b6f1b86` is inside this window and `trigger-system.ts:525-532` did not
+  > stay unchanged.
+  >
+  > **What is NOT closed, and stays the owner's.** ADR 0103's open question 5 —
+  > whether gang membership assigned at intake is reachable in real play at all,
+  > since nothing asks a player to admit prisoners with `priorIncidents >= 2` —
+  > is untouched by this and is not decided here. It is recorded on #979 with
+  > what would settle it.
 - **NEW at the previous anchor — nine ADRs are `Proposed` on `main` and not one
   of them has a §2 row.** At `54418b6` the directory held no `Proposed` document at all;
   at `bb3a01e` it holds **0042, 0043, 0046, 0047, 0048, 0049, 0050, 0051 and
@@ -15171,6 +15321,26 @@ one direction.
   `e1813b7` made them `:545`/`:539` and `004f799` made them `:558`/`:552`, and
   every anchor from `e1813b7` to `a54899a` carried the `82ae630` pair forward.
   Traced out of each anchor tree rather than asserted.
+
+  **SEVENTH ANCHOR, SEVENTH PAIR — `:604` AND `:598` AT `e5fbe9d9`, AND THE
+  FIRST PAIR IN THREE TAKEN WITH THE FILE INSIDE THE WINDOW.**
+  `src/simulation/prisoners/intake-system.ts` **is** a member of this window's
+  79 files: three hunks read at `-U0` — `@@ -38,0 +39,21 @@`,
+  `@@ -256,0 +278,10 @@` and `@@ -517,0 +549,15 @@` — +46 net, every one of
+  them above the cited pair (the lowest starts at old `:517`, thirty-five lines
+  before `:552`), so
+  `findBestAvailable(` moves `:558` → **`:604`** and its #79 comment `:552` →
+  **`:598`**. Both found by `grep -n 'findBestAvailable('` and `grep -n` on the
+  comment at each anchor rather than by adding forty-six to anything; the
+  arithmetic agrees, and it is reported after the search and not instead of it.
+  **The claim survives the move**: `findBestAvailable` is still handed a
+  `rateCellSharing` closure and is still the only allocator
+  (`grep -c 'findBestAvailable'` over `src/simulation/prisoners/` returns the
+  same count at both ends). **And the sentence below this one is now false and
+  is kept rather than corrected in place**, because it is the previous pass's
+  own justification and not this one's: this file was outside that window and is
+  inside this one, which is what changed.
+
   `src/simulation/prisoners/intake-system.ts` is not in this window's 104 files,
   so no delta could have raised it here either — the third instance of that
   class in this section at this anchor, after `transferables.ts` and
