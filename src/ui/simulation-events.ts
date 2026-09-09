@@ -134,6 +134,19 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  *   from `loadSnapshot` -- so no session a player can start opens one today.
  *   The grade is what the code would do if one did, and it is here so that
  *   seeding gangs is not also a copy decision.
+ *
+ *   **THE PARAGRAPH ABOVE IS KEPT WORD FOR WORD AND ITS MIDDLE CLAUSE IS NOW
+ *   FALSE** (`docs/AGENT_WORKFLOW.md` §4, and it is cited verbatim from here
+ *   by ADR 0103's Context 7, which is the other reason not to rewrite it).
+ *   [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+ *   seeds two gangs at session creation, assigns `high-risk` arrivals to one
+ *   at intake, and writes a grudge when a cross-gang assault is adjudicated --
+ *   so a session a player can start *does* open one, and this row is the first
+ *   sentence in this table whose grade was set before anything could reach it
+ *   and is now reached. **The grade itself is unchanged and needs no
+ *   re-argument**: the line above it prices a severity-6 floor and a
+ *   sector-wide lockdown, and ADR 0103 Context 5 re-derived exactly that from
+ *   the constants. What has changed is that it is no longer hypothetical.
  * - **`incidents.assault-opened` is `'warning'`**, the same band as unpaid
  *   wages and for a compatible reason: two prisoners, contained by two or
  *   three guards, and by `ASSAULT_SEVERITY_CEILING` it can never reach the

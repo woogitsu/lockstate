@@ -87,6 +87,52 @@ implementation — the gang registry, the grudge ledger, `gang-retaliation`. It
 also said in as many words that this *"requires you to take decisions 1 and 3–7
 on trust or read them"*. They took it.
 
+**IMPLEMENTED 2026-09-09, AND WHAT WAS LEFT UNBUILT IS NAMED HERE RATHER THAN
+IN A PULL REQUEST NOBODY WILL FIND AGAIN.** All seven decisions are in `src/`:
+two gangs seeded onto the watched sector at session creation and re-applied
+after a restore (decision 1), the grudge producer on the adjudication seam with
+the port widened to carry the record (decision 2), the amplifier untouched
+(decision 3), the guard against a retaliation nobody is in (decision 4),
+nothing added to the four this decision does not touch (decision 5), membership
+assigned at intake (decision 6), and no text, asset or layout taken from
+anywhere (decision 7).
+
+**Three of the eight open questions bear directly on code that was written, and
+none of them was answered.** Where a decision could not be implemented without
+picking one, the decision's own words were followed and the question is named
+at the site:
+
+- **Open question 2 (which prisoner is the offender).** Decision 2.1 states the
+  direction flat — the offending gang is the instigator's — and that is what is
+  written, in `src/simulation/incidents/default-gangs.ts`. The other two
+  answers, both directions at half weight and writing nothing until issue #80's
+  real adjudication exists, are untaken.
+- **Open question 5 (when membership is assigned).** Decision 6 says intake and
+  intake is where it is. The consequence is measured rather than predicted: in
+  the prison this document names as Fixture A, whose arrivals are admitted at
+  `priorIncidents: 0`, **nobody is ever assigned** — entities 2 and 7 are tier
+  1 at intake, are raised to tier 2 by `ClassificationEarlyWarningSystem` after
+  the first assault, and first reach tier 3 at the review on tick **47,999**.
+  The second write site that would catch them is what this question asks about,
+  so it was not added.
+- **Open question 6 (the weight).** Decision 2.5's recommended `0.2` is the
+  constant, named `CROSS_GANG_ASSAULT_GRUDGE_WEIGHT` so a balance pass moves
+  one number.
+
+**The measurement this document demanded was run and one of its predictions was
+wrong.** Context 15's arithmetic says a lapsed assault plus *"the next review"*
+reaches tier 3; the review system's cadence is `intervalTicks` and
+`phaseTicks` of `CLASSIFICATION_REVIEW_INTERVAL_TICKS`, so the first review a
+prisoner classified at tick 1,010 is eligible for lands at **47,999**, not at
+25,010. The arithmetic was right about the score and out by roughly one whole
+review period about the tick.
+
+**And decision 4's sweep is three fixtures rather than the two this document
+names.** Besides the two in `tests/unit/incident-trigger.test.ts`, the shared
+`tests/helpers/determinism-scenario.ts` registers `gang-a` and `gang-b` with no
+members and a grudge of 0.8, and had been opening a memberless retaliation that
+five determinism and projection tests then asserted against.
+
 **What the acceptance does not do.** It answers none of the seven questions
 still open below, authorises no player-visible sentence (the branch that would
 have needed one is the branch they declined on reading A), and moves no other
@@ -402,11 +448,21 @@ incident and the lapse without the lockdown.
 
 ### 6. A gang retaliation can open today with an empty participant list, and that is what would make the sentence false — VERIFIED, read
 
-Participants are the union of both gangs' members:
-`const participants = [...this.gangs.membersOf(offended), ...this.gangs.membersOf(offending)].sort((a, b) => a - b);`
-(verbatim in `src/simulation/incidents/trigger-system.ts`), at `:531`.
+Participants are the union of both gangs' members. **This section read the
+line as it stood before decision 4 was implemented, and the old text is kept
+rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4) — it is the code this
+finding was made against, and a reader has to be able to see the defect as it
+was:
+
+> `const participants = [...this.gangs.membersOf(offended), ...this.gangs.membersOf(offending)].sort((a, b) => a - b);`
+> at `src/simulation/incidents/trigger-system.ts:531`
+
+What stands there now is the same union off two locals the guard has just
+read: `const participants = [...offendedMembers, ...offendingMembers].sort((a, b) => a - b);`
+(verbatim in `src/simulation/incidents/trigger-system.ts`).
 `IncidentLog.open` (`src/simulation/incidents/incident.ts:239`) validates
-nothing about that list's length.
+nothing about that list's length, which is unchanged and is why the guard is in
+the trigger rather than in the log.
 
 This is not hypothetical. An existing unit test registers two gangs with **no
 members at all**, adds a grudge, and asserts an incident opens
@@ -614,12 +670,21 @@ What it takes as input:
 `if (incident.type !== 'assault' || incident.instigatorId === undefined) return;`
 (verbatim in `src/simulation/incidents/response-system.ts`), at `:328`.
 
-What it leaves behind:
-`this.onAssaultAdjudicated(incident.instigatorId, tick);` (verbatim in
-`src/simulation/incidents/response-system.ts`), at `:329`, against a port
-declared
-`private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},`
-(verbatim in `src/simulation/incidents/response-system.ts`), at `:218`. In a
+What it leaves behind. **Both lines below are the ones this finding was made
+against and both were changed by implementing decision 2**, so they are quoted
+here as history rather than as live citations (`docs/AGENT_WORKFLOW.md` §4) —
+point 3 immediately below is what forced the change:
+
+> `this.onAssaultAdjudicated(incident.instigatorId, tick);`
+> at `src/simulation/incidents/response-system.ts:329`, against a port declared
+> `private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},`
+> at `:218`
+
+The port now carries the record —
+`private readonly onAssaultAdjudicated: (incident: IncidentRecord, tick: number) => void = () => {},`
+(verbatim in `src/simulation/incidents/response-system.ts`) — and the
+narrowing above it is untouched, so a consumer may still rely on the incident
+being an `'assault'` that carries an `instigatorId`. In a
 real session that port is
 `prisoners.imposeSolitarySanction(entityId, tick)`
 (`src/simulation/runtime/new-session.ts:1430-1432`), carried out by
