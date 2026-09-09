@@ -122,26 +122,39 @@ import { statusCountsSchema } from '../../src/simulation/protocol/types';
  * ## Proof the gate bites (`docs/AGENT_WORKFLOW.md` §3: a test proves nothing
  * until it has been watched failing)
  *
- * Measured by hand against this tree, in this order, before this file was
- * added to a commit:
+ * Measured by hand against this tree, in this order, after this file was
+ * committed alongside the wiring it checks:
  *
- * 1. With `staffUnassigned` still absent from `HudCountsViewModel`,
- *    `src/ui/simulation-counts.ts` and `src/ui/hud/status-strip.ts` (the
- *    three production sites this change adds it to), running this file's
- *    "every published count has a reader" case failed with exactly one name:
- *    `staffUnassigned has no mention anywhere in src/ui/ or src/main.ts`.
- *    Every other one of the twenty-three fields `statusCountsSchema` declares
- *    passed already, with no change to this file and no exemption entered for
- *    any of them.
- * 2. Restoring the three production edits turned that one failure green with
- *    no other change, and the suite returned to twenty-three read, zero
- *    unread.
+ * 1. `staffUnassigned` was removed from `HudCountsViewModel`,
+ *    `src/ui/simulation-counts.ts` and `src/ui/hud/status-strip.ts` -- the
+ *    three production sites the wiring commit touches -- with this file left
+ *    untouched. `vitest run tests/foundation/unconsumed-status-count-contract.test.ts`
+ *    then reported `2 failed | 3 passed (5)`: the two counting cases red, the
+ *    schema scan and both controls still green. The failure names exactly one
+ *    field --
+ *
+ *    ```
+ *    AssertionError: this field crosses the worker boundary on
+ *    simulation/status-counts and has no mention anywhere in src/ui/ or
+ *    src/main.ts [...]
+ *    - []
+ *    + [ "staffUnassigned" ]
+ *    ```
+ *
+ *    -- and the count case alongside it read `expected 22 to be 23`: every
+ *    other field `statusCountsSchema` declares still passed, unaided, with no
+ *    exemption entered for any of them.
+ * 2. `git checkout -- src/ui/hud/status-strip.ts src/ui/hud/view-model.ts
+ *    src/ui/simulation-counts.ts` restored the three files verbatim (`git
+ *    status --short` and `git diff --stat HEAD` both empty afterward). The
+ *    same run then reported `5 passed (5)` again, with no edit to this file
+ *    at any point in the sequence.
  *
  * That is the shape #870 asked for directly: *"prove it by control ... delete
  * the wiring you just added and watch the gate go red, then restore it."*
  * The wiring was deleted, the gate went red on the one field that was
- * actually missing and nothing else, and restoring the wiring is what turned
- * it green again -- not a change to this file.
+ * actually missing and nothing else, and restoring the wiring -- not a change
+ * to this file -- is what turned it green again.
  *
  * ## What it does not claim
  *
