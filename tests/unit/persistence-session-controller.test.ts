@@ -60,7 +60,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
 
     expectOk(await controller.saveNow(), 'the save');
 
-    controller.closeSession();
+    await controller.closeSession();
     expect(controller.getActiveSession()).toBeUndefined();
 
     const outcome = await controller.loadPrison('prison-1');
@@ -78,7 +78,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     expect(runtime.construction.getOrder('wall-1')).toBeDefined();
 
     await controller.saveNow();
-    controller.closeSession();
+    await controller.closeSession();
     await controller.loadPrison('prison-1');
 
     expect(host.getRuntime()!.construction.getOrder('wall-1')).toBeDefined();
@@ -88,7 +88,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     const { controller } = buildController();
     await controller.createPrison('prison-1');
     await controller.saveNow();
-    controller.closeSession();
+    await controller.closeSession();
 
     // `expectOk` narrows, so the `if (!outcome.ok) return;` that used to sit
     // here is gone rather than kept: it existed only to satisfy the compiler.
@@ -145,6 +145,38 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     await controller.deletePrison('prison-1');
     expect(controller.getActiveSession()).toBeUndefined();
     expect(await controller.listPrisons()).toEqual([]);
+  });
+
+  /**
+   * Issue #582 RED-001. The assertion above -- the one this file has always
+   * carried -- checks `getActiveSession()`, which is a field on the controller,
+   * and that is exactly why the defect survived it: **clearing the controller's
+   * own bookkeeping is not stopping the thing that is running.** The runtime
+   * host keeps its simulation alive after the save it belongs to has been
+   * deleted, so a worker goes on ticking against a prison that no longer
+   * exists on disk, until the next New or Load happens to stop it.
+   *
+   * `SessionRuntimeHost.stop()` is documented "safe to call when nothing is
+   * running", so this needs no guard for the not-running case.
+   */
+  it('stops the runtime host on delete, not merely its own record of the session', async () => {
+    const { controller, host } = buildController();
+    await controller.createPrison('prison-1');
+    expect(host.getRuntime(), 'the fixture must actually be running something for this to mean anything').toBeDefined();
+
+    await controller.deletePrison('prison-1');
+
+    expect(host.getRuntime(), 'the simulation must not outlive the save it belongs to').toBeUndefined();
+  });
+
+  it('stops the runtime host when a session is closed without being deleted', async () => {
+    const { controller, host } = buildController();
+    await controller.createPrison('prison-1');
+    expect(host.getRuntime()).toBeDefined();
+
+    await controller.closeSession();
+
+    expect(host.getRuntime()).toBeUndefined();
   });
 });
 
@@ -252,7 +284,7 @@ describe('SessionController: autosave coalescing and non-overlap', () => {
     saveResults.length = 0;
 
     controller.markDirty();
-    controller.closeSession();
+    await controller.closeSession();
 
     await vi.advanceTimersByTimeAsync(5_000);
     expect(saveResults).toHaveLength(0);

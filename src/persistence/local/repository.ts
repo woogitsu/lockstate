@@ -253,10 +253,29 @@ async function writeSlot(tx: LocalSaveTransaction, metadata: PrisonSlotMetadata)
   await tx.putMetadata(encodePrisonSlotMetadata(metadata));
 }
 
-let generationSequence = 0;
+/**
+ * A generation id no other realm can mint (#582 FINAL-022).
+ *
+ * **This read `gen-<Date.now() base36>-<module counter base36>` until
+ * 2026-09-09, and the counter was the defect.** Module state is per JavaScript
+ * realm, so every tab and every worker starts it at zero: two of them saving in
+ * the same millisecond minted the *same* id for different bytes. A generation
+ * id is the key the payload is stored under **and** the entry in
+ * `generationIds`, so a collision is one generation quietly overwriting
+ * another's bytes while both stay listed -- a corrupted save that reads as a
+ * healthy one.
+ *
+ * `crypto.randomUUID()` is this repository's stated convention for ids minted
+ * on the main thread (`src/ui/save-panel.ts`), and it needs no coordination
+ * between realms, which is the whole property a counter cannot have.
+ *
+ * **The one property `generation-policy.ts` reasons about is preserved and is
+ * pinned by a test**: a UUID emits only hex and `-`, so `!` remains a character
+ * this function cannot produce, and quarantine therefore still means "was
+ * quarantined" rather than "happened to be named that way".
+ */
 function defaultGenerationId(): string {
-  generationSequence += 1;
-  return `gen-${Date.now().toString(36)}-${generationSequence.toString(36)}`;
+  return `gen-${crypto.randomUUID()}`;
 }
 
 /**

@@ -788,6 +788,16 @@ export class SessionController {
    * the bug one step further along. It also does not stop the runtime host on
    * a successful deletion -- issue #582's other half, which is a change to
    * what `closeSession` means and is left to it rather than smuggled in here.
+   *
+   * **THAT LAST SENTENCE IS NOW HISTORY AND IS KEPT BECAUSE IT NAMES THE
+   * DEFECT.** `closeSession` stops the host as of #582 RED-001, so a deletion
+   * that reaches it tears the simulation down too. The paragraph above was
+   * right that this is a change to what `closeSession` means; what it did not
+   * say is what the gap cost in the meantime -- a worker went on ticking
+   * against a prison with no rows on disk until the next New or Load happened
+   * to stop it, and the test that was supposed to cover deletion asserted
+   * `getActiveSession()`, which is the controller's own bookkeeping and not
+   * the thing that was still running.
    */
   public async deletePrison(prisonId: string): Promise<void> {
     // Captured before the store call and compared by identity after it. `?.`
@@ -813,7 +823,7 @@ export class SessionController {
       if (!committed && suspended.declined) this.autosave.markDirty(prisonId);
     }
 
-    if (session !== undefined && this.session === session) this.closeSession();
+    if (session !== undefined && this.session === session) await this.closeSession();
   }
 
   public async exportActive(): Promise<SaveEnvelope | undefined> {
@@ -838,12 +848,38 @@ export class SessionController {
     return this.repository.importSave(prisonId, raw);
   }
 
-  public closeSession(): void {
+  /**
+   * Ends the active session: stops autosaving it, stops the simulation running
+   * it, and forgets it.
+   *
+   * **The host stop is issue #582's RED-001 and it is why this returns a
+   * promise.** Before it, this method cleared the controller's own record and
+   * left `SessionRuntimeHost` running, so the simulation outlived the save --
+   * on a delete, a worker kept ticking against a prison with no rows on disk
+   * until the next `beginSession` happened to stop it. Clearing bookkeeping is
+   * not stopping what is running, and the deletion test that passed throughout
+   * asserted only the bookkeeping.
+   *
+   * **Ordering is deliberate**: autosave first, so no timer can schedule a
+   * capture against a host that is being torn down; then the host; then the
+   * record. `SessionRuntimeHost.stop()` documents itself "safe to call when
+   * nothing is running", so this needs no guard for the idle case and stays
+   * safe to call twice.
+   *
+   * **What this deliberately does not do is wait for an in-flight save.**
+   * `AutosaveScheduler.dispose()` cancels pending timers and does not await a
+   * capture already past its `state = 'saving'` line -- issue #582's FINAL-004,
+   * which is not fixed here because awaiting it would not fix it: the stale
+   * capture has already read pre-teardown state, so what that needs is a token
+   * checked at write time rather than a longer wait here.
+   */
+  public async closeSession(): Promise<void> {
     this.autosave.dispose();
+    await this.host.stop();
     this.session = undefined;
   }
 
-  public dispose(): void {
-    this.closeSession();
+  public async dispose(): Promise<void> {
+    await this.closeSession();
   }
 }

@@ -52,9 +52,19 @@ export interface GenerationRetentionResult {
  * that rewrites the window, so the id in `generationIds` and the key the bytes
  * are stored under never disagree.
  *
- * `!` is not a character `defaultGenerationId` can emit (`gen-<base36>-<base36>`),
- * and `writeGeneration` refuses an injected id that carries the mark, so a
- * generation is quarantined only by having been quarantined.
+ * `!` is not a character `defaultGenerationId` can emit (`gen-<uuid>`, hex and
+ * `-` only), and `writeGeneration` refuses an injected id that carries the
+ * mark, so a generation is quarantined only by having been quarantined.
+ *
+ * **That parenthetical read `gen-<base36>-<base36>` until 2026-09-09 and is
+ * corrected rather than dropped**, because the reasoning above depends on the
+ * emitted alphabet and a reader needs to see which alphabet it was checked
+ * against. #582 FINAL-022 replaced the base36 clock-plus-counter with
+ * `crypto.randomUUID()` -- a module-local counter restarts at zero in every
+ * realm, so two tabs could mint the same id -- and the invariant survived the
+ * change because hex and `-` still exclude `!`.
+ * `tests/unit/persistence-local-repository.test.ts` pins it rather than
+ * leaving it to this comment.
  *
  * ## This module imports nothing, and two `src/ui/**` modules depend on that
  *
