@@ -113,6 +113,7 @@ describe('a migration step that throws is a verdict, and the recovery walk survi
     await store.runTransaction('readwrite', async (tx) => {
       await tx.putGeneration(PRISON_ID, 'gen-2', JSON.parse(JSON.stringify(v1InProgressFixture)) as unknown);
     });
+    const faultedBytes = JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2')));
 
     const result = await repo.loadCurrent(PRISON_ID);
 
@@ -125,9 +126,30 @@ describe('a migration step that throws is a verdict, and the recovery walk survi
     expect(result.envelope.payload.kernel.tick).toBe(100);
     expect(result.envelope.payload.world.ownedChunks).toEqual([{ x: 1, y: 2 }]);
 
-    // And the pointer is healed, so the throwing generation is not re-walked.
+    // **And the generation whose migration threw is still on disk.**
+    //
+    // This assertion read `{ currentGenerationId: 'gen-1', generationIds:
+    // ['gen-1'] }`, under the comment *"And the pointer is healed, so the
+    // throwing generation is not re-walked"*, and it is written out here
+    // rather than quietly swapped because what it pinned was a defect. The
+    // walk deleted every generation it passed over, whatever the decode code
+    // said -- so a step of *ours* throwing cost the player the save it threw
+    // on, which is #431's rule ("our defect reaches no verdict about this
+    // save") broken one boundary below the layer that honours it. See
+    // `DecodeRefusalVerdict` in `src/persistence/local/repository.ts` for the
+    // four outcomes that replaced the one.
+    //
+    // The subject of this file is unchanged and is proved by the four
+    // assertions above: the throw is a verdict rather than an exception, and
+    // the walk survives it and reaches the older good generation. What the
+    // walk may no longer do on the way is destroy the input.
+    //
+    // Re-walking it on the next load is the price, and it is a decode attempt
+    // rather than a worker start -- the same bounded, once-per-load cost ADR
+    // 0065 accepted for a quarantined generation.
     const [metadata] = await repo.list();
-    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-2', generationIds: ['gen-1', 'gen-2'] });
+    expect(JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2')))).toBe(faultedBytes);
   });
 
   it('refuses an import whose migration throws, with a code, rather than throwing at the player', async () => {

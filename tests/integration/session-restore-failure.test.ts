@@ -16,6 +16,33 @@ import v1InProgressFixture from '../fixtures/persistence/save-v1-in-progress.jso
 import { expectOk } from '../helpers/expect-ok';
 
 /**
+ * A migration step that throws, on demand rather than for the whole file.
+ *
+ * `save-migration-fault-recovery.test.ts` faults the V1 -> V2 transform for
+ * every test it contains, which is right there and wrong here: this file's
+ * other cases migrate the same V1 fixture on purpose and must keep doing so.
+ * So the leaf is wrapped rather than replaced -- it delegates to the real
+ * function unless a test has armed the fault -- and every gate before the
+ * throw (`decodeSaveEnvelope`, `MigrationChain`, `PrisonSaveRepository` and
+ * the store) stays the real thing.
+ *
+ * The thrown value is the one that was actually measured escaping this path.
+ * What is being guarded is the class: any step, present or future, that throws
+ * for any reason is our own code failing, not a verdict about the save.
+ */
+const migrationFault = vi.hoisted(() => ({ armed: false }));
+vi.mock('../../src/persistence/save-migrations', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/persistence/save-migrations')>();
+  return {
+    ...actual,
+    migrateSaveEnvelopeV1ToV2: (input: Parameters<typeof actual.migrateSaveEnvelopeV1ToV2>[0]) => {
+      if (migrationFault.armed) throw new RangeError('Array buffer allocation failed');
+      return actual.migrateSaveEnvelopeV1ToV2(input);
+    },
+  };
+});
+
+/**
  * Issue #103, proven where the two halves meet: a real
  * `SimulationWorkerStateMachine` behind a real `WorkerSessionHost`, driving a
  * real `SessionController` over a real `PrisonSaveRepository`.
@@ -1032,5 +1059,216 @@ describe('a save only another build can read is kept, not deleted', () => {
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-3'))).toBeUndefined();
     const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
     expect(kept).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
+  });
+});
+
+/**
+ * The same rule one boundary lower: a **decode** refusal is not consent to
+ * delete either, and which refusal it was decides what happens.
+ *
+ * ADR 0065 decided this for the restore layer and
+ * `SessionController.loadPrison` has honoured it since #432 -- an
+ * `unsupported-by-this-build` refusal is quarantined, a `damaged-payload` one
+ * is deleted, a `restore-code-fault` costs the generation nothing. The walk
+ * inside `PrisonSaveRepository.loadCurrent` reached none of that. It named
+ * every generation it passed over `confirmedInvalid` and handed the lot to
+ * `recoverToGeneration`, which deletes -- so a save written by a *newer* build
+ * and refused `unsupported-version`, the one decode code whose meaning is
+ * "a reader exists, because it wrote these bytes", was destroyed the moment an
+ * older readable generation was found. `PrisonSaveRepository.exportSave` calls
+ * `loadCurrent`, so exporting a save could erase one.
+ *
+ * These cases are the decode-to-recovery boundary, in the file ADR 0065 names
+ * as the model for a mixed walk over refusals. They are deliberately about
+ * three *different* outcomes rather than one, because a fix that collapsed
+ * every refusal into "keep" would be the same defect pointed the other way: a
+ * window that fills with copies nothing can read.
+ */
+describe('a decode refusal is not consent to delete, and which refusal it was decides what happens', () => {
+  /** The id `PrisonSaveRepository.quarantineGeneration` gives `gen-2`. */
+  const QUARANTINED_GEN_2 = '!unreadable!gen-2';
+
+  /**
+   * A save written by a build one schema version ahead of this one.
+   *
+   * Its checksum is computed over its own payload, so the *only* thing this
+   * build can hold against it is the version -- `decodeSaveEnvelope` refuses it
+   * `unsupported-version` and never reaches the checksum at all. That matters:
+   * a fixture that happened to be corrupt as well would pass these tests for
+   * the wrong reason.
+   *
+   * It is planted at the storage layer because there is no way in through the
+   * repository: `save` and `importSave` both decode first and would refuse it,
+   * which is the whole reason a save like this can only arrive from another
+   * build writing into the same IndexedDB.
+   */
+  function futureVersionEnvelope(revision: number): unknown {
+    const payload = restorableEnvelope(revision).payload;
+    return {
+      saveSchemaVersion: SAVE_SCHEMA_VERSION + 1,
+      gameVersion: 'test-version',
+      prisonId: PRISON_ID,
+      revision,
+      createdAt: 1,
+      updatedAt: revision,
+      checksum: computeSaveChecksum(payload as never),
+      payload: JSON.parse(JSON.stringify(payload)) as unknown,
+    };
+  }
+
+  /**
+   * A prison holding one of the player's own readable saves and, above it, a
+   * generation written by the newer build -- plus the bytes as they stood on
+   * disk before anything read them, so the byte-identity claim is made against
+   * what was actually stored rather than against anything a test rebuilt.
+   */
+  async function prisonWithASaveFromANewerBuild(): Promise<{
+    readonly controller: SessionController;
+    readonly repository: PrisonSaveRepository;
+    readonly store: MemoryLocalSaveStore;
+    readonly bytesBefore: string;
+  }> {
+    const { controller, repository, store } = await buildFixture();
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(1)), 'the restorable generation 1');
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(2)), 'the generation 2 slot');
+    await store.runTransaction('readwrite', async (tx) => {
+      await tx.putGeneration(PRISON_ID, 'gen-2', futureVersionEnvelope(2));
+    });
+    const bytesBefore = JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2')));
+    return { controller, repository, store, bytesBefore };
+  }
+
+  it('preserves an unsupported generation when an older generation restores', async () => {
+    const { controller, repository, store, bytesBefore } = await prisonWithASaveFromANewerBuild();
+
+    const result = await repository.loadCurrent(PRISON_ID);
+
+    // The recovered snapshot is the older one, identified by its own bytes:
+    // `restorableEnvelope` splits the chunk's 1,024 tiles at `revision`, so
+    // generation 1's terrain is the pair below and generation 2's is not.
+    expectOk(result, "prison-1's load past a save from a newer build");
+    expect(result.generationId).toBe('gen-1');
+    expect(result.outcome).toBe('recovered-previous');
+    expect(result.envelope.revision).toBe(1);
+    expect(result.envelope.payload.world.chunks[0]?.terrain).toEqual([[1, 1_023], [1, 1]]);
+
+    // The newer bytes still exist -- under the id quarantine gives them, which
+    // is where the "kept" verdict is recorded, and byte for byte what was on
+    // disk before the read. The record was moved to a new key, not re-encoded.
+    const [metadata] = await repository.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', QUARANTINED_GEN_2]);
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'))).toBeUndefined();
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
+    expect(JSON.stringify(kept)).toBe(bytesBefore);
+    expect(kept).toMatchObject({ saveSchemaVersion: SAVE_SCHEMA_VERSION + 1, revision: 2 });
+
+    // And the session layer gets a working prison out of the same window, on
+    // the real worker, with the unreadable copy still there afterwards -- so a
+    // second load is idempotent rather than a second chance to delete it.
+    vi.useFakeTimers();
+    try {
+      expect(await controller.loadPrison(PRISON_ID)).toMatchObject({ ok: true, recovered: true });
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2)))).toBe(
+      bytesBefore,
+    );
+
+    // Retention stays bounded: the quarantined copy is outside `keep`, so the
+    // player keeps their full three readable saves and the generation that
+    // rotates out is the one that would have rotated out anyway.
+    for (const revision of [3, 4, 5]) {
+      expectOk(await repository.save(PRISON_ID, restorableEnvelope(revision)), `the restorable generation ${String(revision)}`);
+    }
+    const [afterSaves] = await repository.list();
+    expect(afterSaves?.generationIds).toEqual([QUARANTINED_GEN_2, 'gen-3', 'gen-4', 'gen-5']);
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-1'))).toBeUndefined();
+    expect(JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2)))).toBe(
+      bytesBefore,
+    );
+  });
+
+  /**
+   * Two verdicts in one walk, because the decision here is *which* refusal
+   * earns what, and a case that shows one arm shows a branch rather than a
+   * choice -- the same reason the restore layer's pair is exercised as one
+   * load above.
+   *
+   * The migration throw is our own code failing. `docs/PERSISTENCE.md` says as
+   * much of its sibling code in the same taxonomy --
+   * `migration-produced-invalid-output` is *"a bug in the migration, not the
+   * input"* -- and #431 already ruled that a fault of ours reaches no verdict
+   * about the save. The checksum mismatch is the opposite: the envelope parses
+   * and migrates cleanly and its checksum does not match its payload, which is
+   * corruption this build has proved rather than inferred.
+   */
+  it('does not retire a generation after a migration code fault', async () => {
+    const { repository, store } = await buildFixture();
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(1)), 'the restorable generation 1');
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(2)), 'the generation 2 slot');
+    expectOk(await repository.save(PRISON_ID, restorableEnvelope(3)), 'the generation 3 slot');
+
+    // gen-2: a legitimate older save this build migrates -- until the fault is
+    // armed below, at which point the V1 -> V2 step throws instead.
+    // gen-3: intact shape, wrong checksum. Damaged after it was written, and
+    // no build reads it.
+    const damaged = { ...restorableEnvelope(3), checksum: '0000000000000000' };
+    await store.runTransaction('readwrite', async (tx) => {
+      await tx.putGeneration(PRISON_ID, 'gen-2', JSON.parse(JSON.stringify(v1InProgressFixture)) as unknown);
+      await tx.putGeneration(PRISON_ID, 'gen-3', damaged);
+    });
+    const faultedBytes = JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2')));
+
+    migrationFault.armed = true;
+    let result;
+    try {
+      result = await repository.loadCurrent(PRISON_ID);
+    } finally {
+      migrationFault.armed = false;
+    }
+
+    expectOk(result, "prison-1's load past a migration that threw");
+    expect(result.generationId).toBe('gen-1');
+    expect(result.envelope.payload.world.chunks[0]?.terrain).toEqual([[1, 1_023], [1, 1]]);
+
+    // The generation this build could not judge is untouched: still retained,
+    // still holding the bytes it held before the walk read it.
+    const [metadata] = await repository.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', 'gen-2']);
+    expect(JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2')))).toBe(faultedBytes);
+
+    // And proven corruption is still retired, out of the same walk. Without
+    // this the fix would have collapsed every refusal into one state, and a
+    // window that keeps everything fills with copies nothing can read.
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-3'))).toBeUndefined();
+
+    // Disarmed, the same save migrates and the same walk reaches it -- so the
+    // generation kept above is one a build really can read, not merely one
+    // that was spared.
+    const afterTheFault = await repository.loadCurrent(PRISON_ID);
+    expectOk(afterTheFault, "prison-1's load once the migration no longer throws");
+    expect(afterTheFault.generationId).toBe('gen-2');
+    expect(afterTheFault.envelope.revision).toBe(v1InProgressFixture.revision);
+  });
+
+  it('export does not erase an unsupported generation', async () => {
+    const { repository, store, bytesBefore } = await prisonWithASaveFromANewerBuild();
+
+    const exported = await repository.exportSave(PRISON_ID);
+
+    // Export hands back the newest save this build can read, which is the
+    // player's own generation 1 and not the one above it.
+    expect(exported?.revision).toBe(1);
+    expect(exported?.payload.world.chunks[0]?.terrain).toEqual([[1, 1_023], [1, 1]]);
+
+    // And exporting a save has not destroyed one. `exportSave` is a read that
+    // runs `loadCurrent`'s housekeeping, so before this fix the act of taking a
+    // backup deleted the copy only another build could open.
+    const [metadata] = await repository.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', QUARANTINED_GEN_2]);
+    expect(JSON.stringify(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2)))).toBe(
+      bytesBefore,
+    );
   });
 });
