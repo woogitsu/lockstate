@@ -2401,42 +2401,6 @@ describe('checkout credential persistence contract', () => {
 });
 
 /**
- * The `browser` job keeps the evidence of its own failures.
- *
- * ## The defect
- *
- * `tests/browser/` is the layer that keeps finding defects nothing else can
- * (docs/TESTING.md), and its CI job failed twice on this branch with a
- * 60-second page-load timeout inside a setup helper. Neither failure was
- * diagnosable, because the one artefact that would have discriminated between
- * the candidate causes -- the `error-context.md` Playwright writes beside a
- * failure, an ARIA snapshot of the page at the moment it gave up -- was
- * written into the runner's workspace and then deleted, unread, by the next
- * run's `git clean -ffdx`. Measured rather than assumed at the time:
- * `git grep -n "upload-artifact" -- .github/` matched nothing anywhere in the
- * repository, no step in any job carried `if: failure()`, and the GitHub API
- * reported `total_count: 0` artifacts for the failing run.
- *
- * ## Why this is a contract and not just the step
- *
- * The step alone is one commit away from being deleted as noise by someone
- * reading a workflow whose runs are all green -- which is exactly the state
- * this repository was in for the whole life of the `browser` job. What the
- * assertions below hold is not "an upload step exists" but that the *names*
- * on it are still the names of the things that produce the evidence: the
- * `tee` target in the suite step, and Playwright's `outputDir`. Renaming
- * either one without following it here is the realistic way this quietly
- * starts uploading nothing, and it fails in the commit that does it.
- *
- * ## What it deliberately does not check
- *
- * That the upload succeeds, that the runner can reach the artifact service,
- * or that anybody reads what it stores. Nothing here can answer those. It
- * also does not pin `retention-days` or `if-no-files-found`: both are policy
- * a later reader may legitimately retune, and neither decides whether the
- * evidence survives the job.
- */
-/**
  * The steps of one top-level job of one workflow, by line range rather than by
  * re-parsing the job structure: `parseWorkflowSteps` above already reads every
  * step of every job, and a second structural parser would be a second thing to
@@ -2476,6 +2440,42 @@ function jobSteps(workflow: string, contents: string, job: string): readonly Wor
   return parseWorkflowSteps(workflow, contents).filter((step) => step.line > start + 1 && step.line <= end);
 }
 
+/**
+ * The `browser` job keeps the evidence of its own failures.
+ *
+ * ## The defect
+ *
+ * `tests/browser/` is the layer that keeps finding defects nothing else can
+ * (docs/TESTING.md), and its CI job failed twice on this branch with a
+ * 60-second page-load timeout inside a setup helper. Neither failure was
+ * diagnosable, because the one artefact that would have discriminated between
+ * the candidate causes -- the `error-context.md` Playwright writes beside a
+ * failure, an ARIA snapshot of the page at the moment it gave up -- was
+ * written into the runner's workspace and then deleted, unread, by the next
+ * run's `git clean -ffdx`. Measured rather than assumed at the time:
+ * `git grep -n "upload-artifact" -- .github/` matched nothing anywhere in the
+ * repository, no step in any job carried `if: failure()`, and the GitHub API
+ * reported `total_count: 0` artifacts for the failing run.
+ *
+ * ## Why this is a contract and not just the step
+ *
+ * The step alone is one commit away from being deleted as noise by someone
+ * reading a workflow whose runs are all green -- which is exactly the state
+ * this repository was in for the whole life of the `browser` job. What the
+ * assertions below hold is not "an upload step exists" but that the *names*
+ * on it are still the names of the things that produce the evidence: the
+ * `tee` target in the suite step, and Playwright's `outputDir`. Renaming
+ * either one without following it here is the realistic way this quietly
+ * starts uploading nothing, and it fails in the commit that does it.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the upload succeeds, that the runner can reach the artifact service,
+ * or that anybody reads what it stores. Nothing here can answer those. It
+ * also does not pin `retention-days` or `if-no-files-found`: both are policy
+ * a later reader may legitimately retune, and neither decides whether the
+ * evidence survives the job.
+ */
 describe('browser failure evidence contract', () => {
   const CI = '.github/workflows/ci.yml';
   const PLAYWRIGHT_CONFIG = 'tests/browser/playwright.config.ts';
