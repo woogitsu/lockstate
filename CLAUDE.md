@@ -104,6 +104,24 @@ its 3.0-minute cap on three of the four runs** while its neighbours held
 **#1093 fixed it** (merged `8a35167b`): `#331` **1.5m** on the next finished
 run, `app-shell.spec.ts` 21.3m → 18.6m.
 
+**A SIXTH RELEASE LANDED ON 2026-09-09, AND IT IS THE FOURTH INSIDE
+RESERVATION 3 — the first that adds a gate rather than widening or resizing
+one.** The owner authorised ONE step in `.github/workflows/ci.yml`'s `verify`
+job, running the `tests/perf/` measurement harness through its own Vitest
+config (#1083), and nothing else in that file: not a second step, not a second
+job, not any `timeout-minutes`, not the runner selectors, not `deploy.yml`. It
+was released because that harness had a config nothing invoked — no script, no
+CI step — so 35 passing tests were read by `tsc` and executed by nobody.
+
+**Its provenance is the weaker kind, exactly as the 2026-09-08 release's is,
+and `AGENTS.md` says so in both entries.** This one quotes the label of a
+clickable option the integrator wrote and the owner chose — *"Dodaj bramkę w
+CI"* — not a sentence they typed. Read the full entry before treating it as a
+precedent for anything, and note that the harness's own config is load-bearing:
+on the root `vitest.config.ts`'s `testTimeout: 5_000` the same 35 assertions go
+red on time rather than on anything about the code — six of them when #1083 was
+filed, 12 when re-measured with `--testTimeout=5000` on a loaded container.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

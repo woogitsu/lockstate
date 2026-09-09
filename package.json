@@ -1,6 +1,6 @@
 {
   "name": "lockstate",
-  "version": "0.0.547",
+  "version": "0.0.548",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.22.0",
@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "test:browser": "node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite browser",
     "test:artifact": "node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact",
+    "test:perf": "vitest run --config tests/perf/vitest.perf.config.ts",
     "benchmark": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/run-benchmarks.mjs --profile full",
     "benchmark:smoke": "node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/run-benchmarks.mjs --profile smoke --output benchmark-results/smoke.json",
     "verify:benchmark": "pnpm benchmark:smoke && node --experimental-transform-types --disable-warning=ExperimentalWarning scripts/verify-benchmark-result.mjs benchmark-results/smoke.json",

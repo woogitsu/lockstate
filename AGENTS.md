@@ -400,6 +400,47 @@ outward-facing or unrevertable, which is the whole reason:
    so `runs-on` cannot tell the two pools apart until a label exists on the
    runner side, which is host configuration and outside this repository
    entirely.
+
+   **A FOURTH RELEASE INSIDE THE SAME RESERVATION, 2026-09-09 — ONE STEP IN
+   THE `verify` JOB, AND IT IS THE FIRST THAT ADDS A GATE RATHER THAN WIDENING
+   OR RESIZING ONE.** Measured on `main` at `450c9819` and reported in #1083:
+   `tests/perf/` has its own Vitest config, `docs/TESTING.md` gave the command,
+   and nothing in this repository invoked it — no `package.json` script, no CI
+   step. Three files, 35 tests, passing, read by `tsc` and executed by nobody.
+   The owner was shown that and chose, from the options put to them, the one
+   labelled:
+
+   > Dodaj bramkę w CI
+
+   ("Add a gate in CI.")
+
+   **What the release covers, exactly.** One step in the `verify` job that runs
+   the measurement harness through its own config, and nothing else in the
+   file: not a second step, not a second job, not `verify`'s `timeout-minutes:
+   30`, not `assets`'s 20, not `browser`'s 90, not the runner selectors, not
+   `deploy.yml`, and no workflow other than `.github/workflows/ci.yml`.
+
+   **The provenance is the weaker kind, and is recorded as such — the same
+   distinction the 2026-09-08 entry above draws about itself.** The 2026-09-06
+   and 2026-09-07 releases quote sentences the owner typed. This one quotes the
+   label of a clickable option the integrator wrote and the owner chose: their
+   decision, not their words. Read it as authorising the step that label
+   describes and nothing wider, and put anything wider to them on its own
+   terms.
+
+   **Why the step names the harness's own config, which is the part an agent
+   would otherwise simplify away.** `tests/perf/vitest.perf.config.ts` sets
+   `testTimeout: 900_000` where the root `vitest.config.ts` sets `5_000`, and
+   #1083 records what the five-second budget does to these files: **six
+   `Test timed out in 5000ms` failures that are not defects.** Re-measured on
+   this tree with `--testTimeout=5000` and nothing else changed: **12 of the 35
+   failed, every one of them that same timeout** — a bigger number than #1083's
+   on a container four agents were sharing, which is the point rather than a
+   discrepancy, since the count tracks the machine and not the code. So folding
+   these files into `pnpm test` is not a tidier version of this release, it is
+   a red gate. `tests/foundation/ci-configuration-contract.test.ts` pins the
+   step and the `test:perf` script to each other, so removing either one fails
+   before CI does.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
