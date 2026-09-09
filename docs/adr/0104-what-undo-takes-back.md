@@ -19,6 +19,27 @@
 
 ## Status
 
+**Accepted by the owner on 2026-09-09 — option 2 now, option 4 as the
+direction, and option 3 folded into whichever lands.** That is this document's
+own recommendation taken whole; nothing in the option list was modified in the
+taking.
+
+> **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
+> UP.** The ruling is the label of a clickable option this session wrote and
+> the owner chose — *"Opcja 2 teraz, 4 jako kierunek (rekomendacja)"* — not a
+> sentence they typed, and it was given against a summary of the four options
+> and the two measurements rather than against these 350 lines. `CLAUDE.md`
+> flags exactly this shape twice about the 2026-09-08 and 2026-09-09 releases
+> of reservation 3, in both cases saying the entry's provenance *"is weaker
+> than the two before it"*, and the same caution applies here. **What the
+> acceptance binds is the direction; the refusal sentence option 2 needs is
+> not authorised by it** and is still the owner's under the fourth reservation,
+> as the paragraph below already said before the ruling.
+>
+> **The `Proposed. Not self-approved.` record is kept below rather than
+> overwritten**, because the document argued the case as a proposal and a
+> reader should see it in the form it was argued in.
+
 **Proposed. Not self-approved.** `docs/AGENT_WORKFLOW.md` §3: *"**Propose an
 ADR rather than deciding architecture inside implementation code, and never
 self-approve one** outside a recorded delegation from the owner."*
