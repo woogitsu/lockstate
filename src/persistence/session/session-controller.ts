@@ -48,9 +48,12 @@ export interface OutgoingSessionCapture {
  * Declining the write is what costs the marker, so the marker is put back if
  * the deletion turns out not to have happened -- see `deletePrison`, which is
  * the only thing that creates one of these.
+ *
+ * The prison it belongs to is the key it is held under, so it is not repeated
+ * here: a copy of it in the value could disagree with the key, and nothing
+ * would read the copy.
  */
 interface SuspendedAutosave {
-  readonly prisonId: string;
   /** Set by the scheduler's `buildEnvelope` callback when it actually declined a save that had come due. */
   declined: boolean;
 }
@@ -751,10 +754,11 @@ export class SessionController {
    * every one of them crosses a real IndexedDB transaction -- can finish after
    * the player has already started or loaded another prison, and
    * `adoptSession` puts a **new** `ActiveSession` object in the field. An id
-   * check would then be satisfied by a session this call never saw (a prison
-   * created under the id just deleted, say) and close a live one. Comparing
-   * the object identity cannot be satisfied that way: the only session it
-   * closes is the very one that was live when the deletion began.
+   * check would then be satisfied by a session this call never saw -- the row
+   * is still on the panel while the deletion is uncommitted, so pressing Load
+   * on it is the plainest route there -- and close a live one. Comparing the
+   * object identity cannot be satisfied that way: the only session it closes
+   * is the very one that was live when the deletion began.
    *
    * ### Why the schedule is suspended, and what makes the suspension safe
    *
@@ -791,7 +795,7 @@ export class SessionController {
     // is of some other prison, which is exactly when nothing should be closed.
     const session = this.session?.prisonId === prisonId ? this.session : undefined;
 
-    const suspended: SuspendedAutosave = { prisonId, declined: false };
+    const suspended: SuspendedAutosave = { declined: false };
     this.deletionsInFlight.set(prisonId, suspended);
 
     let committed = false;
