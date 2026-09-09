@@ -1,21 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { SimulationSnapshotFeed, type SimulationMessageSource } from '../../src/rendering/feed/simulation-snapshot-feed';
-import type { MainToWorkerMessage, WorkerToMainMessage } from '../../src/simulation/protocol/types';
+import { SimulationSnapshotFeed } from '../../src/rendering/feed/simulation-snapshot-feed';
+import type { WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
-import {
-  RENDER_ACTORS_CONTENT_TYPE,
-  RENDER_ACTORS_SCHEMA_ID,
-  RENDER_ACTORS_SCHEMA_VERSION,
-} from '../../src/simulation/protocol/render-actors-payload';
 import { RENDER_DELTA_PUBLISH_INTERVAL_MS } from '../../src/simulation/worker/state-machine';
-import { encodeRenderActorsKeyframe } from '../../src/simulation/worker/render-actors-keyframe';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
-import {
-  SESSION_SNAPSHOT_SCHEMA_ID,
-  SESSION_SNAPSHOT_SCHEMA_VERSION,
-  captureSessionSnapshot,
-} from '../../src/simulation/runtime/restore-session';
+import { LoopbackWorker, TICK_MILLISECONDS } from '../helpers/loopback-simulation-worker';
 import { buildRowIndex } from '../../src/rendering/world/row-index';
 import { isDrawnAsWorldEdge } from '../../src/rendering/world/structures';
 import type { StructurePhase } from '../../src/rendering/world/structures';
@@ -81,9 +71,6 @@ import type { StructurePhase } from '../../src/rendering/world/structures';
 /** A year. Long enough that a poll firing would be a bug in this file rather than a slow test. */
 const NO_POLL_SECONDS = 31_536_000;
 
-/** `FixedStepClock`'s default step, and therefore how much wall clock one tick is. */
-const TICK_MILLISECONDS = 50;
-
 /** The scene's frame loop, which is what calls `readFrame`. */
 const FRAMES_PER_SECOND = 60;
 
@@ -95,84 +82,6 @@ const DOOR = { x: 12, y: 9, edge: 'north' as const };
 
 /** ADR 0099's bound on how long a drawn phase change may take to reach the frame. */
 const BOUND_MILLISECONDS = 200;
-
-/**
- * The worker, as much of it as this needs: it answers a snapshot request with
- * a real `captureSessionSnapshot` and it publishes real keyframe bytes.
- *
- * The envelope is assembled the way `publishRenderDelta` assembles it, and the
- * body comes from the production encoder, so the fifth header word under test
- * is written by the code that writes it in the worker rather than by this
- * file.
- */
-class LoopbackWorker implements SimulationMessageSource {
-  public readonly requested: string[] = [];
-  private readonly handlers: ((message: WorkerToMainMessage) => void)[] = [];
-  private publishedDeltaTick = 0;
-
-  public constructor(private readonly runtime: SimulationRuntime) {}
-
-  public addListener(handler: (message: WorkerToMainMessage) => void): void {
-    this.handlers.push(handler);
-  }
-
-  public send(message: MainToWorkerMessage): void {
-    if (message.kind !== 'simulation/request-snapshot') return;
-    this.requested.push(message.messageId);
-    const bundle = captureSessionSnapshot(this.runtime);
-    this.emit({
-      protocolVersion: SIMULATION_PROTOCOL_VERSION,
-      messageId: `snapshot-${message.messageId}`,
-      replyTo: message.messageId,
-      kind: 'simulation/snapshot',
-      payload: {
-        tick: this.runtime.kernel.tick,
-        reason: 'consistency-check',
-        snapshot: {
-          transport: 'structured-clone',
-          schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
-          schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
-          data: bundle,
-        },
-      },
-    } as unknown as WorkerToMainMessage);
-  }
-
-  public emit(message: WorkerToMainMessage): void {
-    for (const handler of this.handlers) handler(message);
-  }
-
-  /** What `publishRenderDelta` posts, including ADR 0099's marker read off the live world. */
-  public publishDelta(): void {
-    const tick = this.runtime.kernel.tick;
-    if (tick <= this.publishedDeltaTick) return;
-    const data = encodeRenderActorsKeyframe(
-      this.runtime.prisoners,
-      1_000 / TICK_MILLISECONDS,
-      this.runtime.world.drawnWorldRevision,
-      this.runtime.securityGuards,
-    );
-    const message = {
-      protocolVersion: SIMULATION_PROTOCOL_VERSION,
-      messageId: `delta-${String(tick)}`,
-      kind: 'simulation/delta',
-      payload: {
-        baseTick: this.publishedDeltaTick,
-        tick,
-        delta: {
-          schemaId: RENDER_ACTORS_SCHEMA_ID,
-          schemaVersion: RENDER_ACTORS_SCHEMA_VERSION,
-          transport: 'array-buffer',
-          contentType: RENDER_ACTORS_CONTENT_TYPE,
-          byteLength: data.byteLength,
-          data,
-        },
-      },
-    } as unknown as WorkerToMainMessage;
-    this.publishedDeltaTick = tick;
-    this.emit(message);
-  }
-}
 
 function prisonWithADoorOrdered(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
