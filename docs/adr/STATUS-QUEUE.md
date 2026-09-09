@@ -14267,7 +14267,7 @@ is what the previous anchor's 96 counted; **98** adds the unlinked, file-less
 `0018` row (*"Free — released when PR #91 was closed as superseded"*, still
 present at `docs/adr/README.md:174`).
 
-And **Next free number: 0105** — **unmoved in this window at the index, and
+And **Next free number: 0106** — **unmoved in this window at the index, and
 moved inside it.** `git show 3399b1f9:docs/adr/README.md` states **0104** and
 `git show e5fbe9d9:docs/adr/README.md` states **0105**, so the index advanced
 here; the previous anchor's §3 had already restated 0105 because ADR 0104's row
@@ -14277,6 +14277,24 @@ whose window actually contains the movement its predecessor had to describe
 from outside. The figure the previous pass wrote is confirmed rather than
 corrected, and it is now warranted by a window that holds the commit that
 caused it.
+
+> **THIS SENTENCE READ 0105 AND WAS CORRECT ABOUT `e5fbe9d9`, AND IT IS EDITED
+> IN PLACE RATHER THAN MARKED-AND-KEPT — THE FIFTH TIME THIS FILE HAS MADE THAT
+> TRADE, AND THE SECOND TIME IT WAS PREDICTED BEFORE IT HAPPENED.** ADR 0105's
+> draft adds its row to `docs/adr/README.md`, which is what reserves a number
+> (`AGENTS.md`), so the index moved 0105 → 0106 on a branch this anchor's own
+> window does not contain — the identical shape the entry three paragraphs
+> above describes for 0104, one number later and inside the same day.
+> `adr-status-queue-anchor-contract` reads a restatement as **live** by its
+> position relative to this pass's own dated marker, not by whether the prose
+> around it reads as history, so a kept-but-stale "0105" here is exactly the
+> mutation that gate exists to catch even though the sentence is still accurate
+> about `e5fbe9d9`. **The gate caught this within the hour**, on the commit that
+> added ADR 0105's row: *"STATUS-QUEUE.md's live restatement(s) of the Next free
+> number must match docs/adr/README.md's (0106)"*. The two figures either side —
+> the `0104` and `0105` readings at the two anchors — are this pass's own
+> re-derivation and are untouched by a reservation made on a later branch.
+> **This entry is the marking; the sentence above is the edit.**
 
 **§2 IS UNMOVED AT NINE ENTRIES, AND ALL FOUR OF ITS COUNTING SITES AGREE — THE
 CHECK NO DIFF CAN REACH, RUN BECAUSE THIS FILE HAS BEEN CAUGHT BY IT.** No
