@@ -1078,8 +1078,8 @@ finding. Every previous anchor's "already false" class was a number pointing at
 the wrong line while the sentence around it stayed true; this one found a
 sentence that stopped being true because the thing it described got built.
 
-The three that moved inside this window, each verified correct at `c57f5fa8`
-before being called a mover:
+The three that moved inside this window, each of which **had been** verified
+correct at `c57f5fa8` before being called a mover:
 
 - `src/ui/hud/view-model.ts` — `HudPrisonerDetailViewModel` in §2's ADR 0093
   entry **read `:1849` and is `:1910`**, sixty-one lines, the whole of what
@@ -1214,8 +1214,8 @@ WERE FOUND BY LOOKING WHERE THE METHOD CANNOT.** The second half is the
 finding, and it is the first time an anchor in this sequence has gone after the
 blind spot its predecessor named rather than recording that it exists.
 
-The three that moved inside this window, each verified correct at `829d3c11`
-before being called a mover:
+The three that moved inside this window, each of which **had been** verified
+correct at `829d3c11` before being called a mover:
 
 - `src/main.ts` — the `PrisonerDetailReader` construction in §2's ADR 0093
   entry **read `:1429` and is `:1439`**, ten lines down, #1009's play-test
@@ -1364,8 +1364,9 @@ were read.
 ANCHOR CERTIFIED THEM.** The second half is the finding, and it is a finding
 about the method rather than about any entry.
 
-The three that moved inside this window, each verified correct at `413def1c` and
-incorrect at `829d3c11` rather than merely incorrect now:
+The three that moved inside this window, each of which **had been** verified
+correct at `413def1c` and incorrect at `829d3c11` rather than merely incorrect
+now:
 
 - `src/simulation/rooms/zoning.ts` — the optional fourth constructor parameter
   `capacity` **read `:428` and is `:448`**, and its call
@@ -2101,7 +2102,7 @@ INTEGRATOR'S OWN FIX IS ON #917's BRANCH.** `tests/browser/ui-overdraft-badge.sp
 asserted `toMatch(/exhaust/i)` against the sentence #917 rewrote, so the copy
 fix turned a browser assertion red in a suite `vitest run` does not collect.
 `0b415421`, *"test(hud): pin the floor sentence on its property, not on the word
-'exhausted'"*, re-pinned it on the property. Verified rather than taken: at
+'exhausted'"*, re-pinned it on the property. It **was** verified rather than taken: at
 `2732e81e` that file's `:209` is
 `expect(stuck.chipTitle, 'and says the overdraft itself is exhausted').toMatch(/exhaust/i);`
 and on this tree the assertion in its place is pinned on the chip title
@@ -11926,8 +11927,8 @@ all.
   `src/main.ts` and could only find because three merges happened to touch that
   file**; here it was found on purpose, on a file nothing has touched.
 
-**Three movers, all created by this window, each verified correct at
-`829d3c11` before being called a mover.** `src/main.ts` gave up two — the
+**Three movers, all created by this window, each of which **had been** verified
+correct at `829d3c11` before being called a mover.** `src/main.ts` gave up two — the
 `PrisonerDetailReader` construction `:1429` → `:1439` and the telemetry consent
 prompt's mount `:3311` → `:3365`, both moved by #1009's play-test wiring above
 them — and `src/ui/hud/view-model.ts` gave up one, `HudPrisonerDetailViewModel`
@@ -12091,8 +12092,8 @@ scan costs one script and it is still the only part of this method that reaches
 what the delta cannot; the third consecutive pass that runs it should expect the
 number to move with the window's width and not with the corpus's health.**
 
-**THREE MOVERS, ALL CREATED BY THIS WINDOW, EACH VERIFIED CORRECT AT
-`c57f5fa8` BEFORE BEING CALLED A MOVER**, and they are written out in the
+**THREE MOVERS, ALL CREATED BY THIS WINDOW, EACH OF WHICH HAD BEEN VERIFIED
+CORRECT AT `c57f5fa8` BEFORE BEING CALLED A MOVER**, and they are written out in the
 header: `src/ui/hud/view-model.ts` `:1849` → `:1910` (#1015, sixty-one lines),
 `src/main.ts` `:3365` → `:3381` (#1026, sixteen lines in one hunk) and
 `src/ui/primitives/icon.ts` `:77` → `:79` (#1026, two lines of the
@@ -13647,6 +13648,41 @@ That is a separate, reviewable change and it is what this paragraph exists to
 hand to it — **a list rather than a rescan**. Landing it inside a pass whose job
 is to un-red `main` would be trading a known repair against an unknown one.
 
+> **THE SEPARATE CHANGE LANDED THE SAME DAY, AND THE LIST WAS BOTH RIGHT AND
+> INCOMPLETE.** Right about the mechanism and about all five entries; incomplete
+> because widening only the whitespace leaves a second assumption standing.
+> `VERIFIED_AT` also spelled the words *between* the verb and the preposition as
+> nothing at all, and this corpus **had** already written *"each verified
+> correct at `c57f5fa8`"* — six times — and *"Verified rather than taken: at
+> `2732e81e`"*. Generalising
+> the gap as well takes the pattern from **7** occurrences read to **26**, and
+> the offender list from the five above to **nine**. Six of the nine were
+> records missing only an auxiliary and now read *"each of which **had been**
+> verified correct at …"*; one is the quotation whose own full stop hid its
+> wrapper, split into two quoted fragments with the words unchanged; one is
+> §5's ADR 0027 count, put into the past tense the sentence immediately after
+> it has always implied; and one is §4's — the single real reading, re-verified
+> at the anchor, where the *"untouched"* half of the claim turned out to have
+> stopped being true as well. **The paragraph above is kept rather than
+> corrected**, because "it is one character class" was the estimate a
+> measurement refuted, and an estimate that was refuted by the work it
+> commissioned is worth more to a later reader than a tidy one.
+>
+> **And the widened gate caught its own author inside the hour, which is the
+> third instance of the quotation trap and the first one a machine found.** The
+> two sentences immediately above quote the phrasings the widening was written
+> for, and quoting them made them live claims naming `c57f5fa8` and `2732e81e`;
+> `comment-symbol-existence-contract` and `documentation-commit-citation-contract`
+> failed in the same run, on a watchdog symbol this docblock named but never
+> declared and on an invented control sha. Three gates, three of this change's
+> own sentences, all before review. **That is the argument for the widening
+> stated better than any paragraph could** — and stated exactly rather than
+> rounded up: the other two gates would have caught their two findings whatever
+> this change did, but the two live claims were **both** of the shape the old
+> `VERIFIED_AT` could not see, one for its whitespace and one for the word
+> `correct` sitting between the verb and the preposition. The version of this
+> gate that shipped an hour earlier would have passed on both.
+
 **THE FOUR COUNTING SITES, RE-DERIVED BY COUNTING THE `docs/adr/` TREE AT
 `3399b1f9` RATHER THAN BY ADJUSTING THE PREVIOUS ANCHOR'S NUMBERS — AND THE
 METHOD WAS CONTROLLED AGAINST THAT ANCHOR FIRST.** The scan reads the first
@@ -13916,14 +13952,33 @@ is recommendation 1 at the foot of §6 producing a measurable result rather than
 being restated: **three of the four citations into the fastest-moving document
 in the set survived an edit that moved every line of them.**
 
-The half of the decision that *is* in this repository stays verified at
-`0e2eb7fb`, re-read on this tree rather than carried forward from `33a4a22e`:
+The half of the decision that *is* in this repository **had stayed** verified at
+`0e2eb7fb`, re-read on that tree rather than carried forward from `33a4a22e`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
-environment-gated (`:65`) — all three re-read at this anchor and all three still
-land, on a file `git diff --name-only 33a4a22e..HEAD` reports as untouched
-(neither it nor `docs/DEPLOYMENT.md` is among this window's 42 files), run
-rather than recalled. The `on:` key
+environment-gated (`:65`) — all three re-read at that anchor and all three still
+land, on a file `git diff --name-only 33a4a22e..HEAD` reported as untouched
+(neither it nor `docs/DEPLOYMENT.md` was among that window's 42 files), run
+rather than recalled.
+
+**IT IS RE-VERIFIED AT `3399b1f9`, AND BOTH HALVES OF THE SENTENCE ABOVE HAD TO
+MOVE — WHICH IS THE FINDING, BECAUSE NO GATE COULD SEE IT.** That sentence
+named `0e2eb7fb`: not the anchor of its own day, not any anchor since, and not
+one this file's header has ever declared. `adr-status-queue-anchor-contract`'s
+first assertion exists to catch exactly that, and it could not, because the sha
+sat at a line start and the pattern spelled its gap as a literal space. The
+widening that made it readable is the change this paragraph lands with. **And
+the "untouched" clause is no longer true either**: `.github/workflows/migrate-database.yml`
+is a member of the `ebdcb317..3399b1f9` window, `80b54a97` having rewritten
+`:63` from `runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]` to `runs-on:
+self-hosted`. **All three citations still land, and they land better than they
+used to**: `:34`, `:41` and `:65` are byte-identical at `ebdcb317` and at
+`3399b1f9`, the one changed line falls between the second and the third, and
+`grep -c '^\s*push:'` still returns **0**. Up to nine consecutive windows read
+this file as costing nothing because it was *absent* from the diff; this is the
+first reading taken across an edit to the file itself, which is the stronger
+evidence, and it arrives on the same day the gate stopped being unable to ask
+for it. The `on:` key
 at `:33` has `workflow_dispatch:` as its only child, re-read here rather than
 inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
@@ -15929,7 +15984,8 @@ one direction.
 
   **Understated, and CLOSED at `bb3a01e` — the ADR withdrew the figure.** This
   entry read: *"the third figure has no source. ADR 0025 says its inherited budget
-  is 'the 3.9px at 900×600 that ADR 0022 and `hud.css` both record'. Re-verified
+  is 'the 3.9px at 900×600 that ADR 0022 and `hud.css` both record'"*, and it
+  **had** recorded that reading as *"Re-verified
   at `54418b6` by grepping the whole tree: **`3.9` appears in no ADR but 0025 —
   `docs/adr/0025-guard-hiring-surface.md:70` and `:182` — in no `.css` file, and
   nowhere in `src/`.** … it is a docs-truth task inside an accepted ADR and it
@@ -16324,10 +16380,17 @@ one direction.
   correction has itself drifted twice** — which is the entry's own point turned
   back on it, and the reason the anchor above now has a test. Nine was right at
   `4ed571f`; `PlaceObject` (#320) made it ten before the v0.0.65 re-anchor, which
-  did not re-count; `RemoveObject` (#328) has since made it eleven. Re-verified at
-  `83c3121` and it is **still eleven** — the one count in this section that has
+  did not re-count; `RemoveObject` (#328) has since made it eleven; it **was**
+  re-verified at
+  `83c3121` and **was** still eleven there — the one count in this section that
   held across the eleven releases to `dbe271f`, because #367 wired an existing
-  member rather than adding one. **It no longer holds at that count.**
+  member rather than adding one. **It no longer holds at that count.** *(Those
+  two verbs read "is" and "still eleven" in the present until 2026-09-09, when
+  the gate learned to read a wrapped sha and reported the clause as a live claim
+  warranted by `83c3121`. The tense is corrected rather than the reading: the
+  sentence straight after it has said the count no longer holds since the day it
+  was written, so the present tense contradicted its own neighbour, and only the
+  gate's blindness kept the two apart.)*
   `simulationCommandSchema`, declared
   `export const simulationCommandSchema = z.discriminatedUnion('type', [` in
   `src/simulation/protocol/commands.ts` (**`:542` at this anchor**; this entry
