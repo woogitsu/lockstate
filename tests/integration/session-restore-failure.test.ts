@@ -16,6 +16,33 @@ import v1InProgressFixture from '../fixtures/persistence/save-v1-in-progress.jso
 import { expectOk } from '../helpers/expect-ok';
 
 /**
+ * A migration step that throws, on demand rather than for the whole file.
+ *
+ * `save-migration-fault-recovery.test.ts` faults the V1 -> V2 transform for
+ * every test it contains, which is right there and wrong here: this file's
+ * other cases migrate the same V1 fixture on purpose and must keep doing so.
+ * So the leaf is wrapped rather than replaced -- it delegates to the real
+ * function unless a test has armed the fault -- and every gate before the
+ * throw (`decodeSaveEnvelope`, `MigrationChain`, `PrisonSaveRepository` and
+ * the store) stays the real thing.
+ *
+ * The thrown value is the one that was actually measured escaping this path.
+ * What is being guarded is the class: any step, present or future, that throws
+ * for any reason is our own code failing, not a verdict about the save.
+ */
+const migrationFault = vi.hoisted(() => ({ armed: false }));
+vi.mock('../../src/persistence/save-migrations', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/persistence/save-migrations')>();
+  return {
+    ...actual,
+    migrateSaveEnvelopeV1ToV2: (input: Parameters<typeof actual.migrateSaveEnvelopeV1ToV2>[0]) => {
+      if (migrationFault.armed) throw new RangeError('Array buffer allocation failed');
+      return actual.migrateSaveEnvelopeV1ToV2(input);
+    },
+  };
+});
+
+/**
  * Issue #103, proven where the two halves meet: a real
  * `SimulationWorkerStateMachine` behind a real `WorkerSessionHost`, driving a
  * real `SessionController` over a real `PrisonSaveRepository`.

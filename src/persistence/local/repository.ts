@@ -1,4 +1,10 @@
-import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveDecodeError, type SaveEnvelope } from '../save-schema';
+import {
+  decodeSaveEnvelope,
+  decodeSaveEnvelopeUnlessTrusted,
+  type SaveDecodeError,
+  type SaveDecodeErrorCode,
+  type SaveEnvelope,
+} from '../save-schema';
 import {
   applyConfirmedRetention,
   applyGenerationRetention,
@@ -254,6 +260,104 @@ function defaultGenerationId(): string {
 }
 
 /**
+ * What a *decode* refusal licenses `loadCurrent` to do with the generation
+ * that produced it.
+ *
+ * ## The defect this replaces
+ *
+ * The walk had one bucket. Every generation it passed over on the way to one
+ * that decoded was named `confirmedInvalid` and handed to
+ * `recoverToGeneration`, which deletes -- and `decodeSaveEnvelope` returns six
+ * distinct codes, of which exactly one means *"the bytes are fine and this
+ * build is the wrong reader"*. So a generation written by a **newer** build
+ * was destroyed the moment an older readable one was found, on the strength of
+ * a refusal whose own meaning is that a reader exists. `migration.ts` had
+ * written the mechanism down without anybody reading it as a defect: it says
+ * of its own error union that `PrisonSaveRepository.loadCurrent` *"treats any
+ * `ok !== true` alike"*.
+ *
+ * That is the deletion [ADR 0065](../../../docs/adr/0065-what-happens-to-a-save-this-build-cannot-read.md)
+ * exists to prevent, one boundary below the one it decided. Its argument is
+ * about evidence rather than certainty and it transfers verbatim: for
+ * `unsupported-by-this-build`, *"a build that reads the bytes is known to
+ * exist -- it wrote them"*, and a save declaring a `saveSchemaVersion` this
+ * build has never heard of makes that claim more directly than a refused
+ * restore can. `SessionController.loadPrison` has honoured the distinction at
+ * the restore layer since #432; this is the same rule at the decode layer.
+ *
+ * ## The four outcomes, and why the reason has to travel with the id
+ *
+ * - `'record-absent'` -- the id is retained and no record answers to it. There
+ *   are no bytes to keep and none to destroy, so dropping the id from the
+ *   window is pure healing and is what this walk has always done.
+ * - `'undecodable-content'` -- this build read the bytes and reached a verdict
+ *   **about them**. Deleted, once a later generation has decoded, exactly as
+ *   before.
+ * - `'unsupported-version'` -- quarantined through `quarantineGeneration`,
+ *   which already carries ADR 0065's bound of one per prison and its exemption
+ *   from the retention budget. Nothing new is stored and no second store is
+ *   invented; the decode layer simply becomes a second caller of the mechanism
+ *   the restore layer already uses.
+ * - `'no-verdict'` -- our own migration chain failed, so no verdict about the
+ *   save has been reached at all. Nothing is deleted, nothing is marked and
+ *   nothing is repointed. This is #431's rule (`SnapshotRestoreFaultError`
+ *   costs the generation nothing) applied to the code fault that happens
+ *   earlier: `docs/PERSISTENCE.md`'s taxonomy calls
+ *   `migration-produced-invalid-output` *"a bug in the migration, not the
+ *   input"*, and a build must not delete a player's save on the strength of
+ *   its own bug.
+ *
+ * ## `invalid-shape` is deliberately NOT decided here
+ *
+ * It stays in `'undecodable-content'`, which is exactly what it did before
+ * this change, and that is a decision **declined** rather than taken.
+ * `docs/PERSISTENCE.md` records that an optional field added without a format
+ * bump is refused by an older `.strict()` schema as `invalid-shape` where a
+ * version bump would have produced `unsupported-version` -- *"Both builds
+ * refuse it; only the diagnosis differs."* So the code is ambiguous: sometimes
+ * a real future-build mismatch whose bytes a newer build reads, sometimes
+ * genuine corruption. Routing it either way is an amendment to ADR 0065's
+ * taxonomy, and `AGENTS.md` and `CLAUDE.md` both put an absent architectural
+ * decision in an ADR rather than in implementation code.
+ * `docs/adr/drafts/decode-refusals-and-the-ambiguity-of-invalid-shape.md` is
+ * that proposal. Until it is ruled on, this arm behaves as it always has.
+ *
+ * `no-migration-path` is grouped with the migrator faults rather than with the
+ * version mismatch for the same care: `docs/PERSISTENCE.md` describes it as
+ * *"A declared or intermediate version has no registered schema/migration"*,
+ * which is a gap in this build's chain and not a reading of the bytes. It
+ * therefore gets the outcome that asserts least -- nothing -- rather than the
+ * prison's one quarantine slot, which ADR 0065 decision 1 allocated to the
+ * verdict with a demonstrated reader behind it.
+ */
+type DecodeRefusalVerdict = 'record-absent' | 'undecodable-content' | 'unsupported-version' | 'no-verdict';
+
+/**
+ * The mapping above, as code. Exhaustive over `SaveDecodeErrorCode` on
+ * purpose: a seventh decode code has to decide keep-or-delete here rather than
+ * inheriting whichever branch happened to be the fallback, and `never` makes
+ * adding one a typecheck failure at this line -- the same guard
+ * `SessionController.loadPrison` puts on the restore taxonomy.
+ */
+function verdictForDecodeRefusal(code: SaveDecodeErrorCode): DecodeRefusalVerdict {
+  switch (code) {
+    case 'unsupported-version':
+      return 'unsupported-version';
+    case 'no-migration-path':
+    case 'migration-produced-invalid-output':
+    case 'migration-step-threw':
+      return 'no-verdict';
+    case 'invalid-shape':
+    case 'checksum-mismatch':
+      return 'undecodable-content';
+    default: {
+      const unhandled: never = code;
+      throw new Error(`Unhandled save decode error code "${String(unhandled)}"; a refused generation has no retention verdict.`);
+    }
+  }
+}
+
+/**
  * Local-first save repository. All policy — generation retention, startup
  * recovery, export/import validation — lives here against the storage-
  * agnostic `LocalSaveStore`, so it is fully testable with the in-memory
@@ -405,35 +509,74 @@ export class PrisonSaveRepository {
    * Startup recovery policy: try the current generation first; if it is
    * missing or fails schema/checksum validation, walk the remaining
    * generations newest-first and adopt the first one that validates,
-   * updating the pointer so the corrupt generation is not retried on every
-   * boot. Returns `no-valid-generation` only when nothing in the retained
-   * window validates -- and, exactly as before, having deleted nothing in
-   * that case.
+   * updating the pointer so a generation this build has judged is not retried
+   * on every boot. Returns `no-valid-generation` only when nothing in the
+   * retained window validates -- and, exactly as before, having deleted
+   * nothing in that case.
    *
-   * **Nothing is deleted here except generations this call proved
-   * undecodable, and only once a *later* one has decoded.** A generation the
-   * caller asked to `skip` is not judged by this method at all, so it is
-   * neither returned nor retired; see `LoadCurrentOptions.skip`.
+   * **A refusal is not consent to delete, and which refusal it was decides
+   * what happens.** The walk carries each refusal's decode code with the
+   * generation id that produced it and splits the outcomes four ways; see
+   * `DecodeRefusalVerdict` for the whole mapping and for the one arm this
+   * change deliberately leaves as it found it. Only `'record-absent'` and
+   * `'undecodable-content'` reach `recoverToGeneration`, and only once a
+   * *later* generation has decoded.
+   *
+   * A generation the caller asked to `skip` is not judged by this method at
+   * all, so it is neither returned nor retired; see `LoadCurrentOptions.skip`.
    */
   public async loadCurrent(prisonId: string, options: LoadCurrentOptions = {}): Promise<LoadResult> {
     const metadata = readSlot(await this.store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId)), prisonId);
     if (metadata === undefined) return { ok: false, reason: 'not-found' };
 
     const candidates = [...metadata.generationIds].reverse().filter((id) => options.skip?.has(id) !== true); // newest first
-    for (const [index, generationId] of candidates.entries()) {
+    // Newest-first, like the walk, which is what lets `quarantineGeneration`
+    // below apply ADR 0065 decision 3's bound without this method restating
+    // it: the newest claimant is offered the slot first and an older one is
+    // then declined by that method rather than by a rule written twice.
+    const refused: { readonly generationId: string; readonly verdict: DecodeRefusalVerdict }[] = [];
+    for (const generationId of candidates) {
       const raw = await this.store.runTransaction('readonly', (tx) => tx.getGeneration(prisonId, generationId));
       const decoded = raw === undefined ? undefined : decodeSaveEnvelope(raw);
-      if (decoded?.ok !== true) continue;
+      if (decoded === undefined) {
+        refused.push({ generationId, verdict: 'record-absent' });
+        continue;
+      }
+      if (!decoded.ok) {
+        refused.push({ generationId, verdict: verdictForDecodeRefusal(decoded.error.code) });
+        continue;
+      }
 
-      // Everything this walk passed over is confirmed-invalid: it was read
-      // and it did not decode. Skipped generations are not in `candidates`,
-      // so they can never end up here.
-      const confirmedInvalid = candidates.slice(0, index);
+      // Everything below is housekeeping earned by *this* decode: a generation
+      // went through the same schema, migration and checksum on the same build
+      // moments ago and came back a save. That is what turns each refusal above
+      // from "this build can read nothing" into "this build cannot read that
+      // one". Skipped generations are not in `candidates`, so they can never
+      // end up here.
+      const confirmedInvalid = refused
+        .filter((entry) => entry.verdict === 'record-absent' || entry.verdict === 'undecodable-content')
+        .map((entry) => entry.generationId);
+
+      // Before the deletions rather than after, so that a storage failure
+      // here leaves the disk exactly as it was: quarantine is the arm that
+      // *keeps* bytes, and a partial run of this housekeeping must not be one
+      // that destroyed the readable generations and failed to keep the
+      // unreadable one. The next load reaches the same verdicts and finishes
+      // the job -- the same self-healing the walk itself is built on.
+      for (const { generationId: unsupportedGenerationId } of refused.filter(
+        (entry) => entry.verdict === 'unsupported-version',
+      )) {
+        await this.quarantineGeneration(prisonId, unsupportedGenerationId);
+      }
+
       // The other reason the generation that decoded is not the current one
       // is a pointer that has fallen outside the retained window, which this
       // read heals. A pointer that is retained and simply older than the
       // generation returned is left alone -- moving it would be a write on a
-      // read that retired nothing.
+      // read that retired nothing. A pointer left naming a *newer* generation
+      // this walk refused is left alone for the same reason, and costs
+      // nothing: the walk is newest-first regardless of what the pointer says,
+      // and `quarantineGeneration` moves it itself when it marks the record.
       const pointerIsRetained =
         metadata.currentGenerationId !== undefined && metadata.generationIds.includes(metadata.currentGenerationId);
       if (confirmedInvalid.length > 0 || !pointerIsRetained) {
