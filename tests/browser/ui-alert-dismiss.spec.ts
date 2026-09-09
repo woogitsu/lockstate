@@ -83,6 +83,7 @@ function viewModel(occurrences: boolean): HudViewModel {
       prisonerCapacity: 48,
       occupiedPlaces: 42,
       staff: 11,
+      staffUnassigned: 0,
       rooms: 23,
       prisonersCovered: 42,
       prisonersUnderstaffed: 0,

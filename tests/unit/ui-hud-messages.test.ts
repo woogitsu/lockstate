@@ -340,6 +340,9 @@ describe('message keys live in one registry', () => {
       // where everybody was housed would leave the new one unwalked.
       occupiedPlaces: 0,
       staff: 1,
+      // Not painted by any strip label this case walks (issue #870); a value
+      // to satisfy the type.
+      staffUnassigned: 1,
       rooms: 1,
       roomCapacity: 2,
       // Non-zero on the understaffed rung, so the coverage chip takes its

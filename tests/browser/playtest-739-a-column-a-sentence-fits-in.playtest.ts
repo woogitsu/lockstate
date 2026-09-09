@@ -39,6 +39,7 @@ const POPULATED: HudCountsViewModel = {
   prisonerCapacity: 180,
   occupiedPlaces: 178,
   staff: 27,
+  staffUnassigned: 0,
   rooms: 61,
   prisonersCovered: 178,
   prisonersUnderstaffed: 0,

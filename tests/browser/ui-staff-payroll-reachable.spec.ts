@@ -123,6 +123,7 @@ function viewModel(): HudViewModel {
       prisonerCapacity: 0,
       occupiedPlaces: 0,
       staff: 60,
+      staffUnassigned: 0,
       rooms: 0,
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,

@@ -176,6 +176,7 @@ function viewModelWith(parts: {
       prisonerCapacity: 2,
       occupiedPlaces: 1,
       staff: 0,
+      staffUnassigned: 0,
       rooms: 2,
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,

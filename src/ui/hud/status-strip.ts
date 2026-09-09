@@ -125,6 +125,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     prisonerCapacity: 0,
     occupiedPlaces: 0,
     staff: 0,
+    staffUnassigned: 0,
     rooms: 0,
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,

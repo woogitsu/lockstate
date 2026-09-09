@@ -132,6 +132,7 @@ function coveredPrison(coverage: HudViewModel['staffCoverage']): HudViewModel {
       prisonerCapacity: 24,
       occupiedPlaces: 17,
       staff: 4,
+      staffUnassigned: 0,
       rooms: 12,
       prisonersCovered: 17,
       prisonersUnderstaffed: 0,

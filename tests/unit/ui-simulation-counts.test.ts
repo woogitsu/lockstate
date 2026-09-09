@@ -102,6 +102,10 @@ describe('the HUD counts are read from the worker', () => {
       // the bed under it (ADR 0028 decision 2, issue #609).
       occupiedPlaces: 28,
       staff: 11,
+      // Straight through, and it is the count the Security panel's coverage
+      // hint needs and does not have -- computed and published since the
+      // field existed, and read by nothing in `src/ui/` until issue #870.
+      staffUnassigned: 2,
       rooms: 9,
       // Straight through, and deliberately the field beside it in `COUNTS`
       // (60) rather than `accommodationCapacity` (44) again -- see
