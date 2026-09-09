@@ -53,6 +53,14 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   // the envelope and the discriminant.
   'construction.order-cancelled': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled' }),
   'construction.order-cancelled-underway': (sequence) => ({ sequence, tick: 100, type: 'construction.order-cancelled-underway' }),
+  // ADR 0104 option 2 (#956): the press found a transaction and declined it,
+  // because the player's latest action was not a change to the build queue.
+  // Carries nothing, for the same #749 ruling the four above carry nothing.
+  'construction.undo-refused-newer-action': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'construction.undo-refused-newer-action',
+  }),
   'construction.undone': (sequence) => ({ sequence, tick: 100, type: 'construction.undone' }),
   'construction.undone-spend-destroyed': (sequence) => ({
     sequence,

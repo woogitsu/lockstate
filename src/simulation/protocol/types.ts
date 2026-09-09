@@ -1714,6 +1714,7 @@ export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled',
   'construction.order-cancelled-underway',
   'construction.redone',
+  'construction.undo-refused-newer-action',
   'construction.undone',
   'construction.undone-spend-destroyed',
   'contraband.discovered',
@@ -2431,6 +2432,29 @@ const constructionUndoneSpendDestroyedEventSchema = z
   .strict();
 
 /**
+ * `Undo` found a transaction and declined to reverse it, because the player's
+ * latest action was not a change to the build queue
+ * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2,
+ * accepted 2026-09-09, against
+ * [#956](https://github.com/woogitsu/lockstate/issues/956)).
+ *
+ * **Carries no count and no figure**, on the same two rulings the two members
+ * above carry none: what the press declined to touch is not more reportable
+ * than what it touched. The one bit that crosses is the type itself.
+ *
+ * **Not a `REFUSAL_REASONS` member.** That vocabulary is a single record
+ * reached through a rate-limited, skippable status snapshot, and a refusal a
+ * player must not miss belongs on the queue that does not drop. This is the
+ * same argument `construction.order-cancelled` makes for living here.
+ */
+const constructionUndoRefusedNewerActionEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.undo-refused-newer-action'),
+  })
+  .strict();
+
+/**
  * An object that was standing in the prison was taken away, and what it cost
  * is gone with it
  * ([#945](https://github.com/matmaxalez/lockstate/issues/945)).
@@ -2525,6 +2549,7 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   buildOrderCancelledUnderwayEventSchema,
   constructionUndoneEventSchema,
   constructionUndoneSpendDestroyedEventSchema,
+  constructionUndoRefusedNewerActionEventSchema,
   constructionRedoneEventSchema,
   objectRemovedSpendDestroyedEventSchema,
   deliveryCancelledEventSchema,

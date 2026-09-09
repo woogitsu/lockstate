@@ -97,13 +97,23 @@ function cancel(runtime: SimulationRuntime, orderId: string): void {
   );
 }
 
+/**
+ * Calls the system rather than submitting the command.
+ *
+ * ADR 0104 option 2 ([#956](https://github.com/woogitsu/lockstate/issues/956),
+ * accepted 2026-09-09) refuses a router-level `Undo` whose newest transaction
+ * is not the player's own latest action, and the cancel this file pairs `Undo`
+ * with is a later action -- so submitting the command here would answer a
+ * refusal and reach no order at all. That route is covered by
+ * `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`.
+ * **What this file is about is unchanged**: which order `undo()` reaches, and
+ * that it is not the one `CancelBuildOrder` reaches, which is the same call on
+ * the same stack either way. `label` is kept so the call sites still read as
+ * the presses they model.
+ */
 function undo(runtime: SimulationRuntime, label: string): void {
-  runtime.kernel.submitCommand(
-    `cmd-undo-${label}`,
-    runtime.kernel.expectedSequence,
-    runtime.kernel.tick,
-    packCommand({ type: 'Undo' }),
-  );
+  void label;
+  runtime.construction.undo();
 }
 
 function runTo(runtime: SimulationRuntime, tick: number): void {

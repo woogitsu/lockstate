@@ -186,6 +186,32 @@ export function createConstructionCommandHandler(
        * ruling declined -- see `ConstructionUndoOutcome`.
        */
       case 'Undo': {
+        /*
+         * **The press is entitled to the newest transaction only while that
+         * transaction is the player's own latest action**
+         * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2,
+         * accepted by the owner on 2026-09-09, against
+         * [#956](https://github.com/woogitsu/lockstate/issues/956)).
+         *
+         * Here rather than inside `ConstructionSystem.undo()`, and the
+         * difference is not cosmetic: `undo()` means *"reverse the newest
+         * transaction"*, which is what every other caller wants and gets. What
+         * changes is what one **command** may ask for. The first draft put the
+         * branch in the history itself and eight existing tests refuted it in
+         * one run -- their subject is what a cancellation costs, reached
+         * through `undo()` directly, and a history that refuses its own method
+         * had made that unreachable.
+         *
+         * The emptiness test is first and is not decoration: without it a press
+         * against a prison that has never had a build order would answer
+         * *"something else has happened since the last one"*, which is a false
+         * sentence about a change that never existed. An empty history says
+         * nothing, which is what it has always done.
+         */
+        if (constructionSystem.hasSomethingToUndo && constructionSystem.undoWouldReachPastTheLatestAction) {
+          events.recordConstructionUndoRefused(context.tick);
+          break;
+        }
         const undone = constructionSystem.undo();
         if (undone.reversed) {
           events.recordConstructionUndone(undone.spendDestroyed ? 'spend-destroyed' : 'nothing-destroyed', context.tick);

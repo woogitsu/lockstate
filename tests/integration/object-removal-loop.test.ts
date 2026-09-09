@@ -694,7 +694,14 @@ describe('a bed removed from an occupied cell relocates its resident, and evicts
     const prisoner = runtime.prisoners.entityStore.getIdByIndex(0);
     expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'housed on the bed the undo will take').toBe(cellInstanceId);
 
-    submit(runtime, 'undo', packCommand({ type: 'Undo' }));
+    // Called on the system rather than submitted: ADR 0104 option 2 (#956,
+    // accepted 2026-09-09) refuses a router-level `Undo` whose newest
+    // transaction is not the player's latest action, and the admission above is
+    // a later one. The subject here is that the undo route relocates the
+    // resident exactly as `RemoveObject` does, which is the same call on the
+    // same order either way; the press is covered by
+    // `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`.
+    runtime.construction.undo();
 
     expect(runtime.placedObjects.objectAt(BED_TILE as never), 'the bed is gone').toBeUndefined();
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId)?.residentCapacity).toBe(0);

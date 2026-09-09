@@ -221,7 +221,13 @@ describe('what the player is told when a removal moves somebody (ADR 0076 A(i))'
     expect(relocationEventsOf(runtime), 'and nothing has been said yet').toEqual([]);
     const who = nameOf(runtime, prisoner);
 
-    submit(runtime, 'undo', packCommand({ type: 'Undo' }));
+    // Called on the system rather than submitted, for the reason
+    // `tests/integration/object-removal-loop.test.ts` gives at its own undo
+    // site: ADR 0104 option 2 (#956) refuses the router-level press once a
+    // later action has happened, and the admission above is one. What this case
+    // is about -- that the undo route says the same sentence the removal route
+    // says -- is the same call on the same order.
+    runtime.construction.undo();
 
     expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'rehoused, not left').toBe(secondCellInstanceId);
     const events = relocationEventsOf(runtime);
