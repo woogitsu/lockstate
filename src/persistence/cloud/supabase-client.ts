@@ -24,6 +24,27 @@ interface CreateSaveVersionRow {
 }
 
 /**
+ * What `uploadVersion` answers when the RPC's row cannot be believed: either no
+ * row came back at all, or the row's columns do not match what its own status
+ * promises. The wording is the older, narrower case's and is kept because it is
+ * the string `tests/unit/persistence-cloud-supabase-client.test.ts` pins.
+ */
+const INCOMPLETE_SAVE_VERSION_ROW = { status: 'error', message: 'create_save_version returned no row.' } as const;
+
+/**
+ * The three version columns as a summary, or `undefined` when the row does not
+ * carry a complete one.
+ *
+ * Deliberately says nothing about whether an incomplete row is legitimate --
+ * that depends on the status, and only the caller knows which one it is
+ * holding.
+ */
+function completeVersion(row: CreateSaveVersionRow): CloudSaveVersionSummary | undefined {
+  if (row.version_id === null || row.revision === null || row.checksum === null) return undefined;
+  return { versionId: row.version_id, revision: row.revision, checksum: row.checksum };
+}
+
+/**
  * Thin real adapter over `@supabase/supabase-js`, calling the
  * `create_save_version` RPC (supabase/migrations/
  * 20260822190300_create_save_version_rpc.sql) and the `prisons`/
@@ -55,6 +76,18 @@ interface CreateSaveVersionRow {
  * *missing* case is a type error while a *wrong* case was caught by nothing
  * (#264 S7). Neither test says anything about RLS, grants or the RPC's
  * semantics.
+ *
+ * A THIRD, AND THE COUNT ABOVE IS LEFT AT TWO BECAUSE IT IS THE READING THAT
+ * MISSED IT: which ROW SHAPE each status carries, not merely which status.
+ * `uploadVersion` validated the three version columns above its `switch`, so
+ * the one row only `'conflict'` can produce -- `(NULL, 0, NULL)`, the prison
+ * with no saved version -- was rejected before its own branch was reached, and
+ * the branch written for it was unreachable. The unit test named for that
+ * branch passed anyway, on a fixture the SQL cannot return. The shape is now
+ * pinned in three places: by execution in
+ * `supabase/tests/001_rls_and_save_version_rpc.test.sql`, as a status x
+ * column-presence matrix in `tests/foundation/rpc-status-vocabulary-
+ * contract.test.ts`, and per branch in the unit test.
  */
 export class SupabaseCloudSaveClient implements CloudSaveClient {
   public constructor(private readonly supabase: SupabaseClient) {}
@@ -169,18 +202,58 @@ export class SupabaseCloudSaveClient implements CloudSaveClient {
     }
 
     const row = (Array.isArray(data) ? data[0] : data) as CreateSaveVersionRow | undefined;
-    if (row === undefined || row.version_id === null || row.revision === null || row.checksum === null) {
-      return { status: 'error', message: 'create_save_version returned no row.' };
-    }
+    if (row === undefined) return INCOMPLETE_SAVE_VERSION_ROW;
 
-    const version: CloudSaveVersionSummary = { versionId: row.version_id, revision: row.revision, checksum: row.checksum };
+    // The status is read BEFORE the other three columns, because WHICH columns
+    // a row carries is a property of the status and not of the function. This
+    // guard used to sit above the switch, rejecting any row with a null
+    // `version_id`, `revision` or `checksum` -- and the conflict a prison with
+    // no saved version answers with is exactly such a row.
+    //
+    // `20260822190300_create_save_version_rpc.sql:132-138` returns
+    // `v_current_version_id, v_current_revision, v_current_checksum` on a
+    // conflict, read from `prisons`, where `current_version_id` has no default
+    // and `current_revision` is `not null default 0`
+    // (`20260822190100_create_prisons.sql:12-13`). A prison that has never been
+    // saved therefore answers `('conflict', NULL, 0, NULL)`, pinned by
+    // execution against real PostgreSQL in
+    // `supabase/tests/001_rls_and_save_version_rpc.test.sql`. A client that
+    // believes it is synced at revision N and pushes N+1 into an empty cloud
+    // prison is how that call arises -- and it used to come back as
+    // `{ status: 'error' }`, which `PrisonSyncEngine.push` turns into
+    // `reason: 'error'` with no resolution offered, instead of the conflict
+    // `resolveSyncConflict('keep-local', undefined)` already answers with
+    // `retry-push` at revision 1.
     switch (row.status) {
-      case 'created':
-        return { status: 'created', version };
-      case 'idempotent_replay':
-        return { status: 'idempotent-replay', version };
-      case 'conflict':
-        return { status: 'conflict', cloudCurrent: row.revision > 0 ? version : undefined };
+      case 'created': {
+        const version = completeVersion(row);
+        return version === undefined ? INCOMPLETE_SAVE_VERSION_ROW : { status: 'created', version };
+      }
+      case 'idempotent_replay': {
+        const version = completeVersion(row);
+        return version === undefined ? INCOMPLETE_SAVE_VERSION_ROW : { status: 'idempotent-replay', version };
+      }
+      case 'conflict': {
+        // Revision 0 is the prison with nothing in it: there is no earlier
+        // version to point the caller at, and the other two columns are NULL by
+        // construction rather than by accident.
+        //
+        // A NULL revision is a different thing and is deliberately not caught
+        // here. `prisons.current_revision` is `not null`, so it is a row this
+        // schema cannot produce; it falls through to `completeVersion` below,
+        // which refuses it along with the other two columns. An explicit guard
+        // for it was written first and then removed: mutation-testing showed it
+        // changed no outcome, which makes it dead code that reads as handling
+        // something.
+        if (row.revision === 0) return { status: 'conflict', cloudCurrent: undefined };
+
+        // A conflict at a positive revision names a version that exists, so an
+        // incomplete one is incoherent rather than empty. Reporting it as a
+        // conflict with no `cloudCurrent` would send the caller to
+        // `retry-push` at revision 1, into a prison that is already past it.
+        const version = completeVersion(row);
+        return version === undefined ? INCOMPLETE_SAVE_VERSION_ROW : { status: 'conflict', cloudCurrent: version };
+      }
     }
   }
 
