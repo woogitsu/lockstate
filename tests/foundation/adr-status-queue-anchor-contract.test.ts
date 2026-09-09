@@ -105,8 +105,82 @@ const ANCHOR_LINE = /Re-anchored at `main` @ `([0-9a-f]{7,40})`\s*\(\*{0,2}v(\d+
  * Deliberately broad on the verb — `verified`, `re-verified`, `stays verified`
  * — because the point is to find every live claim of the shape "this was true
  * at X", not to police one wording.
+ *
+ * ## It was two assumptions narrower than that until 2026-09-09, and both cost
+ *
+ * The pattern spelled the gap between `verified` and `at` as **one literal
+ * space**, and the gap between `at` and the sha as another. `STATUS-QUEUE.md`
+ * is hand-wrapped prose, so a sha that happened to land at a line start was
+ * invisible to this gate — permanently, silently, and in exactly the sentences
+ * a re-anchor has to settle. Measured on the tree that widened it: the old
+ * pattern read **7** occurrences and the new one reads **25**, and among the
+ * eighteen it had never read was a live `verified at` in §4 naming
+ * `0e2eb7fb` — neither the anchor of its day nor any anchor since. **A live
+ * claim warranted by a commit the header does not name is the entire defect
+ * this file's first assertion exists to catch**, and it sat one line break out
+ * of reach.
+ *
+ * That is the second assumption. The first is the words between the verb and
+ * the preposition: this corpus writes *"each verified correct at `c57f5fa8`"*
+ * and *"Verified rather than taken: at `2732e81e`"*, six occurrences of the
+ * first shape alone, none of which the old pattern could see either. So the
+ * gap is `[^.\`]{0,40}?` — bounded so it cannot wander into the next clause,
+ * period-free so it cannot cross a sentence, backtick-free so it cannot skip
+ * over one sha to reach another.
+ *
+ * **Neither assumption was novel and both were already written down.**
+ * `NEXT_FREE_RESTATEMENT` below is `\s`-tolerant and says why in its own
+ * docblock — *"this file's paragraphs are hand-wrapped"* — and adds
+ * *"(`ANCHOR_LINE` above tolerates the same thing for the same reason; it is
+ * not a coincidence that both patterns need it, since both read paragraphs a
+ * human keeps re-wrapping)"*. Two of this file's three patterns had learned
+ * it. `adr-quotation-verbatim-contract.test.ts` records the identical failure
+ * in its own `ATTRIBUTION` and `TRAILING_QUOTE` and states the general rule
+ * this change is an application of: *"a pattern that matches prose must treat
+ * every gap as whitespace"*.
+ *
+ * ## What it still cannot see, measured rather than assumed
+ *
+ * A looser scan — `verified` then up to forty non-backtick characters then a
+ * backticked sha, dropping the `at` — finds **five** more. All five are prose
+ * *about* a citation rather than a citation: three quote this pattern's own
+ * text while discussing it, and *"re-verified at every anchor since
+ * `26434e8e`"* names the **start of a range**, not a commit anything was
+ * checked at. **A watchdog of that shape — the move
+ * `adr-quotation-verbatim-contract.test.ts` makes with its own
+ * `ATTRIBUTION_SHAPED` — was written, run, and rejected for that reason**, and
+ * is deliberately not declared here: it fires on all five, four of them
+ * correctly-written sentences, and the only way to quiet it is an allowlist,
+ * which rots faster than the thing it guards. The honest form of "a pattern
+ * cannot report its own misses" here is this paragraph and the number in it.
+ *
+ * ## It bites, and it is not vacuous
+ *
+ * Four controls, run against the tree that landed the widening rather than
+ * argued for:
+ *
+ * - **Undo the §4 repair this widening exposed** — restore *"stays verified at
+ *   `0e2eb7fb`"* — and `names one commit throughout` fails, naming it, with the
+ *   line break visible in the reported match. Under the old pattern the same
+ *   sentence passed, which is how it survived every anchor that has run this
+ *   gate.
+ * - **Add a fresh live claim whose sha wraps** — *"stays verified at"*, a line
+ *   break, then `` `4ed571f` `` — and the same assertion fails, naming it, with
+ *   the break inside the reported match. A real commit rather than an invented
+ *   one, because `documentation-commit-citation-contract` reads shas out of
+ *   this docblock and a fabricated one fails it. This is the control the old
+ *   pattern could not have failed at all.
+ * - **Keep the widened `VERIFIED_AT` but restore `HISTORICAL_CLAIM`'s original
+ *   four-word trigger list** and it fails on two records — `4ed571f` and
+ *   `1e7c63c7` — which is what `were` and `said` are load-bearing for. Neither
+ *   is a live claim; both are a superseded entry being quoted.
+ * - **Non-vacuity, both sides.** On the landing tree `VERIFIED_AT` matches
+ *   **26** occurrences, `HISTORICAL_CLAIM` exempts **24** of them, **23** of
+ *   those name a sha that is not the anchor — so the exemption is doing work
+ *   rather than being unreachable — and the **2** that remain live both name
+ *   the header's own anchor, which is the state this assertion is for.
  */
-const VERIFIED_AT = /((?:re-)?verified) at `([0-9a-f]{7,40})`/gi;
+const VERIFIED_AT = /((?:re-)?verified)\b[^.`]{0,40}?at\s+`([0-9a-f]{7,40})`/gi;
 
 /**
  * The same claim in the past tense, which is a record rather than a claim.
@@ -116,7 +190,18 @@ const VERIFIED_AT = /((?:re-)?verified) at `([0-9a-f]{7,40})`/gi;
  * destroy the record. The same exemption `adr-status-reference-contract.test.ts`
  * grants past-tense status claims, for the same reason.
  */
-const HISTORICAL_CLAIM = /\b(?:read|used to|had|was)\b[^.]{0,400}?(?:re-)?verified at `[0-9a-f]{7,40}`/gis;
+const HISTORICAL_CLAIM =
+  /\b(?:read|used to|had|was|were|said)\b[^.]{0,400}?(?:re-)?verified\b[^.`]{0,40}?at\s+`[0-9a-f]{7,40}`/gis;
+// `were` and `said` joined the four on 2026-09-09, with `VERIFIED_AT`'s
+// widening above: once the gate could read a wrapped sha it could also read
+// *"Both absences **were** re-verified at `1e7c63c7`"* and *"§§3-5 **said**
+// 're-verified at `4ed571f`' in five places"*, both of them plainly records of
+// a superseded entry and both reported as live claims for want of an
+// auxiliary the list did not carry. Two words cut that run from five to three.
+// The trade is stated rather than hidden: every word added here can exempt a
+// genuinely live claim that happens to carry it earlier in the same sentence,
+// which is the same trade the original four made and the reason the list is
+// six words and not a part-of-speech.
 
 /**
  * A dated pass's opening clause: "<label> at `<sha>` (v<version>)", e.g.
