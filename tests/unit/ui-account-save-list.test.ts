@@ -21,6 +21,14 @@ interface SlotOverrides {
   readonly updatedAt?: number;
   readonly generationIds?: readonly string[];
   readonly currentGenerationId?: string | undefined;
+  /** The prison's true current local revision (`PrisonSlotMetadata.currentRevision`), what this projection now reads (#1097). */
+  readonly currentRevision?: number;
+  /**
+   * `pendingSync.dirtySinceRevision` -- kept as its own override, distinct
+   * from `currentRevision`, precisely to exercise #1097's fix: this
+   * projection no longer reads it, so a slot can carry a stale or absent
+   * marker here without affecting `localRevision` or `sync` at all.
+   */
   readonly dirtySinceRevision?: number;
 }
 
@@ -31,6 +39,7 @@ function slot(prisonId: string, overrides: SlotOverrides = {}): PrisonSlotMetada
     gameVersion: 'lockstate-0.0.0',
     ...(overrides.displayName === undefined ? {} : { displayName: overrides.displayName }),
     currentGenerationId: 'currentGenerationId' in overrides ? overrides.currentGenerationId : generationIds.at(-1),
+    ...(overrides.currentRevision === undefined ? {} : { currentRevision: overrides.currentRevision }),
     generationIds,
     createdAt: 1_000,
     updatedAt: overrides.updatedAt ?? 2_000,
@@ -85,27 +94,26 @@ describe('the save list says whether a push can actually be made (#34, #20)', ()
    * implementation with a different rule cannot satisfy all four.
    */
   it('reports sync-pending only when the local revision is exactly one past the cloud', () => {
-    const [row] = project({ local: [slot('p1', { dirtySinceRevision: 4 })], cloud: [cloud('p1', 3)] });
+    const [row] = project({ local: [slot('p1', { currentRevision: 4 })], cloud: [cloud('p1', 3)] });
     expect(row).toMatchObject({ sync: 'sync-pending', conflict: undefined, localRevision: 4, cloudRevision: 3 });
   });
 
-  it('reports a cloud-ahead conflict when another device has already taken that revision', () => {
-    const [row] = project({ local: [slot('p1', { dirtySinceRevision: 4 })], cloud: [cloud('p1', 4)] });
+  it('reports a cloud-ahead conflict when another device has already taken the next revision', () => {
+    const [row] = project({ local: [slot('p1', { currentRevision: 4 })], cloud: [cloud('p1', 5)] });
     expect(row).toMatchObject({ sync: 'conflict', conflict: 'cloud-ahead' });
   });
 
   it('reports a cloud-ahead conflict when the cloud has moved several revisions on', () => {
-    const [row] = project({ local: [slot('p1', { dirtySinceRevision: 4 })], cloud: [cloud('p1', 9)] });
+    const [row] = project({ local: [slot('p1', { currentRevision: 4 })], cloud: [cloud('p1', 9)] });
     expect(row).toMatchObject({ sync: 'conflict', conflict: 'cloud-ahead' });
   });
 
   it('distinguishes a local copy that has simply run ahead offline from a genuine divergence', () => {
     // Five offline saves from cloud revision 3. Nothing diverged -- the local
-    // copy is strictly newer -- but the push still cannot be made as-is,
-    // because markPendingSync records only the newest unsynced revision.
+    // copy is strictly newer -- but the push still cannot be made as-is.
     // Calling this `cloud-ahead` would offer a choice between the player's own
     // work and an older copy of it.
-    const [row] = project({ local: [slot('p1', { dirtySinceRevision: 8 })], cloud: [cloud('p1', 3)] });
+    const [row] = project({ local: [slot('p1', { currentRevision: 8 })], cloud: [cloud('p1', 3)] });
     expect(row).toMatchObject({ sync: 'conflict', conflict: 'local-ahead-of-cloud-baseline' });
   });
 
@@ -113,12 +121,44 @@ describe('the save list says whether a push can actually be made (#34, #20)', ()
     const [row] = project({ local: [slot('p1')], cloud: [cloud('p1', 7)] });
     expect(row).toMatchObject({ sync: 'synced', localRevision: undefined, cloudRevision: 7 });
   });
+
+  it('reports a prison whose local revision exactly matches the cloud as synced, not as a conflict', () => {
+    // `currentRevision` is written on every save and never cleared, so unlike
+    // the old `pendingSync`-backed marker it stays defined long after a
+    // prison is genuinely caught up. Calling `conflictOf` on equal revisions
+    // would answer `cloud-ahead` on a prison with nothing left to push.
+    const [row] = project({ local: [slot('p1', { currentRevision: 7 })], cloud: [cloud('p1', 7)] });
+    expect(row).toMatchObject({ sync: 'synced', conflict: undefined, localRevision: 7, cloudRevision: 7 });
+  });
+
+  /**
+   * The exact defect #1097 measured: `markPendingSync` has one caller, inside
+   * `saveNow`, and the interval autosave never reaches it -- so
+   * `pendingSync.dirtySinceRevision` can freeze at an old revision while the
+   * durable one moves on. Numbers match the issue's own repro (marker at 5,
+   * true local revision 8, cloud at 5) rather than a paraphrase of it: the old
+   * reader answered `{"sync":"conflict","conflict":"cloud-ahead"}` here,
+   * offering "keep cloud" over three good autosaves.
+   */
+  it('#1097: a stale, low pendingSync marker does not turn a prison that is strictly ahead into a cloud-ahead conflict', () => {
+    const [row] = project({
+      local: [slot('p1', { currentRevision: 8, dirtySinceRevision: 5 })],
+      cloud: [cloud('p1', 5)],
+    });
+    expect(row?.conflict).not.toBe('cloud-ahead');
+    expect(row).toMatchObject({
+      sync: 'conflict',
+      conflict: 'local-ahead-of-cloud-baseline',
+      localRevision: 8,
+      cloudRevision: 5,
+    });
+  });
 });
 
 describe('the save list is understandable offline, and says what a retry would do (#34)', () => {
   it('reports unsynced work as offline rather than pending when the device cannot reach the cloud', () => {
     const [row] = project({
-      local: [slot('p1', { dirtySinceRevision: 4 })],
+      local: [slot('p1', { currentRevision: 4 })],
       cloud: [cloud('p1', 3)],
       connectivity: 'offline',
     });
@@ -128,14 +168,14 @@ describe('the save list is understandable offline, and says what a retry would d
   it('turns the same prison into a pending push as soon as the device is back online', () => {
     // Same local and cloud state; connectivity is the only difference, which
     // is what makes "this will retry" honest guidance rather than a label.
-    const input = { local: [slot('p1', { dirtySinceRevision: 4 })], cloud: [cloud('p1', 3)] } as const;
+    const input = { local: [slot('p1', { currentRevision: 4 })], cloud: [cloud('p1', 3)] } as const;
     expect(project({ ...input, connectivity: 'offline' })[0]?.sync).toBe('sync-offline');
     expect(project({ ...input, connectivity: 'online' })[0]?.sync).toBe('sync-pending');
   });
 
   it('reports a push that was refused for a non-conflict reason as failed, with the reason', () => {
     const [row] = project({
-      local: [slot('p1', { dirtySinceRevision: 4 })],
+      local: [slot('p1', { currentRevision: 4 })],
       cloud: [cloud('p1', 3)],
       failures: { p1: 'not-registered' },
     });
@@ -146,7 +186,7 @@ describe('the save list is understandable offline, and says what a retry would d
     // The failed push and the conflict are usually the same event; only the
     // conflict says which of #20's choices apply, so it is the one shown.
     const [row] = project({
-      local: [slot('p1', { dirtySinceRevision: 4 })],
+      local: [slot('p1', { currentRevision: 4 })],
       cloud: [cloud('p1', 6)],
       failures: { p1: 'error' },
     });

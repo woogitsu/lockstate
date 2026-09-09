@@ -34,6 +34,13 @@ function idSequence(prefix: string): () => string {
   };
 }
 
+/** Writes a record the typed API would never produce, the way a slot from an older build would arrive. */
+async function seedRawSlotRecord(store: MemoryLocalSaveStore, record: unknown): Promise<void> {
+  await store.runTransaction('readwrite', async (tx) => {
+    await tx.putMetadata(record as Parameters<typeof tx.putMetadata>[0]);
+  });
+}
+
 describe('PrisonSaveRepository: CRUD', () => {
   it('creates, lists and deletes prison slots', async () => {
     const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: () => 1000 });
@@ -811,5 +818,94 @@ describe('PrisonSaveRepository: pending sync metadata', () => {
     await repo.clearPendingSync('prison-1');
     [metadata] = await repo.list();
     expect(metadata?.pendingSync).toBeUndefined();
+  });
+
+  /**
+   * #1097's fix, at the choke point rather than through `SessionController`:
+   * `currentRevision` is written by `writeGeneration`, which every save route
+   * reaches -- including a caller (the interval autosave) that never calls
+   * `markPendingSync` at all. These three `save()` calls model exactly that:
+   * no `markPendingSync` call between them, the way
+   * `SessionController`'s `AutosaveScheduler` drives `repository.save`
+   * directly.
+   */
+  it('writes currentRevision on every save, with no markPendingSync call in sight (#1097)', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    await repo.save('prison-1', buildEnvelope(1));
+    expect((await repo.list())[0]?.currentRevision).toBe(1);
+    await repo.save('prison-1', buildEnvelope(2));
+    expect((await repo.list())[0]?.currentRevision).toBe(2);
+    await repo.save('prison-1', buildEnvelope(3));
+    expect((await repo.list())[0]?.currentRevision).toBe(3);
+
+    // Untouched by any of this -- `currentRevision` and `pendingSync` are two
+    // separate facts now (#1097), and nothing here ever called
+    // `markPendingSync`.
+    expect((await repo.list())[0]?.pendingSync).toBeUndefined();
+  });
+
+  it('writes currentRevision on an import, the other route into writeGeneration', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    const imported = JSON.parse(JSON.stringify(buildEnvelope(7))) as unknown;
+    expect((await repo.importSave('prison-1', imported)).ok).toBe(true);
+    expect((await repo.list())[0]?.currentRevision).toBe(7);
+  });
+
+  /**
+   * `pendingSync.dirtySinceRevision` is a lower bound -- the revision the
+   * prison first went dirty at -- not "whatever the latest save wrote"
+   * (#1097). So a second `markPendingSync` call while a marker already
+   * stands must leave it exactly where it was; only `clearPendingSync` may
+   * move it, by removing it so the next call sets a fresh one.
+   */
+  it('leaves an existing pendingSync marker untouched: markPendingSync only sets the first one', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    await repo.markPendingSync('prison-1', { dirtySinceRevision: 3, markedAt: 100 });
+    await repo.markPendingSync('prison-1', { dirtySinceRevision: 9, markedAt: 900 });
+    expect((await repo.list())[0]?.pendingSync).toEqual({ dirtySinceRevision: 3, markedAt: 100 });
+
+    // Clearing it is what makes a *new* first-dirty revision recordable.
+    await repo.clearPendingSync('prison-1');
+    await repo.markPendingSync('prison-1', { dirtySinceRevision: 9, markedAt: 900 });
+    expect((await repo.list())[0]?.pendingSync).toEqual({ dirtySinceRevision: 9, markedAt: 900 });
+  });
+
+  /**
+   * `PrisonSlotMetadata.currentRevision` is optional precisely so a slot
+   * written before #1097 -- no `currentRevision` key at all, exactly what
+   * `seedRawSlotRecord` below writes -- still loads rather than being refused
+   * as corrupt (`docs/PERSISTENCE.md`, "Adding an optional field without a
+   * version bump"). Nothing repairs it retroactively: it reads back
+   * `undefined` until its next durable save.
+   */
+  it('still loads a slot written before currentRevision existed, and backfills it on the next save (#1097)', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store);
+    const legacyRecord = {
+      prisonId: 'prison-1',
+      gameVersion: 'lockstate-0.0.0',
+      currentGenerationId: 'gen-1',
+      generationIds: ['gen-1'],
+      createdAt: 1_000,
+      updatedAt: 1_000,
+      pendingSync: { dirtySinceRevision: 1, markedAt: 1_000 },
+      // Deliberately no `currentRevision` key: this is the shape a build
+      // before #1097 wrote.
+    };
+    await seedRawSlotRecord(store, legacyRecord);
+
+    const [metadataBefore] = await repo.list();
+    expect(metadataBefore?.currentRevision).toBeUndefined();
+    expect(metadataBefore?.prisonId).toBe('prison-1');
+
+    await repo.save('prison-1', buildEnvelope(4));
+    const [metadataAfter] = await repo.list();
+    expect(metadataAfter?.currentRevision).toBe(4);
   });
 });

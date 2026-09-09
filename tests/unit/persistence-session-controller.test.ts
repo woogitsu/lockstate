@@ -7,6 +7,7 @@ import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { type CloudPrisonMetadata, projectSaveList } from '../../src/ui/account/save-list-projection';
 import { expectOk } from '../helpers/expect-ok';
 
 function buildController(options: { readonly autosaveIntervalMs?: number; readonly store?: MemoryLocalSaveStore } = {}) {
@@ -124,7 +125,13 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     await controller.saveNow();
 
     const [metadata] = await repository.list();
-    expect(metadata!.pendingSync?.dirtySinceRevision).toBe(controller.getActiveSession()!.revision);
+    // `dirtySinceRevision` is a lower bound -- the revision the prison first
+    // went dirty at -- not "whatever `saveNow` just wrote" (#1097): once a
+    // marker exists, `markPendingSync` leaves it alone until
+    // `clearPendingSync` runs, so it stays at 1 (set by `createPrison`'s own
+    // `saveNow`) rather than moving to 2 with this second save.
+    expect(metadata!.pendingSync?.dirtySinceRevision).toBe(1);
+    expect(metadata!.pendingSync?.dirtySinceRevision).not.toBe(controller.getActiveSession()!.revision);
     // The payload itself carries no sync state -- it lives on slot metadata.
     const loaded = await repository.loadCurrent('prison-1');
     expect(loaded.ok && Object.keys(loaded.envelope.payload)).not.toContain('pendingSync');
@@ -316,6 +323,88 @@ describe('SessionController: autosave coalescing and non-overlap', () => {
     expect(results.at(-1)).toMatchObject({ ok: true });
     const loaded = await repository.loadCurrent('prison-1');
     expect(loaded.ok && loaded.envelope.revision).toBe(2);
+  });
+
+  /**
+   * Reproduces #1097's measurement. `markPendingSync` has one caller, inside
+   * `saveNow` (`session-controller.ts`), and the interval autosave writes a
+   * new generation through `repository.save` directly -- never through
+   * `saveNow` -- so `pendingSync.dirtySinceRevision` freezes at whatever
+   * `createPrison`'s own `saveNow` set while the durable revision keeps
+   * moving underneath it. Numbers match the issue's own repro (marker frozen
+   * at the create-time revision, 1; durable revision at 4 after three
+   * autosaves) rather than being asserted from a paraphrase of it.
+   */
+  it('#1097: three autosaves after creation leave the pendingSync marker stale while the durable revision moves on', async () => {
+    const { controller, repository } = buildController({ autosaveIntervalMs: 1_000 });
+    await controller.createPrison('prison-1');
+    expect(controller.getActiveSession()!.revision).toBe(1);
+
+    for (let i = 0; i < 3; i += 1) {
+      controller.markDirty();
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+
+    const durableRevision = controller.getActiveSession()!.revision;
+    const [metadata] = await repository.list();
+    // eslint-disable-next-line no-console -- evidence for the PR, not a leftover.
+    console.log(
+      '#1097 repro: durable revision =',
+      durableRevision,
+      'pendingSync =',
+      metadata!.pendingSync,
+      'currentRevision =',
+      metadata!.currentRevision,
+    );
+
+    expect(durableRevision).toBe(4);
+    // The marker: never moved past what `createPrison`'s own `saveNow` set.
+    // This is the defect, not something the fix touches -- see the next test
+    // and `save-list-projection.ts` for what stops reading it as the local
+    // revision.
+    expect(metadata!.pendingSync?.dirtySinceRevision).toBe(1);
+    // The fix: `PrisonSlotMetadata.currentRevision` is written by every
+    // durable save, autosave included (`writeGeneration` in `repository.ts`),
+    // so it never drifts the way the marker does.
+    expect(metadata!.currentRevision).toBe(durableRevision);
+  });
+
+  /**
+   * The consequence #1097 traced all the way to the one reader that exists.
+   * `save-list-projection.ts` used to read the stale marker as the row's
+   * local revision, so this same drift turned into `cloud-ahead` on a prison
+   * that was strictly *ahead* of the cloud -- the multi-device divergence
+   * case, offering "keep cloud" over three good autosaves.
+   */
+  it('#1097: the save-list projection no longer misreads that drift as a cloud-ahead conflict', async () => {
+    const { controller, repository } = buildController({ autosaveIntervalMs: 1_000 });
+    await controller.createPrison('prison-1');
+    for (let i = 0; i < 3; i += 1) {
+      controller.markDirty();
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+    const [metadata] = await repository.list();
+
+    // The cloud sits exactly where the stale marker says local is -- the
+    // scenario in which the old reader answered `cloud-ahead`.
+    const cloud: CloudPrisonMetadata = {
+      prisonId: 'prison-1',
+      revision: metadata!.pendingSync!.dirtySinceRevision,
+      updatedAt: metadata!.updatedAt,
+    };
+    const [row] = projectSaveList({
+      account: { kind: 'anonymous', accountId: 'a3f1c2d4-0000-4000-8000-000000000001' },
+      local: [metadata!],
+      cloud: [cloud],
+      connectivity: 'online',
+    });
+
+    // Local is genuinely three revisions ahead of a cloud that has not moved
+    // -- the offline case, not a divergence -- so `cloud-ahead`, which would
+    // offer "keep cloud" over the player's own autosaves, must not be the
+    // verdict.
+    expect(row!.conflict).not.toBe('cloud-ahead');
+    expect(row).toMatchObject({ sync: 'conflict', conflict: 'local-ahead-of-cloud-baseline' });
   });
 });
 
