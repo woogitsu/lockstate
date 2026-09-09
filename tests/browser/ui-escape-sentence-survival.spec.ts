@@ -233,6 +233,7 @@ function viewModelWith(event: HudViewModel['event'], alerts: readonly HudAlertVi
       prisonerCapacity: 2,
       occupiedPlaces: 2,
       staff: 0,
+      staffUnassigned: 0,
       rooms: 1,
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,

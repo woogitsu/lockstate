@@ -154,6 +154,36 @@ export interface HudCountsViewModel {
    */
   readonly occupiedPlaces: number;
   readonly staff: number;
+  /**
+   * How many hired guards are standing in deployment phase `'unassigned'` --
+   * hired, and posted nowhere (issue #870).
+   *
+   * Published, never derived here, for `prisonerCapacity`'s reason above: it
+   * is `counts.staffUnassigned`, which `projectStatusStrip` counts on the
+   * same walk over `allGuardIds()` that counts `staff` above
+   * (`src/simulation/presentation/status-strip-projection.ts`), so the two
+   * cannot come to disagree about who is on the roster.
+   *
+   * **It has been on `statusCountsSchema` since `staffUnassigned` was added
+   * and until this line nothing in `src/ui/` or `src/main.ts` read it** --
+   * `grep -rn 'staffUnassigned' src/ui/ src/main.ts` returned nothing, which
+   * is issue #629's class rather than a missing feature: every guard hired
+   * and posted nowhere was counted, published twice a second, and shown to
+   * nobody.
+   *
+   * **The number stops here, deliberately.** Nothing paints this field yet:
+   * the Security panel's coverage hint is the surface issue #870 names as the
+   * one this number belongs on, but the *sentence* that hint would say about
+   * an unassigned guard is a player-visible promise, and #868 is the open
+   * question about exactly that sentence -- `AGENTS.md`'s fourth exclusion,
+   * the owner's rather than an implementing agent's. #870 is scoped to the
+   * number reaching this view model, not to authoring the copy that would
+   * read it out.
+   *
+   * `0` is a real state, not "unknown": it is every prison that has hired
+   * nobody, and every prison whose whole roster is posted.
+   */
+  readonly staffUnassigned: number;
   readonly rooms: number;
   /**
    * The summed `residentCapacity` of **every** registered room instance --
@@ -2026,6 +2056,7 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     prisonerCapacity: 0,
     occupiedPlaces: 0,
     staff: 0,
+    staffUnassigned: 0,
     rooms: 0,
     prisonersCovered: 0,
     prisonersUnderstaffed: 0,

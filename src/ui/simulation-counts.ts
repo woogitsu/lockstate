@@ -87,6 +87,28 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          */
         occupiedPlaces: counts.occupiedPlaces,
         staff: counts.staff,
+        /**
+         * Straight through, for `accommodationCapacity`'s reason above, and
+         * it is the count the Security panel's coverage hint needs and does
+         * not have -- the same defect #868 found from the *coverage* side
+         * (issue #870).
+         *
+         * **It has been on the wire since `staffUnassigned` was added to
+         * `statusCountsSchema` and until this line nothing in `src/ui/` or
+         * `src/main.ts` read it** -- `grep -rn 'staffUnassigned' src/ui/
+         * src/main.ts` returned nothing, which is issue #629's class rather
+         * than a missing feature: every guard hired and posted nowhere was
+         * counted, published twice a second, and shown to nobody.
+         *
+         * **The number stops here.** No panel reads
+         * `HudCountsViewModel.staffUnassigned` yet: the sentence a coverage
+         * hint would say about an unassigned guard is a player-visible
+         * promise, and #868 is the owner's open question about exactly that
+         * sentence (`AGENTS.md`'s fourth exclusion). #870 is scoped to the
+         * number reaching this translator, not to authoring the copy that
+         * would read it out.
+         */
+        staffUnassigned: counts.staffUnassigned,
         rooms: counts.rooms,
         // Straight through, deliberately not `prisonerCapacity` above -- see
         // `HudCountsViewModel.roomCapacity`'s own doc comment for why the

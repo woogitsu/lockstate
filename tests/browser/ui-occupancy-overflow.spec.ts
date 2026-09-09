@@ -62,6 +62,7 @@ async function setOccupancy(page: Page, prisoners: number, prisonerCapacity: num
           // that badge does not move the bar it sits beside.
           occupiedPlaces: Math.min(value as number, capacity as number),
           staff: 27,
+          staffUnassigned: 0,
           rooms: 61,
           prisonersCovered: 0,
           prisonersUnderstaffed: 0,

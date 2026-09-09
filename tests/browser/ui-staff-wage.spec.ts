@@ -119,6 +119,7 @@ function viewModel(options: { readonly hired: number; readonly bill?: number }):
       prisonerCapacity: 180,
       occupiedPlaces: 142,
       staff: 60,
+      staffUnassigned: 0,
       rooms: 61,
       prisonersCovered: 100,
       prisonersUnderstaffed: 30,

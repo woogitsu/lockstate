@@ -147,6 +147,7 @@ function viewModel(staffRoster: HudStaffRosterViewModel): HudViewModel {
       prisonerCapacity: 8,
       occupiedPlaces: 0,
       staff: staffRoster.hired,
+      staffUnassigned: 0,
       rooms: 2,
       prisonersCovered: 0,
       prisonersUnderstaffed: 0,

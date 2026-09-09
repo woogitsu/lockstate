@@ -298,6 +298,12 @@ const BASE_VIEW_MODEL: HudViewModel = {
     // the same fixture is paying full price for.
     occupiedPlaces: 142,
     staff: 27,
+    // Not painted by anything this harness drives (issue #870): the field
+    // exists on `HudCountsViewModel` and needs a value to satisfy the type,
+    // and it is deliberately not a fraction of `staff` above so a future
+    // reader that confused the two would not get a plausible-looking number
+    // by accident.
+    staffUnassigned: 5,
     rooms: 61,
     // The three coverage rungs sum to 142, this fixture's own population, and
     // no two of them are equal -- so a strip that read the wrong one, or

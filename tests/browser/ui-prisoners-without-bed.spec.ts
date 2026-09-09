@@ -63,6 +63,7 @@ async function setCounts(
           // fit into, and a strip whose other seven chips read "0" is a
           // narrower strip than any player sees.
           staff: 27,
+          staffUnassigned: 0,
           rooms: 61,
           prisonersCovered: 100,
           prisonersUnderstaffed: 30,
