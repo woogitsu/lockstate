@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
@@ -907,5 +907,73 @@ describe('PrisonSaveRepository: pending sync metadata', () => {
     await repo.save('prison-1', buildEnvelope(4));
     const [metadataAfter] = await repo.list();
     expect(metadataAfter?.currentRevision).toBe(4);
+  });
+});
+
+/**
+ * Issue #582 FINAL-022. `defaultGenerationId` minted
+ * `gen-<Date.now() base36>-<counter base36>` from a **module-local** counter,
+ * so every JavaScript realm starts that counter at zero: two tabs, or a tab and
+ * a worker, saving in the same millisecond mint the *same* id for different
+ * bytes. `generationId` is the key the bytes are stored under and the entry in
+ * `generationIds`, so a collision is one generation silently overwriting
+ * another's payload while both remain listed.
+ *
+ * ## Why the test resets modules rather than opening two tabs
+ *
+ * The counter is module state and there is no way to reach it from outside, so
+ * the only honest way to reproduce a second realm is to *be* one:
+ * `vi.resetModules()` plus a fresh dynamic import gives a second copy of the
+ * module with its counter back at zero, which is exactly what a second tab has.
+ * With the clock frozen so both realms agree on `Date.now()`, the old
+ * implementation makes the two sequences identical -- the collision, reproduced
+ * rather than argued.
+ */
+describe('PrisonSaveRepository: generation ids across realms (#582 FINAL-022)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.resetModules();
+  });
+
+  async function mintInFreshRealm(count: number): Promise<readonly string[]> {
+    vi.resetModules();
+    const { PrisonSaveRepository: FreshRepository } = await import('../../src/persistence/local/repository');
+    const { MemoryLocalSaveStore: FreshStore } = await import('../../src/persistence/local/memory-store');
+    // No `generateGenerationId` injected: this test is about the DEFAULT, which
+    // is the only thing a shipped tab uses.
+    const repository = new FreshRepository(new FreshStore());
+    await repository.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    const minted: string[] = [];
+    for (let revision = 1; revision <= count; revision += 1) {
+      expectOk(await repository.save('prison-1', buildEnvelope(revision)), `save ${String(revision)}`);
+      const slot = (await repository.list()).find((prison) => prison.prisonId === 'prison-1');
+      minted.push(slot!.currentGenerationId!);
+    }
+    return minted;
+  }
+
+  it('mints ids no second realm can duplicate, even with the clock frozen on the same millisecond', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(1_700_000_000_000));
+
+    const firstRealm = await mintInFreshRealm(3);
+    const secondRealm = await mintInFreshRealm(3);
+
+    expect(new Set(firstRealm).size, 'ids within one realm must already be distinct').toBe(3);
+    expect(
+      firstRealm.filter((id) => secondRealm.includes(id)),
+      'a second tab starting its own module counter at zero must not be able to mint an id this one already used -- these are storage keys, so a collision overwrites one generation with another',
+    ).toEqual([]);
+  });
+
+  it('keeps the one property `generation-policy.ts` reasons about: no minted id carries the quarantine mark', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(1_700_000_000_000));
+
+    // `generation-policy.ts` states that `!` is not a character
+    // `defaultGenerationId` can emit, and `writeGeneration` refuses an injected
+    // id that carries the mark -- so quarantine means "was quarantined" and
+    // nothing else. Changing the id format must not quietly cost that.
+    for (const id of await mintInFreshRealm(3)) expect(id.includes('!')).toBe(false);
   });
 });
