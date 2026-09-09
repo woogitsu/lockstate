@@ -754,62 +754,82 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `3399b1f9` (**v0.0.546**) by the delta method this
-header describes, from the v0.0.534 anchor kept below. **This anchor is again
-a merge commit rather than the `chore(release)` commit above it** — `3399b1f9`
-is #1101's merge; `3b6f1b86` (`chore(release): v0.0.547`) sits one commit above
+Re-anchored at `main` @ `e5fbe9d9` (**v0.0.554**) by the delta method this
+header describes, from the v0.0.546 anchor kept below. **This anchor is again
+a merge commit rather than the `chore(release)` commit above it** — `e5fbe9d9`
+is #1107's merge; `fad2657c` (`chore(release): v0.0.555`) sits one commit above
 it on `main` and is not what this line names, for the reason every anchor in
 this chain has repeated: a `chore(release)` commit starts no CI run at all and
 a reader who followed one out to verify it would find nothing to verify
-against. `package.json` ships **0.0.546** at `3399b1f9`.
+against. `package.json` ships **0.0.554** at `e5fbe9d9`.
 
-**THIS PASS WAS DISPATCHED BY THE GATE'S OWN FAILURE ON `main` — THE THIRD TIME
-IN THIS CHAIN, AND THE WIDEST OVERRUN OF THE THREE.** The spend is **TWELVE of
-the ten releases the budget allows** counted against the merge this line names,
-and **THIRTEEN** counted against the tree this commit is written against
-(`3b6f1b86`, v0.0.547), which is the figure
-`tests/foundation/adr-status-queue-anchor-contract.test.ts` printed when it
-turned `main` red: *"STATUS-QUEUE.md is anchored at v0.0.534 and package.json
-ships 0.0.547: 13 releases of history that no entry in that file has been read
-against."* Both readings are stated rather than reconciled to one, as every
-anchor in this chain states its own pair. `ANCHOR_STALENESS_BUDGET_RELEASES` is
-unmoved at **10**: the gate's own message forbids raising it in words, the brief
-that dispatched this pass forbade it independently, and a budget widened the
-first time it costs something is not a budget. Once the anchor line above
-moves, the same assertion reads 547 − 546 = **one**.
+**THIS PASS WAS DISPATCHED WITH THE GATE STILL GREEN, WHICH ENDS A RUN OF THREE
+CONSECUTIVE RED-GATE PASSES.** The spend is **EIGHT of the ten releases the
+budget allows** counted against the merge this line names, and **NINE** counted
+against the tree this branch is written on (`fad2657c`, v0.0.555). Both
+readings are stated rather than reconciled to one, as every anchor in this
+chain states its own pair. `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at
+**10**: the gate's own message forbids raising it in words, the brief that
+dispatched this pass forbade it independently, and a budget widened the first
+time it costs something is not a budget. Once the anchor line above moves, the
+same assertion reads 555 − 554 = **one**.
 
-**WHERE THE OVERRUN BECAME VISIBLE, AND WHERE IT DID NOT — WHICH IS TWO MERGES
-AND ONE RELEASE COMMIT WIDE.** The tree first crossed the budget at `053bd02c`
-(`chore(release): v0.0.545`, spend eleven), a commit
-`.github/workflows/version.yml` writes after a merge and which starts no CI run
-at all. The first run that could have reported it belonged to `a06a9067`/#1100,
-whose tree ships **0.0.545** — and that commit carries no `verify`, `browser` or
-`assets` conclusion at all, because `main`'s concurrency group holds one pending
-run per group and the merges that followed superseded it. The same is true of
-`dc031fdb`/#1095 and `a19976af`/#1099 before it. So the first *reported* red is
-`3399b1f9`'s own `verify` job, three commits after the budget was actually
-spent. That gap is a property of the release workflow and the concurrency group
-rather than of anything in this file, and it is stated here because the previous
-two red-gate passes both recorded the release commit as the reason nobody was
-told, and neither had a superseded run to record on top of it.
+**THE BRIEF THAT DISPATCHED THIS PASS SAID THE NEXT `chore(release)` COMMIT
+WOULD TURN THE GATE RED, AND IT IS OFF BY ONE — MEASURED RATHER THAN
+REASONED.** The assertion is `toBeLessThanOrEqual(10)`, so against this
+anchor's v0.0.554 a tree shipping **v0.0.556 spends ten and still passes, while
+v0.0.557 is the first red at eleven** — both figures taken on `fad2657c` with
+`package.json` edited to each value in turn and nothing else changed. On
+`fad2657c`, v0.0.556 returned `Tests  8 passed (8)` and v0.0.557 returned
+`Tests  1 failed | 7 passed (8)` with *"11 releases of history that no entry in
+that file has been read against"*. **The error is in the safe direction and it
+changes nothing about what this pass did** — two release commits of margin
+remained rather than one, and a re-anchor run at nine of ten is right on either
+reading. It is recorded because an off-by-one on a budget is exactly the figure
+a later brief copies forward, and because the boundary is now measured rather
+than inferred: **the budget permits a spend of ten; it does not fire at ten.**
 
-**THE SEQUENCE SENTENCE STOPPED BEING EXTENDED THREE ANCHORS AGO, AND IS
-RESTARTED HERE RATHER THAN EDITED WHERE IT STANDS.** The newest copy in this
-header reads *"five, five, nine, five, six, five, six, five, eight, FOURTEEN,
-ELEVEN, EIGHT, NINE, TEN, EIGHT"* and sits inside the v0.0.511 account, which
-is kept history and is not touched. The three anchors after it each recorded
-their own spend in their own opening and none of them added it to the run: the
-v0.0.521 anchor spent **ten**, the v0.0.528 anchor **seven**, the v0.0.534
-anchor **six**, each figure read back out of its own kept blockquote below
-rather than recomputed. **So the sequence now reads five, five, nine, five,
-six, five, six, five, eight, FOURTEEN, ELEVEN, EIGHT, NINE, TEN, EIGHT, TEN,
-SEVEN, SIX, TWELVE** — nineteen entries, four of them added here. This is the
-same failure the paragraph above about the seven counting sites describes,
-happening to an eighth place it does not name: a sentence only ever moved by
-somebody who remembers it exists stops being moved, and nothing mechanical
-notices, because
-nothing mechanical can tell a count that is stale from a count that is
-history.
+**THE CONCURRENCY GAP THE PREVIOUS ANCHOR FOUND IS STILL OPEN, AND IN THIS
+WINDOW IT SWALLOWED THE LARGEST MERGE OF THE EIGHT.** That pass recorded three
+merges carrying no `verify`, `browser` or `assets` conclusion at all, and
+attributed it to `main`'s concurrency group holding one pending run per group
+without cancelling the running one, so that a burst of merges supersedes its own
+queue. Read off `GET /repos/woogitsu/lockstate/commits/<sha>/check-runs` for
+every merge in this window, the same absence is present on
+**`ee0292de`/#1108 — ADR 0103's entire implementation, nineteen files** — which
+carries `bump=success` and nothing else. `e5fbe9d9`, the merge this anchor
+names, carries `verify=success`, `browser=success` and `assets=success`, so the
+tree this anchor is taken at is green on its own run; #1108's contribution to it
+was never reported on `main` and was gated only on its own pull request. **The
+absence is measured here and the mechanism is the previous anchor's, not
+re-derived** — what this window adds is that the same mechanism costs
+observability on a window that does not trip the budget, where before it was
+only ever recorded as the budget overrun's hiding place. There is no overrun to
+hide this time.
+
+**THE SEQUENCE SENTENCE, EXTENDED BY ONE RATHER THAN RESTARTED.** The previous
+anchor restarted it after three anchors of neglect and left it reading *"five,
+five, nine, five, six, five, six, five, eight, FOURTEEN, ELEVEN, EIGHT, NINE,
+TEN, EIGHT, TEN, SEVEN, SIX, TWELVE"* — nineteen entries. This anchor spent
+**eight**, read back off the pair above rather than recomputed, so the sequence
+now reads five, five, nine, five, six, five, six, five, eight, FOURTEEN,
+ELEVEN, EIGHT, NINE, TEN, EIGHT, TEN, SEVEN, SIX, TWELVE, EIGHT — **twenty
+entries, one added here.** Extending it is the cheap half of what the previous
+anchor found; the failure it named — that a sentence only ever moved by somebody
+who remembers it exists stops being moved, and that nothing mechanical can tell
+a stale count from a kept one — is untouched by this pass and stays true.
+
+> **The v0.0.546 anchor's own opening, kept rather than overwritten**
+> (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `3399b1f9`
+> (**v0.0.546**) by the delta method this header describes, from the v0.0.534
+> anchor kept below."* That anchor was `3399b1f9`/#1101's merge rather than the
+> `chore(release): v0.0.547` commit (`3b6f1b86`) above it, `package.json`
+> shipped **0.0.546** there, and that pass was **dispatched by the gate's own
+> failure on `main` — the third time in this chain and the widest overrun of
+> the three — at TWELVE of the ten releases the budget allows** counted against
+> the merge and **THIRTEEN** against `3b6f1b86`, which is the figure the
+> contract printed when it turned `main` red. The anchor it replaced named
+> v0.0.534. `ANCHOR_STALENESS_BUDGET_RELEASES` was unmoved at **10**.
 
 > **The v0.0.534 anchor's own opening, kept rather than overwritten**
 > (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `ebdcb317`
@@ -13980,7 +14000,7 @@ land, on a file `git diff --name-only 33a4a22e..HEAD` reported as untouched
 (neither it nor `docs/DEPLOYMENT.md` was among that window's 42 files), run
 rather than recalled.
 
-**IT IS RE-VERIFIED AT `3399b1f9`, AND BOTH HALVES OF THE SENTENCE ABOVE HAD TO
+**IT WAS RE-VERIFIED AT `3399b1f9`, AND BOTH HALVES OF THE SENTENCE ABOVE HAD TO
 MOVE — WHICH IS THE FINDING, BECAUSE NO GATE COULD SEE IT.** That sentence
 named `0e2eb7fb`: not the anchor of its own day, not any anchor since, and not
 one this file's header has ever declared. `adr-status-queue-anchor-contract`'s
@@ -14002,6 +14022,21 @@ at `:33` has `workflow_dispatch:` as its only child, re-read here rather than
 inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
+
+**RE-VERIFIED AT `e5fbe9d9`, AND THIS READING IS THE WEAKER KIND AGAIN — WHICH
+IS WORTH SAYING BECAUSE THE PREVIOUS ONE WAS THE STRONGER KIND AND SAID SO.**
+All four citations hold: at `e5fbe9d9`, `:20` is the ADR 0016 §2 comment, `:34`
+is `workflow_dispatch:`, `:41` is `confirm_project_ref:` and `:65` is
+`environment:`, each opened at both ends of this window, and
+`grep -c '^\s*push:'` still returns **0**. `cmp` reports
+`.github/workflows/migrate-database.yml` **byte-identical at `3399b1f9` and at
+`e5fbe9d9`**, and the file is **absent from this window's 79** — so this is an
+absence-based reading, the shape the paragraph above called out as evidence that
+the file was left alone and nothing more. The previous anchor got the stronger
+form by accident, because `80b54a97` had edited the file and its citations held
+across that edit anyway; this window did not touch it, so the stronger form is
+not available here and is not claimed. **The substance of §4 is unchanged and
+the run of absence-based readings resumes at one.**
 
 **This entry used to say that nothing here had moved, and that has been false
 since v0.0.116.** It read: *"`git diff cddaebb..main` over that file is still empty, and so is
