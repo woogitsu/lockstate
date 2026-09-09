@@ -1883,8 +1883,11 @@ Database `lockstate-saves`, version 1, two object stores:
 
 - `prisons` (keyPath `prisonId`) — one `PrisonSlotMetadata` record per slot:
   game version, display name, `currentGenerationId`, the ordered
-  (oldest-first) `generationIds` window, timestamps, optional
-  `pendingSync`.
+  (oldest-first) `generationIds` window, timestamps, optional `pendingSync`,
+  optional `currentRevision` (#1097 — the revision of the generation
+  `currentGenerationId` points at, written by every durable save including
+  the interval autosave; see "Adding an optional field without a version
+  bump" below and that field's doc comment in `store.ts`).
 - `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
   validated `SaveEnvelope` per generation.
 

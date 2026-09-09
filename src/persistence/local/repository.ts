@@ -399,6 +399,10 @@ export class PrisonSaveRepository {
         prisonId: input.prisonId,
         gameVersion: input.gameVersion,
         currentGenerationId: undefined,
+        // Omitted rather than set to `undefined`: unlike `currentGenerationId`
+        // (typed `string | undefined`, always present), `currentRevision` is
+        // genuinely optional -- see its doc comment in `store.ts` -- and
+        // `exactOptionalPropertyTypes` distinguishes the two.
         generationIds: [],
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -490,6 +494,14 @@ export class PrisonSaveRepository {
         await writeSlot(tx, {
           ...metadata,
           currentGenerationId: generationId,
+          // Every route that lands a generation goes through this one write,
+          // the interval autosave included (`SessionController`'s
+          // `AutosaveScheduler` calls `save()` directly, never `saveNow`) --
+          // which is exactly the choke point #1097 needed: a revision number
+          // that cannot drift behind the durable generation it describes,
+          // because it is written in the same transaction as that generation
+          // rather than by a separate, easily-missed call.
+          currentRevision: decoded.value.revision,
           generationIds: retention.generationIds,
           updatedAt: this.now(),
         });
@@ -944,10 +956,21 @@ export class PrisonSaveRepository {
     return result.ok ? { ...result, migrated: decoded.migrated } : result;
   }
 
+  /**
+   * Records that the prison has unpushed local work, at the revision it first
+   * went dirty -- a lower bound, not the latest revision `saveNow` happens to
+   * have just written (#1097). So this is a no-op once a marker already
+   * exists: only `clearPendingSync` may move it, by removing it so the next
+   * call can set a fresh one. Every caller (`SessionController.saveNow`)
+   * still calls this after every successful save, exactly as before; it is
+   * this method, not the call site, that now makes repeated calls between one
+   * clear and the next collapse into the first.
+   */
   public async markPendingSync(prisonId: string, pendingSync: PendingSyncState): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) throw new Error(`Prison "${prisonId}" does not exist.`);
+      if (metadata.pendingSync !== undefined) return;
       await writeSlot(tx, { ...metadata, pendingSync });
     });
   }
