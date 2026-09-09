@@ -8,7 +8,20 @@
  * introduced by this issue.
  */
 export interface PendingSyncState {
-  /** The prison revision (see save-schema.ts) that has not yet reached cloud storage. */
+  /**
+   * The **earliest** prison revision (see save-schema.ts) not yet known to
+   * have reached cloud storage -- a lower bound, set once when the prison
+   * first goes dirty and left alone by every save after that until
+   * `clearPendingSync` runs. `PrisonSaveRepository.markPendingSync` enforces
+   * this: it is a no-op once a marker already exists (#1097).
+   *
+   * It used to be overwritten to "whatever revision `saveNow` just wrote",
+   * which made it the *latest* marked-dirty revision rather than the
+   * earliest, and the only place that ever read it (`save-list-projection.ts`)
+   * used it as a stand-in for "the prison's current local revision" --
+   * `PrisonSlotMetadata.currentRevision` is that field now, and this one goes
+   * back to meaning exactly what its name says.
+   */
   readonly dirtySinceRevision: number;
   readonly markedAt: number;
 }
@@ -25,6 +38,26 @@ export interface PrisonSlotMetadata {
   readonly updatedAt: number;
   /** Local-only bookkeeping; #20 (Supabase sync) executes on this, this issue only stores it. */
   readonly pendingSync?: PendingSyncState;
+  /**
+   * The revision (see save-schema.ts) of the generation this slot's
+   * `currentGenerationId` actually points at -- written by every durable save
+   * that lands a new generation, `writeGeneration` in `repository.ts`, which
+   * every save route reaches including the interval autosave (#1097).
+   *
+   * `undefined` only in the narrow window between `create()` writing a fresh
+   * slot and its first generation actually landing, and for a slot written by
+   * a build that predates this field (`docs/PERSISTENCE.md`, "Adding an
+   * optional field without a version bump" -- the same rule
+   * `construction.currentTransaction` was added under). Such a slot is not
+   * repaired retroactively; its very next durable save populates the field,
+   * exactly as an old save with no `currentTransaction` stays without one
+   * until the next build gesture opens.
+   *
+   * This is the field `pendingSync.dirtySinceRevision` was standing in for
+   * before this existed -- see that field's doc comment for why the two are
+   * no longer the same fact.
+   */
+  readonly currentRevision?: number;
 }
 
 export interface LocalSaveTransaction {
