@@ -7,9 +7,10 @@
 -- they were written: the thirteen for issue #105 finding 11 (the
 -- "storage_path" section), the five for issue #194's `created_at` half, the
 -- six for its `updated_at` half (the two server-timestamp sections), the eight
--- for the scalar CHECKs suite 008 names and nothing exercised, and the three
--- pinning #340's two-branch refusal (the last two sections).
--- `pnpm verify:sql` reports 54/54 for this suite. That figure is what drifted
+-- for the scalar CHECKs suite 008 names and nothing exercised, the three
+-- pinning #340's two-branch refusal (the last two sections), and the two
+-- pinning the row an empty prison's conflict returns.
+-- `pnpm verify:sql` reports 56/56 for this suite. That figure is what drifted
 -- before -- it read 32/32 for as long as nobody re-ran it after #194 -- so
 -- treat it as a claim to check rather than as a fact to trust.
 --
@@ -31,7 +32,7 @@
 -- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
-select plan(54);
+select plan(56);
 
 -- Two auth.users rows to test cross-owner isolation. Inserting directly
 -- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
@@ -219,6 +220,50 @@ select throws_ok(
   '42501',
   null,
   'save_versions has no direct client-facing insert path, only create_save_version()'
+);
+
+-- --- the conflict a prison with no saved version answers with ----------
+--
+-- The conflict branch reports `v_current_version_id`, `v_current_revision`
+-- and the checksum looked up from that id
+-- (20260822190300_create_save_version_rpc.sql:132-138). On a prison that
+-- has never been saved those are NULL, 0 and NULL -- `prisons` declares
+-- `current_version_id uuid` with no default and `current_revision int not
+-- null default 0` (20260822190100_create_prisons.sql:12-13). Nothing else
+-- in this suite produces that row, because every conflict above is against
+-- a prison that already holds versions.
+--
+-- Reaching it needs `p_new_revision >= 2`, since `<= 0` raises and 1 is the
+-- accepted next revision: a client that believes it is already synced and
+-- pushes revision N against a cloud that has nothing is precisely that
+-- call.
+--
+-- THE ROW SHAPE IS THE ASSERTION, NOT THE STATUS. A client that checks
+-- `version_id`/`checksum` for NULL before it reads `status` sees this
+-- answer as a missing row and reports a generic error, losing the one piece
+-- of information the caller needs -- that this is a conflict it can resolve
+-- by pushing revision 1. `src/persistence/cloud/supabase-client.ts` did
+-- exactly that until this row was written down.
+reset role;
+insert into public.prisons (id, owner_id, game_version, slot_index)
+values ('aaaaaaaa-0000-0000-0000-00000000000e', '11111111-1111-1111-1111-111111111111', 'lockstate-0.0.0', 1);
+
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+set local role authenticated;
+
+select results_eq(
+  $$ select status, version_id, revision, checksum from public.create_save_version(
+       'aaaaaaaa-0000-0000-0000-00000000000e', 2, 1, 'checksum-empty-conflict', '{"tick": 0}'::jsonb, null, 10
+     ) $$,
+  $$ values ('conflict'::text, null::uuid, 0, null::text) $$,
+  'a conflict on a prison with no saved version reports revision 0 with a NULL version id and a NULL checksum'
+);
+
+select is(
+  (select current_version_id is null and current_revision = 0
+     from public.prisons where id = 'aaaaaaaa-0000-0000-0000-00000000000e'),
+  true,
+  'the refused save left the empty prison empty -- a conflict never advances the pointer'
 );
 
 -- --- storage_path: a shape, and a prefix it cannot escape --------------
