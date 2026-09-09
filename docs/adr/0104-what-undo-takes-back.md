@@ -198,12 +198,15 @@ newest accepted player command of any kind, and says so.
   touching #108: the transaction still survives the reload, and it is still
   refused, because a reload is followed by *some* newer command before the
   press.
-- **What it needs that does not exist.** A single monotone fact — the tick and
-  kind of the newest accepted player command. **ADR 0099 set the precedent for
-  exactly this shape**, a monotone marker published rather than a channel
-  added, and its own argument applies here: the cheap fact is the one the
-  system already computes and throws away. Every command passes the session
-  router with a tick.
+- **What it needs that does not exist.** A single monotone fact — the tick of
+  the newest accepted command. **ADR 0099 set the precedent for exactly this
+  shape**, a monotone marker published rather than a channel added, and its own
+  argument applies here: the cheap fact is the one the system already computes
+  and throws away. Every command passes the session router with a tick, and
+  **every command there is, is a player press** — enumerated in the weakest-claim
+  section below, which is why this reads *"newest accepted command"* and not
+  *"newest accepted **player** command"*: the qualifier would suggest a
+  distinction the tree does not contain.
 - **And a refusal sentence.** Player-visible. Wording ours, truth not waived,
   and it must be verified against `undo()` and quoted verbatim in the commit
   and the pull request body.
@@ -277,17 +280,51 @@ lands.** The reasoning, stated so it can be argued with:
   it is replaced, and the replacement is a player-visible promise.
 - **Nothing here moves any other document's status.**
 
-## The weakest claim in this document, named
+## The weakest claim this document named, and what settling it returned
 
-**That "the newest accepted player command" is a cheap fact.** The claim rests
-on ADR 0099's precedent and on every command passing one router with a tick —
-both VERIFIED — but the marker option 2 needs is not merely a tick: it has to
-distinguish a command the *player* issued from one the simulation issued on
-their behalf, and this document has not enumerated the commands to check that
-the distinction is clean. If it is not, option 2's cost moves from *one
-monotone fact* toward option 4's, and the recommendation weakens with it.
-**What would settle it:** enumerate `SimulationCommand`'s members and classify
-each as player-issued or not. That is a bounded read and it is not done here.
+> **THE PARAGRAPH BELOW IS KEPT RATHER THAN DELETED, BECAUSE THE DIRECTION IS
+> THE FINDING.** It read, before the read it asked for was done:
+> *"**That "the newest accepted player command" is a cheap fact.** The claim
+> rests on ADR 0099's precedent and on every command passing one router with a
+> tick — both VERIFIED — but the marker option 2 needs is not merely a tick: it
+> has to distinguish a command the player issued from one the simulation issued
+> on their behalf, and this document has not enumerated the commands to check
+> that the distinction is clean. If it is not, option 2's cost moves from one
+> monotone fact toward option 4's, and the recommendation weakens with it.
+> **What would settle it:** enumerate `SimulationCommand`'s members and classify
+> each as player-issued or not. That is a bounded read and it is not done
+> here."*
+
+**It is done now, and the distinction does not exist — which strengthens option
+2 rather than weakening it.** VERIFIED at `296812c9`:
+
+- `simulationCommandSchema` (`src/simulation/protocol/commands.ts:597-613`) has
+  **fifteen** members.
+- Every `.submit(` call site in the whole of `src/` — **fifteen of them**, one
+  per member — is in `src/main.ts`, inside the HUD-intent dispatcher, and every
+  one reads an `intent`. No other module submits a command at all.
+- The worker's only `submitCommand` call is
+  `state-machine.ts:1130`, inside `handleSubmitCommand`, which forwards a
+  `simulation/submit-command` message that arrived from the main thread. **The
+  simulation originates no command.**
+
+So the marker option 2 needs is *"the newest accepted command"*, full stop:
+there is no player/non-player classification to get wrong, because there is
+only one kind. Option 2's price is one monotone fact and it does not drift
+toward option 4's.
+
+### The new weakest claim, which is what the old one turned into
+
+**That the property above stays true, and nothing enforces it.** "Every command
+is player-issued" is an enumeration of fifteen call sites on one tree, not an
+invariant: `tests/foundation/composition-root-contract.test.ts` pins specific
+*wirings* in `src/main.ts` and says nothing about where a command may be
+submitted from. The day something in `src/` submits a command no press caused —
+an automatic sanction, a scheduled admission, a retry — option 2's marker
+silently starts counting it, and `Undo` starts refusing transactions the player
+really did just create. **The read is sound and the guarantee is absent**, and
+that is a different and smaller claim than the one it replaces. Open question 4
+names the gate.
 
 Two smaller ones, stated rather than buried:
 
@@ -322,7 +359,15 @@ Two smaller ones, stated rather than buried:
 2. **What does `Redo` mean under option 2?** A refused undo pushes nothing, so
    `Redo` is unaffected by the refusal itself; whether a *stale* redo should be
    refused by the same rule is not decided here.
-3. **Is there a pointer route to undo at all?** ADR 0022 `:631` already
+3. **Should a contract pin command submission to the composition root?**
+   Option 2 rests on every command being a player press, which is true by
+   enumeration and guarded by nothing. A gate of the shape this repository
+   already uses — a boundary manifest over `.submit(` call sites — would turn
+   the enumeration into an invariant, and it would fail on the first
+   simulation-issued command rather than on the first `Undo` that refuses
+   wrongly because of one. Not proposed here, because it is only worth its
+   maintenance if option 2 is accepted.
+4. **Is there a pointer route to undo at all?** ADR 0022 `:631` already
    records that undo being a keyboard chord left *"no recovery of any kind on a
    touch device"*, and [#928](https://github.com/woogitsu/lockstate/issues/928)
    carries that half. This document changes what the key does, not how it is
