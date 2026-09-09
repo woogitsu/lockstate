@@ -214,8 +214,27 @@ export class IncidentResponseSystem implements SystemRegistration {
      * `new-session.ts`, so a hard dependency would invert that order. Defaults
      * to doing nothing, so a fixture with no prisoner slice -- and every
      * existing test of this system -- is unchanged.
+     *
+     * **IT TOOK `(entityId, tick)` UNTIL
+     * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+     * AND THE PARAGRAPHS ABOVE ARE KEPT BECAUSE EVERY OTHER WORD OF THEM STILL
+     * HOLDS.** The old signature handed on `incident.instigatorId` and nothing
+     * else, so the second participant -- the one a *directional* grudge needs
+     * -- never crossed it. ADR 0103 Context 13 point 3 is that finding, and
+     * Context 9's claim that this port was already *"of exactly the shape a
+     * second consumer needs"* is the sentence it corrects: the **pattern** was
+     * right and the **shape** was not. It carries the record now, which the
+     * method already held, so widening it is one line of signature rather than
+     * a second port beside this one -- and one port keeps the property
+     * `adjudicateAssaultIfAny`'s own docblock is about, that the two terminal
+     * call sites cannot drift.
+     *
+     * **The narrowing below the port is unchanged, and a consumer may rely on
+     * it**: `adjudicateAssaultIfAny` still calls this only for an `'assault'`
+     * that carries an `instigatorId`, so `incident.type === 'assault'` and
+     * `incident.instigatorId !== undefined` both hold on every call.
      */
-    private readonly onAssaultAdjudicated: (entityId: EntityId, tick: number) => void = () => {},
+    private readonly onAssaultAdjudicated: (incident: IncidentRecord, tick: number) => void = () => {},
   ) {}
 
   /**
@@ -326,7 +345,7 @@ export class IncidentResponseSystem implements SystemRegistration {
   /** The one thing both terminal transitions below do identically, so the two call sites cannot drift about which incidents earn a sanction or which participant it lands on. */
   private adjudicateAssaultIfAny(incident: IncidentRecord, tick: number): void {
     if (incident.type !== 'assault' || incident.instigatorId === undefined) return;
-    this.onAssaultAdjudicated(incident.instigatorId, tick);
+    this.onAssaultAdjudicated(incident, tick);
   }
 
   /**

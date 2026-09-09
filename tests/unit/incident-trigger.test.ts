@@ -274,10 +274,62 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
     expect(trigger.getMetrics().retaliationsTriggered).toBe(1);
   });
 
+  /**
+   * [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 4, from its Context 6: *"Two gangs are settling a score."* with an
+   * empty participant list is a sentence about nobody, and it was reachable
+   * from the mechanism ADR 0103 seeds -- `releasePrisoner` drops a departing
+   * prisoner's membership, so a gang can be emptied between the tick a grudge
+   * is recorded and the tick it is acted on.
+   *
+   * Both sides are asserted separately, because the guard is an `||` and a
+   * single memberless-on-both-sides case would pass against a guard that only
+   * checked one of them.
+   */
+  it('refuses a retaliation nobody is in, on either side, and opens one the moment both sides have a member', () => {
+    const gangs = new GangRegistry();
+    gangs.register({ id: 'gang-north', territorySectorIds: ['block-a'] });
+    gangs.register({ id: 'gang-south', territorySectorIds: ['block-a'] });
+    gangs.addGrudge('gang-north', 'gang-south', 0.9); // contested -> 1.35, clamped to 1, well over the 0.6 threshold
+
+    const { incidents, trigger, kernel } = buildHarness({ sectorIds: ['block-a'], sampleFor: () => CALM, gangs });
+
+    // Neither gang has a member: the risk gate passes and this one must not.
+    stepSamples(kernel, 5);
+    expect(incidents.all()).toEqual([]);
+    expect(gangs.getGrudge('gang-north', 'gang-south')).toBe(0.9); // not consumed by an incident that never opened
+
+    // Only the offended side is in the prison.
+    gangs.addMember('gang-north', 4);
+    stepSamples(kernel, 5);
+    expect(incidents.all()).toEqual([]);
+
+    // Only the offending side is in the prison.
+    gangs.removeMember(4);
+    gangs.addMember('gang-south', 9);
+    stepSamples(kernel, 5);
+    expect(incidents.all()).toEqual([]);
+
+    // Both sides, and the same grudge that has been refused four times fires.
+    gangs.addMember('gang-north', 4);
+    stepSamples(kernel, 1);
+    expect(incidents.all()).toHaveLength(1);
+    expect(incidents.all()[0]!.type).toBe('gang-retaliation');
+    expect(incidents.all()[0]!.participantIds).toEqual([4, 9]);
+    expect(trigger.getMetrics().retaliationsTriggered).toBe(1);
+  });
+
   it('a grudge below the threshold never fires, and an acted-on grudge is cleared rather than repeating', () => {
     const gangs = new GangRegistry();
     gangs.register({ id: 'gang-north', territorySectorIds: ['block-a'] });
     gangs.register({ id: 'gang-south', territorySectorIds: ['block-b'] }); // uncontested -> dampened
+    // Members on both sides of every pair below, so the only thing this file
+    // measures is the *threshold*: since ADR 0103 decision 4 a memberless pair
+    // is refused before the risk is read, and a fixture with no members would
+    // pass the first assertion for the wrong reason. The assertions themselves
+    // are untouched.
+    gangs.addMember('gang-north', 4);
+    gangs.addMember('gang-south', 9);
     gangs.addGrudge('gang-north', 'gang-south', 0.5); // 0.5 * 0.5 = 0.25, below the 0.6 threshold
 
     const { incidents, kernel } = buildHarness({ sectorIds: ['block-a'], sampleFor: () => CALM, gangs });
@@ -286,6 +338,7 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
 
     // Raise it onto contested ground and it fires exactly once.
     gangs.register({ id: 'gang-east', territorySectorIds: ['block-a'] });
+    gangs.addMember('gang-east', 11);
     gangs.addGrudge('gang-north', 'gang-east', 0.9);
     stepSamples(kernel, 1);
     expect(incidents.all()).toHaveLength(1);
@@ -304,6 +357,11 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
       gangs.register({ id: 'gang-north', territorySectorIds: ['block-a'] });
       gangs.register({ id: 'gang-south', territorySectorIds: ['block-a'] });
       gangs.addMember('gang-north', 2);
+      // The offending side got a member with ADR 0103 decision 4: a pair with
+      // nobody on one side is now refused before the risk is read, so the
+      // scenario this replays would otherwise have become "no incident, twice"
+      // -- which replays identically and measures nothing.
+      gangs.addMember('gang-south', 5);
       gangs.addGrudge('gang-north', 'gang-south', 0.9);
       const harness = buildHarness({ sectorIds: ['block-a', 'block-b'], sampleFor: () => HOT, occupants: () => [1, 2], gangs });
       stepSamples(harness.kernel, 6);

@@ -148,6 +148,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Whether one `Undo` press destroyed what had been spent on any of the orders it reversed (#927), and exempt because it is a *selector between two authored sentences* rather than a fact of its own. `createConstructionCommandHandler` computes it from `ConstructionSystem.undo()`\'s answer and hands it to `recordConstructionUndone`, which switches it onto `construction.undone` or `construction.undone-spend-destroyed`; both of those already resolve to authored HUD sentences through `EVENT_PRESENTATION`, which is where the words a player reads come from and which the `SIMULATION_EVENT_TYPES` entry below argues out. A derived `construction-undo-spend-outcome.spend-destroyed.name` reading "Spend Destroyed" would be a second English word for a fact the sentence already carries, would have nowhere to be rendered, and would drift from it -- the same argument that entry makes, one level further from the player. It never crosses the worker boundary either: what travels is the event type it selected.',
   },
   {
+    sourceFile: 'src/simulation/incidents/default-gangs.ts',
+    declaration: 'DEFAULT_GANG_IDS',
+    reason:
+      'The two gangs every prison is seeded with ([ADR 0103](docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md) decision 1), and exempt for the reason `src/content/simulation-message-keys.ts` already gives about gang ids in general: `GangRegistry` accepts any `GangDefinition.id` a scenario registers, so a gang\'s label could only come from the definition that created it and not from a static table -- which is why the census excludes runtime-registered ids by name rather than by filter. These two are the first such ids `src/` itself writes, and nothing renders them: the one sentence a gang reaches a player through, `hud.alert.event.incidents.gang-retaliation-opened` ("Two gangs are settling a score."), takes no parameters at all, and both surfaces that carry a `gangId` on their projection -- `simulation-prisoner-roster.ts` and `simulation-prisoner-detail.ts` -- drop it before rendering and say in their own docblocks that they do so because it has no labelling mechanism. ADR 0103 decision 1 declines a `nameKey` on that basis; open question 8 is where it would come back, and it is open.',
+  },
+  {
     sourceFile: 'src/simulation/rooms/enclosure.ts',
     declaration: 'RoomPerimeterAccess',
     reason:

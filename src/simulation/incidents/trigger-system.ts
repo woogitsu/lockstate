@@ -225,6 +225,18 @@ export function countIncidentsByType(incidents: IncidentLog): IncidentTypeCounts
  * `'gang-retaliation'` still has no producer of its own -- it needs
  * `GangRegistry` entries nothing in `src/` writes -- and that is the one member
  * of the union ADR 0061 did not reach.
+ *
+ * **THAT LAST SENTENCE IS FALSE AS OF
+ * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+ * and it is kept rather than overwritten because it is the state this file
+ * described from ADR 0061 until then** (`docs/AGENT_WORKFLOW.md` §4). All four
+ * members of the union now have a producer in `src/`: `default-gangs.ts`
+ * registers two gangs onto the watched sector at session creation,
+ * `IntakeSystem` assigns `high-risk` arrivals to one, and
+ * `IncidentResponseSystem`'s adjudication of a cross-gang assault writes the
+ * grudge `resolveRetaliationRisk` reads. `tryOpenRetaliation` below is
+ * unchanged except for decision 4's guard, which refuses a pair whose members
+ * have gone.
  */
 export class IncidentTriggerSystem implements SystemRegistration {
   public readonly id = 'incidents.trigger';
@@ -528,7 +540,29 @@ export class IncidentTriggerSystem implements SystemRegistration {
         const risk = resolveRetaliationRisk(this.gangs, offended, offending, sectorId);
         if (risk < this.retaliationThreshold) continue;
 
-        const participants = [...this.gangs.membersOf(offended), ...this.gangs.membersOf(offending)].sort((a, b) => a - b);
+        // **A retaliation nobody is in is refused**
+        // ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+        // decision 4, from its Context 6).
+        //
+        // Membership is not static: `releasePrisoner` drops a departing
+        // prisoner's membership (`src/simulation/prisoners/release.ts:211`), so
+        // a gang can be emptied between the tick a grudge is recorded and the
+        // tick it is acted on. Without this line that produces a prison-wide
+        // lockdown, a severity-at-least-6 danger alert and the sentence
+        // `'Two gangs are settling a score.'` with an empty participant list --
+        // `IncidentLog.open` validates nothing about that list's length. That
+        // is `AGENTS.md`'s fourth reservation reached from inside the
+        // mechanism rather than a theoretical worry.
+        //
+        // A **narrowing** of the gate above, not a lowered floor: the risk
+        // threshold is untouched and this asks a second question the sentence
+        // has always implied. Both sides, because the sentence says "two
+        // gangs" and one of them being empty makes it as false as both being.
+        const offendedMembers = this.gangs.membersOf(offended);
+        const offendingMembers = this.gangs.membersOf(offending);
+        if (offendedMembers.length === 0 || offendingMembers.length === 0) continue;
+
+        const participants = [...offendedMembers, ...offendingMembers].sort((a, b) => a - b);
         this.openIncident(
           {
             id: this.nextIncidentId('gang-retaliation'),

@@ -57,7 +57,14 @@ import {
  * - `gangId` has no labelling mechanism at all -- `simulation-message-keys.ts`
  *   excludes runtime-registered ids by name and says why -- and nothing in
  *   `src/` registers a gang into a new session, so it is absent in every prison
- *   a player can start.
+ *   a player can start. **That last clause is false since
+ *   [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+ *   which seeds two gangs per session and assigns `high-risk` arrivals to one
+ *   at intake, and it is kept rather than overwritten**
+ *   (`docs/AGENT_WORKFLOW.md` §4). The reason this row still drops the field is
+ *   the clause before it, which did not move: `gang.alpha` is a machine name
+ *   with no locale key, and a roster cell reading it would be raw dotted text.
+ *   See `simulation-prisoner-detail.ts`, which carries the same correction.
  * - `lowestNeed` **was** dropped here for a different reason, which belonged to
  *   the panel: gap 7, no threshold. See `regime-panel.ts`. It is forwarded as
  *   of issue #535 decision 6, and the bullet is amended rather than deleted

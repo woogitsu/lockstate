@@ -23,7 +23,14 @@ import {
   SubstitutionRecordComponent,
 } from './components';
 import { PrisonerDischargeSystem } from './discharge-system';
-import { DEFAULT_ACCOMMODATION_POLICY, firstAvailableAccommodationTarget, type AccommodationPolicy, IntakeSystem, type IntakeContrabandIntroducer } from './intake-system';
+import {
+  DEFAULT_ACCOMMODATION_POLICY,
+  firstAvailableAccommodationTarget,
+  type AccommodationPolicy,
+  IntakeSystem,
+  type IntakeContrabandIntroducer,
+  type IntakeGangAssigner,
+} from './intake-system';
 import {
   releasePrisoner,
   type PrisonerGangReleasePort,
@@ -224,6 +231,19 @@ export interface PrisonerOperationsRuntimeOptions {
   /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
   readonly contrabandRngStreamName?: string;
   /**
+   * Which gang an arrival joins, called by `IntakeSystem` at the same
+   * classification stage `contrabandIntroducer` is called from
+   * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 6). Absent, intake assigns nobody.
+   *
+   * A separate port from `gangs` above rather than a second method on it, and
+   * the split is the point: `gangs` is a *release* surface -- the one thing
+   * this runtime has to tell the registry when a prisoner leaves -- and this
+   * is an *intake* rule. `PrisonerReleaseSurfaces` names the first; nothing
+   * about a departure belongs in the second.
+   */
+  readonly gangAssigner?: IntakeGangAssigner;
+  /**
    * How long a solitary sanction runs (issue #80,
    * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
    * Defaults to
@@ -372,6 +392,8 @@ export class PrisonerOperationsRuntime {
       options.identityRngStreamName,
       options.contrabandIntroducer,
       options.contrabandRngStreamName,
+      undefined,
+      options.gangAssigner,
     );
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
     this.classificationReviewSystem = new ClassificationReviewSystem(

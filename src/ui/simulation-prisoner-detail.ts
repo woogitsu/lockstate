@@ -61,6 +61,17 @@ import {
  *   name and says why, so a gang id has no word at all -- and nothing in `src/`
  *   registers a gang into a new session, so the field is absent in every prison
  *   a player can start.
+ *
+ *   **THE SECOND HALF OF THAT IS FALSE SINCE
+ *   [ADR 0103](../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+ *   AND IS KEPT RATHER THAN OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). A new
+ *   session now seeds two gangs and intake puts `high-risk` arrivals in one, so
+ *   the field is *present* for some prisoners. **The refusal is unchanged and
+ *   is now doing real work rather than describing an empty case**: the first
+ *   half is the reason, and it did not move -- a gang id is `gang.alpha`, a
+ *   machine name with no locale key, and rendering it would put raw dotted text
+ *   in front of a player. ADR 0103 decision 1 declines a `nameKey` on exactly
+ *   this reading and its open question 8 is where one would come back.
  * - **`sentence` and `currentAction`.** Both are renderable and neither can be
  *   *said*: a tick count is not a date (`regime.ts` says outright that
  *   `DAY_LENGTH_TICKS` is a tick budget rather than a mapping onto a clock
