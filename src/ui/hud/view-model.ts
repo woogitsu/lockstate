@@ -1914,7 +1914,9 @@ export interface HudPrisonerRosterViewModel {
  * **What is not here is not missing**, and `src/ui/simulation-prisoner-detail.ts`
  * carries the list with a reason for each: the tile and the accommodation
  * because neither answers "where is this person" (`docs/HUD_PROJECTIONS.md`
- * gaps 10 and 11), the gang because no gang id has a word or a producer, and
+ * gaps 10 and 11), the gang because no gang id has a word (it had no producer
+ * either until ADR 0103 gave it one; the missing word is what still keeps it
+ * off the screen), and
  * the sentence and the current action because every sentence that would frame
  * either figure is new player-facing copy -- `AGENTS.md`'s fourth exclusion,
  * the owner's.

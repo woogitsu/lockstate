@@ -28,7 +28,10 @@ import {
   IncidentTriggerSystem,
   SectorRiskTracker,
   TunnelRegistry,
+  applyDefaultGangs,
   createRiotRegimeOverride,
+  defaultGangIdForArrival,
+  recordGrudgeFromAdjudicatedAssault,
   type PrisonerFlashpointSampler,
   type SectorOccupantResolver,
   type SectorRiskSampler,
@@ -627,6 +630,27 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
       },
     },
     contrabandRngStreamName: CONTRABAND_INTRODUCTION_RNG_STREAM,
+    /*
+     * Who joins a gang
+     * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+     * decision 6), on the same terms as the introduction above: the rule is in
+     * `src/simulation/incidents/default-gangs.ts` and none of it is here.
+     *
+     * `defaultGangIdForArrival` answers `undefined` for everybody who is not
+     * `high-risk` at intake, so most prisons assign nobody at this seam. That
+     * is the decision as accepted and **not** a bug to route around here:
+     * ADR 0103's own Context 15 shows the population that becomes `high-risk`
+     * becomes so at `ClassificationReviewSystem`'s review rather than at the
+     * gate, and whether membership should also be assigned there is its **Open
+     * Question 5**, which the owner has not answered. Adding the second write
+     * site would be answering it in implementation code.
+     */
+    gangAssigner: {
+      assign: (entityId, classificationGroupId) => {
+        const gangId = defaultGangIdForArrival(entityId, classificationGroupId);
+        if (gangId !== undefined) gangs.addMember(gangId, entityId);
+      },
+    },
   });
 
   /*
@@ -1202,7 +1226,31 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `applyDefaultSecuritySector` is idempotent and leaves anything already
    * present alone, for that reason.
    */
-  applyDefaultSecuritySector({ world, sectors: securitySectors, schedules: securitySchedules, watchedSectorIds: incidentSectorIds });
+  const defaultSector = applyDefaultSecuritySector({ world, sectors: securitySectors, schedules: securitySchedules, watchedSectorIds: incidentSectorIds });
+
+  /*
+   * The two gangs every prison has, on the sector it just derived
+   * ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   * decision 1).
+   *
+   * **Here, immediately after the sector, because a gang with no territory is
+   * structurally inert.** ADR 0103 Context 2 is the finding:
+   * `tryOpenRetaliation` walks the *sector's claimants* first and only then
+   * filters grudges to those a claimant holds, so a gang that claims nothing is
+   * never selected as `offended` and can hold a grudge for ever without acting
+   * on it. Seeding one would be authored content that provably does nothing.
+   *
+   * `defaultSector.id` rather than `DEFAULT_SECURITY_SECTOR_ID` spelled a
+   * second time: the derivation is payload-wins and answers with whichever
+   * definition is now in the registry, so the gangs claim the sector that
+   * exists rather than the one this line assumed.
+   *
+   * The same second call site as the line above -- `restoreSessionSystems`
+   * re-applies both, because `GangRegistry.loadSnapshot` clears every
+   * definition and every save that exists was written before this change.
+   * `applyDefaultGangs` is idempotent and payload-wins for that reason.
+   */
+  applyDefaultGangs(gangs, defaultSector.id);
 
   /*
    * Who is in a sector, per
@@ -1426,9 +1474,37 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * confinement the moment the incident closes. `imposeSolitarySanction`
      * is the one write; `SanctionSystem` (registered by
      * `PrisonerOperationsRuntime.registerOn`) is what carries it out.
+     *
+     * **TWO CONSUMERS OF ONE ADJUDICATION SINCE
+     * [ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md),
+     * and the port carries the record rather than the instigator for that
+     * reason** -- a directional grudge needs the second participant, which the
+     * old `(entityId, tick)` signature could not name (ADR 0103 Context 13
+     * point 3). `incident.instigatorId` is non-`undefined` on every call:
+     * `adjudicateAssaultIfAny` narrows to an `'assault'` that carries one
+     * before it calls, and that narrowing is stated in the port's own
+     * docblock.
+     *
+     * Two calls in one callback rather than two ports, because the
+     * *adjudication* is one event and this is the composition root's job:
+     * `IncidentResponseSystem` announces that an assault ended, and what the
+     * prison does about it -- a sanction, a grudge -- is decided here. Neither
+     * call reads the other's result.
      */
-    (entityId, tick) => {
-      prisoners.imposeSolitarySanction(entityId, tick);
+    (incident, tick) => {
+      prisoners.imposeSolitarySanction(incident.instigatorId!, tick);
+      /*
+       * The owner's ruling of 2026-09-08: *"A grudge forms from an adjudicated
+       * assault between members of different gangs -- one the player was
+       * actually shown."* The rule, the direction and the weight are all in
+       * `default-gangs.ts`; this is the wiring, and the weight is that
+       * module's default rather than a second number written here.
+       *
+       * **Silent for everything that is not a cross-gang assault**, which
+       * today is most of them: `recordGrudgeFromAdjudicatedAssault` writes
+       * nothing unless both participants are in gangs and the two differ.
+       */
+      recordGrudgeFromAdjudicatedAssault(gangs, incident);
     },
   );
 

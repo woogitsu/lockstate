@@ -9,6 +9,7 @@ import type { SearchPolicyDefinition } from '../contraband/search-policy';
 import type { SearchSystem } from '../contraband/search-system';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
 import { SnapshotRefusedError } from './restore-refusal';
+import { applyDefaultGangs } from '../incidents/default-gangs';
 import type { TunnelRecord } from '../incidents/escape';
 import type { GangRegistry } from '../incidents/gangs';
 import type { IncidentLog } from '../incidents/incident';
@@ -989,12 +990,34 @@ export function restoreSessionSystems(
    *    no migration** -- `SAVE_SCHEMA_VERSION` stays 5 and no persisted field is
    *    added, because derived state is recomputed rather than carried.
    */
-  applyDefaultSecuritySector({
+  const defaultSector = applyDefaultSecuritySector({
     world: runtime.world,
     sectors: runtime.securitySectors,
     schedules: runtime.securitySchedules,
     watchedSectorIds: runtime.incidentSectorIds,
   });
+
+  /*
+   * 8b. The two gangs, re-applied after the payload
+   *     ([ADR 0103](../../../docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md)
+   *     decision 1), and for exactly the reason 8 and 9 give.
+   *
+   *     Step 7 above called `GangRegistry.loadSnapshot`, which **clears every
+   *     definition** before it replays the payload's -- so a save written
+   *     before ADR 0103, which is every save that exists, restores a prison
+   *     with no gangs at all and a `'gang-retaliation'` producer that can
+   *     never fire again. Honouring that absence with the derived value rather
+   *     than a throw is ADR 0038 §1, the same reading step 9 makes about the
+   *     search policies.
+   *
+   *     `applyDefaultGangs` is idempotent and payload-wins per id: a save that
+   *     carries a gang under one of the two ids keeps its own definition and
+   *     its own territory, and the *members* and *grudges* the payload
+   *     restored are untouched either way -- this call registers definitions
+   *     and writes neither. So no persisted field is added,
+   *     `SAVE_SCHEMA_VERSION` does not move, and there is no migration.
+   */
+  applyDefaultGangs(runtime.gangs, defaultSector.id);
 
   /*
    * 9. The four default search policies, re-applied after the payload
