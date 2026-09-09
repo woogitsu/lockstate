@@ -247,6 +247,42 @@ jobs:
       - name: Verify project
         run: pnpm verify
 
+      # The measurement harness under `tests/perf/` sits outside `pnpm test` on
+      # purpose: its files are named `*.perf.ts` so the ordinary suite never
+      # pays for building multi-hundred-chunk prisons. Until #1083 nothing else
+      # ran it either -- no `package.json` script, no step here -- so it was
+      # read by `tsc` and executed by nobody, and nothing would have said if it
+      # stopped passing. Three files and 35 tests when that was measured.
+      #
+      # `pnpm test:perf` and not a bare `vitest run`, and the config is the
+      # load-bearing part. `tests/perf/vitest.perf.config.ts` sets its own
+      # `testTimeout: 900_000` where the root `vitest.config.ts` sets `5_000`,
+      # and on the five-second budget these files go red on time rather than on
+      # anything about the code: #1083 hit six `Test timed out in 5000ms`
+      # failures with an ad-hoc config, and re-running the harness with
+      # `--testTimeout=5000` and nothing else changed produced 12 of 35. The
+      # count follows the machine; that there is one is why the script exists
+      # rather than the command being typed here.
+      #
+      # It asserts schema, bytes and round-trips and never elapsed time
+      # (`docs/BENCHMARKING.md`), so a slow runner makes this step long and not
+      # flaky. ~85s where #1083 was filed; 143s on a four-way-shared container.
+      # The whole `verify` job finished in 50s on `lockstate-wsl-DOM-NEW-03`
+      # (run 34328735520) and 1m54s on `woogitsu-linux-03` (run 34284035100)
+      # against this job's 30-minute cap, so the step fits with room to spare.
+      # That matters because the cap is NOT what was authorised below: if this
+      # job ever approaches 30 minutes, that is a decision for the owner and
+      # not a number to nudge.
+      #
+      # AUTHORISED BY THE OWNER ON 2026-09-09, as one step in this job and
+      # nothing else in this file. The provenance is the weaker kind and
+      # `AGENTS.md` records it as such: the label of a clickable option the
+      # integrator wrote -- "Dodaj bramkę w CI" -- and not a sentence the owner
+      # typed. `tests/foundation/ci-configuration-contract.test.ts` pins the
+      # step and the script together, so deleting either one is red.
+      - name: Verify measurement harness
+        run: pnpm test:perf
+
       - name: Verify benchmark harness
         run: pnpm verify:benchmark
 

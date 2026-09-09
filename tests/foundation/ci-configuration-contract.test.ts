@@ -2401,6 +2401,46 @@ describe('checkout credential persistence contract', () => {
 });
 
 /**
+ * The steps of one top-level job of one workflow, by line range rather than by
+ * re-parsing the job structure: `parseWorkflowSteps` above already reads every
+ * step of every job, and a second structural parser would be a second thing to
+ * keep right.
+ *
+ * Module scope rather than inside one contract, because two contracts below
+ * now ask the same question of two different jobs.
+ */
+function jobSteps(workflow: string, contents: string, job: string): readonly WorkflowStep[] {
+  const lines = contents.split(/\r?\n/u);
+  const header = `  ${job}:`;
+  const start = lines.indexOf(header);
+
+  expect(
+    start,
+    `${workflow} has no \`${header.trim()}\` job at top-level job indentation. If it was renamed, rename it here in the same commit -- a job this contract cannot find is a job this contract does not check.`,
+  ).toBeGreaterThanOrEqual(0);
+
+  // The next thing at job indentation or shallower ends the block. Comments
+  // are skipped rather than treated as the end: in this file a paragraph at
+  // two-space indentation introduces the job *after* it, and stopping there
+  // would be right for the range but wrong the moment the paragraph moves.
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index] ?? '';
+    if (line.trim().length === 0 || /^\s*#/u.test(line)) {
+      continue;
+    }
+    if (/^ {0,2}\S/u.test(line)) {
+      end = index;
+      break;
+    }
+  }
+
+  // `WorkflowStep.line` is 1-based; `start` and `end` index the same array
+  // from 0, so the open interval below is `(start, end]` in 1-based terms.
+  return parseWorkflowSteps(workflow, contents).filter((step) => step.line > start + 1 && step.line <= end);
+}
+
+/**
  * The `browser` job keeps the evidence of its own failures.
  *
  * ## The defect
@@ -2451,43 +2491,6 @@ describe('browser failure evidence contract', () => {
    */
   const DEFAULT_OUTPUT_DIR = 'test-results/';
 
-  /**
-   * The steps of one top-level job, by line range rather than by re-parsing
-   * the job structure: `parseWorkflowSteps` above already reads every step of
-   * every job, and a second structural parser would be a second thing to keep
-   * right.
-   */
-  function jobSteps(contents: string, job: string): readonly WorkflowStep[] {
-    const lines = contents.split(/\r?\n/u);
-    const header = `  ${job}:`;
-    const start = lines.indexOf(header);
-
-    expect(
-      start,
-      `${CI} has no \`${header.trim()}\` job at top-level job indentation. If it was renamed, rename it here in the same commit -- a job this contract cannot find is a job this contract does not check.`,
-    ).toBeGreaterThanOrEqual(0);
-
-    // The next thing at job indentation or shallower ends the block. Comments
-    // are skipped rather than treated as the end: in this file a paragraph at
-    // two-space indentation introduces the job *after* it, and stopping there
-    // would be right for the range but wrong the moment the paragraph moves.
-    let end = lines.length;
-    for (let index = start + 1; index < lines.length; index += 1) {
-      const line = lines[index] ?? '';
-      if (line.trim().length === 0 || /^\s*#/u.test(line)) {
-        continue;
-      }
-      if (/^ {0,2}\S/u.test(line)) {
-        end = index;
-        break;
-      }
-    }
-
-    // `WorkflowStep.line` is 1-based; `start` and `end` index the same array
-    // from 0, so the open interval below is `(start, end]` in 1-based terms.
-    return parseWorkflowSteps(CI, contents).filter((step) => step.line > start + 1 && step.line <= end);
-  }
-
   /** The lines of a step's `path: |` block, trimmed, comments dropped. */
   function pathEntries(step: WorkflowStep): readonly string[] {
     const start = step.lines.findIndex((line) => /^path:\s*\|-?\s*$/u.test(line.trim()));
@@ -2515,7 +2518,7 @@ describe('browser failure evidence contract', () => {
 
   it('uploads, on failure, exactly the two things the browser suite leaves behind', async () => {
     const contents = await readRepositoryFile(CI);
-    const steps = jobSteps(contents, 'browser');
+    const steps = jobSteps(CI, contents, 'browser');
 
     // Vacuity guard, in the shape the two contracts above use: every
     // assertion below is about a step found in this list, and a list of none
@@ -2603,5 +2606,119 @@ describe('browser failure evidence contract', () => {
         .map((line) => line.trim()),
       `${PLAYWRIGHT_CONFIG} now sets \`outputDir\`, and ${CI}'s failure-evidence upload still collects the default \`${DEFAULT_OUTPUT_DIR}\`. One of the two has to move: point the upload at the configured directory and update DEFAULT_OUTPUT_DIR here, in this commit. Playwright resolves an unset \`outputDir\` to \`<package.json dir>/test-results\`, which for this config is the repository root -- that is the only reason the literal in the workflow is right.`,
     ).toEqual([]);
+  });
+});
+
+/**
+ * The measurement harness is invoked by something.
+ *
+ * ## The defect
+ *
+ * Issue #1083. `tests/perf/` carries three files and 35 tests behind its own
+ * Vitest config, `docs/TESTING.md` documented the command, and **nothing in
+ * the repository ran it**: no `package.json` script, no CI step. The root
+ * `vitest.config.ts` collects `*.test.ts` and every file there is named
+ * `*.perf.ts` on purpose, so `pnpm test` could not reach them either. They
+ * were read by `tsc` and executed by nobody, and they passed -- which is the
+ * whole point of the issue rather than a mitigation of it, because nothing
+ * would have said if they had stopped.
+ *
+ * ## Why the config is asserted and not merely the path
+ *
+ * Running these files on the root config's budget is not a slower version of
+ * the same check, it is a red one: that config sets `testTimeout: 5_000`
+ * against the harness's `900_000`, and #1083 records **six** `Test timed out
+ * in 5000ms` failures produced that way, none of them a defect. Re-measured
+ * with `--testTimeout=5000` and nothing else changed, **12 of the 35** failed
+ * that way -- the count follows the machine, which is why this contract
+ * asserts the config rather than a number. So a script that pointed
+ * `vitest run` at `tests/perf/` without `--config` would satisfy "the harness
+ * is invoked" and fail every run.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the harness asserts anything worth asserting, or that it is fast.
+ * `docs/BENCHMARKING.md` owns the first and forbids timing assertions
+ * outright; the second is a runner property that changes under this repository
+ * without a commit, as the `browser` job's budget comments in the workflow
+ * record at length. What is checked is that the gate is *reachable*, which is
+ * the one property #1083 found missing.
+ *
+ * ## The reserved file
+ *
+ * The CI step this asserts is inside `.github/workflows/ci.yml`, which is
+ * `AGENTS.md` reservation 3. The owner released one step for it on 2026-09-09,
+ * and that entry records both what was authorised and that its provenance is a
+ * clicked option label rather than the owner's own words. Widening this
+ * contract to require a second step would be requiring a change nobody has
+ * authorised.
+ */
+describe('measurement harness reachability contract', () => {
+  const CI = '.github/workflows/ci.yml';
+  const SCRIPT = 'test:perf';
+  const CONFIG = 'tests/perf/vitest.perf.config.ts';
+
+  it('gives the harness a script that runs it through its own config', async () => {
+    const manifest = JSON.parse(await readRepositoryFile('package.json')) as {
+      readonly scripts?: Readonly<Record<string, string>>;
+    };
+    const script = manifest.scripts?.[SCRIPT];
+
+    expect(
+      script,
+      `package.json no longer declares a \`${SCRIPT}\` script. #1083 is the state where \`${CONFIG}\` exists and nothing invokes it: the harness is typechecked and never run, and its 35 assertions report nothing when they break. The CI step below runs this script by name, so removing it empties that step too.`,
+    ).toBeDefined();
+
+    expect(
+      script,
+      `\`pnpm ${SCRIPT}\` must pass \`--config ${CONFIG}\`. Without it these files inherit the root \`vitest.config.ts\`'s \`testTimeout: 5_000\` against the harness's own \`900_000\`: #1083 measured six \`Test timed out in 5000ms\` failures that way and a re-measurement with \`--testTimeout=5000\` produced 12 of 35. A run of this harness without its config is red for a reason that is not about the code.`,
+    ).toContain(`--config ${CONFIG}`);
+  });
+
+  it('runs that script from the `verify` job, so the harness is a gate and not a habit', async () => {
+    const contents = await readRepositoryFile(CI);
+    const steps = jobSteps(CI, contents, 'verify');
+
+    // Vacuity guard, in the shape the contracts above use: every assertion
+    // below is about a step found in this list, and a list of none satisfies
+    // nothing rather than failing.
+    expect(
+      steps.length,
+      `no steps were parsed out of the \`verify\` job in ${CI}. The line-range filter or \`parseWorkflowSteps\` is broken; fix it rather than the workflow.`,
+    ).toBeGreaterThan(0);
+
+    const commands = steps
+      .map((step) => stepScalar(step, 'run')?.value)
+      .filter((value): value is string => value !== undefined)
+      .map((value) => value.trim());
+
+    expect(
+      commands,
+      `${CI}'s \`verify\` job no longer runs \`pnpm ${SCRIPT}\`. That step is the whole of what the owner authorised on 2026-09-09 (\`AGENTS.md\`, reservation 3), and without it \`tests/perf/\` is back in the state #1083 filed: a harness with a config, a script, documentation and no runner. Steps found: ${commands.join(' | ') || '(none)'}`,
+    ).toContain(`pnpm ${SCRIPT}`);
+  });
+
+  it('leaves the harness out of the default suite, which is what hid it and is still right', async () => {
+    const root = await readRepositoryFile('vitest.config.ts');
+    const include = root.split(/\r?\n/u).filter((line) => /^\s*include\s*:/u.test(line));
+
+    // Vacuity guard: the assertion below is about what `include` names, and a
+    // config this filter cannot find an `include` in would satisfy it with
+    // nothing read at all.
+    expect(
+      include,
+      'vitest.config.ts declares no `include:` on a line of its own, so the assertion below reads nothing. Fix this filter rather than the config.',
+    ).toHaveLength(1);
+
+    /*
+     * The other direction of the contract above. #1083's answer is a gate, not
+     * a fold-in: collecting `*.perf.ts` from the root config would give these
+     * files a runner and a five-second budget in the same move, and `pnpm test`
+     * would start paying for multi-hundred-chunk fixtures on every run.
+     */
+    expect(
+      include[0],
+      `vitest.config.ts's \`include\` now reaches the measurement harness. It must not: this config's \`testTimeout\` is \`5_000\` where the harness's own is \`900_000\`, and its fixtures are expensive enough that \`pnpm test\` would stop being the fast gate. The harness is reached through \`pnpm ${SCRIPT}\` and its own config instead.`,
+    ).not.toContain('perf');
   });
 });
