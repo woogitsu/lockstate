@@ -111,7 +111,16 @@ document proposes no new field.**
 
 Only the first needs a second tab. The other two happen in one.
 
-### 5. What #1112 already fixed, so this document does not re-argue it — VERIFIED
+### 5. The revision is not monotone in one session — MEASURED at `5d5df28a`
+
+Two `saveNow()` calls started before either commits both build an envelope at
+`session.revision + 1` from the same value, so both carry **revision 2**; the
+counter is then advanced twice while one write survives, and the next save lands
+on **4**. On-disk revisions: **1, 2, 4**. Full output and its consequence for
+the Decision are in "The weakest claim" below, because it refutes what this
+document first recommended.
+
+### 6. What #1112 already fixed, so this document does not re-argue it — VERIFIED
 
 `closeSession()` now stops the runtime host (#582 RED-001) and generation ids
 are `crypto.randomUUID()` (#582 FINAL-022). Both were pure correctness and
@@ -151,13 +160,20 @@ concepts.
 
 ### What this document recommends
 
-**Option 2 now, option 3 as the direction, option 1 rejected.**
+**FINAL-005 first, then option 2, then option 3 as the direction. Option 1
+rejected.**
+
+**The ordering is not cosmetic and it is the opposite of what this document
+recommended in its first draft** — see "The weakest claim", which named the risk
+and was then confirmed by measurement rather than left standing. A revision CAS
+cannot be adopted while the revision it compares is not monotone, because it
+would refuse writes that are not stale.
 
 2 is the one that transposes a rule the project has already committed to, needs
-no new field, and closes the pointer write and FINAL-005. 3 is what FINAL-004
-actually needs and should not be smuggled into 2's change. 1 is rejected because
-"two positions on the same question" is the defect this file exists to prevent,
-not a resting state.
+no new field, and closes the pointer write. 3 is what FINAL-004 actually needs
+and should not be smuggled into 2's change. 1 is rejected because "two positions
+on the same question" is the defect this file exists to prevent, not a resting
+state.
 
 **The mismatch path is the open question and it is not this document's to
 settle alone** — see Open questions 1 and 2.
@@ -176,19 +192,49 @@ under `AGENTS.md`'s fourth reservation** — the wording has been ours since
 2026-09-04, the decision to make the promise at all has not. This document
 authors none and recommends none.
 
-## The weakest claim this document makes
+## The weakest claim this document made, and the measurement that settled it against the document
 
-**That a revision CAS is implementable without a false-refusal problem.**
-`revision` is caller-managed (`docs/PERSISTENCE.md`'s own words), and #582
-FINAL-005 reports autosave and manual save allocating the *same* revision — so
-the token this option compares is itself not currently guaranteed monotone in
-one process. If FINAL-005 is fixed first the claim holds; if it is not, option 2
+**It read:** *"That a revision CAS is implementable without a false-refusal
+problem … If FINAL-005 is fixed first the claim holds; if it is not, option 2
 would refuse writes that are not actually stale. **The order matters and this
-document may have it backwards.**
+document may have it backwards.** What would change my mind: a run showing two
+same-revision allocations in one session after #1112, which I have not
+performed."*
 
-What would change my mind: a run showing two same-revision allocations in one
-session after #1112, which I have not performed — #582's own comment reports it
-against an earlier tree and I reproduced neither.
+**That run was then performed, on `5d5df28a` (v0.0.559), and it had it
+backwards.** The paragraph is kept above rather than replaced because a
+recommendation refuted by the measurement it asked for is worth more to a later
+reader than a tidy one.
+
+**MEASURED.** A prison created, then two `saveNow()` calls started before either
+commits — which is exactly the shape of an autosave firing while a manual save
+is in flight:
+
+```
+overlappingEnvelopeRevisions: [2, 2]
+after the pair:  generations 2, currentRevision 2, revisions on disk [1, 2]
+after a third:   generations 3, currentRevision 4, revisions on disk [1, 2, 4]
+```
+
+**Both envelopes carry revision 2**, because `buildEnvelope` reads
+`session.revision + 1` and `session.revision += 1` runs only *after*
+`repository.save` resolves — so the two overlap inside that window. Both saves
+report success. One revision-2 generation survives.
+
+**And the third save lands on 4.** `session.revision` was incremented twice
+while only one revision-2 write survived, so the sequence on disk is **1, 2, 4**
+and revision 3 never exists.
+
+**What that does to option 2.** The cloud's rule is `new === current + 1`.
+Applied locally to this same session it would reject the third save — 4 is not
+2 + 1 — a write that is perfectly legitimate and not stale at all. **So the CAS
+cannot go first.** FINAL-005 is not a defect option 2 closes; it is a
+precondition option 2 has.
+
+**What this does not settle.** Whether the fix for FINAL-005 is a lock, a
+queue, or allocating the revision at write time inside the same transaction that
+compares it — the last would make FINAL-005 and option 2 one change rather than
+two, and this document does not choose between them.
 
 ## What would change my mind
 
