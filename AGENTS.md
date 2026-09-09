@@ -396,7 +396,7 @@ outward-facing or unrevertable, which is the whole reason:
 
    **What was declined by not being asked.** Routing `browser` back to the
    faster pool is not available from this file: every job's `labels` in the API
-   is the identical `runs-on` list `[self-hosted, Linux, X64, wsl2, woogitsu]`,
+   is the generic `runs-on: self-hosted`,
    so `runs-on` cannot tell the two pools apart until a label exists on the
    runner side, which is host configuration and outside this repository
    entirely.

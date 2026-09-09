@@ -139,7 +139,7 @@ jobs:
     #
     # tests/foundation/ci-configuration-contract.test.ts carries the same
     # argument against version.yml's `runs-on`, with the measurement.
-    runs-on: [self-hosted, Linux, X64, wsl2, woogitsu]
+    runs-on: self-hosted
     timeout-minutes: 30
 
     # NO CHECKOUT, AND NO ACTIONS AT ALL. That is a decision, not an omission,
