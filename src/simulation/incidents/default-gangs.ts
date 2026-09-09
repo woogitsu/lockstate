@@ -103,6 +103,25 @@ export function applyDefaultGangs(gangs: GangRegistry, sectorId: string): void {
  * as well is the obvious repair and it is a second write site with its own
  * determinism question, which is exactly what Open Question 5 asks the owner
  * and is therefore **not** decided here.
+ *
+ * **ANSWERED BY THE OWNER ON 2026-09-09: at the review site as well.** The
+ * paragraph above is kept rather than rewritten, because it is the reading
+ * that put the question and a reader should see what was asked.
+ * `ClassificationReviewSystem` now takes this same port, so this function is
+ * called from two sites and **the sentence "a prison whose arrivals all come
+ * in at `priorIncidents: 0` assigns nobody here" is still true of *here* and
+ * no longer true of the prison** — those arrivals become members at their
+ * first `high-risk` review instead. Sharper than the paragraph above put it:
+ * `priorIncidents: 0` is not merely the common case, it is the **only** value
+ * the game's one admission surface can send (`src/main.ts`'s
+ * `ADMISSION_REQUEST`, a held decision), so nothing reached this rule through
+ * intake in play at all.
+ *
+ * **Calling it twice for one entity is safe by construction**, which is what
+ * makes two sites cheap: the answer is a pure function of `entityId`, so both
+ * sites compute the same gang, and `GangRegistry.addMember` moves-or-sets.
+ * `tests/integration/gang-membership-at-review.test.ts` measures the whole
+ * path from an admission a player can actually make.
  */
 export function defaultGangIdForArrival(entityId: EntityId, classificationGroupId: string): string | undefined {
   if (classificationGroupId !== HIGH_RISK_GROUP_ID) return undefined;

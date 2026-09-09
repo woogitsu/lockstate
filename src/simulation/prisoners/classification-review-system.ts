@@ -8,7 +8,7 @@ import {
   type RiskTier,
 } from './classification';
 import { classificationGroupIndex, intakeStageFromIndex, type PrisonerRecordComponent } from './components';
-import type { IntakeContrabandIntroducer } from './intake-system';
+import type { IntakeContrabandIntroducer, IntakeGangAssigner } from './intake-system';
 import {
   buildDisciplinaryIndex,
   CLEAN_DISCIPLINARY_RECORD,
@@ -312,6 +312,65 @@ export class ClassificationReviewSystem implements SystemRegistration {
     private readonly contrabandIntroducer?: IntakeContrabandIntroducer,
     /** The named stream the introduction draws from. Only read when an introducer is supplied. */
     private readonly contrabandRngStreamName: string = 'contraband.introduction',
+    /**
+     * The same membership port `IntakeSystem` takes, asked again wherever this
+     * system writes a prisoner's `classificationGroupIndex` -- **ADR 0103 open
+     * question 5, answered by the owner on 2026-09-09.**
+     *
+     * OQ5 asked *"when is membership assigned -- at intake, or wherever the
+     * tier is written?"* and named assigning at both sites as "the obvious
+     * repair ... with its own determinism question". The owner chose the
+     * review site. **The provenance is the weaker kind and is disclosed rather
+     * than dressed up**, exactly as ADR 0104's Status does: the ruling is the
+     * label of a clickable option this session wrote and the owner chose, not
+     * a sentence they typed.
+     *
+     * ## Why this needed answering at all
+     *
+     * Decision 6 keys membership on `high-risk`, and `high-risk` was
+     * unreachable from the only admission surface the game has:
+     * `src/main.ts` builds the one `AdmitPrisoner` command and passes
+     * `ADMISSION_REQUEST.priorIncidents`, which is `0` and is a **held**
+     * decision rather than an oversight (that constant's own docblock says
+     * so, and says why: drawing priors moves risk tiers, and tiers decide cell
+     * sharing, contraband and regime). So gangs, grudges and
+     * `'gang-retaliation'` were built, tested, and unreachable in play. This
+     * port is what makes them reachable, because a review **can** carry a
+     * prisoner admitted at `priorIncidents: 0` into tier 3.
+     *
+     * ## The determinism question OQ5 raised, answered by the port's own shape
+     *
+     * `IntakeGangAssigner` takes **no `rng`** and says so in its own docblock:
+     * *"a session that wires it registers no seventh stream and no existing
+     * seed's classification draw moves."* A second call site therefore adds no
+     * stream and moves no draw, which is what makes assigning at both sites
+     * cheap rather than delicate.
+     *
+     * **This is NOT the reason `contrabandIntroducer` above is gated on the
+     * step into tier 3, and the two must not be read as the same gate.** That
+     * producer *does* consume a draw, so calling it on every increase would
+     * advance a stream in prisons where nothing changed hands. This one cannot
+     * do that. It is called on a group **change** because membership keys on
+     * the group and a change is when the group is news -- bookkeeping, not
+     * determinism.
+     *
+     * ## Assigning at both sites is idempotent, not merely tolerable
+     *
+     * `defaultGangIdForArrival` is a pure function of the entity id
+     * (`DEFAULT_GANG_IDS[entityId % DEFAULT_GANG_IDS.length]`) and `addMember`
+     * moves-or-sets, so an arrival who was `high-risk` at intake and is
+     * re-affirmed here lands in the same gang both times.
+     *
+     * **What this deliberately does not do is revoke.** A prisoner who leaves
+     * `high-risk` keeps their membership, because `defaultGangIdForArrival`
+     * answers `undefined` for every other group and this system does not
+     * invent a removal ADR 0103 never asked for. `releasePrisoner` is still the
+     * only thing that drops a member.
+     *
+     * **Omitted, nothing changes**, which is what every fixture that wires no
+     * assigner relies on.
+     */
+    private readonly gangAssigner?: IntakeGangAssigner,
   ) {}
 
   public getMetrics(): ClassificationReviewMetrics {
@@ -404,7 +463,14 @@ export class ClassificationReviewSystem implements SystemRegistration {
           this.contrabandIntroducer.introduce(entityId, assessment.riskTier, context.tick, context.rng.get(this.contrabandRngStreamName));
         }
       } else if (assessment.riskTier < previousTier) this.tierDecreases += 1;
-      if (nextGroupIndex !== previousGroupIndex) this.groupChanges += 1;
+      if (nextGroupIndex !== previousGroupIndex) {
+        this.groupChanges += 1;
+        // ADR 0103 open question 5, answered by the owner on 2026-09-09: the
+        // second membership write site. The rule stays in
+        // `defaultGangIdForArrival` -- this system supplies the group and the
+        // tick and nothing else, the same division the introducer above uses.
+        this.gangAssigner?.assign(entityId, assessment.classificationGroupId, context.tick);
+      }
     }
   }
 }

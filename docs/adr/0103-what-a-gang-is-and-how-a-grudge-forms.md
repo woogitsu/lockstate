@@ -1868,17 +1868,65 @@ a reader holding the earlier draft can follow.**
    case for it without removing it**: `high-risk` turns out to be reachable, so
    "the mechanism cannot ship inert" is no longer the decisive argument it was
    when this question was written.
-5. **When is membership assigned — at intake, or wherever the tier is written?
-   — NEW, and it is the question an implementer hits first.** Decision 6 says
-   intake; Context 15 shows the population that actually becomes `high-risk`
-   becomes so at review, long after intake, and that
-   `ClassificationReviewSystem` writes both `riskTier` and
-   `classificationGroupIndex` at
-   `src/simulation/prisoners/classification-review-system.ts:384-385`. Assigning
-   at both sites is the obvious repair and it is a second write site with its
-   own determinism question; assigning *only* at review means a prison's first
-   gang members appear after its first review interval, which is a real
-   pacing decision rather than a detail.
+5. **ANSWERED BY THE OWNER, 2026-09-09: wherever the tier is written.** *(Kept
+   in place and at number 5, the way open question 1 above is, because the
+   question is what a later reader will want to find.)* The write is added to
+   `ClassificationReviewSystem`, which is given the **same**
+   `IntakeGangAssigner` port the intake stage already takes; the intake write
+   stays. `tests/integration/gang-membership-at-review.test.ts` pins it.
+
+   > **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
+   > UP**, exactly as this repository does for the 2026-09-08 and 2026-09-09
+   > releases inside `AGENTS.md`'s reservation 3 and for ADR 0104's own
+   > acceptance: the ruling is **the label of a clickable option this session
+   > wrote and the owner chose**, not a sentence they typed, and it was put to
+   > them against the finding below rather than against this document.
+
+   **What forced the question is sharper than this entry put it, and the
+   original text is kept below.** This entry said the population that becomes
+   `high-risk` does so at review *"long after intake"*. The stronger fact,
+   measured rather than reasoned: **`high-risk` is not reachable at intake at
+   all in the shipped game.** `src/main.ts` builds the only `AdmitPrisoner`
+   command the interface can produce and passes
+   `ADMISSION_REQUEST.priorIncidents`, which is `{ priorIncidents: 0 } as const`
+   — a *held* decision carrying its own reason (drawing priors moves risk tiers,
+   and tiers decide cell sharing, contraband introduction and regime). So
+   decision 6's gate was sound and unreachable, and gangs, grudges and
+   `'gang-retaliation'` were built, tested and inert.
+   `tests/integration/gang-grudge-loop.test.ts` admits at `priorIncidents: 2`
+   and says so in its own header, which is why a green suite never showed this.
+
+   **The determinism question this entry raised is answered by the port's own
+   shape rather than by a measurement.** `IntakeGangAssigner` takes no `rng`,
+   and its docblock says a session wiring it *"registers no seventh stream and
+   no existing seed's classification draw moves"* — so a second call site adds
+   no stream and moves no draw. It is **not** the situation
+   `contrabandIntroducer` is in at the same site, which does consume a draw and
+   is gated on the step into tier 3 for that reason; the two look alike and are
+   not.
+
+   **What it costs, measured on the new test's prison:** the first members
+   appear at tick **48,000** rather than at intake, so this entry's own *"a
+   prison's first gang members appear after its first review interval"* is the
+   accepted pacing rather than a surprise. Membership is idempotent across the
+   two sites, because `defaultGangIdForArrival` is pure in the entity id.
+   Release still drops membership — entity 6 leaves at tick 48,611 in the same
+   fixture — and **no revocation on a tier drop was added**, because this
+   document never asked for one.
+
+   The question as it stood:
+
+   > **When is membership assigned — at intake, or wherever the tier is
+   > written? — NEW, and it is the question an implementer hits first.**
+   > Decision 6 says intake; Context 15 shows the population that actually
+   > becomes `high-risk` becomes so at review, long after intake, and that
+   > `ClassificationReviewSystem` writes both `riskTier` and
+   > `classificationGroupIndex` at
+   > `src/simulation/prisoners/classification-review-system.ts:384-385`.
+   > Assigning at both sites is the obvious repair and it is a second write
+   > site with its own determinism question; assigning *only* at review means a
+   > prison's first gang members appear after its first review interval, which
+   > is a real pacing decision rather than a detail.
 6. **What weight should one cross-gang assault carry?** *(was open question 6.)*
    Decision 2.5 recommends `0.2` and shows the arithmetic that makes `0.4`,
    `0.2` and `0.15` mean "every assault", "every second" and "every third". This

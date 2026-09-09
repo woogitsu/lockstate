@@ -644,6 +644,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
      * gate, and whether membership should also be assigned there is its **Open
      * Question 5**, which the owner has not answered. Adding the second write
      * site would be answering it in implementation code.
+     *
+     * **The owner answered it on 2026-09-09: assign at the review site too.**
+     * The paragraph above is kept because it is the reason this seam was left
+     * alone for a day, and its last sentence is exactly right about why —
+     * which is the point. The second site is not added *here*: this closure is
+     * handed unchanged to `ClassificationReviewSystem` as well, inside
+     * `PrisonerOperationsRuntime`, so the rule still lives in one place and
+     * two callers ask it.
      */
     gangAssigner: {
       assign: (entityId, classificationGroupId) => {

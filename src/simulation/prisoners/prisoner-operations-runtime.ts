@@ -239,8 +239,17 @@ export interface PrisonerOperationsRuntimeOptions {
    * A separate port from `gangs` above rather than a second method on it, and
    * the split is the point: `gangs` is a *release* surface -- the one thing
    * this runtime has to tell the registry when a prisoner leaves -- and this
-   * is an *intake* rule. `PrisonerReleaseSurfaces` names the first; nothing
+   * is an *assignment* rule. `PrisonerReleaseSurfaces` names the first; nothing
    * about a departure belongs in the second.
+   *
+   * **This bullet read "an *intake* rule" until 2026-09-09 and the word is
+   * corrected rather than the sentence rewritten**, because the split it
+   * describes is unchanged and only the number of assignment sites moved. The
+   * owner answered ADR 0103's open question 5 that day, so this port is now
+   * handed to `ClassificationReviewSystem` as well -- which is the site that
+   * makes it reach anybody at all, since the game's only admission surface
+   * sends `priorIncidents: 0` and `high-risk` is therefore unreachable at
+   * intake. One port, two callers, one rule.
    */
   readonly gangAssigner?: IntakeGangAssigner;
   /**
@@ -403,6 +412,11 @@ export class PrisonerOperationsRuntime {
       options.disciplinaryEvidence,
       options.contrabandIntroducer,
       options.contrabandRngStreamName,
+      // The SAME port the intake stage above is given, not a second one --
+      // ADR 0103 open question 5, answered by the owner on 2026-09-09. Both
+      // sites hand the rule the group and the tick; `defaultGangIdForArrival`
+      // decides, and it is pure in the entity id, so the two writes agree.
+      options.gangAssigner,
     );
     this.classificationEarlyWarningSystem = new ClassificationEarlyWarningSystem(this.entityStore, this.query, this.records, options.disciplinaryEvidence);
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
