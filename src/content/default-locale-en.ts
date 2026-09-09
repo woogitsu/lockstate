@@ -1472,6 +1472,62 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.catalogue': 'What to build',
   'hud.build.catalogue-empty': 'Nothing is available to build',
   'hud.build.selected': 'Selected',
+  /**
+   * The catalogue row's own price (issue #901), authored under `AGENTS.md`'s
+   * fourth reservation as partly released on 2026-09-04: the wording is ours,
+   * the truth of it is not, and this comment is the verification the release
+   * asks for -- opened beside the code it quotes rather than left to the
+   * commit message alone.
+   *
+   * `'{buildable} · {total}'` copies the shape `hud.security.hire` shipped
+   * for the Security tab, `'Hire {role} · {total}'` -- a price folded into a
+   * row's own label -- minus the verb: this row's press *selects* it, the
+   * spend happens at a placement press (issue #640), so there is nothing to
+   * put in front of the name.
+   *
+   * **What makes the number true, read off the code rather than assumed.**
+   * `purchasableMaterialFor` (`src/main.ts:751`) puts
+   * `unitPriceMinorUnits * quantityPerPlacement` within reach as
+   * `HudBuildMaterialViewModel`'s two fields; `build-panel.ts`'s row-mount
+   * loop multiplies them once, at the same place `paintBuyTotal` multiplies
+   * `unitPriceMinorUnits * quantity` for the buy button
+   * (`hud.build.buy-submit`, below) -- one formula, read twice. Two rows
+   * checked against `src/content/procurement-catalog.ts:100-101` (`item.brick`
+   * 40, `item.wood-plank` 65) and `src/simulation/construction/definition.ts`:
+   * `wall-brick` (`:89`, 2 brick) renders "Brick wall · 80"; `bed-wooden`
+   * (`:180`, 1 plank) renders "Bed · 65". All 21 rows carry exactly one
+   * `materialsRequired` entry and both items it can name are in
+   * `PROCURABLE_MATERIALS`, so every row gets a price -- `total` is only ever
+   * `undefined`, and this key only ever skipped, for a future buildable made
+   * of something #29 has not priced yet.
+   *
+   * This key is for the **nineteen** rows whose press places one discrete
+   * object (`buildable.placesObject === true`): `ObjectTool.place`
+   * (`src/ui/object-tool.ts:198`) is one press, one tile, one command, so the
+   * quoted total is what that one press spends, full stop, every time.
+   */
+  'hud.build.catalogue-row-price': '{buildable} · {total}',
+  /**
+   * The per-segment twin of the key above, for the **two** rows a flat price
+   * would misstate: `wall-brick` and `door-wooden`, the only two rows
+   * answering `false` to `placesObject`. Both occupy a tile edge and both
+   * reach `BuildTool.place` (`src/ui/build-tool.ts:235`) through the
+   * `place-build-order` route `hud.ts` sends for `placesObject === false`
+   * (searched: `dispatchCommand({ kind: 'place-build-order', ...order })`,
+   * fed by `BuildTool.attachOrders`, which takes "the whole run" as one call)
+   * -- so a drag across several tile edges places several segments in one
+   * gesture, and `ProcurementSystem`/the treasury charge once per segment.
+   *
+   * `wall-brick` costs 80 a segment (`unitPriceMinorUnits: 40` ×
+   * `quantity: 2`, `definition.ts:89`): a drag of seven is 560, not 80, and
+   * `'{buildable} · {total}'` alone would have promised the smaller number for
+   * the larger charge -- exactly the false promise reservation 4 exists to
+   * stop. Naming the unit is the whole fix: `'{buildable} · {total} per
+   * segment'` stays true of a one-tap door (`door-wooden`, 65) and of a
+   * sixty-segment wall alike, because it never claims to be the total, only
+   * the rate.
+   */
+  'hud.build.catalogue-row-price-segment': '{buildable} · {total} per segment',
   'hud.build.placement': 'Where',
   'hud.build.tile-x': 'Tile X',
   'hud.build.tile-y': 'Tile Y',

@@ -253,6 +253,26 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * same chip's same balance at its `critical` step -- the treasury floor,
      * `counts.treasuryOverdraftFloorMinorUnits` -- and no new flow either.
      */
+    /*
+     * **Two more join on 2026-09-09, and `price` is one of the two refused
+     * words above that this pair actually contradicts -- read the paragraph
+     * at "cost" and "price" stay refused" again before assuming precedent.**
+     * `hud.build.catalogue-row-price` and `-price-segment` (issue #901) are a
+     * catalogue row's own cost, stated on the row rather than behind a press
+     * on the buy disclosure. That paragraph's objection was to a *standalone*
+     * readout invented for a key with no purchase behind it -- and this one
+     * is not standalone: `build-panel.ts`'s row-mount loop computes the exact
+     * `unitPriceMinorUnits * quantityPerPlacement` product `paintBuyTotal`
+     * already renders for `hud.build.buy-submit`, from the same
+     * `HudBuildMaterialViewModel` the buy control reads. It restates a number
+     * the panel already states elsewhere, earlier, where a player can read it
+     * without a press -- it does not invent one.
+     *
+     * `AGENTS.md`'s fourth reservation names #901 by number as one of the four
+     * sentences waiting when the owner partly released it on 2026-09-04: the
+     * wording is the agent's to choose, the truth of it is not, and the two
+     * keys ship only because that number is opened and checked, not assumed.
+     */
     const ALLOWED_MONEY_KEYS = new Set([
       'hud.status.funds',
       'hud.status.funds-remaining',
@@ -260,6 +280,8 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.status.funds-deliveries-stopped',
       'hud.status.funds-treasury-floor-exhausted',
       'hud.security.roster-wage-bill',
+      'hud.build.catalogue-row-price',
+      'hud.build.catalogue-row-price-segment',
     ]);
 
     for (const key of HUD_MESSAGE_KEYS) {

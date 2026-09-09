@@ -2010,7 +2010,12 @@ test.describe('HUD shell', () => {
       // ADR 0011: an unresolved key renders as itself. Nothing on this panel
       // may be a raw `hud.*` identifier.
       expect(probe.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
-      expect(probe.texts).toContain('Brick wall');
+      // Since issue #901 the row's own label carries its price -- this
+      // fixture's `wall-brick` is a per-segment row (`placesObject: false`),
+      // priced at 40 minor units × 2 bricks (`BUILD_MODEL` in
+      // `tests/browser/ui-harness.ts`), so "Brick wall" alone is no longer
+      // this row's whole text and would falsely pass if it still were.
+      expect(probe.texts).toContain('Brick wall · 80 per segment');
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);

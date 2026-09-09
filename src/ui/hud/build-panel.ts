@@ -361,6 +361,52 @@ export function armedHintKey(buildable: HudBuildableViewModel | undefined, remov
 }
 
 /**
+ * What one catalogue row's own label says, price included (issue #901).
+ *
+ * **Every one of the 21 rows used to show zero digits.** The price existed
+ * only behind a press on the buy disclosure (`hud.build.buy-submit`); this is
+ * where it is folded into the row itself instead, on the shape
+ * `hud.security.hire` already shipped for the Security tab -- see the
+ * commentary on `HUD_MESSAGE_KEY.buildCatalogueRowPrice` in `messages.ts` and
+ * on the two locale entries in `default-locale-en.ts` for the full
+ * verification: what the two keys say, and the code that makes each true.
+ *
+ * Branched on `buildable.placesObject`, the same fact `armedHintKey` above
+ * branches its own two sentences on: `true` (nineteen rows) is one press, one
+ * tile, one command (`ObjectTool.place`), so a flat price stays true; `false`
+ * (`wall-brick`, `door-wooden`) reaches the drag-a-run route
+ * (`BuildTool.place`), so the price must name its unit or a run of several
+ * would be underquoted by the same factor.
+ *
+ * `total` arrives pre-formatted, exactly as `formatBuildQueueOrderText` and
+ * `formatPendingDeliveryText` below take theirs: number formatting is
+ * `HudLocalizer.formatNumber`'s job, which a function taking only `Translate`
+ * has no access to. `undefined` means the buildable's material has no price
+ * at all (`HudBuildableViewModel.material` is absent) -- the row still needs a
+ * label, and a row naming no price is honest about a material `#29` has not
+ * priced, rather than a bug to route around.
+ *
+ * Pure and exported for the reason `armedHintKey` above is: the default
+ * Vitest environment is `node` (`docs/TESTING.md`), so nothing headless can
+ * mount the panel, and "what a row's price sentence says" is exactly the
+ * claim that has to be assertable over real text from a real catalog.
+ */
+export function buildCatalogueRowLabel(
+  t: Translate,
+  buildable: HudBuildableViewModel,
+  total: string | undefined,
+): string {
+  const name = t(buildable.labelKey);
+  if (total === undefined) return name;
+  return t(
+    buildable.placesObject
+      ? HUD_MESSAGE_KEY.buildCatalogueRowPrice
+      : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
+    { buildable: name, total },
+  );
+}
+
+/**
  * The edge a submitted intent carries: the player's choice while the chooser is
  * on screen, and `HUD_DEFAULT_BUILD_EDGE` while it is not.
  *
@@ -992,9 +1038,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   };
 
   for (const buildable of model.buildables) {
+    // The row's price, computed once at mount rather than repainted: content
+    // supplies one price per unit and it never moves
+    // (`src/content/procurement-catalog.ts`), and `model.buildables` is itself
+    // supplied once at mount and not per snapshot -- see `HudBuildViewModel`.
+    // `undefined` for a buildable made of something nothing sells, which
+    // `buildCatalogueRowLabel` reads as "no price to state" rather than a bug.
+    const total =
+      buildable.material === undefined
+        ? undefined
+        : localizer.formatNumber(buildable.material.unitPriceMinorUnits * buildable.material.quantityPerPlacement);
     const row = createListRow({
       icon: 'build',
-      label: t(buildable.labelKey),
+      label: buildCatalogueRowLabel(t, buildable, total),
       onActivate: () => {
         selectedId = buildable.definitionId;
         paintCatalogue();
