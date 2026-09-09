@@ -6,11 +6,35 @@
  *
  * One precision, because the guarantee is narrower than it reads: the value
  * `zodVersionSchema` returns is fresh at every node Zod rebuilds, but a
- * `z.custom` field -- `jsonValueSchema`, and so a save's queued command
- * payloads -- is returned by reference (see `markTrusted` in
- * `save-schema.ts`). A step that mutated such a sub-object in place *would*
- * reach the caller's input; the existing steps rebuild rather than mutate,
- * which is what "must be pure" below requires of any new one.
+ * `z.custom` node has no shape to rebuild from -- it validates by *predicate*
+ * and returns its input **by reference**. `jsonValueSchema`
+ * (`src/simulation/protocol/types.ts:48`) is built that way, and is still a
+ * pass-through wherever it is used bare.
+ *
+ * **This paragraph used to continue "-- and so a save's queued command
+ * payloads --", and that half stopped being true one commit after it was
+ * written.** It is marked rather than deleted because #105 corrected this
+ * docblock *into* that reading and a reader arriving from it needs to see the
+ * turn. Since #106 the save schema wraps the pass-through in a `.transform`
+ * that `structuredClone`s -- `detachedJsonValueSchema`, `save-schema.ts:75` --
+ * and applies it at `queuedCommandSchema.payload` (`save-schema.ts:82`), which
+ * every version schema registered in `saveMigrationChain`
+ * (`save-schema.ts:1503-1507`) reaches through the shared
+ * `kernelSnapshotSchema`. So a save's queued command payloads are
+ * detached at parse, on every version, and no longer alias the caller's input.
+ * `save-schema.ts:55-75` records why the clone sits at that field instead of
+ * inside `jsonValueSchema`, and `markTrusted`'s comment carries the same
+ * history from the other end;
+ * `tests/unit/persistence-save-schema-aliasing.test.ts` is what fails if
+ * either drifts back.
+ *
+ * What the general warning still covers, and why it is kept rather than
+ * retired with the instance: a step that mutated a `z.custom` sub-object in
+ * place *would* reach the caller's input, and the detachment above is a
+ * property of one field in one schema, not of `zodVersionSchema`. A future
+ * payload field typed by a bare `z.custom` reopens it. The existing steps
+ * rebuild rather than mutate, which is what "must be pure" below requires of
+ * any new one.
  *
  * Values are treated as opaque (`unknown`) rather than constrained to
  * `JsonValue`: the chain only ever calls `parse`/`migrate` on them, and
