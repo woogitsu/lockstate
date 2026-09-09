@@ -1100,6 +1100,36 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.construction.order-cancelled': 'The order was cancelled — the money it cost is refunded.',
   'hud.alert.event.construction.order-cancelled-underway':
     'The order was cancelled. Anything already spent past the point of no return stays spent.',
+  /*
+   * **Authored here on 2026-09-09, and quoted verbatim in the commit message
+   * and the pull request body beside the code that proves it true**, which is
+   * what `AGENTS.md`'s fourth reservation requires of a string this side of the
+   * 2026-09-04 release: the choice of words is ours, the requirement that the
+   * sentence be TRUE is not waived.
+   *
+   * What makes each clause true, at the code that decides it:
+   *
+   * - *"Nothing was undone"* -- `ConstructionSystem.undo()` returns
+   *   `{ reversed: false, refusedBecause: 'a-newer-action-came-after-it' }`
+   *   before it flushes the open gesture or pops anything, so the history is
+   *   left exactly as the press found it.
+   * - *"Undo takes back a change to the build queue"* -- the stack holds
+   *   nothing else. `registerTransactionOrder` has two producers in all of
+   *   `src/`, a `PlaceBuildOrder` and a `PlaceObject`.
+   * - *"and something else has happened since the last one"* -- the flag this
+   *   sentence reports is set by `noteActionThatDoesNotWriteTheUndoStack`,
+   *   called for every accepted command outside those two and the two history
+   *   controls, and by `restore()`. It is cleared by a stack write and by a
+   *   successful redo. So it is set if and only if that clause is true.
+   *
+   * The sentence deliberately does not say *which* thing happened, and not
+   * because it could not: naming it would be a fact about a command this
+   * channel does not otherwise carry, and the no-count ruling on #749 is about
+   * exactly this kind of helpful addition to a sentence whose job is to say
+   * that a press did nothing and why.
+   */
+  'hud.alert.event.construction.undo-refused-newer-action':
+    'Nothing was undone — Undo takes back a change to the build queue, and something else has happened since the last one.',
   'hud.alert.event.construction.undone': 'The last change to the build queue was undone.',
   'hud.alert.event.construction.undone-spend-destroyed':
     'The last change to the build queue was undone — anything already spent past the point of no return stays spent.',

@@ -2,7 +2,7 @@ import { createConstructionCommandHandler, reportMaterialsFunding } from '../con
 import { isJustInTimePurchaseOrderId, type ProcurementSystem } from '../economy';
 import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
-import { unpackCommand } from '../protocol/commands';
+import { type SimulationCommand, unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
@@ -158,6 +158,38 @@ import { tileCoordinate } from '../world/coordinates';
  * established as a place where a true claim was available and nothing was
  * published.
  */
+/**
+ * The command types after which `ConstructionSystem`'s undo history still
+ * describes the player's latest action.
+ *
+ * Two of them **write** it -- `PlaceBuildOrder` and `PlaceObject` are the only
+ * two producers `ConstructionSystem.registerTransactionOrder` has, checked
+ * rather than assumed: `src/simulation/construction/handler.ts` and
+ * `src/simulation/objects/object-placement-service.ts` are its only callers in
+ * `src/`. The other two **are** the history controls, and counting `Undo` or
+ * `Redo` as "something else the player did" would make the second press of a
+ * multi-step undo refuse the transaction the first press exposed.
+ *
+ * Everything else is in the complement on purpose, including the two that look
+ * like near misses. `CancelBuildOrder` touches the build queue and writes no
+ * transaction, so a cancel followed by `Z` is exactly the shape
+ * [#956](https://github.com/woogitsu/lockstate/issues/956) measured. And
+ * `DismissAlert` is housekeeping rather than a change to the prison -- the
+ * judgement is that a player who dismisses a banner and presses `Z` is better
+ * served by a refusal that says why than by a finished wall coming down, and it
+ * is a judgement rather than a derivation, so it is written here where it can
+ * be argued with.
+ *
+ * [ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2, accepted
+ * by the owner on 2026-09-09.
+ */
+const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = new Set([
+  'PlaceBuildOrder',
+  'PlaceObject',
+  'Undo',
+  'Redo',
+]);
+
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
   procurement: ProcurementSystem,
@@ -174,6 +206,9 @@ export function createSessionCommandHandler(
 
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
+    if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type)) {
+      construction.noteActionThatDoesNotWriteTheUndoStack();
+    }
     if (simCommand !== null && simCommand.type === 'ZoneRoom') {
       // The outcome is not dropped and it now reaches the player. It used to
       // reach only `RoomZoningService.recentRefusals`, a bounded window kept

@@ -535,11 +535,22 @@ defect, so latency does not decide between them and cost does.
 **Rejected, and the cost is a player-facing sentence per wall segment.**
 `simulation/event` is a closed union and adding to it is deliberately expensive:
 
-`export const SIMULATION_EVENT_TYPES = [ 'construction.order-cancelled', 'construction.order-cancelled-underway', 'construction.redone', 'construction.undone', 'construction.undone-spend-destroyed',`
+`export const SIMULATION_EVENT_TYPES = [ 'construction.order-cancelled', 'construction.order-cancelled-underway', 'construction.redone', 'construction.undo-refused-newer-action', 'construction.undone', 'construction.undone-spend-destroyed',`
 (verbatim in `src/simulation/protocol/types.ts`)
 
-Five `construction.*` members and no completion among them — and the reason a
-sixth is not free is stated in the receiver:
+**This quotation and the count under it read five members until 2026-09-09, and
+both are corrected rather than overwritten**, because the paragraph's point is
+about what the list does *not* contain and a reader should see that it survived
+the list growing. ADR 0104 option 2 added
+`'construction.undo-refused-newer-action'` — a press of `Undo` that found a
+transaction and declined to reverse it, because the player's latest action was
+not a change to the build queue
+([#956](https://github.com/woogitsu/lockstate/issues/956)). It is a **refusal**,
+so the sentence below holds unchanged: still no completion among them, and the
+sixth member arriving did not make a seventh free.
+
+Six `construction.*` members and no completion among them — and the reason a
+seventh is not free is stated in the receiver:
 
 `an event type added to the protocol **fails to compile here** until somebody has decided what it says to a player, how serious it is, and which surfaces it reaches.`
 (verbatim in `src/ui/simulation-events.ts`)

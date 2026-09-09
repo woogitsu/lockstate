@@ -734,6 +734,26 @@ export class SimulationEventLog {
    * what both refundable cases share is only that nothing was destroyed, and
    * the shipped sentence for them says only that the change was undone.
    */
+  /**
+   * Records that `Undo` found a transaction and declined to reverse it, because
+   * the player's latest action was not a change to the build queue
+   * ([ADR 0104](../../docs/adr/0104-what-undo-takes-back.md) option 2, accepted
+   * 2026-09-09, against [#956](https://github.com/woogitsu/lockstate/issues/956)).
+   *
+   * **Carries no count and no figure**, for the same ruling
+   * `recordConstructionUndone` carries none: the owner's 2026-09-01 ruling on
+   * #749 declines the transaction-size plumbing, and nothing about what was
+   * *not* touched is more reportable than what was.
+   *
+   * Called only when `ConstructionSystem.undo()` answers
+   * `refusedBecause: 'a-newer-action-came-after-it'`, never on the other
+   * `reversed: false` shape -- a press against an empty history says nothing,
+   * which is what it has always done.
+   */
+  public recordConstructionUndoRefused(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'construction.undo-refused-newer-action' });
+  }
+
   public recordConstructionUndone(spend: ConstructionUndoSpendOutcome, tick: number): void {
     const sequence = this._sequence + 1;
     switch (spend) {

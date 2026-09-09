@@ -227,7 +227,16 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
       // The move. One keystroke: `Undo` is `KeyZ` (`docs/INPUT.md`), and the
       // open transaction is this one placement (`ObjectPlacementService.place`
       // groups by order id), so it reverses the bed and nothing else.
-      send(runtime, `undo-${index}`, { type: 'Undo' });
+      // Called on the system rather than submitted as a command. ADR 0104
+      // option 2 (#956, accepted 2026-09-09) refuses a router-level `Undo`
+      // whose newest transaction is not the player's own latest action, and
+      // the command above is a later one -- so the press this line used to
+      // model now answers a refusal instead of reaching the order. The router
+      // route is covered by
+      // `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`;
+      // what this file measures is what the cancellation costs, which is the
+      // same call on the same order either way.
+      runtime.construction.undo();
       expect(runtime.construction.getOrder(`bed-${index}`)?.state).toBe('cancelled');
       /*
        * **This assertion read `.toBe(1)` under `'undo hands the plank back,
@@ -501,7 +510,7 @@ describe('a bed recycled by undo, with the resident left behind (ECON-003)', () 
     // named for is still a comparison. `Undo` finds the completed order the
     // removal left behind, cancels it, and hands back exactly as much as the
     // removal did.
-    send(runtime, 'undo', { type: 'Undo' });
+    runtime.construction.undo(); // See the note on the recycling loop above: ADR 0104 option 2 refuses this press through the router.
     expect(runtime.construction.getOrder('bed-0')?.state, 'the undo does reach the order').toBe('cancelled');
     expect(planksInStock(runtime), 'and it gives back nothing either').toBe(0);
   });

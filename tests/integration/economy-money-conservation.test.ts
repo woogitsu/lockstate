@@ -345,7 +345,24 @@ function createSession(seed = 7) {
     label: string,
   ): void => send({ type: 'PlaceBuildOrder', orderId, definitionId, x, y, edge: 'north', transactionId }, label);
 
-  const undo = (label: string): void => send({ type: 'Undo' }, label);
+  /*
+   * Calls the system rather than submitting the command. ADR 0104 option 2
+   * ([#956](https://github.com/woogitsu/lockstate/issues/956), accepted by the
+   * owner on 2026-09-09) refuses a router-level `Undo` whose newest transaction
+   * is not the player's own latest action, and every case in this file pairs
+   * the press with a later `RemoveObject` or admission -- so the command would
+   * now answer a refusal and reach no order.
+   *
+   * **What this file measures is untouched**: `undo()` is the same call on the
+   * same order, and the subject here is what the cancellation costs, not which
+   * press is entitled to it. The press is covered by
+   * `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`.
+   * `label` is kept so the call sites still read as the presses they model.
+   */
+  const undo = (label: string): void => {
+    void label;
+    runtime.construction.undo();
+  };
   const redo = (label: string): void => send({ type: 'Redo' }, label);
 
   const stock = (itemId: string): number =>

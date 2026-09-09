@@ -300,6 +300,30 @@ export class ConstructionSystem implements SystemRegistration {
   // A transaction is just a list of order IDs.
   private undoStack: string[][] = [];
   private redoStack: string[][] = [];
+  /**
+   * Whether the player has done something since the newest thing on
+   * `undoStack`, so that a press of `Undo` would reach past their latest action
+   * rather than take it back
+   * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2).
+   *
+   * **This class records the fact and does not act on it**, which is the whole
+   * of why it is a field and two getters rather than a branch inside `undo()`.
+   * `undo()` means *"reverse the newest transaction"* and every caller that
+   * wants that meaning still gets it; whether one particular press is entitled
+   * to it is a policy about a command, and it lives with the command, in
+   * `createConstructionCommandHandler`. The first draft of this change put the
+   * branch here and eight existing tests refuted it in one run -- their subject
+   * is what the cancellation costs, reached through `undo()` directly, and a
+   * history that refuses its own method had made that unreachable.
+   *
+   * A boolean and not a tick, deliberately: the question is *"is the top of
+   * this stack still the player's latest action"*, and the three writers -- a
+   * stack write clears it, an unrelated command sets it, a successful redo
+   * clears it -- answer exactly that. A tick would additionally need every
+   * transaction to carry the tick it was pushed at, which is a save-schema
+   * field and therefore a migration, for an answer this already gives.
+   */
+  private newerActionThanTheStackTop = false;
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
 
@@ -606,6 +630,48 @@ export class ConstructionSystem implements SystemRegistration {
       this.redoStack = []; // Clear redo stack on new action
     }
     this.currentTransaction.push(orderId);
+    // The top of the history is now something the player just did, so the next
+    // press of `Undo` is about their latest action rather than about an older
+    // one.
+    this.newerActionThanTheStackTop = false;
+  }
+
+  /**
+   * Records that the player did something this history cannot hold
+   * ([ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2,
+   * accepted by the owner on 2026-09-09).
+   *
+   * Only `PlaceBuildOrder` and `PlaceObject` write to this stack -- a hire, a
+   * designation, an admission, a dismissal, an alert dismissal, a removal and a
+   * cancel all write nothing and cannot -- so before this existed the press
+   * reached past every one of them to the last wall.
+   * [#956](https://github.com/woogitsu/lockstate/issues/956) measured the cost:
+   * a player who hires a guard and presses the one key labelled `Undo` keeps
+   * the guard, keeps the wage, and loses a finished wall with no refund.
+   *
+   * Called from `createSessionCommandHandler`, the one place that sees every
+   * command, for each accepted command that is neither a stack write nor a
+   * history control.
+   */
+  public noteActionThatDoesNotWriteTheUndoStack(): void {
+    this.newerActionThanTheStackTop = true;
+  }
+
+  /**
+   * Whether a press of `Undo` would reach past the player's own latest action.
+   *
+   * Read by `createConstructionCommandHandler` and by nothing else. Paired with
+   * `hasSomethingToUndo` below, because the two answer different questions and
+   * the handler needs both: a press against an empty history is not a refusal
+   * and has never said anything.
+   */
+  public get undoWouldReachPastTheLatestAction(): boolean {
+    return this.newerActionThanTheStackTop;
+  }
+
+  /** Whether `undo()` has any transaction at all to reach, open gesture included. */
+  public get hasSomethingToUndo(): boolean {
+    return this.currentTransaction.length > 0 || this.undoStack.length > 0;
   }
 
   /**
@@ -735,6 +801,13 @@ export class ConstructionSystem implements SystemRegistration {
 
     if (undoTransaction.length === 0) return false;
     this.undoStack.push(undoTransaction);
+    // Symmetrical with `registerTransactionOrder`: a redo that re-applied
+    // something has just made the top of the stack the player's latest action
+    // again, so the press after it must not be refused. Without this line a
+    // hire, a redo and an undo would leave the redo stranded -- re-applied and
+    // impossible to take back -- which is a worse shape than the one this whole
+    // change exists to fix.
+    this.newerActionThanTheStackTop = false;
     return true;
   }
 

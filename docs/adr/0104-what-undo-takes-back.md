@@ -60,6 +60,19 @@ Option 2 below would need one; the wording of it would be ours under the
 2026-09-04 release of `AGENTS.md`'s fourth reservation and its *truth* would
 not be waived, and this document proposes the option rather than the string.
 
+> **A CLAUSE IN THE ACCEPTANCE BLOCK ABOVE OVERSTATED THAT RESERVATION AND IS
+> CORRECTED HERE RATHER THAN EDITED THERE.** It said the refusal sentence *"is
+> still the owner's under the fourth reservation"*. The paragraph immediately
+> above it, written before the ruling, has it right and the acceptance block had
+> it wrong: after the 2026-09-04 release the **choice of words is ours**, and
+> what is not waived is that the sentence be TRUE and be quoted verbatim in the
+> commit message and the pull request body beside the code that proves it.
+> `CLAUDE.md` states the release in those terms. The implementing change authors
+> the string on that footing and quotes it; **nothing about the ruling widens or
+> narrows the reservation**, and the overstatement is kept above so that a
+> reader who copies a reservation out of an acceptance block sees it being got
+> wrong once.
+
 ## Claim tiers used below
 
 - **MEASURED** — a number a run produced, on the tree named beside it.

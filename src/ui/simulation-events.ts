@@ -474,6 +474,17 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'info',
     surfaces: 'band-and-log',
   },
+  'construction.undo-refused-newer-action': {
+    labelKey: 'hud.alert.event.construction.undo-refused-newer-action',
+    // `'info'` and not `'warning'`: nothing was lost and nothing was spent --
+    // the whole point of the refusal is that the press cost the player nothing.
+    // `construction.undone-spend-destroyed` next to it is a `'warning'` because
+    // something *was* destroyed, and grading a refusal the same would say the
+    // two presses are comparable when the change that added this one exists
+    // precisely to make them not.
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
   'construction.undone': {
     labelKey: 'hud.alert.event.construction.undone',
     severity: 'info',
@@ -1224,6 +1235,10 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // The plumbing for both was explicitly declined; see the schemas.
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
+    // Parameter-free, and the locale entry beside the sentence says why: naming
+    // what the player did instead would be a fact about a command this channel
+    // does not carry.
+    case 'construction.undo-refused-newer-action':
     case 'construction.undone':
     // #927's sixth. It carries no figure for the reason the two cancellation
     // rows above carry none -- `ConstructionSystem.cancelOrder` answers `void`
@@ -1343,6 +1358,10 @@ function eventParameterMessages(
     // it.
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
+    // Parameter-free, and the locale entry beside the sentence says why: naming
+    // what the player did instead would be a fact about a command this channel
+    // does not carry.
+    case 'construction.undo-refused-newer-action':
     case 'construction.undone':
     case 'construction.undone-spend-destroyed':
     case 'objects.removed-spend-destroyed':
