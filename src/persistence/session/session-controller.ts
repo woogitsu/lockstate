@@ -38,6 +38,26 @@ export interface OutgoingSessionCapture {
   readonly result: SaveResult;
 }
 
+/**
+ * One `deletePrison` call's hold on the autosave schedule, for as long as its
+ * store transaction is in flight.
+ *
+ * A deletion that has not committed must not have a new generation written
+ * into the prison it is deleting, and the schedule is the only thing that
+ * would: it is a trailing-edge timer that can come due inside the `await`.
+ * Declining the write is what costs the marker, so the marker is put back if
+ * the deletion turns out not to have happened -- see `deletePrison`, which is
+ * the only thing that creates one of these.
+ *
+ * The prison it belongs to is the key it is held under, so it is not repeated
+ * here: a copy of it in the value could disagree with the key, and nothing
+ * would read the copy.
+ */
+interface SuspendedAutosave {
+  /** Set by the scheduler's `buildEnvelope` callback when it actually declined a save that had come due. */
+  declined: boolean;
+}
+
 export interface SessionControllerOptions {
   readonly gameVersion: string;
   readonly autosaveIntervalMs?: number;
@@ -105,6 +125,15 @@ export class SessionController {
   private lastSaveResult: SaveResult | undefined;
   private retirementFailure: unknown;
   private outgoingCapture: OutgoingSessionCapture | undefined;
+  /**
+   * The deletions whose store transaction is in flight, by prison.
+   *
+   * A map rather than a single field so that deleting prison A never lifts
+   * prison B's hold: the two are independent, and the UI's one-action-at-a-time
+   * gate (`SavePanel`'s `AsyncActionGate`) is a property of one panel rather
+   * than of this class.
+   */
+  private readonly deletionsInFlight = new Map<string, SuspendedAutosave>();
 
   public constructor(
     private readonly repository: PrisonSaveRepository,
@@ -118,7 +147,20 @@ export class SessionController {
 
     this.autosave = new AutosaveScheduler({
       intervalMs: options.autosaveIntervalMs ?? DEFAULT_AUTOSAVE_INTERVAL_MS,
-      buildEnvelope: (prisonId) => (this.session?.prisonId === prisonId ? this.buildEnvelope() : undefined),
+      buildEnvelope: (prisonId) => {
+        // A deletion of this prison is mid-transaction, so decline: writing a
+        // generation into a slot that is being removed either wastes the work
+        // or, if it lands after the delete commits, fails with "does not
+        // exist" and reports that to the player as a failed save of a prison
+        // they have just deleted. `deletePrison` puts the marker back if the
+        // deletion does not commit.
+        const suspended = this.deletionsInFlight.get(prisonId);
+        if (suspended !== undefined) {
+          suspended.declined = true;
+          return undefined;
+        }
+        return this.session?.prisonId === prisonId ? this.buildEnvelope() : undefined;
+      },
       save: (prisonId, envelope) => this.repository.save(prisonId, envelope),
       onResult: (prisonId, result) => {
         this.lastSaveResult = result;
@@ -681,9 +723,97 @@ export class SessionController {
     return result;
   }
 
+  /**
+   * Deletes a prison, and closes the live session **only once the store has
+   * actually committed the deletion**.
+   *
+   * ### The defect this closes
+   *
+   * These two lines used to be the other way round:
+   *
+   * ```ts
+   * if (this.session?.prisonId === prisonId) this.closeSession();
+   * await this.repository.delete(prisonId);
+   * ```
+   *
+   * `closeSession` disposes the autosave schedule and clears `this.session`,
+   * and nothing put either back when the `await` rejected. So a deletion the
+   * store refused reported failure -- `SavePanel.requestDelete` does not catch,
+   * so `AsyncActionGate`'s `onError` surfaces it -- and left the player with a
+   * prison that was still on disk, still in the list, still being simulated by
+   * a host this controller never stopped, and no longer the active session:
+   * `markDirty` returns at its first line, `saveNow` answers *"No active
+   * session to save."*, and the write that was already queued went with the
+   * schedule. A refusal *before the first mutation* is enough to reach that
+   * state, so it does not depend on how a store rolls back.
+   *
+   * ### Why the guard after the `await` is an identity check
+   *
+   * Because `prisonId` is not enough to prove that the session in the field is
+   * the one this call was going to close. A deletion that takes a while --
+   * every one of them crosses a real IndexedDB transaction -- can finish after
+   * the player has already started or loaded another prison, and
+   * `adoptSession` puts a **new** `ActiveSession` object in the field. An id
+   * check would then be satisfied by a session this call never saw -- the row
+   * is still on the panel while the deletion is uncommitted, so pressing Load
+   * on it is the plainest route there -- and close a live one. Comparing the
+   * object identity cannot be satisfied that way: the only session it closes
+   * is the very one that was live when the deletion began.
+   *
+   * ### Why the schedule is suspended, and what makes the suspension safe
+   *
+   * With the store call now happening *before* anything is torn down, the
+   * autosave timer is still armed for the duration of it, and it can come due
+   * inside the `await`. Left alone it would write a generation into the prison
+   * being deleted -- wasted if the deletion commits, and reported to the
+   * player as a failed save if it lands after the slot is gone. So the
+   * scheduler's `buildEnvelope` callback declines while the deletion is in
+   * flight (see the constructor), which costs the pending marker, and this
+   * method puts the marker back when the deletion does **not** commit.
+   *
+   * `AutosaveScheduler.markDirty` is the right instrument for that because it
+   * composes with the scheduler's own state machine under either ordering: if
+   * the declined save has not settled yet its entry is still `'saving'`, so
+   * `markDirty` turns it into `'saving-with-pending-dirty'` and `settle`
+   * reschedules; if it has already settled the entry is gone and `markDirty`
+   * arms a fresh timer. There is no window in which a late `settle` deletes a
+   * marker this method restored, because `settle` only ever runs on an entry
+   * that this restoration has already turned into the rescheduling state.
+   *
+   * ### What this deliberately does not do
+   *
+   * Swallow the rejection and report success; build a replacement session to
+   * stand in for the one that was closed; or close by id after the `await`.
+   * The first two lie to the player about what is on disk, and the third is
+   * the bug one step further along. It also does not stop the runtime host on
+   * a successful deletion -- issue #582's other half, which is a change to
+   * what `closeSession` means and is left to it rather than smuggled in here.
+   */
   public async deletePrison(prisonId: string): Promise<void> {
-    if (this.session?.prisonId === prisonId) this.closeSession();
-    await this.repository.delete(prisonId);
+    // Captured before the store call and compared by identity after it. `?.`
+    // and the id test together mean this is `undefined` whenever the deletion
+    // is of some other prison, which is exactly when nothing should be closed.
+    const session = this.session?.prisonId === prisonId ? this.session : undefined;
+
+    const suspended: SuspendedAutosave = { declined: false };
+    this.deletionsInFlight.set(prisonId, suspended);
+
+    let committed = false;
+    try {
+      await this.repository.delete(prisonId);
+      committed = true;
+    } finally {
+      // Identity-guarded, so a second deletion of the same prison that started
+      // while this one was in flight keeps its own hold rather than having it
+      // lifted by this one's return.
+      if (this.deletionsInFlight.get(prisonId) === suspended) this.deletionsInFlight.delete(prisonId);
+      // Only what was actually taken away is given back. Marking dirty
+      // unconditionally would schedule a write for a session that had none,
+      // which is a different behaviour rather than a restoration of this one.
+      if (!committed && suspended.declined) this.autosave.markDirty(prisonId);
+    }
+
+    if (session !== undefined && this.session === session) this.closeSession();
   }
 
   public async exportActive(): Promise<SaveEnvelope | undefined> {
