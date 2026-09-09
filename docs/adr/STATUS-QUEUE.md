@@ -13722,9 +13722,28 @@ own status line is split. 40 + 56 = 96 = the linked rows = the files on disk.
 are named rather than silently swapped**: **96** counts linked rows and files
 on disk, which is what the previous anchor's 94 counted and what is restated
 above; **97** adds the unlinked, file-less `0018` row, which is what the
-2026-09-08 section counts. And **Next free number: 0104** — the index moved
+2026-09-08 section counts. And **Next free number: 0105** — the index moved
 `0102 → 0104` inside this window, one for each arrival's row, because adding
 the row is what reserves the number.
+
+> **THAT SENTENCE READ 0104 AND WAS CORRECT ABOUT `3399b1f9`, AND IT IS EDITED
+> IN PLACE RATHER THAN MARKED-AND-KEPT — THE FOURTH TIME THIS FILE HAS HAD TO
+> MAKE THAT TRADE, AND THE FIRST TIME IT WAS PREDICTED BEFORE IT HAPPENED.**
+> ADR 0104's draft adds its row to `docs/adr/README.md`, which is what reserves
+> a number (`AGENTS.md`), so the index moved 0104 → 0105 on a branch this
+> anchor's own window does not contain. `adr-status-queue-anchor-contract`
+> reads a restatement as **live** by its position relative to the anchor's own
+> dated pass, not by whether the sentence around it reads as history — so a
+> kept-but-stale "0104" here is exactly the mutation that gate exists to catch,
+> even though the sentence is still describing `3399b1f9`'s own tree
+> accurately. The two figures either side of it — the `0102 → 0104` movement
+> and everything above — are this pass's own re-derivation at `3399b1f9` and
+> are untouched by a reservation made on a later, unrelated branch.
+> `343d876b` reached the same resolution and said why in its own commit
+> message: *"They are DESCRIBED instead of restated -- the resolution this
+> repository already reached twice, at #1043 and again at #1056, when a gate
+> that reads by position collided with a rule that asks for the old text to be
+> kept."* **This entry is the marking; the sentence above is the edit.**
 
 > **A CORRECTION OWED TO THIS FILE'S NEWEST COUNTING SECTION, IN BOTH
 > DIRECTIONS.** The 2026-09-08 section publishes **41 `Proposed`, 54
