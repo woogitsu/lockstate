@@ -2653,6 +2653,42 @@ const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
     'button.ui-section__header "Alerts"',
   /*
+   * AND THE MINIMAP SURFACE ITSELF, ADDED 2026-09-10 (#903). **This entry is
+   * not a control that stopped being reachable. It is a control that did not
+   * exist**, and the distinction is the whole reason it is written out.
+   *
+   * Until #903 the surface was a `div` with an implicit `tabIndex -1` and no
+   * `role`, so the sweep below did not count it as a control at any viewport --
+   * which was itself the defect #903 fixed: a keyboard player could never
+   * press the one surface whose own sentence denied that pressing it did
+   * anything. It is a real `<button>` now, so it enters the inventory, and at
+   * 720px and below it enters it inside a region `hud.css` sets to
+   * `display: none` -- the same mechanical reason as the two entries above.
+   *
+   * **So #903's fix does not reach a phone, and that is what this line
+   * records.** It is the honest limit, stated the way the zoom pair below
+   * states its own: a keyboard player at a desktop width can now reach the
+   * minimap; a keyboard player at 375px still cannot reach it, because nobody
+   * can. Retiring this entry is the mobile layout pass's job, not an
+   * implementing agent's -- the accounting assertion at the foot of the sweep
+   * fails the moment the corner comes back, which is what will retire all
+   * three of these together.
+   *
+   * **Its label is the authored sentence, truncated to 32 characters by the
+   * inventory's own `textContent.slice(0, 32)` -- and it is stable across the
+   * latch, which is luck worth naming rather than relying on silently.** The
+   * two strings the surface can carry are
+   * `'No map is drawn here yet — pressing may move the camera'` before a press
+   * has proved the camera moves and
+   * `'No map is drawn here yet — press to jump the camera there'` after, and
+   * their first 32 characters are identical, so this entry does not depend on
+   * which state the sweep happens to find. Reword either sentence past that
+   * 32nd character and nothing here moves; reword the shared prefix and this
+   * line has to move with it.
+   */
+  'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ' +
+    'button.hud-minimap__surface "No map is drawn here yet — press"',
+  /*
    * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
    * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
    *

@@ -20,6 +20,40 @@
 
 ## Status
 
+**Accepted by the owner on 2026-09-10 — the recommendation taken whole:
+FINAL-005 first, then option 2, then option 3 as the direction. Option 1
+rejected.** Nothing in the option list was modified in the taking, and the
+ordering is the load-bearing half: see "What this document recommends" for
+why it is the reverse of what the first draft said, and "The weakest claim"
+for the measurement that reversed it.
+
+> **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
+> UP.** The ruling is the label of a clickable option this session wrote and
+> the owner chose — *"Przyjmij rekomendację w całości"* ("Accept the
+> recommendation in full") — not a sentence they typed, and it was given
+> against a summary of the four options and two measurements (the SQL rule
+> from 2026-08-22, and the on-disk `1, 2, 4` sequence) rather than against
+> this document's full text. `CLAUDE.md` flags exactly this shape about the
+> 2026-09-08 and 2026-09-09 releases of reservation 3, in both cases saying
+> the entry's provenance *"is weaker than the two before it"*, and
+> [ADR 0104](./0104-what-undo-takes-back.md) discloses the same of its own
+> ruling one day earlier. The same caution applies here.
+>
+> **What the acceptance binds, exactly.** The order of work and the choice of
+> mechanism: FINAL-005 is a precondition rather than a nicety, option 2 is a
+> compare-and-swap on `currentRevision` that refuses on mismatch, and option 3
+> (a session epoch) is the direction rather than this round's work. It does
+> **not** authorise a player-visible sentence — a refusal a player can see
+> would need one, and that stays the owner's under the fourth reservation,
+> whose 2026-09-04 release gives us the wording and not the promise. It moves
+> no other document's status.
+>
+> **The `Proposed. Not self-approved.` record is kept below rather than
+> overwritten**, because the document argued the case as a proposal and a
+> reader should see it in the form it was argued in — and because its first
+> recommendation was wrong and the record of being refuted by its own
+> measurement is the most useful thing in it.
+
 **Proposed. Not self-approved.** `docs/AGENT_WORKFLOW.md` §3: *"**Propose an
 ADR rather than deciding architecture inside implementation code, and never
 self-approve one** outside a recorded delegation from the owner."*
