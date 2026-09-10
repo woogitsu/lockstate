@@ -1330,6 +1330,122 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.alert.event.rooms.zoned': '{room} designated.',
 
+  /*
+   * **Authored under `AGENTS.md` reservation 4's partial release of
+   * 2026-09-04** -- the choice of words is ours, the requirement that the
+   * sentence be TRUE is not -- and this one exists to fix a *silence*, which
+   * is #1006 finding 3's own framing of the defect: the Rooms panel's
+   * `NOT READY` block simply disappears when a room stops being short of
+   * something, nothing replaces it, and the bands either side of the repair
+   * are byte-identical. `src/ui/hud/messages.ts` (`hud.rooms.needs`'s own
+   * docblock) argues at length why the panel itself must not grow an
+   * "every room is ready" line -- a 7.9px height budget (ADR 0022) -- and
+   * #1006 accepts that argument for the *panel* and says it is not an
+   * argument against a *one-off alert* in the column that already carries
+   * `hud.alert.event.rooms.zoned` above.
+   *
+   * **What "short of something" means, established before a word was chosen,
+   * per `AGENTS.md`'s "verify, then write".** `roomNeedsFromProjections`
+   * (`src/ui/simulation-room-needs.ts`) computes `shortfallOf(row)` as
+   * `row.requirementSummary.missingCapability + (row.access === 'no-way-in'
+   * ? 1 : 0)` -- every `object` requirement the room's own definition asks
+   * for and does not yet hold enough of, counted against its authored
+   * `minQuantity`, plus one more if the room's perimeter holds no doorway at
+   * all. `RoomNeedsClearedNoticeSystem`
+   * (`src/simulation/rooms/room-needs-cleared-notice.ts`) fires this event
+   * the tick that same sum, computed the same way from the same two fields,
+   * is measured going from above zero to exactly zero for one room instance.
+   * So the sentence below is true of *exactly* the rooms the panel's own
+   * `NOT READY` block would have stopped counting, no wider and no
+   * narrower -- neither module recomputes the other's arithmetic; the
+   * system restates it because a tick system may not import a HUD module to
+   * borrow the reducer (`AGENTS.md` boundary 3).
+   *
+   * **Why this is not the false promise #1006 is about, and this is the
+   * clause that had to survive contact with the code before anything else
+   * was written.** `row.access` reads `'doorway'` for a door found in the
+   * room's perimeter, whether or not that door leads anywhere --
+   * `roomPerimeterAccess` (`src/simulation/rooms/enclosure.ts:288`) "returns
+   * `'doorway'` on the first door found in the perimeter and never asks
+   * whether anything can reach that door", which is the issue's own
+   * comment's exact finding, and #938 already measured a doorless-from-
+   * outside cell reading complete at hygiene 0 of 255 with 162 route
+   * failures. So `shortfallOf(row) === 0` asserts that the panel's own
+   * checklist is clear; it does not assert, and this sentence must not
+   * claim, that a prisoner can reach the room. Whether `roomPerimeterAccess`
+   * ought to answer about reachability instead of edge adjacency is the
+   * issue's own reserved decision ("Decyzja właściciela, na ADR ... Nie
+   * rozstrzygać tego w kodzie implementacji.") and nothing here decides it
+   * or works around it.
+   *
+   * **The sentence, clause by clause:**
+   *
+   * - **"{room}"** -- the same catalog `nameKey` `hud.alert.event.rooms.zoned`
+   *   above resolves, read by `RoomNeedsClearedNoticeSystem` off the same
+   *   projection row the crossing was measured on, the tick it was measured,
+   *   rather than cached from the room's own zoning moment.
+   * - **"is no longer short anything the Rooms panel checks for"** -- states
+   *   the transition (`shortfallOf` crossed from positive to zero) in the
+   *   panel's own words for the underlying concept: `hud.rooms.needs` is
+   *   *"Not ready"* and `hud.rooms.needs-room` is *"{room} at {x}, {y} is
+   *   missing"*; "short" and "checks for" name the same fact those two
+   *   already name, without repeating either string verbatim into a new
+   *   context where a translator would have to keep three in sync.
+   * - **"— that is not a claim anyone can get in."** -- the explicit
+   *   disclaimer the paragraph above establishes is necessary, in
+   *   `hud.rooms.needs-doorway`'s own words turned around: that line reads
+   *   *"a door — nobody can get in"* for the state this event's own trigger
+   *   cannot distinguish from a working doorway. Removing this clause would
+   *   make the sentence exactly the false promise the issue is about; it
+   *   stays no matter how the first clause is ever reworded.
+   *
+   * **No coordinates, no count, for `hud.alert.event.rooms.zoned`'s own two
+   * reasons.** A player who fixed a room already knows which one, and
+   * carrying the rectangle would give every repair its own row where the
+   * room type alone lets a run of same-type repairs collapse into one
+   * counted row (`simulationEventIdentity`). One event per instance, exactly
+   * as `hud.alert.event.prisoners.relocated` is one per resident rather than
+   * a batch total.
+   */
+  'hud.alert.event.rooms.needs-cleared':
+    '{room} is no longer short anything the Rooms panel checks for — that is not a claim anyone can get in.',
+
+  /*
+   * **Authored under the same release, the mirror of the two entries above
+   * on the command that undoes a designation** ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+   * finding 5). Before this key existed, a room zoned and immediately
+   * removed left `hud.alert.event.rooms.zoned`'s *"{room} designated."*
+   * standing in this same column with the status strip already reading
+   * `0 ROOMS` -- a lifecycle event for the room's start and none for its
+   * end, which reads as a stale record rather than as history.
+   *
+   * **"{room} removed."** Deliberately the same shape as *"{room}
+   * designated."* two entries above -- same tense, same terseness, no
+   * second clause -- because the fact it reports is exactly as narrow: a
+   * `RoomZoningService.unzone` outcome whose `kind` is `'unzoned'` has
+   * already cleared every tile of this instance's rectangle on the zoning
+   * plane (`SparseWorld.setZoning(tile, 0)`) and unregistered the instance
+   * (`RoomInstanceRegistry.unregister`), so "removed" is true of the world
+   * at the moment this fires and asserts nothing beyond it. "Remove" is
+   * also this control's own established verb -- `hud.rooms.remove`,
+   * `hud.rooms.remove-hint`, `hud.rooms.confirm-remove` all use it -- so
+   * this reuses the word the player already pressed rather than choosing a
+   * synonym.
+   *
+   * **`{room}`** resolves the same catalog `nameKey` the two entries above
+   * do, one per `UnzoneRoomAccepted.removedRoomNameKeys` entry -- read by
+   * `RoomZoningService.unzone` from the definition it looked up to find each
+   * removed instance, before that instance was unregistered, because
+   * nothing can be re-derived from a registry entry that no longer exists.
+   *
+   * **No coordinates, no count, for the same two reasons the entry above
+   * gives.** A player who dragged the removal already knows where it was,
+   * and one event per removed instance (not per command) is the same grain
+   * `hud.alert.event.prisoners.relocated` uses for the same reason: a drag
+   * that clears several rooms removed several distinct facts.
+   */
+  'hud.alert.event.rooms.unzoned': '{room} removed.',
+
   // The incident sentences (issue #555). Same family, same voice, written
   // against two constraints the two above did not have.
   //

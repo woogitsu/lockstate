@@ -105,6 +105,8 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   // the one room type that authors no object requirement, which is the room a
   // sentence promising *function* would have been true of and false for the
   // other seventeen.
+  'rooms.needs-cleared': (sequence) => ({ sequence, tick: 100, type: 'rooms.needs-cleared', roomNameKey: 'room.yard.name' }),
+  'rooms.unzoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.unzoned', roomNameKey: 'room.yard.name' }),
   'rooms.zoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.zoned', roomNameKey: 'room.yard.name' }),
 };
 
@@ -282,9 +284,14 @@ describe('what the prison says when nothing went wrong', () => {
    * ruling; every other member of `SIMULATION_EVENT_TYPES` must produce a
    * notice. So a member added to the union and quietly given `'log-only'` fails
    * here, and so does `rooms.zoned` being put back on the band.
+   *
+   * `rooms.needs-cleared` and `rooms.unzoned` joined `rooms.zoned` here under
+   * issue #1006, for the same reason stated at their own `EVENT_PRESENTATION`
+   * entries: a repair or a removal the player already knows about belongs in
+   * the record, not fighting for the band's one line.
    */
   it('sends the acknowledgement to the log alone and every other event to both surfaces (#966)', () => {
-    const LOG_ONLY = new Set<SimulationEvent['type']>(['rooms.zoned']);
+    const LOG_ONLY = new Set<SimulationEvent['type']>(['rooms.needs-cleared', 'rooms.unzoned', 'rooms.zoned']);
 
     for (const type of SIMULATION_EVENT_TYPES) {
       const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
