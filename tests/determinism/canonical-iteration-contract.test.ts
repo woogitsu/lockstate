@@ -150,6 +150,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       "`totalResidentCapacity` (#771's starter-rung predicate) sums every registered instance's `residentCapacity`, an integer field, into a running total with `+=`. Integer addition is commutative and associative, so the total is identical in every walk order, and nothing about *which* instance contributed which part of the sum is read anywhere -- the caller only compares the total to zero. The method touches no snapshot and folds nothing across instances beyond the arithmetic sum itself.",
   },
   {
+    file: 'src/simulation/rooms/room-needs-cleared-notice.ts',
+    expression: 'this.ready',
+    reason:
+      "`RoomNeedsClearedNoticeSystem.update`'s pruning pass deletes every instance id this pass did not see (issue #1006 finding 3) -- a keyed delete from a `Set`, which commutes for `room-instance-registry.ts`'s `this.occupants` reason above: a deletion of a given key has the same effect wherever in the walk it happens, and no earlier deletion changes whether a later key is still present to delete. Nothing is folded across ids and nothing is returned; the walk immediately above it that decides *which* rooms fire an event iterates `list.rooms.rows`, `projectRoomList`'s own canonically sorted output, not this set. `this.ready` is never persisted -- it seeds silently from live state on this system's first `update()` (the `seeded` idiom `InsolvencyRungSystem` also uses), so no walk order here can reach a save or a determinism hash.",
+  },
+  {
     file: 'src/simulation/rooms/topology.ts',
     expression: 'this.chunkTopologies.entries()',
     reason:

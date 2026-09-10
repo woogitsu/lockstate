@@ -336,6 +336,21 @@ export function createSessionCommandHandler(
         // occupants have gone -- is withdrawn rather than left to answer a
         // request that has since succeeded.
         refusals.supersede(unzoneKey);
+        // Issue #1006 finding 5: the other half of `rooms.zoned`'s
+        // acknowledgement, on the command that undoes it. Before this line a
+        // room zoned and then immediately removed left "{room} designated."
+        // standing in the alerts column with nothing to say it had gone --
+        // `rooms=0` on the strip, a stale lifecycle line in the log. One call
+        // per removed instance, exactly as `outcome.removedRoomNameKeys` lists
+        // them (ascending by instance id, the same order `removedInstanceIds`
+        // is in), for the reason `prisoners.relocated` is one event per
+        // resident rather than one per command: a drag that clears several
+        // rooms at once removed several distinct facts, and
+        // `simulationEventIdentity` already collapses a run of same-type
+        // removals into one counted row exactly as it does for `rooms.zoned`.
+        for (const roomNameKey of outcome.removedRoomNameKeys) {
+          events.recordRoomUnzoned(roomNameKey, context.tick);
+        }
       }
       return;
     }

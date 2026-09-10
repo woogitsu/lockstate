@@ -46,9 +46,11 @@ import { HUD_MESSAGE_KEY } from './hud/messages';
  * this column generalises: a **restored** record goes to the log and never to
  * the band (the owner's decision 4 of 2026-09-01 on ADR 0084 -- *"a restored
  * record is not an announcement"*). That is a property of the message. This is
- * the same distinction drawn on the event *type* instead, and `rooms.zoned` is
- * its first and so far only user; see its section below for the ruling that
- * put it there.
+ * the same distinction drawn on the event *type* instead, and `rooms.zoned`
+ * was its first user; see its section below for the ruling that put it
+ * there. `rooms.needs-cleared` and `rooms.unzoned` joined it under issue
+ * #1006, for the same reason: a repair or a removal a player already knows
+ * about belongs in the record and not in a line fighting for the band.
  *
  * `'log-only'` means the log and nothing else. It is not silence and it is not
  * a lower severity -- there is no grade below `'info'` and inventing a fourth
@@ -463,10 +465,11 @@ const EVENT_PRESENTATION: Readonly<
        * Which of this channel's two surfaces the sentence reaches.
        *
        * `'band-and-log'` is what every member did before this column existed
-       * and what all but one still does. `'log-only'` keeps the row and
+       * and what all but three still do. `'log-only'` keeps the row and
        * declines the line -- see the `surfaces` section of the docblock above,
-       * and `rooms.zoned`'s section for the ruling that is the only reason a
-       * member carries it today.
+       * `rooms.zoned`'s section for the ruling that first put it there, and
+       * `rooms.needs-cleared`'s and `rooms.unzoned`'s own entries below for
+       * issue #1006's reason the other two carry it.
        */
       readonly surfaces: 'band-and-log' | 'log-only';
     }
@@ -583,8 +586,16 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'info',
     surfaces: 'band-and-log',
   },
-  // The one `'log-only'` member, and the only reason the column exists: the
-  // owner's ruling of 2026-09-05. See the section on this member above.
+  // `'log-only'` for `rooms.zoned`'s own reason below, two more times
+  // (issue #1006 findings 3 and 5): a player who just fixed or removed a room
+  // already knows they did, so the confirmation belongs in the historical
+  // record beside "{room} designated." rather than interrupting the band,
+  // which the player is not necessarily looking at when either fires.
+  'rooms.needs-cleared': { labelKey: 'hud.alert.event.rooms.needs-cleared', severity: 'info', surfaces: 'log-only' },
+  'rooms.unzoned': { labelKey: 'hud.alert.event.rooms.unzoned', severity: 'info', surfaces: 'log-only' },
+  // `rooms.zoned` was the one `'log-only'` member until issue #1006 gave it
+  // two siblings directly above, for the same reason the owner's ruling of
+  // 2026-09-05 gave it its own: see the section on this member above.
   'rooms.zoned': { labelKey: 'hud.alert.event.rooms.zoned', severity: 'info', surfaces: 'log-only' },
 };
 
@@ -1215,6 +1226,10 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // figure -- the rectangle and the anchor tile are both in the accepted
     // outcome and both deliberately left off the wire; the schema says why.
     case 'rooms.zoned':
+    // Issue #1006's two siblings, `{room}` again and no figure for the same
+    // reasons: neither schema carries a rectangle or a tile to substitute.
+    case 'rooms.needs-cleared':
+    case 'rooms.unzoned':
       return {};
     // Four members with nothing to substitute, and an empty object rather than
     // `undefined`: a `switch` that sometimes returned nothing would make an
@@ -1342,6 +1357,12 @@ function eventParameterMessages(
     // nothing here looks one up -- `RoomZoningService.zone` read it from the
     // definition it decided the request against.
     case 'rooms.zoned':
+    // Issue #1006's two siblings: the same catalog field, resolved by the
+    // renderer exactly as `rooms.zoned`'s is, whether the type read is the
+    // one just designated, the one that just cleared its checklist, or the
+    // one that just came off the plane.
+    case 'rooms.needs-cleared':
+    case 'rooms.unzoned':
       return { room: { key: event.roomNameKey } };
     // #703 ruling 13's `{item}`: the contraband catalog's own `nameKey`, passed
     // through exactly as the relocation notice's `{room}` is. This module
