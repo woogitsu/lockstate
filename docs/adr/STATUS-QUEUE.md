@@ -785,6 +785,29 @@ re-opened for it; the reading is stated so that a later pass comparing figures
 knows a merge landed mid-pass, which is the same disclosure the v0.0.554
 anchor's predecessor made about a merge it did not chase.
 
+**AND A FOURTH READING, WHICH MAKES THE LAST FIGURE ABOVE WRONG BY ONE — added
+at integration rather than by the pass, and the figure above is left standing
+because being able to see a mid-pass count go stale is the whole point of
+recording it.** That sentence says the spend will be **two** once this anchor
+line lands. Between the pass finishing and this branch being pushed, two more
+merges landed on `main` — `fc9d8208`/#1118 (*"the minimap says what it does
+before proof, and a keyboard can reach it"*, carrying the owner's rulings on
+ADR 0105 and ADR 0103's open question 2) and the `chore(release)` above it —
+so the reading measured on the tree this line ships from is **two** and the
+reading after this pull request's own release commit fires will be **three**.
+Still seven inside the budget on either. `ANCHOR_STALENESS_BUDGET_RELEASES`
+is unmoved at 10, and the count of merges this section actually read against
+is unchanged at seven: nothing here re-opens the window.
+
+**The three citation moves that were spot-checked at integration rather than
+taken on the pass's word**, each opened in the new tree: `new-session.ts:659`
+holds `gangs.addMember(gangId, entityId)`; `default-gangs.ts:205` holds
+`gangs.addGrudge(offendedGangId, offendingGangId, weight)`; and
+`tests/unit/ui-hud-messages.test.ts:292-298` holds the allow-list staleness
+loop with `for (const allowed of ALLOWED_MONEY_KEYS)` at `:295`, exactly the
+figure the pass published. That last one moved because #1115 added two keys to
+`ALLOWED_MONEY_KEYS` — the same merge this anchor line names.
+
 **THE BOUNDARY THE PREVIOUS ANCHOR MEASURED IS CARRIED RATHER THAN RE-MEASURED,
 AND SAYING WHICH IS THE POINT.** That pass took `package.json` on `fad2657c`
 to each value in turn and found that against its v0.0.554 anchor a tree
