@@ -49,6 +49,32 @@
 
 set -euo pipefail
 
+# `python3` is assumed at the `open_heads` assignment below and provisioned by
+# nothing in this repository (#1089's audit, row `delete-branches.yml` /
+# `python3` -- which cites this line, not the workflow: the workflow file
+# names no interpreter at all). It cannot be provisioned from here either:
+# installing it needs root, and the `woogitsu-linux-*` pool has no
+# passwordless sudo (proved on job 101846181533, 2026-09-07).
+#
+# `set -euo pipefail` above already makes a missing `python3` fail the script
+# rather than leave `open_heads` empty -- which matters, because an empty
+# `open_heads` would leave every open pull request's head branch unprotected,
+# the same catastrophe the `curl` guard further down refuses to risk. **So
+# this check adds no safety. It adds a sentence**: without it the run dies on
+# a bare `python3: command not found` at line 107 of a script whose visible
+# purpose is deleting branches, and the operator has to read the script to
+# learn what was actually missing.
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "error: python3 is not on PATH." >&2
+  echo "       This script reads the open pull requests' head branches with" >&2
+  echo "       python3, and refuses to run without that list -- every open" >&2
+  echo "       pull request's head branch would otherwise be unprotected." >&2
+  echo "       Nothing in this repository can install it: the step needs root" >&2
+  echo "       and this runner pool has no passwordless sudo. Pre-provision" >&2
+  echo "       the host (apt-get install -y python3) and re-dispatch." >&2
+  exit 1
+fi
+
 APPLY=0
 [ "${1:-}" = "--apply" ] && APPLY=1
 
