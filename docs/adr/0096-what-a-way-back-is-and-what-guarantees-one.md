@@ -38,6 +38,42 @@
 
 ## Status
 
+**Accepted by the owner on 2026-09-10 — the recommendation taken whole,
+including the two amendments it names as load-bearing: `'wages'` gets a rung of
+its own while the prison has no residency capacity, and ADR 0083 decision 1's
+scope extends to arrears at the 2,500 bound.** Six days after the ruling this
+document was designed against, and it is the same person answering the same
+question one level down: they ruled the principle on 2026-09-04 and the
+mechanism on 2026-09-10.
+
+> **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
+> UP.** The ruling is the label of a clickable option this session wrote and
+> the owner chose — *"Przyjmij rekomendację w całości"* ("Accept the
+> recommendation in full") — not a sentence they typed, and it was given
+> against a summary naming the measured state (−2,500 pinned from day 4,
+> arrears 3,220 → 27,220 at 4,800 a day, every lever at its floor at once) and
+> the single most load-bearing item, rather than against this document's full
+> text. `CLAUDE.md` flags exactly this shape about two reservation-3 releases,
+> and [ADR 0104](./0104-what-undo-takes-back.md) and
+> [ADR 0105](./0105-what-makes-a-local-save-the-newest-one.md) each disclose
+> the same of their own rulings. The same caution applies here, and it applies
+> harder than usual because item 2 changes a magnitude the owner themselves
+> ruled in [ADR 0017](./0017-money-primary-resource-model.md)'s
+> "Amendment, 2026-09-01" — the summary said so in those words before they
+> chose.
+>
+> **WHAT THE ACCEPTANCE DOES NOT REACH, STATED BECAUSE THE APPROVAL LIST
+> CONTAINS IT.** Item 6 of "What the owner must approve" asks whether a restore
+> should write down arrears above the new bound, and answers itself that
+> `supabase/migrations/` and the save format are **outside any agent's
+> mandate**. Accepting this document does not release `AGENTS.md`'s
+> reservation 2. That question was not put to the owner and is not settled
+> here; an implementation reaching the save format still stops and asks.
+>
+> **The `Proposed` record is kept below rather than overwritten**, because the
+> document argued the case as a proposal and a reader should see it in the form
+> it was argued in.
+
 **Proposed, 2026-09-04. Not self-approved.**
 
 **The decision this document designs against is the owner's, ruled on
@@ -663,8 +699,22 @@ take longer, and nothing here measures how much longer.
    both outside any agent's mandate.
 7. **The sell-back ratio** (#29's), which ADR 0075 decision 3 left open when the
    owner accepted it on 2026-08-29.
-8. **This ADR itself.** It is `Proposed` and nothing in this corpus is
-   self-approved.
+8. **This ADR itself.** It was `Proposed` when this list was written, and
+   nothing in this corpus is self-approved.
+
+   **ANSWERED 2026-09-10: accepted, and items 1-5 and 7 with it.** The list
+   above is kept in the interrogative rather than rewritten as a record of
+   answers, because what a reader needs is to see *what was asked* beside what
+   was granted — `docs/AGENT_WORKFLOW.md` §4. The sentence *"It is `Proposed`"*
+   is therefore left standing above and is false as of that date; the Status
+   section at the top of this document is what holds the current word.
+
+   **Item 6 is the exception and is NOT answered.** It asks whether a restore
+   should write down arrears above the new bound, and answers itself that
+   `supabase/migrations/` and the save format are outside any agent's mandate.
+   That question was not put to the owner, so `AGENTS.md`'s reservation 2 is
+   untouched by this acceptance and an implementation reaching the save format
+   stops and asks.
 
 ## What would change my mind
 
