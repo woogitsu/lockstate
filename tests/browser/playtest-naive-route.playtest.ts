@@ -307,6 +307,24 @@ test.describe('playtest: the naive quantity', () => {
    * only "Brick wall", and the buy control says only
    * `Buy {count} × {material} · {total}`.
    *
+   * **The first half of that is no longer true, and it is kept rather than
+   * corrected because it is what this test was written against.** Since #901
+   * the row states its own price and names the unit it is priced in --
+   * `wall-brick` renders as "Brick wall · 80 per segment" -- so a player
+   * reading the catalogue can now see that a wall costs 80 and that 80 buys
+   * one segment. What the row still does not state is the *material*
+   * requirement this paragraph is about: two bricks -- a price in minor units
+   * is not a quantity of bricks.
+   *
+   * **But it is now derivable, which is more than this paragraph claimed and
+   * is worth saying rather than glossing.** The buy control quotes the same
+   * material at `item.brick`'s own unit price, 40, and the row now quotes 80
+   * a segment; a player who puts the two figures side by side gets two bricks
+   * per wall by division. So the guess this test plays is still *available*
+   * -- nothing on screen states the requirement outright, and nothing invites
+   * the comparison -- but it is no longer the only route, and if this test is
+   * ever re-run its premise should be re-read rather than assumed.
+   *
    * So the player guesses. The obvious guess is **one brick per wall**, and
    * this test plays that guess: buy 24 bricks for a 24-segment perimeter, wait
    * for them, lay the perimeter, and read what the game shows when the crew
