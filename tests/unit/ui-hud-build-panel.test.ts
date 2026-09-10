@@ -8,6 +8,7 @@ import {
   PENDING_DELIVERY_ROW_LIMIT,
   armedHintKey,
   buildCatalogueFocusRing,
+  buildCatalogueRowLabel,
   buildCategoryOptions,
   buildEdgeChoiceOptions,
   edgeChooserShown,
@@ -152,6 +153,74 @@ describe('the armed hint says what the armed gesture does (#904)', () => {
     expect(localizer.format(armedHintKey(row(true), false))).not.toBe(
       localizer.format(armedHintKey(row(false), false)),
     );
+  });
+});
+
+/**
+ * **The catalogue row states its own price, before it is armed** (issue #901).
+ *
+ * All 21 rows used to show zero digits, in the visible label or anywhere
+ * else, with the price reachable only behind a press on the buy disclosure.
+ * `buildCatalogueRowLabel` is the fix, folding the price into the row's own
+ * label on `hud.security.hire`'s shipped shape -- and, since a wall or door
+ * row's cost is per segment rather than per press, it must say so or a drag
+ * of several would be underquoted by the same factor.
+ */
+describe('the catalogue row states its own price (#901)', () => {
+  const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+  const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
+    parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
+  const row = (placesObject: boolean): HudBuildableViewModel => ({
+    definitionId: placesObject ? 'bed-wooden' : 'wall-brick',
+    // `object.bed.name` is `bed-wooden`'s real label key -- an object
+    // buildable is labelled by the object it places (`buildableLabelKey`,
+    // `src/main.ts`) -- so the assertions below check real catalogue text
+    // rather than a placeholder key, per `armedHintKey`'s own reasoning above.
+    labelKey: 'object.bed.name',
+    occupiesEdge: !placesObject,
+    placesObject,
+    categoryId: 'structure',
+    categoryLabelKey: 'category.structure',
+  });
+
+  it('states a flat price for a row that places one object with one press', () => {
+    expect(buildCatalogueRowLabel(t, row(true), '65')).toBe('Bed · 65');
+  });
+
+  it('names the unit for a row whose press can drag a run of several', () => {
+    // The exact defect a flat price would reproduce: a drag of several tile
+    // edges costs several times the quoted number, so the sentence must say
+    // "per segment" or it promises the smaller figure for the larger charge.
+    expect(buildCatalogueRowLabel(t, row(false), '80')).toBe('Bed · 80 per segment');
+  });
+
+  it('gives the two shapes different sentences, which is the whole of the fix', () => {
+    expect(buildCatalogueRowLabel(t, row(true), '80')).not.toBe(buildCatalogueRowLabel(t, row(false), '80'));
+  });
+
+  it('states no price for a buildable made of something nothing sells', () => {
+    // `total` is `undefined` exactly when `HudBuildableViewModel.material` is
+    // -- a real state (`purchasableMaterialFor` in `src/main.ts`), not a
+    // defect to paper over with an invented figure.
+    expect(buildCatalogueRowLabel(t, row(true), undefined)).toBe('Bed');
+  });
+
+  it('renders real catalogue text for the two shapes that ship today', () => {
+    // Asserted against the *catalogue text* rather than the key alone, for
+    // `armedHintKey`'s own reason above: a key is satisfied by any sentence,
+    // and what #901 found wrong was a sentence with no price in it at all.
+    const wallBrick: HudBuildableViewModel = {
+      definitionId: 'wall-brick',
+      labelKey: 'hud.build.buildable.wall-brick',
+      occupiesEdge: true,
+      placesObject: false,
+      categoryId: 'structure',
+      categoryLabelKey: 'category.structure',
+    };
+    const label = buildCatalogueRowLabel(t, wallBrick, localizer.formatNumber(80));
+    expect(label).toContain('Brick wall');
+    expect(label, 'the number a segment actually costs').toContain('80');
+    expect(label, 'the unit the number is per, or a run overcharges silently').toContain('per segment');
   });
 });
 
