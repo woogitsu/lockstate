@@ -722,9 +722,9 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS`
    * = -1,250 + 1,195 = **-55**, shallower than -745, so the walk this case
    * used to measure is intercepted long before it gets there. Every balance
-   * and arrears figure below this point is superseded; the text above it is
-   * left standing because it is the record of what ruling 19 alone did, one
-   * release before this one.
+   * and arrears figure below this point moves with the release named above
+   * it; the text above it is left standing because it is the record of what
+   * ruling 19 alone did, one release before this one.
    */
   it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wages reserve (ADR 0096 decision 2)', () => {
     const runtime = createNewSimulationRuntime(SEED);
@@ -762,12 +762,12 @@ describe('the same lock reached by a charge the player cannot decline', () => {
      * > `expect(runtime.treasury.balanceMinorUnits).toBe(-745)`
      * > `expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0)`
      *
-     * That is superseded, not merely re-valued: -745 is deeper than the new
-     * starter wages rung (-55), so the walk this case used to measure eight
-     * more days of never happens -- the very first payday after the plank
-     * purchase already has only 30 of room left before -55 (`-25 - (-55) =
-     * 30`), pays that much and no more, and every payday after it pays
-     * nothing at all while the arrears bound (ADR 0096 decision 3(c),
+     * That reading is overtaken here rather than merely re-valued: -745 is
+     * deeper than the new starter wages rung (-55), so the eight more days
+     * this case used to measure never happen -- the very first payday after
+     * the plank purchase already has only 30 of room left before -55 (`-25 -
+     * (-55) = 30`), pays that much and no more, and every payday after it
+     * pays nothing at all while the arrears bound (ADR 0096 decision 3(c),
      * `ARREARS_BOUND_MINOR_UNITS`) has not yet been reached.
      */
     expect(runtime.treasury.balanceMinorUnits).toBe(-25);
