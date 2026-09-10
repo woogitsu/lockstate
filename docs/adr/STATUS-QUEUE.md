@@ -793,6 +793,18 @@ anchor out to a run. The six merges before it in this window all concluded
 for the next pass to read rather than guessed at here**, and the honest reading
 of the pair is that `browser` is the only job that could still turn it.
 
+**AND IT CONCLUDED BEFORE THIS BRANCH WAS PUSHED, WHICH MAKES THE PARAGRAPH
+ABOVE OUT OF DATE RATHER THAN WRONG — SO IT IS KEPT** (`docs/AGENT_WORKFLOW.md`
+§4). Re-read at 17:16Z, run 34504763421 is `status: completed`,
+`conclusion: success`, `updated_at` **2026-09-10T17:07:29Z**: `browser` finished
+green about three minutes after the reading above was taken, so **`main` is
+green at `e9d5e500` and at all seven merges of this window**. The paragraph
+above is left standing because *being able to see a pending verdict go final is
+the point of recording that it was pending*, and because a later pass comparing
+these figures should be able to tell a reading taken mid-run from one taken
+after it. The prediction in its last clause — that `browser` was the only job
+that could still turn the run — held.
+
 **THE RUNNER POOL IS NOT THE ONE `AGENTS.md`'s RESERVATION 3 ENTRIES ARGUE
 ABOUT, AND THE WINDOW ITSELF CARRIES THE CORRECTION.** The previous anchor
 recorded that every job in the one run it opened reported a
@@ -14961,7 +14973,7 @@ record as giving wrong answers:
 | `3c1baaac`/#1120 | 34489456773 | success |
 | `f55879f4`/#1121 | 34492452701 | success |
 | `d2b64493`/#1122 | 34499531361 | success |
-| `e9d5e500`/#1123 | 34504763421 | **still running at 17:04:42Z** |
+| `e9d5e500`/#1123 | 34504763421 | **still running at 17:04:42Z; `success` at 17:07:29Z** |
 
 **So the concurrency gap did not bite this window either** — the absence this
 header has recorded twice, where a burst of merges supersedes its own queue and
@@ -15008,15 +15020,26 @@ count.
   the half the format still cannot fix is unchanged — this file's prose still
   quotes *"Only free guards answer incidents."* for a key whose value is
   *"Incidents and searches need free guards."* at both ends of this window.
-- **`src/simulation/rooms/zoning.ts` — SIX HELD, ONE MOVED.** The file's five
-  hunks open at old `:330`, so `:106`, `:115`, `:116-117`, `:125`, `:217` and
-  `:255-256` are byte-identical at both anchors, read line-for-line rather than
-  inferred. §5's ADR 0074 entry cites `:448` for *"the optional constructor
-  parameter `capacity`"*; that declaration is at **`:467`** at `e9d5e500`
-  (`private readonly capacity?: { resolveInstance(instanceId: string): unknown },`
-  at both ends, found by opening both files at both numbers), and old `:448`
-  reads `private readonly refusals: ZoneRoomRefusal[] = [];` in the new tree.
-  **Not re-aimed here**: the sentence carrying it opens a dated §5 span.
+- **`src/simulation/rooms/zoning.ts` — SIX HELD, TWO MOVED, AND THE SECOND OF
+  THE TWO WAS FOUND BY READING THE SENTENCE RATHER THAN BY THE PATH SCAN.** The
+  file's five hunks open at old `:330`, so `:106`, `:115`, `:116-117`, `:125`,
+  `:217` and `:255-256` are byte-identical at both anchors, read line-for-line
+  rather than inferred. §5's ADR 0023/0028 entry cites `:448` for *"an optional
+  fourth constructor parameter `capacity`"* and, in the same sentence, a bare
+  `:634` for *"`this.capacity?.resolveInstance(instanceId)`"*. **Both move by
+  the same nineteen lines** and both were found by `grep -n` on their own text
+  at each end: the declaration
+  (`private readonly capacity?: { resolveInstance(instanceId: string): unknown },`)
+  is `:448` → **`:467`**, and the call is `:634` → **`:653`**. In the new tree
+  old `:448` reads `private readonly refusals: ZoneRoomRefusal[] = [];` and old
+  `:634` reads `height: request.height,`. **The bare `:634` is the finding
+  about method, not the number**: a rooted-path scan cannot see a coordinate
+  written as `` `:634` `` beside a path given once earlier in the sentence, so
+  it was reached only by opening the sentence that cites `:448` and reading the
+  rest of it. **Neither is re-aimed here**: that entry opens *"This entry read
+  'Accepted and unimplemented'"* and is a dated record with its own kept
+  corrections, and the same sentence already carries a parenthesis marking an
+  earlier pair of numbers as superseded.
 - **`src/simulation/runtime/new-session.ts` — BOTH LIVE COORDINATES MOVED BY
   EXACTLY ONE LINE, AND ONE OF THEM WAS RE-AIMED TWO ANCHORS AGO.**
   `const gangs = new GangRegistry();` is `:546` at `374543cc` and **`:547`** at
@@ -15039,8 +15062,13 @@ count.
   of `:1290` for the producer bullet is wrong at both ends, exactly as the
   previous anchor recorded, and is **published rather than re-aimed** for the
   same reason.
-- **`docs/adr/README.md` — EIGHT ROOTED CITATIONS ACROSS SEVEN COORDINATES,
-  ALL HELD, AND PROVED BY MORE THAN SPAN-BY-SPAN.** The file's changes are ADR
+- **`docs/adr/README.md` — NINE ROOTED CITATIONS ACROSS SEVEN COORDINATES,
+  ALL HELD, AND PROVED BY MORE THAN SPAN-BY-SPAN.** Nine rather than the
+  previous anchor's eight, because that anchor's own section added a ninth
+  (`:174`, in its index cross-check); counted at `e9d5e500` with
+  `grep -oE 'docs/adr/README\.md:[0-9-]+' | sort | uniq -c`, which returns
+  `:44-52`, `:97`, `:100`, `:102-106` twice, `:103-110`, `:108` and `:174`
+  twice. The file's changes are ADR
   0105's row rewritten in place at `:262`, ADR 0106's row and its own
   `Next free number` paragraph inserted after it, and a ten-line 2026-09-10
   sweep paragraph removed below that; `cmp` over `head -261` reports the two
@@ -15121,12 +15149,15 @@ count.
   `tests/unit/{room-needs-cleared-notice,rooms-zoning,ui-simulation-events}.test.ts`
   — **all 24 carry no `file:line` citation in this file at all**, measured
   rather than assumed. The guard was checked for the members whose basenames
-  could collide: `README\.md:[0-9]` returns 15 hits in this file and every one
-  of them is either `docs/adr/README.md`, `docs/research/README.md` or the
-  root `README.md:59` this file has repeatedly recorded as the basename-scan
-  decoy, while `package\.json:[0-9]` and `hud\.css:[0-9]` both return **0**.
-  The member with the most bare mentions and no coordinate at all is
-  `package.json`, at 90.
+  could collide: the word-boundary-guarded `README\.md:[0-9]` returns **15**
+  hits in this file at `e9d5e500` and **every one of them is the string
+  `` `README.md:59` ``** — the root `README.md`, ADR-0014's status quote, which
+  this file has recorded four separate times as the decoy a basename scan hands
+  back as though it belonged to `docs/research/README.md`. `package\.json:[0-9]`
+  and `hud\.css:[0-9]` both return **0** even unguarded. The member with the
+  most bare mentions and no coordinate at all is `package.json`: **90** at
+  `374543cc`, **96** at `e9d5e500`, counted rather than carried from the
+  previous anchor, which published the first of those two numbers.
 
 **THE FOUR COUNTING SITES, RE-DERIVED BY COUNTING THE `docs/adr/` TREE AT
 `e9d5e500` — AND CONTROLLED AGAINST THE PREVIOUS ANCHOR'S PUBLISHED FIGURES
@@ -15197,8 +15228,9 @@ current value and this file's live restatement agree at 0107 without an edit to
 either.
 
 **§2 IS UNMOVED AT NINE ENTRIES, AND ALL FOUR COUNTING SITES AGREE.** This
-window's seven STATUS-QUEUE hunks are at `:757`, `:764`, `:10430`, `:14400`,
-`:14573`, `:14940` and `:18655` — the header, one dated §3 account, the
+window's seven STATUS-QUEUE hunks open at `:757`, `:764`, `:10430`, `:14400`,
+`:14573`, `:14940` and `:18655` — old-side numbers, i.e. against the file as it
+stood at `374543cc` — the header, one dated §3 account, the
 previous pass's new section, §5 and §6 — and **not one falls inside §1
 (`:7583-7694`) or §2 (`:7694-9134`)**, so no row was added or removed. Read
 against each other rather than assumed: this header's opening paragraph says
@@ -15269,6 +15301,12 @@ over.** Three things. **One**, the anchor's own `CI` run 34504763421 was still
 in `browser` when this section was written, so this pass cannot say `main` is
 green at the commit it anchors — only that it is green at the six merges
 before it and that `verify` and `assets` are green at the anchor itself.
+(**That sentence stopped being true before this branch was pushed and is kept
+rather than rewritten**: the run concluded `success` at 17:07:29Z, recorded in
+the header above and in this section's table. It stays here because the shape
+of the admission is the useful part — a pass that anchors on a pending verdict
+should say so at the moment it does, not decide afterwards that it got away
+with it.)
 **Two**, the `browser` failure the previous anchor found on `a3653fef`/#1110
 was left where it was: its evidence artefact
 (`browser-failure-34380246403-1`) has seven days' retention from 2026-09-09
@@ -15280,11 +15318,13 @@ those docblocks cite — `WorldScene.navigateToMinimapPoint`'s `false` return an
 docblock's authority, not re-derived.
 
 **The weakest claim in this pass, named.** It is the live/kept-history
-classification again, and this pass makes it on **five** coordinates that are
-wrong at both ends — `0103-…md:1290`, `messages.ts:95`, `app-shell.spec.ts:10010`,
-and the `hud.ts` docblock-interior numbers as a group — plus **three** that
-moved and were deliberately not re-aimed (`zoning.ts:448`, and
-`new-session.ts:546`/`:659` inside §5's closure block). In every case the
+classification again, and this pass makes it on **three named coordinates plus
+one group** that are wrong at both ends — `0103-…md:1290`, `messages.ts:95`,
+`app-shell.spec.ts:10010`, and the `hud.ts` docblock-interior numbers — plus
+**four** that
+moved and were deliberately not re-aimed (`zoning.ts:448` and its bare
+`:634` in the same sentence, and `new-session.ts:546`/`:659` inside §5's
+closure block). In every case the
 decision not to touch the number rests on my reading that the sentence dates
 itself. If any one of those is actually live, this pass has left a false
 `file:line` standing and published the right number in a place a reader of that
@@ -15293,8 +15333,21 @@ file already computes for exactly one check and nothing else: position relative
 to the last dated pass marker naming the header's own anchor, which
 `adr-status-queue-anchor-contract` applies to `Next free number` restatements
 and could apply to every coordinate. Three anchors have now named that remedy
-and none has built it, and the case for it is eight instances stronger than it
-was this morning.
+and none has built it, and the case for it is seven named coordinates and one
+group stronger than it was this morning.
+
+**AND A THIRD, WHICH THIS PASS FOUND BY ACCIDENT AND WHICH WEAKENS ITS OWN
+FILE-COUNT SPLIT.** The 11/24 split between members carrying a `file:line` and
+members carrying none was measured with a rooted-path scan and a
+word-boundary-guarded basename scan. **Neither can see a bare `` `:634` ``
+written beside a path given once earlier in the same sentence**, which is how
+`zoning.ts`'s second moved coordinate was nearly missed — it was reached by
+reading the sentence that cites `:448`, not by any scan. So **24** is the
+count of members with no *scannable* citation, and a member whose only
+citation is written in that bare style would be filed under it wrongly. No
+such member was found here; the point is that this pass could not have found
+one if it existed, and neither could its two predecessors, which used the same
+two scans.
 
 **Second, and narrower.** The claim that no commit landed outside a pull
 request rests on `git log --first-parent` plus a subject-line filter, which
