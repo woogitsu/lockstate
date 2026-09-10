@@ -764,7 +764,35 @@
  * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
  * section starts open, and the list now scrolls instead of clipping -- so a row
  * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
- * CSS px, measured at all seven. What has not changed is that this row survives
+ * CSS px, measured at all seven.
+ *
+ * **THE FIRST CLAUSE OF THAT PARAGRAPH IS FALSE AND THIS FILE CONTRADICTS IT
+ * ITSELF (#1117).** `.hud__corner` IS hidden below 720px: the rule
+ * `.hud__corner { display: none; }` lives inside `@media (max-width: 720px)`
+ * further down this file, there is no other `@media` between that query and
+ * the rule, and the brace depth at the rule is 1. Measured in the DOM harness
+ * at 375x812, `getComputedStyle('.hud__corner').display` is `none` and the
+ * minimap surface inside it reports `clientHeight: 0`.
+ * `tests/browser/app-shell.spec.ts`'s `#88` sweep says the same in its own
+ * words -- "at 720px and below the responsive rules drop `.hud__corner`
+ * outright" -- and `NEVER_LAID_OUT_BELOW_720` exists to exempt the controls
+ * that fall with it. **So the ORIGINAL reason this row is deliberately not in
+ * `.hud__corner` still holds**, and the paragraph above tells a reader the
+ * justification for the arrangement it is standing next to has expired. It
+ * has not.
+ *
+ * **The sentence is kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4)
+ * because it cost something: a reader verifying an unrelated change on
+ * 2026-09-10 landed on one of this paragraph's three copies, concluded a
+ * correct claim about the 720px breakpoint was refuted, and said so before
+ * opening the rule. The correction is repeated at all three copies for the
+ * same reason -- a reader arrives at one of them, not at a canonical one.
+ *
+ * **What is NOT established: which half drifted.** Either #703's rulings 1
+ * and 5 moved `.hud__corner` and the move was later reverted without this
+ * prose following, or the paragraph over-reached at the time and described a
+ * change to the alerts *list* as a change to its container. #703 has not been
+ * read here. The measurement above says only that, today, the clause is false. What has not changed is that this row survives
  * every breakpoint *unconditionally* and needs nothing opened, and that a band
  * carrying one sentence is a different job from a list keeping several: #701
  * measured the band losing a message to another from the same tick, which is
@@ -815,7 +843,35 @@
  * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
  * section starts open, and the list now scrolls instead of clipping -- so a row
  * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
- * CSS px, measured at all seven. What has not changed is that this row survives
+ * CSS px, measured at all seven.
+ *
+ * **THE FIRST CLAUSE OF THAT PARAGRAPH IS FALSE AND THIS FILE CONTRADICTS IT
+ * ITSELF (#1117).** `.hud__corner` IS hidden below 720px: the rule
+ * `.hud__corner { display: none; }` lives inside `@media (max-width: 720px)`
+ * further down this file, there is no other `@media` between that query and
+ * the rule, and the brace depth at the rule is 1. Measured in the DOM harness
+ * at 375x812, `getComputedStyle('.hud__corner').display` is `none` and the
+ * minimap surface inside it reports `clientHeight: 0`.
+ * `tests/browser/app-shell.spec.ts`'s `#88` sweep says the same in its own
+ * words -- "at 720px and below the responsive rules drop `.hud__corner`
+ * outright" -- and `NEVER_LAID_OUT_BELOW_720` exists to exempt the controls
+ * that fall with it. **So the ORIGINAL reason this row is deliberately not in
+ * `.hud__corner` still holds**, and the paragraph above tells a reader the
+ * justification for the arrangement it is standing next to has expired. It
+ * has not.
+ *
+ * **The sentence is kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4)
+ * because it cost something: a reader verifying an unrelated change on
+ * 2026-09-10 landed on one of this paragraph's three copies, concluded a
+ * correct claim about the 720px breakpoint was refuted, and said so before
+ * opening the rule. The correction is repeated at all three copies for the
+ * same reason -- a reader arrives at one of them, not at a canonical one.
+ *
+ * **What is NOT established: which half drifted.** Either #703's rulings 1
+ * and 5 moved `.hud__corner` and the move was later reverted without this
+ * prose following, or the paragraph over-reached at the time and described a
+ * change to the alerts *list* as a change to its container. #703 has not been
+ * read here. The measurement above says only that, today, the clause is false. What has not changed is that this row survives
  * every breakpoint *unconditionally* and needs nothing opened, and that a band
  * carrying one sentence is a different job from a list keeping several: #701
  * measured the band losing a message to another from the same tick, which is
@@ -865,7 +921,35 @@
  * the band stays.** `.hud__corner` is no longer hidden below 720px, the alerts
  * section starts open, and the list now scrolls instead of clipping -- so a row
  * in it is laid out and reachable at 1920, 1440, 1280, 900, 768, 600 and 375
- * CSS px, measured at all seven. What has not changed is that this row survives
+ * CSS px, measured at all seven.
+ *
+ * **THE FIRST CLAUSE OF THAT PARAGRAPH IS FALSE AND THIS FILE CONTRADICTS IT
+ * ITSELF (#1117).** `.hud__corner` IS hidden below 720px: the rule
+ * `.hud__corner { display: none; }` lives inside `@media (max-width: 720px)`
+ * further down this file, there is no other `@media` between that query and
+ * the rule, and the brace depth at the rule is 1. Measured in the DOM harness
+ * at 375x812, `getComputedStyle('.hud__corner').display` is `none` and the
+ * minimap surface inside it reports `clientHeight: 0`.
+ * `tests/browser/app-shell.spec.ts`'s `#88` sweep says the same in its own
+ * words -- "at 720px and below the responsive rules drop `.hud__corner`
+ * outright" -- and `NEVER_LAID_OUT_BELOW_720` exists to exempt the controls
+ * that fall with it. **So the ORIGINAL reason this row is deliberately not in
+ * `.hud__corner` still holds**, and the paragraph above tells a reader the
+ * justification for the arrangement it is standing next to has expired. It
+ * has not.
+ *
+ * **The sentence is kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4)
+ * because it cost something: a reader verifying an unrelated change on
+ * 2026-09-10 landed on one of this paragraph's three copies, concluded a
+ * correct claim about the 720px breakpoint was refuted, and said so before
+ * opening the rule. The correction is repeated at all three copies for the
+ * same reason -- a reader arrives at one of them, not at a canonical one.
+ *
+ * **What is NOT established: which half drifted.** Either #703's rulings 1
+ * and 5 moved `.hud__corner` and the move was later reverted without this
+ * prose following, or the paragraph over-reached at the time and described a
+ * change to the alerts *list* as a change to its container. #703 has not been
+ * read here. The measurement above says only that, today, the clause is false. What has not changed is that this row survives
  * every breakpoint *unconditionally* and needs nothing opened, and that a band
  * carrying one sentence is a different job from a list keeping several: #701
  * measured the band losing a message to another from the same tick, which is

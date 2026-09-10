@@ -31,7 +31,16 @@ import type { HudZoningNoticeViewModel } from './hud/view-model';
  * **The second half of that sentence expired on 2026-08-31 (#703, rulings 1
  * and 5)** -- the section starts open and the corner is no longer hidden below
  * 720px, so nothing routed to the list is painted at no viewport any more; see
- * `INITIAL_HUD_SHELL_STATE`. **The distinction it was supporting survives
+ * `INITIAL_HUD_SHELL_STATE`. *
+ * **AND THE CORNER IS hidden below 720px -- that clause is false and is
+ * corrected here rather than deleted (#1117).** The rule
+ * `.hud__corner { display: none; }` sits inside `@media (max-width: 720px)`
+ * in `hud.css`, measured `display: none` at 375x812 in the DOM harness, and
+ * `tests/browser/app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720` exempts the
+ * controls that fall with it. **Nothing above changes**: this paragraph
+ * already says the distinction it supports survives without it.
+ * `event-band-dwell.ts` has carried the same correction for longer; the
+ * contradiction was known and had not reached the places that state it. **The distinction it was supporting survives
  * without it**, and is the first sentence of this paragraph rather than the
  * second: the alerts list carries refusals, and an accepted designation is not
  * one. Visibility was the argument that made the taxonomy urgent; the taxonomy

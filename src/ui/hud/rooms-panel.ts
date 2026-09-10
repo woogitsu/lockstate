@@ -1525,7 +1525,18 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * **That last clause stopped being true on 2026-08-31 (#703, rulings 1 and
    * 5)**: the section starts open and `.hud__corner` is no longer hidden below
    * 720px, so a row in the list is laid out at every width -- see
-   * `INITIAL_HUD_SHELL_STATE`. **The placement does not change**, because the
+   * `INITIAL_HUD_SHELL_STATE`.   *
+   * **AND `.hud__corner` IS hidden below 720px -- that clause is false and is
+   * corrected here rather than deleted (#1117).** The rule
+   * `.hud__corner { display: none; }` sits inside `@media (max-width: 720px)`
+   * in `hud.css`, measured `display: none` at 375x812 in the DOM harness, and
+   * `tests/browser/app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720` exists to
+   * exempt the controls that fall with it. **Nothing above changes**: this
+   * paragraph already says the clause was the weaker of its two reasons and
+   * that the placement stands on the other one. `event-band-dwell.ts` has
+   * carried the same correction since before this file was read; the
+   * contradiction was known and had simply not reached the places that state
+   * it. **The placement does not change**, because the
    * clause was the weaker of the two reasons given: the load-bearing one is the
    * sentence above it, that this is a fact about the room the player made and
    * belongs beside the control that made it. A list of refusals is still the
