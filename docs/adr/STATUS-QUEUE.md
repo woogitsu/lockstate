@@ -14754,16 +14754,21 @@ swapped: **98** counts linked rows and files on disk, which is what the
 previous anchor's 97 counted; **99** adds the unlinked, file-less `0018` row,
 still at `docs/adr/README.md:174`.
 
-And **Next free number: 0106** — **the index moved to it inside this window
-and this file already stated it.** `git show e5fbe9d9:docs/adr/README.md`
-states **0105** and `git show 374543cc:docs/adr/README.md` states **0106**, the
-move being ADR 0105's own row landing in `9569cb81`/#1113. The previous
-anchor's section had already restated 0106, because ADR 0105's draft reserved
-the number on a branch its window did not contain, and it marked that edit as
-the fifth time this file has traded a mark-and-keep for an edit in place.
-**This pass is the one whose window holds the commit that caused it**, so the
-figure is confirmed rather than corrected — the second consecutive anchor to
-inherit a restatement its predecessor had to make from outside its own window.
+And **Next free number: 0107** — **moved again, by a draft this file's own
+window does not contain, the same shape this paragraph already records once
+for 0105 -> 0106.** `docs/adr/README.md` stated **0106** as this anchor's
+section first recorded (the move being ADR 0105's own row landing in
+`9569cb81`/#1113, `git show e5fbe9d9:docs/adr/README.md` at **0105** against
+`git show 374543cc:docs/adr/README.md` at **0106**) and has since moved again
+to **0107**, ADR 0106 (`how-a-finished-wall-comes-down-without-a-keyboard.md`,
+filed against #928) taking the number the index's own line stated and landing
+its row in the same index edit. This restatement is edited in place a sixth
+time on this one figure rather than left to disagree, exactly as the fifth
+edit — recorded here rather than duplicated as a second paragraph, because a
+second `Next free number:` phrase inside this anchor's live section would
+itself be a second live restatement the index's current value would have to
+agree with, which is the trap `tests/foundation/adr-status-queue-anchor-
+contract.test.ts` exists to catch rather than a way around it.
 
 **§2 IS UNMOVED AT NINE ENTRIES, AND ALL FOUR COUNTING SITES AGREE.** Two of
 this window's STATUS-QUEUE hunks fall inside §2 — both from `02fde3b3`/#1109,
