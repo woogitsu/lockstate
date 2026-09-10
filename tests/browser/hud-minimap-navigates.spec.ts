@@ -111,7 +111,7 @@ async function clickMinimap(page: Page, point: { readonly x: number; readonly y:
 
 /**
  * Which world tile the camera currently puts under `PROBE`, read by pressing
- * the world with the removal tool armed and catching the `RemoveObject` the
+ * the world with the removal tool armed and catching the `RemoveWall` the
  * gesture submits.
  *
  * **Deliberately not `calibrate()`.** That measures the screen-to-tile
@@ -123,10 +123,14 @@ async function clickMinimap(page: Page, point: { readonly x: number; readonly y:
  * resolution. Precision moved to `world-scene-minimap.spec.ts`, which can state
  * it exactly; what is left here is a direction, and one press answers that.
  *
- * `RemoveObject` is submitted for whatever tile the gesture names, with nothing
- * checked first (`src/main.ts`'s own comment on the `remove-object` intent: the
- * one refusal reason is the worker's), so this reads correctly even after the
- * camera has jumped to land the prison does not own.
+ * **`RemoveWall`, not `RemoveObject`, since ADR 0106.** A world press with the
+ * removal tool armed always resolves an edge (`pickEdgeAtWorld`, never
+ * `undefined` for a finite point) and `src/main.ts` reads that presence to
+ * choose the command, so every such press now submits `RemoveWall` rather
+ * than the tile-only `RemoveObject` -- with nothing checked first either way
+ * (`src/main.ts`'s own comment on the `remove-object` intent: the one refusal
+ * reason is the worker's), so this reads correctly even after the camera has
+ * jumped to land the prison does not own.
  *
  * Armed and disarmed around each reading, exactly as `calibrate()` does, so a
  * caller is never left holding a tool it did not ask for.
@@ -135,9 +139,9 @@ async function probeCameraTile(page: Page): Promise<{ readonly tileX: number; re
   await page.locator('.hud-build__remove').click();
   const commands = await press(page, PROBE.x, PROBE.y);
   await page.locator('.hud-build__remove').click();
-  const removal = commands.find((command) => command['type'] === 'RemoveObject');
+  const removal = commands.find((command) => command['type'] === 'RemoveWall');
   if (removal === undefined) {
-    throw new Error(`no RemoveObject from a press at ${String(PROBE.x)},${String(PROBE.y)}: ${JSON.stringify(commands)}`);
+    throw new Error(`no RemoveWall from a press at ${String(PROBE.x)},${String(PROBE.y)}: ${JSON.stringify(commands)}`);
   }
   return { tileX: removal['x'] as number, tileY: removal['y'] as number };
 }
@@ -363,11 +367,12 @@ test.describe('the minimap surface is keyboard-reachable (#903)', () => {
 
     // AGENTS.md boundary 1: a keyboard press on this surface is exactly as
     // presentational as a click on it. `probeCameraTile` itself submits a
-    // `RemoveObject` to do its reading, so that is the one command type this
-    // filters out before asserting the keyboard gesture built nothing else.
+    // `RemoveWall` to do its reading (ADR 0106), so that is the one command
+    // type this filters out before asserting the keyboard gesture built
+    // nothing else.
     const submittedSince = (await sentCommands(page)).slice(submittedBefore);
     expect(
-      submittedSince.filter((command) => command['type'] !== 'RemoveObject'),
+      submittedSince.filter((command) => command['type'] !== 'RemoveWall'),
       'a keyboard press on the minimap reached the simulation -- moving the camera is presentational only',
     ).toEqual([]);
   });
