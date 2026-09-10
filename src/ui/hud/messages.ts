@@ -298,16 +298,24 @@ export const HUD_MESSAGE_KEY = {
   minimapTitle: 'hud.minimap.title',
   minimapPlaceholder: 'hud.minimap.placeholder',
   /**
-   * Replaces `minimapPlaceholder` the first time a click on the surface
-   * actually moves the camera (issue #793): the surface still draws no map
-   * (`hud.ts`'s own comment on it is unchanged and still true -- rendering
-   * belongs to the renderer and does not exist yet), so "not available yet"
-   * stops being the honest sentence the moment the surface has visibly *done*
-   * something, and this is what replaces it. Never reverts: once a session
-   * has a world the surface can navigate within, later clicks always find
-   * one too (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365`
-   * -- and a stopped session keeps its last one -- `simulation-snapshot-feed.ts`
+   * Replaces `minimapPlaceholder` the first time a click OR a keyboard
+   * activation on the surface actually moves the camera (issue #793, keyboard
+   * reachability added by #903): the surface still draws no map (`hud.ts`'s
+   * own comment on it is unchanged and still true -- rendering belongs to the
+   * renderer and does not exist yet), so `minimapPlaceholder`'s own hedge --
+   * "pressing MAY move the camera" -- stops being the honest sentence the
+   * moment the surface has visibly *done* something, and this is what
+   * replaces it. Never reverts: once a session has a world the surface can
+   * navigate within, later presses always find one too
+   * (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365` -- and a
+   * stopped session keeps its last one -- `simulation-snapshot-feed.ts`
    * preserves `frame.world` across `simulation/stopped`).
+   *
+   * Both sentences are quoted verbatim, against the code that proves each
+   * true, in the comment above `hud.minimap.navigable` in
+   * `src/content/default-locale-en.ts` -- read that rather than this file for
+   * the wording's own justification; this comment is about when the swap
+   * happens, not about the words.
    */
   minimapNavigable: 'hud.minimap.navigable',
   alertsTitle: 'hud.alerts.title',

@@ -835,23 +835,27 @@ export interface MountHudOptions {
    */
   readonly worldObjects?: HudWorldObjectSource;
   /**
-   * Where a click on `.hud-minimap__surface` asks the camera to go (issue
-   * #793): a point normalized to the surface's own box, `0,0` at its
-   * top-left corner and `1,1` at its bottom-right, exactly as the caller
-   * reads it off `getBoundingClientRect()`. The mapping from that point to a
-   * world position is not this module's to make -- it belongs with the
-   * camera and the loaded-world bounds, both of which are the renderer's
-   * (`AGENTS.md` boundary 1; this file may not import `src/rendering/**`,
+   * Where a press on `.hud-minimap__surface` asks the camera to go (issue
+   * #793; keyboard-reachable since #903): a point normalized to the surface's
+   * own box, `0,0` at its top-left corner and `1,1` at its bottom-right. A
+   * pointer press reads it off `getBoundingClientRect()`; a keyboard
+   * activation (Enter/Space on the now-real `<button>`) has no such point and
+   * names the surface's own centre, `0.5, 0.5`, instead -- see the `click`
+   * listener's own comment in this module for why `event.detail` is what
+   * distinguishes the two. The mapping from that point to a world position is
+   * not this module's to make -- it belongs with the camera and the
+   * loaded-world bounds, both of which are the renderer's (`AGENTS.md`
+   * boundary 1; this file may not import `src/rendering/**`,
    * `tests/unit/ui-hud-messages.test.ts`) -- so this is a plain callback
    * rather than a port object like `worldBuild`/`worldRooms`/`worldObjects`:
    * there is no shared mutable state for a port to carry, only one gesture
    * translated into one call.
    *
-   * Returns whether the camera actually moved. A click that lands while no
+   * Returns whether the camera actually moved. A press that lands while no
    * world has ever been loaded (before a session exists, or on a page whose
    * `Worker` never started) has nowhere to go, and `false` is how the HUD
    * finds that out and says so -- swapping `hud.minimap.placeholder` for
-   * `hud.minimap.navigable` only once a click has actually landed somewhere,
+   * `hud.minimap.navigable` only once a press has actually landed somewhere,
    * rather than leaving the surface's one sentence claiming "not available"
    * forever once it demonstrably is. This is deliberately not on the gated
    * `dispatchCommand`/`dispatchShell` paths every other control here uses:
@@ -1659,17 +1663,54 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // real click target, and every point on it maps to a world position
   // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
   // mapping -- see its own comment for what the surface represents and why).
+  //
+  // **A real `<button>`, not a `div`, since issue #903.** It used to be a
+  // `div` with no `role` and no way into the keyboard's focus order at all --
+  // `tabIndex` reads `-1` by default on an element nobody opted in -- so a
+  // keyboard player could never fire the swap below and only ever read
+  // `minimapPlaceholder`'s denial, against `AGENTS.md` boundary 10 (input
+  // must support touch/pointer *and* remapping/keyboard). A real `<button>`
+  // gives the correct role and a correct accessible name for free rather than
+  // reinventing either with ARIA: it is in the tab order by default, its
+  // accessible name is computed from its own text content -- exactly the
+  // sentence a sighted player reads, kept as the one source of truth instead
+  // of a second, divergent `aria-label` -- and, load-bearing for the handler
+  // below, it dispatches a `click` event for an Enter/Space activation just
+  // as it does for a pointer click, so the one listener already here needed
+  // no second, keyboard-only code path. `hud.css` resets the button chrome a
+  // `<button>` would otherwise add; see its comment on `.hud-minimap__surface`
+  // for what that costs and why each reset is there.
   const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
-  const minimapSurface = element('div', {
+  const minimapSurface = element('button', {
     className: 'hud-minimap__surface',
+    attributes: { type: 'button' },
     children: [minimapPlaceholder],
   });
   minimapSurface.addEventListener('click', (event: MouseEvent) => {
     const rect = minimapSurface.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
-    const point = { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
+    /*
+     * `event.detail` is the DOM's own count of the click -- 1 for an
+     * ordinary click, 2/3 for a double/triple click, and **0 for a `click`
+     * a `<button>` dispatches from a non-pointer activation** (Enter, Space,
+     * or an assistive technology's virtual "activate"), because nothing was
+     * actually clicked to be counted. That is the one reliable way to tell a
+     * keyboard press from a pointer click on this event, rather than reading
+     * `clientX`/`clientY`: browsers are not required to place those at any
+     * particular point for a synthetic activation, so trusting them here
+     * would make the keyboard path's target point an implementation detail
+     * of whichever engine is running rather than a decision this file makes.
+     * A keyboard press names the surface's own centre (`0.5, 0.5`) --
+     * consistent with `frameCameraOnFirstWorld`'s own choice of the loaded
+     * bounds' midpoint (`world-scene.ts`) for "no particular point given" --
+     * rather than any point a mouse could have chosen.
+     */
+    const point =
+      event.detail === 0
+        ? { fx: 0.5, fy: 0.5 }
+        : { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
     const navigated = options.onMinimapNavigate?.(point) ?? false;
-    // Only ever moves *toward* "navigable" -- a click that fails today still
+    // Only ever moves *toward* "navigable" -- a press that fails today still
     // leaves the accurate `minimapPlaceholder` sentence standing, and a
     // session's loaded world never disappears once one exists (see the
     // message key's own comment), so this never has to move back.
