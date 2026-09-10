@@ -78,6 +78,30 @@ chose the one labelled:
 
 ("Accept all seven decisions.")
 
+**Open question 2 answered by the owner on 2026-09-10 — both directions at
+half weight.** The one remaining answer that
+[#979](https://github.com/woogitsu/lockstate/issues/979) was blocked on: the
+grudge ledger is directional and this document's ruling "between" is
+symmetric, so somebody had to say which of two prisoners is the offender.
+Put to them as four clickable options, they chose the one labelled:
+
+> Obie strony po pół wagi
+
+("Both sides at half weight.")
+
+**The provenance is the weaker kind, exactly as the 2026-09-08 acceptance
+above is**: the label of a clickable option this session wrote, given against
+a summary of the three available answers and the `instigatorId` objection,
+not a sentence the owner typed. **And the cost this document named beside its
+own instinct was not waived by the answer** — half-weight writes double the
+ledger entries and the cadence is still unmeasured. See open question 2 below
+for what that makes a precondition of, and of what.
+
+**No decision's status moved, and no player-visible sentence is authored
+here.** The answer settles a direction in a ledger nobody reads on screen;
+question 1's finding stands untouched, so a player still cannot connect a
+retaliation to the fight that caused it.
+
 **Given against a summary, not against these 1,700 lines, and that is
 disclosed rather than glossed.** The option they read carried three things: that
 Decision 2 was already theirs and decisions 1 and 3 to 7 were the document's and
@@ -1842,7 +1866,35 @@ a reader holding the earlier draft can follow.**
    that caused it, and nothing in this document may be read as licensing a
    sentence that would let them. That is a live limitation of the accepted
    design, not an oversight, and reopening it needs a fresh ruling.
-2. **Which of the two prisoners is the offender? — NEW.** The grudge ledger is
+2. **ANSWERED BY THE OWNER, 2026-09-10: write both directions at half
+   weight.** *(Kept in place and at number 2, the way question 1 above is,
+   because the two answers they declined are what a later reader will want to
+   find.)* Status quotes the option they chose. **What the answer authorises
+   and what it does not:** it settles the *direction* problem — the ledger is
+   written symmetrically, so an even score stays even and a one-sided prison
+   escalates — and it does **not** waive the cost this document named in the
+   same breath. **The measurement is still owed and is now a precondition of
+   implementation rather than of the decision**: half-weight writes double the
+   number of ledger entries, nobody has measured what that does to the
+   retaliation cadence, and a mechanism that fires twice as often as intended
+   is a different game from the one that was accepted. Measure the cadence
+   against a real prison before wiring the three missing writers
+   [#979](https://github.com/woogitsu/lockstate/issues/979) needs, and if the
+   figure moves the design, come back here rather than tuning it in
+   implementation code.
+
+   **Why the two rejected answers are worth keeping visible.** Treating the
+   instigator's gang as the offender was the cheap option and it is the one
+   that would have made the game assign fault from a signal three modules
+   independently say is not a finding of fault. Writing nothing until
+   [#80](https://github.com/woogitsu/lockstate/issues/80)'s real adjudication
+   exists was the honest option and it would have left `gang-retaliation`
+   unreachable indefinitely — which is the state #979 reports, so declining it
+   is what makes #979 actionable.
+
+   The question as it stood:
+
+   **Which of the two prisoners is the offender? — NEW.** The grudge ledger is
    directional (`src/simulation/incidents/gangs.ts:82`) and the ruling's
    "between" is symmetric. The only directional signal on an assault record is
    `instigatorId`, which three modules independently say is not a finding of
