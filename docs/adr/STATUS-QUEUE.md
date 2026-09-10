@@ -774,6 +774,17 @@ independently, and a budget widened the first time it costs something is not a
 budget. Once the anchor line above moves, the same assertion reads
 562 − 561 = **one**.
 
+**A THIRD READING WAS TAKEN WHILE THIS PASS RAN AND IT IS NOT CHASED**, the
+way the v0.0.534 anchor recorded two of its own: `main` advanced to
+`1d0156b7`/#1116 (*"ci(python3): name the missing host tool instead of exiting
+127 (#1089)"*) and then to `cd6addac` (`chore(release): v0.0.563`) after this
+branch was cut, so counted against `main`'s tip at the time of writing the
+spend is **nine**, still one inside the budget and **two** once this anchor
+line lands. The window this section reads is the one the line names and is not
+re-opened for it; the reading is stated so that a later pass comparing figures
+knows a merge landed mid-pass, which is the same disclosure the v0.0.554
+anchor's predecessor made about a merge it did not chase.
+
 **THE BOUNDARY THE PREVIOUS ANCHOR MEASURED IS CARRIED RATHER THAN RE-MEASURED,
 AND SAYING WHICH IS THE POINT.** That pass took `package.json` on `fad2657c`
 to each value in turn and found that against its v0.0.554 anchor a tree
