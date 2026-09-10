@@ -296,7 +296,7 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all fifteen in `src/main.ts`, which is the composition
+    // where it is -- all sixteen in `src/main.ts`, which is the composition
     // root and the only place in `src/` that builds a command object.
     //
     // **This read `all eleven` until this change**, and it was right when #367
@@ -309,7 +309,7 @@ describe('every declared simulation command either has a producer or is accounte
     // Corrected rather than overwritten, because the number is not the finding
     // and the assertion below is: `COMMAND_TYPES.length` is pinned two lines
     // down, so the *comment* could rot for three additions while the *gate*
-    // could not rot for one. Fourteen of the fifteen are named in this block;
+    // could not rot for one. Fourteen of the fifteen were named in this block;
     // `Undo` is named at the `case 'Undo':` case below, for the reason given
     // there.
     //
@@ -318,8 +318,13 @@ describe('every declared simulation command either has a producer or is accounte
     // which added `DismissAlert` -- with its producer, from the alerts list's
     // own rows. The correction is the fifth of exactly the shape the paragraph
     // above describes, which is why the paragraph is kept.
+    //
+    // **And it read `all fifteen` until ADR 0106**, which added `RemoveWall`
+    // -- with its producer, in the same `case 'remove-object':` branch
+    // `RemoveObject` already had, distinguished by whether the intent carries
+    // an `edge`. The sixth correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(15);
+    expect(COMMAND_TYPES.length).toBe(16);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -340,6 +345,14 @@ describe('every declared simulation command either has a producer or is accounte
     // whole purpose is that a *gesture* reaches it, so a producer that existed
     // only in a test would be the exact defect this gate is named after.
     expect(producersOf('RemoveObject')).toEqual(['src/main.ts']);
+    // The sixteenth, added by ADR 0106 beside `RemoveObject` in the same
+    // branch (ADR 0106): the completed-wall arm of the same removal gesture,
+    // reached only when the object arm this gate already named finds
+    // nothing. Named separately for `RemoveObject`'s own reason: a producer
+    // that existed only in a test would be exactly the defect this gate is
+    // named after, and this is the command whose whole point is that a
+    // touch player's *press* reaches a finished wall at all.
+    expect(producersOf('RemoveWall')).toEqual(['src/main.ts']);
     expect(producersOf('UnzoneRoom')).toEqual(['src/main.ts']);
     // The tenth and eleventh, added by ADR 0028 phases 1 and 3 by the same
     // route: arriving *with* their producers rather than spending time on the
@@ -374,6 +387,7 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'UnzoneRoom'`);
     expect(main!.text).toContain(`type: 'PlaceObject'`);
     expect(main!.text).toContain(`type: 'RemoveObject'`);
+    expect(main!.text).toContain(`type: 'RemoveWall'`);
     expect(main!.text).toContain(`type: 'CancelBuildOrder'`);
     expect(main!.text).toContain(`type: 'CancelMaterialPurchase'`);
     expect(main!.text).toContain(`type: 'ReleaseGuardAssignment'`);
@@ -445,7 +459,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures fourteen produced and none unproduced, which this file has now been able to say four times', () => {
+  it('measures fifteen produced and none unproduced, which this file has now been able to say five times', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -477,12 +491,16 @@ describe('every declared simulation command either has a producer or is accounte
     // existing path but a path that did not exist, and **zero and fifteen**
     // once `DismissAlert` arrived the same way (ADR 0084 decision 3, the
     // owner's, 2026-09-01) and gave the alerts log the player gesture two
-    // modules in `src/ui/` had each recorded as missing.
+    // modules in `src/ui/` had each recorded as missing, and **zero and
+    // sixteen** once `RemoveWall` arrived the same way (ADR 0106) and put a
+    // pointer route in front of `ConstructionSystem.completedOrderClaimingEdge`
+    // for a finished wall, which until then had none.
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a sixteenth command added
-    // with no producer fails here as well as failing the accounting above.
+    // stay green. Note the denominator moves too, so a seventeenth command
+    // added with no producer fails here as well as failing the accounting
+    // above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(15);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(16);
   });
 });

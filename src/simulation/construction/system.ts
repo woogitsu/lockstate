@@ -288,6 +288,26 @@ export interface DoorPlacementSink {
  */
 const MOCK_CREW_WORKER_ID = 'mock-worker-1';
 
+/**
+ * What a `RemoveWall` press can be refused for
+ * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
+ *
+ * **One entry, and the table exists anyway**, for the reason
+ * `RemoveObjectRefusalReason` records of its own single member: a table is
+ * what makes a *second* reason a compile error at the mapping in
+ * `src/simulation/refusals/refusal-log.ts` rather than a silent `undefined` on
+ * the wire.
+ *
+ * Spelled exactly like `RemoveObjectRefusalReason`'s and `UnzoneRoomRefusalReason`'s
+ * member of the same name, because it is the same fact about a third gesture:
+ * the player pressed somewhere there was nothing of theirs to take away. It is
+ * namespaced apart from both on the wire (`remove-wall.*` against
+ * `remove-object.*` and `unzone.*`) for the reason every other collision in
+ * `REFUSAL_REASONS` is -- a player who pressed the world expecting a wall to
+ * come down must not read a sentence about a room.
+ */
+export type RemoveWallRefusalReason = 'nothing-to-remove';
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
@@ -1364,6 +1384,51 @@ export class ConstructionSystem implements SystemRegistration {
 
   public getOrder(id: string): BuildOrder | undefined {
     return this.orders.get(id);
+  }
+
+  /**
+   * The completed order, if any, claiming this tile edge -- what a
+   * `RemoveWall` press resolves to
+   * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
+   *
+   * **Only a `'completed'` order counts, deliberately.** An in-flight wall or
+   * door already has a pointer route -- the queue's per-row cancel, since
+   * `PENDING_BUILD_ORDER_STATES` excludes only `'completed'`
+   * (`src/simulation/presentation/construction-projection.ts:87-93`) -- so
+   * this resolver is not asked to arbitrate a wall still being built, and a
+   * press over one answers `undefined` here exactly as it would if nothing
+   * were there at all.
+   *
+   * **Filtered to `edgeNumericIdFor(...) !== 0`**, or an old *object* order
+   * sharing this location would match: an object order never sets `.edge`
+   * (`resolveBuildEdge` defaults every unset edge to `'north'`), and its
+   * completed row survives in `this.orders` long after
+   * `ObjectPlacementService.remove` has deleted the object itself from
+   * `PlacedObjectRegistry` -- nothing here ever purges a finished order.
+   * `otherCompletedClaimants` below tolerates the same false match without
+   * this filter because both of its callers filter it back out themselves
+   * (`remainingEdgeValue` on `otherValue !== 0`, `anotherCompletedDoorClaims`
+   * on `placesDoor`); this resolver has no second reader to lean on, so it
+   * filters here.
+   *
+   * **Highest id wins when more than one completed order claims the same
+   * edge**, matching `remainingEdgeValue`'s own precedent for which claimant
+   * an edge's *value* belongs to -- the walk below is ascending and keeps
+   * overwriting `winner`, exactly as that method keeps overwriting `value`.
+   * Stated as a rule rather than left implicit: `remainingEdgeValue` only ever
+   * has to agree with itself about a number, and this resolver has to name
+   * one order to cancel.
+   */
+  public completedOrderClaimingEdge(location: TilePosition, edge: BuildEdge): BuildOrder | undefined {
+    let winner: BuildOrder | undefined;
+    for (const order of this.orderedOrders()) {
+      if (order.state !== 'completed') continue;
+      if (order.location.x !== location.x || order.location.y !== location.y) continue;
+      if (resolveBuildEdge(order) !== edge) continue;
+      if (edgeNumericIdFor(getBuildableDefinition(order.definitionId)) === 0) continue;
+      winner = order;
+    }
+    return winner;
   }
 
   /**

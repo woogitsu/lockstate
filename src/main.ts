@@ -2382,11 +2382,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             // disarmed in the same call, so a player who armed a wall and then
             // pressed Remove gets one gesture rather than two layered ones.
             //
-            // There is no wall removal behind this and the control does not
-            // claim one: `hud.build.remove-hint` says "any tile of an object".
-            // Taking a *wall* down is `Undo` for a finished one, and -- since the
-            // Build panel's queue block -- a press on its row for one that is
-            // still queued, which is a per-order control the panel now has.
+            // A **finished** wall comes down through this same arming too,
+            // since ADR 0106: `hud.build.remove-hint` now says so ("or a
+            // finished wall"), and the `case 'remove-object':` producer below
+            // is where the press becomes `RemoveWall` rather than
+            // `RemoveObject`. A wall still being built is not reached by this
+            // control -- that is `Undo`, or -- since the Build panel's queue
+            // block -- a press on its row, which is a per-order control the
+            // panel already has.
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { removing: true });
             return;
@@ -2739,7 +2742,32 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * every viewport -- which is what makes removal answerable on a phone
          * at all (#220, made structural).
          */
+        /*
+         * **Since ADR 0106, this branch also produces `RemoveWall`.** Which of
+         * the two commands a removal press becomes is decided by `intent.edge`,
+         * present only when the world gesture supplied one
+         * (`HudObjectGesture`'s own comment): the object tool's world press
+         * always resolves an edge from the raw pointer position and reports it,
+         * and the Build panel's numeric fields never do, having no sub-tile
+         * position for `pickEdgeAtWorld` to read.
+         *
+         * A finished wall's own reachability is therefore this `edge` field and
+         * nothing else in the stack: `RemoveWall`'s own session-command branch
+         * tries the object arm first (the exact call this file's `RemoveObject`
+         * line makes), so a bed pressed near its own cell's wall still removes
+         * the bed and not the wall, and only a press that finds no object falls
+         * through to the edge.
+         */
         case 'remove-object':
+          if (intent.edge !== undefined) {
+            requireSimulation(commands).submit({
+              type: 'RemoveWall',
+              x: intent.x,
+              y: intent.y,
+              edge: intent.edge,
+            });
+            return;
+          }
           requireSimulation(commands).submit({ type: 'RemoveObject', x: intent.x, y: intent.y });
           return;
 
