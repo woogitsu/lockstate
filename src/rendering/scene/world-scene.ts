@@ -1186,7 +1186,22 @@ export class WorldScene extends Phaser.Scene {
     // The *anchor*, not the rectangle: the tool and the command both take one
     // tile, and the rectangle only ever existed so the player could see what a
     // press would claim.
-    if (rect !== undefined) this.objectTool?.place({ tileX: rect.tileX, tileY: rect.tileY });
+    //
+    // `edge` (ADR 0106) is computed unconditionally, from the release pointer
+    // -- the same point the tile above is already tracking, so the two agree
+    // about where the gesture ended even after a drag corrects it. It is
+    // computed here rather than only while removing because deciding which
+    // arm reads it is `ObjectTool.place`'s job, not this scene's: the scene
+    // reports the geometry a press resolved to and the tool decides what a
+    // press means, exactly as `isRemoving()` is read for the preview colour
+    // alone and never for what a press *does*.
+    if (rect !== undefined) {
+      this.objectTool?.place({
+        tileX: rect.tileX,
+        tileY: rect.tileY,
+        edge: pickEdgeAtWorld(this.worldPointOf(pointer)).edge,
+      });
+    }
     return true;
   }
 

@@ -1,5 +1,6 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { ConstructionFundingRefusalReason } from '../construction/materials-procurement';
+import type { RemoveWallRefusalReason } from '../construction/system';
 import type { PurchaseCancelRefusalReason, PurchaseRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
@@ -304,6 +305,24 @@ export const PLACE_OBJECT_REFUSAL_REASONS: Readonly<Record<PlaceObjectRefusalRea
  */
 export const REMOVE_OBJECT_REFUSAL_REASONS: Readonly<Record<RemoveObjectRefusalReason, RefusalReason>> = {
   'nothing-to-remove': 'remove-object.nothing-to-remove',
+};
+
+/**
+ * `RemoveWallRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (ADR 0106).
+ *
+ * **One entry, and the table exists anyway**, for the argument
+ * `REMOVE_OBJECT_REFUSAL_REASONS` records of its own single member.
+ *
+ * `nothing-to-remove` is spelled exactly like `REMOVE_OBJECT_REFUSAL_REASONS`'s
+ * and `UNZONE_REFUSAL_REASONS`'s members of the same name -- the same fact
+ * about a third gesture -- and namespaced apart from both for the reason every
+ * other collision in `REFUSAL_REASONS` is: a player who pressed the world
+ * expecting a wall to come down must not read a sentence about an object or a
+ * room.
+ */
+export const REMOVE_WALL_REFUSAL_REASONS: Readonly<Record<RemoveWallRefusalReason, RefusalReason>> = {
+  'nothing-to-remove': 'remove-wall.nothing-to-remove',
 };
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */
@@ -634,6 +653,20 @@ export function placeObjectSupersessionKey(definitionId: string, x: number, y: n
 /** `remove-object.*`'s key: the tile. `RemoveObject` names no order id at all. */
 export function removeObjectSupersessionKey(x: number, y: number): string {
   return `remove-object:${x}:${y}`;
+}
+
+/**
+ * `remove-wall.*`'s key: the tile edge, not the order id -- `RemoveWall` names
+ * no order id either (ADR 0106), and a wall's edge is the thing a player
+ * repeatedly presses, exactly as a tile is `removeObjectSupersessionKey`'s.
+ * Distinct from that key even for the same `x`/`y`, because the two commands'
+ * refusals are two different standing facts about one tile and neither
+ * answers the other -- a `remove-object.nothing-to-remove` there says nothing
+ * about whether a wall's edge is claimed, and a `remove-wall.nothing-to-remove`
+ * says nothing about whether an object is standing on it.
+ */
+export function removeWallSupersessionKey(x: number, y: number, edge: string): string {
+  return `remove-wall:${x}:${y}:${edge}`;
 }
 
 /** `release-guard.*`'s key: the guard id, which is the one thing `ReleaseGuardAssignment` names. */

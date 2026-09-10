@@ -13,6 +13,7 @@ import {
   PURCHASE_REFUSAL_REASONS,
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
+  REMOVE_WALL_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
@@ -108,8 +109,8 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the twelve domains can produce', () => {
-  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the thirteen domains can produce', () => {
+  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, wall removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
@@ -121,6 +122,7 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
       ...Object.values(PURCHASE_REFUSAL_REASONS),
       ...Object.values(RELEASE_GUARD_REFUSAL_REASONS),
       ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
+      ...Object.values(REMOVE_WALL_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
     ];
@@ -216,6 +218,7 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
       'unknown-guard': 'release-guard.unknown-guard',
     });
     expect(REMOVE_OBJECT_REFUSAL_REASONS).toEqual({ 'nothing-to-remove': 'remove-object.nothing-to-remove' });
+    expect(REMOVE_WALL_REFUSAL_REASONS).toEqual({ 'nothing-to-remove': 'remove-wall.nothing-to-remove' });
     expect(UNZONE_REFUSAL_REASONS).toEqual({
       'invalid-area': 'unzone.invalid-area',
       'nothing-to-remove': 'unzone.nothing-to-remove',
@@ -253,6 +256,11 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
     // list was still eleven tables long -- `expected [...] to have a length of
     // 41 but got 40`. The count named the shortfall and not the table, exactly
     // as predicted, and exactly as it did for `dismiss`.
+    //
+    // **And it tripped again on the thirteenth (ADR 0106)**, the same
+    // paragraph earning its keep a third time: `REMOVE_WALL_REFUSAL_REASONS`
+    // was added to the set comparison above and forgotten here first, and
+    // this list was still twelve tables long.
     const paired = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
@@ -264,6 +272,7 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
       ...Object.values(PURCHASE_REFUSAL_REASONS),
       ...Object.values(RELEASE_GUARD_REFUSAL_REASONS),
       ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
+      ...Object.values(REMOVE_WALL_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
     ];
@@ -340,6 +349,11 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
     // test name said "eleven commands" until this member arrived; it says
     // "vocabularies" now, because that is what the twelve have always been and
     // the eleventh was the last one for which the two words coincided.
+    // `remove-wall` is the thirteenth (ADR 0106) and it is a command's
+    // vocabulary again: the demolition gesture's edge arm, namespaced apart
+    // from `remove-object` for the ninth demonstration -- the same fact, "the
+    // player pressed where there was nothing of theirs to take away", answers
+    // a third different gesture and must not read as either of the other two.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
@@ -352,6 +366,7 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
       'purchase',
       'release-guard',
       'remove-object',
+      'remove-wall',
       'unzone',
       'zone',
     ]);
@@ -387,6 +402,28 @@ describe('the wire vocabulary is exactly what the twelve domains can produce', (
       const fromUnzone = UNZONE_REFUSAL_REASONS[reason as keyof typeof UNZONE_REFUSAL_REASONS];
       const fromRemoveObject = REMOVE_OBJECT_REFUSAL_REASONS[reason as keyof typeof REMOVE_OBJECT_REFUSAL_REASONS];
       expect(fromRemoveObject, `${reason} must not be one wire id for two commands`).not.toBe(fromUnzone);
+    }
+  });
+
+  it('keeps the one spelling object removal, wall removal and un-zoning all share as three different wire ids (ADR 0106)', () => {
+    // `nothing-to-remove` is now a member of three tables: `UnzoneRoomRefusalReason`,
+    // `RemoveObjectRefusalReason` and `RemoveWallRefusalReason`, the same
+    // condition reached by a third control -- a world press armed to remove
+    // that finds no object, no pending object order and no completed wall.
+    const sharedWithObject = Object.keys(REMOVE_OBJECT_REFUSAL_REASONS).filter((reason) =>
+      Object.hasOwn(REMOVE_WALL_REFUSAL_REASONS, reason),
+    );
+    expect(sharedWithObject.sort()).toEqual(['nothing-to-remove']);
+    const sharedWithUnzone = Object.keys(UNZONE_REFUSAL_REASONS).filter((reason) =>
+      Object.hasOwn(REMOVE_WALL_REFUSAL_REASONS, reason),
+    );
+    expect(sharedWithUnzone.sort()).toEqual(['nothing-to-remove']);
+    for (const reason of sharedWithObject) {
+      const fromRemoveObject = REMOVE_OBJECT_REFUSAL_REASONS[reason as keyof typeof REMOVE_OBJECT_REFUSAL_REASONS];
+      const fromRemoveWall = REMOVE_WALL_REFUSAL_REASONS[reason as keyof typeof REMOVE_WALL_REFUSAL_REASONS];
+      const fromUnzone = UNZONE_REFUSAL_REASONS[reason as keyof typeof UNZONE_REFUSAL_REASONS];
+      expect(fromRemoveWall, `${reason} must not be one wire id for two commands`).not.toBe(fromRemoveObject);
+      expect(fromRemoveWall, `${reason} must not be one wire id for two commands`).not.toBe(fromUnzone);
     }
   });
 
