@@ -711,8 +711,22 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    * exists to report: the plank is bought at -25 and the bed is buildable, so
    * the income line can start. What ruling 19 changes is that the prison spends
    * its facility on wages while it waits, instead of holding it.
+   *
+   * **[ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+   * decision 2 (accepted 2026-09-10) moves where this walk stops, a second
+   * time, and this is the case that measured it.** This prison never places
+   * the plank it bought into a bed -- `residentCapacity` stays `0` for the
+   * whole of this case, so it is fresh and unfurnished throughout, and
+   * `'wages'` now has a rung of its own while that holds:
+   * `STARTER_RUNG_WAGES_FLOOR_MINOR_UNITS` in `src/simulation/economy/treasury.ts`,
+   * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS`
+   * = -1,250 + 1,195 = **-55**, shallower than -745, so the walk this case
+   * used to measure is intercepted long before it gets there. Every balance
+   * and arrears figure below this point is superseded; the text above it is
+   * left standing because it is the record of what ruling 19 alone did, one
+   * release before this one.
    */
-  it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wage rung', () => {
+  it('walks a prison past zero on payroll alone, buys the plank on the way, and stops at the wages reserve (ADR 0096 decision 2)', () => {
     const runtime = createNewSimulationRuntime(SEED);
     // Walls, not a spending spree: 616 bricks is 24,640, which at two bricks a
     // wall segment is 308 segments. The prison keeps 360 -- five planks' worth,
@@ -738,47 +752,63 @@ describe('the same lock reached by a charge the player cannot decline', () => {
     expect(stockOf(runtime, 'item.wood-plank'), 'and a bed is now buildable, which is the way out').toBe(1);
 
     /*
-     * **And payroll now follows it down, which is the half ruling 19 reversed.**
+     * **And payroll now follows it down, only as far as the reserve --
+     * ADR 0096 decision 2, measured through the real kernel rather than only
+     * in `treasury.ts`'s own arithmetic.**
      *
-     * This block read:
+     * This block asserted, for the whole life of ruling 19 alone:
      *
-     * > And payroll still cannot follow it down. Nine more in-game days of an 80
-     * > wage against a balance of -25: not one minor unit is paid, the balance
-     * > does not move, and the whole bill becomes arrears -- ADR 0049's third
-     * > rung, which ADR 0083 §(a) predicted survives an open floor and which this
-     * > measures at a balance that is already negative.
+     * > Nine more in-game days of an 80 wage against a balance of -25 …
+     * > `expect(runtime.treasury.balanceMinorUnits).toBe(-745)`
+     * > `expect(runtime.payroll.unpaidWagesMinorUnits).toBe(0)`
      *
-     * > ```
-     * > expect(runtime.treasury.balanceMinorUnits, 'wages are bounded by the balance, not by the floor')
-     * >   .toBe(balanceBeforeTheWages);
-     * > expect(runtime.payroll.unpaidWagesMinorUnits).toBeGreaterThan(0);
-     * > ```
-     *
-     * Nine days at 80 out of -25 is **-745**, and nothing is owed: the room is
-     * the payroll's now, down to the wage rung.
+     * That is superseded, not merely re-valued: -745 is deeper than the new
+     * starter wages rung (-55), so the walk this case used to measure eight
+     * more days of never happens -- the very first payday after the plank
+     * purchase already has only 30 of room left before -55 (`-25 - (-55) =
+     * 30`), pays that much and no more, and every payday after it pays
+     * nothing at all while the arrears bound (ADR 0096 decision 3(c),
+     * `ARREARS_BOUND_MINOR_UNITS`) has not yet been reached.
      */
     expect(runtime.treasury.balanceMinorUnits).toBe(-25);
+    stepTo(runtime, 4 * 2_400);
+    expect(runtime.treasury.balanceMinorUnits, 'one payday: 30 of room to the reserve, not the whole 80').toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, '80 due, 30 paid').toBe(50);
+
     stepTo(runtime, 12 * 2_400);
-    expect(runtime.treasury.balanceMinorUnits, 'nine paydays at 80, out of the overdraft').toBe(-745);
-    expect(runtime.payroll.unpaidWagesMinorUnits, 'and not a minor unit is owed while the room lasts').toBe(0);
+    expect(runtime.treasury.balanceMinorUnits, 'pinned at the reserve, not walking on to -745').toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'eight more whole paydays owed in full: 50 + 8 x 80').toBe(690);
 
     /*
-     * **The third rung, watched firing.** From -745 the wage rung is 1,755 away,
-     * which is twenty-one whole paydays at 80 with 75 left over. The
-     * twenty-second takes the 75, lands the balance exactly on -2,500 and owes
-     * the other 5 -- ADR 0049's arrears, at the threshold ruling 19 gives them.
-     * Every payday after that owes the whole 80.
+     * **The arrears bound, watched firing -- ADR 0096 decision 3(c), not the
+     * third rung ruling 19 gave `'wages'` alone.** From 690 owed, 80 a day,
+     * `ARREARS_BOUND_MINOR_UNITS` (2,500) is crossed on the twenty-third
+     * payday after day 12: 690 + 22 x 80 = 2,450, one short; the
+     * twenty-third would add the 24th multiple and land on 2,530, capped to
+     * exactly 2,500 instead -- forgiven, per decision 3(c)'s own words,
+     * rather than deferred.
      */
     stepTo(runtime, 34 * 2_400);
-    expect(runtime.treasury.balanceMinorUnits, 'exactly the wage rung, which is the floor').toBe(
-      TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-    );
-    expect(runtime.payroll.unpaidWagesMinorUnits, '80 due against the 75 the rung left').toBe(5);
+    expect(runtime.treasury.balanceMinorUnits, 'the reserve holds: no payday may pass it while unfurnished').toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, '690 + 22 whole paydays at 80').toBe(2_450);
 
     stepTo(runtime, 35 * 2_400);
-    expect(runtime.treasury.balanceMinorUnits, 'and the rung holds: no payday may pass it').toBe(
+    expect(runtime.treasury.balanceMinorUnits).toBe(-55);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'the bound: 2,450 + 80 would be 2,530, forgiven down to 2,500').toBe(
+      2_500,
+    );
+
+    stepTo(runtime, 40 * 2_400);
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'and it stays there -- nothing past the bound is ever remembered').toBe(
+      2_500,
+    );
+
+    // `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (-2,500) is cited here rather than
+    // silently dropped: it is what this same fixture reached under ruling 19
+    // alone, and it is now unreachable for as long as this prison stays
+    // unfurnished, which is exactly ADR 0096 decision 2's point.
+    expect(runtime.treasury.balanceMinorUnits, 'nowhere near the treasury`s own floor').toBeGreaterThan(
       TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
     );
-    expect(runtime.payroll.unpaidWagesMinorUnits, '5 owed plus the next whole 80').toBe(85);
   });
 });

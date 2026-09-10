@@ -13,8 +13,10 @@ export {
   type PrisonerDayGrantSource,
 } from './income';
 export {
+  ARREARS_BOUND_MINOR_UNITS,
   PayrollSystem,
   dailyWageBillMinorUnits,
+  type PayrollResidencySource,
   type PayrollSnapshot,
   type PayrollStaffSource,
 } from './payroll';
@@ -35,6 +37,7 @@ export {
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   Treasury,
+  WAGES_STARTER_RESERVE_MINOR_UNITS,
   rungFloorMinorUnits,
   type SpendClass,
   type TreasurySnapshot,

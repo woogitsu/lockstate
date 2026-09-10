@@ -64,6 +64,18 @@ function rosterOf(...roleIds: readonly string[]): GuardRoster {
   return roster;
 }
 
+/**
+ * A room-instance stand-in reporting a mature, furnished prison
+ * (`totalResidentCapacity` of `1`), so every test in this file exercises the
+ * ladder `PayrollSystem` used before ADR 0096 decision 2 existed — a bare
+ * `Treasury` never opens a facility (`floor` stays `0`), so the starter
+ * reserve added by that decision cannot fire here regardless: `Math.max(rung,
+ * 0)` is `0` for every rung, fresh or mature alike. Reported as mature anyway,
+ * because this file's subject is the mature ladder and a fresh fixture would
+ * say so falsely.
+ */
+const MATURE_ROOM_INSTANCES = { totalResidentCapacity: 1 };
+
 /** A kernel carrying only the payroll, so nothing else in the world can move the balance. */
 function payrollOnlyKernel(
   roster: GuardRoster,
@@ -73,7 +85,7 @@ function payrollOnlyKernel(
   // Returned rather than swallowed so a payday test can assert what the prison
   // *said*, not only what it now owes (issue #507).
   const events = new SimulationEventLog();
-  const payroll = new PayrollSystem(treasury, roster, events, ROLES.registry);
+  const payroll = new PayrollSystem(treasury, roster, events, MATURE_ROOM_INSTANCES, ROLES.registry);
   const kernel = new Kernel();
   kernel.registerSystem(payroll);
   return { kernel, treasury, payroll, events };
@@ -243,8 +255,29 @@ describe('the day the treasury cannot pay', () => {
       expect(treasury.balanceMinorUnits, `day ${String(day)}`).toBeGreaterThanOrEqual(0);
     }
     expect(treasury.balanceMinorUnits).toBe(0);
-    // 30 days at 1,400 is 42,000, less the 100 the treasury actually had.
-    expect(payroll.unpaidWagesMinorUnits).toBe(41_900);
+    /*
+     * **Bounded at `ARREARS_BOUND_MINOR_UNITS` since ADR 0096 decision 3(c)
+     * (accepted 2026-09-10).** 30 days at 1,400 is 42,000, less the 100 the
+     * treasury actually had, is 41,900 -- what this asserted before that
+     * decision, quoted rather than silently replaced: *"30 days at 1,400 is
+     * 42,000, less the 100 the treasury actually had."* The bound forgives
+     * everything past 2,500 rather than deferring it, so this file's own
+     * subject -- arrears climbing without limit while the prison is left
+     * alone -- now stops at the bound on day 2 (2,500 of a 1,400-a-day bill is
+     * under two days) and stays there for the other twenty-eight.
+     */
+    expect(payroll.unpaidWagesMinorUnits).toBe(2_500);
+  });
+
+  it('stops accruing at the bound and forgives what a day would have added past it (ADR 0096 decision 3(c))', () => {
+    // One chief at 700/day against a treasury with nothing in it: arrears
+    // climbs 700 a day, uncapped, until it would cross 2,500.
+    const { kernel, payroll } = payrollOnlyKernel(rosterOf(CHIEF), 0);
+    const expected = [700, 1_400, 2_100, 2_500, 2_500, 2_500];
+    for (let day = 1; day <= expected.length; day += 1) {
+      step(kernel, DAY_LENGTH_TICKS);
+      expect(payroll.unpaidWagesMinorUnits, `end of day ${String(day)}`).toBe(expected[day - 1]);
+    }
   });
 
   it('owes nothing while it can pay, so the arrears figure is a state and not a counter', () => {

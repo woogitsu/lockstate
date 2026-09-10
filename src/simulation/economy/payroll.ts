@@ -5,7 +5,7 @@ import type { EntityId } from '../entity/entity-store';
 import type { SimulationEventLog } from '../events';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
-import type { Treasury } from './treasury';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type Treasury } from './treasury';
 import { staffDailyWageMinorUnits } from './wages';
 
 /**
@@ -177,6 +177,52 @@ export interface PayrollStaffSource {
   getStaffRoleId(entityId: EntityId): string;
 }
 
+/**
+ * The one fact this system needs about residency, to compute
+ * `isFreshUnfurnishedPrison` for [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 2 — narrow against `RoomInstanceRegistry`, exactly as
+ * `PayrollStaffSource` is narrow against `GuardRoster`: this system needs to
+ * know whether anything anywhere has a standing sleep surface, and nothing
+ * about which room, which tile or which object.
+ */
+export interface PayrollResidencySource {
+  readonly totalResidentCapacity: number;
+}
+
+/**
+ * **[ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 3(c), accepted by the owner 2026-09-10: arrears stop accruing at a
+ * bound, and what cannot accrue is forgiven rather than deferred.**
+ *
+ * Measured in that ADR's own act B: 3,220 → 27,220 in six in-game days,
+ * climbing 4,800/day, unbounded for as long as a prison is left alone — the
+ * one accrual against a negative balance ADR 0075 decision 2's own accrual-cap
+ * rider did not reach (ADR 0083 decision 1 read that rider as being about the
+ * loan's fee alone, and `LoanBook.draw` applies its fee once; nothing bounded
+ * this figure). ADR 0096's own words on the magnitude: *"the candidate this
+ * document names is the overdraft floor's own, 2,500, on the single ground
+ * that it is already the size of 'what this prison may owe' in the one other
+ * place the repository states such a number."*
+ *
+ * **Derived from `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` rather than written
+ * out a second time**, for the reason every other rung in this corpus derives
+ * rather than duplicates: two constants holding the same value by coincidence
+ * is the shape that drifts apart the first time one of them moves. This is a
+ * fixed design constant, not a read of any particular `Treasury` instance's
+ * configured floor — a test `Treasury` built with no facility open (`floor`
+ * at its default of `0`) still bounds arrears at this figure, because the
+ * bound is a property of what a prison may owe, independent of whether this
+ * particular session opened the standing overdraft at all.
+ *
+ * **Prospective, exactly as decision 2's reserve is** — ADR 0096 §"What the
+ * owner must approve" item 6 asks whether a *restore* should write down
+ * arrears already above this bound, answers itself that the save format is
+ * outside any agent's mandate, and that question is **not** answered by this
+ * change: `restore` below still admits any non-negative safe integer
+ * unchanged. Only forward accrual, inside `update`, is capped.
+ */
+export const ARREARS_BOUND_MINOR_UNITS = -TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+
 export interface PayrollSnapshot {
   /** Wages billed and not paid, in the treasury's minor units. `0` for a prison that has always paid. */
   readonly unpaidWagesMinorUnits: number;
@@ -241,11 +287,21 @@ export class PayrollSystem implements SystemRegistration {
    * required parameter after an optional one, and this one is required on
    * purpose: a `PayrollSystem` with no sink would go on billing silently,
    * which is the defect issue #507 exists to close.
+   *
+   * **`roomInstances` is a new, required dependency, added for
+   * [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+   * decision 2 (accepted 2026-09-10).** Required rather than defaulted, the
+   * same argument `SpendClass` itself makes on `Treasury`: a `PayrollSystem`
+   * that silently read "mature" for a fresh, unfurnished prison would spend
+   * exactly the reserve this change exists to protect, at every call site that
+   * forgot to say otherwise. `InsolvencyRungSystem` takes the same dependency
+   * for the same reason — see its own class comment, "The starter rung".
    */
   public constructor(
     private readonly treasury: Treasury,
     private readonly staff: PayrollStaffSource,
     private readonly events: SimulationEventLog,
+    private readonly roomInstances: PayrollResidencySource,
     private readonly staffRoles: ContentRegistry<StaffRoleDefinition> = defaultStaffRoleRegistry,
   ) {}
 
@@ -260,6 +316,10 @@ export class PayrollSystem implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
+    // Captured before this update overwrites `this.unpaid`, and load-bearing
+    // for ADR 0096 decision 3(c) below: the bound it names caps how much
+    // *this day* may add, never a figure the day inherited.
+    const unpaidBeforeToday = this.unpaid;
     const accrued = this.unpaid + this.dailyWageBillMinorUnits();
     /*
      * Saturating rather than throwing, and it is a guard against a *file*
@@ -310,14 +370,54 @@ export class PayrollSystem implements SystemRegistration {
      * `Math.max(0, …)` because the balance can already be below the wage rung's
      * floor when this runs — a restored save, or income withheld after a
      * construction pass — and a negative `payable` is not a refund.
+     *
+     * **`isFreshUnfurnishedPrison`, read live, added for ADR 0096 decision 2.**
+     * The same idiom `createSessionCommandHandler`'s `'deliveries'` press and
+     * `InsolvencyRungSystem` already use: a moment-of-read fact off
+     * `RoomInstanceRegistry.totalResidentCapacity`, never cached, so the
+     * instant a build order completes a sleep surface this system judges the
+     * very next payday at the mature rung — no separate "graduation" step,
+     * nothing to remember and nothing to forget.
      */
-    const payable = Math.max(0, Math.min(due, this.treasury.balanceMinorUnits - this.treasury.floorFor('wages')));
+    const isFreshUnfurnishedPrison = this.roomInstances.totalResidentCapacity === 0;
+    const payable = Math.max(
+      0,
+      Math.min(due, this.treasury.balanceMinorUnits - this.treasury.floorFor('wages', isFreshUnfurnishedPrison)),
+    );
     // `spend` cannot refuse `payable` -- it is a non-negative integer bounded
     // by the room the wage rung leaves -- but the outcome is read rather than
     // discarded, so that a refusal leaves the whole bill owed instead of
     // silently vanishing.
-    const paid = payable > 0 && this.treasury.spend(payable, 'wages') ? payable : 0;
-    this.unpaid = due - paid;
+    const paid = payable > 0 && this.treasury.spend(payable, 'wages', isFreshUnfurnishedPrison) ? payable : 0;
+    /*
+     * **ADR 0096 decision 3(c): arrears stop accruing at
+     * `ARREARS_BOUND_MINOR_UNITS`, and what cannot accrue is forgiven rather
+     * than deferred.** `due - paid` is what today's bill leaves owed before
+     * the bound; a day that would have pushed arrears from, say, 2,480 to
+     * 3,200 leaves it at exactly 2,500, with the 700 above the bound never
+     * remembered anywhere, not on this system and not on the event this fires
+     * below.
+     *
+     * **`Math.max(ARREARS_BOUND_MINOR_UNITS, unpaidBeforeToday)`, not the bound
+     * alone — this is the whole of what keeps decision 3(c) prospective, and
+     * the distinction the ADR itself draws: "a bound on arrears applies to
+     * accrual rather than to a figure already accrued."** For an ordinary
+     * prison that has never crossed the bound, `unpaidBeforeToday <=
+     * ARREARS_BOUND_MINOR_UNITS`, so the ceiling **is** the bound and this is
+     * `Math.min(due - paid, ARREARS_BOUND_MINOR_UNITS)` to the minor unit. For
+     * a prison already above it — restored from a save written before this
+     * change, or from one a player edited by hand (#102) — the ceiling is
+     * `unpaidBeforeToday` itself: today adds nothing further (the figure does
+     * not grow), and it is not reduced either, because `due - paid` can only
+     * fall below `unpaidBeforeToday` through an actual payment (`paid > 0`).
+     * A `Math.min(due - paid, ARREARS_BOUND_MINOR_UNITS)` alone would have
+     * written such a figure down to 2,500 on this system's very next tick
+     * after every restore — exactly the repair ADR 0096's own "What the owner
+     * must approve" item 6 names and leaves unanswered, and exactly the
+     * save-format question `AGENTS.md` reservation 2 keeps the owner's.
+     */
+    const arrearsCeilingMinorUnits = Math.max(ARREARS_BOUND_MINOR_UNITS, unpaidBeforeToday);
+    this.unpaid = Math.min(due - paid, arrearsCeilingMinorUnits);
     /*
      * The event is the *payday*, not the condition. ADR 0049 decided
      * insolvency is a state rather than a loss condition, and a state belongs
