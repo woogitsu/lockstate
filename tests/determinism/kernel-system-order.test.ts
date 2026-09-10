@@ -404,6 +404,24 @@ describe('kernel system ordering', () => {
    * and it is simply not yet reachable, which is a different thing from being
    * satisfied -- and it is the reason this comment says so rather than the
    * edit passing silently.
+   *
+   * **The ninth is `rooms.needs-cleared-notice` (order 140), issue #1006
+   * finding 3's confirmation that a repaired room stopped being short of
+   * anything the Rooms panel checks for.** Inserted into the same gap
+   * `economy.insolvency-rungs` was, between it (135) and `navigation` (150),
+   * so no existing system moves -- and after 135 rather than before it for
+   * the reason argued at the class itself: it reads room, door and
+   * placed-object state that a command handler or `construction` (100) has
+   * already settled for the tick, and nothing between 135 and `navigation`
+   * writes any of the three. Scheduled once a day
+   * (`intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1`),
+   * `PayrollSystem`'s own cadence and for the same reason -- every
+   * determinism scenario in this directory runs 400 ticks, under one sixth
+   * of `DAY_LENGTH_TICKS` (2,400), so this system is registered, pinned here,
+   * and never fires in any of them, exactly as `economy.state-income` and
+   * `economy.payroll` above do not.
+   * `tests/unit/room-needs-cleared-notice.test.ts` is where a crossing is
+   * watched actually firing.
    */
   it('pins the declared execution order of a real session', () => {
     expect(buildDeterminismScenario().kernel.systemExecutionOrder).toEqual([
@@ -417,6 +435,7 @@ describe('kernel system ordering', () => {
       { id: 'economy.state-income', order: 120 },
       { id: 'economy.payroll', order: 130 },
       { id: 'economy.insolvency-rungs', order: 135 },
+      { id: 'rooms.needs-cleared-notice', order: 140 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.locomotion', order: 200 },
       /*
