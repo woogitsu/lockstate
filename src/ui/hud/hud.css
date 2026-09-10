@@ -491,6 +491,30 @@
    * it, which is the defect this file exists to fix).
    */
   cursor: pointer;
+  /*
+   * `hud.ts` builds this as a real `<button>`, not a `div`, since issue #903
+   * (a keyboard player could not reach a `div` at all). Every declaration
+   * above this point was already an explicit override of the UA button
+   * stylesheet -- `background`, `border`, `padding`, `box-sizing`,
+   * `text-align`, `width`/`max-width` all name their own value rather than
+   * inheriting one -- so becoming a `<button>` changed nothing about how this
+   * box paints except the three resets below, which is why the diff that
+   * added them is this short:
+   */
+  appearance: none;
+  font: inherit;
+  color: inherit;
+}
+
+/*
+ * The one visual change a real `<button>` needed: its own focus ring, on the
+ * same terms `.hud-build__category:focus-visible` already states for a select
+ * standing in for a HUD control -- keyboard only (`:focus-visible`, not
+ * `:focus`), so a pointer press or a touch tap never leaves a ring behind.
+ */
+.hud-minimap__surface:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* The placeholder says so in words. An empty dark square is indistinguishable

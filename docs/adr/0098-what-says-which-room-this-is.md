@@ -366,9 +366,10 @@ finding openable:
 3. **The minimap draws nothing.** `src/ui/hud/hud.ts:1614` states that minimap
    *rendering*
    belongs to the renderer and does not exist yet, and the two strings it ships
-   say so to the player:
-   `'hud.minimap.placeholder': 'Minimap is not available yet',`
-   `'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera there',`
+   say so to the player (reworded by issue #903 to fix a contradiction between
+   them; the finding here — that the minimap draws no map — is unchanged):
+   `'hud.minimap.placeholder': 'No map is drawn here yet — pressing may move the camera',`
+   `'hud.minimap.navigable': 'No map is drawn here yet — press to jump the camera there',`
    (both verbatim in `src/content/default-locale-en.ts`).
 
 4. **The Rooms panel names an instance in exactly two conditional blocks, and a
