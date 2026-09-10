@@ -407,6 +407,63 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that a designated room came off the zoning plane
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+   *
+   * **One call per removed instance**, like `recordResidentRelocated` above
+   * and unlike `recordRoomZoned`: `RoomZoningService.unzone` can clear several
+   * instances in one accepted press (a drag covering more than one room), and
+   * `UnzoneRoomAccepted.removedRoomNameKeys` already names each of them, in
+   * the same order as `removedInstanceIds`. The caller is
+   * `createSessionCommandHandler`'s `UnzoneRoom` branch, once per entry in
+   * that array, on the arm where `unzone` answered `'unzoned'`.
+   *
+   * **Unguarded, for `recordRoomZoned`'s own reason**: there is no figure to
+   * guard and the caller -- one call per name already resolved by `unzone` --
+   * is what bounds it. A refused press takes the other arm, which records a
+   * `RefusalLog` reason and calls nothing here.
+   *
+   * @param roomNameKey One entry of `UnzoneRoomAccepted.removedRoomNameKeys`
+   * -- the removed instance's own room catalog `nameKey`, resolved by `unzone`
+   * from the definition it looked up to find the instance, before that
+   * instance was unregistered. Passed through rather than re-derived here,
+   * for `recordRoomZoned`'s reason: there is no registry left to derive it
+   * from once the instance is gone.
+   */
+  public recordRoomUnzoned(roomNameKey: string, tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'rooms.unzoned', roomNameKey });
+  }
+
+  /**
+   * Records that one room instance stopped being short of anything the
+   * Rooms panel's own `NOT READY` block checks for
+   * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 3).
+   *
+   * **One call per instance crossing the threshold on one scheduled read**,
+   * like `recordRoomUnzoned` above and for the analogous reason: a session
+   * can repair several rooms inside one in-game day, and each is a distinct
+   * fact rather than an aggregate. The caller is
+   * `RoomNeedsClearedNoticeSystem.update`, whose own class comment argues out
+   * what "short of something" means, why it fires once a day rather than
+   * every tick, and -- the part that had to be settled before this method
+   * was written -- why the sentence this produces must not claim a room is
+   * reachable.
+   *
+   * **Unguarded, for `recordRoomZoned`'s own reason**: there is no figure to
+   * guard, and the caller already decided the one thing this method would
+   * otherwise re-decide -- that the crossing is real and not a restore
+   * artefact -- via its own `seeded` flag.
+   *
+   * @param roomNameKey The instance's own room catalog `nameKey`, read off
+   * the same `RoomListRowViewModel` row the crossing was measured on, at the
+   * tick it was measured -- not cached from the room's own zoning moment,
+   * so a save migrated onto a renamed catalog id still reads correctly.
+   */
+  public recordRoomNeedsCleared(roomNameKey: string, tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'rooms.needs-cleared', roomNameKey });
+  }
+
+  /**
    * Records that a prisoner got out
    * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
    *

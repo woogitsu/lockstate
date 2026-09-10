@@ -1732,6 +1732,8 @@ export const SIMULATION_EVENT_TYPES = [
   'objects.removed-spend-destroyed',
   'prisoners.discharged',
   'prisoners.relocated',
+  'rooms.needs-cleared',
+  'rooms.unzoned',
   'rooms.zoned',
 ] as const;
 
@@ -1825,6 +1827,150 @@ const residentRelocatedEventSchema = z
       .strict()
       .optional(),
     /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
+  })
+  .strict();
+
+/**
+ * A room that was short something the Rooms panel checks for is no longer
+ * short it ([#1006](https://github.com/matmaxalez/lockstate/issues/1006)
+ * finding 3).
+ *
+ * ## What "short something" means, exactly, because that is the whole risk here
+ *
+ * `roomNeedsFromProjections` (`src/ui/simulation-room-needs.ts`) defines a
+ * room's `shortfallOf` as `requirementSummary.missingCapability + (access ===
+ * 'no-way-in' ? 1 : 0)` -- every unmet `object` requirement, each counted
+ * against its authored `minQuantity` by `RoomListRowViewModel.requirementSummary`,
+ * plus one more if `RoomListRowViewModel.access` reads `'no-way-in'`. This
+ * event fires the tick that sum is measured going from above zero to exactly
+ * zero for one instance, using that same arithmetic and nothing narrower or
+ * wider than it -- see `RoomNeedsClearedNoticeSystem`
+ * (`src/simulation/rooms/room-needs-cleared-notice.ts`), which is this
+ * event's only producer and states the identical predicate a second time
+ * because a tick system needs the plain values `access`/`requirementSummary`
+ * are drawn from and may not import a HUD module to get the reducer that
+ * already exists (`AGENTS.md` boundary 3: the HUD is the main thread's, not
+ * the worker's dependency).
+ *
+ * ## Why this is not the sentence issue #1006 warns against
+ *
+ * `access !== 'no-way-in'` is satisfied by `'doorway'` **and by `'gap'`**
+ * (`roomPerimeterAccess`, `src/simulation/rooms/enclosure.ts`) -- a doorway
+ * being found, not a doorway being reachable. #1006's own comment measured
+ * exactly this gap: a door built and then walled in from the outside still
+ * reads `'doorway'` here, because `roomPerimeterAccess` "returns `'doorway'`
+ * on the first door found in the perimeter and never asks whether anything
+ * can reach that door." So a sentence on this event that claimed the room
+ * could be **used** would be false of that exact case, which is why
+ * `hud.alert.event.rooms.needs-cleared` (`src/content/default-locale-en.ts`)
+ * says only that the panel's own checklist is clear and says so from the
+ * words of `hud.rooms.needs-doorway` itself ("a door -- nobody can get in"),
+ * rather than inventing a second vocabulary for the same caution. Changing
+ * what `roomPerimeterAccess` answers is the issue's own reserved decision
+ * ("Decyzja właściciela, na ADR ... Nie rozstrzygać tego w kodzie
+ * implementacji.") and nothing here touches it.
+ *
+ * ## Why a system rather than a hook at every place `missingCapability` or
+ * `access` could change
+ *
+ * Both facts can move for reasons that do not share one call site: an object
+ * finishing construction (`ObjectPlacementService.onOrderCompleted`), a
+ * removed object undoing that, and a completed door order writing
+ * `DOOR_EDGE_NUMERIC_ID` into an edge the room's own perimeter reads, which
+ * today calls into no room-facing consumer at all
+ * (`ConstructionSystem`'s door arm "registers nothing", `system.ts:346`).
+ * Hooking each of those individually would need a new call from the door
+ * arm for a fact it has never had to report and would still miss any future
+ * mutation route nobody remembered to wire. Recomputing the same two facts
+ * `projectRoomList` already computes, once per instance, is the one
+ * mechanism guaranteed to see every route, because it is the route the HUD
+ * itself remains correct through — no rendered readout depends on any
+ * particular write path either.
+ *
+ * ## Why once a day and not every tick
+ *
+ * Rooms number in the hundreds and `roomPerimeterAccess` walks
+ * `2 * (width + height)` edges per instance -- cheap for one HUD poll
+ * (`projectRoomList`'s own comment: "unlike the prisoner roster this is not
+ * an actor-tier concern"), less so multiplied by every tick of a session
+ * that can run for simulated years. `RoomNeedsClearedNoticeSystem` runs on
+ * `PayrollSystem`'s own cadence -- once per in-game day -- so a repaired room
+ * is confirmed within a day rather than never, which is what issue #1006
+ * measured (a repair going unconfirmed for the rest of the session), at a
+ * cost bounded the same way `PayrollSystem`'s own daily bill is. **This is a
+ * latency trade, stated rather than hidden**: a room repaired and broken
+ * again inside the same in-game day announces nothing, because there is
+ * nothing to compare against until the next scheduled read.
+ *
+ * ## No count and no coordinates, for `rooms.zoned`'s own two reasons
+ *
+ * The rectangle and the tile are not on this event for the reason they are
+ * not on `rooms.zoned`'s: a player who fixed a room already knows which one,
+ * and carrying them would give every repair its own row where the type alone
+ * lets a run of same-type repairs collapse into one counted row via
+ * `simulationEventIdentity`. No count either -- one instance crossing the
+ * threshold is one fact, and a session that fixes several rooms on the same
+ * day reports several of these, one per instance, exactly as
+ * `prisoners.relocated` reports one event per resident rather than
+ * aggregating a batch.
+ *
+ * ## Restore does not re-announce
+ *
+ * `RoomNeedsClearedNoticeSystem` keeps the same `seeded` idiom
+ * `InsolvencyRungSystem` does: its first `update()` call after construction
+ * (fresh session or restored one, `restoreSessionSystems` runs before the
+ * kernel ever steps) records the current state of every instance silently,
+ * so a session that reloads with every room already fine announces nothing
+ * -- correctly, because nothing new just happened. Only a transition
+ * observed between two of this system's own reads is a real crossing.
+ */
+const roomNeedsClearedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('rooms.needs-cleared'),
+    /** The room's own type, as the catalog's `nameKey` -- read the tick the crossing was found, not cached from when the room was zoned. */
+    roomNameKey: identifierSchema,
+  })
+  .strict();
+
+/**
+ * A designated room came off the zoning plane
+ * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+ *
+ * **The mirror of `rooms.zoned` on the command that undoes it, and the gap
+ * issue #1006 measured directly: a room zoned and then immediately removed
+ * left "{room} designated." standing in the alerts column with `rooms=0` on
+ * the strip and nothing saying the room had gone.** There is a lifecycle
+ * event for designation and none for removal, which reads as a stale record
+ * rather than as history.
+ *
+ * **One event per removed instance, not one per accepted press.**
+ * `RoomZoningService.unzone` can clear more than one instance in a single
+ * drag (issue #337: each covered zoned tile resolves to the room *instance*
+ * containing it, and a rectangle can cover several), so `createSessionCommandHandler`'s
+ * `UnzoneRoom` branch calls this once per entry of
+ * `UnzoneRoomAccepted.removedRoomNameKeys` -- the same grain
+ * `prisoners.relocated` uses for the same reason: a batch is several distinct
+ * facts, not one aggregate.
+ *
+ * `roomNameKey` is each removed instance's own type, resolved by `unzone`
+ * from the definition it looked up to find that instance -- read before the
+ * instance is unregistered, because nothing can be re-derived from a
+ * registry entry that is already gone. The wire carries the same field
+ * `rooms.zoned` does and for the same ADR 0011 reason: a message key, not
+ * text, so the main thread resolves it.
+ *
+ * **No rectangle and no tile, for `rooms.zoned`'s own reason.** The player
+ * just dragged the removal and already knows where; carrying the location
+ * would give every removal a distinct `simulationEventIdentity` where the
+ * type alone lets a run of same-type removals collapse into one counted row.
+ */
+const roomUnzonedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('rooms.unzoned'),
+    /** The removed instance's own type, as the room catalog's own `nameKey`. */
     roomNameKey: identifierSchema,
   })
   .strict();
@@ -2559,6 +2705,8 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   constructionRefusedEventSchema,
   dischargedEventSchema,
   residentRelocatedEventSchema,
+  roomNeedsClearedEventSchema,
+  roomUnzonedEventSchema,
   roomZonedEventSchema,
   riotOpenedEventSchema,
   gangRetaliationOpenedEventSchema,
