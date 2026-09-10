@@ -300,7 +300,7 @@ interface SubmittedCommand {
         readonly transactionId?: string;
         readonly itemId?: string;
         readonly quantity?: number;
-        /** The anchor tile a `PlaceObject` or `RemoveObject` names (ADR 0028). */
+        /** The anchor tile a `PlaceObject`, `RemoveObject` or `RemoveWall` names (ADR 0028, ADR 0106). */
         readonly x?: number;
         readonly y?: number;
       };
@@ -579,7 +579,7 @@ function unitPriceOf(itemId: string): number {
  */
 async function objectCommandsSent(
   page: Page,
-  type: 'PlaceObject' | 'RemoveObject',
+  type: 'PlaceObject' | 'RemoveObject' | 'RemoveWall',
 ): Promise<readonly { x: number; y: number }[]> {
   return page.evaluate(
     (commandType) =>
@@ -5132,10 +5132,11 @@ test.describe('the assembled application', () => {
    * page (`window.lockstateWorldSceneHarness` exists only on the isolated
    * world-scene harness), so this reads the world the same way the playtest
    * did: arm Remove once, as a read-only probe, and press the same fixed
-   * screen point before and after the arrow keys. `RemoveObject`'s own report
-   * names the world tile under wherever the press landed -- if the camera
-   * moved between the two presses, the same screen point names a different
-   * tile, and if it did not, the same tile comes back twice.
+   * screen point before and after the arrow keys. `RemoveWall`'s own report
+   * (`RemoveObject` before ADR 0106 taught the world press to always resolve
+   * an edge) names the world tile under wherever the press landed -- if the
+   * camera moved between the two presses, the same screen point names a
+   * different tile, and if it did not, the same tile comes back twice.
    */
   test('the Build catalogue arrow keys move the catalogue, not the world camera', async ({ page }) => {
     await installCommandTee(page);
@@ -5147,7 +5148,7 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-build')).toBeVisible();
 
     // Armed once and left alone -- a toggle re-pressed mid-test would un-arm
-    // it, and a probe that fires no `RemoveObject` at all reads as "nothing
+    // it, and a probe that fires no `RemoveWall` at all reads as "nothing
     // moved" rather than as a defect, which is the test bug the 2026-09-01
     // playtest's own script recorded catching in itself.
     await page.locator('.hud-build__remove').click();
@@ -5174,15 +5175,15 @@ test.describe('the assembled application', () => {
     if (aim === null) return;
 
     const probeAt = async (): Promise<{ x: number; y: number } | undefined> => {
-      const already = (await objectCommandsSent(page, 'RemoveObject')).length;
+      const already = (await objectCommandsSent(page, 'RemoveWall')).length;
       await page.mouse.move(aim.x, aim.y);
       await page.mouse.down({ button: 'left' });
       await page.mouse.up({ button: 'left' });
-      return (await objectCommandsSent(page, 'RemoveObject')).slice(already)[0];
+      return (await objectCommandsSent(page, 'RemoveWall')).slice(already)[0];
     };
 
     const before = await probeAt();
-    expect(before, 'the first probe produced no RemoveObject to read a tile from').not.toBeUndefined();
+    expect(before, 'the first probe produced no RemoveWall to read a tile from').not.toBeUndefined();
 
     // Re-focus a catalogue row: arming Remove above, and the world press just
     // taken, both move DOM focus off the catalogue.
@@ -8483,7 +8484,7 @@ test.describe('the assembled application', () => {
 
     // Nothing has been sent yet, so the press below is the only thing that can
     // have produced what is asserted after it.
-    expect(await objectCommandsSent(page, 'RemoveObject')).toEqual([]);
+    expect(await objectCommandsSent(page, 'RemoveWall')).toEqual([]);
 
     await remove.click();
     await expect(remove).toHaveAttribute('aria-pressed', 'true');
@@ -8491,7 +8492,10 @@ test.describe('the assembled application', () => {
     expect(pressed, 'the HUD left no bare world to press at 375x812').toBe(true);
 
     // **One press, one removal command, and no keyboard anywhere in this test.**
-    const removals = await objectCommandsSent(page, 'RemoveObject');
+    // `RemoveWall`, not `RemoveObject`, since ADR 0106: a world press with
+    // Remove armed always resolves an edge and reaches the object arm from
+    // inside that command's own session-command branch.
+    const removals = await objectCommandsSent(page, 'RemoveWall');
     expect(removals).toHaveLength(1);
     expect(Number.isInteger(removals[0]?.x)).toBe(true);
     expect(Number.isInteger(removals[0]?.y)).toBe(true);
@@ -8522,7 +8526,7 @@ test.describe('the assembled application', () => {
     await expect(remove).toHaveAttribute('aria-pressed', 'false');
     await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
     expect(await pressOnWorld(page)).toBe(true);
-    expect(await objectCommandsSent(page, 'RemoveObject')).toHaveLength(1);
+    expect(await objectCommandsSent(page, 'RemoveWall')).toHaveLength(1);
     // And nothing was placed either, which is the half the old shape could not
     // assert: it had just disarmed a tool that #689 left armed to place.
     expect(await objectCommandsSent(page, 'PlaceObject')).toEqual([]);
@@ -8593,7 +8597,7 @@ test.describe('the assembled application', () => {
       })
       .toBe('simulation');
     await expect(band).toBeVisible();
-    await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    await expect(band).toContainText(localeText('hud.alert.refusal.remove-wall.nothing-to-remove'));
     // No control is marked: the press was on the world, and the command was
     // accepted before the simulation refused it several ticks later.
     await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
@@ -8625,9 +8629,9 @@ test.describe('the assembled application', () => {
     // of that catalogue rather than typed here: ADR 0011 puts the key on one
     // side of the boundary and the text on the other, so a test that hard-coded
     // the English would stay green while the player read something else.
-    await expect(alertRow).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    await expect(alertRow).toContainText(localeText('hud.alert.refusal.remove-wall.nothing-to-remove'));
     // A localized sentence, not the wire vocabulary (ADR 0011).
-    await expect(alertRow).not.toContainText('remove-object.');
+    await expect(alertRow).not.toContainText('remove-wall.');
     await expect(alertRow).not.toContainText('nothing-to-remove');
     // The log keeps its job. The band holds one sentence; the list holds this
     // row beside any standing `protocol/error` row, which is why it is not
@@ -8752,8 +8756,8 @@ test.describe('the assembled application', () => {
     expect(measured.alertRowPresent).toBe(true);
     expect(measured.alertRowLaidOut, 'the corner is display:none at 375px, so the row has no box').toBe(false);
 
-    await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
-    await expect(band).not.toContainText('remove-object.');
+    await expect(band).toContainText(localeText('hud.alert.refusal.remove-wall.nothing-to-remove'));
+    await expect(band).not.toContainText('remove-wall.');
     await expect(band).not.toContainText('nothing-to-remove');
   });
 

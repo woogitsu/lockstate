@@ -37,8 +37,9 @@ import { installTee, openApp, press, sentCommands, tab } from './playtest-harnes
  * ## How the zoom is read, given the HUD exposes no readout
  *
  * By how much world a fixed span of screen covers. Two presses on the world
- * with the removal tool armed name the tile under each point (`RemoveObject`
- * is submitted for whatever tile the gesture names, with nothing checked
+ * with the removal tool armed name the tile under each point (`RemoveWall`,
+ * not `RemoveObject`, since ADR 0106 -- a world press always resolves an edge
+ * and is submitted for whatever tile the gesture names, with nothing checked
  * first -- `src/main.ts`'s own comment), and the number of tiles between them
  * is `span / (TILE_SIZE_PX * zoom)`. Zooming **in** makes that number smaller;
  * zooming **out** makes it larger. It needs no camera handle, no readout and
@@ -100,9 +101,9 @@ async function assertHits(page: Page, point: { readonly x: number; readonly y: n
 async function tileUnder(page: Page, point: { readonly x: number; readonly y: number }): Promise<number> {
   await assertHits(page, point, '#game-root canvas', 'the world');
   const commands = await press(page, point.x, point.y);
-  const removal = commands.find((command) => command['type'] === 'RemoveObject');
+  const removal = commands.find((command) => command['type'] === 'RemoveWall');
   if (removal === undefined) {
-    throw new Error(`no RemoveObject from a press at ${String(point.x)},${String(point.y)}: ${JSON.stringify(commands)}`);
+    throw new Error(`no RemoveWall from a press at ${String(point.x)},${String(point.y)}: ${JSON.stringify(commands)}`);
   }
   return removal['x'] as number;
 }

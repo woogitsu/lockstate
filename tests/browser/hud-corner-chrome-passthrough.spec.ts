@@ -67,7 +67,8 @@ import { installTee, openApp, press, tab } from './playtest-harness';
  * 1. **Blank chrome passes a press through to the world.** `.hud-minimap`'s
  *    title and `.hud-zoom`'s own background (not a button) both resolve to
  *    `CANVAS` at `elementFromPoint`, and a real press there submits a
- *    `RemoveObject` for whatever tile is under it.
+ *    `RemoveWall` for whatever tile is under it (`RemoveObject` before
+ *    ADR 0106, which taught the world press to always resolve an edge).
  * 2. **The mirror-image defect does not exist.** Narrowing an opt-in can
  *    overshoot and take the pointer away from a real control, which the
  *    issue itself names as the risk worth pricing. So this file also presses
@@ -111,12 +112,13 @@ test.describe("#1054: `.hud__corner`'s blank chrome is transparent to the pointe
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
     await tab(page, 'build').click();
-    // The removal tool, not a placement buildable: `RemoveObject` is
-    // submitted for whatever tile a press names with nothing checked first,
-    // where the wall tool's own edge-snap tolerance can legitimately produce
-    // nothing at a pixel that still, correctly, reached the canvas -- so this
-    // is the instrument that isolates whether the press reached the canvas at
-    // all, not whether it also satisfied a second tool's own geometry.
+    // The removal tool, not a placement buildable: `RemoveWall` is submitted
+    // for whatever tile a press names with nothing checked first (ADR 0106 --
+    // a world press always resolves an edge, where the wall tool's own
+    // edge-snap tolerance can legitimately produce nothing at a pixel that
+    // still, correctly, reached the canvas -- so this is the instrument that
+    // isolates whether the press reached the canvas at all, not whether it
+    // also satisfied a second tool's own geometry.
     await page.locator('.hud-build__remove').click();
 
     const title = await centreOfSelector(page, '.hud-minimap .ui-panel__title');
@@ -124,7 +126,7 @@ test.describe("#1054: `.hud__corner`'s blank chrome is transparent to the pointe
     expect(titleHit.tag, `a press at the minimap title landed on ${JSON.stringify(titleHit)}, not the canvas`).toBe('CANVAS');
     const fromTitle = await press(page, title.x, title.y);
     expect(
-      fromTitle.some((command) => command['type'] === 'RemoveObject'),
+      fromTitle.some((command) => command['type'] === 'RemoveWall'),
       `a press on the minimap's own title produced ${JSON.stringify(fromTitle)} -- the panel's name swallowed a press meant for the world`,
     ).toBe(true);
 
@@ -137,7 +139,7 @@ test.describe("#1054: `.hud__corner`'s blank chrome is transparent to the pointe
     expect(legendHit.tag, `a press at the zoom legend landed on ${JSON.stringify(legendHit)}, not the canvas`).toBe('CANVAS');
     const fromLegend = await press(page, legend.x, legend.y);
     expect(
-      fromLegend.some((command) => command['type'] === 'RemoveObject'),
+      fromLegend.some((command) => command['type'] === 'RemoveWall'),
       `a press on the zoom island's own legend produced ${JSON.stringify(fromLegend)} -- the island's chrome swallowed a press meant for the world`,
     ).toBe(true);
   });

@@ -341,10 +341,11 @@ export function placements(
  * ### The three things it deliberately does not do
  *
  * - **It does not complain about a gesture that produced no placement.** A
- *   press is also how `calibrate` bisects (`RemoveObject`), how a room is
- *   drawn (`DesignateRoom`) and how a playtest checks that a press on the HUD
- *   reaches nothing at all. Silence there is a legitimate result; a *wrong*
- *   object never is.
+ *   press is also how `calibrate` bisects (`RemoveWall`, since ADR 0106; it
+ *   was `RemoveObject` before the world press learned to resolve an edge),
+ *   how a room is drawn (`DesignateRoom`) and how a playtest checks that a
+ *   press on the HUD reaches nothing at all. Silence there is a legitimate
+ *   result; a *wrong* object never is.
  * - **It does not complain when it does not know what was asked** -- before any
  *   catalogue row has been clicked, or after `.hud-build__remove` was pressed.
  *   See `BuildIntentRecord`.
@@ -418,7 +419,7 @@ export async function drag(
  * at every viewport: the HUD's right-hand rail opts back into pointer events
  * (`hud.css`, "Every interactive island opts back in") and reaches x=700 on a
  * narrower page, at which point every press below lands on a panel, no
- * `RemoveObject` is produced and this throws. A caller measuring more than one
+ * `RemoveWall` is produced and this throws. A caller measuring more than one
  * viewport therefore finds a free square first and passes it in -- see
  * `tests/browser/world-scene-drag-under-the-hud.spec.ts`, which is where the
  * parameter came from (issue #878).
@@ -444,8 +445,8 @@ export async function calibrate(
   const probeY = probe.y;
   const at = async (x: number, y: number): Promise<{ x: number; y: number }> => {
     const commands = await press(page, x, y);
-    const removal = commands.find((c) => c['type'] === 'RemoveObject');
-    if (removal === undefined) throw new Error(`no RemoveObject from a press at ${x},${y}: ${JSON.stringify(commands)}`);
+    const removal = commands.find((c) => c['type'] === 'RemoveWall');
+    if (removal === undefined) throw new Error(`no RemoveWall from a press at ${x},${y}: ${JSON.stringify(commands)}`);
     return { x: removal['x'] as number, y: removal['y'] as number };
   };
 
