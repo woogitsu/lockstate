@@ -265,3 +265,111 @@ test.describe('the minimap navigates the camera (#793)', () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * **The keyboard half of #903: the surface used to be a `div` with no `role`
+ * and not in the tab order, so `cursor: pointer` (`hud.css`) was an
+ * affordance only a mouse could see and only a mouse could fire.**
+ *
+ * `Enter`/`Space` on a *focused* element is the one thing this suite cannot
+ * fake below the app: a unit test could call the surface's `keydown` handler
+ * directly and prove nothing about whether the element is actually reachable
+ * by `Tab` or actually carries a role a screen reader would announce -- both
+ * of which need a real DOM and a real focus model. So, as the file header
+ * above says of the click-side claims, this stays here.
+ */
+test.describe('the surface is reachable and operable from the keyboard (#903)', () => {
+  test('carries an explicit role and sits in the tab order', async ({ page }) => {
+    await startFreshPrison(page);
+    const surface = page.locator('.hud-minimap__surface');
+    await expect(surface, 'a plain div with no role tells a screen reader nothing is there to press').toHaveAttribute('role', 'button');
+    await expect(surface, 'tabindex="0" is what puts a div in the tab order at all -- without it Tab skips straight over it').toHaveAttribute(
+      'tabindex',
+      '0',
+    );
+  });
+
+  test('Enter on the focused surface reaches onMinimapNavigate and moves the camera -- not merely focuses it', async ({ page }) => {
+    await startFreshPrison(page);
+    const surface = page.locator('.hud-minimap__surface');
+
+    // A real click first, away from (0.5, 0.5) -- where a keyboard press
+    // lands (`hud.ts`'s own comment on the surface says why the centre) --
+    // so the camera is somewhere identifiable *other than* where Enter is
+    // about to send it. Without this, a camera that already sat at dead
+    // centre from `frameCameraOnFirstWorld`'s own first-paint framing would
+    // leave `beforeEnter` and `afterEnter` identical even if Enter worked,
+    // and the assertion below would be proving nothing.
+    await clickMinimap(page, pointAt(await minimapSurfaceRect(page), 0.05, 0.95));
+    const beforeEnter = await probeCameraTile(page);
+
+    await surface.focus();
+    await expect(surface, 'the surface never received keyboard focus').toBeFocused();
+    // Taken after `probeCameraTile`'s own arm/press/disarm above (which submits
+    // a `RemoveObject` of its own) and before the one below, so the slice
+    // below covers exactly the keyboard press and nothing either probe added.
+    const submittedBefore = (await sentCommands(page)).length;
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(50);
+    expect(
+      (await sentCommands(page)).slice(submittedBefore),
+      'a keyboard activation reached the simulation -- moving the camera is presentational only (AGENTS.md boundary 1), so this gesture must build no command at all',
+    ).toEqual([]);
+
+    const afterEnter = await probeCameraTile(page);
+    expect(
+      afterEnter,
+      'Enter on the focused surface did not move the camera -- the press never reached onMinimapNavigate',
+    ).not.toEqual(beforeEnter);
+  });
+
+  test('Space on the focused surface reaches onMinimapNavigate the same way Enter does', async ({ page }) => {
+    await startFreshPrison(page);
+    const surface = page.locator('.hud-minimap__surface');
+
+    await clickMinimap(page, pointAt(await minimapSurfaceRect(page), 0.95, 0.05));
+    const beforeSpace = await probeCameraTile(page);
+
+    await surface.focus();
+    await expect(surface, 'the surface never received keyboard focus').toBeFocused();
+    // Taken after `probeCameraTile`'s own arm/press/disarm above (which submits
+    // a `RemoveObject` of its own) and before the one below, so the slice
+    // below covers exactly the keyboard press and nothing either probe added.
+    const submittedBefore = (await sentCommands(page)).length;
+    await page.keyboard.press(' ');
+    await page.waitForTimeout(50);
+    expect(
+      (await sentCommands(page)).slice(submittedBefore),
+      'a keyboard activation reached the simulation -- moving the camera is presentational only (AGENTS.md boundary 1), so this gesture must build no command at all',
+    ).toEqual([]);
+
+    const afterSpace = await probeCameraTile(page);
+    expect(
+      afterSpace,
+      'Space on the focused surface did not move the camera -- the press never reached onMinimapNavigate',
+    ).not.toEqual(beforeSpace);
+  });
+
+  test('a keyboard press that finds no loaded world is refused exactly as a click is, and leaves the arrival sentence standing', async ({ page }) => {
+    await installTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    // Deliberately no "New prison" -- the one state `navigateToMinimapPoint`
+    // cannot map any point from, keyboard or pointer alike (issue #793's own
+    // finding).
+
+    const surface = page.locator('.hud-minimap__surface');
+    await surface.focus();
+    await expect(surface, 'the surface never received keyboard focus').toBeFocused();
+    await page.keyboard.press('Enter');
+
+    const commands = await sentCommands(page);
+    expect(commands, 'a keyboard press with no world loaded reached the simulation -- it must not, this gesture is presentational only (AGENTS.md boundary 1)').toEqual(
+      [],
+    );
+
+    const textAfter = await page.locator('.hud-minimap__placeholder').textContent();
+    expect(textAfter, 'a keyboard press that found no world must not silently claim it worked').toBe(MINIMAP_PLACEHOLDER_TEXT);
+    expect(textAfter, 'a keyboard press that found no world must not silently claim it worked').not.toBe(MINIMAP_NAVIGABLE_TEXT);
+  });
+});

@@ -493,6 +493,23 @@
   cursor: pointer;
 }
 
+/*
+ * Keyboard-only focus ring (issue #903): the surface is a `div` with an
+ * explicit `role="button"` and `tabindex="0"` (`hud.ts`'s own comment on it
+ * says why it is not a real `<button>`), and giving it a ring is the other
+ * half of making it a real control rather than only reachable. `:focus-visible`
+ * rather than `:focus` so a pointer press -- which already shows the state
+ * change in the surface's own text -- never gets a ring, matching every other
+ * pressable control's shared treatment (`primitives.css`'s
+ * `:focus-visible` list); this one is declared here rather than added to that
+ * list because the surface's own visuals, unlike that list's members, live
+ * entirely in this file.
+ */
+.hud-minimap__surface:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* The placeholder says so in words. An empty dark square is indistinguishable
    from a rendering failure, and a label that only exists for a screen reader
    leaves a sighted player guessing. */

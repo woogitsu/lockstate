@@ -298,16 +298,28 @@ export const HUD_MESSAGE_KEY = {
   minimapTitle: 'hud.minimap.title',
   minimapPlaceholder: 'hud.minimap.placeholder',
   /**
-   * Replaces `minimapPlaceholder` the first time a click on the surface
-   * actually moves the camera (issue #793): the surface still draws no map
-   * (`hud.ts`'s own comment on it is unchanged and still true -- rendering
-   * belongs to the renderer and does not exist yet), so "not available yet"
-   * stops being the honest sentence the moment the surface has visibly *done*
-   * something, and this is what replaces it. Never reverts: once a session
-   * has a world the surface can navigate within, later clicks always find
-   * one too (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365`
-   * -- and a stopped session keeps its last one -- `simulation-snapshot-feed.ts`
+   * Replaces `minimapPlaceholder` the first time a press on the surface --
+   * a click, or `Enter`/`Space` now that the surface is keyboard-reachable
+   * (issue #903) -- actually moves the camera (issue #793): the surface
+   * still draws no map (`hud.ts`'s own comment on it is unchanged and still
+   * true -- rendering belongs to the renderer and does not exist yet), so
+   * the arrival sentence's hedge -- *"once a prison is loaded"*, since that
+   * is the one thing unproven before the first press succeeds -- stops being
+   * needed the moment the surface has visibly *done* something, and this is
+   * what replaces it. Never reverts: once a session has a world the surface
+   * can navigate within, later presses always find one too
+   * (`WorldRenderView.loadedBounds` only grows -- `system.ts:340-365` -- and
+   * a stopped session keeps its last one -- `simulation-snapshot-feed.ts`
    * preserves `frame.world` across `simulation/stopped`).
+   *
+   * **Before #903, `minimapPlaceholder` read *"Minimap is not available
+   * yet"*** -- a sentence this comment used to describe as what "stops being
+   * honest" once a press works. That was true of the old wording and is not
+   * true of the current one: `default-locale-en.ts`'s own comment on
+   * `hud.minimap.placeholder` records why the new arrival sentence is true
+   * in every reachable state, proven rather than merely replaced, and does
+   * not itself become dishonest the moment this key takes over -- it is
+   * superseded, not corrected.
    */
   minimapNavigable: 'hud.minimap.navigable',
   alertsTitle: 'hud.alerts.title',

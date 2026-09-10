@@ -363,13 +363,15 @@ finding openable:
    tile in order to show anything.** There is no hover read, no tooltip, no
    click-to-inspect and no room selection.
 
-3. **The minimap draws nothing.** `src/ui/hud/hud.ts:1614` states that minimap
+3. **The minimap draws nothing.** `src/ui/hud/hud.ts:1660` states that minimap
    *rendering*
    belongs to the renderer and does not exist yet, and the two strings it ships
    say so to the player:
-   `'hud.minimap.placeholder': 'Minimap is not available yet',`
+   `'hud.minimap.placeholder': 'No map is drawn here yet — click to jump the camera there, once a prison is loaded',`
    `'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera there',`
-   (both verbatim in `src/content/default-locale-en.ts`).
+   (both verbatim in `src/content/default-locale-en.ts`). `hud.minimap.placeholder`'s
+   wording changed under issue #903, after this ADR was written, and still
+   says the same thing this finding relies on.
 
 4. **The Rooms panel names an instance in exactly two conditional blocks, and a
    healthy room is in neither.** `RoomListRowViewModel` carries `roomNameKey` and

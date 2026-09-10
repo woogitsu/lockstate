@@ -467,9 +467,9 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.zoom.out': 'Zoom out',
 
   'hud.minimap.title': 'Minimap',
-  'hud.minimap.placeholder': 'Minimap is not available yet',
+  'hud.minimap.placeholder': 'No map is drawn here yet — click to jump the camera there, once a prison is loaded',
   /*
-   * **THIS WORDING IS OWNER-PENDING. The mechanism behind it is not.**
+   * **THIS WORDING WAS OWNER-PENDING. The mechanism behind it never was.**
    *
    * `AGENTS.md`'s fourth exclusion keeps player-facing copy the owner's, and
    * `src/simulation/runtime/new-session.ts` refuses to author a sentence for
@@ -502,6 +502,48 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * See `src/ui/hud/messages.ts`'s `minimapNavigable` for when it replaces the
    * placeholder and why that never reverts, and
    * `WorldScene.navigateToMinimapPoint` for what the surface represents.
+   *
+   * **RELEASED BY THE OWNER ON 2026-09-04, AND THIS PAIR IS TWO OF THE FOUR
+   * SENTENCES `AGENTS.md` NAMES AS WAITING FOR IT** (`AGENTS.md`'s fourth
+   * exclusion, "Partly released by the owner on 2026-09-04"). The CHOICE OF
+   * WORDS in a player-facing string is authored here now; the requirement
+   * that the sentence be TRUE is not released and never was, and the rule
+   * that replaces "ask the owner" is *verify, then write*. So "OWNER-PENDING"
+   * above is history rather than this key's current state -- both this
+   * sentence, drafted before the release, and `hud.minimap.placeholder`
+   * below, rewritten under it for issue #903, are authored rather than
+   * provisional. The paragraph above is kept exactly as it stood rather than
+   * corrected, for the reason every entry like it in `AGENTS.md` gives: a
+   * reader needs to see what the wording used to be waiting on, not just that
+   * it no longer is.
+   *
+   * **`hud.minimap.placeholder` used to read *"Minimap is not available
+   * yet"* -- a categorical denial, and issue #903's finding.** The only way a
+   * player ever learned the surface was a real, working control was to press
+   * it, because the arrival sentence claimed no such control existed at all
+   * -- and a keyboard player who can now reach the surface (`hud.ts`'s own
+   * comment on its `role`/`tabindex`, added for the same issue) would have
+   * read nothing but that denial forever, since nothing in this file lets the
+   * arrival sentence report the result of a press that never happened.
+   *
+   * **It is not simply this sentence moved earlier, and that is verified
+   * rather than assumed.** `WorldScene.navigateToMinimapPoint`
+   * (`src/rendering/scene/world-scene.ts:1427-1428`) returns `false` --
+   * and `hud.ts`'s click handler leaves the placeholder standing when it
+   * does -- exactly when `lastLoadedBounds` is `undefined`, which is the
+   * state of the page before any prison exists (no worker, or a worker with
+   * no session yet). That state is reachable every time this game boots:
+   * `mountHud` mounts unconditionally, before "New prison" or a save is
+   * chosen (`src/main.ts:2136`). Copying this sentence's own
+   * *"click to jump the camera there"* onto the arrival sentence verbatim
+   * would therefore be false on exactly that screen. So the new arrival
+   * sentence keeps this sentence's claim and adds the one clause that makes
+   * it true there too -- *"once a prison is loaded"* -- checked against the
+   * same read `frameCameraOnFirstWorld` takes to frame a session's very
+   * first paint (`world-scene.ts:1373-1381`): the instant a prison exists,
+   * `lastLoadedBounds` is set from that same frame (`world-scene.ts:743`), so
+   * the clause's premise and the click's success become true on the same
+   * tick, and the new sentence is never ahead of the code it describes.
    */
   'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera there',
   'hud.alerts.title': 'Alerts',

@@ -835,11 +835,15 @@ export interface MountHudOptions {
    */
   readonly worldObjects?: HudWorldObjectSource;
   /**
-   * Where a click on `.hud-minimap__surface` asks the camera to go (issue
-   * #793): a point normalized to the surface's own box, `0,0` at its
-   * top-left corner and `1,1` at its bottom-right, exactly as the caller
-   * reads it off `getBoundingClientRect()`. The mapping from that point to a
-   * world position is not this module's to make -- it belongs with the
+   * Where a press on `.hud-minimap__surface` asks the camera to go (issue
+   * #793, keyboard reachability added for #903): a point normalized to the
+   * surface's own box, `0,0` at its top-left corner and `1,1` at its
+   * bottom-right, exactly as a `click`'s handler reads it off
+   * `getBoundingClientRect()` -- or, from `Enter`/`Space` on the same
+   * surface, `0.5, 0.5`, the one point a keyboard press can name without a
+   * pointer position to read (`hud.ts`'s own comment on the surface states
+   * why that is the centre and not a corner). The mapping from that point to
+   * a world position is not this module's to make -- it belongs with the
    * camera and the loaded-world bounds, both of which are the renderer's
    * (`AGENTS.md` boundary 1; this file may not import `src/rendering/**`,
    * `tests/unit/ui-hud-messages.test.ts`) -- so this is a plain callback
@@ -847,13 +851,13 @@ export interface MountHudOptions {
    * there is no shared mutable state for a port to carry, only one gesture
    * translated into one call.
    *
-   * Returns whether the camera actually moved. A click that lands while no
+   * Returns whether the camera actually moved. A press that lands while no
    * world has ever been loaded (before a session exists, or on a page whose
    * `Worker` never started) has nowhere to go, and `false` is how the HUD
    * finds that out and says so -- swapping `hud.minimap.placeholder` for
-   * `hud.minimap.navigable` only once a click has actually landed somewhere,
-   * rather than leaving the surface's one sentence claiming "not available"
-   * forever once it demonstrably is. This is deliberately not on the gated
+   * `hud.minimap.navigable` only once a press has actually landed somewhere,
+   * rather than leaving the surface stuck on its arrival sentence forever
+   * once a press demonstrably works. This is deliberately not on the gated
    * `dispatchCommand`/`dispatchShell` paths every other control here uses:
    * moving the camera never reaches the simulation, so there is nothing to
    * gate and nothing for a host to refuse.
@@ -1660,20 +1664,74 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
   // mapping -- see its own comment for what the surface represents and why).
   const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
+  /*
+   * `role="button"` and `tabindex="0"` (issue #903): before this, the element
+   * was a plain `div` -- not in the tab order and not exposed as a control to
+   * a screen reader -- so `cursor: pointer` (`hud.css`) was an affordance only
+   * a mouse could see, and the swap to `hud.minimap.navigable` below could
+   * only ever be *triggered* by a pointer too. `AGENTS.md` boundary 10
+   * requires touch/pointer *and* keyboard, and a `<button>` was not used in
+   * its place because the element's one purpose is a full-bleed press
+   * surface with its own background, border and aspect ratio (`hud.css`),
+   * exactly the shape `.ui-section__header` already solves by resetting a
+   * real `<button>`'s chrome away -- but here the visible text is the surface's
+   * only content and already carries its own font via `.ui-eyebrow`
+   * (`primitives.css`), so nothing about this surface's box needs resetting
+   * that a native button's UA styles would otherwise fight. A `div` with an
+   * explicit role is the ARIA "button" pattern for exactly this case, and it
+   * is why the two keys below exist: nothing here makes Enter/Space activate
+   * a `div` for free, unlike a real `<button>`.
+   *
+   * The accessible name comes from the element's own text content -- the
+   * same rule a native button's name follows -- so it reads the placeholder
+   * or navigable sentence, whichever is current, and needs no separate
+   * `aria-label` to drift out of sync with what is on screen.
+   */
   const minimapSurface = element('div', {
     className: 'hud-minimap__surface',
+    attributes: { role: 'button', tabindex: '0' },
     children: [minimapPlaceholder],
   });
-  minimapSurface.addEventListener('click', (event: MouseEvent) => {
-    const rect = minimapSurface.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return;
-    const point = { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
+  /**
+   * One press, from either input: a mouse/touch `click` at a real point on
+   * the surface, or `Enter`/`Space` at its centre (`onMinimapNavigate`'s own
+   * `fx`/`fy: 0` and `1` are the surface's corners, so `0.5, 0.5` is the one
+   * point a keyboard press -- which carries no pointer position -- can name
+   * without inventing a direction the player never chose). Both go through
+   * this one function so the "only ever moves toward navigable" rule below
+   * cannot drift between the two input paths.
+   */
+  const attemptNavigate = (point: { readonly fx: number; readonly fy: number }): void => {
     const navigated = options.onMinimapNavigate?.(point) ?? false;
-    // Only ever moves *toward* "navigable" -- a click that fails today still
+    // Only ever moves *toward* "navigable" -- a press that fails today still
     // leaves the accurate `minimapPlaceholder` sentence standing, and a
     // session's loaded world never disappears once one exists (see the
     // message key's own comment), so this never has to move back.
     if (navigated) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
+  };
+  minimapSurface.addEventListener('click', (event: MouseEvent) => {
+    const rect = minimapSurface.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    attemptNavigate({ fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height });
+  });
+  /*
+   * `Enter` and `Space` are what activates a `role="button"` element, and
+   * they have to be written here because the surface is a `div` -- the same
+   * reason `regime-panel.ts`'s roster row states at its own `keydown`
+   * listener for `role="radio"`. `preventDefault` because `Space` on a
+   * focused element scrolls the page; `stopPropagation` because `WorldScene`
+   * binds its own camera keys on `window` in the bubble phase
+   * (`world-scene.ts`'s `keyDown`) -- Enter and Space name no camera action
+   * in `src/input/bindings.ts` today, so nothing currently double-fires, but
+   * a key actually consumed here should not also reach the world, exactly as
+   * the roster row's own comment argues.
+   */
+  minimapSurface.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    event.stopPropagation();
+    attemptNavigate({ fx: 0.5, fy: 0.5 });
   });
 
   const alertList = element('div', { className: 'hud-alerts__list' });
