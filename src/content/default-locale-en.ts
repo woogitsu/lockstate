@@ -467,43 +467,76 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.zoom.out': 'Zoom out',
 
   'hud.minimap.title': 'Minimap',
-  'hud.minimap.placeholder': 'Minimap is not available yet',
   /*
-   * **THIS WORDING IS OWNER-PENDING. The mechanism behind it is not.**
+   * **THIS WORDING WAS OWNER-PENDING FROM #782 UNTIL 2026-09-04, AND THAT
+   * MARKING IS KEPT RATHER THAN DELETED (`docs/AGENT_WORKFLOW.md` §4: mark
+   * both directions, do not overwrite).** The comment on `hud.minimap.navigable`
+   * below is the one that used to carry the owner-pending notice and the
+   * reasoning behind it; this key inherited the same status because the two
+   * sentences are two views of one surface. `AGENTS.md`'s fourth exclusion
+   * released the CHOICE OF WORDS on that date -- *"Sam decyduj zawsze"* /
+   * *"Wybierz sam"* -- and names issue #903 explicitly as one of the four
+   * sentences waiting when the release came. What the release did NOT touch is
+   * the requirement that follows it: **verify, then write**. The words below
+   * are chosen, not the owner's, and each is true of the code cited beside it,
+   * in `hud.minimap.navigable`'s comment.
    *
-   * `AGENTS.md`'s fourth exclusion keeps player-facing copy the owner's, and
-   * `src/simulation/runtime/new-session.ts` refuses to author a sentence for
-   * the standing overdraft on exactly that ground -- *"the copy that would
-   * explain it is the owner's under `AGENTS.md`'s fourth exclusion ... no
-   * sentence has been authored here"*. This one is drafted rather than
-   * refused, and the difference is which way the exclusion points:
-   *
-   * - Refusing to write a sentence for the overdraft leaves the player with
-   *   **no claim at all**, which is honest.
-   * - Refusing to write one here leaves `hud.minimap.placeholder` --
-   *   *"Minimap is not available yet"* -- standing on a surface that has
-   *   visibly just moved the camera. That is a false statement to the player,
-   *   which is the very defect the exclusion exists to prevent, so silence is
-   *   not the safe option.
-   *
-   * So the key ships with the mechanism and the *wording* is put to the owner
-   * separately, the way `hud.status.funds-treasury-floor-exhausted` above is:
-   * that sentence carries the same marking in three places -- its own comment
-   * here, `HUD_MESSAGE_KEY.fundsTreasuryFloorExhausted` in
-   * `src/ui/hud/messages.ts`, and `overdraftTone` in `src/ui/hud/projection.ts`
-   * (*"the clearest available draft, flagged owner-pending, not a
-   * placeholder"*) -- from #782 under the owner's #768 ruling. Drafted to be
-   * the clearest available sentence, not to be the owner's last word on it. What
-   * it has to convey is both halves of what the surface now is -- still no
-   * map drawn (rendering belongs to the renderer and does not exist yet,
-   * `hud.ts`'s own comment on the frame), and a click on it does something.
-   * Anything shorter drops one of the two.
-   *
-   * See `src/ui/hud/messages.ts`'s `minimapNavigable` for when it replaces the
-   * placeholder and why that never reverts, and
-   * `WorldScene.navigateToMinimapPoint` for what the surface represents.
+   * **THE DEFECT ISSUE #903 FOUND WAS NOT IN THIS KEY ON ITS OWN -- IT WAS
+   * THAT THIS SENTENCE AND `hud.minimap.navigable` CONTRADICTED EACH OTHER.**
+   * On arrival the surface used to read *"Minimap is not available yet"*, and
+   * the only way a player ever learned that was false was to do the one thing
+   * that sentence said could not be done -- and a keyboard player could not
+   * even do that, because the surface was not reachable by keyboard at all.
+   * Both halves are fixed together below: the sentence and the surface's own
+   * operability.
    */
-  'hud.minimap.navigable': 'No map is drawn here yet — click to jump the camera there',
+  'hud.minimap.placeholder': 'No map is drawn here yet — pressing may move the camera',
+  /*
+   * **Both minimap sentences, chosen under the 2026-09-04 release, verified
+   * against the code rather than assumed, and recorded here per the release's
+   * own condition -- quoted verbatim beside the `file:line` that proves each
+   * true, so the owner's promised harmonising pass is one reading rather than
+   * an excavation.**
+   *
+   * *"No map is drawn here yet — pressing may move the camera"*
+   * (`hud.minimap.placeholder`, above) is what a player reads before any press
+   * on the surface has succeeded, including on a page where no world has ever
+   * loaded (`tests/browser/hud-minimap-navigates.spec.ts`'s pre-session test
+   * asserts the placeholder is on screen there, unclicked). Both halves are
+   * true in every one of those states. "No map is drawn" is true of the
+   * renderer's own placeholder frame regardless of session state (`hud.ts`'s
+   * comment on `.hud-minimap__surface`, below: *"Rendering is still a
+   * placeholder ... minimap rendering belongs to the renderer ... and does
+   * not exist yet"*). "Pressing MAY move the camera" is hedged rather than
+   * asserted because `WorldScene.navigateToMinimapPoint`
+   * (`src/rendering/scene/world-scene.ts:1426`) returns `false` -- moves
+   * nothing -- exactly when no world has ever loaded
+   * (`this.lastLoadedBounds === undefined`), which is a real, reachable,
+   * on-screen state (`hud-minimap-navigates.spec.ts`'s *"a click that finds no
+   * loaded world..."* test, unchanged by this issue). Asserting the stronger
+   * claim `hud.minimap.navigable` carries below would be false precisely
+   * there, which is the honest answer to issue #903's own question -- *"the
+   * second sentence already conveys both halves ... so why is it not the
+   * first one?"* -- the first sentence cannot yet claim what has not been
+   * proven, and this is the shortest wording found that says so without
+   * dropping either half.
+   *
+   * *"No map is drawn here yet — press to jump the camera there"* is what
+   * replaces it, and ONLY the word *press* is new for issue #903: it read
+   * *click* until this issue made the surface keyboard-operable (`hud.ts`'s
+   * `minimapSurface`, now a real `<button>` rather than a `div`), and *click*
+   * would have quietly kept describing one input method after the code
+   * stopped being limited to it (`AGENTS.md` boundary 10). *Press* is true of
+   * a mouse click, a touch tap and an Enter/Space key alike -- all three reach
+   * this sentence through the one `click` listener `hud.ts` attaches, because
+   * a native `<button>` dispatches its own `click` event for a keyboard
+   * activation exactly as it does for a pointer one. The swap itself is
+   * unchanged and still gated on `navigated`, i.e. on `onMinimapNavigate`
+   * returning `true` -- see `src/ui/hud/messages.ts`'s `minimapNavigable` for
+   * why that never reverts, and `WorldScene.navigateToMinimapPoint` for what
+   * the surface represents.
+   */
+  'hud.minimap.navigable': 'No map is drawn here yet — press to jump the camera there',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
 
