@@ -202,6 +202,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The procurement system\'s own spelling of why it refused a purchase, exempt for exactly the reason `BUILD_ORDER_FAIL_REASONS` above is: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything crosses the worker boundary, and nothing projects or persists it. Newly *discovered* rather than newly written -- the union used to sit inline inside `PurchaseOutcome`, where no scan could see it, and #261 named it so the mapping could be checked exhaustively at compile time.',
   },
   {
+    sourceFile: 'src/simulation/economy/procurement.ts',
+    declaration: 'SellStockRefusalReason',
+    reason:
+      'Why `ProcurementSystem.sellStock` -- ADR 0075 decision 3, "sell-back at a loss", invoked by [ADR 0096](../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md) decision 3(b) -- credited nothing: an item the catalogue does not sell, a non-integer or non-positive quantity, or a container that does not hold that much unreserved stock. Genuinely unreachable from a player action today rather than merely unlabelled, and that is named here rather than hidden: there is no `SellMaterials` (or similarly named) member in `simulationCommandSchema`, so `createSessionCommandHandler` has no call site to map this union through the exhaustive `Record` the sibling `PurchaseRefusalReason` and `PurchaseCancelRefusalReason` entries above describe. ADR 0075 decision 3 prices what that wiring costs -- "a command … a refusal reason … a HUD control … a player-facing string" -- and `src/simulation/protocol/commands.ts` and the Build panel are another agent\'s surface this hour (ADR 0106), so this exemption records a gap to close rather than an argument that one never will be: the day a `SellMaterials` command exists, this union stops being exempt and starts being the `PurchaseRefusalReason` pattern one command later.',
+  },
+  {
     sourceFile: 'src/simulation/staff/hiring.ts',
     declaration: 'StaffHireRefusalReason',
     reason:
