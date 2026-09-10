@@ -53,8 +53,18 @@ set -euo pipefail
 # nothing in this repository (#1089's audit, row `delete-branches.yml` /
 # `python3` -- which cites this line, not the workflow: the workflow file
 # names no interpreter at all). It cannot be provisioned from here either:
-# installing it needs root, and the `woogitsu-linux-*` pool has no
-# passwordless sudo (proved on job 101846181533, 2026-09-07).
+# installing it needs root, which no job here has.
+#
+# **That sentence read "and the `woogitsu-linux-*` pool has no passwordless
+# sudo (proved on job 101846181533, 2026-09-07)", and it is corrected in
+# place rather than deleted.** The measurement is real and it is about a pool
+# this repository no longer runs on: read off `runner_name` for every job of
+# the four most recent completed runs, the pool is
+# `lockstate-wsl-DOM-NEW-01/02/03` and the runner user is `mateusz`. Whether
+# THIS pool grants passwordless sudo is untested, because every
+# `scripts/provision-*.sh` short-circuits on it
+# (`[provision-postgres] packages already present`) and so never reaches an
+# elevation path.
 #
 # `set -euo pipefail` above already makes a missing `python3` fail the script
 # rather than leave `open_heads` empty -- which matters, because an empty
@@ -69,9 +79,9 @@ if ! command -v python3 >/dev/null 2>&1; then
   echo "       This script reads the open pull requests' head branches with" >&2
   echo "       python3, and refuses to run without that list -- every open" >&2
   echo "       pull request's head branch would otherwise be unprotected." >&2
-  echo "       Nothing in this repository can install it: the step needs root" >&2
-  echo "       and this runner pool has no passwordless sudo. Pre-provision" >&2
-  echo "       the host (apt-get install -y python3) and re-dispatch." >&2
+  echo "       Nothing in this repository can install it: the step needs" >&2
+  echo "       root, which no job here has. Pre-provision the host" >&2
+  echo "       (apt-get install -y python3) and re-dispatch." >&2
   exit 1
 fi
 

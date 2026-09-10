@@ -469,6 +469,39 @@ outward-facing or unrevertable, which is the whole reason:
    2026-09-09 entries above record of themselves**: the label of a clickable
    option the integrator wrote and the owner chose, not a sentence they typed.
 
+   **AND THE SECOND CLAUSE OF THIS ENTRY'S OWN OPENING PARAGRAPH IS WRONG,
+   FOUND HOURS AFTER THE GUARD SHIPPED AND CORRECTED HERE RATHER THAN
+   THERE.** It says the change cannot be provisioned from here because
+   *"installing it needs root and the `woogitsu-linux-*` pool has no
+   passwordless sudo, proved on job 101846181533"*. The first half holds. The
+   second half is a true measurement **about a pool this repository no longer
+   runs on**, and the guard's own error message asserted it to an operator
+   before anybody checked.
+
+   Read off `runner_name` for every job of the four most recent completed
+   runs: the pool is **`lockstate-wsl-DOM-NEW-01`, `-02` and `-03`**, and the
+   runner user is **`mateusz`** rather than `matma`. So #1089's opening
+   premise — *"The WSL2 runner pool was retired on 2026-09-07 and everything
+   moved to `woogitsu-linux-*`"* — no longer describes the machine, and
+   **every figure in the 2026-09-08 and 2026-09-09 entries above is measured
+   on hosts that are not the ones running CI today.** Those entries are left
+   exactly as they stand: what they authorise did not change, and a reader
+   needs to see which pool each figure came from.
+
+   **Whether this pool grants passwordless sudo is untested, which is the
+   honest position and not a smaller version of the old claim.** Every
+   `scripts/provision-*.sh` short-circuits here — a `verify` job on
+   `lockstate-wsl-DOM-NEW-*` prints `[provision-postgres] packages already
+   present (postgresql-18 + pgTAP)` and `role mateusz already usable` — so
+   nothing has reached an elevation path to find out. The guard's message and
+   both source comments now claim only that the step needs root, which no job
+   here has.
+
+   **The correction was in scope and this says why, because the boundary is
+   narrow.** The release authorises one guard in that file; rewording the
+   message *inside that guard* is the same guard, not a second change. Nothing
+   else in `branch-gc.yml` moved.
+
    **AND THE QUESTION THEY ANSWERED CARRIED A FALSE PREMISE, WHICH IS WHY THE
    RELEASE IS NARROWER THAN THE PERMISSION GIVEN.** The option said "both
    lines" because the question named `branch-gc.yml` **and**
