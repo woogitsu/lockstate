@@ -410,12 +410,22 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * downstream.
      */
     stepTo(runtime, DAY_LENGTH_TICKS * 15);
-    // 380 owed on day 10 and 520 a day compounding after it -- the 960 bill
-    // less the 440 this prison still earns with both needs unserved. This read
-    // `1_380` (300 owed from day 12, then 360 a day) while the withheld share
-    // was suspended between 2026-09-03 and 2026-09-04, and both are kept
-    // (`docs/AGENT_WORKFLOW.md` §4).
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
+    /*
+     * **380 owed on day 10 and 520 a day compounding after it -- the 960 bill
+     * less the 440 this prison still earns with both needs unserved -- is
+     * 2,980 on day 15, and that is what this asserted for the whole life of
+     * the ladder before ADR 0096 decision 3(c) (accepted 2026-09-10).** This
+     * read `1_380` (300 owed from day 12, then 360 a day) while the withheld
+     * share was suspended between 2026-09-03 and 2026-09-04, and both readings
+     * are kept (`docs/AGENT_WORKFLOW.md` §4).
+     *
+     * **Superseded by the arrears bound, `ARREARS_BOUND_MINOR_UNITS` (2,500).**
+     * Day 14 reaches 2,460 (still under the bound, unaffected); day 15 would
+     * add the 960 bill's usual 520 and land on 2,980, and decision 3(c) caps
+     * the *carried* figure at exactly 2,500 instead -- the 480 above the bound
+     * forgiven rather than deferred, per that decision's own words.
+     */
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_500);
     // Filtered to `economy.wages-unpaid` for the reason the first check above
     // is: the two rung-crossing events from day 8 are still on the channel
     // (nothing here retires them) and are not paydays. **This comment said
@@ -437,7 +447,9 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
       afterMisses.length,
       'a prison that stays broke says so once per payday -- six missed paydays, six sentences',
     ).toBe(6);
-    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_980 });
+    // 2,980 uncapped, kept above; the arrears bound (ADR 0096 decision 3(c))
+    // caps the sentence's own figure at 2,500, same as `unpaidWagesMinorUnits`.
+    expect(afterMisses.at(-1)).toMatchObject({ type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 2_500 });
     // And the ladder's whole shape in one assertion: two rung crossings while
     // solvent, then one wages-unpaid sentence per missed payday thereafter --
     // eight events for eight real things that happened, none of them repeated.
@@ -574,10 +586,15 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
 
     stepTo(runtime, DAY_LENGTH_TICKS * 15);
     expect(runtime.treasury.balanceMinorUnits, 'and no payday may pass it').toBe(-2_500);
-    // Five days of debt after the first miss, at 520 a day rather than the
-    // suspended schedule's 360: `380 + 5 x 520`. This read `1_380` between
-    // 2026-09-03 and 2026-09-04, and both are kept.
-    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_980);
+    /*
+     * **Five days of debt after the first miss, at 520 a day rather than the
+     * suspended schedule's 360, is `380 + 5 x 520` = 2,980 -- this read `1_380`
+     * between 2026-09-03 and 2026-09-04, and both are kept.** Superseded by
+     * ADR 0096 decision 3(c)'s arrears bound (accepted 2026-09-10): day 14 is
+     * 2,460, day 15's usual +520 would reach 2,980, and it is capped at
+     * `ARREARS_BOUND_MINOR_UNITS` (2,500) instead -- forgiven, not deferred.
+     */
+    expect(runtime.payroll.unpaidWagesMinorUnits).toBe(2_500);
   });
 
   /**

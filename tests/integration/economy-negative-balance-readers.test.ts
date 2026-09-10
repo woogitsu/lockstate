@@ -253,6 +253,12 @@ describe('payroll draws on the room a floor opened, down to the wage rung and no
       treasury,
       { allGuardIds: () => [1], getStaffRoleId: () => 'staff-role.guard' },
       new SimulationEventLog(),
+      // Mature and furnished: this describe's subject is the mature ladder's
+      // own wage rung, which ADR 0096 decision 2 (2026-09-10) leaves
+      // untouched -- only a *fresh, unfurnished* prison's `'wages'` rung moves,
+      // and this fixture must not accidentally exercise that starter rung
+      // instead of the one these cases are about.
+      { totalResidentCapacity: 1 },
     );
     const kernel = new Kernel();
     kernel.registerSystem(payroll);

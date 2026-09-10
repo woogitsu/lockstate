@@ -1027,7 +1027,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `GuardRoster` is the only staff store there is and this is where it exists;
    * registered below at order 130, immediately after `economy.state-income`.
    */
-  const payroll = new PayrollSystem(treasury, securityGuards, events);
+  /*
+   * `prisoners.roomInstances` since ADR 0096 decision 2 (2026-09-10) — the
+   * same registry `InsolvencyRungSystem` below and the `'deliveries'` press
+   * in `session-commands.ts` already read `totalResidentCapacity` off, live,
+   * so a fresh, unfurnished prison's payday gets the same starter reserve on
+   * `'wages'` that a press already gets on `'deliveries'`/`'hiring'`.
+   */
+  const payroll = new PayrollSystem(treasury, securityGuards, events, prisoners.roomInstances);
   /*
    * The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
    * amendment): the one-off notice at the moment the treasury crosses the
