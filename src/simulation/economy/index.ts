@@ -46,6 +46,8 @@ export { staffDailyWageMinorUnits } from './wages';
 export {
   MAX_PURCHASE_QUANTITY,
   ProcurementSystem,
+  SELL_BACK_RATIO_DENOMINATOR,
+  SELL_BACK_RATIO_NUMERATOR,
   type PendingDelivery,
   type ProcurementSnapshot,
   type PurchaseCancelOutcome,
@@ -53,4 +55,6 @@ export {
   type PurchaseOutcome,
   type PurchaseRefusalReason,
   type PurchaseSpendClass,
+  type SellStockOutcome,
+  type SellStockRefusalReason,
 } from './procurement';
