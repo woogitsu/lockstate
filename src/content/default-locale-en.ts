@@ -1493,7 +1493,15 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // That section starts OPEN as of 2026-08-31 (#703, rulings 1 and 5), and the
   // corner holding it is no longer hidden below 720px -- so the past tense
   // above is now the only correct tense, and this key keeps its namespace
-  // anyway. The band exists because a browser that cannot start a worker has
+  // anyway.
+  //
+  // **THE CORNER CLAUSE IS FALSE and is corrected here rather than deleted
+  // (#1117).** `.hud__corner { display: none; }` sits inside
+  // `@media (max-width: 720px)` in `hud.css`, measured `display: none` at
+  // 375x812. So on a phone the alerts list is NOT on screen, the fold is not
+  // the only thing that would have hidden a row there, and the past tense
+  // above is half right rather than wholly. The key keeps its namespace for
+  // the reason the next sentence gives, which never depended on either. The band exists because a browser that cannot start a worker has
   // no simulation to log events from at all, which is a stronger reason than
   // the fold ever was: an empty list, open or shut, says nothing.
   'hud.unavailable.simulation': 'Simulation unavailable — this browser could not start it, so nothing can run or be saved',
