@@ -28,6 +28,8 @@ const CHUNK_SIZE = 32;
 const CELL = 'room.cell';
 /** `room.cell`'s zoning value comes from the content catalog, never from the service. */
 const CELL_NUMERIC_ID = defaultRoomContentRegistry.getById(CELL)!.numericId;
+/** `room.cell`'s own `nameKey`, read back the same way rather than hard-coded, for `removedRoomNameKeys` assertions (#1006 finding 5). */
+const CELL_NAME_KEY = defaultRoomContentRegistry.getById(CELL)!.nameKey;
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
@@ -501,6 +503,8 @@ describe('a designation can be removed, which is what makes one recoverable', ()
     expect(removed).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
     if (removed.kind !== 'unzoned') throw new Error('unreachable');
     expect(removed.removedInstanceIds).toEqual([zoned.instance.instanceId]);
+    // #1006 finding 5: `removedRoomNameKeys` names this instance's own type.
+    expect(removed.removedRoomNameKeys).toEqual([CELL_NAME_KEY]);
     expect(rooms.allByRoomCatalogId(CELL), 'the registry must not still hold it').toEqual([]);
     expect(rooms.getById(zoned.instance.instanceId)).toBeUndefined();
     for (let y = 4; y < 7; y += 1) {
@@ -681,6 +685,11 @@ describe('a designation can be removed, which is what makes one recoverable', ()
       [...first.removedInstanceIds].sort(),
     );
     expect(first.removedInstanceIds).toHaveLength(2);
+    // #1006 finding 5: `removedRoomNameKeys` is the same length, in the same
+    // order, one type per id -- both instances are `room.cell` here, so this
+    // is the same name twice rather than a coincidence of length alone.
+    expect(first.removedRoomNameKeys).toHaveLength(first.removedInstanceIds.length);
+    expect(first.removedRoomNameKeys).toEqual([CELL_NAME_KEY, CELL_NAME_KEY]);
   });
 });
 
@@ -811,6 +820,8 @@ describe('two adjacent rectangles of one type are two rooms at both ends (#337)'
     expect(removed.removedInstanceIds).toEqual(
       [roomInstanceIdFor(CELL, tile(0, 0)), roomInstanceIdFor(CELL, tile(2, 0))].sort(),
     );
+    // #1006 finding 5: one name per id, in the same order as `removedInstanceIds`.
+    expect(removed.removedRoomNameKeys).toEqual([CELL_NAME_KEY, CELL_NAME_KEY]);
     expect(rooms.allByRoomCatalogId(CELL)).toEqual([]);
   });
 

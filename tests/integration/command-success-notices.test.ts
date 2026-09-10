@@ -937,6 +937,108 @@ describe('a room that is designated says so (#966)', () => {
   });
 });
 
+/**
+ * **A room that comes off the zoning plane says so** (issue
+ * [#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 5).
+ *
+ * The gap the issue measured directly: a room zoned and then immediately
+ * removed left `hud.alert.event.rooms.zoned`'s *"{room} designated."*
+ * standing in the alerts column with `rooms=0` on the strip and nothing
+ * saying the room had gone. `rooms.unzoned` is the mirror of `rooms.zoned` on
+ * the command that undoes it, and the three cases below are the same three
+ * shapes the `#966` block above pins, on the opposite command.
+ */
+describe('a room that comes off the zoning plane says so (#1006)', () => {
+  it('says which type was removed, and carries nothing but the type', () => {
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+
+    const instanceId = `room.cell:${String(CELL_RECT.x)}:${String(CELL_RECT.y)}`;
+    expect(
+      session.runtime.prisoners.roomInstances.getById(instanceId),
+      'the room really is registered before the removal this case is about',
+    ).not.toBeUndefined();
+
+    const before = session.types().length;
+    session.send({ type: 'UnzoneRoom', ...CELL_RECT });
+
+    // The removal really did happen, on both halves `unzone` writes -- the
+    // registry and the zoning plane -- for the same reason the `#966` case
+    // above asserts the designation on both.
+    expect(session.runtime.prisoners.roomInstances.getById(instanceId), 'the instance is gone').toBeUndefined();
+    expect(
+      session.runtime.world.getZoning({ x: tileCoordinate(CELL_RECT.x), y: tileCoordinate(CELL_RECT.y) }),
+      'and the plane is cleared',
+    ).toBe(0);
+
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['rooms.unzoned']);
+    // The payload, pinned exhaustively -- the envelope and `roomNameKey`, and
+    // nothing else: no instance id, no rectangle, no tile, for the same two
+    // reasons `rooms.zoned`'s own case above gives.
+    expect(Object.keys(said[0]!).sort()).toEqual(['roomNameKey', 'sequence', 'tick', 'type']);
+    expect(said[0]).toMatchObject({ roomNameKey: 'room.cell.name' });
+  });
+
+  it('says nothing when the press was refused', () => {
+    // Nothing was ever zoned at this rectangle, so `unzone` refuses
+    // `nothing-to-remove` before writing anything -- the mirror of the `#966`
+    // block's `below-minimum-size` case: a producer wired to the branch
+    // rather than to the accepted outcome would announce a removal that never
+    // happened.
+    const session = createSession();
+    const before = session.types().length;
+    session.send({ type: 'UnzoneRoom', x: 2, y: 20, width: 1, height: 1 });
+
+    expect(session.runtime.refusals.last?.reason, 'the press really was refused').toBe('unzone.nothing-to-remove');
+    expect(session.types().slice(before), 'a refused removal removed nothing').toEqual([]);
+  });
+
+  it('says one type per removed instance when a single drag clears more than one room (#337)', () => {
+    /*
+     * Two adjacent `room.cell` instances, sharing the wall between them --
+     * `wallRoomPerimeter`'s own comment says walling both is idempotent on
+     * that shared edge, which is exactly what makes them adjacent rather than
+     * double-walled. One drag rectangle spans both anchors, so `unzone`
+     * resolves and clears both instances in the one accepted press
+     * (`RoomZoningService.unzone`'s own comment on issue #337).
+     */
+    const roomB = { x: CELL_RECT.x + CELL_RECT.width, y: CELL_RECT.y, width: CELL_RECT.width, height: CELL_RECT.height };
+    const session = createSession();
+    wallRoomPerimeter(session.runtime.world, CELL_RECT, { doors: session.runtime.navigation.doors });
+    wallRoomPerimeter(session.runtime.world, roomB, { doors: session.runtime.navigation.doors });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
+    session.send({ type: 'ZoneRoom', roomId: 'room.cell', ...roomB });
+
+    const before = session.types().length;
+    session.send({
+      type: 'UnzoneRoom',
+      x: CELL_RECT.x,
+      y: CELL_RECT.y,
+      width: CELL_RECT.width + roomB.width,
+      height: CELL_RECT.height,
+    });
+
+    expect(
+      session.runtime.prisoners.roomInstances.getById(`room.cell:${String(CELL_RECT.x)}:${String(CELL_RECT.y)}`),
+    ).toBeUndefined();
+    expect(
+      session.runtime.prisoners.roomInstances.getById(`room.cell:${String(roomB.x)}:${String(roomB.y)}`),
+    ).toBeUndefined();
+
+    // One event per removed instance, not one per press -- the same grain
+    // `prisoners.relocated` uses, and unlike `rooms.zoned` (whose own press
+    // can never register more than one instance).
+    const said = session.said().slice(before);
+    expect(said.map((event) => event.type)).toEqual(['rooms.unzoned', 'rooms.unzoned']);
+    expect(said.map((event) => (event as { roomNameKey?: string }).roomNameKey)).toEqual([
+      'room.cell.name',
+      'room.cell.name',
+    ]);
+  });
+});
+
 describe('nothing else on the channel changed', () => {
   it('leaves a session that pressed nothing with nothing to say', () => {
     /*
@@ -947,8 +1049,17 @@ describe('nothing else on the channel changed', () => {
      *
      * `objects.` joined the filter with #945, whose event is on the same
      * footing: it is a statement about a press and nothing else can produce it.
-     * `rooms.` joined it with #966 site 2, on the same footing again -- nothing
-     * but an accepted `ZoneRoom` can produce one, and no system zones anything.
+     * `rooms.` joined it with #966 site 2 on the same footing -- nothing but an
+     * accepted `ZoneRoom` produced `rooms.zoned`, and no system zoned anything.
+     *
+     * **That justification is only half true of the family since #1006.**
+     * `rooms.unzoned` is command-produced exactly as `rooms.zoned` is, by an
+     * accepted `UnzoneRoom` -- see `command-success-notices.test.ts`'s sibling
+     * describe block below. `rooms.needs-cleared` is not: it is
+     * `RoomNeedsClearedNoticeSystem`'s own tick-scheduled notice, and this
+     * session zones nothing, so there is no room for it to ever find short of
+     * anything in the first place -- it is absent here for having nothing to
+     * report, not for lacking a producer that could fire unprompted.
      */
     const session = createSession();
     session.run(400);

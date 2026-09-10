@@ -55,6 +55,7 @@ import {
   type DisciplinaryEvidenceSource,
 } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
+import { RoomNeedsClearedNoticeSystem } from '../rooms/room-needs-cleared-notice';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
@@ -1044,6 +1045,23 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * "The starter rung".
    */
   const insolvencyRungs = new InsolvencyRungSystem(treasury, events, prisoners.roomInstances);
+  /*
+   * Issue #1006 finding 3: the alerts column's confirmation that a repaired
+   * room stopped being short of anything the Rooms panel checks for. Reads
+   * live `world` edges and `navigation.doors` for the same reason
+   * `hud/room-list`'s own projection wiring does
+   * (`src/simulation/worker/projection-catalog.ts`) -- "`navigation.doors` is
+   * the registry the router, the caches and `doorsSnapshot` all read ...
+   * so the panel's answer and the walk's answer cannot disagree" -- and this
+   * system's own answer must not disagree with either.
+   */
+  const roomNeedsClearedNotice = new RoomNeedsClearedNoticeSystem(
+    prisoners,
+    placedObjects,
+    world,
+    navigation.doors,
+    events,
+  );
   const securitySchedules: DeploymentSchedule[] = [];
   /*
    * The fifth argument is the constructor's own default, restated (and skipped)
@@ -1547,6 +1565,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
   kernel.registerSystem(insolvencyRungs);
+  kernel.registerSystem(roomNeedsClearedNotice);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(intelligenceSystem);
