@@ -122,6 +122,34 @@ on the root `vitest.config.ts`'s `testTimeout: 5_000` the same 35 assertions go
 red on time rather than on anything about the code — six of them when #1083 was
 filed, 12 when re-measured with `--testTimeout=5000` on a loaded container.
 
+**A SEVENTH RELEASE LANDED ON 2026-09-10, AND IT IS THE FIFTH INSIDE
+RESERVATION 3 — the first that buys a sentence rather than a behaviour.** The
+owner authorised ONE `command -v python3` guard line in
+`.github/workflows/branch-gc.yml`, in front of the heredoc already there, and
+nothing else in that file or any other workflow. Provenance is the weaker
+kind again — the label of a clickable option (*"Zrób obie linijki"*), not
+words they typed.
+
+**Its own entry in `AGENTS.md` records that the question carried a false
+premise, and that is the part to read.** The option said "both lines" because
+the question named `branch-gc.yml` AND `delete-branches.yml` as two workflow
+files needing a guard. `delete-branches.yml` contains no `python3` at all —
+it runs `bash deletebranches.sh`, and #1089's audit row cites
+`deletebranches.sh:107`. The second guard therefore went into a shell script,
+which was ours already and needed no release. **The owner authorised more than
+was required, and only half of it was used.**
+
+**The provenance of that error is worth naming precisely, because this file
+has a habit of collecting blame it has not earned.** The false premise did
+not come from this document — it came from a running session's own carried
+notes, restated across three context handovers without being re-read against
+the two files it described. So it is the same *failure mode* this file's
+three recorded mistakes are (a paraphrase outliving the thing it paraphrased)
+arriving by a different route, and the useful difference is that it was
+caught **before** the edit rather than after: the check that found it was
+opening the two files named in the permission, immediately after the
+permission was given and before spending it.
+
 **This clause read "and so are the other three exclusions — including the
 migration the ingest needs before it can store anything", and both halves of
 that are now wrong.** The telemetry migration landed on 2026-09-04

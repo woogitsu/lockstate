@@ -2722,3 +2722,77 @@ describe('measurement harness reachability contract', () => {
     ).not.toContain('perf');
   });
 });
+
+/**
+ * Two jobs reach for `python3` and nothing in this repository provisions it
+ * (#1089's audit). Installing it needs root, and the `woogitsu-linux-*` pool
+ * has no passwordless sudo -- proved on job 101846181533, 2026-09-07 -- so
+ * what the repository can add is a diagnosis rather than a fix: a guard that
+ * names the host step instead of dying on a bare `python3: command not found`
+ * and exit 127.
+ *
+ * **This contract exists because that guard is otherwise ungated.** Both jobs
+ * are `workflow_dispatch`-only and neither has run since the pool changed
+ * (`branch-gc.yml` 2026-09-03, `delete-branches.yml` 2026-08-30), so nothing
+ * in CI executes either line. A future edit could delete the guard and every
+ * other gate in this repository would stay green -- which is precisely the
+ * case #1089 was written about, one level up: an assumption nobody can see
+ * until the day it matters.
+ *
+ * **What it does NOT claim.** It does not assert that `python3` is present on
+ * any runner; nothing here can read the host, and `AGENTS.md` reservation 3
+ * makes the same point about dashboards. It asserts only that the two call
+ * sites still say what to do when it is absent.
+ *
+ * The `delete-branches.yml` half deliberately reads `deletebranches.sh` and
+ * not the workflow. The workflow names no interpreter at all -- it runs
+ * `bash deletebranches.sh` -- and the audit row that cites `python3` for this
+ * job cites `deletebranches.sh:107`. A guard written into the workflow would
+ * be guarding the wrong file.
+ */
+describe('python3 availability diagnosis contract (#1089)', () => {
+  it('branch-gc names the host step when python3 is missing, rather than exiting 127', async () => {
+    const source = await readRepositoryFile('.github/workflows/branch-gc.yml');
+
+    // Vacuity guard: the assertion below is about the guard sitting in front
+    // of a real use, so establish the use is still there. If `branch-gc.yml`
+    // stops running python3 this test should be deleted, not satisfied.
+    expect(
+      source,
+      '`branch-gc.yml` no longer invokes python3; this contract is guarding a call site that has gone.',
+    ).toContain('python3 - <<');
+
+    expect(
+      source,
+      '`branch-gc.yml` invokes python3 with no `command -v` guard in front of it. Nothing here can install python3 -- that needs root and this pool has no passwordless sudo -- so the guard is the whole remedy: without it the job dies on a bare `python3: command not found` in a run whose next act is deleting branches on a shared remote.',
+    ).toContain('command -v python3');
+
+    const guardIndex = source.indexOf('command -v python3');
+    const useIndex = source.indexOf('python3 - <<');
+    expect(
+      guardIndex,
+      '`branch-gc.yml` has a `command -v python3` guard, but it sits after the heredoc it is supposed to protect, so the bare 127 happens first.',
+    ).toBeLessThan(useIndex);
+  });
+
+  it('deletebranches.sh says what is missing before it reaches the interpreter', async () => {
+    const source = await readRepositoryFile('deletebranches.sh');
+
+    expect(
+      source,
+      '`deletebranches.sh` no longer pipes through python3; this contract is guarding a call site that has gone.',
+    ).toContain('| python3 -c');
+
+    expect(
+      source,
+      '`deletebranches.sh` reaches python3 with no `command -v` guard. `set -euo pipefail` already makes the failure safe -- an empty `open_heads` would leave every open pull request unprotected, and the script exits instead -- so what the guard adds is the sentence, not the safety.',
+    ).toContain('command -v python3');
+
+    const guardIndex = source.indexOf('command -v python3');
+    const useIndex = source.indexOf('| python3 -c');
+    expect(
+      guardIndex,
+      '`deletebranches.sh` guards python3 after the pipeline that uses it.',
+    ).toBeLessThan(useIndex);
+  });
+});

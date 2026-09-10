@@ -441,6 +441,55 @@ outward-facing or unrevertable, which is the whole reason:
    a red gate. `tests/foundation/ci-configuration-contract.test.ts` pins the
    step and the `test:perf` script to each other, so removing either one fails
    before CI does.
+
+   **A FIFTH RELEASE INSIDE THE SAME RESERVATION, 2026-09-10 — ONE GUARD LINE
+   IN `branch-gc.yml`, AND IT IS THE FIRST THAT BUYS A SENTENCE RATHER THAN A
+   BEHAVIOUR.** #1089's audit found `python3` assumed by two jobs and
+   provisioned by nothing in this repository, in the class it calls *untested*:
+   both are `workflow_dispatch`-only and neither had run since the pool changed
+   (`branch-gc.yml` 2026-09-03, `delete-branches.yml` 2026-08-30). It cannot be
+   provisioned from here — installing it needs root and the `woogitsu-linux-*`
+   pool has no passwordless sudo, proved on job 101846181533 — so the issue's
+   own recommendation is *"host provisioning, plus (owner's call) a one-line
+   `command -v python3 || { echo "::error::…"; exit 1; }` guard so the failure
+   names the host step rather than printing `127`"*. The owner was asked and
+   chose, from the options put to them, the one labelled:
+
+   > Zrób obie linijki
+
+   ("Do both lines.")
+
+   **What the release covers, exactly.** One `command -v python3` guard in
+   `.github/workflows/branch-gc.yml`, in front of the heredoc that already
+   ran there, and nothing else in that file or any other workflow: not
+   `curl`, not `tar`, not a second job, not any `timeout-minutes`, not the
+   runner selectors, not `version.yml`'s `npm`, not `deploy.yml`.
+
+   **The provenance is the weaker kind, exactly as the 2026-09-08 and
+   2026-09-09 entries above record of themselves**: the label of a clickable
+   option the integrator wrote and the owner chose, not a sentence they typed.
+
+   **AND THE QUESTION THEY ANSWERED CARRIED A FALSE PREMISE, WHICH IS WHY THE
+   RELEASE IS NARROWER THAN THE PERMISSION GIVEN.** The option said "both
+   lines" because the question named `branch-gc.yml` **and**
+   `delete-branches.yml` as the two workflow files needing a guard. Checked
+   after the answer and before the edit: **`delete-branches.yml` contains no
+   `python3` at all.** It runs `bash deletebranches.sh`, and #1089's own audit
+   row cites `deletebranches.sh:107` rather than the workflow. So the second
+   guard went into the shell script, which is ours under the standing mandate
+   and needed no release — the owner authorised more than was required, and
+   only the `branch-gc.yml` half of it was used. Recorded rather than quietly
+   banked, because a release read back later as covering two workflow files
+   would be wider than what was actually asked for.
+
+   **What the guard is worth, stated without inflation.** In
+   `deletebranches.sh`, `set -euo pipefail` already makes a missing `python3`
+   fail the script rather than leave `open_heads` empty — which matters,
+   since an empty list would leave every open pull request's head branch
+   unprotected. **So the guard adds no safety there. It adds a sentence.**
+   `tests/foundation/ci-configuration-contract.test.ts` pins both call sites,
+   because neither job runs in CI and every other gate in the repository would
+   stay green if a later edit removed them.
 4. **Anything that reaches a player as a promise the code does not keep.** A
    locale key with no implementation behind it is the defect that forced the
    telemetry decision; do not add one, in any tree.
