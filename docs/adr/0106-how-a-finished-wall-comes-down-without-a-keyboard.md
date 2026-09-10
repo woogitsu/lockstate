@@ -19,6 +19,35 @@
 
 ## Status
 
+**Accepted by the owner on 2026-09-10 — option 1, the sibling command beside
+`RemoveObject`, which is this document's own recommendation taken whole.**
+Options 2 and 3 declined; nothing in the option list was modified in the
+taking.
+
+> **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
+> UP.** The ruling is the label of a clickable option this session wrote and
+> the owner chose — *"Opcja 1 — osobna komenda (rekomendacja)"* — not a
+> sentence they typed, and it was given against a summary of the three shapes
+> and the two measurements that re-priced option 1 (exactly one producer of
+> `CancelBuildOrder` in the whole application; `pickEdgeAtWorld` pure and
+> already imported by `WorldScene`), rather than against this document's full
+> text.
+>
+> **The falsifier this document names was put to them before they chose**, and
+> it stands unchanged by the acceptance: a tile bordering both a placed object
+> and a completed wall produces an ambiguous resolution. If an implementer
+> finds it needs an affordance beyond "press the thing", option 1's cost moves
+> toward option 2's and **this recommendation needs re-arguing rather than
+> continuing**.
+>
+> **What the acceptance does not authorise: a player-visible sentence.** The
+> two this design will need are named as owed rather than authored, and the
+> 2026-09-04 release of `AGENTS.md`'s fourth reservation gives us the wording
+> and not the promise — a sentence still ships only once the code that makes
+> it true exists.
+>
+> **The `Proposed` record is kept below rather than overwritten.**
+
 **Proposed. Not self-approved.** `docs/AGENT_WORKFLOW.md` §3: *"**Propose an
 ADR rather than deciding architecture inside implementation code, and never
 self-approve one** outside a recorded delegation from the owner."*
