@@ -157,10 +157,10 @@ export function unfinishedRoomIds(list: RoomListViewModel): readonly string[] {
  * for an uncounted object.
  */
 function shortfallOf(row: RoomListViewModel['rooms']['rows'][number]): number {
-  return (
-    row.requirementSummary.missingCapability +
-    (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0)
-  );
+  // One line, and it has to stay one line: `room-shortfall-parity-contract`
+  // holds this text and the worker's copy as the same literal string, and a
+  // wrap would indent one of them differently and fail it.
+  return row.requirementSummary.missingCapability + (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0);
 }
 
 /**

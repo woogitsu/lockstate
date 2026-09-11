@@ -176,9 +176,7 @@ export class RoomNeedsClearedNoticeSystem implements SystemRegistration {
       seenInstanceIds.add(row.instanceId);
       // The panel's own predicate, restated rather than imported -- see the
       // class comment's "What 'short of something' means".
-      const shortfall =
-        row.requirementSummary.missingCapability +
-        (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0);
+      const shortfall = row.requirementSummary.missingCapability + (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0);
       const isReady = shortfall === 0;
       const wasReady = this.ready.has(row.instanceId);
       if (isReady === wasReady) continue;

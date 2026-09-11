@@ -38,7 +38,16 @@ async function read(relativePath: string): Promise<string> {
  * rather than tolerated, because a reformat is a reason to look at both.
  */
 describe('the Rooms-panel shortfall predicate, written twice (#1006)', () => {
-  const EXPRESSION = "row.requirementSummary.missingCapability + (row.access === 'no-way-in' ? 1 : 0)";
+  /*
+   * **Widened by ADR 0108, and the widening is the exact drift this contract
+   * exists for.** It used to read `(row.access === 'no-way-in' ? 1 : 0)`. A
+   * fourth `RoomAccess` value, `'unreachable'`, now carries the room whose door
+   * nothing can reach, and it is a shortfall for the same reason `'no-way-in'`
+   * is: nobody can get in. Had only one copy moved, the alert would have gone
+   * on announcing act-4a rooms as clear.
+   */
+  const EXPRESSION =
+    "row.requirementSummary.missingCapability + (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0)";
 
   it('is spelled identically in the panel and in the worker system that announces it', async () => {
     const panel = await read('src/ui/simulation-room-needs.ts');

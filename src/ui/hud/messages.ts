@@ -1266,6 +1266,16 @@ export const HUD_MESSAGE_KEY = {
   roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
   roomsNeedsDoorway: 'hud.rooms.needs-doorway',
   /*
+   * The second entry in this block that is not about an object (ADR 0108),
+   * and it exists because `roomsNeedsDoorway` above became unable to cover
+   * both states once `RoomAccess` could tell them apart. That line says the
+   * room has no door; this one says it has one and nothing outside can reach
+   * it. Same header, same shape, same absence of a placeholder -- there is one
+   * way in to be short of either way -- and two sentences because a player
+   * shown the wrong one goes and builds the wrong thing.
+   */
+  roomsNeedsUnreachable: 'hud.rooms.needs-unreachable',
+  /*
    * The same block, saying the other thing a room can be wrong about: it is
    * finished, and it is full (ADR 0028 phase 5, issues #997 and #1003).
    *

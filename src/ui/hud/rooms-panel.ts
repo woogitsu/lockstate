@@ -1617,6 +1617,11 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * - `kind: 'doorway'` -- the room's walls hold no door, so nothing can get
    *   in (#938). No placeholder: there is one door to be short of, and the
    *   locale entry carries the proof of each clause.
+   * - `kind: 'unreachable'` -- the room has a door and nothing outside can
+   *   reach it (ADR 0108). A second key rather than the same one reworded,
+   *   because the two states send the player to different walls, and one
+   *   sentence covering both would be the readout-that-renders-identically
+   *   defect #938 records, one value further along.
    * - an object with a count -- the shortfall, which is what the player has
    *   to build, under the object's own name or the stand-in for one the
    *   catalogue does not define.
@@ -1629,6 +1634,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   function needSentence(need: HudRoomNeedViewModel): string {
     if (need.kind === 'doorway') return t(HUD_MESSAGE_KEY.roomsNeedsDoorway);
+    if (need.kind === 'unreachable') return t(HUD_MESSAGE_KEY.roomsNeedsUnreachable);
     const object = t(need.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
     return need.missingQuantity === undefined
       ? t(HUD_MESSAGE_KEY.roomsNeedsObjectUncounted, { object })

@@ -1213,9 +1213,16 @@ export interface HudRoomsViewModel {
  *   readout could carry before #938: a cell short of a bed, a canteen short
  *   of three benches.
  * - `'doorway'` -- the room's perimeter is closed and holds no door at all,
- *   so no prisoner can ever get into it. `RoomPerimeterAccess`' `'no-way-in'`
- *   carried across the boundary, and it is a fact about the *walls* rather
- *   than about anything standing inside them.
+ *   so no prisoner can ever get into it. `RoomAccess`' `'no-way-in'` carried
+ *   across the boundary, and it is a fact about the *walls* rather than about
+ *   anything standing inside them.
+ * - `'unreachable'` -- the room has a door and **nothing outside can reach
+ *   it** (ADR 0108): the space beyond that door is itself closed off.
+ *   `RoomAccess`' `'unreachable'`, and it is a third kind rather than a second
+ *   spelling of `'doorway'` because the two want different repairs -- one
+ *   player has to build a door, the other has to take down a wall they built
+ *   somewhere else. #1001 measured what the second costs while the panel was
+ *   silent about it: 11,558 route failures and 2,000 a day.
  *
  * A discriminator rather than two separate lists, because the two are the
  * same kind of sentence in the same block -- "this room is not ready, and
@@ -1232,7 +1239,7 @@ export interface HudRoomsViewModel {
  * defect #938 is -- a readout that renders the same for two different states
  * -- so this field may not be able to default.
  */
-export type HudRoomNeedKind = 'object' | 'doorway';
+export type HudRoomNeedKind = 'object' | 'doorway' | 'unreachable';
 
 export interface HudRoomNeedViewModel {
   /** Which kind of shortfall this entry is. See `HudRoomNeedKind`. */
@@ -1251,8 +1258,8 @@ export interface HudRoomNeedViewModel {
   readonly tile: { readonly x: number; readonly y: number };
   /**
    * The missing object's `nameKey`, absent when the object catalogue names
-   * none -- and always absent on a `kind: 'doorway'` entry, which is about
-   * the room's walls and names no object at all.
+   * none -- and always absent on a `kind: 'doorway'` or `kind: 'unreachable'`
+   * entry, which is about the room's walls and names no object at all.
    */
   readonly objectLabelKey?: LocalizationKey;
   /**
