@@ -806,6 +806,13 @@ export interface HudBuildOrderViewModel {
    * all read it -- never "unknown".
    */
   readonly cancelRefundMinorUnits: number;
+  /**
+   * This order's revision as of this publication (ADR 0107), carried
+   * unchanged from `BuildQueueOrderViewModel.revision` so a later
+   * `CancelBuildOrder` press can name it as `expectedRevision` -- the row's
+   * own read of what it last saw, not a value this thread invents.
+   */
+  readonly revision: number;
 }
 
 /**

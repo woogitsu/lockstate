@@ -71,7 +71,7 @@ import { PrisonerDetailReader } from './ui/simulation-prisoner-detail';
 import { RegimeReader } from './ui/simulation-regime';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
-import { SimulationCommandSender } from './ui/simulation-commands';
+import { CANCEL_BUILD_ORDER_LEAD_TICKS, SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { ObjectTool } from './ui/object-tool';
 import { RoomTool } from './ui/room-tool';
@@ -2498,7 +2498,24 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * publication then shows the queue as it really is.
          */
         case 'cancel-build-order':
-          requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
+          /*
+           * `expectedRevision: intent.revision` is ADR 0107's half of this
+           * producer: the row's own last-read revision, carried unchanged
+           * from `BuildQueueOrderViewModel.revision` through the HUD intent
+           * to here, so `createConstructionCommandHandler` can tell a press
+           * aimed at the order this row still names from one aimed at an
+           * order that has since transitioned underneath it.
+           *
+           * `{ leadTicks: CANCEL_BUILD_ORDER_LEAD_TICKS }` is the other half:
+           * a narrower per-command margin than every other command in this
+           * file gets, so a running-clock press is scheduled closer to the
+           * tick the row was actually read at -- see that constant's own
+           * docblock for what it costs and how that cost was measured.
+           */
+          requireSimulation(commands).submit(
+            { type: 'CancelBuildOrder', orderId: intent.orderId, expectedRevision: intent.revision },
+            { leadTicks: CANCEL_BUILD_ORDER_LEAD_TICKS },
+          );
           return;
 
         /*

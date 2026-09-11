@@ -169,13 +169,16 @@ export interface BuildPanelOptions {
   /** Buy the selected buildable's material, in the quantity the stepper shows (#89). */
   readonly onPurchase: (intent: BuildPanelPurchaseIntent) => void;
   /**
-   * Withdraw **one** pending order, named by its own id.
+   * Withdraw **one** pending order, named by its own id, at the revision this
+   * row's own last publication read for it (ADR 0107).
    *
-   * The id and nothing else. The panel does not know that a `CancelBuildOrder`
-   * command exists, any more than it knows `PurchaseMaterials` does -- it knows
-   * that a row it drew named an order and that the player pressed that row.
+   * The id, the revision and nothing else. The panel does not know that a
+   * `CancelBuildOrder` command exists, any more than it knows
+   * `PurchaseMaterials` does, or that `expectedRevision` is compared against
+   * anything -- it knows that a row it drew named an order at a revision and
+   * that the player pressed that row.
    */
-  readonly onCancelOrder: (orderId: string) => void;
+  readonly onCancelOrder: (orderId: string, revision: number) => void;
   /**
    * Cancel **one** purchase whose delivery has not landed, named by its own id
    * (#285).
@@ -2398,6 +2401,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     readonly cancel: ActionButton;
     /** The order this row names, or `undefined` while it names nothing. */
     orderId: string | undefined;
+    /**
+     * The revision (ADR 0107) this row's last publication read for `orderId`
+     * -- `0` while the row names nothing, matching `ConstructionSystem
+     * .revisionOf`'s own answer for an id it holds nothing under. Kept in
+     * step with `orderId` for the same reason: `assignPooledRows` guarantees
+     * this field always names *this row's current occupant*, never a
+     * previous one, so a press reads the pairing this row is showing right
+     * now rather than one captured earlier and possibly re-pointed since.
+     */
+    revision: number;
     /** When this place was last emptied. `assignPooledRows` reads it; see `BUILD_QUEUE_ROW_SETTLE_MS`. */
     freedAtMs: number | undefined;
   }
@@ -2460,12 +2473,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
            * order has left the window -- so a press reaches what the player was
            * looking at, or reaches nothing.
            */
-          const { orderId } = row;
+          const { orderId, revision } = row;
           if (orderId === undefined) return;
-          options.onCancelOrder(orderId);
+          options.onCancelOrder(orderId, revision);
         },
       }),
       orderId: undefined,
+      revision: 0,
       freedAtMs: undefined,
     };
     row.element.append(
@@ -2762,6 +2776,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
          */
         if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.orderId = undefined;
+        row.revision = 0;
         row.element.hidden = false;
         row.label.textContent = '';
         row.state.textContent = '';
@@ -2775,6 +2790,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       if (order === undefined) continue;
       drawn += 1;
       row.orderId = order.orderId;
+      row.revision = order.revision;
       row.element.hidden = false;
       row.cancel.setUnavailable(false);
       row.label.textContent = formatBuildQueueOrderText(t, order, localizer.formatNumber(order.cancelRefundMinorUnits));

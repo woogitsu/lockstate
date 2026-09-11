@@ -673,6 +673,27 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.build.unowned-land': 'The build order failed — you do not own that land.',
   'hud.alert.refusal.build.water-blocked': 'The build order failed — there is water on that tile.',
   /*
+   * The one `cancel-build-order.*` sentence (ADR 0107).
+   *
+   * "Nothing was refunded — …" first, matching `cancel-purchase.not-pending`'s
+   * own opening clause below for the same family of refusal (ADR 0107 Context
+   * §8): the balance did not move, and that is the fact the press was aimed
+   * at changing. Deliberately generic across every `order.state =` transition
+   * a revision mismatch could represent (Decision §3's eleven sites), not
+   * only `'assigned'` -> `'in-progress'` -- a sentence naming "the crew" would
+   * be false of a press caught between, say, `'approved'` and
+   * `'materials-pending'`, where no crew is involved yet.
+   *
+   * The second sentence answers ADR 0107 Context §7's own frequency finding: a
+   * control that refuses seven presses in ten (pre-fix; see this repository's
+   * measurement of the post-fix rate) owes the player somewhere to look, and
+   * the row's own next publication is exactly that -- it already reads the
+   * order's honest current state and honest current refund figure by the
+   * time this sentence is read.
+   */
+  'hud.alert.refusal.cancel-build-order.stale-cancellation':
+    'Nothing was refunded — this order moved on before the cancellation reached it. Press Cancel again to see what it pays now.',
+  /*
    * The one `cancel-purchase.*` sentence (#285).
    *
    * It says the money did not come back *first*, because that is the fact the
