@@ -124,38 +124,37 @@ describe('recordGrudgeFromAdjudicatedAssault: decision 2', () => {
     expect(gangs.getGrudge('gang.alpha', 'gang.beta')).toBe(CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2);
   });
 
-  it('accumulates identically in both directions, and the fourth cross-gang assault is what clears the retaliation threshold', () => {
+  it('accumulates identically in both directions, and the second cross-gang assault is what clears the retaliation threshold', () => {
     const gangs = twoGangsWithMembers();
 
     recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 2));
     // Measured against the trigger's own default threshold of 0.6, not
-    // recomputed from the code under test: one assault at half weight (0.1)
-    // is 0.1 * 1.5 = 0.15 on contested ground in EITHER direction, which is
-    // below it. Before 2026-09-10, one full-weight assault produced 0.3; the
-    // half-weight ruling halves this too, in both directions equally.
-    expect(resolveRetaliationRisk(gangs, 'gang.beta', 'gang.alpha', SECTOR)).toBeCloseTo(0.15, 10);
-    expect(resolveRetaliationRisk(gangs, 'gang.alpha', 'gang.beta', SECTOR)).toBeCloseTo(0.15, 10);
-
-    recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 2));
-    // Two assaults: 0.2 grudge each way, risk 0.3 each way -- still under
-    // threshold. Under the pre-ruling one-directional ledger this second
-    // assault was the one that cleared 0.6; it no longer is, because half the
-    // weight now goes to the direction that was previously untouched.
+    // recomputed from the code under test: one assault at half of a 0.4
+    // weight is 0.2 a key, and 0.2 * 1.5 = 0.3 on contested ground in EITHER
+    // direction, which is below it.
+    //
+    // **THIS FILE READ 0.15 HERE, AND FOR ONE DAY THAT WAS RIGHT.** Two
+    // rulings landed on top of each other. The owner's answer to open
+    // question 2 (2026-09-10) halved every write, and with the weight still
+    // at 0.2 that left 0.1 a key and a risk of 0.15 -- which doubled the
+    // assaults a retaliation needed, from two to four, because the threshold
+    // is on ONE key. That consequence was not named when they answered, so it
+    // was put to them, and on 2026-09-11 they ruled the weight to 0.4 so a
+    // key accrues what a key accrued before. Both figures are kept here
+    // because a reader should see which number moved and why.
     expect(resolveRetaliationRisk(gangs, 'gang.beta', 'gang.alpha', SECTOR)).toBeCloseTo(0.3, 10);
     expect(resolveRetaliationRisk(gangs, 'gang.alpha', 'gang.beta', SECTOR)).toBeCloseTo(0.3, 10);
 
     recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 2));
-    expect(resolveRetaliationRisk(gangs, 'gang.beta', 'gang.alpha', SECTOR)).toBeCloseTo(0.45, 10);
-    expect(resolveRetaliationRisk(gangs, 'gang.alpha', 'gang.beta', SECTOR)).toBeCloseTo(0.45, 10);
-
-    recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 2));
-    // Four assaults, any direction mix (this fixture keeps the same
-    // instigator throughout, and it makes no difference): 0.4 grudge each
-    // way, risk 0.6 each way -- exactly at the threshold, in BOTH directions
-    // simultaneously. This is the emergent behaviour the ADR Status flagged as
-    // unmeasured: a one-directional ledger needed 2 same-direction assaults;
-    // this ledger needs 4 (any direction), and then both gangs are eligible to
-    // retaliate against each other in the same tick.
+    // Two assaults, any direction mix (this fixture keeps the same instigator
+    // throughout, and it makes no difference): 0.4 grudge each way, risk 0.6
+    // each way -- exactly at the threshold, in BOTH directions
+    // simultaneously.
+    //
+    // That simultaneity is the part neither ruling bought on purpose and both
+    // produced: the pre-2026-09-10 one-directional ledger also cleared on the
+    // second assault, but in ONE direction only. The owner was told before
+    // choosing 0.4 that a retaliation can now fire twice where it fired once.
     expect(resolveRetaliationRisk(gangs, 'gang.beta', 'gang.alpha', SECTOR)).toBeCloseTo(0.6, 10);
     expect(resolveRetaliationRisk(gangs, 'gang.alpha', 'gang.beta', SECTOR)).toBeCloseTo(0.6, 10);
   });
@@ -163,16 +162,22 @@ describe('recordGrudgeFromAdjudicatedAssault: decision 2', () => {
   it('accumulates the same way when the instigator alternates, which the one-directional ledger could not do', () => {
     const gangs = twoGangsWithMembers();
 
-    // Entity 2 (gang.alpha) instigates twice, then entity 7 (gang.beta)
-    // instigates twice. Under the pre-ruling one-directional ledger this
-    // would write 0.2 to 'gang.beta->gang.alpha' and 0.2 to
-    // 'gang.alpha->gang.beta' -- two different keys, NEITHER reaching the 0.4
-    // needed for a 0.6 risk (ADR 0103 decision 2.5's "an alternating pair
-    // never retaliates at all"). Under the half-weight-both-directions
-    // ruling, all four credit both keys equally regardless of who instigated.
+    // Entity 2 (gang.alpha) instigates once, then entity 7 (gang.beta) does.
+    // Under the pre-2026-09-10 one-directional ledger this wrote 0.2 to
+    // 'gang.beta->gang.alpha' and 0.2 to 'gang.alpha->gang.beta' -- two
+    // different keys, NEITHER reaching the 0.4 a 0.6 risk needs, which is ADR
+    // 0103 decision 2.5's "an alternating pair never retaliates at all".
+    // Under both-directions-at-half-weight every assault credits both keys
+    // equally regardless of who instigated, so an alternating pair now
+    // accumulates exactly as a one-sided pair does.
+    //
+    // **THIS CASE USED FOUR ASSAULTS AND ASSERTED 0.4 A KEY, AND THAT WAS
+    // RIGHT WHILE THE WEIGHT WAS 0.2.** The owner ruled the weight to 0.4 on
+    // 2026-09-11, so a key accrues 0.2 an assault again and four assaults
+    // would now clamp the risk at 1 rather than sit at the threshold. Two is
+    // what demonstrates the property at the ruled weight; the point the case
+    // was written to make is unchanged.
     recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 2));
-    recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 2));
-    recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 7));
     recordGrudgeFromAdjudicatedAssault(gangs, assaultRecord([2, 7], 7));
 
     expect(gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.4, 10);

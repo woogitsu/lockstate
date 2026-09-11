@@ -138,8 +138,40 @@ export function defaultGangIdForArrival(entityId: EntityId, classificationGroupI
  * directional default in the same sense `retaliationThreshold` calls itself
  * one, and **Open Question 6 is the one number a balance pass would move
  * first**; it is not settled by anything the owner ruled.
+ *
+ * **THE LAST CLAUSE ABOVE IS NOW FALSE AND IS KEPT SO A READER SEES WHICH
+ * SENTENCE MOVED. Open Question 6 was ruled by the owner on 2026-09-11: this
+ * constant is 0.4.** It was put to them because open question 2's own answer
+ * changed what this number buys, and nobody had said so when they answered
+ * it. Halving every write means each directional key accrues `weight / 2` per
+ * assault, so at 0.2 a retaliation needed **four** cross-gang assaults where
+ * it had needed two -- measured through the real kernel, first retaliation
+ * moving from tick 7,000 to tick 11,800 on the same seed. The arithmetic
+ * above says why: the threshold is on ONE key's grudge, and it is the
+ * per-key rate that halving moves.
+ *
+ * **At 0.4 each key accrues 0.2 an assault, which is what a key accrued
+ * before the ruling**, so the first retaliation returns to every second
+ * cross-gang assault. The owner was told, before choosing, that this is NOT
+ * a clean restoration of the prior behaviour and the difference was named:
+ * total ledger movement per assault doubles (0.4 spread over two keys rather
+ * than 0.2 on one), and because both keys now cross the threshold in step, a
+ * retaliation can fire **twice -- once in each direction -- where it fired
+ * once**. They chose it against that, so the extra retaliation is bought
+ * rather than overlooked.
+ *
+ * **What made the question worth asking rather than deciding here**: at 0.2
+ * the mechanism was measurably close to unreachable. Eight seeds, ninety
+ * in-game days each, at the repository's own reference staffing, produced a
+ * gang member in **2 of 8** sessions and a gang retaliation in **1 of 8** --
+ * so *"Two gangs are settling a score."* is a sentence most players would
+ * never see. That measurement is what the ruling was given against.
+ *
+ * **Provenance is the weaker kind**, as `AGENTS.md` records of several
+ * rulings: the label of a clickable option this session wrote -- *"Podnieś
+ * wagę do 0,4"* -- not a sentence the owner typed.
  */
-export const CROSS_GANG_ASSAULT_GRUDGE_WEIGHT = 0.2;
+export const CROSS_GANG_ASSAULT_GRUDGE_WEIGHT = 0.4;
 
 /**
  * Writes the grudge an adjudicated cross-gang assault leaves behind, and

@@ -169,44 +169,53 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
 
     // The line ADR 0103 Context 1 calls the decisive one --
     // `if (grudge === 0) return 0;` -- no longer answers 0 for this prison, in
-    // EITHER direction. 0.1 * 1.5 on contested ground, well under the
-    // trigger's 0.6 -- half of what one assault bought before 2026-09-10.
-    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.15, 10);
-    expect(resolveRetaliationRisk(runtime.gangs, 'gang.alpha', 'gang.beta', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.15, 10);
+    // EITHER direction. Half of the ruled 0.4 weight is 0.2 a key, and
+    // 0.2 * 1.5 is 0.3 on contested ground, under the trigger's 0.6.
+    // **This read 0.15 while the weight was still 0.2**, which is the reading
+    // that made a retaliation need four assaults instead of two.
+    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.3, 10);
+    expect(resolveRetaliationRisk(runtime.gangs, 'gang.alpha', 'gang.beta', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.3, 10);
     expect(runtime.incidents.all().some((incident) => incident.type === 'gang-retaliation')).toBe(false);
 
     // Measured: the second assault opens at 6,350 and lapses at 6,960, the
-    // same pair and the same instigator. Before 2026-09-10, two in the SAME
-    // direction was exactly what decision 2.5 said weight 0.2 buys -- 0.4 *
-    // 1.5 is exactly the 0.6 threshold, and a retaliation opened here. Under
-    // the half-weight-both-directions ruling this is only 0.2 each way, risk
-    // 0.3 each way: the same instigator no longer buys a retaliation twice as
-    // fast, because half of what it writes now goes to the direction that
-    // used to be untouched. This is the doubled-ledger-entries cost the ADR
-    // Status named and asked to have measured.
+    // same pair and the same instigator. At the ruled weight this is 0.4 each
+    // way -- `0.4 * 1.5` is exactly the 0.6 threshold, in BOTH directions at
+    // once, and the retaliation opens at the next sampling point.
+    //
+    // **This block asserted 0.2 each way and no retaliation while the weight
+    // was 0.2**, because halving without raising the weight put a retaliation
+    // two assaults further out than it had ever been. Kept so a reader can
+    // see which reading moved: what the halving changed is WHICH keys are
+    // credited, and what the weight ruling restored is HOW FAST a key fills.
     stepTo(runtime, 6_970);
-    expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.2, 10);
-    expect(runtime.gangs.getGrudge('gang.alpha', 'gang.beta')).toBeCloseTo(0.2, 10);
-    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.3, 10);
-    expect(runtime.incidents.all().some((incident) => incident.type === 'gang-retaliation')).toBe(false);
+    expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.4, 10);
+    expect(runtime.gangs.getGrudge('gang.alpha', 'gang.beta')).toBeCloseTo(0.4, 10);
+    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.6, 10);
   });
 
-  it('opens the gang retaliation the trigger has never had a producer for, after the FOURTH cross-gang assault -- not the second, since 2026-09-10', () => {
+  it('opens the gang retaliation the trigger has never had a producer for, after the SECOND cross-gang assault', () => {
     const runtime = buildPrison();
-    // Measured on this tree: a 3rd assault opens at 8,750 (lapses 9,360) and a
-    // 4th at 11,150 (lapses 11,760), same pair and same instigator throughout.
-    // Before 2026-09-10 this fixture's one retaliation opened at tick 7,000,
-    // after the SECOND assault. It now takes the FOURTH: 0.1 per assault per
-    // direction, 4 assaults, 0.4 each way, `0.4 * 1.5` exactly the threshold.
-    stepTo(runtime, 11_810);
+    // **THIS CASE READ "after the FOURTH cross-gang assault -- not the second,
+    // since 2026-09-10" AND STEPPED TO 11,810, AND THAT WAS RIGHT FOR ONE
+    // DAY.** Two rulings landed on consecutive days and the second undid the
+    // first's side effect. Open question 2's answer (2026-09-10) halved every
+    // write, which at a weight of 0.2 left 0.1 a key and pushed this fixture's
+    // first retaliation from tick 7,000 to tick 11,800 -- four assaults where
+    // two had been enough, because the threshold is on ONE key's grudge. That
+    // consequence was measured here rather than predicted, put to the owner,
+    // and on 2026-09-11 they ruled the weight to 0.4. A key accrues 0.2 an
+    // assault again.
+    //
+    // Measured on this tree at the ruled weight: assaults open at 3,950 and
+    // 6,350, and the retaliation opens at **7,000** -- the same tick it opened
+    // at before either ruling. `intervalTicks` is 50.
+    stepTo(runtime, 7_010);
 
     const retaliations = runtime.incidents.all().filter((incident) => incident.type === 'gang-retaliation');
     expect(retaliations).toHaveLength(1);
     const retaliation = retaliations[0]!;
 
-    // Measured: tick 11,800 -- the first sampling point after the fourth
-    // assault reached its terminal state at 11,760. `intervalTicks` is 50.
-    expect(retaliation.startedAtTick).toBe(11_800);
+    expect(retaliation.startedAtTick).toBe(7_000);
 
     // ADR 0103 Context 5's arithmetic, met by a run: `round(risk * 10)` at the
     // threshold is 6, and 6 is `lockdownSeverityThreshold`. There is no mild
@@ -236,8 +245,8 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     // Acted on, not retained, for the direction that fired -- but the OTHER
     // direction is untouched at 0.4 and is still eligible. This is the
     // emergent, previously-impossible shape the ADR Status flagged as
-    // unmeasured: this fixture opens a SECOND gang-retaliation at 16,600, in
-    // the other direction, with no further assault -- see the next test.
+    // unmeasured, and at the ruled weight it is not a second retaliation but
+    // two more -- see the next test.
     expect(runtime.gangs.getGrudge('gang.alpha', 'gang.beta')).toBe(0);
     expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.4, 10);
     expect(runtime.gangs.allGrudges()).toEqual([['gang.beta', 'gang.alpha', 0.4]]);
@@ -245,45 +254,68 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     expect(runtime.incidentTriggerSystem.getMetrics().retaliationsTriggered).toBe(1);
   });
 
-  it('opens a SECOND gang-retaliation, in the other direction, off the same four assaults -- the doubled-ledger-entries cost measured', () => {
+  it('opens a SECOND and a THIRD gang-retaliation off the same four assaults, and the third is severity 10 -- the doubled-ledger cost measured', () => {
     const runtime = buildPrison();
-    // Measured on this tree: after the first retaliation (tick 11,800, see
-    // above), the sector's one open-incident slot is held by it until it
-    // lapses (no guard responds -- the same one-hire shortfall Context 13
-    // prices) at 12,400. No fifth assault occurs before then or after --
-    // this prison's assault pressure has moved on to riots by this point
-    // (`riotsTriggered` below). The reverse direction's grudge, untouched by
-    // the first retaliation, is still 0.4 and still clears the threshold the
-    // moment the sector is free to sample it again.
+    // **THIS CASE ASSERTED TWO RETALIATIONS AND IT NOW MEASURES THREE.** It
+    // was written on 2026-09-10, when open question 2's halving met a weight
+    // of 0.2; the owner ruled the weight to 0.4 on 2026-09-11, so a key
+    // accrues 0.2 an assault and this fixture's four assaults buy more than
+    // they did under either earlier arrangement. The old figures are kept
+    // beside the new ones rather than deleted.
+    //
+    // Measured on this tree at the ruled weight, walking the same four
+    // assaults (3,950 / 6,350 / 8,750 / 11,150):
+    //
+    //   tick  7,000  -- 'gang.alpha->gang.beta' at 0.4, risk 0.6, severity 6
+    //   tick 11,800  -- 'gang.alpha->gang.beta' again at 0.4, severity 6
+    //   tick 16,600  -- 'gang.beta->gang.alpha' at **0.8**, risk clamped to
+    //                   1, **severity 10**
+    //
+    // `allGrudges()` sorts by key, so 'gang.alpha->gang.beta' is sampled
+    // first and is discharged twice while the reverse key keeps accruing --
+    // which is how one direction reaches 0.8 and produces a retaliation half
+    // again as severe as any this fixture produced before. **Nobody
+    // predicted the severity-10 one**; it is recorded here because the owner
+    // was told a retaliation could fire twice where it fired once, and the
+    // measured answer is three times with one of them worse.
     stepTo(runtime, 16_610);
 
     const retaliations = runtime.incidents.all().filter((incident) => incident.type === 'gang-retaliation');
-    expect(retaliations).toHaveLength(2);
-    const second = retaliations[1]!;
+    expect(retaliations).toHaveLength(3); // was 2 while the weight was 0.2
 
-    expect(second.startedAtTick).toBe(16_600);
-    expect(second.severity).toBe(6);
-    expect(second.participantIds).toEqual([0, 2, 3, 4, 5, 7]);
-    expect(second.causeFactors).toEqual([
+    expect(retaliations[1]!.startedAtTick).toBe(11_800);
+    expect(retaliations[1]!.severity).toBe(6);
+    expect(retaliations[1]!.participantIds).toEqual([0, 2, 3, 4, 5, 7]);
+    expect(retaliations[1]!.causeFactors).toEqual([
       { kind: 'gang-grudge', value: 0.4 },
       { kind: 'retaliation-risk', value: 0.6000000000000001 },
     ]);
 
+    const third = retaliations[2]!;
+    expect(third.startedAtTick).toBe(16_600);
+    // `round(risk * 10)` with the risk clamped at 1 -- the only severity-10
+    // retaliation this fixture has ever produced.
+    expect(third.severity).toBe(10);
+    expect(third.participantIds).toEqual([0, 2, 3, 4, 5, 7]);
+    expect(third.causeFactors).toEqual([
+      { kind: 'gang-grudge', value: 0.8 },
+      { kind: 'retaliation-risk', value: 1 },
+    ]);
+
     // Both directions are now discharged.
     expect(runtime.gangs.allGrudges()).toEqual([]);
-    expect(runtime.incidentTriggerSystem.getMetrics().retaliationsTriggered).toBe(2);
+    expect(runtime.incidentTriggerSystem.getMetrics().retaliationsTriggered).toBe(3);
 
     // **The cadence measurement ADR 0103 Status required before this could
-    // ship.** Over the SAME four assaults, on the SAME fixture, the
-    // pre-2026-09-10 one-directional ledger produced exactly the same COUNT
-    // of retaliations (2) by tick 11,800 -- but at ticks 7,000 and 11,800,
-    // evenly spaced one per two assaults. This ledger produces the same count
-    // over the same four assaults, but clustered as a pair (11,800 and
-    // 16,600) after a longer wait for the first one, because every assault
-    // now credits both keys instead of only the accumulating one. The ledger
-    // entry count doubles regardless: 4 assaults -> 4 writes before this
-    // change, 8 after (`addGrudge` called twice per adjudicated assault).
-    // Full measurement, both trees, is in this pass's report.
+    // ship, now across all three arrangements of the same fixture and the
+    // same four assaults.** Pre-2026-09-10, one-directional at weight 0.2:
+    // retaliations at 7,000 and 11,800, one per two assaults, one direction
+    // only. Both-directions-at-half-weight with the weight still 0.2:
+    // 11,800 and 16,600 -- the same count, clustered, after a longer wait.
+    // Both directions at the ruled weight 0.4: 7,000, 11,800 and 16,600.
+    // The ledger-entry count doubles under all three: four assaults write
+    // four entries before the halving and eight after, because `addGrudge`
+    // is called twice per adjudicated assault.
   });
 
   /**
@@ -388,13 +420,14 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     ]);
 
     // And it keeps behaving: ticked forward from the save, the restored
-    // prison reaches the same retaliation the continuous session did.
-    // Requires two further assaults (a 3rd and 4th) beyond the save point,
-    // which this fixture's own pressure still produces identically -- the
-    // weight change does not move assault timing, only the grudge ledger.
-    stepTo(restored, 11_810); // was 7,010
+    // prison reaches the same retaliation the continuous session did, at the
+    // same tick. **This stepped to 11,810 while the weight was 0.2** -- the
+    // save point is unchanged and so is assault timing; what moved is how
+    // many assaults a key needs, and the 2026-09-11 weight ruling put that
+    // back to two.
+    stepTo(restored, 7_010);
     const retaliation = restored.incidents.all().find((incident) => incident.type === 'gang-retaliation');
-    expect(retaliation).toMatchObject({ startedAtTick: 11_800, severity: 6, participantIds: [0, 2, 3, 4, 5, 7] });
+    expect(retaliation).toMatchObject({ startedAtTick: 7_000, severity: 6, participantIds: [0, 2, 3, 4, 5, 7] });
   });
 
   /**
