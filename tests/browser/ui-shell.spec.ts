@@ -4525,6 +4525,7 @@ test.describe('the Rooms panel', () => {
       };
     });
 
+    console.log('AGENT_D_MEASUREMENT', JSON.stringify(measured));
     expect(measured).not.toBeNull();
     expect(measured!.laidOut, 'the readout has no box to measure').toBe(true);
     expect(measured!.text).toBe('Walled in — not a door check');
