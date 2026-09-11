@@ -9,7 +9,14 @@ import type { EntityId } from '../entity/entity-store';
 import type { PlacedObject } from '../objects/placed-object';
 import { roomBoundsOf, roomContains } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
-import { roomPerimeterAccess, type RoomDoorReader, type RoomEdgeReader, type RoomPerimeterAccess } from '../rooms/enclosure';
+import type { RoomDoorReader, RoomEdgeReader, TileRectangle } from '../rooms/enclosure';
+import {
+  roomAccess,
+  roomReachability,
+  type RoomAccess,
+  type RoomReachability,
+  type RoomRegionReader,
+} from '../rooms/reachability';
 import type { SecuritySectorDefinition } from '../security/sector';
 import {
   compareEntityIds,
@@ -106,6 +113,22 @@ export interface RoomProjectionOptions {
   readonly perimeter?: {
     readonly edges: RoomEdgeReader;
     readonly doors: RoomDoorReader;
+    /**
+     * The region/portal partition navigation already builds, so a row can say
+     * whether anybody can get *to* the door it found (ADR 0108, #1006).
+     *
+     * **Required alongside the other two, not optional beside them**, for the
+     * reason the paragraph above gives about those: a caller that supplied the
+     * walls and the doors but not the regions would have answered only the
+     * question that cannot distinguish a working cell from a dead one, which is
+     * the defect #1006 is. The type refuses it instead of this projection
+     * having to.
+     *
+     * `NavigationGraph` satisfies `RoomRegionReader` structurally and
+     * `runtime.navigation.getGraph()` is the one the router reads, so the
+     * panel's answer and the walk's answer cannot disagree.
+     */
+    readonly regions: RoomRegionReader;
   };
 }
 
@@ -376,7 +399,7 @@ export interface RoomListRowViewModel {
    * is a *fact about the instance*, published beside the requirement verdict
    * rather than inside it.
    */
-  readonly access?: RoomPerimeterAccess;
+  readonly access?: RoomAccess;
   /** Counts over the catalog's `object` requirements only; the rest are `'not-evaluated'`. */
   readonly requirementSummary: {
     readonly total: number;
@@ -670,12 +693,50 @@ function projectSecurity(
  * of a room's extent, and the perimeter walk would be reading a different
  * rectangle from the one the object count is attributed to.
  */
-function projectAccess(instance: RoomInstance, options: RoomProjectionOptions): RoomPerimeterAccess | undefined {
+function projectAccess(
+  instance: RoomInstance,
+  options: RoomProjectionOptions,
+  reachability: RoomReachability | undefined,
+): RoomAccess | undefined {
   const { perimeter } = options;
-  if (perimeter === undefined) return undefined;
+  if (perimeter === undefined || reachability === undefined) return undefined;
   const bounds = roomBoundsOf(instance);
   if (bounds === undefined) return undefined;
-  return roomPerimeterAccess(perimeter.edges, perimeter.doors, bounds);
+  return roomAccess(perimeter.edges, perimeter.doors, reachability, bounds);
+}
+
+/**
+ * The exterior walk for one projection pass, or nothing when nobody asked.
+ *
+ * **One per call and shared by every row**, which is the difference between ADR
+ * 0108's measured cost and several hundred copies of it: the seed walk is a
+ * question about the prison and only the `tileToRegion` lookup is a question
+ * about a room. `roomReachability` defers even that walk until the first row
+ * actually needs it.
+ *
+ * `zonedRooms` is a thunk because the rule behind it has a rare second branch
+ * -- the exterior falls back to the boundary ring minus every zoned room's
+ * rectangle only when the loaded area has no opening at all -- and
+ * `projectRoomDetail` would otherwise enumerate every instance in the prison to
+ * answer about one. `roomBoundsOf` is the single definition of a room's extent
+ * here, exactly as it is in `projectAccess` above; an instance carrying none
+ * contributes nothing rather than a rectangle this layer invented.
+ */
+function reachabilityFor(
+  source: RoomProjectionSource,
+  rooms: ContentRegistry<RoomCatalogDefinition>,
+  options: RoomProjectionOptions,
+): RoomReachability | undefined {
+  const { perimeter } = options;
+  if (perimeter === undefined) return undefined;
+  return roomReachability(perimeter.edges, perimeter.doors, perimeter.regions, () => {
+    const rectangles: TileRectangle[] = [];
+    for (const instance of collectRoomInstances(source, rooms)) {
+      const bounds = roomBoundsOf(instance);
+      if (bounds !== undefined) rectangles.push(bounds);
+    }
+    return rectangles;
+  });
 }
 
 function projectRow(
@@ -686,6 +747,7 @@ function projectRow(
   grades: ContentRegistry<SecurityGradeDefinition>,
   options: RoomProjectionOptions,
   contents: readonly PlacedObject[] | undefined,
+  reachability: RoomReachability | undefined,
 ): RoomListRowViewModel {
   const definition = rooms.getById(instance.roomCatalogId);
   const requirements = definition?.requirements ?? [];
@@ -705,7 +767,7 @@ function projectRow(
   }
 
   const security = projectSecurity(instance.instanceId, options, grades);
-  const access = projectAccess(instance, options);
+  const access = projectAccess(instance, options, reachability);
   // One sorted list, read twice: the capabilities the row publishes and the
   // keys of the concurrent-use list are the same set in the same order, and
   // sorting twice would be two chances to disagree.
@@ -755,8 +817,9 @@ export function projectRoomList(
 
   const instances = collectRoomInstances(source, rooms);
   const contents = contentsByInstanceId(instances, options.placedObjects);
+  const reachability = reachabilityFor(source, rooms, options);
   const allRows = instances.map((instance) =>
-    projectRow(source, instance, rooms, objects, grades, options, contents?.get(instance.instanceId)),
+    projectRow(source, instance, rooms, objects, grades, options, contents?.get(instance.instanceId), reachability),
   );
 
   let occupants = 0;
@@ -807,7 +870,7 @@ export function projectRoomDetail(
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
-    ...projectRow(source, instance, rooms, objects, grades, options, contents),
+    ...projectRow(source, instance, rooms, objects, grades, options, contents, reachabilityFor(source, rooms, options)),
     occupantEntityIds: [...source.roomInstances.occupantsOf(instanceId)].sort(compareEntityIds),
     requirements: (definition?.requirements ?? []).map((requirement) =>
       projectRequirement(requirement, instance, objects, contents),
