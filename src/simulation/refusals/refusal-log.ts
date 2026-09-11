@@ -1,7 +1,7 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { ConstructionFundingRefusalReason } from '../construction/materials-procurement';
 import type { RemoveWallRefusalReason } from '../construction/system';
-import type { PurchaseCancelRefusalReason, PurchaseRefusalReason } from '../economy/procurement';
+import type { PurchaseCancelRefusalReason, PurchaseRefusalReason, SellStockRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
@@ -334,6 +334,28 @@ export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, Re
 };
 
 /**
+ * `SellStockRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (`SellMaterials`, ADR 0075 decision 3 / ADR 0096 decision
+ * 3(b)).
+ *
+ * Namespaced `sell.*` rather than folded into `purchase.*`, for the reason
+ * every such pair in this file is: buying and selling are opposite gestures on
+ * the same material, and somebody who pressed Sell must not read
+ * `purchase.unknown-material` and wonder whether a delivery they never asked
+ * for failed to arrive. `unknown-material` and `invalid-quantity` are spelled
+ * exactly like two of `PURCHASE_REFUSAL_REASONS`'s own members -- the same
+ * condition, read off the same catalogue lookup and the same integer guard,
+ * for the opposite direction of money -- which is precisely the shape the
+ * namespace exists to keep apart. `insufficient-stock` has no purchase-side
+ * twin: nothing about buying can ever be refused for want of stock.
+ */
+export const SELL_REFUSAL_REASONS: Readonly<Record<SellStockRefusalReason, RefusalReason>> = {
+  'insufficient-stock': 'sell.insufficient-stock',
+  'invalid-quantity': 'sell.invalid-quantity',
+  'unknown-material': 'sell.unknown-material',
+};
+
+/**
  * `PurchaseCancelRefusalReason`, mapped onto the wire's. Exhaustive for the same
  * reason as above (#285).
  *
@@ -607,6 +629,16 @@ export function unzoneSupersessionKey(x: number, y: number, width: number, heigh
 /** `purchase.*`'s key: the item and the quantity, not the order id -- see the section comment. */
 export function purchaseSupersessionKey(itemId: string, quantity: number): string {
   return `purchase:${itemId}:${quantity}`;
+}
+
+/**
+ * `sell.*`'s key: the item and the quantity, exactly as `purchase.*`'s is --
+ * `SellMaterials` carries no order id for `purchaseSupersessionKey`'s reason
+ * to key on instead. A fresh press of the same item and quantity is the same
+ * request landing, so it withdraws a still-standing refusal about it.
+ */
+export function sellSupersessionKey(itemId: string, quantity: number): string {
+  return `sell:${itemId}:${quantity}`;
 }
 
 /**

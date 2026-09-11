@@ -1208,7 +1208,7 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the thirteen vocabularies behind it cannot collide:
+ * refusal answers, so the fourteen vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `cancel-purchase.*` mirrors
  * `PurchaseCancelRefusalReason`, `construction.*` mirrors
@@ -1218,8 +1218,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
  * `release-guard.*` mirrors `GuardReleaseRefusalReason`,
  * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `remove-wall.*`
- * mirrors `RemoveWallRefusalReason`, `unzone.*` mirrors
- * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
+ * mirrors `RemoveWallRefusalReason`, `sell.*` mirrors
+ * `SellStockRefusalReason`, `unzone.*` mirrors `UnzoneRoomRefusalReason` and
+ * `zone.*` mirrors `ZoneRoomRefusalReason`. The
  * namespace is doing real work rather than being tidy -- `out-of-bounds` and
  * `unowned-land` are members of *two* of those domain vocabularies,
  * `insufficient-funds` and `invalid-area` are each a member of two others, and
@@ -1230,8 +1231,8 @@ export type SimulationStatusCounts = DeepReadonly<
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
  * these through an exhaustive `Record`, so a reason added to any of the
- * thirteen fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the thirteen tables between
+ * fourteen fails to compile until it is named here -- and
+ * `tests/unit/simulation-refusals.test.ts` asserts the fourteen tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  *
@@ -1329,6 +1330,20 @@ export type SimulationStatusCounts = DeepReadonly<
  * `nothing-to-remove`, is the fourth spelling of "the player pressed where
  * there was nothing of theirs to take away", beside `remove-object.*`'s own
  * and `unzone.*`'s.
+ *
+ * `sell.*` is the fourteenth namespace
+ * ([ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 3, invoked by
+ * [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 3(b)) and mirrors `SellStockRefusalReason`. It is a namespace of its
+ * own against `purchase.*` for the reason `cancel-purchase.*` is: buying and
+ * selling are opposite gestures on the same material and the same treasury,
+ * and somebody who pressed Sell must not read that a delivery was not
+ * ordered. Two of its three members are spelled exactly like two of
+ * `purchase.*`'s -- `unknown-material` and `invalid-quantity` are the same
+ * catalogue lookup and the same integer guard, read for the opposite
+ * direction of money -- and `insufficient-stock` has no purchase-side twin at
+ * all: nothing about buying can be refused for want of stock.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
@@ -1362,6 +1377,9 @@ export const REFUSAL_REASONS = [
   'release-guard.unknown-guard',
   'remove-object.nothing-to-remove',
   'remove-wall.nothing-to-remove',
+  'sell.insufficient-stock',
+  'sell.invalid-quantity',
+  'sell.unknown-material',
   'unzone.invalid-area',
   'unzone.nothing-to-remove',
   'unzone.room-occupied',
