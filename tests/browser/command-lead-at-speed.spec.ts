@@ -1,5 +1,5 @@
 import { expect, test, type Page } from './network-changed-fixture';
-import { installTee, openApp, type TeeWindow } from './playtest-harness';
+import { TILE, armBuildable, drag, installTee, openApp, tab, type TeeWindow } from './playtest-harness';
 
 /**
  * **A press at ×4 whose tick report reached this thread late still becomes a
@@ -231,5 +231,89 @@ test.describe('a press whose tick report arrived late (#942)', () => {
       })
       .toEqual(['queued', 'queued']);
     await expect(metric(page, 'staff')).toHaveText('2');
+  });
+});
+
+/**
+ * **A `CancelBuildOrder` press riding the same 400 ms stall this file already
+ * proves `DEFAULT_LEAD_TICKS` survives, at `CancelBuildOrder`'s own narrower
+ * margin (ADR 0107).**
+ *
+ * `CANCEL_BUILD_ORDER_LEAD_TICKS` (`src/ui/simulation-commands.ts`) is 12
+ * ticks -- 600 ms of real time at every speed -- in place of the sender's
+ * default 20 (1000 ms), specifically so a stale-cancellation press is
+ * scheduled closer to the tick its row was actually read at. That margin is
+ * smaller and this file's own stall is exactly what it has to survive: the
+ * same 400 ms figure the test above stalls a tick report's own listener for,
+ * standing in for the renderer's heaviest per-message work rather than a
+ * typical one. 600 ms keeps 200 ms of headroom over it; this test is that
+ * headroom, measured rather than assumed.
+ *
+ * The mechanism is identical to the test above -- a `message` listener added
+ * at press time, so the press lands in the same dispatch as the late report,
+ * after the application's own handler and before anything fresher arrives --
+ * aimed at the Build panel's `Cancel` button instead of `Hire`.
+ */
+test.describe('a stale-cancellation press survives the same stall #942 tests, at its own narrower margin (ADR 0107)', () => {
+  test('a CancelBuildOrder press on a 400 ms late report is still queued, not rejected as past-tick', async ({ page }) => {
+    test.slow();
+
+    await installTee(page);
+    await installStallableWorker(page);
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    // ---- x1, the speed ADR 0107 is about ---------------------------------
+    const transport = page.locator('.hud-strip__transport button');
+    await transport.nth(1).click();
+    await expect(page.locator('.hud-clock__speed'), 'the worker never took the speed, so this is not a x1 run').toHaveText('×1');
+
+    // ---- the order and its control ----------------------------------------
+    await tab(page, 'build').click();
+    await armBuildable(page, 'wall-brick');
+    const viewport = page.viewportSize() ?? { width: 1440, height: 900 };
+    const from = { x: Math.round(viewport.width * 0.35), y: Math.round(viewport.height / 2) };
+    await drag(page, from, { x: from.x + Math.round(TILE * 0.5), y: from.y });
+
+    const section = page.locator('.hud-build__queue');
+    if ((await section.getAttribute('data-collapsed')) === 'true') {
+      await section.locator('.ui-section__header').click();
+    }
+    const cancelButton = page.locator('.hud-build__queue-row').getByRole('button', { name: 'Cancel' }).first();
+    await expect(cancelButton, 'no queue row drew a Cancel control to press').toBeVisible({ timeout: 15_000 });
+
+    expect(await commandResults(page), 'this session has issued a command already, so the count below is not this press').not.toEqual([]);
+    const before = (await commandResults(page)).length;
+
+    // ---- the press, on a report that took 400 ms to be read ----------------
+    await page.evaluate(async () => {
+      const scope = window as unknown as StallWindow;
+      const stall = scope.lockstateStallNextTickReport;
+      const worker = scope.lockstateWorkerInstance;
+      if (stall === undefined || worker === undefined) throw new Error('the stallable worker was not installed');
+
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error('no tick report arrived to be delayed'));
+        }, 10_000);
+        const pressOnTheLateReport = (event: MessageEvent): void => {
+          if ((event.data as { kind?: string } | null)?.kind !== 'simulation/clock-state') return;
+          worker.removeEventListener('message', pressOnTheLateReport);
+          clearTimeout(timer);
+          resolve();
+        };
+        worker.addEventListener('message', pressOnTheLateReport);
+        stall(400);
+      });
+    });
+    await cancelButton.click();
+
+    await expect
+      .poll(async () => (await commandResults(page)).slice(before), {
+        message: 'the CancelBuildOrder press on the late report never became a command the worker accepted',
+        timeout: 20_000,
+      })
+      .toEqual(['queued']);
   });
 });
