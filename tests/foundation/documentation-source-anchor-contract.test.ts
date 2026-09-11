@@ -232,6 +232,7 @@ describe('every rooted file:line anchor in the documentation is in range', () =>
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:215-224: no such file',
-    ]);
+      'docs/research/2026-09-05-does-the-game-say-there-is-no-door.md -> src/simulation/rooms/enclosure.ts:303: out of range, src/simulation/rooms/enclosure.ts has 294 lines',
+    ].sort());
   });
 });

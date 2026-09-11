@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 444 authored sentences
+## The 445 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -390,86 +390,87 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.rooms.needs-item-more` | and {count} more | `src/content/default-locale-en.ts:2860` |
 | `hud.rooms.needs-object-unknown` | something this build cannot name | `src/content/default-locale-en.ts:2864` |
 | `hud.rooms.needs-doorway` | a door — nobody can get in | `src/content/default-locale-en.ts:2891` |
-| `hud.rooms.at-capacity` | At capacity | `src/content/default-locale-en.ts:2951` |
-| `hud.rooms.at-capacity-count` | {full} of {total} | `src/content/default-locale-en.ts:2952` |
-| `hud.rooms.at-capacity-room` | {room} at {x}, {y} is full | `src/content/default-locale-en.ts:2953` |
-| `hud.rooms.at-capacity-places` | places in use: {inUse} of {capacity} | `src/content/default-locale-en.ts:2954` |
-| `hud.severity.info` | Info | `src/content/default-locale-en.ts:2956` |
-| `hud.severity.warning` | Warning | `src/content/default-locale-en.ts:2957` |
-| `hud.severity.danger` | Critical | `src/content/default-locale-en.ts:2958` |
-| `save.panel.region` | Prison saves | `src/content/default-locale-en.ts:2973` |
-| `save.panel.title` | Prisons | `src/content/default-locale-en.ts:2974` |
-| `save.action.create` | New prison | `src/content/default-locale-en.ts:2976` |
-| `save.action.save` | Save now | `src/content/default-locale-en.ts:2977` |
-| `save.action.export` | Export | `src/content/default-locale-en.ts:2978` |
-| `save.action.import` | Import | `src/content/default-locale-en.ts:2979` |
-| `save.action.load` | Load | `src/content/default-locale-en.ts:2980` |
-| `save.action.delete` | Delete | `src/content/default-locale-en.ts:2981` |
-| `save.list.empty` | No prisons yet. | `src/content/default-locale-en.ts:2983` |
-| `save.list.item` | {name} ({count} gen) | `src/content/default-locale-en.ts:2984` |
-| `save.status.idle` | Local saves only — no network required. | `src/content/default-locale-en.ts:2986` |
-| `save.status.saved` | Saved (generation {generation}). | `src/content/default-locale-en.ts:2987` |
-| `save.status.quota-exceeded` | Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact. | `src/content/default-locale-en.ts:2992` |
-| `save.status.transaction-aborted` | The browser interrupted the save. Your previous save is intact — try saving again. | `src/content/default-locale-en.ts:2994` |
-| `save.status.save-failed` | Save failed: {detail} | `src/content/default-locale-en.ts:2996` |
-| `save.status.list-unreadable` | Could not read the local prison list (private browsing or an unreadable slot record can cause this): {detail} | `src/content/default-locale-en.ts:3000` |
-| `save.status.creating` | Creating prison… | `src/content/default-locale-en.ts:3002` |
-| `save.status.create-failed` | Could not create a prison: {detail} | `src/content/default-locale-en.ts:3003` |
-| `save.status.no-active-prison` | No active prison — create or load one first. | `src/content/default-locale-en.ts:3004` |
-| `save.status.saving` | Saving… | `src/content/default-locale-en.ts:3005` |
-| `save.status.loading` | Loading… | `src/content/default-locale-en.ts:3006` |
-| `save.status.not-found` | That prison no longer exists. | `src/content/default-locale-en.ts:3007` |
-| `save.status.no-readable-generation` | No readable save generation remains for this prison. Every retained copy failed validation. | `src/content/default-locale-en.ts:3008` |
-| `save.status.recovered` | The most recent save was unreadable — recovered an earlier verified generation. | `src/content/default-locale-en.ts:3010` |
-| `save.status.loaded` | Loaded. | `src/content/default-locale-en.ts:3011` |
-| `save.status.deleted` | Prison deleted. | `src/content/default-locale-en.ts:3012` |
-| `save.status.nothing-to-export` | Nothing to export — no valid active save. | `src/content/default-locale-en.ts:3013` |
-| `save.status.exported` | Exported the current save. | `src/content/default-locale-en.ts:3014` |
-| `save.status.importing` | Reading the save file… | `src/content/default-locale-en.ts:3021` |
-| `save.status.imported` | Imported the save file into this prison (generation {generation}). | `src/content/default-locale-en.ts:3022` |
-| `save.status.imported-migrated` | Imported a save from an older version of Lockstate and brought it up to date (generation {generation}). | `src/content/default-locale-en.ts:3023` |
-| `save.status.import-not-a-save` | That file is not a Lockstate save — choose a file exported from this game. | `src/content/default-locale-en.ts:3025` |
-| `save.status.import-unsupported-version` | That save was written by a newer version of Lockstate than this one. Update the game, then import it again. | `src/content/default-locale-en.ts:3026` |
-| `save.status.import-corrupt` | That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported. | `src/content/default-locale-en.ts:3028` |
-| `save.status.import-invalid` | That save file could not be read: {detail} | `src/content/default-locale-en.ts:3030` |
-| `save.failure.create` | Creating the prison failed: {detail} | `src/content/default-locale-en.ts:3032` |
-| `save.failure.save` | Saving failed: {detail} | `src/content/default-locale-en.ts:3033` |
-| `save.failure.load` | Loading failed: {detail} | `src/content/default-locale-en.ts:3034` |
-| `save.failure.delete` | Deleting failed: {detail} | `src/content/default-locale-en.ts:3035` |
-| `save.failure.export` | Exporting failed: {detail} | `src/content/default-locale-en.ts:3036` |
-| `save.failure.import` | Importing failed: {detail} | `src/content/default-locale-en.ts:3037` |
-| `save.failure.unknown` | The action failed: {detail} | `src/content/default-locale-en.ts:3038` |
-| `save.detail.restored-scope` | Restored: {restored}. Not carried by this save version: {notCarried}. | `src/content/default-locale-en.ts:3045` |
-| `save.scope.kernel` | kernel tick and command queue | `src/content/default-locale-en.ts:3064` |
-| `save.scope.rng-streams` | RNG stream states | `src/content/default-locale-en.ts:3065` |
-| `save.scope.world` | world terrain and ownership | `src/content/default-locale-en.ts:3066` |
-| `save.scope.construction` | construction orders and undo/redo | `src/content/default-locale-en.ts:3067` |
-| `save.scope.entity-liveness` | entity id liveness | `src/content/default-locale-en.ts:3068` |
-| `save.scope.prisoners` | prisoners, needs, actions and cell assignments | `src/content/default-locale-en.ts:3069` |
-| `save.scope.operations` | jobs, containers and utility networks | `src/content/default-locale-en.ts:3070` |
-| `save.scope.security` | doors, security sectors, guards and patrols | `src/content/default-locale-en.ts:3071` |
-| `save.scope.contraband` | contraband, intelligence and searches | `src/content/default-locale-en.ts:3072` |
-| `save.scope.incidents` | incidents, gangs and tunnels | `src/content/default-locale-en.ts:3073` |
-| `save.scope.names` | prisoner and staff names | `src/content/default-locale-en.ts:3074` |
-| `save.scope.room-caches` | room and topology caches (recomputed from the world) | `src/content/default-locale-en.ts:3079` |
-| `save.scope.navigation-caches` | navigation caches and in-flight path requests (re-issued on the next tick) | `src/content/default-locale-en.ts:3080` |
-| `input.action.camera.up` | Pan camera up | `src/content/default-locale-en.ts:3088` |
-| `input.action.camera.down` | Pan camera down | `src/content/default-locale-en.ts:3089` |
-| `input.action.camera.left` | Pan camera left | `src/content/default-locale-en.ts:3090` |
-| `input.action.camera.right` | Pan camera right | `src/content/default-locale-en.ts:3091` |
-| `input.action.camera.zoom.in` | Zoom in | `src/content/default-locale-en.ts:3092` |
-| `input.action.camera.zoom.out` | Zoom out | `src/content/default-locale-en.ts:3093` |
-| `input.action.selection.primary` | Select | `src/content/default-locale-en.ts:3094` |
-| `input.action.build.confirm` | Confirm placement | `src/content/default-locale-en.ts:3095` |
-| `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:3098` |
-| `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:3102` |
-| `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:3103` |
-| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:3108` |
-| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:3111` |
-| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:3119` |
-| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:3128` |
-| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:3132` |
-| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:3148` |
-| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:3149` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3159` |
+| `hud.rooms.needs-unreachable` | a way in — nothing outside can reach its door | `src/content/default-locale-en.ts:2933` |
+| `hud.rooms.at-capacity` | At capacity | `src/content/default-locale-en.ts:2993` |
+| `hud.rooms.at-capacity-count` | {full} of {total} | `src/content/default-locale-en.ts:2994` |
+| `hud.rooms.at-capacity-room` | {room} at {x}, {y} is full | `src/content/default-locale-en.ts:2995` |
+| `hud.rooms.at-capacity-places` | places in use: {inUse} of {capacity} | `src/content/default-locale-en.ts:2996` |
+| `hud.severity.info` | Info | `src/content/default-locale-en.ts:2998` |
+| `hud.severity.warning` | Warning | `src/content/default-locale-en.ts:2999` |
+| `hud.severity.danger` | Critical | `src/content/default-locale-en.ts:3000` |
+| `save.panel.region` | Prison saves | `src/content/default-locale-en.ts:3015` |
+| `save.panel.title` | Prisons | `src/content/default-locale-en.ts:3016` |
+| `save.action.create` | New prison | `src/content/default-locale-en.ts:3018` |
+| `save.action.save` | Save now | `src/content/default-locale-en.ts:3019` |
+| `save.action.export` | Export | `src/content/default-locale-en.ts:3020` |
+| `save.action.import` | Import | `src/content/default-locale-en.ts:3021` |
+| `save.action.load` | Load | `src/content/default-locale-en.ts:3022` |
+| `save.action.delete` | Delete | `src/content/default-locale-en.ts:3023` |
+| `save.list.empty` | No prisons yet. | `src/content/default-locale-en.ts:3025` |
+| `save.list.item` | {name} ({count} gen) | `src/content/default-locale-en.ts:3026` |
+| `save.status.idle` | Local saves only — no network required. | `src/content/default-locale-en.ts:3028` |
+| `save.status.saved` | Saved (generation {generation}). | `src/content/default-locale-en.ts:3029` |
+| `save.status.quota-exceeded` | Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact. | `src/content/default-locale-en.ts:3034` |
+| `save.status.transaction-aborted` | The browser interrupted the save. Your previous save is intact — try saving again. | `src/content/default-locale-en.ts:3036` |
+| `save.status.save-failed` | Save failed: {detail} | `src/content/default-locale-en.ts:3038` |
+| `save.status.list-unreadable` | Could not read the local prison list (private browsing or an unreadable slot record can cause this): {detail} | `src/content/default-locale-en.ts:3042` |
+| `save.status.creating` | Creating prison… | `src/content/default-locale-en.ts:3044` |
+| `save.status.create-failed` | Could not create a prison: {detail} | `src/content/default-locale-en.ts:3045` |
+| `save.status.no-active-prison` | No active prison — create or load one first. | `src/content/default-locale-en.ts:3046` |
+| `save.status.saving` | Saving… | `src/content/default-locale-en.ts:3047` |
+| `save.status.loading` | Loading… | `src/content/default-locale-en.ts:3048` |
+| `save.status.not-found` | That prison no longer exists. | `src/content/default-locale-en.ts:3049` |
+| `save.status.no-readable-generation` | No readable save generation remains for this prison. Every retained copy failed validation. | `src/content/default-locale-en.ts:3050` |
+| `save.status.recovered` | The most recent save was unreadable — recovered an earlier verified generation. | `src/content/default-locale-en.ts:3052` |
+| `save.status.loaded` | Loaded. | `src/content/default-locale-en.ts:3053` |
+| `save.status.deleted` | Prison deleted. | `src/content/default-locale-en.ts:3054` |
+| `save.status.nothing-to-export` | Nothing to export — no valid active save. | `src/content/default-locale-en.ts:3055` |
+| `save.status.exported` | Exported the current save. | `src/content/default-locale-en.ts:3056` |
+| `save.status.importing` | Reading the save file… | `src/content/default-locale-en.ts:3063` |
+| `save.status.imported` | Imported the save file into this prison (generation {generation}). | `src/content/default-locale-en.ts:3064` |
+| `save.status.imported-migrated` | Imported a save from an older version of Lockstate and brought it up to date (generation {generation}). | `src/content/default-locale-en.ts:3065` |
+| `save.status.import-not-a-save` | That file is not a Lockstate save — choose a file exported from this game. | `src/content/default-locale-en.ts:3067` |
+| `save.status.import-unsupported-version` | That save was written by a newer version of Lockstate than this one. Update the game, then import it again. | `src/content/default-locale-en.ts:3068` |
+| `save.status.import-corrupt` | That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported. | `src/content/default-locale-en.ts:3070` |
+| `save.status.import-invalid` | That save file could not be read: {detail} | `src/content/default-locale-en.ts:3072` |
+| `save.failure.create` | Creating the prison failed: {detail} | `src/content/default-locale-en.ts:3074` |
+| `save.failure.save` | Saving failed: {detail} | `src/content/default-locale-en.ts:3075` |
+| `save.failure.load` | Loading failed: {detail} | `src/content/default-locale-en.ts:3076` |
+| `save.failure.delete` | Deleting failed: {detail} | `src/content/default-locale-en.ts:3077` |
+| `save.failure.export` | Exporting failed: {detail} | `src/content/default-locale-en.ts:3078` |
+| `save.failure.import` | Importing failed: {detail} | `src/content/default-locale-en.ts:3079` |
+| `save.failure.unknown` | The action failed: {detail} | `src/content/default-locale-en.ts:3080` |
+| `save.detail.restored-scope` | Restored: {restored}. Not carried by this save version: {notCarried}. | `src/content/default-locale-en.ts:3087` |
+| `save.scope.kernel` | kernel tick and command queue | `src/content/default-locale-en.ts:3106` |
+| `save.scope.rng-streams` | RNG stream states | `src/content/default-locale-en.ts:3107` |
+| `save.scope.world` | world terrain and ownership | `src/content/default-locale-en.ts:3108` |
+| `save.scope.construction` | construction orders and undo/redo | `src/content/default-locale-en.ts:3109` |
+| `save.scope.entity-liveness` | entity id liveness | `src/content/default-locale-en.ts:3110` |
+| `save.scope.prisoners` | prisoners, needs, actions and cell assignments | `src/content/default-locale-en.ts:3111` |
+| `save.scope.operations` | jobs, containers and utility networks | `src/content/default-locale-en.ts:3112` |
+| `save.scope.security` | doors, security sectors, guards and patrols | `src/content/default-locale-en.ts:3113` |
+| `save.scope.contraband` | contraband, intelligence and searches | `src/content/default-locale-en.ts:3114` |
+| `save.scope.incidents` | incidents, gangs and tunnels | `src/content/default-locale-en.ts:3115` |
+| `save.scope.names` | prisoner and staff names | `src/content/default-locale-en.ts:3116` |
+| `save.scope.room-caches` | room and topology caches (recomputed from the world) | `src/content/default-locale-en.ts:3121` |
+| `save.scope.navigation-caches` | navigation caches and in-flight path requests (re-issued on the next tick) | `src/content/default-locale-en.ts:3122` |
+| `input.action.camera.up` | Pan camera up | `src/content/default-locale-en.ts:3130` |
+| `input.action.camera.down` | Pan camera down | `src/content/default-locale-en.ts:3131` |
+| `input.action.camera.left` | Pan camera left | `src/content/default-locale-en.ts:3132` |
+| `input.action.camera.right` | Pan camera right | `src/content/default-locale-en.ts:3133` |
+| `input.action.camera.zoom.in` | Zoom in | `src/content/default-locale-en.ts:3134` |
+| `input.action.camera.zoom.out` | Zoom out | `src/content/default-locale-en.ts:3135` |
+| `input.action.selection.primary` | Select | `src/content/default-locale-en.ts:3136` |
+| `input.action.build.confirm` | Confirm placement | `src/content/default-locale-en.ts:3137` |
+| `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:3140` |
+| `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:3144` |
+| `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:3145` |
+| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:3150` |
+| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:3153` |
+| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:3161` |
+| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:3170` |
+| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:3174` |
+| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:3190` |
+| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:3191` |
+| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3201` |
 
