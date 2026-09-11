@@ -50,7 +50,21 @@ const REACHED: RoomReachability = { reaches: () => true };
 const NOT_REACHED: RoomReachability = { reaches: () => false };
 const NEVER_WALKED: RoomReachability = {
   reaches() {
-    throw new Error('this rectangle must be decided by its perimeter alone, with no region walk');
+    throw new Error('a rectangle with a gap in its perimeter must be decided without any region walk');
+  },
+};
+/**
+ * A door reader that throws if it is consulted.
+ *
+ * The short-circuit in `roomAccess`'s own docblock, asserted rather than
+ * described: a **sealed** rectangle the exterior walk reached must be
+ * `'doorway'` without a door read, because being sealed and reachable already
+ * entails a registered door on the perimeter -- nothing else can cross a
+ * boundary whose every edge holds geometry.
+ */
+const NEVER_READ: RoomDoorReader = {
+  getByEdge() {
+    throw new Error('a sealed rectangle the walk reached must not need a door read');
   },
 };
 
@@ -585,13 +599,16 @@ describe('whether anything can cross a room perimeter (#938)', () => {
     wallPerimeter(world, room);
 
     expect(roomPerimeterEnclosure(world, room)).toEqual({ enclosure: 'sealed' });
-    // `NEVER_WALKED` is half of the assertion: ADR 0108 decision 3 keeps
-    // 'no-way-in' meaning what it always meant, which requires the region
-    // question to be asked *after* the door read and not before it. A doorless
-    // sealed room is unreachable too, so an implementation that walked first
-    // would answer 'unreachable' here and stop telling this player to build a
-    // door.
-    expect(roomAccess(world, new DoorRegistry(), NEVER_WALKED, room)).toBe('no-way-in');
+    /*
+     * `NOT_REACHED` is the truthful answer for this rectangle and half of the
+     * assertion: a sealed room with no door cannot be reached, by the same
+     * argument that lets `roomAccess` skip the door read when it *is* reached.
+     * ADR 0108 decision 3 keeps 'no-way-in' meaning what it always meant, so
+     * what has to be pinned is that this room is **not** swallowed into
+     * 'unreachable' -- the panel must go on telling this player to build a
+     * door rather than to take down a wall somewhere else.
+     */
+    expect(roomAccess(world, new DoorRegistry(), NOT_REACHED, room)).toBe('no-way-in');
   });
 
   /*
@@ -640,6 +657,10 @@ describe('whether anything can cross a room perimeter (#938)', () => {
         `a door at ${String(edge.x)},${String(edge.y)} ${edge.side} is a way in`,
       ).toBe('doorway');
       expect(
+        roomAccess(world, NEVER_READ, REACHED, room),
+        `a sealed rectangle the walk reached is a way in without reading the registry`,
+      ).toBe('doorway');
+      expect(
         roomAccess(world, doors, NOT_REACHED, room),
         `the same door at ${String(edge.x)},${String(edge.y)} ${edge.side}, with nothing able to reach it`,
       ).toBe('unreachable');
@@ -655,7 +676,7 @@ describe('whether anything can cross a room perimeter (#938)', () => {
     // there and not to this rectangle.
     const doors = doorAt(world, { x: 4, y: 8 }, 'top');
 
-    expect(roomAccess(world, doors, NEVER_WALKED, room)).toBe('no-way-in');
+    expect(roomAccess(world, doors, NOT_REACHED, room)).toBe('no-way-in');
   });
 
   /*
