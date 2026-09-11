@@ -102,6 +102,20 @@ import { describe, expect, it } from 'vitest';
  * — its value is prospective, for the regime #449 measured, where one release
  * carried 169 commits and this gate reported nine releases of headroom.
  *
+ * **AND "35 TODAY" WAS A WINDOW STILL OPEN, NOT A CEILING — IT GREW BEFORE THE
+ * DAY DID.** "Today" named the anchor chain's then-current, unclosed window
+ * (`24b96881`..`HEAD` at the moment this docblock was written, mid-way through
+ * the same 2026-09-11 this file's sweep is dated to). That window kept
+ * accepting merges after this sentence landed and closed at **45** commits
+ * merge-to-merge (`24b96881`..`b0cf1beb`, the next anchor) — **46** against the
+ * `chore(release)` tip one commit past it — not 35. Both figures are still
+ * comfortably inside **100** and below the **63**-commit historical ceiling
+ * this same sentence states, so nothing here argues for moving either budget
+ * constant; the correction is that "today" was never going to hold still long
+ * enough to cite as a fixed number, which is the same lesson
+ * `docs/adr/STATUS-QUEUE.md`'s own header draws about every dated figure it
+ * carries (`docs/AGENT_WORKFLOW.md` §4, "mark both directions").
+ *
  * ## It bites, and it is not vacuous
  *
  * Proved by three controls run against the tree that landed it, not asserted:
