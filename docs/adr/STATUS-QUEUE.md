@@ -15215,20 +15215,28 @@ swapped: **99** counts linked rows and files on disk, which is what the
 previous anchor's 98 counted; **100** adds the unlinked, file-less `0018` row,
 still at `docs/adr/README.md:174`.
 
-And **Next free number: 0108** — **moved again, by a draft this file's own
-window does not contain, the same shape this paragraph has now recorded twice
-running (0105 → 0106, then 0106 → 0107).** `git show e9d5e500:docs/adr/README.md`
-states **0107**, and `docs/adr/README.md` has since moved to **0108**, ADR
-0107 (`what-a-stale-build-order-cancellation-is-refused-for.md`, filed against
-#853, `Proposed. Not self-approved.`) taking the number the index's own line
-stated and landing its row in the same index edit. This restatement is
-edited in place a seventh time on this one figure rather than left to
-disagree, exactly as the sixth edit — recorded here rather than duplicated as
-a second paragraph, because a second `Next free number:` phrase inside this
-anchor's live section would itself be a second live restatement the index's
-current value would have to agree with, which is the trap `tests/foundation/
-adr-status-queue-anchor-contract.test.ts` exists to catch rather than a way
-around it.
+And **Next free number: 0109** — **moved again, and this time by two drafts
+written in parallel in the same hour, which is new in this paragraph's
+history.** `git show e9d5e500:docs/adr/README.md` states **0107**, and
+`docs/adr/README.md` has since moved to **0109**: ADR 0107
+(`what-a-stale-build-order-cancellation-is-refused-for.md`, filed against
+#853, `Proposed. Not self-approved.`) took the number the index's own line
+stated, and ADR 0108 (`what-nobody-can-get-in-should-mean.md`, filed against
+#1006, `Proposed. Not self-approved.`) took the next. **They were drafted
+concurrently and both sweeps first answered 0107**, three agreeing answers
+each; the second agent re-swept after the first branch appeared, found two
+documents at 0107 and nothing at 0108, and moved rather than colliding. That
+is `docs/AGENT_WORKFLOW.md` §2's rule doing its work — *"the number is not
+reserved until it is in `docs/adr/README.md`"* — and the index's own paragraph
+for 0108 keeps both directions rather than overwriting the first.
+
+This restatement is edited in place an eighth time on this one figure rather
+than left to disagree, exactly as the seventh and sixth edits — recorded here
+rather than duplicated as a second paragraph, because a second
+`Next free number:` phrase inside this anchor's live section would itself be a
+second live restatement the index's current value would have to agree with,
+which is the trap `tests/foundation/adr-status-queue-anchor-contract.test.ts`
+exists to catch rather than a way around it.
 
 **§2 IS UNMOVED AT NINE ENTRIES, AND ALL FOUR COUNTING SITES AGREE.** This
 window's seven STATUS-QUEUE hunks open at `:757`, `:764`, `:10430`, `:14400`,
