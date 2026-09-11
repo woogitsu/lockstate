@@ -164,6 +164,14 @@ export class InsolvencyRungSystem implements SystemRegistration {
         if (this.seeded) this.events.recordInsolvencyRungCrossed(rung, context.tick);
       } else {
         this.standing.delete(rung);
+        // The recovery half of the same edge detection
+        // ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1).
+        // No `this.seeded` guard is needed here: this arm is reached only when
+        // `wasStanding` was `true`, which requires a *previous* call to have
+        // added the rung to `standing`, and every call sets `this.seeded = true`
+        // before returning -- so the seeding call itself can never be the one
+        // that first observes a rung already standing and now clear.
+        this.events.recordInsolvencyRungCleared(rung, context.tick);
       }
     }
     this.seeded = true;

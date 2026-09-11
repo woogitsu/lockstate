@@ -77,6 +77,9 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'economy.wages-unpaid': (sequence) => ({ sequence, tick: 100, type: 'economy.wages-unpaid', unpaidWagesMinorUnits: 360 }),
   'economy.deliveries-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-refused' }),
   'economy.construction-refused': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-refused' }),
+  // #966 site 1's recovery mirror of the two crossings above.
+  'economy.deliveries-restored': (sequence) => ({ sequence, tick: 100, type: 'economy.deliveries-restored' }),
+  'economy.construction-restored': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-restored' }),
   'prisoners.discharged': (sequence) => ({ sequence, tick: 100, type: 'prisoners.discharged', count: 2 }),
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
   'incidents.assault-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.assault-opened' }),
@@ -95,6 +98,15 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
     sequence,
     tick: 100,
     type: 'prisoners.relocated',
+    entityId: 3,
+    name: { givenName: 'Ada', familyName: 'Bell' },
+    roomNameKey: 'room.cell.name',
+  }),
+  // #966 site 3's housing mirror of `prisoners.relocated` above.
+  'prisoners.housed': (sequence) => ({
+    sequence,
+    tick: 100,
+    type: 'prisoners.housed',
     entityId: 3,
     name: { givenName: 'Ada', familyName: 'Bell' },
     roomNameKey: 'room.cell.name',
@@ -223,6 +235,49 @@ describe('what the prison says when nothing went wrong', () => {
     );
     expect(sentence).toBe('Prisoner 3 had nowhere to sleep and moved to Cell.');
     expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
+  });
+
+  /**
+   * The housing mirror of the case above, for `prisoners.housed`
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+   * same optional `name`, same fallback, same reason: a session wired without
+   * an identity registry mints nobody, and `createIntakeHousedNotice` never
+   * invents one.
+   */
+  it('names a newly housed prisoner by their entity id when nobody minted a name (#966)', () => {
+    const anonymous = { ...SAMPLE['prisoners.housed'](1) } as Record<string, unknown>;
+    delete anonymous['name'];
+    const notice = hudEventNoticeFromWorkerMessage(publication(anonymous as never));
+    if (notice === undefined || notice === 'none') throw new Error('an unnamed prisoner was still housed');
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentence = localizer.format(
+      notice.labelKey,
+      resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+    );
+    expect(sentence).toBe('Prisoner 3 has a place in Cell.');
+    expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
+  });
+
+  /**
+   * The exact sentences `EVENT_PRESENTATION`'s two new members back
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1),
+   * pinned word for word for the reason the designation sentence above is:
+   * under `AGENTS.md` reservation 4 the wording is ours and its truth is not,
+   * so every clause is a claim to prove rather than a string to skim past.
+   */
+  it('names which rung recovered, and claims nothing about what a purchase would now cost (#966)', () => {
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    const sentenceFor = (type: 'economy.deliveries-restored' | 'economy.construction-restored'): string => {
+      const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));
+      if (notice === undefined || notice === 'none') throw new Error(`${type} produced no notice`);
+      return localizer.format(
+        notice.labelKey,
+        resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
+      );
+    };
+
+    expect(sentenceFor('economy.deliveries-restored')).toBe('The treasury has climbed back above the deliveries floor.');
+    expect(sentenceFor('economy.construction-restored')).toBe('The treasury has climbed back above the construction floor.');
   });
 
   /**

@@ -273,6 +273,15 @@ describe('what the player is told when a removal moves somebody (ADR 0076 A(i))'
     const prisoner = runtime.prisoners.entityStore.getIdByIndex(0);
     expect(runtime.prisoners.coldState.getAccommodation(prisoner)).toBe(cellInstanceId);
 
+    // Issue #966 site 3: the admission above now says something too --
+    // `IntakeSystem`'s `'accommodation-assignment'` stage fires
+    // `prisoners.housed` the tick this prisoner gets the cell, which is before
+    // this case's subject even happens. The events-since watermark below is
+    // what keeps the assertion at the bottom of this case about the removal
+    // and the stranded resident, and not about an unrelated event this same
+    // fixture's own admission now legitimately produces.
+    const beforeRemoval = runtime.events.since(0).at(-1)?.sequence ?? 0;
+
     submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
 
     expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'stranded, and not evicted').toBe(cellInstanceId);
@@ -314,9 +323,22 @@ describe('what the player is told when a removal moves somebody (ADR 0076 A(i))'
      * so a producer that announces something about either still fails here, and
      * a fixture that presses one more button does not.
      */
+    /*
+     * **And it happened a third time, to the same narrowed line, for the same
+     * reason as the two notes above** ([#966](https://github.com/matmaxalez/lockstate/issues/966)
+     * site 3): from #966 site 2 until now this read
+     * `runtime.events.since(0)`, and that admission's own accommodation now
+     * legitimately produces a `prisoners.housed` this case has no opinion
+     * about. The response this time is not a wider net but a narrower
+     * *window* -- `since(beforeRemoval)` rather than `since(0)` -- because the
+     * net itself (`objects.` or `prisoners.`) is already exactly the two
+     * families that could say something about this removal or this resident,
+     * and widening it again would only be papering over the next unrelated
+     * producer this fixture's setup happens to exercise.
+     */
     expect(
       runtime.events
-        .since(0)
+        .since(beforeRemoval)
         .map((event) => event.type)
         .filter((type) => type.startsWith('objects.') || type.startsWith('prisoners.')),
       'the removal says what it cost, and nothing says anything about the resident it could not move',

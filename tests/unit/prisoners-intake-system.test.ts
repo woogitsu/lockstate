@@ -13,7 +13,7 @@ import {
   intakeStageFromIndex,
   intakeStageIndex,
 } from '../../src/simulation/prisoners/components';
-import { DEFAULT_ACCOMMODATION_POLICY, IntakeSystem } from '../../src/simulation/prisoners/intake-system';
+import { DEFAULT_ACCOMMODATION_POLICY, IntakeSystem, type IntakeHousedNotice } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -857,5 +857,117 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
       expect(prison.intakeSystem.getMetrics().failedCount).toBe(0);
       expect(prison.intakeSystem.getMetrics().accommodationBacklogTicks, 'the wait must be counted as unmet demand').toBeGreaterThan(0);
     });
+  });
+});
+
+/**
+ * The housed notice, `IntakeSystem`'s optional port for issue #966 site 3 --
+ * the place the simulation already computes a queued arrival getting a bed
+ * and used to publish nothing about it.
+ */
+describe('IntakeSystem: the housed notice (#966 site 3)', () => {
+  /** A one-cell, one-place prison with a bed standing, so an arrival is housed on the first accommodation-assignment tick. */
+  function onePlacePrison(housedNotice?: IntakeHousedNotice) {
+    const capacity = 4;
+    const store = new EntityStore(capacity);
+    const bitset = new ComponentBitset(capacity);
+    const query = new EntityQuery(store, bitset);
+    query.mask.require(0);
+    const records = new PrisonerRecordComponent(capacity);
+    const coldState = new PrisonerColdState();
+    const roomInstances = new RoomInstanceRegistry();
+    roomInstances.register({
+      instanceId: 'cell-1',
+      roomCatalogId: 'room.cell',
+      anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
+      objectCapabilities: ['sleep-surface'],
+    });
+    const intakeSystem = new IntakeSystem(
+      store,
+      query,
+      records,
+      coldState,
+      roomInstances,
+      DEFAULT_ACCOMMODATION_POLICY,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      housedNotice,
+    );
+    return { store, bitset, query, records, coldState, roomInstances, intakeSystem };
+  }
+
+  it('announces exactly the tick RoomInstanceRegistry.assign succeeds, naming the room the assignment actually claimed', () => {
+    const announced: Array<{ entityId: number; roomCatalogId: string; tick: number }> = [];
+    const housedNotice: IntakeHousedNotice = {
+      announce: (entityId, roomCatalogId, tick) => announced.push({ entityId, roomCatalogId, tick }),
+    };
+    const { store, bitset, intakeSystem } = onePlacePrison(housedNotice);
+    const kernel = makeKernel();
+    kernel.registerSystem(intakeSystem);
+
+    const entityId = store.spawn();
+    bitset.add(store.getIndex(entityId), 0);
+    intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    // Not yet: queued, reception and classification each need their own
+    // scheduled tick before accommodation-assignment is even asked.
+    expect(announced, 'nothing is announced before an assignment has actually succeeded').toEqual([]);
+
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    expect(announced).toEqual([{ entityId, roomCatalogId: 'room.cell', tick: expect.any(Number) }]);
+    expect(intakeSystem.getMetrics().completedCount, 'the notice fires alongside completion, not instead of it').toBe(1);
+  });
+
+  it('announces nothing for an arrival left waiting on a full cell', () => {
+    const announced: unknown[] = [];
+    const housedNotice: IntakeHousedNotice = { announce: (...args) => announced.push(args) };
+    const { store, bitset, intakeSystem } = onePlacePrison(housedNotice);
+    const kernel = makeKernel();
+    kernel.registerSystem(intakeSystem);
+
+    // Two arrivals, one place: the second is left waiting, not housed.
+    const first = store.spawn();
+    bitset.add(store.getIndex(first), 0);
+    intakeSystem.submitIntake(first, { sentenceLengthTicks: 100, priorIncidents: 0 });
+    const second = store.spawn();
+    bitset.add(store.getIndex(second), 0);
+    intakeSystem.submitIntake(second, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    expect(announced).toHaveLength(1);
+    expect(intakeSystem.getMetrics().completedCount).toBe(1);
+    expect(intakeSystem.getMetrics().accommodationBacklogTicks, 'the second arrival is waiting, not housed').toBeGreaterThan(0);
+  });
+
+  /**
+   * The red-then-green control this port needs: absent, `IntakeSystem` must
+   * behave **exactly** as it did before this port existed -- the same
+   * guarantee every other optional collaborator on this class documents about
+   * itself. Housing still completes; nothing throws for calling an absent
+   * port; nothing is announced because there is nowhere to announce it to.
+   */
+  it('houses an arrival exactly as before when no housedNotice is wired at all', () => {
+    const { store, bitset, intakeSystem } = onePlacePrison(undefined);
+    const kernel = makeKernel();
+    kernel.registerSystem(intakeSystem);
+
+    const entityId = store.spawn();
+    bitset.add(store.getIndex(entityId), 0);
+    intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    expect(() => {
+      for (let i = 0; i < 20; i += 1) kernel.step();
+    }).not.toThrow();
+
+    expect(intakeSystem.getMetrics().completedCount).toBe(1);
   });
 });

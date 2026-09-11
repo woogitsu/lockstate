@@ -94,8 +94,21 @@ function step(runtime: SimulationRuntime, ticks: number): void {
  * them on release would be worse than keeping them, because it would make the
  * index disagree with the records it is derived from -- and the disagreement,
  * not the entry, is what a later reader would trip on.
+ *
+ * **A third fragment joined these two once `SimulationEventLog` gained an
+ * event that names an `entityId`
+ * without leaving** ([#966](https://github.com/matmaxalez/lockstate/issues/966)
+ * site 3, `prisoners.housed`), and the argument is the identical one made for
+ * `incidents.records` above rather than a new one: `_buffered` is a record of
+ * what the prison *said*, not a store keyed by who is still in it, and a
+ * prisoner who was told about their own housing before they left is still
+ * told about it after -- the same fact `incidents.escape-succeeded` and
+ * `prisoners.relocated` already establish for this log, this fixture simply
+ * never happened to exercise either of them. Scrubbing a departed entity id
+ * out of an already-published event would rewrite history the player already
+ * read, which is a stranger thing for a release to do than leaving it alone.
  */
-const HISTORICAL_FRAGMENTS = ['incidents.records', 'incidents.openRiotCountByParticipant'] as const;
+const HISTORICAL_FRAGMENTS = ['incidents.records', 'incidents.openRiotCountByParticipant', 'events._buffered'] as const;
 
 function releaseRelevant(hits: readonly Hit[]): readonly Hit[] {
   return hits.filter((hit) => !HISTORICAL_FRAGMENTS.some((fragment) => hit.includes(fragment)));
