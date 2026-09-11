@@ -274,6 +274,16 @@ where it classifies cloud drift.
 
 ### 4. `revision` is outside the checksum, which is what makes write-time allocation cheap — VERIFIED, and ADR 0105 did not have it
 
+> **The two line numbers in this section are correct at
+> `be5061f95f6eacdcd8114efd43f4f37154330e81`, as this document's claim tiers
+> promise, and are stale on `main` — because the branch implementing this
+> document wrote the `revision` docblock §"Consequences for existing sentences"
+> asked for, immediately above them.** `createSaveEnvelope` now opens at
+> `:1774` and the `checksum:` line is `:1792`. Recorded here rather than
+> silently renumbered: the citations below are evidence for a claim taken at a
+> named commit, and a reader who greps rather than trusting either number is
+> doing the right thing. Both ends were re-opened to get these.
+
 `createSaveEnvelope` (`src/persistence/save-schema.ts:1747-1769`) hashes the
 **payload** and puts `revision` in the metadata beside it, not inside it:
 
