@@ -516,7 +516,13 @@ box.
 
 ### What changed
 
-`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:737`) —
+`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:740`) —
+**this read `:737` when it landed, which was wrong by three lines and is
+corrected here rather than quietly**: the declaration was opened at the end
+of the window and read 740, and a citation computed instead of opened is the
+one thing `docs/adr/STATUS-QUEUE.md`'s header forbids by name. It shipped
+through an integration pass that did not re-open it, and the next anchor's
+delta read is what found it —
 `MAX_RUN_SEGMENTS` (`src/rendering/build/edge-picking.ts:46`), the longest run one
 drag can place, so the pool holds a row for every order one gesture can produce.
 `.hud-build__queue-list` (`src/ui/hud/hud.css:1978`) now carries its own
