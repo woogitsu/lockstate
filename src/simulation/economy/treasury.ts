@@ -508,23 +508,120 @@ export const INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS =
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + STARTER_RUNG_MARGIN_MINOR_UNITS;
 
 /**
+ * **[ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 2's reserve, accepted by the owner 2026-09-10.** ADR 0017's
+ * "Amendment, 2026-09-01" (ruling 19) left `'wages'` as the one spend class
+ * with no rung of its own — its own §6 says so, in these words: *"Whether the
+ * wages rung should ever be drawn toward the other two [is] out of scope … it
+ * stays `Number.NEGATIVE_INFINITY`."* **ADR 0096 is the release**, and it
+ * changes a magnitude that amendment's own text ruled — recorded here because
+ * the ADR itself names that as the single most load-bearing item in its
+ * acceptance.
+ *
+ * **Why: a payday is not a press, and nothing at the `'deliveries'` rung
+ * stops it.** ADR 0096 §2's own mechanical statement: *"the undeclinable
+ * charge spends the 65 minor units of headroom [the starter deliveries rung]
+ * exists to reserve … true for every balance a press or a hire could have
+ * reached, and false the moment payroll reaches past them."* Without a rung
+ * of its own, `'wages'` clamps to `Treasury.overdraftFloorMinorUnits` exactly
+ * as a mature prison's does, and a big enough roster walks a fresh,
+ * unfurnished prison's balance down through the very room the starter
+ * deliveries rung reserved for its first plank — and does it on a schedule
+ * the player did not choose and cannot decline.
+ *
+ * **Sized at "the cheapest complete earning unit", not one plank — ADR 0096
+ * §2's own words, and the reason it is a bigger number than the deliveries
+ * margin.** That document's own arithmetic over content prices — a `room.cell`
+ * ring at ten tile edges, `wall-brick` at two `item.brick` each, one
+ * `item.wood-plank` for the bed — gives **785–865**; its own measurement of
+ * the *position*, `scripts/report-loan-recovery-pricing.mjs` §10a, gives
+ * **1,130** with a standing build queue and **1,195** with it cancelled,
+ * invariant across seven overdraft sizes, and the ADR is explicit that the
+ * measured figure is the authority: *"the arithmetic prices the goods, the
+ * sweep prices the position."* **1,195 is the value this repository takes** —
+ * the larger and more conservative of the two the ADR names as its own
+ * measured candidate rather than choosing between (item 4 of "What the owner
+ * must approve", answered in the acceptance of 2026-09-10).
+ */
+export const WAGES_STARTER_RESERVE_MINOR_UNITS = 1_195;
+
+/**
+ * **The wages starter rung — anchored to the construction floor, not to the
+ * treasury's own floor, and this is a correction this implementation made
+ * against its own first reading rather than something ADR 0096 states in so
+ * many words.**
+ *
+ * `'wages'` has no *mature* floor of its own to shift shallower the way
+ * `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` shifts the mature
+ * deliveries floor — `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages` is the
+ * sentinel `Number.NEGATIVE_INFINITY`, which clamps to whatever
+ * `Treasury.overdraftFloorMinorUnits` is. **The first reading of "extend the
+ * existing derivation" built this off *that* value —
+ * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS`,
+ * −2,500 + 1,195 = −1,305 — and measuring it (below) found it does not do
+ * what decision 2 is for.**
+ *
+ * **The measurement, through the real kernel, before this correction:**
+ * `tests/integration/economy-liquidity-hard-lock.test.ts`'s single-guard case,
+ * run with no further press, stopped payroll at exactly **−1,305** instead of
+ * continuing to the treasury's own floor of −2,500 (1,195 minor units never
+ * spent, to the unit) — so the reserve *held*, as cash. But
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` is −1,250, **shallower**
+ * than −1,305, so a treasury payroll has already pinned at −1,305 is already
+ * below the one rung a queued build order's material purchase is judged
+ * against — `Treasury.canAfford('construction')` refuses at −1,305 for the
+ * same reason it always refused below −1,250, reserve or no reserve. The 1,195
+ * was protected as headroom nobody could spend, including the construction
+ * queue the reserve exists to feed. **Sizing the margin off the treasury
+ * floor reserves money the one rung that needs it cannot reach.**
+ *
+ * **The fix: anchor to `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`
+ * instead**, the rung this reserve is *for* — the same choice
+ * `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` already makes for
+ * the one-plank case, where it is invisible only because
+ * `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS` and
+ * `INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS` happen to be the same value
+ * since the 2026-09-01 equalisation. `−1,250 + 1,195 = −55`: shallower than
+ * both the mature and the starter deliveries floors, which is the point — a
+ * treasury payroll has pinned at −55 still has the full 1,195 of room a
+ * queued order can spend, down to the construction rung, whatever the
+ * `'deliveries'`/`'hiring'` presses have or have not already done.
+ *
+ * **Re-measured with this anchor, same fixture, same kernel:** payroll now
+ * pins at **−55**, arrears begin accruing there rather than at −1,305, and
+ * `−55 − 1,195 = −1,250` — exactly `INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS`,
+ * with nothing to spare and nothing short, the identical "worst case lands
+ * exactly on the rung it protects, never below it" shape
+ * `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`'s own derivation
+ * proves. This repository's report for ADR 0096 carries both readings side by
+ * side with the real kernel output for each, because the difference between
+ * them is the ADR's own weakest claim #2 made concrete.
+ */
+const STARTER_RUNG_WAGES_FLOOR_MINOR_UNITS = INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS;
+
+/**
  * The rungs a **fresh, unfurnished** prison is refused at — see
  * `isFreshUnfurnishedPrison` for what "fresh, unfurnished" means and why it is
  * read from live state rather than carried as a flag.
  *
- * Only `'deliveries'` and `'hiring'` move, to
+ * `'deliveries'` and `'hiring'` move, to
  * `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS` — shallower than the
- * mature −1,250, reserving one plank's worth of room. `'construction'` and
- * `'wages'` are **unchanged**: the owner's ruling names "the very first
- * purchase or hire", not the build queue, and construction's own rung is what
- * the reserved room is *for* — see `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`'s
+ * mature −1,250, reserving one plank's worth of room. `'construction'` is
+ * **unchanged**: the owner's ruling names "the very first purchase or hire",
+ * not the build queue, and construction's own rung is what the reserved room
+ * is *for* — see `INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS`'s
  * arithmetic. Widening construction here as well would spend the reserve on
  * itself and prove nothing.
+ *
+ * **`'wages'` moves too, since ADR 0096 decision 2 (accepted 2026-09-10) —
+ * this cell used to be `Number.NEGATIVE_INFINITY`, the same sentinel
+ * `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS.wages` still is.** See
+ * `STARTER_RUNG_WAGES_FLOOR_MINOR_UNITS`.
  */
 export const STARTER_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, number>> = {
   deliveries: INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
   construction: INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
-  wages: Number.NEGATIVE_INFINITY,
+  wages: STARTER_RUNG_WAGES_FLOOR_MINOR_UNITS,
   hiring: INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
 };
 
@@ -545,18 +642,20 @@ export const STARTER_RUNG_FLOORS_MINOR_UNITS: Readonly<Record<SpendClass, number
  * and that is a deliberate departure from `SpendClass`'s own "no default"
  * rule, not an oversight of it.** `SpendClass` is required because it is
  * asked at every one of dozens of call sites and a default would be a silent
- * wrong answer at any of them. This flag is consulted by exactly two of
+ * wrong answer at any of them. This flag is consulted by exactly three of
  * those call sites in the whole of `src/` — the `'deliveries'` press and the
  * `'hiring'` hire, both in `createSessionCommandHandler`
- * (`src/simulation/runtime/session-commands.ts`), which computes it from
- * `PrisonerOperationsRuntime.roomInstances.totalResidentCapacity` and is the
- * one place this repository's own tests hold accountable for passing it.
- * Every other caller — `'construction'`, `'wages'`, and every test that spends
- * before this amendment existed — reads a spend class whose rung this flag
- * does not move at all (`STARTER_RUNG_FLOORS_MINOR_UNITS` above leaves
- * `construction` and `wages` exactly where `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`
- * has them), so a default of `false` there is not a wrong answer waiting to
- * happen — it is the *only* answer, whichever way it is spelled.
+ * (`src/simulation/runtime/session-commands.ts`), and, since ADR 0096 decision
+ * 2 (2026-09-10), the `'wages'` payday in `PayrollSystem.update`
+ * (`src/simulation/economy/payroll.ts`) — all three computing it the same way,
+ * from `RoomInstanceRegistry.totalResidentCapacity`, live at the moment of the
+ * spend rather than cached. `'construction'` is the one caller this flag
+ * genuinely never moves — `STARTER_RUNG_FLOORS_MINOR_UNITS` above leaves it
+ * exactly where `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS` has it, on purpose (see
+ * `STARTER_RUNG_FLOORS_MINOR_UNITS`'s own comment) — and every test that spent
+ * before this amendment existed reads a `false` default that is the only
+ * answer for whichever spend class it names, so a default of `false` there is
+ * not a wrong answer waiting to happen.
  *
  * See `Treasury.floorFor` for what the clamp buys and what it deliberately
  * does not decide.

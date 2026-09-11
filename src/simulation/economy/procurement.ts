@@ -129,6 +129,51 @@ export type PurchaseCancelOutcome =
   | { readonly ok: false; readonly reason: PurchaseCancelRefusalReason };
 
 /**
+ * **[ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 3, "Sell-back at a loss" — Accepted 2026-08-29 and, per that
+ * decision's own text, invoked rather than amended by
+ * [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 3(b): "building the sell-back needs no new ruling; it needs the
+ * ratio (#29's) and the command, the control and the refusal sentence the
+ * decision already prices."**
+ *
+ * **The ratio, which neither ADR names a candidate for.** ADR 0075 decision 3
+ * states only *"the ratio is a balance value and is #29's"*; ADR 0096 §3(b)
+ * gives the arithmetic that bounds it from below — *"any ratio above about
+ * 12% reopens the game"*, over the act B fixture's 288 bricks at catalogue —
+ * and explicitly declines to name a candidate above that floor: *"the ratio
+ * is #29's and the class does not turn on it."* This implementation chooses
+ * one rather than leaving the mechanism unusable, and flags the choice for
+ * the owner rather than presenting it as settled:
+ *
+ * **One half — 50%.** Comfortably above the ~12% arithmetic floor (so the
+ * class this decision exists for is closed with margin, not by a hair), a
+ * plain fraction a refusal or confirmation sentence can state without a
+ * percent sign, and in keeping with decision 3's own argument for why the
+ * ratio must be a real loss: *"a round trip at full price makes purchase
+ * decisions free and turns the treasury into a warehouse; a loss keeps the
+ * decision to buy a real one."* No other value is measured or argued for
+ * here — see this repository's report for ADR 0096 for the flag.
+ */
+export const SELL_BACK_RATIO_NUMERATOR = 1;
+export const SELL_BACK_RATIO_DENOMINATOR = 2;
+
+/**
+ * Why a sell-back credited nothing.
+ *
+ * Named as a union for the same reason `PurchaseRefusalReason` is: a fifth
+ * reason added later fails to compile at `src/simulation/refusals/refusal-log.ts`
+ * until somebody decides what the player is told, rather than being silently
+ * absorbed into a boolean.
+ */
+export type SellStockRefusalReason = 'unknown-material' | 'invalid-quantity' | 'insufficient-stock';
+
+/** What a sell-back did. `ok` is not a refusal. */
+export type SellStockOutcome =
+  | { readonly ok: true; readonly creditedMinorUnits: number }
+  | { readonly ok: false; readonly reason: SellStockRefusalReason };
+
+/**
  * Quantity bound for one purchase.
  *
  * Not a balance decision: an unbounded quantity multiplied by a unit price is
@@ -391,6 +436,75 @@ export class ProcurementSystem implements SystemRegistration {
     const material = procurableMaterial(itemId);
     if (material === undefined) return 0;
     return material.unitPriceMinorUnits * quantity;
+  }
+
+  /**
+   * **[ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+   * decision 3, invoked by [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+   * decision 3(b): sells `quantity` of `itemId` out of the container this
+   * system already deposits deliveries into, at `SELL_BACK_RATIO_NUMERATOR /
+   * SELL_BACK_RATIO_DENOMINATOR` of the catalogue price.**
+   *
+   * **The general answer to "the money is in the wrong shape", stated in ADR
+   * 0075's own words: "the 625-brick prison is not poor, it is illiquid."**
+   * `refundMaterials` above returns money for stock an *order* is holding;
+   * this is the sibling for stock a *container* is holding, with nothing
+   * queued to cancel — the gap ADR 0096 §4 measures directly: "there is no
+   * player command that sells stock out of a container, at any ratio."
+   *
+   * **Withdraws through `reserve`/`withdrawReserved`, the same two-step
+   * commit `ContainerMaterialsProvider.tryAllocate` already uses**, rather
+   * than a new removal method on `Container` — this system already holds a
+   * reference to the one container that matters (`this.destination`, the same
+   * one `ProcurementSystem.update` deposits arrivals into and
+   * `ConstructionSystem` draws from), so no second container reference or
+   * no-teleport exception is introduced.
+   *
+   * **The loss rounds down, per-unit, so it is never a tax at the margin.**
+   * `Math.floor(unitPriceMinorUnits * SELL_BACK_RATIO_NUMERATOR /
+   * SELL_BACK_RATIO_DENOMINATOR)` per unit, not
+   * `Math.floor(unitPriceMinorUnits * quantity * ratio)` for the whole sale —
+   * the two differ whenever a unit's price does not divide evenly by the
+   * ratio's denominator (a plank at 65, halved, is 32 per unit rather than a
+   * batch-dependent rounding), and per-unit is the reading that cannot be
+   * gamed by splitting one sale into many or combining many into one.
+   *
+   * **What this deliberately does not yet do, named because it is the whole
+   * of what is missing rather than a detail:** there is no `SellMaterials` (or
+   * similarly named) entry in `simulationCommandSchema`, no refusal reason
+   * registered on `src/simulation/refusals/refusal-log.ts`'s exhaustive
+   * `Record`, and no HUD control — `src/simulation/protocol/commands.ts` and
+   * the Build panel are another agent's surface this hour (ADR 0106), and
+   * wiring a command needs a decision about where a `SellMaterials` command
+   * belongs relative to that work rather than a unilateral edit to a shared
+   * file. This method and `previewSellStock` are the economics ADR 0075
+   * decision 3 already priced, ready for that command to call.
+   */
+  public sellStock(itemId: string, quantity: number): SellStockOutcome {
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) return { ok: false, reason: 'invalid-quantity' };
+    const material = procurableMaterial(itemId);
+    if (material === undefined) return { ok: false, reason: 'unknown-material' };
+    if (this.destination.availableOf(itemId) < quantity) return { ok: false, reason: 'insufficient-stock' };
+
+    const creditedMinorUnits = this.previewSellStock(itemId, quantity);
+    this.destination.reserve(itemId, quantity);
+    this.destination.withdrawReserved(itemId, quantity);
+    if (creditedMinorUnits > 0) this.treasury.credit(creditedMinorUnits);
+    return { ok: true, creditedMinorUnits };
+  }
+
+  /**
+   * What `sellStock` would credit, without crediting it or touching the
+   * container — the read-only half `previewRefundMaterials` is to
+   * `refundMaterials`, for the same reason: a queue row or a confirmation
+   * dialog must be able to state the price without moving anything.
+   */
+  public previewSellStock(itemId: string, quantity: number): number {
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) return 0;
+    const material = procurableMaterial(itemId);
+    if (material === undefined) return 0;
+    const perUnitMinorUnits = Math.floor((material.unitPriceMinorUnits * SELL_BACK_RATIO_NUMERATOR) / SELL_BACK_RATIO_DENOMINATOR);
+    return perUnitMinorUnits * quantity;
   }
 
   /** Deliveries not yet arrived, in the order they will arrive. */
