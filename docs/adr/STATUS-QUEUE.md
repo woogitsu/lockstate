@@ -15215,17 +15215,20 @@ swapped: **99** counts linked rows and files on disk, which is what the
 previous anchor's 98 counted; **100** adds the unlinked, file-less `0018` row,
 still at `docs/adr/README.md:174`.
 
-And **Next free number: 0107** — **unmoved across this window's own endpoints,
-which is the first time in seven anchors this restatement has had nothing to
-correct.** `git show 374543cc:docs/adr/README.md` states **0106** and
-`git show e9d5e500:docs/adr/README.md` states **0107**, the move being ADR
-0106's own row landing in `e9d5e500`/#1123 — and the previous anchor's live
-section had **already** restated 0107, having caught the move after its own
-window closed and edited its restatement in place a sixth time to say so.
-**So this pass confirms that figure from inside the window rather than
-restating it from outside**, which is what its brief asked for, and the index's
-current value and this file's live restatement agree at 0107 without an edit to
-either.
+And **Next free number: 0108** — **moved again, by a draft this file's own
+window does not contain, the same shape this paragraph has now recorded twice
+running (0105 → 0106, then 0106 → 0107).** `git show e9d5e500:docs/adr/README.md`
+states **0107**, and `docs/adr/README.md` has since moved to **0108**, ADR
+0107 (`what-a-stale-build-order-cancellation-is-refused-for.md`, filed against
+#853, `Proposed. Not self-approved.`) taking the number the index's own line
+stated and landing its row in the same index edit. This restatement is
+edited in place a seventh time on this one figure rather than left to
+disagree, exactly as the sixth edit — recorded here rather than duplicated as
+a second paragraph, because a second `Next free number:` phrase inside this
+anchor's live section would itself be a second live restatement the index's
+current value would have to agree with, which is the trap `tests/foundation/
+adr-status-queue-anchor-contract.test.ts` exists to catch rather than a way
+around it.
 
 **§2 IS UNMOVED AT NINE ENTRIES, AND ALL FOUR COUNTING SITES AGREE.** This
 window's seven STATUS-QUEUE hunks open at `:757`, `:764`, `:10430`, `:14400`,
