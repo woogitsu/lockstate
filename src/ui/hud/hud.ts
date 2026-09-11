@@ -437,6 +437,19 @@ export type HudIntent =
    */
   | { readonly kind: 'purchase-materials'; readonly itemId: string; readonly quantity: number }
   /**
+   * Sell stock back to the depot at a loss (ADR 0075 decision 3, invoked by
+   * ADR 0096 decision 3(b)).
+   *
+   * A *command*, on `purchase-materials`'s own reasons: a second tap while
+   * one is in flight must not hand a busy host two sales, and a refusal has
+   * to reach the player rather than being discarded. Unlike a purchase it
+   * needs no pre-flight balance check -- the host holds no live count of what
+   * is in the container to check a quantity against -- so every refusal this
+   * intent can provoke is the simulation's own, reached the way
+   * `cancel-material-purchase`'s is.
+   */
+  | { readonly kind: 'sell-materials'; readonly itemId: string; readonly quantity: number }
+  /**
    * The player asked for a prisoner to be admitted (#261 step 4).
    *
    * **Payload-free, and that is the whole of the boundary here.** An
@@ -1913,6 +1926,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       dispatchCommand(
         { kind: 'purchase-materials', itemId: intent.itemId, quantity: intent.quantity },
         buildPanel.purchaseControl,
+      );
+    },
+    /*
+     * Selling is a *command* for the same reasons buying is: it asks the host
+     * to change the simulation, the credit lands immediately, and a second
+     * tap while one is in flight would sell twice. The button is passed so a
+     * refusal lands on it as well as on the refusal line (issue #207), on
+     * `onPurchase`'s own pattern.
+     */
+    onSell: (intent) => {
+      dispatchCommand(
+        { kind: 'sell-materials', itemId: intent.itemId, quantity: intent.quantity },
+        buildPanel.sellControl,
       );
     },
     /*

@@ -1256,6 +1256,8 @@ export function refusalMessageKey(actionId: string, reason?: HostRefusalReason):
       return HUD_MESSAGE_KEY.refusalCancelBuildOrder;
     case 'cancel-material-purchase':
       return HUD_MESSAGE_KEY.refusalCancelMaterialPurchase;
+    case 'sell-materials':
+      return HUD_MESSAGE_KEY.refusalSellMaterials;
     case 'release-guard':
       return HUD_MESSAGE_KEY.refusalReleaseGuard;
     default:

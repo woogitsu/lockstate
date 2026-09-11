@@ -1868,7 +1868,40 @@
   gap: var(--hud-build-map-gutter);
 }
 
-.hud-build__buy > .ui-action { width: 100%; }
+/*
+ * Buy and Sell, side by side inside one row (ADR 0075 decision 3, invoked by
+ * ADR 0096 decision 3(b)) -- `.hud-build__actions`'s own pattern (two
+ * buttons, `flex: 1 1 0`, `min-width: 0` so a long label can still shrink),
+ * reused here rather than invented.
+ *
+ * **This replaces `.hud-build__buy > .ui-action { width: 100%; }`, which
+ * this row makes dead rather than merely unused.** That rule sized the Buy
+ * button alone to the row's full width; `quantityField.element` is
+ * `.ui-number`, never `.ui-action`, so nothing else in this column ever
+ * matched it. Buy now lives inside `.hud-build__buy-sell` instead of
+ * directly under `.hud-build__buy`, so the old selector matches nothing at
+ * all -- removed rather than left beside a rule with an empty match, which
+ * is exactly the kind of declaration a later reader would waste time
+ * explaining.
+ *
+ * **Why a row rather than a second stacked button, measured rather than
+ * assumed.** A second full-height row here is a second full-height row
+ * `deliveriesBlock` -- a *sibling* of `.hud-build__buy`, not a child of it --
+ * gets pushed down by, and `tests/browser/app-shell.spec.ts`'s "a pending
+ * delivery is on the panel with the fold shut … (#285, #703)" measures that
+ * block's third delivery row's Cancel control against `.hud-build`'s visible
+ * box at 900x600. Stacking Sell under Buy pushed it below that box; this
+ * layout, taking the same height Buy alone always took, does not.
+ */
+.hud-build__buy-sell {
+  display: flex;
+  gap: var(--hud-build-map-gutter);
+}
+
+.hud-build__buy-sell > .ui-action {
+  flex: 1 1 0;
+  min-width: 0;
+}
 
 /*
  * Armed is a state, not a moment: the control has to keep saying so while the

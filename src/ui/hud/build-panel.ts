@@ -1,7 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
-import { pressAffordabilityVerdict } from '../affordability';
+import { pressAffordabilityVerdict, sellBackPreviewMinorUnits } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
@@ -114,7 +114,14 @@ export interface BuildPanelIntent {
   readonly removing: boolean;
 }
 
-/** What one press of the buy control asks for: ids and numbers only. */
+/**
+ * What one press of the buy control asks for: ids and numbers only.
+ *
+ * Reused for the sell control below rather than declared a second time with
+ * an identical shape: both name a material and a quantity and nothing else,
+ * and a second interface would be one more thing to keep in step with this
+ * one for no distinction either control's consumer reads.
+ */
 export interface BuildPanelPurchaseIntent {
   readonly itemId: string;
   readonly quantity: number;
@@ -180,6 +187,16 @@ export interface BuildPanelOptions {
    * player pressed it.
    */
   readonly onCancelPurchase: (orderId: string) => void;
+  /**
+   * Sell the selected buildable's material, in the quantity the stepper
+   * shows, back to the depot at a loss (ADR 0075 decision 3, invoked by ADR
+   * 0096 decision 3(b)).
+   *
+   * Shares `onPurchase`'s stepper and its `BuildPanelPurchaseIntent` shape --
+   * selling names the same material and the same quantity a purchase would,
+   * out of the same disclosure.
+   */
+  readonly onSell: (intent: BuildPanelPurchaseIntent) => void;
 }
 
 export interface BuildPanel {
@@ -209,6 +226,8 @@ export interface BuildPanel {
   readonly submitControl: HTMLButtonElement;
   /** The buy button, for the same reason `submitControl` exists: a refused purchase is reported on it. */
   readonly purchaseControl: HTMLButtonElement;
+  /** The sell button, for the same reason `purchaseControl` exists: a refused sale is reported on it. */
+  readonly sellControl: HTMLButtonElement;
   /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
   isArmed(): boolean;
@@ -1629,6 +1648,40 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   });
   buySubmit.element.classList.add('hud-build__buy-submit');
 
+  /**
+   * Sell back the same material the buy row is open on, in the same
+   * quantity the same stepper shows (ADR 0075 decision 3, invoked by ADR
+   * 0096 decision 3(b)).
+   *
+   * Beside `buySubmit` in the same disclosure rather than a fold of its own:
+   * both name the same material and reuse `quantityField`, so a second
+   * toggle and a second stepper would be two controls asking the same two
+   * questions the Buy row already asks. `paintBuy` already hides this row
+   * for a buildable nothing sells and for the removal gesture, on the same
+   * terms `buyToggle`'s own comment gives, because a purchase and a sale of
+   * a material nothing prices are both nothing to offer.
+   *
+   * **No `setUnavailable` and no pre-flight, unlike `buySubmit`.** #772's
+   * verdict exists because the host holds a published balance to check a
+   * charge against; there is no published count of what the container
+   * holds, so there is nothing honest to check a quantity against before the
+   * press. The press still lands and is still refused on its own terms --
+   * `session-commands.ts`'s `SellMaterials` branch records
+   * `sell.insufficient-stock` through the same `RefusalLog` every other
+   * command's refusal reaches the player through -- which is
+   * `cancel-material-purchase`'s own precedent for a control with no
+   * pre-check, applied here to stock instead of to a delivery in flight.
+   */
+  const sellSubmit: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.buildSell),
+    onActivate: () => {
+      const material = selectedMaterial();
+      if (material === undefined) return;
+      options.onSell({ itemId: material.itemId, quantity });
+    },
+  });
+  sellSubmit.element.classList.add('hud-build__sell-submit');
+
   /*
    * ---- what has been bought and has not arrived (#285, #703) -----------
    *
@@ -1854,11 +1907,27 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const buyShortfallId = nextUiId('hud-build-buy-shortfall');
   buyShortfall.id = buyShortfallId;
 
+  /*
+   * Buy and Sell, side by side rather than stacked (issue measured live: a
+   * second full-width row here pushes `deliveriesBlock` -- a *sibling* of
+   * `buyRow`, not a child of it -- far enough down that its third delivery
+   * row's Cancel control lands outside `.hud-build`'s visible box at 900x600.
+   * `tests/browser/app-shell.spec.ts`'s "a pending delivery is on the panel
+   * with the fold shut … (#285, #703)" measures exactly that box and caught
+   * it. One row of the same height Buy alone used to take, on
+   * `.hud-build__actions`'s own pattern (two buttons, `flex: 1 1 0`,
+   * `min-width: 0`), is what keeps this addition height-neutral.
+   */
+  const buySellRow = element('div', {
+    className: 'hud-build__buy-sell',
+    children: [buySubmit.element, sellSubmit.element],
+  });
+
   const buyRow = element('div', {
     className: 'hud-build__buy',
     children: [
       quantityField.element,
-      buySubmit.element,
+      buySellRow,
       buyShortfall,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
       /*
@@ -1889,13 +1958,34 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   buyRow.id = buyRowId;
   buyToggle.element.setAttribute('aria-controls', buyRowId);
 
-  /** Clamps to what the selected material allows, then repaints what it costs. */
+  /** Clamps to what the selected material allows, then repaints what it costs and what selling it back would credit. */
   function setQuantity(value: number): void {
     const material = selectedMaterial();
     const ceiling = material === undefined ? value : material.maxQuantity;
     quantity = Math.min(Math.max(1, Math.trunc(value)), ceiling);
     quantityField.setValue(quantity);
     paintBuyTotal();
+    paintSellTotal();
+  }
+
+  /**
+   * What selling the stepper's quantity of the selected material would
+   * credit -- `paintBuyTotal`'s own shape, and simpler than it for the
+   * reason `sellSubmit`'s own comment gives: there is no verdict to mark,
+   * only a label to state, so this is the whole of what a quantity change
+   * repaints on the sell side.
+   */
+  function paintSellTotal(): void {
+    const material = selectedMaterial();
+    if (material === undefined) return;
+    const total = sellBackPreviewMinorUnits(material.unitPriceMinorUnits, quantity);
+    sellSubmit.setLabel(
+      t(HUD_MESSAGE_KEY.buildSellSubmit, {
+        count: quantity,
+        material: t(material.labelKey),
+        total: localizer.formatNumber(total),
+      }),
+    );
   }
 
   function paintBuyTotal(): void {
@@ -2828,18 +2918,21 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   return {
     element: panel.element,
-    // Every control that issues a command, which is now three kinds of them:
-    // the numeric route's submit, the buy button, and one cancel per pooled
-    // queue row. The rows are pooled precisely so that this list is fixed at
-    // mount -- the HUD's busy group has `add` and no `remove`.
+    // Every control that issues a command, which is now four kinds of them:
+    // the numeric route's submit, the buy button, the sell button, and one
+    // cancel per pooled queue row. The rows are pooled precisely so that this
+    // list is fixed at mount -- the HUD's busy group has `add` and no
+    // `remove`.
     controls: [
       submit.element,
       buySubmit.element,
+      sellSubmit.element,
       ...queueRows.map((row) => row.cancel.element),
       ...deliveryRows.map((row) => row.cancel.element),
     ],
     submitControl: submit.element,
     purchaseControl: buySubmit.element,
+    sellControl: sellSubmit.element,
     getSelection: readSelection,
     isArmed: () => armed,
     isRemoving: () => removing,

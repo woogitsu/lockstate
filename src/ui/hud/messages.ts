@@ -520,6 +520,23 @@ export const HUD_MESSAGE_KEY = {
   buildBuySubmit: 'hud.build.buy-submit',
   buildBuyHint: 'hud.build.buy-hint',
   /**
+   * The Sell control (ADR 0075 decision 3, invoked by ADR 0096 decision
+   * 3(b)), on `buildBuy`/`buildBuySubmit`'s own two-key shape: a placeholder
+   * label overwritten the moment a material is selected, and the sentence
+   * stating what a press would credit. See `src/content/default-locale-en.ts`
+   * for the wording and the arithmetic that proves it.
+   *
+   * **No third, hint, key** -- unlike `buildBuyHint`. One was authored and
+   * removed in the same pass that put Sell beside Buy rather than under it:
+   * `tests/browser/app-shell.spec.ts`'s "a pending delivery is on the panel
+   * with the fold shut … (#285, #703)" measured a hint line's worth of extra
+   * height pushing the deliveries block's third Cancel control outside
+   * `.hud-build`'s visible box at 900x600, and the button's own label
+   * already states what selling credits.
+   */
+  buildSell: 'hud.build.sell',
+  buildSellSubmit: 'hud.build.sell-submit',
+  /**
    * **What stops a Buy press, and what would lift it** -- the wording half of
    * issue #772, authored by the owner on 2026-09-03.
    *
@@ -1436,6 +1453,20 @@ export const HUD_MESSAGE_KEY = {
    * produces exactly one of them and never both.
    */
   refusalCancelMaterialPurchase: 'hud.refusal.cancel-material-purchase',
+  /**
+   * A sale the host refused before it was sent -- which here means only
+   * "there is no session", exactly as `refusalCancelMaterialPurchase`'s does:
+   * `SellMaterials` has no pre-flight check of its own, because there is no
+   * live stock projection this thread could honestly check a quantity
+   * against (ADR 0075 decision 3, invoked by ADR 0096 decision 3(b)).
+   *
+   * It is **not** the sentence a player sees when the simulation itself
+   * refuses the sale -- that is `hud.alert.refusal.sell.*`, decided at the
+   * tick the command executes, and it arrives in the alerts list. The two sit
+   * on opposite sides of `sender.submit`, so one press produces exactly one
+   * of them and never both.
+   */
+  refusalSellMaterials: 'hud.refusal.sell-materials',
 
   /**
    * What a refused *dispatch* of a release says, on the control that was pressed
