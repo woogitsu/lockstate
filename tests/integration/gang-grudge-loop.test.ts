@@ -136,7 +136,7 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     expect(runtime.gangs.getGangOf(1)).toBeUndefined();
   });
 
-  it('writes one directional grudge from the adjudicated cross-gang assault, and the second one clears the threshold', () => {
+  it('writes both directions at half weight from the adjudicated cross-gang assault -- ADR 0103 open question 2, answered 2026-09-10', () => {
     const runtime = buildPrison();
 
     // Measured: the first assault in this fixture opens at tick 3,950 naming
@@ -157,42 +157,61 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     expect(runtime.incidents.get(opened[0]!.id)!.state).toBe('lapsed');
 
     // Entity 2 is the instigator and is in `gang.alpha`; entity 7 is the other
-    // participant and is in `gang.beta`. Decision 2.1's direction: the
-    // offended gang is the victim's, the offending gang is the instigator's.
-    // ADR 0103's Open Question 2 records that the owner's ruling does not
-    // settle this and that two other answers are defensible.
-    expect(runtime.gangs.allGrudges()).toEqual([['gang.beta', 'gang.alpha', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT]]);
+    // participant and is in `gang.beta`. Before 2026-09-10 this wrote one
+    // directional entry ('gang.beta'->'gang.alpha') at the full per-assault
+    // weight. The owner's ruling on Open Question 2 declines to pick an
+    // offender: BOTH directions are written, each at half the weight --
+    // `allGrudges()` is sorted by key, so 'gang.alpha->gang.beta' sorts first.
+    expect(runtime.gangs.allGrudges()).toEqual([
+      ['gang.alpha', 'gang.beta', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],
+      ['gang.beta', 'gang.alpha', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],
+    ]);
 
     // The line ADR 0103 Context 1 calls the decisive one --
-    // `if (grudge === 0) return 0;` -- no longer answers 0 for this prison.
-    // 0.2 * 1.5 on contested ground, still under the trigger's 0.6.
-    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.3, 10);
+    // `if (grudge === 0) return 0;` -- no longer answers 0 for this prison, in
+    // EITHER direction. 0.1 * 1.5 on contested ground, well under the
+    // trigger's 0.6 -- half of what one assault bought before 2026-09-10.
+    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.15, 10);
+    expect(resolveRetaliationRisk(runtime.gangs, 'gang.alpha', 'gang.beta', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.15, 10);
     expect(runtime.incidents.all().some((incident) => incident.type === 'gang-retaliation')).toBe(false);
 
     // Measured: the second assault opens at 6,350 and lapses at 6,960, the
-    // same pair and the same instigator. Two in the *same* direction is what
-    // decision 2.5 says weight 0.2 buys, and the arithmetic is why: 0.4 * 1.5
-    // is exactly the 0.6 threshold.
+    // same pair and the same instigator. Before 2026-09-10, two in the SAME
+    // direction was exactly what decision 2.5 said weight 0.2 buys -- 0.4 *
+    // 1.5 is exactly the 0.6 threshold, and a retaliation opened here. Under
+    // the half-weight-both-directions ruling this is only 0.2 each way, risk
+    // 0.3 each way: the same instigator no longer buys a retaliation twice as
+    // fast, because half of what it writes now goes to the direction that
+    // used to be untouched. This is the doubled-ledger-entries cost the ADR
+    // Status named and asked to have measured.
     stepTo(runtime, 6_970);
-    expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.4, 10);
-    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.6, 10);
+    expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.2, 10);
+    expect(runtime.gangs.getGrudge('gang.alpha', 'gang.beta')).toBeCloseTo(0.2, 10);
+    expect(resolveRetaliationRisk(runtime.gangs, 'gang.beta', 'gang.alpha', DEFAULT_SECURITY_SECTOR_ID)).toBeCloseTo(0.3, 10);
+    expect(runtime.incidents.all().some((incident) => incident.type === 'gang-retaliation')).toBe(false);
   });
 
-  it('opens the gang retaliation the trigger has never had a producer for, with a participant list that is not empty', () => {
+  it('opens the gang retaliation the trigger has never had a producer for, after the FOURTH cross-gang assault -- not the second, since 2026-09-10', () => {
     const runtime = buildPrison();
-    stepTo(runtime, 7_010);
+    // Measured on this tree: a 3rd assault opens at 8,750 (lapses 9,360) and a
+    // 4th at 11,150 (lapses 11,760), same pair and same instigator throughout.
+    // Before 2026-09-10 this fixture's one retaliation opened at tick 7,000,
+    // after the SECOND assault. It now takes the FOURTH: 0.1 per assault per
+    // direction, 4 assaults, 0.4 each way, `0.4 * 1.5` exactly the threshold.
+    stepTo(runtime, 11_810);
 
     const retaliations = runtime.incidents.all().filter((incident) => incident.type === 'gang-retaliation');
     expect(retaliations).toHaveLength(1);
     const retaliation = retaliations[0]!;
 
-    // Measured: tick 7,000 -- the first sampling point after the second
-    // assault reached its terminal state at 6,960. `intervalTicks` is 50.
-    expect(retaliation.startedAtTick).toBe(7_000);
+    // Measured: tick 11,800 -- the first sampling point after the fourth
+    // assault reached its terminal state at 11,760. `intervalTicks` is 50.
+    expect(retaliation.startedAtTick).toBe(11_800);
 
     // ADR 0103 Context 5's arithmetic, met by a run: `round(risk * 10)` at the
     // threshold is 6, and 6 is `lockdownSeverityThreshold`. There is no mild
-    // gang retaliation.
+    // gang retaliation -- unaffected by the weight change, since the
+    // threshold arithmetic in `resolveRetaliationRisk` was not touched.
     expect(retaliation.severity).toBe(6);
 
     // Decision 4: both gangs' members, and the list is not empty. This is the
@@ -202,18 +221,69 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     expect(retaliation.participantIds.length).toBeGreaterThan(0);
     expect(retaliation.instigatorId).toBeUndefined(); // only an assault names one
 
+    // `gangsClaiming` sorts ['gang.alpha', 'gang.beta']; `allGrudges` sorts by
+    // key, so 'gang.alpha->gang.beta' is tried first and is the one that
+    // fires here -- the REVERSE of the one direction the pre-ruling code
+    // would ever have written for this same fixture (entity 2's gang,
+    // 'gang.alpha', is the one instigating every assault, so it was always
+    // "offending" before; it fires here as "offended" instead, which is
+    // exactly the point of not picking a side).
     expect(retaliation.causeFactors).toEqual([
       { kind: 'gang-grudge', value: 0.4 },
       { kind: 'retaliation-risk', value: 0.6000000000000001 },
     ]);
 
-    // Acted on, not retained: the ledger is empty again, which is what makes
-    // the sentence's "settling a score" a discharge rather than a standing
-    // grievance.
-    expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBe(0);
-    expect(runtime.gangs.allGrudges()).toEqual([]);
+    // Acted on, not retained, for the direction that fired -- but the OTHER
+    // direction is untouched at 0.4 and is still eligible. This is the
+    // emergent, previously-impossible shape the ADR Status flagged as
+    // unmeasured: this fixture opens a SECOND gang-retaliation at 16,600, in
+    // the other direction, with no further assault -- see the next test.
+    expect(runtime.gangs.getGrudge('gang.alpha', 'gang.beta')).toBe(0);
+    expect(runtime.gangs.getGrudge('gang.beta', 'gang.alpha')).toBeCloseTo(0.4, 10);
+    expect(runtime.gangs.allGrudges()).toEqual([['gang.beta', 'gang.alpha', 0.4]]);
 
     expect(runtime.incidentTriggerSystem.getMetrics().retaliationsTriggered).toBe(1);
+  });
+
+  it('opens a SECOND gang-retaliation, in the other direction, off the same four assaults -- the doubled-ledger-entries cost measured', () => {
+    const runtime = buildPrison();
+    // Measured on this tree: after the first retaliation (tick 11,800, see
+    // above), the sector's one open-incident slot is held by it until it
+    // lapses (no guard responds -- the same one-hire shortfall Context 13
+    // prices) at 12,400. No fifth assault occurs before then or after --
+    // this prison's assault pressure has moved on to riots by this point
+    // (`riotsTriggered` below). The reverse direction's grudge, untouched by
+    // the first retaliation, is still 0.4 and still clears the threshold the
+    // moment the sector is free to sample it again.
+    stepTo(runtime, 16_610);
+
+    const retaliations = runtime.incidents.all().filter((incident) => incident.type === 'gang-retaliation');
+    expect(retaliations).toHaveLength(2);
+    const second = retaliations[1]!;
+
+    expect(second.startedAtTick).toBe(16_600);
+    expect(second.severity).toBe(6);
+    expect(second.participantIds).toEqual([0, 2, 3, 4, 5, 7]);
+    expect(second.causeFactors).toEqual([
+      { kind: 'gang-grudge', value: 0.4 },
+      { kind: 'retaliation-risk', value: 0.6000000000000001 },
+    ]);
+
+    // Both directions are now discharged.
+    expect(runtime.gangs.allGrudges()).toEqual([]);
+    expect(runtime.incidentTriggerSystem.getMetrics().retaliationsTriggered).toBe(2);
+
+    // **The cadence measurement ADR 0103 Status required before this could
+    // ship.** Over the SAME four assaults, on the SAME fixture, the
+    // pre-2026-09-10 one-directional ledger produced exactly the same COUNT
+    // of retaliations (2) by tick 11,800 -- but at ticks 7,000 and 11,800,
+    // evenly spaced one per two assaults. This ledger produces the same count
+    // over the same four assaults, but clustered as a pair (11,800 and
+    // 16,600) after a longer wait for the first one, because every assault
+    // now credits both keys instead of only the accumulating one. The ledger
+    // entry count doubles regardless: 4 assaults -> 4 writes before this
+    // change, 8 after (`addGrudge` called twice per adjudicated assault).
+    // Full measurement, both trees, is in this pass's report.
   });
 
   /**
@@ -228,7 +298,7 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
    */
   it('says it on the alerts channel, after the assault it came from', () => {
     const runtime = buildPrison();
-    stepTo(runtime, 7_010);
+    stepTo(runtime, 11_810); // measured retaliation tick since 2026-09-10; was 7,010
 
     const types = eventTypes(runtime);
     expect(types).toContain('incidents.gang-retaliation-opened');
@@ -252,7 +322,7 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
    */
   it('lapses at one guard rather than locking the prison down, which is what the arithmetic predicted', () => {
     const runtime = buildPrison();
-    stepTo(runtime, 7_010);
+    stepTo(runtime, 11_810); // measured retaliation tick since 2026-09-10; was 7,010
     const retaliation = runtime.incidents.all().find((incident) => incident.type === 'gang-retaliation')!;
 
     // `respondersPerSeverityPoint` is 0.5, so severity 6 demands
@@ -260,7 +330,7 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
     // posted. So the response is never mounted, the lockdown line inside
     // `mountResponse` is never reached, and the incident runs out its
     // `responseDeadlineTicks` of 600.
-    stepTo(runtime, 7_620);
+    stepTo(runtime, 12_420); // was 7,620
     expect(runtime.incidents.get(retaliation.id)!.state).toBe('lapsed');
     expect(runtime.securitySectors.getControlState(DEFAULT_SECURITY_SECTOR_ID)).toBe('normal');
   });
@@ -275,7 +345,12 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
   it('carries gangs, members and a live grudge through a real save and load without a schema move', () => {
     const runtime = buildPrison();
     stepTo(runtime, 4_570);
-    expect(runtime.gangs.allGrudges()).toEqual([['gang.beta', 'gang.alpha', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT]]);
+    // Both directions, half weight each, since 2026-09-10 -- was a single
+    // entry at the full weight.
+    expect(runtime.gangs.allGrudges()).toEqual([
+      ['gang.alpha', 'gang.beta', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],
+      ['gang.beta', 'gang.alpha', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],
+    ]);
 
     const bundle = captureSessionSnapshot(runtime);
     const envelope = createSaveEnvelope({
@@ -307,13 +382,19 @@ describe('a prison a player can build seeds gangs, forms a grudge from a real as
       [0, 2, 4],
       [3, 5, 7],
     ]);
-    expect(restored.gangs.allGrudges()).toEqual([['gang.beta', 'gang.alpha', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT]]);
+    expect(restored.gangs.allGrudges()).toEqual([
+      ['gang.alpha', 'gang.beta', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],
+      ['gang.beta', 'gang.alpha', CROSS_GANG_ASSAULT_GRUDGE_WEIGHT / 2],
+    ]);
 
-    // And it keeps behaving: ticked forward from the save, the restored prison
-    // reaches the same retaliation the continuous session did.
-    stepTo(restored, 7_010);
+    // And it keeps behaving: ticked forward from the save, the restored
+    // prison reaches the same retaliation the continuous session did.
+    // Requires two further assaults (a 3rd and 4th) beyond the save point,
+    // which this fixture's own pressure still produces identically -- the
+    // weight change does not move assault timing, only the grudge ledger.
+    stepTo(restored, 11_810); // was 7,010
     const retaliation = restored.incidents.all().find((incident) => incident.type === 'gang-retaliation');
-    expect(retaliation).toMatchObject({ startedAtTick: 7_000, severity: 6, participantIds: [0, 2, 3, 4, 5, 7] });
+    expect(retaliation).toMatchObject({ startedAtTick: 11_800, severity: 6, participantIds: [0, 2, 3, 4, 5, 7] });
   });
 
   /**

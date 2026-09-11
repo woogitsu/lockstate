@@ -143,7 +143,7 @@ export const CROSS_GANG_ASSAULT_GRUDGE_WEIGHT = 0.2;
 
 /**
  * Writes the grudge an adjudicated cross-gang assault leaves behind, and
- * answers with the ledger key it wrote -- ADR 0103 decision 2, which is the
+ * answers with the gang pair involved -- ADR 0103 decision 2, which is the
  * owner's ruling of 2026-09-08 and not this repository's proposal:
  *
  * > A grudge forms from an adjudicated assault between members of different
@@ -166,42 +166,62 @@ export const CROSS_GANG_ASSAULT_GRUDGE_WEIGHT = 0.2;
  * incident tree the first simulation reader of that log (ADR 0103 Context 14g)
  * and is deliberately not done.
  *
- * **THE DIRECTION IS DECISION 2.1'S AND OPEN QUESTION 2 RECORDS THAT IT IS NOT
- * THE ONLY DEFENSIBLE ONE.** Decision 2.1 states it flat -- *"The offending
- * gang is the instigator's, the offended gang is the other participant's"* --
- * and that is what is written here. What the owner's ruling does not settle is
- * whether it is right: `instigatorId` is `ranked[0]` of
- * `scoreAssaultPressure`, and three modules say independently that it is not a
- * finding of fault. Open Question 2's other two answers -- write **both**
- * directions at half weight, or write nothing until issue #80's real
- * adjudication exists -- are open, and neither is chosen here.
+ * **BOTH DIRECTIONS, AT HALF WEIGHT -- OPEN QUESTION 2, ANSWERED BY THE OWNER
+ * ON 2026-09-10.** Decision 2.1 originally stated the direction flat --
+ * *"the offending gang is the instigator's, the offended gang is the other
+ * participant's"* -- and wrote a single directional entry at full weight. The
+ * owner's ruling declines that: nobody has to say which of the two gangs is
+ * the offender, because `instigatorId` is `ranked[0]` of
+ * `scoreAssaultPressure` and three modules say independently that it is not a
+ * finding of fault (ADR 0103 Context 12). So this writes **both** directional
+ * keys from the one event, each at half the per-assault weight, rather than
+ * one key at the whole of it -- the same total ledger movement per assault,
+ * split instead of concentrated on a guess about fault.
+ *
+ * **This changes the arithmetic decision 2.5 stated for a one-directional
+ * ledger.** That section's "two assaults means two in the SAME direction, or
+ * an alternating pair never retaliates at all" no longer holds: every
+ * cross-gang assault now credits both keys equally regardless of who
+ * `instigatorId` names, so an alternating pair accumulates exactly as a
+ * one-sided pair does. It also means both directional keys reach the
+ * retaliation threshold in step, which is priced in the ledger-cadence
+ * measurement this change is required to carry (ADR 0103 Status, "the cadence
+ * is still unmeasured").
  *
  * Answers `undefined` and writes nothing when the assault was not between two
  * gangs: no instigator, either participant in no gang, or both in the same
  * one. A same-gang assault is silent by construction, which is also what keeps
- * `addGrudge`'s self-grudge `RangeError` unreachable from this path.
+ * `addGrudge`'s self-grudge `RangeError` unreachable from this path. The
+ * `instigatorId` field is still read here -- not as a fault-finding, only to
+ * derive the two gangs and the one other participant off the two-long
+ * `participantIds` list (ADR 0103 Context 12), which needs no new field on the
+ * incident.
  */
 export function recordGrudgeFromAdjudicatedAssault(
   gangs: GangRegistry,
   incident: IncidentRecord,
   weight: number = CROSS_GANG_ASSAULT_GRUDGE_WEIGHT,
-): readonly [offendedGangId: string, offendingGangId: string] | undefined {
+): readonly [gangA: string, gangB: string] | undefined {
   if (incident.type !== 'assault' || incident.instigatorId === undefined) return undefined;
 
-  const offendingGangId = gangs.getGangOf(incident.instigatorId);
-  if (offendingGangId === undefined) return undefined;
+  const instigatorGangId = gangs.getGangOf(incident.instigatorId);
+  if (instigatorGangId === undefined) return undefined;
 
-  // `ASSAULT_PARTICIPANT_COUNT` is 2, so the victim is the participant that is
-  // not the instigator -- derived rather than carried, which is why ADR 0103
-  // Context 12 concludes a grudge needs no new field on the incident record.
-  // A record that does not name exactly one other participant is refused
-  // rather than guessed at: it is not the shape this rule is about.
+  // `ASSAULT_PARTICIPANT_COUNT` is 2, so the other participant is the one that
+  // is not the instigator -- derived rather than carried, which is why ADR
+  // 0103 Context 12 concludes a grudge needs no new field on the incident
+  // record. A record that does not name exactly one other participant is
+  // refused rather than guessed at: it is not the shape this rule is about.
   const others = incident.participantIds.filter((entityId) => entityId !== incident.instigatorId);
   if (others.length !== 1) return undefined;
 
-  const offendedGangId = gangs.getGangOf(others[0]!);
-  if (offendedGangId === undefined || offendedGangId === offendingGangId) return undefined;
+  const victimGangId = gangs.getGangOf(others[0]!);
+  if (victimGangId === undefined || victimGangId === instigatorGangId) return undefined;
 
-  gangs.addGrudge(offendedGangId, offendingGangId, weight);
-  return [offendedGangId, offendingGangId];
+  // Half-weight, both directions: an even ledger entry from each gang against
+  // the other, so neither direction has to be picked as "the" offender.
+  const halfWeight = weight / 2;
+  gangs.addGrudge(victimGangId, instigatorGangId, halfWeight);
+  gangs.addGrudge(instigatorGangId, victimGangId, halfWeight);
+  return [victimGangId, instigatorGangId];
 }
