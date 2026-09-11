@@ -128,12 +128,26 @@ export function unfinishedRoomIds(list: RoomListViewModel): readonly string[] {
 
 /**
  * How many things this room is short: its unmet object requirements, plus one
- * for a missing doorway (#938).
+ * for a room nobody can get into (#938, and ADR 0108 for the second value).
  *
  * One function rather than the same sum in three places -- the sort key, the
  * unfinished predicate and the header's `totalNeeds` all have to agree, and
  * two of them disagreeing is a header that counts a room the list does not
  * name.
+ *
+ * **Two values count, not one, and they are two different repairs.**
+ * `'no-way-in'` is a perimeter with no door in it at all; `'unreachable'` is a
+ * door nothing can get to, which ADR 0108 added because collapsing the two
+ * would have the panel tell a player to build a door they already built. Both
+ * are rooms nobody can enter, so both are one thing short.
+ *
+ * **`'gap'` counts as nothing here and that is not an oversight.** A rectangle
+ * open on one side has a way across its boundary; whether the space beyond that
+ * side is itself sealed is a question `roomAccess` answers only for a *closed*
+ * perimeter (`reachability.ts`, "The three questions in order"). So this sum
+ * reaching zero says the panel's checklist is clear and still does not say a
+ * prisoner can reach the room -- which is why
+ * `hud.alert.event.rooms.needs-cleared` keeps its disclaiming clause.
  *
  * `access` is absent in exactly the states `RoomListRowViewModel.access`
  * records -- a caller that supplied the projection no perimeter, or an
@@ -143,7 +157,10 @@ export function unfinishedRoomIds(list: RoomListViewModel): readonly string[] {
  * for an uncounted object.
  */
 function shortfallOf(row: RoomListViewModel['rooms']['rows'][number]): number {
-  return row.requirementSummary.missingCapability + (row.access === 'no-way-in' ? 1 : 0);
+  // One line, and it has to stay one line: `room-shortfall-parity-contract`
+  // holds this text and the worker's copy as the same literal string, and a
+  // wrap would indent one of them differently and fail it.
+  return row.requirementSummary.missingCapability + (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0);
 }
 
 /**
@@ -341,7 +358,7 @@ export function roomNeedsFromProjections(
   for (const detail of details) {
     if (detail.roomNameKey === undefined) continue;
     /*
-     * **The doorway goes first, before this room's object lines** (#938).
+     * **The way in goes first, before this room's object lines** (#938).
      *
      * Not a tie-break and not taste: `ROOM_NEEDS_NAMED_LIMIT` is 4, so a room
      * short of four objects would push the doorway line off the panel
@@ -351,9 +368,13 @@ export function roomNeedsFromProjections(
      * to choose; which rooms are named is the projection's, and that is
      * untouched.
      */
-    if (detail.access === 'no-way-in') {
+    if (detail.access === 'no-way-in' || detail.access === 'unreachable') {
       needs.push({
-        kind: 'doorway',
+        // Two values, two sentences, and the distinction is carried across
+        // rather than flattened here: the panel says "build a door" for one and
+        // "the door leads nowhere" for the other, and a player given the wrong
+        // one of those goes and does the wrong work (ADR 0108 decision 3).
+        kind: detail.access === 'no-way-in' ? 'doorway' : 'unreachable',
         instanceId: detail.instanceId,
         roomLabelKey: detail.roomNameKey,
         tile: { x: detail.anchorTile.x, y: detail.anchorTile.y },

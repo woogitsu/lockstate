@@ -3,7 +3,8 @@ import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { DOOR_EDGE_NUMERIC_ID } from '../../src/simulation/construction/definition';
 import { DoorConstructionService } from '../../src/simulation/construction/door-construction';
 import { DoorRegistry } from '../../src/simulation/navigation/door';
-import { roomPerimeterAccess, roomPerimeterEnclosure, type RoomDoorReader } from '../../src/simulation/rooms/enclosure';
+import { roomPerimeterEnclosure, type RoomDoorReader } from '../../src/simulation/rooms/enclosure';
+import { roomAccess, type RoomReachability } from '../../src/simulation/rooms/reachability';
 import { enclosureRequirement, minimumSizeRequirement } from '../../src/simulation/rooms/requirements';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { RoomZoningService } from '../../src/simulation/rooms/zoning';
@@ -33,6 +34,39 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
 
 const CHUNK_SIZE = 32;
 const WALL = 7;
+
+/*
+ * The region half of `roomAccess`, stubbed, so the cases below stay about the
+ * *perimeter* half this file is named for.
+ *
+ * `roomAccess` asks three questions in a fixed order -- enclosure, then a door
+ * on the perimeter, then reachability -- and only the third needs a navigation
+ * graph. Stubbing it keeps these fixtures at two edge layers and a door
+ * registry, and lets a case assert that the walk was **not** reached at all,
+ * which is how the ordering itself gets pinned rather than assumed. The real
+ * walk, over real worlds, is `tests/unit/rooms-reachability.test.ts`.
+ */
+const REACHED: RoomReachability = { reaches: () => true };
+const NOT_REACHED: RoomReachability = { reaches: () => false };
+const NEVER_WALKED: RoomReachability = {
+  reaches() {
+    throw new Error('a rectangle with a gap in its perimeter must be decided without any region walk');
+  },
+};
+/**
+ * A door reader that throws if it is consulted.
+ *
+ * The short-circuit in `roomAccess`'s own docblock, asserted rather than
+ * described: a **sealed** rectangle the exterior walk reached must be
+ * `'doorway'` without a door read, because being sealed and reachable already
+ * entails a registered door on the perimeter -- nothing else can cross a
+ * boundary whose every edge holds geometry.
+ */
+const NEVER_READ: RoomDoorReader = {
+  getByEdge() {
+    throw new Error('a sealed rectangle the walk reached must not need a door read');
+  },
+};
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
@@ -556,7 +590,7 @@ describe('whether anything can cross a room perimeter (#938)', () => {
         throw new Error('a rectangle with a gap in its perimeter must not need a door read');
       },
     };
-    expect(roomPerimeterAccess(world, refuses, room)).toBe('gap');
+    expect(roomAccess(world, refuses, NEVER_WALKED, room)).toBe('gap');
   });
 
   it('answers `no-way-in` for a sealed perimeter with no door anywhere on it', () => {
@@ -565,7 +599,16 @@ describe('whether anything can cross a room perimeter (#938)', () => {
     wallPerimeter(world, room);
 
     expect(roomPerimeterEnclosure(world, room)).toEqual({ enclosure: 'sealed' });
-    expect(roomPerimeterAccess(world, new DoorRegistry(), room)).toBe('no-way-in');
+    /*
+     * `NOT_REACHED` is the truthful answer for this rectangle and half of the
+     * assertion: a sealed room with no door cannot be reached, by the same
+     * argument that lets `roomAccess` skip the door read when it *is* reached.
+     * ADR 0108 decision 3 keeps 'no-way-in' meaning what it always meant, so
+     * what has to be pinned is that this room is **not** swallowed into
+     * 'unreachable' -- the panel must go on telling this player to build a
+     * door rather than to take down a wall somewhere else.
+     */
+    expect(roomAccess(world, new DoorRegistry(), NOT_REACHED, room)).toBe('no-way-in');
   });
 
   /*
@@ -610,9 +653,17 @@ describe('whether anything can cross a room perimeter (#938)', () => {
         `a door at ${String(edge.x)},${String(edge.y)} ${edge.side} keeps the perimeter sealed`,
       ).toEqual({ enclosure: 'sealed' });
       expect(
-        roomPerimeterAccess(world, doors, room),
+        roomAccess(world, doors, REACHED, room),
         `a door at ${String(edge.x)},${String(edge.y)} ${edge.side} is a way in`,
       ).toBe('doorway');
+      expect(
+        roomAccess(world, NEVER_READ, REACHED, room),
+        `a sealed rectangle the walk reached is a way in without reading the registry`,
+      ).toBe('doorway');
+      expect(
+        roomAccess(world, doors, NOT_REACHED, room),
+        `the same door at ${String(edge.x)},${String(edge.y)} ${edge.side}, with nothing able to reach it`,
+      ).toBe('unreachable');
     }
   });
 
@@ -625,7 +676,7 @@ describe('whether anything can cross a room perimeter (#938)', () => {
     // there and not to this rectangle.
     const doors = doorAt(world, { x: 4, y: 8 }, 'top');
 
-    expect(roomPerimeterAccess(world, doors, room)).toBe('no-way-in');
+    expect(roomAccess(world, doors, NOT_REACHED, room)).toBe('no-way-in');
   });
 
   /*
@@ -646,6 +697,6 @@ describe('whether anything can cross a room perimeter (#938)', () => {
     doors.setState(door!.id, 'locked');
     expect(doors.getById(door!.id)?.state).toBe('locked');
 
-    expect(roomPerimeterAccess(world, doors, room)).toBe('doorway');
+    expect(roomAccess(world, doors, REACHED, room)).toBe('doorway');
   });
 });

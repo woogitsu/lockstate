@@ -2996,6 +2996,48 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.needs-doorway': 'a door — nobody can get in',
   /*
    * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
+   * reservation 4** (ADR 0108, issue #1006), and every clause was proved
+   * against code opened for the purpose rather than reasoned about. It is the
+   * sentence for the state this readout was **silent** in until ADR 0108: a
+   * room with a door that nothing can get to. #1001 measured the same seed with
+   * and without a way through -- 11,000 against 13,000 income a day, 0 yard
+   * ticks, `recreation` 0 permille for 50 of 50 days, and **11,558 route
+   * failures against 0** -- so the silence was not a small mis-statement.
+   *
+   * - *"a way in"* -- what the room is short, and not "a door", which it has.
+   *   `roomAccess` (`src/simulation/rooms/reachability.ts`) answers
+   *   `'unreachable'` only after `roomPerimeterEnclosure` has called the
+   *   perimeter sealed *and* `roomPerimeterHoldsDoor` has found a registered
+   *   door on it. A room with no door is `'no-way-in'` and draws
+   *   `hud.rooms.needs-doorway` above instead, which is the whole reason these
+   *   are two sentences.
+   * - *"nothing outside can reach its door"* -- `RoomReachability.reaches`
+   *   answered `false`, which means no tile of this room lies in a region the
+   *   exterior walk reached. A perimeter door is a `Portal` joining the room's
+   *   own region to the region beyond it (`buildNavigationGraph` records one
+   *   for every registered door "regardless of its current lock state"), and
+   *   `walkPortals` is transitive over `regionPortals` -- so an exterior region
+   *   that could reach the far side of that door would have entered the room's
+   *   region in the same walk. `false` therefore says exactly that nothing
+   *   outside reaches the door, and not merely that the room is awkward.
+   *
+   * **"Outside" is the exterior ADR 0108 decision 1 defines as amended**: the
+   * regions with an open crossing out of the loaded chunk area, falling back to
+   * the boundary ring minus every zoned room's rectangle when nothing escapes.
+   * It is not a claim about a world beyond the loaded chunks, which this game
+   * does not stream; `reachability.ts` carries the two frontier states that
+   * definition cannot answer, and neither of them can make this line appear for
+   * a room that is in fact reachable -- both fail the other way, towards
+   * `'doorway'`.
+   *
+   * No placeholder, for `hud.rooms.needs-doorway`'s own reason: there is one
+   * way in to be short of, and no count makes the sentence more actionable. It
+   * sits under the same `hud.rooms.needs-room` header -- "{room} at {x}, {y} is
+   * missing" -- so the line completes that sentence.
+   */
+  'hud.rooms.needs-unreachable': 'a way in — nothing outside can reach its door',
+  /*
+   * **Authored under the owner's 2026-09-04 release of `AGENTS.md`
    * reservation 4** (ADR 0028 phase 5; issues #997 and #1003). Four strings,
    * and every clause of each was proved against code opened for the purpose:
    *

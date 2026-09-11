@@ -6,6 +6,7 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
 import { projectRoomList, type RoomObjectSource, type RoomProjectionSource } from '../presentation';
 import type { RoomDoorReader, RoomEdgeReader } from './enclosure';
+import type { RoomRegionGraphSource } from './reachability';
 
 /**
  * Requested once per scheduled read, large enough that no session's room
@@ -146,6 +147,13 @@ export class RoomNeedsClearedNoticeSystem implements SystemRegistration {
     private readonly placedObjects: RoomObjectSource,
     private readonly edges: RoomEdgeReader,
     private readonly doors: RoomDoorReader,
+    /**
+     * The region partition, read through its holder rather than handed over as
+     * a value: `getGraph()` refreshes a stale graph on the spot, so this
+     * system's `order = 140` reading it before `navigation`'s 150 still gets a
+     * graph current for the tick. See `RoomRegionGraphSource`.
+     */
+    private readonly regions: RoomRegionGraphSource,
     private readonly events: SimulationEventLog,
     private readonly rooms: ContentRegistry<RoomCatalogDefinition> = defaultRoomContentRegistry,
     private readonly objects: ContentRegistry<ObjectDefinition> = defaultObjectRegistry,
@@ -159,7 +167,7 @@ export class RoomNeedsClearedNoticeSystem implements SystemRegistration {
         rooms: this.rooms,
         objects: this.objects,
         placedObjects: this.placedObjects,
-        perimeter: { edges: this.edges, doors: this.doors },
+        perimeter: { edges: this.edges, doors: this.doors, regions: this.regions.getGraph() },
       },
     );
 
@@ -168,7 +176,7 @@ export class RoomNeedsClearedNoticeSystem implements SystemRegistration {
       seenInstanceIds.add(row.instanceId);
       // The panel's own predicate, restated rather than imported -- see the
       // class comment's "What 'short of something' means".
-      const shortfall = row.requirementSummary.missingCapability + (row.access === 'no-way-in' ? 1 : 0);
+      const shortfall = row.requirementSummary.missingCapability + (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0);
       const isReady = shortfall === 0;
       const wasReady = this.ready.has(row.instanceId);
       if (isReady === wasReady) continue;

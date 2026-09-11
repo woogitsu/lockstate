@@ -3,6 +3,7 @@ import {
   compareChunkPositions,
   tileCoordinate,
   tileKey,
+  type ChunkPosition,
   type TilePosition,
 } from '../world/coordinates';
 import { type DoorSide, DoorRegistry } from './door';
@@ -29,6 +30,26 @@ export interface NavigationGraph {
   readonly portals: readonly Portal[];
   /** Portals touching a region on either side. */
   readonly regionPortals: ReadonlyMap<RegionId, readonly Portal[]>;
+  /**
+   * The chunk positions this graph was built over, in `compareChunkPositions`
+   * order, and the tile side of one chunk.
+   *
+   * Published because the loaded *area's* own frontier is a question about
+   * this graph rather than about the world: `SparseWorld` answers `0` for an
+   * edge in a chunk that does not exist, so "open ground" and "outside the
+   * materialised world" are the same read there, and only the set of chunks a
+   * graph covers says which tiles sit on its boundary. ADR 0108's exterior
+   * anchor is the consumer (`src/simulation/rooms/reachability.ts`), and it
+   * needs the boundary ring in `O(chunks x side)` rather than by scanning
+   * every tile in `tileToRegion` for a missing neighbour.
+   *
+   * The same list `computeGeometrySignature` fingerprints, so a graph's
+   * staleness and its frontier are derived from one set of chunks and cannot
+   * describe two different areas.
+   */
+  readonly loadedChunks: readonly ChunkPosition[];
+  /** `SparseWorld.tileChunkSize` at build time; see `loadedChunks`. */
+  readonly tileChunkSize: number;
   /** Fingerprint of the geometry revisions used to build this graph; see `isNavigationGraphStale`. */
   readonly geometrySignature: string;
   /** `DoorRegistry.structuralRevision` at build time -- doors *added* affect topology; lock/permission changes alone do not. */
@@ -173,6 +194,8 @@ export function buildNavigationGraph(
     regionTiles: regionTileLists,
     portals,
     regionPortals,
+    loadedChunks: loadedChunks.map((chunk) => chunk.position),
+    tileChunkSize: size,
     geometrySignature: computeGeometrySignature(loadedChunks),
     doorStructuralRevision: doors.structuralRevision,
   };

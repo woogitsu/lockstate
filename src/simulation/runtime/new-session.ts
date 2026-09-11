@@ -1078,6 +1078,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     placedObjects,
     world,
     navigation.doors,
+    navigation,
     events,
   );
   const securitySchedules: DeploymentSchedule[] = [];

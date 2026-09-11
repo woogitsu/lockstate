@@ -64,7 +64,49 @@
 
 ## Status
 
-**Proposed, 2026-09-11. Not self-approved.**
+**Accepted in full by the owner, 2026-09-11 — AND AMENDED THE SAME DAY BY THE
+PROBE THIS DOCUMENT ASKED FOR AND DID NOT RUN.** Put the whole document to
+them, they chose the option labelled:
+
+> **Przyjmij w całości i wdrażaj**
+
+("Accept it in full and implement it.")
+
+> **THE PROVENANCE IS THE WEAKER KIND, exactly as the ruling this document was
+> written against is** — the label of a clickable option a session wrote and
+> the owner selected, not a sentence they typed. The same disclosure
+> [ADR 0096](./0096-what-a-way-back-is-and-what-guarantees-one.md),
+> [ADR 0104](./0104-what-undo-takes-back.md),
+> [ADR 0105](./0105-what-makes-a-local-save-the-newest-one.md) and
+> [ADR 0106](./0106-how-a-finished-wall-comes-down-without-a-keyboard.md) each
+> make of their own rulings.
+
+**AND WITHIN THE HOUR OF THAT ACCEPTANCE, DECISION 1 WAS FALSIFIED BY THE
+PROBE THIS DOCUMENT NAMED AND DECLINED TO RUN.** The implementing agent ran
+weakest claim 1's falsifier *before* writing any production code, and it did
+what this document predicted it would: a walled **unzoned** shed in the corner
+of the loaded area seeds the exterior with its own interior and then vouches,
+through its own door, for a room nothing can reach. Wrong in the reassuring
+direction. Shown that, the owner chose:
+
+> **Popraw na R4 i wdrażaj dalej**
+
+("Amend to R4 and carry on implementing.") Same weaker provenance. **Decision 1
+below is therefore superseded by the amendment printed beneath it**, which is
+kept beside the original rather than replacing it, per
+`docs/AGENT_WORKFLOW.md` §4 — the original is what was accepted, and a reader
+needs to see what the probe cost.
+
+**The sequence is the argument for the rule that produced it.** This document
+named a falsifier, said *"I did not run it, and I expect it to fail"*, and was
+accepted in full anyway. Had the implementation been written first and measured
+after, the defect would have shipped — into the one readout #1006 exists to
+make honest, in the one direction #1006 is about.
+
+---
+
+**Proposed, 2026-09-11. Not self-approved.** *(The record below this line is
+kept as it stood when the document was proposed.)*
 
 **The direction this document designs against is the owner's, ruled on
 2026-09-10, and is not re-argued here.** Asked whether `roomPerimeterAccess`
@@ -335,6 +377,64 @@ at `new-session.ts:442`, and never again — and a default session loads exactly
 **one** 32×32 chunk. So the ring is 124 of 1024 tiles in a new prison, and the
 exterior is a rule about a small square rather than about the world.
 
+### AMENDMENT, 2026-09-11 — the rule above is defeated, and R4 is what ships
+
+Everything above this heading is what the owner accepted and is kept for that
+reason. It is **not what the code does.** `tests/research/0108-exterior-anchor-falsifier.research.ts`
+built seven prisons and scored four candidate seed rules on each, every rule
+followed by the same portal walk and the same `tileToRegion` lookup per room so
+that the seed set is the only variable:
+
+| rule | seeds |
+| --- | --- |
+| **R1** | the rule above: ring tiles not inside a zoned room's rectangle |
+| **R2** | ring tiles with an **open crossing out of the loaded area** — the edge between the tile and its missing neighbour holds no geometry, or holds a registered door |
+| **R3** | R2's crossing test *and* R1's room exclusion together |
+| **R4** | R2, falling back to R1 only when R2 finds nothing at all |
+
+| scenario | R1 | R2 | R3 | **R4** |
+| --- | --- | --- | --- | --- |
+| S1 anchor: sealed zoned rooms, one interior and one on the ring | ok | ok | ok | **ok** |
+| **S2 falsifier: walled UNZONED shed in the corner** | **WRONG** | ok | ok | **ok** |
+| S3 shed leaning on the loaded-area edge for two of its walls | WRONG | WRONG | WRONG | **WRONG** |
+| S4 control: sealed room, door onto open yard | ok | ok | ok | **ok** |
+| S5 perimeter wall two tiles in, one gate | ok | ok | ok | **ok** |
+| **S6 loaded area walled flush at its own boundary** | ok | **WRONG** | **WRONG** | **ok** |
+| S7 flush wall AND a shed in the corner | WRONG | ok | ok | **WRONG** |
+
+**S2 is the falsifier this document named.** A 3×3 shed walled on all four
+sides in the corner is not a zoned room, so R1 does not exclude its interior
+from the ring; its tiles seed the exterior — seed set `1, 2, 3` against the
+correct `2` — and the walk then vouches through the shed's own door for a zoned
+room nothing can reach.
+
+**S6 is the one this document did not consider, and it is why R2 alone is not
+the answer.** If the player walls the loaded area flush along its own boundary,
+no tile has an opening out of it, the seed set is **empty**, and every room in
+the prison reads unreachable at once. R4 is the smallest rule surviving both:
+prefer the regions that escape the loaded area, and fall back to this
+document's own ring-minus-room-rectangles rule only when nothing escapes — so
+**both clauses of decision 1 survive where they are load-bearing**, and the
+anchor probe's repair is still doing its work in the branch where it bites.
+
+**S3 and S7 defeat every rule in the table, and neither is a seed-rule problem
+— they are open question 5's territory.** Both turn on the same fact: the
+loaded area's frontier is **open ground to the edge layers and a wall to the
+region graph.** `enclosure.ts:44-50` already records it — *"a region that
+reaches the edge of the materialised world is indistinguishable from one
+bounded by walls there, so 'is this region closed' needs a rule about the
+world's frontier that nobody has written"* — and this is that rule being
+written, bounded to the loaded area, running into the same wall. **Any rule
+that answers S6 by relaxing the loaded-area boundary relaxes it for a corner
+shed's own walls too**, which is precisely what S7 is; the two cannot be
+separated by a choice of seed. They are recorded here as measured limits rather
+than repaired, and both fail *towards* `'doorway'` — so neither can make the
+panel accuse a room that is in fact reachable.
+
+`tests/unit/rooms-reachability.test.ts` is the gate: S2 and S6 are assertions
+there, because a research instrument that prints a table would let the repaired
+rule regress in silence.
+
 ---
 
 ## Decision 2 — the mechanism is a portal walk over the graph navigation already builds, with no new cache
@@ -448,6 +548,26 @@ inside one projection call.
 | `message-keys` exemption | its reason text stops being true about the value count |
 | `RoomZoningService.zone`, `room-tool.ts` | **unaffected** — both read `roomPerimeterEnclosure` |
 
+> **AMENDMENT, 2026-09-11 — the row for `roomNeedsFromProjections` was the one
+> that nearly shipped broken, and only a mutation caught it.** This table says
+> that consumer *"must emit a need entry for `'unreachable'` too, or the count
+> and the list disagree"*, and the implementation did. **Deleting that clause
+> from the implementation left all 19 tests in
+> `tests/unit/ui-simulation-room-needs.test.ts` GREEN** — the room still counted
+> towards `totalNeeds` through `shortfallOf`, and no need line named it, so the
+> panel header would have reported the prison one thing short of something the
+> list could not name. A comment in this document was the only thing holding it.
+>
+> It was found by **performing** the mutation rather than reasoning about it,
+> which is `AGENTS.md`'s rule — *"a test proves nothing until the production
+> code has been mutated and that test watched going red"* — and it is the same
+> vacuity class the repository caught the week before, when an assertion passed
+> because the phrase it searched for appeared twice in one file. The case that
+> now holds it is #1006's own screenshot at the smallest world that can carry
+> it: a furnished cell, a real door on its south boundary, and the one tile that
+> door opens onto boxed in on its other three sides.
+
+
 **The alert sentence shipped by #1122 is the one to retire, and only as a
 consequence of acceptance.** It reads:
 
@@ -458,6 +578,32 @@ would include getting in, so the clause becomes something the game no longer
 needs to say. **Nothing changes it before the code lands**: until then it is
 the only thing standing between a player and the false reading, and #1006's
 own comment says so.
+
+> **AMENDMENT, 2026-09-11 — THE CLAUSE STAYS, AND THE PARAGRAPH ABOVE IS WRONG
+> ABOUT ITS OWN PREMISE.** "Under this design the checklist would include
+> getting in" is not true of the implementation, and the counterexample is one
+> of this document's own four values.
+>
+> `shortfallOf` counts `'no-way-in'` and `'unreachable'`. It does not count
+> **`'gap'`**, and decision 3 deliberately leaves `'gap'` unchanged — it is
+> decided by `roomPerimeterEnclosure` *before* any region question is asked, so
+> it says a boundary can be crossed and says nothing whatever about what is
+> beyond it. `room.yard` is `{ type: 'outdoors' }` in the room catalogue, so
+> `RoomZoningService.zone` accepts **any** perimeter for one. A yard zoned
+> inside a sealed structure therefore reads `'gap'`, counts **zero** towards
+> the shortfall, and is a room nobody can get into. A second, narrower
+> escape: `access` is absent for an instance carrying no rectangle, and absent
+> counts zero too.
+>
+> So `shortfallOf(row) === 0` still means "the panel's checklist is clear" and
+> still does not mean "a prisoner can reach this room". **Retiring the clause
+> would have made the sentence false in exactly the shape #1006 is about**, one
+> value further along. It stays, verbatim, and
+> `tests/unit/rooms-reachability.test.ts` pins the counterexample so the next
+> reader of this paragraph does not have to take it on trust.
+>
+> Making `'gap'` reachability-aware would close it. That is a change to decision
+> 3, which the owner accepted as written, and it is not taken here.
 
 ---
 
@@ -478,6 +624,27 @@ the second clause simply goes:
 > **"{room} is no longer short anything the Rooms panel checks for."**
 
 Neither is written into `src/content/default-locale-en.ts` by this document.
+
+> **AMENDMENT, 2026-09-11 — what actually shipped, and only one of the two.**
+> The first candidate was **not** used. *"a way through — the door is walled
+> off"* asserts a particular geometry — that the door itself is walled — and
+> `'unreachable'` is a weaker and wider fact than that: the space beyond the
+> door cannot reach the exterior, which the door's own tile being bricked up is
+> only one way to achieve. The sentence that shipped is
+>
+> > **`'hud.rooms.needs-unreachable': 'a way in — nothing outside can reach its door'`**
+>
+> (`src/content/default-locale-en.ts`), whose locale docblock proves each clause
+> against the code: *"a way in"* rather than *"a door"*, because `roomAccess`
+> reaches `'unreachable'` only **after** `roomPerimeterHoldsDoor` has found one;
+> and *"nothing outside can reach its door"* because a perimeter door is a
+> `Portal` joining the room's region to the region beyond it and `walkPortals`
+> is transitive, so an exterior region able to reach the far side of that door
+> would have entered the room's own region in the same walk.
+>
+> **The second candidate was not used either**, and the amendment under decision
+> 5 says why: the checklist does not cover access, so the clause it would have
+> retired is still doing its job.
 
 ---
 
@@ -524,6 +691,92 @@ Three runs of the same table agreed to within the spread
   calls unreachable, today's function calls `'doorway'`. That is the defect,
   reproduced at 42, 180, 775 and 3,150 rooms.
 
+### AMENDMENT, 2026-09-11 — re-measured against what shipped, and the headline claim does not survive intact
+
+The table above was measured on this document's branch against the rule this
+document published. The rule that shipped is R4, which adds a per-ring-tile
+crossing test to the seed selection, so the claim had to be re-taken.
+`tests/perf/room-access-reachability.perf.ts` is that measurement, on the same
+method — warmup discarded, minimum of samples — on a 4× Xeon @ 2.80GHz
+container. Two prisons at each size, because the first run found a variable
+neither table has a column for:
+
+| doors walled | rooms | A edge ms | B graph ms | **C walk ms** | **D shipped ms** | unreachable |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 in 7 | 80 | 0.28 | 5.01 | **0.29** | **0.46** | 30 |
+| 1 in 7 | 336 | 1.03 | 17.6 | **1.21** | **1.79** | 228 |
+| 1 in 7 | 1,344 | 3.92 | 86.6 | **3.02** | **7.33** | 1,122 |
+| 1 in 7 | 5,440 | 16.4 | 358 | **13.9** | **33.7** | 4,990 |
+| none | 80 | 0.20 | 3.32 | **0.16** | **0.37** | 0 |
+| none | 336 | 0.91 | 14.6 | **0.53** | **1.49** | 0 |
+| none | 1,344 | 3.80 | 75.0 | **1.89** | **6.15** | 0 |
+| none | 5,440 | 16.5 | 370 | **6.84** | **27.8** | 0 |
+
+**Three corrections, and the second is the one that matters to a reader of this
+document.**
+
+1. **C is cheaper than A in every row, by 1.2× to 2.4× — not by about 4×.** The
+   *direction* this document argues from holds everywhere and is not in doubt.
+   The factor does not: 0.17 µs per room at 775 does not reproduce, and the
+   healthy rows here run 1.3–2.0 µs.
+2. **This document publishes no column D, and column D is what the projection
+   actually spends.** `roomAccess` asks **both** questions — the perimeter walk
+   that was column A, then the region lookup — so the marginal cost C is not the
+   new total. **The Rooms projection is DEARER after this change, by about 2×**:
+   27.8 ms against 16.5 at 5,440 rooms, 6.15 against 3.80 at 1,344, and 1.49
+   against 0.91 at the room counts this repository actually claims. The sentence
+   *"roughly four times cheaper than the one it replaces"* is true of a marginal
+   cost and false of the readout, and it is easy to read as the second.
+3. **The variable is how many rooms are unreachable.** `reaches` exits on the
+   first room tile in a reached region, so a room somebody can get into costs
+   one lookup and a room nobody can get into costs `width × height` of them. The
+   paired rows isolate it: C doubles at 5,440 rooms when 92% of them are dead.
+   This document's own fixture had 14% unreachable, which is part of why its
+   column C is so much lower than anything measurable here.
+
+**THE SHORT-CIRCUIT WAS TRIED BEFORE THIS WAS PUT TO ANYONE, AND IT NARROWS THE
+REGRESSION WITHOUT INVERTING IT.** `roomAccess` paid for both questions on every
+room; it now skips the door read for any room the exterior walk already reached,
+which is sound because a **sealed** rectangle that is reachable necessarily has a
+registered door on its perimeter — the flood fill crosses an edge only when the
+edge value is `0` *and* no door is registered, so nothing can have got in except
+through a portal on a perimeter edge, and a portal is a door.
+
+| rooms | A edge ms | D before | D after | after / A |
+| --- | --- | --- | --- | --- |
+| 1,344 | 3.90 | 6.15 | **5.16** | **1.32×** |
+| 5,440 | 18.2 | 27.8 | **21.6** | **1.19×** |
+
+About 20%, and the conclusion stands: **still dearer than what runs today.** It
+helps less than the shape of the argument suggests for two measured reasons.
+The **enclosure walk is still charged to every room**, because `'gap'` is a fact
+about the boundary that no region answer can supply. And the reachable fraction
+— the population the skip pays on — is 100% in the control rows but **16.5% at
+1,344 rooms and 8.3% at 5,440** in the act-4a rows, because of the contagion
+recorded above: walling one door in seven strands 83–92% of the block.
+
+**What it cost, recorded because it is not free.** Making the region answer
+load-bearing *before* the door answer means the two can no longer be stubbed
+independently — a fixture that faked a doorless sealed room as reachable was
+describing a world that cannot exist, and the old ordering was the only thing
+hiding it. Two fixtures became real rather than relaxed.
+
+**What the decision does not turn on**, stated so the correction is not read as
+a reversal: at the room counts in evidence the absolute figures are around a
+millisecond and a half, the alternative this document rules out is still four
+to five orders of magnitude worse, and no cache is needed for either number.
+Weakest claim 2 — *"every number here is from a synthetic cell block"* — still
+stands, and now stands twice.
+
+**And the fixture refuted its own first assertion, which is a fact about the
+game rather than about the code.** It expected the unreachable count to equal
+the number of doors walled up and got **30 against 12** at one chunk: boxing in
+the tile outside a door puts two walls into the shared corridor row, and where
+two sealed doors fall in the same row the segment between them is bounded on
+all four sides, stranding every room whose door opens into it. **The act-4a
+state is contagious** — a player who walls one doorway can kill a row of cells —
+which raises what #1001 measured rather than lowering it.
+
 **One number is not a cost of this proposal and must not be read as one.**
 Column B is large — 264 ms at 256×256 — and it is **already paid today**:
 `NavigationSystem.update` calls `ensureGraph()` every tick, and every wall edit
@@ -559,6 +812,11 @@ had the plain ring rule and the probe was written to try to break it.
 ---
 
 ## The weakest claims, and what would falsify each
+
+> **AMENDMENT, 2026-09-11.** Claims 1, 4 and 5 were discharged by the
+> implementation and the falsifier; the resolutions are marked inline below.
+> Claims 2 and 3 stand, and claim 2 now stands about two measurements rather
+> than one.
 
 1. **The strongest one: the exterior rule is proved against room rectangles
    only.** The probe shows a *zoned room* on the frontier defeating the plain
@@ -596,8 +854,25 @@ had the plain ring rule and the probe was written to try to break it.
    an absence is the shape of claim `docs/AGENT_WORKFLOW.md` §4 says rots
    first.
 
+   > **STILL UNTESTED, AND NARROWER THAN IT LOOKS, 2026-09-11.** The
+   > implementation added no cache, so there is still exactly one invalidation.
+   > It is not this change's to prove: if `isNavigationGraphStale` were
+   > incomplete, every route in the game would already be wrong, and the Rooms
+   > panel would be the least of it.
+
 5. **The cost of the rename is asserted rather than counted.** I did not
    attempt `roomPerimeterAccess` → `roomAccess` to see how many files move.
+
+   > **COUNTED, 2026-09-11: eight production files and five test files**, and
+   > the type checker enumerated every one of them the moment
+   > `RoomProjectionOptions.perimeter` gained its third required member. The
+   > rename went further than this document proposed: `roomPerimeterAccess` did
+   > not become `roomAccess` in place but **split**, because its two halves
+   > answer different questions. `roomPerimeterHoldsDoor` stays in
+   > `enclosure.ts` with the perimeter walks it belongs to, and `RoomAccess` /
+   > `roomAccess` live in a new `src/simulation/rooms/reachability.ts`. The
+   > names `roomPerimeterEnclosure` and `roomPerimeterHoldsDoor` are then still
+   > **true**, which the flat rename would not have left them.
 
 ---
 
@@ -621,6 +896,14 @@ had the plain ring rule and the probe was written to try to break it.
    Reading the graph there means reading the one built on the *previous* tick.
    For a once-a-day system that is almost certainly fine and it should be said
    out loud rather than assumed.
+
+   > **CLOSED, 2026-09-11: it does not arise.** `NavigationSystem.getGraph()`
+   > calls `ensureGraph()`, which **rebuilds a stale graph on the spot** rather
+   > than handing back whatever the last `update()` left. So a system ordered at
+   > 140 reading through that method gets a graph current for its own tick, and
+   > the system is handed the navigation system rather than a graph value
+   > precisely so that it does. Checked in `navigation-system.ts` rather than
+   > assumed, which is how the question turned out to have no content.
 4. `buildNavigationGraph` at 264 ms for a 256×256 loaded area, on a tick
    budget of 50 ms, with a full rebuild triggered by any wall edit. Not this
    document's to fix; filed here because this document measured it.
