@@ -548,6 +548,26 @@ inside one projection call.
 | `message-keys` exemption | its reason text stops being true about the value count |
 | `RoomZoningService.zone`, `room-tool.ts` | **unaffected** — both read `roomPerimeterEnclosure` |
 
+> **AMENDMENT, 2026-09-11 — the row for `roomNeedsFromProjections` was the one
+> that nearly shipped broken, and only a mutation caught it.** This table says
+> that consumer *"must emit a need entry for `'unreachable'` too, or the count
+> and the list disagree"*, and the implementation did. **Deleting that clause
+> from the implementation left all 19 tests in
+> `tests/unit/ui-simulation-room-needs.test.ts` GREEN** — the room still counted
+> towards `totalNeeds` through `shortfallOf`, and no need line named it, so the
+> panel header would have reported the prison one thing short of something the
+> list could not name. A comment in this document was the only thing holding it.
+>
+> It was found by **performing** the mutation rather than reasoning about it,
+> which is `AGENTS.md`'s rule — *"a test proves nothing until the production
+> code has been mutated and that test watched going red"* — and it is the same
+> vacuity class the repository caught the week before, when an assertion passed
+> because the phrase it searched for appeared twice in one file. The case that
+> now holds it is #1006's own screenshot at the smallest world that can carry
+> it: a furnished cell, a real door on its south boundary, and the one tile that
+> door opens onto boxed in on its other three sides.
+
+
 **The alert sentence shipped by #1122 is the one to retire, and only as a
 consequence of acceptance.** It reads:
 
@@ -713,6 +733,33 @@ document.**
    paired rows isolate it: C doubles at 5,440 rooms when 92% of them are dead.
    This document's own fixture had 14% unreachable, which is part of why its
    column C is so much lower than anything measurable here.
+
+**THE SHORT-CIRCUIT WAS TRIED BEFORE THIS WAS PUT TO ANYONE, AND IT NARROWS THE
+REGRESSION WITHOUT INVERTING IT.** `roomAccess` paid for both questions on every
+room; it now skips the door read for any room the exterior walk already reached,
+which is sound because a **sealed** rectangle that is reachable necessarily has a
+registered door on its perimeter — the flood fill crosses an edge only when the
+edge value is `0` *and* no door is registered, so nothing can have got in except
+through a portal on a perimeter edge, and a portal is a door.
+
+| rooms | A edge ms | D before | D after | after / A |
+| --- | --- | --- | --- | --- |
+| 1,344 | 3.90 | 6.15 | **5.16** | **1.32×** |
+| 5,440 | 18.2 | 27.8 | **21.6** | **1.19×** |
+
+About 20%, and the conclusion stands: **still dearer than what runs today.** It
+helps less than the shape of the argument suggests for two measured reasons.
+The **enclosure walk is still charged to every room**, because `'gap'` is a fact
+about the boundary that no region answer can supply. And the reachable fraction
+— the population the skip pays on — is 100% in the control rows but **16.5% at
+1,344 rooms and 8.3% at 5,440** in the act-4a rows, because of the contagion
+recorded above: walling one door in seven strands 83–92% of the block.
+
+**What it cost, recorded because it is not free.** Making the region answer
+load-bearing *before* the door answer means the two can no longer be stubbed
+independently — a fixture that faked a doorless sealed room as reachable was
+describing a world that cannot exist, and the old ordering was the only thing
+hiding it. Two fixtures became real rather than relaxed.
 
 **What the decision does not turn on**, stated so the correction is not read as
 a reversal: at the room counts in evidence the absolute figures are around a
