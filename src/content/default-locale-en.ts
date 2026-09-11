@@ -1866,18 +1866,25 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `sellBackUnitPriceMinorUnits` (`src/simulation/economy/procurement.ts`),
    * the one formula both `ProcurementSystem.previewSellStock` and this
    * control's own arithmetic derive from -- see
-   * `src/ui/hud/build-panel.ts`'s `paintSellTotal`.
+   * `src/ui/hud/build-panel.ts`'s `paintSellTotal`. The ratio itself
+   * (`SELL_BACK_RATIO_NUMERATOR / SELL_BACK_RATIO_DENOMINATOR` = 1/2) is the
+   * owner's ruling of 2026-09-11 (the clickable option "50% — zostaw jak
+   * jest"), recorded in ADR 0096 and in `procurement.ts`'s own docblock.
    *
-   * `hud.build.sell-hint` states the ratio and the source in one line, on
-   * `hud.build.buy-hint`'s pattern: "Half" is `SELL_BACK_RATIO_NUMERATOR /
-   * SELL_BACK_RATIO_DENOMINATOR` = 1/2 (the owner's ruling of 2026-09-11,
-   * the clickable option "50% — zostaw jak jest"), and "that same stock" is
-   * `this.destination` in `ProcurementSystem` -- the one container both
-   * `update`'s deliveries and `sellStock`'s withdrawal touch.
+   * **No third, hint, key naming the ratio in words, unlike
+   * `hud.build.buy-hint`.** One was authored and removed in the same pass
+   * that put Sell beside Buy rather than under it (see `messages.ts`'s
+   * `buildSell` entry): a stacked second row pushed the deliveries block's
+   * third Cancel control outside the panel's visible box at 900x600,
+   * measured by `tests/browser/app-shell.spec.ts`'s "a pending delivery is
+   * on the panel with the fold shut … (#285, #703)". Saying "half" in prose
+   * was also imprecise for an odd price -- `Math.floor` loses the half unit
+   * (a 65 plank credits 32, not 32.5) -- where the button's own total, which
+   * this key states, is always exact. Removing the hint fixed the layout and
+   * removed the imprecision in the same stroke.
    */
   'hud.build.sell': 'Sell',
   'hud.build.sell-submit': 'Sell {count} × {material} · {total}',
-  'hud.build.sell-hint': 'Half the catalogue price, credited at once out of that same stock.',
   /*
    * **The sentence a refused Buy press shows, and it is the owner's own.**
    *
