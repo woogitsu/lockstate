@@ -434,6 +434,73 @@ export const removeObjectSchema = z.object({
 }).strict();
 
 /**
+ * Take down whatever a world press on the removal gesture resolves to: the
+ * object standing on the pressed tile, the object order still building one
+ * there, or -- new here -- the completed wall or door claiming the tile edge
+ * the press landed nearest
+ * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
+ *
+ * ## Why a sibling command rather than a wider `RemoveObject`
+ *
+ * Because a wall is not an object. `RemoveObject` reaches
+ * `ObjectPlacementService.remove`, whose whole contract is a *tile-to-object*
+ * lookup (`placedObjects.objectAt`, `orderBuildingObjectAt`); a wall is
+ * written by `ConstructionSystem.writeEdge` and reversed only by
+ * `revertConstruction`, which `ObjectPlacementService` does not import and
+ * must not start importing -- doing so would mean a service whose contract is
+ * about objects also holding a copy of the edge model, or reaching into
+ * `ConstructionSystem` for it, and either weakens a boundary
+ * `session-commands.ts`'s own routing comment states on purpose. ADR 0106 §4
+ * carries the argument in full.
+ *
+ * ## What it carries, and why it is a superset of `RemoveObject`'s shape
+ * rather than a second, edge-only command
+ *
+ * `x`/`y`/`edge`, where `RemoveObject` carries only `x`/`y`. **This command's
+ * own session-command branch tries the object arm first, calling
+ * `ObjectPlacementService.remove` unchanged, and falls to the edge arm only
+ * when that answers `nothing-to-remove`.** The alternative -- sending
+ * `RemoveObject` and `RemoveWall` as two independent commands from one press
+ * -- was rejected: neither this thread nor the world press can know whether
+ * the pressed tile holds an object (`src/main.ts` holds no copy of the placed
+ * objects, exactly as `RemoveObject`'s own comment says), so firing both
+ * unconditionally would, on a bed built against its own cell's wall, remove
+ * the bed **and** cancel the neighbouring wall from one press -- destroying
+ * two things the player meant to press once. Trying the object arm first and
+ * falling through only on its refusal is what keeps one press one outcome.
+ *
+ * `edge` is `BuildEdge` (`'north' | 'west'`), required rather than optional:
+ * every press this command is built for has a resolved edge --
+ * `pickEdgeAtWorld` (`src/rendering/build/edge-picking.ts`) always answers one
+ * for a finite point, tying towards north then west -- and a command with no
+ * edge to fall back on would have nothing for the wall arm to try. The
+ * numeric Build panel route stays on plain `RemoveObject`: a typed tile has no
+ * sub-tile position for `pickEdgeAtWorld` to resolve, and `edgeChooserShown`
+ * already hides the edge control while removing for exactly that reason.
+ *
+ * ## Scope, deliberately narrow
+ *
+ * Only a **completed** order claiming the edge is eligible
+ * (`ConstructionSystem.completedOrderClaimingEdge`). A wall or door still
+ * being built already has a pointer route -- the queue's per-row cancel,
+ * since `PENDING_BUILD_ORDER_STATES` excludes only `'completed'` -- so this
+ * command does not widen that gesture's reach; it closes the one gap
+ * boundary 10 names, a **finished** wall with no way back but `Undo`.
+ *
+ * No `orderId` and no `transactionId`, for `RemoveObject`'s own reasons: the
+ * order id is found from the tile and the edge rather than named on the wire,
+ * and cancelling it is not itself undoable -- `ConstructionSystem.cancelOrder`
+ * is called directly, exactly as `RemoveObject`'s pending-order arm already
+ * calls it, and neither push a transaction onto the undo stack.
+ */
+export const removeWallSchema = z.object({
+  type: z.literal('RemoveWall'),
+  x: z.number().int(),
+  y: z.number().int(),
+  edge: z.enum(BUILD_EDGES),
+}).strict();
+
+/**
  * Release one guard from whatever is holding it
  * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md), answering
  * [ADR 0033](../../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)
@@ -605,6 +672,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   hireStaffSchema,
   placeObjectSchema,
   removeObjectSchema,
+  removeWallSchema,
   releaseGuardAssignmentSchema,
   dismissStaffSchema,
   dismissAlertSchema,
@@ -692,6 +760,9 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'RemoveObject':
       return { type: command.type, x: command.x, y: command.y };
+
+    case 'RemoveWall':
+      return { type: command.type, x: command.x, y: command.y, edge: command.edge };
 
     case 'ReleaseGuardAssignment':
       return { type: command.type, guardId: command.guardId };

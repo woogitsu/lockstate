@@ -335,7 +335,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * of: a `SellMaterials`, a `ProduceItem` or a `RequestGrant` added later
      * fails this line and sends its author here.
      *
-     * Of these fifteen, exactly one credits the treasury --
+     * Of these sixteen, exactly one credits the treasury --
      * `CancelMaterialPurchase` -- and the test below measures that it refuses
      * once the delivery has landed.
      *
@@ -346,6 +346,12 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * changes nothing about the prison. The tally is what rots here and the
      * list is what to read, so both are corrected together rather than the
      * number alone.
+     *
+     * **And it said "fifteen" until ADR 0106.** `RemoveWall` is the sixteenth
+     * and it moves no money either in the sense this test is about: it takes
+     * geometry away and, for a `'completed'` order, destroys whatever was
+     * spent on it -- `destroysSpendOnCancel` -- which is a loss, not a route
+     * back into money.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
@@ -361,6 +367,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'Redo',
       'ReleaseGuardAssignment',
       'RemoveObject',
+      'RemoveWall',
       'Undo',
       'UnzoneRoom',
       'ZoneRoom',

@@ -62,6 +62,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'release-guard.not-held': 'hud.alert.refusal.release-guard.not-held',
   'release-guard.unknown-guard': 'hud.alert.refusal.release-guard.unknown-guard',
   'remove-object.nothing-to-remove': 'hud.alert.refusal.remove-object.nothing-to-remove',
+  'remove-wall.nothing-to-remove': 'hud.alert.refusal.remove-wall.nothing-to-remove',
   'zone.below-minimum-size': 'hud.alert.refusal.zone.below-minimum-size',
   'zone.duplicate-instance-id': 'hud.alert.refusal.zone.duplicate-instance-id',
   'zone.invalid-area': 'hud.alert.refusal.zone.invalid-area',

@@ -12,6 +12,7 @@ import {
   PURCHASE_REFUSAL_REASONS,
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
+  REMOVE_WALL_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
@@ -22,6 +23,7 @@ import {
   purchaseSupersessionKey,
   releaseGuardSupersessionKey,
   removeObjectSupersessionKey,
+  removeWallSupersessionKey,
   unzoneSupersessionKey,
   zoneAreaSupersessionKey,
   zoneRefusalSupersessionKey,
@@ -87,13 +89,20 @@ import { tileCoordinate } from '../world/coordinates';
  * reaches knows about search jobs and incident responses as well as about
  * deployment. Beside the hire would have implied it was the opposite of one.
  *
- * `refusals` is the session's `RefusalLog`, and all ten routes write to the
+ * `refusals` is the session's `RefusalLog`, and all eleven routes write to the
  * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
  * refused un-zoning, a refused hire, a refused admission, a refused object
- * placement, a refused object removal, a cancellation with nothing left to
- * refund and a release of a guard nothing was holding are the same kind of fact
- * about the session -- the kernel took the command and a system then declined to
- * carry it out -- and they reach the player down one channel (#261).
+ * placement, a refused object removal, a refused wall removal, a cancellation
+ * with nothing left to refund and a release of a guard nothing was holding are
+ * the same kind of fact about the session -- the kernel took the command and a
+ * system then declined to carry it out -- and they reach the player down one
+ * channel (#261).
+ *
+ * **`RemoveWall` is the eleventh, added by ADR 0106, and it writes to this log
+ * from inside `objectPlacement.remove`'s own outcome handling as well as from
+ * its own edge resolver** -- see that branch below for why: it tries the
+ * object arm `RemoveObject` tries before ever reaching a wall, and only its
+ * own final refusal, `remove-wall.nothing-to-remove`, is recorded.
  *
  * Every branch below also calls `refusals.supersede` on its success path
  * (issue #492): a refusal outlives the thing it refused otherwise, because
@@ -101,10 +110,10 @@ import { tileCoordinate } from '../world/coordinates';
  * it once declined. Each call passes the same key its own `record` call would
  * have used had the command been refused instead, built by that route's own
  * `*SupersessionKey` function in `../refusals`; see those functions for why
- * nine of the ten compare a target (a rectangle, a tile, an order id, a
- * guard id) and one -- `admit` -- compares nothing but the domain, and for
- * why a role, an item or a tile that does not match the standing refusal's
- * own leaves that refusal exactly as it was.
+ * ten of the eleven compare a target (a rectangle, a tile, a tile edge, an
+ * order id, a guard id) and one -- `admit` -- compares nothing but the domain,
+ * and for why a role, an item or a tile that does not match the standing
+ * refusal's own leaves that refusal exactly as it was.
  *
  * `events` is the session's `SimulationEventLog`, and it is `refusals`' mirror
  * for the case that log could never carry: a command that **worked** (the
@@ -157,6 +166,17 @@ import { tileCoordinate } from '../world/coordinates';
  * is not that decision. It is one site the acknowledgement census (#960, #966)
  * established as a place where a true claim was available and nothing was
  * published.
+ *
+ * **A fifth route writes to `events` since ADR 0106: `RemoveWall`, and it is
+ * the first to do so with no new sentence of its own.** Its object arm, on a
+ * win, records the same event `RemoveObject`'s own branch does for the same
+ * outcome (a cancelled pending order) -- it is the identical call, reused, not
+ * a second one. Its wall arm records `recordBuildOrderCancelled` too, and for
+ * the reason no new locale key exists for it: `cancelOrder`'s own state
+ * decides the sentence, `'completed'` is the only state this branch's resolver
+ * ever returns, and that state already answers "anything already spent past
+ * the point of no return stays spent" -- the same sentence `Undo` produces for
+ * the same wall today, which is the positive control ADR 0106 §2 records.
  */
 /**
  * The command types after which `ConstructionSystem`'s undo history still
@@ -845,6 +865,77 @@ export function createSessionCommandHandler(
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
         }
       }
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'RemoveWall') {
+      /*
+       * The demolition gesture's other arm
+       * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)):
+       * a completed wall or door, reached the same way `RemoveObject`'s tile
+       * is -- one world press, one command, no order id on the wire.
+       *
+       * **Tries the object arm first, calling the exact method `RemoveObject`'s
+       * own branch above calls, with the exact same two arguments.** A world
+       * press armed to remove is one gesture and an object standing on the
+       * pressed tile has to win it -- `removeWallSchema`'s own comment argues
+       * why submitting both `RemoveObject` and `RemoveWall` unconditionally
+       * was rejected (a bed pressed near its own cell's wall would then remove
+       * the bed *and* cancel the wall from one press). Only when the object
+       * arm answers `nothing-to-remove` does this branch try the edge.
+       *
+       * The object arm's own refusal is not recorded here: it is not the
+       * press's final answer, so recording it would put a sentence about an
+       * object on a press that is about to also fail to find a wall, or
+       * succeed at finding one. The refusal this press can stand under is
+       * `remove-wall.nothing-to-remove`, below, and it is the only one this
+       * branch ever records.
+       */
+      const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
+      if (outcome.kind !== 'refused') {
+        // The object arm won. Handled exactly as `RemoveObject`'s own branch
+        // handles the same two outcomes above -- same supersession key
+        // (issue #492: the tile, which is the fact this press changed),
+        // same notice port already wired inside `objectPlacement.remove`,
+        // same event for a cancelled pending order.
+        refusals.supersede(removeObjectSupersessionKey(simCommand.x, simCommand.y));
+        if (outcome.kind === 'order-cancelled') {
+          events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
+        }
+        return;
+      }
+
+      /*
+       * Nothing to remove as an object. Try the edge the press resolved to
+       * (ADR 0106 §5): only a *completed* order counts --
+       * `completedOrderClaimingEdge`'s own comment argues why an in-flight
+       * wall or door is not this branch's concern, because the queue's
+       * per-row cancel already reaches it.
+       */
+      const wallOrder = construction.completedOrderClaimingEdge(
+        { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
+        simCommand.edge,
+      );
+      const wallKey = removeWallSupersessionKey(simCommand.x, simCommand.y, simCommand.edge);
+      if (wallOrder === undefined) {
+        refusals.record(REMOVE_WALL_REFUSAL_REASONS['nothing-to-remove'], context.tick, wallKey);
+        return;
+      }
+
+      // Read before cancelling, for `RemoveObjectOrderCancelled
+      // .stateAtCancellation`'s own reason: `cancelOrder` writes `'cancelled'`
+      // onto the order before this branch could read the distinction back.
+      const stateAtCancellation = wallOrder.state;
+      construction.cancelOrder(wallOrder.id);
+      refusals.supersede(wallKey);
+      // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
+      // arm already record, reused rather than a new sentence: the state this
+      // order was cancelled from decides the same truth for a wall that it
+      // does for anything else `cancelOrder` accepts, and `'completed'`
+      // (the only state this branch's own resolver ever returns) answers with
+      // the same "stays spent" sentence `Undo` already produces for the same
+      // wall today (§2's positive control).
+      events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
       return;
     }
 

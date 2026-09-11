@@ -242,10 +242,17 @@ export interface HudObjectPlacement {
  *
  * Discriminated rather than "a placement with an optional definition id", so
  * `tsc` and not a reader decides which fields each arm has.
+ *
+ * **`remove`'s `edge`, added by ADR 0106, is optional for the reason `place`
+ * carries no edge at all: it is set only by a world press, which always has
+ * one to give (`pickEdgeAtWorld` resolves any finite point), and absent from
+ * a source that has no sub-tile position -- none exists today, but the type
+ * does not assume the object tool is the only producer forever. `hud.ts`
+ * reads its presence to decide between `RemoveObject` and `RemoveWall`.
  */
 export type HudObjectGesture =
   | ({ readonly kind: 'place' } & HudObjectPlacement)
-  | { readonly kind: 'remove'; readonly x: number; readonly y: number };
+  | { readonly kind: 'remove'; readonly x: number; readonly y: number; readonly edge?: HudBuildEdge };
 
 /**
  * The world's object gesture, as the HUD is willing to know it (ADR 0028).
@@ -399,8 +406,20 @@ export type HudIntent =
    * is bound to `KeyZ` and nothing else, so on a touch device a misplaced object
    * was permanent for the session. That is the trap the Rooms tab shipped with
    * and had to fix in a follow-up, and it is not worth repeating.
+   *
+   * **`edge`, added by ADR 0106, is optional and carries the same asymmetry as
+   * `HudObjectGesture`'s own `remove` arm.** Present only when the world
+   * gesture supplied one -- `pickEdgeAtWorld` always resolves a press to an
+   * edge, so the object tool's world press always sets it -- and absent from
+   * the Build panel's numeric route, which names a typed tile with no sub-tile
+   * position for an edge to come from. `src/main.ts` reads its presence to
+   * decide which command a press becomes: `RemoveWall` when present, plain
+   * `RemoveObject` (this intent's original, edge-less shape) when not. A
+   * finished wall therefore has no keyboard route through this field alone --
+   * the numeric route stays exactly what it was, which is what
+   * `edgeChooserShown` already documents for the removing mode.
    */
-  | { readonly kind: 'remove-object'; readonly x: number; readonly y: number }
+  | { readonly kind: 'remove-object'; readonly x: number; readonly y: number; readonly edge?: HudBuildEdge }
   /**
    * The player asked to buy materials (#89). Ids and numbers only -- the host
    * turns this into a `PurchaseMaterials` command and mints the order id it
@@ -2166,7 +2185,17 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   options.worldObjects?.attachGestures((gesture) => {
     if (gesture.kind === 'remove') {
-      dispatchCommand({ kind: 'remove-object', x: gesture.x, y: gesture.y });
+      // `edge` (ADR 0106) travels through unchanged when the gesture carried
+      // one and is omitted entirely otherwise -- `exactOptionalPropertyTypes`
+      // is on, so `edge: undefined` and no key at all are different things,
+      // and `src/main.ts` reads absence, not `undefined`, to choose
+      // `RemoveObject` over `RemoveWall`.
+      dispatchCommand({
+        kind: 'remove-object',
+        x: gesture.x,
+        y: gesture.y,
+        ...(gesture.edge === undefined ? {} : { edge: gesture.edge }),
+      });
       return;
     }
     dispatchCommand({ kind: 'place-object', definitionId: gesture.definitionId, x: gesture.x, y: gesture.y });

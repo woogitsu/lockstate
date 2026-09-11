@@ -112,7 +112,7 @@ const CANVAS_ONLY = 'CANVAS';
  *
  * `calibrate`'s default probe is `(700, 300)`, which is on the rail at the
  * narrower viewports here -- every press would land on a panel, produce no
- * `RemoveObject`, and the calibration would throw. So the square is found
+ * `RemoveWall`, and the calibration would throw. So the square is found
  * first, by asking the page what is on top at its four corners and its centre.
  * Nearest the viewport centre wins, so the bisection stays as far from every
  * island as the page allows.

@@ -878,6 +878,25 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * sentence names both populations without listing them.
    */
   'hud.alert.refusal.remove-object.nothing-to-remove': 'Nothing was removed — there is no object on that tile, and none being built there.',
+  /*
+   * The one `remove-wall.*` sentence
+   * (ADR 0106, authored under `AGENTS.md`'s 2026-09-04 release of
+   * reservation 4).
+   *
+   * It is the terminal refusal of a world press armed to remove: this
+   * command's own session-command branch tries the object arm first, so this
+   * sentence is only ever what the player reads when that arm *also* found
+   * nothing -- which is why it names all three things checked rather than
+   * only the wall. "None being built there" is carried over from
+   * `remove-object.*`'s own sentence rather than repeated as a separate
+   * clause, and "no finished wall there either" is deliberately not "no
+   * wall": a wall still being built answers `nothing-to-remove` here too
+   * (`ConstructionSystem.completedOrderClaimingEdge` only ever matches a
+   * `'completed'` order), and a sentence that said "no wall" would be false
+   * of that case.
+   */
+  'hud.alert.refusal.remove-wall.nothing-to-remove':
+    'Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.',
   'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
   // Ruling 23's other half -- see `hire.insufficient-funds` above for the
   // whole argument, and note that this key has a second producer:
@@ -1736,7 +1755,30 @@ const authoredMessages: Readonly<Record<string, string>> = {
    */
   'hud.build.remove': 'Remove',
   'hud.build.remove-active': 'Stop removing',
-  'hud.build.remove-hint': 'Press any tile of an object to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded.',
+  /*
+   * **Amended under `AGENTS.md`'s 2026-09-04 release of reservation 4**
+   * (ADR 0106): the choice of words is ours, the requirement that the sentence
+   * be true is not. The one clause added is *"or a finished wall"* in the
+   * first sentence; the rest is unchanged, including the closing sentence,
+   * which was already true of both kinds and needed no edit -- see below.
+   *
+   * **"or a finished wall"** is true against
+   * `src/simulation/runtime/session-commands.ts`'s `RemoveWall` branch: a
+   * world press armed to remove now falls through to
+   * `ConstructionSystem.completedOrderClaimingEdge` when the pressed tile
+   * holds no object, and that resolver only ever matches a `'completed'`
+   * order -- a wall still being built is not reached by this control at all,
+   * which is why the clause says *"finished"* and not merely *"wall"*.
+   *
+   * **"A finished one is not refunded."** was written for an object and is
+   * kept byte-for-byte, because it is *also* true of a wall now: `cancelOrder`
+   * runs `destroysSpendOnCancel(stateAtCancellation)` before releasing or
+   * refunding anything, that predicate answers `true` for `'completed'`
+   * regardless of what the order builds, and the wall arm's own resolver
+   * never returns any other state. So "a finished one" reads, correctly, as
+   * either kind the first sentence just introduced.
+   */
+  'hud.build.remove-hint': 'Press any tile of an object, or a finished wall, to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded.',
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',

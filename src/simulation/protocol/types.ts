@@ -1208,7 +1208,7 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the twelve vocabularies behind it cannot collide:
+ * refusal answers, so the thirteen vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `cancel-purchase.*` mirrors
  * `PurchaseCancelRefusalReason`, `construction.*` mirrors
@@ -1217,7 +1217,8 @@ export type SimulationStatusCounts = DeepReadonly<
  * `place-object.*` mirrors `PlaceObjectRefusalReason`,
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
  * `release-guard.*` mirrors `GuardReleaseRefusalReason`,
- * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `unzone.*` mirrors
+ * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `remove-wall.*`
+ * mirrors `RemoveWallRefusalReason`, `unzone.*` mirrors
  * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
  * namespace is doing real work rather than being tidy -- `out-of-bounds` and
  * `unowned-land` are members of *two* of those domain vocabularies,
@@ -1228,9 +1229,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the twelve
- * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the twelve tables between
+ * these through an exhaustive `Record`, so a reason added to any of the
+ * thirteen fails to compile until it is named here -- and
+ * `tests/unit/simulation-refusals.test.ts` asserts the thirteen tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  *
@@ -1318,6 +1319,16 @@ export type SimulationStatusCounts = DeepReadonly<
  * "the build order failed" and not as "the materials were not ordered" or "the
  * object was not placed", the sentence either of the other two spellings would
  * have given it.
+ *
+ * `remove-wall.*` is the thirteenth namespace
+ * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)),
+ * and it is a namespace of its own against `remove-object.*` for that
+ * comment's own reason applied to a third gesture: a player who pressed the
+ * world expecting a finished wall to come down must not read a sentence about
+ * an object, on a tile that may hold neither, either or both. Its one member,
+ * `nothing-to-remove`, is the fourth spelling of "the player pressed where
+ * there was nothing of theirs to take away", beside `remove-object.*`'s own
+ * and `unzone.*`'s.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
@@ -1350,6 +1361,7 @@ export const REFUSAL_REASONS = [
   'release-guard.not-held',
   'release-guard.unknown-guard',
   'remove-object.nothing-to-remove',
+  'remove-wall.nothing-to-remove',
   'unzone.invalid-area',
   'unzone.nothing-to-remove',
   'unzone.room-occupied',
