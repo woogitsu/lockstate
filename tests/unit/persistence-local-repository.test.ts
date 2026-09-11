@@ -71,7 +71,10 @@ describe('PrisonSaveRepository: save() and generation retention', () => {
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
 
     const result = await repo.save('prison-1', buildEnvelope(1));
-    expect(result).toEqual({ ok: true, generationId: 'gen-1' });
+    // `revision` on the success arm is ADR 0109 Decision 1: the number the
+    // transaction actually allocated, reported back so a caller caches what
+    // was written rather than allocating what it hopes will be.
+    expect(result).toEqual({ ok: true, generationId: 'gen-1', revision: 1 });
 
     const [metadata] = await repo.list();
     expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
@@ -118,12 +121,27 @@ describe('PrisonSaveRepository: save() and generation retention', () => {
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
 
     const trusted = buildEnvelope(1);
-    expect(await repo.save('prison-1', trusted)).toEqual({ ok: true, generationId: 'gen-1' });
+    expect(await repo.save('prison-1', trusted)).toEqual({ ok: true, generationId: 'gen-1', revision: 1 });
     const storedTrusted = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
-    expect(storedTrusted).toBe(trusted);
+    /*
+     * NOT `toBe(trusted)` any more, and the reason is worth stating because
+     * the identity was the original assertion (#49).
+     *
+     * ADR 0109 Decision 1 stamps the revision inside the write transaction, so
+     * what reaches storage is `{ ...trusted, revision }` -- a different object
+     * by necessity, since `markTrusted` freezes the envelope it vouches for.
+     * What #49 actually bought was **not re-walking the payload**, and that is
+     * untouched: the spread is eight scalar metadata fields and one shared
+     * reference to the payload, so the payload is still the caller's object
+     * and still never validated twice. The assertion below is that property,
+     * stated directly instead of through object identity.
+     */
+    expect(storedTrusted).not.toBe(trusted);
+    expect((storedTrusted as SaveEnvelope).payload).toBe(trusted.payload);
+    expect(storedTrusted).toEqual({ ...trusted, revision: 1 });
 
     const untrusted = JSON.parse(JSON.stringify(buildEnvelope(2))) as SaveEnvelope;
-    expect(await repo.save('prison-1', untrusted)).toEqual({ ok: true, generationId: 'gen-2' });
+    expect(await repo.save('prison-1', untrusted)).toEqual({ ok: true, generationId: 'gen-2', revision: 2 });
     const storedUntrusted = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-2'));
     expect(storedUntrusted).not.toBe(untrusted);
     expect(storedUntrusted).toEqual(untrusted);
@@ -368,7 +386,7 @@ describe('PrisonSaveRepository: export/import', () => {
     const destinationRepo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('imported') });
     await destinationRepo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
     const importResult = await destinationRepo.importSave('prison-1', exported);
-    expect(importResult).toEqual({ ok: true, generationId: 'imported-1', migrated: false });
+    expect(importResult).toEqual({ ok: true, generationId: 'imported-1', revision: 1, migrated: false });
 
     const loaded = await destinationRepo.loadCurrent('prison-1');
     expect(loaded).toMatchObject({ ok: true, envelope: exported });
@@ -449,7 +467,13 @@ describe('PrisonSaveRepository: export/import', () => {
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
 
     const result = await repo.importSave('prison-1', v1InProgressFixture);
-    expect(result).toEqual({ ok: true, generationId: 'imported-1', migrated: true });
+    // `revision: 7` is the V1 fixture's own, kept rather than reallocated,
+    // because the destination slot was created moments ago and so has no
+    // `currentRevision` to allocate from. That is ADR 0109's "fail open exactly
+    // once" applied to the allocation: a slot that cannot speak for itself
+    // carries the sequence forward, and every write after this one is allocated
+    // by the transaction. See `writeGeneration`.
+    expect(result).toEqual({ ok: true, generationId: 'imported-1', revision: 7, migrated: true });
 
     const loaded = await repo.loadCurrent('prison-1');
     expectOk(loaded, "prison-1's current generation after the v1 import");
@@ -499,9 +523,16 @@ describe('PrisonSaveRepository: an import does not evict until it has restored',
   it('writes the imported generation into the window without deleting the oldest', async () => {
     const { store, repo } = await prisonWithThreeSaves();
 
+    // `revision: 4`, not the file's own 9. ADR 0109 Decision 1 allocates at
+    // write time, so an imported file joins the slot's sequence instead of
+    // stamping its own number onto a slot it knows nothing about -- before
+    // this, importing a file exported at revision 9 into a slot at 3 left
+    // `currentRevision: 9` and the next ordinary save built 4, a pointer that
+    // went backwards.
     expect(await repo.importSave('prison-1', asImportedFile(buildEnvelope(9, 99)))).toEqual({
       ok: true,
       generationId: 'gen-4',
+      revision: 4,
       migrated: false,
     });
 
@@ -546,7 +577,9 @@ describe('PrisonSaveRepository: an import does not evict until it has restored',
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-4'))).toBeUndefined();
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-5'))).toBeUndefined();
     const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-6'));
-    expect(kept).toMatchObject({ revision: 11, payload: { kernel: { tick: 222 } } });
+    // Revision 6, not the file's 11: three saves (1, 2, 3) then three imports
+    // allocated 4, 5 and 6 in turn. See the import assertion above.
+    expect(kept).toMatchObject({ revision: 6, payload: { kernel: { tick: 222 } } });
   });
 
   it('confirms a window already within budget without retiring or rewriting anything', async () => {

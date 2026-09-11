@@ -85,7 +85,17 @@ export function describeFailureDetail(error: unknown, localizer: SavePanelLocali
  * states." Each maps to different advice, so they must not collapse into
  * one "save failed" string.
  */
-export type SaveStatusKind = 'idle' | 'saving' | 'saved' | 'recovered' | 'quota-exceeded' | 'transaction-aborted' | 'storage-unavailable' | 'error';
+export type SaveStatusKind =
+  | 'idle'
+  | 'saving'
+  | 'saved'
+  | 'recovered'
+  | 'quota-exceeded'
+  | 'transaction-aborted'
+  /** A save refused because the prison was written by something else (ADR 0109). Recoverable, and distinct advice: reload it, do not retry. */
+  | 'changed-elsewhere'
+  | 'storage-unavailable'
+  | 'error';
 
 /**
  * A message key and its parameters (ADR 0011).
@@ -148,6 +158,19 @@ export function describeSaveResult(result: SaveResult): SaveStatus {
       return { kind: 'quota-exceeded', messageKey: SAVE_PANEL_MESSAGE_KEY.statusQuotaExceeded };
     case 'transaction-aborted':
       return { kind: 'transaction-aborted', messageKey: SAVE_PANEL_MESSAGE_KEY.statusTransactionAborted };
+    case 'stale-revision':
+      /*
+       * ADR 0109 Decisions 4 and 5. The sentence behind this key is the
+       * owner's ruling of 2026-09-11, verbatim:
+       *
+       *   "Could not save: this prison was changed elsewhere."
+       *
+       * No `{detail}`, deliberately. `SaveWriteError.message` on this arm
+       * carries the two revision numbers, which are diagnostic English for a
+       * log and say nothing to a player; `SaveResult.stale` carries the same
+       * numbers as data for anything that wants to act on them.
+       */
+      return { kind: 'changed-elsewhere', messageKey: SAVE_PANEL_MESSAGE_KEY.statusChangedElsewhere };
     default:
       /*
        * A raw message, and the one place in this file where that is not a

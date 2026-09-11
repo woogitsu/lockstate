@@ -518,7 +518,10 @@ describe('a deterministic refusal costs no generation at all', () => {
   it('keeps a legitimate migrated V1 save whose ledger is wider than this build can address', async () => {
     const { controller, repository } = await buildFixture();
     const imported = await repository.importSave(PRISON_ID, v1WithWrittenPrefix(5_001));
-    expect(imported).toEqual({ ok: true, generationId: 'gen-1', migrated: true });
+    // `revision: 7` is the V1 file's own, kept because this slot was created
+    // moments ago and has no `currentRevision` to allocate from -- ADR 0109
+    // Decision 1's allocation failing open exactly once per slot.
+    expect(imported).toEqual({ ok: true, generationId: 'gen-1', revision: 7, migrated: true });
 
     vi.useFakeTimers();
     try {
@@ -555,6 +558,7 @@ describe('a deterministic refusal costs no generation at all', () => {
     expect(await repository.importSave(PRISON_ID, v1InProgressFixture)).toEqual({
       ok: true,
       generationId: 'gen-1',
+      revision: 7,
       migrated: true,
     });
 
@@ -903,9 +907,14 @@ describe('a save only another build can read is kept, not deleted', () => {
   }> {
     const { controller, repository, store } = await buildFixture();
     expectOk(await repository.save(PRISON_ID, restorableEnvelope(1)), 'the restorable generation 1');
+    // `revision: 2`, not the V1 file's 7: generation 1 landed above, so the
+    // slot now has a `currentRevision` and ADR 0109 Decision 1 allocates from
+    // it. An imported file joins this slot's sequence rather than stamping
+    // another slot's number onto it.
     expect(await repository.importSave(PRISON_ID, v1WithWrittenPrefix(5_001))).toEqual({
       ok: true,
       generationId: 'gen-2',
+      revision: 2,
       migrated: true,
     });
     const stored = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'));
@@ -937,13 +946,19 @@ describe('a save only another build can read is kept, not deleted', () => {
     });
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'))).toBeUndefined();
 
-    // Its own contents, against the V1 file's literals rather than against
-    // anything this test could have rebuilt: the fixture's revision, and the
-    // written prefix that made it unreadable here.
+    // Its own contents, against literals rather than against anything this
+    // test could have rebuilt: the written prefix that made it unreadable
+    // here, and the revision the slot allocated for it.
+    //
+    // **That used to say "the fixture's revision", and it no longer can.**
+    // ADR 0109 Decision 1 allocates the revision inside the write, so the
+    // imported V1 file's own 7 is replaced by this slot's next number. The
+    // payload literals are still the file's, which is the half of this
+    // assertion that was ever about the fixture.
     const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
     expect(kept).toMatchObject({
       saveSchemaVersion: SAVE_SCHEMA_VERSION,
-      revision: 7,
+      revision: 2,
       payload: { entities: { nextAvailableIndex: 5_001, maxActiveIndex: 5_000 } },
     });
     // And byte for byte what was stored before the load, which is the claim
@@ -981,7 +996,7 @@ describe('a save only another build can read is kept, not deleted', () => {
     // it would have given way on anyway.
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-1'))).toBeUndefined();
     const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
-    expect(kept).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
+    expect(kept).toMatchObject({ revision: 2, payload: { entities: { nextAvailableIndex: 5_001 } } });
     // And a save of the player's own from after the quarantine, so this is a
     // window that went on being written rather than one that stood still.
     const newest = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-5'));
@@ -1027,7 +1042,7 @@ describe('a save only another build can read is kept, not deleted', () => {
     expect(metadata).toMatchObject({ currentGenerationId: 'gen-2', generationIds: ['gen-1', 'gen-2'] });
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2))).toBeUndefined();
     const recovered = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'));
-    expect(recovered).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
+    expect(recovered).toMatchObject({ revision: 2, payload: { entities: { nextAvailableIndex: 5_001 } } });
   });
 
   /**
@@ -1058,7 +1073,7 @@ describe('a save only another build can read is kept, not deleted', () => {
     // The terrain run that overruns its chunk is gone; the wider ledger is not.
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-3'))).toBeUndefined();
     const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
-    expect(kept).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
+    expect(kept).toMatchObject({ revision: 2, payload: { entities: { nextAvailableIndex: 5_001 } } });
   });
 });
 

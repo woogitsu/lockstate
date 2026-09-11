@@ -118,7 +118,13 @@ advanced the *new* session's revision counter from 1 to 2, because that callback
 is guarded by `prisonId`, which a same-slot reload does not change:
 
   `if (result.ok && this.session?.prisonId === prisonId) this.session.revision += 1;`
-  (verbatim in `src/persistence/session/session-controller.ts`).
+  — the line exactly as it stood at `be5061f95f6eacdcd8114efd43f4f37154330e81`,
+  and **deleted by the branch that implements this document**, which is why the
+  attribution above no longer reads *"verbatim in"*: it would be a false claim
+  about the present tree, and
+  `tests/foundation/adr-quotation-verbatim-contract.test.ts` is what caught it
+  saying so. The autosave's `onResult` no longer touches the revision at all;
+  `SessionController.submitSave` assigns it from what the write returned.
 
 So the next ordinary save from the fresh session builds **revision 3** — a
 perfectly consecutive successor to a durable state that session never saw. The

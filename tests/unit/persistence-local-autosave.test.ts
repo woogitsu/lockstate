@@ -23,7 +23,7 @@ afterEach(() => {
 
 describe('AutosaveScheduler', () => {
   it('saves once, intervalMs after the first dirty marker', async () => {
-    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1' } satisfies SaveResult);
+    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1', revision: 1 } satisfies SaveResult);
     const scheduler = new AutosaveScheduler({ intervalMs: 1000, buildEnvelope: () => FAKE_ENVELOPE, save });
 
     scheduler.markDirty('prison-1');
@@ -35,7 +35,7 @@ describe('AutosaveScheduler', () => {
   });
 
   it('coalesces repeated dirty markers before the timer fires into a single save', async () => {
-    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1' } satisfies SaveResult);
+    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1', revision: 1 } satisfies SaveResult);
     const scheduler = new AutosaveScheduler({ intervalMs: 1000, buildEnvelope: () => FAKE_ENVELOPE, save });
 
     scheduler.markDirty('prison-1');
@@ -64,24 +64,24 @@ describe('AutosaveScheduler', () => {
     await vi.advanceTimersByTimeAsync(5000); // no new save fires while the first is still in-flight
     expect(save).toHaveBeenCalledTimes(1);
 
-    first.resolve({ ok: true, generationId: 'gen-1' });
+    first.resolve({ ok: true, generationId: 'gen-1', revision: 1 });
     await vi.advanceTimersByTimeAsync(0); // let the .then() continuation run and schedule the follow-up timer
     expect(save).toHaveBeenCalledTimes(1); // follow-up is scheduled, not immediate
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(save).toHaveBeenCalledTimes(2);
 
-    second.resolve({ ok: true, generationId: 'gen-2' });
+    second.resolve({ ok: true, generationId: 'gen-2', revision: 2 });
   });
 
   it('reports results through onResult and settles back to idle after a save with no further dirty marks', async () => {
     const onResult = vi.fn();
-    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1' } satisfies SaveResult);
+    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1', revision: 1 } satisfies SaveResult);
     const scheduler = new AutosaveScheduler({ intervalMs: 1000, buildEnvelope: () => FAKE_ENVELOPE, save, onResult });
 
     scheduler.markDirty('prison-1');
     await vi.advanceTimersByTimeAsync(1000);
-    expect(onResult).toHaveBeenCalledWith('prison-1', { ok: true, generationId: 'gen-1' });
+    expect(onResult).toHaveBeenCalledWith('prison-1', { ok: true, generationId: 'gen-1', revision: 1 });
     expect(scheduler.isPending('prison-1')).toBe(false);
   });
 
@@ -97,7 +97,7 @@ describe('AutosaveScheduler', () => {
   });
 
   it('tracks prisons independently', async () => {
-    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1' } satisfies SaveResult);
+    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1', revision: 1 } satisfies SaveResult);
     const scheduler = new AutosaveScheduler({ intervalMs: 1000, buildEnvelope: () => FAKE_ENVELOPE, save });
 
     scheduler.markDirty('prison-1');
@@ -137,7 +137,7 @@ describe('AutosaveScheduler', () => {
       .fn()
       .mockRejectedValueOnce(new Error('The simulation worker did not reply within 15000ms.'))
       .mockResolvedValue(FAKE_ENVELOPE);
-    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1' } satisfies SaveResult);
+    const save = vi.fn().mockResolvedValue({ ok: true, generationId: 'gen-1', revision: 1 } satisfies SaveResult);
     const scheduler = new AutosaveScheduler({ intervalMs: 1000, buildEnvelope, save, onResult });
 
     scheduler.markDirty('prison-1');
@@ -158,7 +158,7 @@ describe('AutosaveScheduler', () => {
 
     expect(save).toHaveBeenCalledTimes(1);
     expect(save).toHaveBeenCalledWith('prison-1', FAKE_ENVELOPE);
-    expect(onResult).toHaveBeenLastCalledWith('prison-1', { ok: true, generationId: 'gen-1' });
+    expect(onResult).toHaveBeenLastCalledWith('prison-1', { ok: true, generationId: 'gen-1', revision: 1 });
   });
 
   it('reports a rejected write with its storage classification and still runs the follow-up the mid-save marker asked for', async () => {
@@ -175,7 +175,7 @@ describe('AutosaveScheduler', () => {
     const save = vi
       .fn()
       .mockReturnValueOnce(firstWrite)
-      .mockResolvedValue({ ok: true, generationId: 'gen-2' } satisfies SaveResult);
+      .mockResolvedValue({ ok: true, generationId: 'gen-2', revision: 2 } satisfies SaveResult);
     const scheduler = new AutosaveScheduler({ intervalMs: 1000, buildEnvelope: () => FAKE_ENVELOPE, save, onResult });
 
     scheduler.markDirty('prison-1');
@@ -193,7 +193,7 @@ describe('AutosaveScheduler', () => {
 
     expect(onResult.mock.calls).toEqual([
       ['prison-1', { ok: false, error: { code: 'quota-exceeded', message: 'Autosave failed: QuotaExceededError' } }],
-      ['prison-1', { ok: true, generationId: 'gen-2' }],
+      ['prison-1', { ok: true, generationId: 'gen-2', revision: 2 }],
     ]);
     expect(save).toHaveBeenCalledTimes(2);
   });

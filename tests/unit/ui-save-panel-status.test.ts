@@ -41,7 +41,7 @@ function resolve(message: SaveMessage): string {
 }
 describe('describeSaveResult: distinct, actionable recovery states', () => {
   it('reports a successful save with its generation id', () => {
-    const status = describeSaveResult({ ok: true, generationId: 'gen-abc' });
+    const status = describeSaveResult({ ok: true, generationId: 'gen-abc', revision: 3 });
     expect(status.kind).toBe('saved');
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusSaved);
     expect(resolve(status)).toBe('Saved (generation gen-abc).');
@@ -402,7 +402,7 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
   } as const;
 
   it('reports a completed import with the generation it wrote', () => {
-    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', migrated: false });
+    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', revision: 4, migrated: false });
     expect(status.kind).toBe('saved');
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImported);
     expect(resolve(status)).toBe('Imported the save file into this prison (generation gen-xyz).');
@@ -411,7 +411,7 @@ describe('describeImportResult: four refusals, four sentences (issue #287)', () 
   it('says so when the file it imported came from an older version', () => {
     // The player-visible evidence that the migration chain ran. Nothing else
     // in the interface can tell them.
-    const status = describeImportResult({ ok: true, generationId: 'gen-old', migrated: true });
+    const status = describeImportResult({ ok: true, generationId: 'gen-old', revision: 5, migrated: true });
     expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportedMigrated);
     expect(resolve(status)).toContain('older version');
     expect(resolve(status)).toContain('gen-old');
