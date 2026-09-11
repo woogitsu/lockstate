@@ -14,6 +14,7 @@ import {
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
   REMOVE_WALL_REFUSAL_REASONS,
+  SELL_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
@@ -109,8 +110,8 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the thirteen domains can produce', () => {
-  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, wall removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the fourteen domains can produce', () => {
+  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, wall removal, sale, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
@@ -123,6 +124,7 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
       ...Object.values(RELEASE_GUARD_REFUSAL_REASONS),
       ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
       ...Object.values(REMOVE_WALL_REFUSAL_REASONS),
+      ...Object.values(SELL_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
     ];
@@ -219,6 +221,19 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
     });
     expect(REMOVE_OBJECT_REFUSAL_REASONS).toEqual({ 'nothing-to-remove': 'remove-object.nothing-to-remove' });
     expect(REMOVE_WALL_REFUSAL_REASONS).toEqual({ 'nothing-to-remove': 'remove-wall.nothing-to-remove' });
+    /*
+     * The fourteenth table (ADR 0075 decision 3, invoked by ADR 0096 decision
+     * 3(b)), transcribed here like every other rather than read back off the
+     * table it would be checking against itself -- `insufficient-stock` has
+     * no purchase-side twin for the pairing test to have caught a typo
+     * against, which is exactly the one-member-table argument
+     * `REMOVE_OBJECT_REFUSAL_REASONS` above records for its own entry.
+     */
+    expect(SELL_REFUSAL_REASONS).toEqual({
+      'insufficient-stock': 'sell.insufficient-stock',
+      'invalid-quantity': 'sell.invalid-quantity',
+      'unknown-material': 'sell.unknown-material',
+    });
     expect(UNZONE_REFUSAL_REASONS).toEqual({
       'invalid-area': 'unzone.invalid-area',
       'nothing-to-remove': 'unzone.nothing-to-remove',
@@ -261,6 +276,13 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
     // paragraph earning its keep a third time: `REMOVE_WALL_REFUSAL_REASONS`
     // was added to the set comparison above and forgotten here first, and
     // this list was still twelve tables long.
+    //
+    // **And a fourth time, on the fourteenth (`SellMaterials`, ADR 0075
+    // decision 3 / ADR 0096 decision 3(b)).** Reproduced rather than assumed:
+    // with `SELL_REFUSAL_REASONS` left out of this block (and in the set
+    // comparison above), `paired` stayed 42 long against
+    // `REFUSAL_REASONS.length` at 45 -- `expected [ …(41) ] to have a length
+    // of 45 but got 42`. Adding it here too is what turns that green again.
     const paired = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
@@ -273,6 +295,7 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
       ...Object.values(RELEASE_GUARD_REFUSAL_REASONS),
       ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
       ...Object.values(REMOVE_WALL_REFUSAL_REASONS),
+      ...Object.values(SELL_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
     ];
@@ -295,7 +318,7 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the twelve vocabularies it can answer, so they cannot collide', () => {
+  it('names the fourteen vocabularies it can answer, so they cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -354,6 +377,18 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
     // from `remove-object` for the ninth demonstration -- the same fact, "the
     // player pressed where there was nothing of theirs to take away", answers
     // a third different gesture and must not read as either of the other two.
+    //
+    // **This test's own name said "twelve" from the moment `remove-wall`
+    // (the thirteenth) landed until this pass, and the body above already
+    // documented thirteen the whole time** -- a title is exactly the kind of
+    // tally `docs/AGENT_WORKFLOW.md` §4 says rots first, and it rotted here
+    // before this change touched the file at all. Corrected to "fourteen"
+    // now rather than "thirteen", since `sell` (ADR 0075 decision 3, invoked
+    // by ADR 0096 decision 3(b)) is the fourteenth and the tenth
+    // demonstration: `unknown-material` and `invalid-quantity` are spelled
+    // like two of `purchase`'s own members -- the same catalogue lookup and
+    // the same integer guard, for the opposite direction of money -- and a
+    // player who pressed Sell must not read that a delivery was refused.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
@@ -367,6 +402,7 @@ describe('the wire vocabulary is exactly what the thirteen domains can produce',
       'release-guard',
       'remove-object',
       'remove-wall',
+      'sell',
       'unzone',
       'zone',
     ]);
