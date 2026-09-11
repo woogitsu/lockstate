@@ -5,6 +5,7 @@ import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instan
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { placedObjectAt, PlacedObjectRegistry } from '../../src/simulation/objects';
 import type { RoomDoorReader } from '../../src/simulation/rooms/enclosure';
+import type { RoomRegionGraphSource, RoomRegionReader } from '../../src/simulation/rooms/reachability';
 import { RoomNeedsClearedNoticeSystem } from '../../src/simulation/rooms/room-needs-cleared-notice';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
@@ -59,6 +60,33 @@ function constantDoorReader(present: boolean): RoomDoorReader {
   return { getByEdge: () => (present ? {} : undefined) };
 }
 
+/**
+ * A region reader putting every loaded tile in one portal-free region -- enough
+ * to hold the *reachability* side of `shortfallOf` constant while a test varies
+ * one of the other two, exactly as `constantDoorReader` holds the door side.
+ *
+ * One region over the whole chunk means the fixture room's tiles and the
+ * boundary ring's are the same region, and that region escapes the loaded area
+ * wherever the world holds no wall -- which, outside `wall2x2`'s own rectangle,
+ * is every edge of the chunk. So `roomAccess` answers `'doorway'` whenever the
+ * door reader says there is a door, and both describe blocks below keep meaning
+ * what their names say. The exterior rule itself is exercised over real worlds
+ * in `tests/unit/rooms-reachability.test.ts`.
+ */
+function oneOpenRegion(): RoomRegionGraphSource {
+  const tileToRegion = new Map<string, number>();
+  for (let y = 0; y < CHUNK_SIZE; y += 1) {
+    for (let x = 0; x < CHUNK_SIZE; x += 1) tileToRegion.set(`${String(x)},${String(y)}`, 1);
+  }
+  const graph: RoomRegionReader = {
+    tileToRegion,
+    regionPortals: new Map(),
+    loadedChunks: [{ x: 0, y: 0 }],
+    tileChunkSize: CHUNK_SIZE,
+  };
+  return { getGraph: () => graph };
+}
+
 /** A door reader whose answer can be flipped after construction, isolating the doorway-side crossing from the object side. */
 function toggledDoorReader(): { reader: RoomDoorReader; setPresent: (value: boolean) => void } {
   let present = false;
@@ -98,6 +126,7 @@ describe('RoomNeedsClearedNoticeSystem: the object-capability side of shortfallO
       placedObjects,
       world,
       constantDoorReader(true),
+      oneOpenRegion(),
       events,
     );
 
@@ -138,6 +167,7 @@ describe('RoomNeedsClearedNoticeSystem: the object-capability side of shortfallO
       placedObjects,
       world,
       constantDoorReader(true),
+      oneOpenRegion(),
       events,
     );
 
@@ -167,10 +197,12 @@ describe('RoomNeedsClearedNoticeSystem: the doorway side of shortfallOf, the obj
     wall2x2(world);
     const events = new SimulationEventLog();
     const { reader: doors, setPresent } = toggledDoorReader();
-    const system = new RoomNeedsClearedNoticeSystem({ roomInstances }, placedObjects, world, doors, events);
+    const system = new RoomNeedsClearedNoticeSystem({ roomInstances }, placedObjects, world, doors, oneOpenRegion(), events);
 
-    // Sealed with no door: `roomPerimeterAccess` reads `'no-way-in'`, exactly
-    // the state issue #1006's own comment and #938 describe.
+    // Sealed with no door: `roomAccess` reads `'no-way-in'`, exactly the state
+    // issue #1006's own comment and #938 describe. Once the door appears it
+    // reads `'doorway'` rather than `'unreachable'`, because `oneOpenRegion`
+    // puts this room in a region that escapes the loaded area (ADR 0108).
     system.update(context(0));
     expect(events.since(0), 'no door yet: nothing to announce on the seeding tick').toEqual([]);
 
@@ -199,6 +231,7 @@ describe('RoomNeedsClearedNoticeSystem: restore does not re-announce', () => {
       placedObjects,
       world,
       constantDoorReader(true),
+      oneOpenRegion(),
       events,
     );
 
@@ -229,6 +262,7 @@ describe('RoomNeedsClearedNoticeSystem: a removed instance does not poison a reu
       placedObjects,
       world,
       constantDoorReader(true),
+      oneOpenRegion(),
       events,
     );
 
