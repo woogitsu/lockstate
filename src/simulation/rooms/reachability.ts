@@ -195,6 +195,23 @@ function tileAt(x: number, y: number): TilePosition {
 }
 
 /**
+ * `tileKey`'s string for a pair of plain numbers, without minting a
+ * `TilePosition` to hand it.
+ *
+ * **Measured, not assumed.** `tileToRegion` is keyed by string, and the two
+ * loops below probe it once per room tile and four times per ring candidate.
+ * Going through `tileAt` costs an object allocation and two `tileCoordinate`
+ * calls per probe, and at 5,440 rooms over 64 chunks that was the difference
+ * between the marginal walk costing more than the edge scan it replaces and
+ * costing less. It must agree with `tileKey` exactly, which
+ * `tests/unit/rooms-reachability.test.ts` holds by using real graphs
+ * throughout: a key built differently here would simply never match.
+ */
+function keyAt(x: number, y: number): string {
+  return `${String(x)},${String(y)}`;
+}
+
+/**
  * Whether `position` has an open crossing to a tile outside the loaded area.
  *
  * A registered door counts, for `buildNavigationGraph`'s own reason: a portal is
@@ -207,25 +224,26 @@ function opensOutOfLoadedArea(
   regions: RoomRegionReader,
   position: TilePosition,
 ): boolean {
-  const east = tileAt(position.x + 1, position.y);
-  const west = tileAt(position.x - 1, position.y);
-  const south = tileAt(position.x, position.y + 1);
-  const north = tileAt(position.x, position.y - 1);
+  const { x, y } = position;
 
   // The same edge vocabulary `resolveEdge` uses, written out rather than
   // imported: a tile's east boundary is its neighbour's west edge, and its
-  // south boundary is the north edge of the row below.
-  if (!regions.tileToRegion.has(tileKey(east)) && (world.getLeftEdge(east) === 0 || doors.getByEdge(east, 'left') !== undefined)) {
-    return true;
+  // south boundary is the north edge of the row below. The `has` probe comes
+  // first in each pair so a tile with every neighbour loaded -- which is most
+  // of them -- never materialises a `TilePosition` at all.
+  if (!regions.tileToRegion.has(keyAt(x + 1, y))) {
+    const east = tileAt(x + 1, y);
+    if (world.getLeftEdge(east) === 0 || doors.getByEdge(east, 'left') !== undefined) return true;
   }
-  if (!regions.tileToRegion.has(tileKey(west)) && (world.getLeftEdge(position) === 0 || doors.getByEdge(position, 'left') !== undefined)) {
-    return true;
+  if (!regions.tileToRegion.has(keyAt(x - 1, y))) {
+    if (world.getLeftEdge(position) === 0 || doors.getByEdge(position, 'left') !== undefined) return true;
   }
-  if (!regions.tileToRegion.has(tileKey(south)) && (world.getTopEdge(south) === 0 || doors.getByEdge(south, 'top') !== undefined)) {
-    return true;
+  if (!regions.tileToRegion.has(keyAt(x, y + 1))) {
+    const south = tileAt(x, y + 1);
+    if (world.getTopEdge(south) === 0 || doors.getByEdge(south, 'top') !== undefined) return true;
   }
-  if (!regions.tileToRegion.has(tileKey(north)) && (world.getTopEdge(position) === 0 || doors.getByEdge(position, 'top') !== undefined)) {
-    return true;
+  if (!regions.tileToRegion.has(keyAt(x, y - 1))) {
+    if (world.getTopEdge(position) === 0 || doors.getByEdge(position, 'top') !== undefined) return true;
   }
   return false;
 }
@@ -250,9 +268,27 @@ function containsTile(rectangle: TileRectangle, position: TilePosition): boolean
  */
 function ringTiles(regions: RoomRegionReader): readonly TilePosition[] {
   const size = regions.tileChunkSize;
+  const loaded = new Set<string>();
+  for (const chunk of regions.loadedChunks) loaded.add(keyAt(chunk.x, chunk.y));
+
   const ring: TilePosition[] = [];
   const seen = new Set<string>();
   for (const chunk of regions.loadedChunks) {
+    // A chunk with all four orthogonal neighbours loaded contributes nothing:
+    // a tile's neighbours are orthogonal only, so every tile in it has every
+    // neighbour inside the loaded area. Skipping it here is what makes this
+    // walk cost the loaded area's *perimeter* rather than its chunk count --
+    // measured, since enumerating interior chunks' borders anyway was most of
+    // the exterior walk's cost at 64 chunks.
+    if (
+      loaded.has(keyAt(chunk.x + 1, chunk.y)) &&
+      loaded.has(keyAt(chunk.x - 1, chunk.y)) &&
+      loaded.has(keyAt(chunk.x, chunk.y + 1)) &&
+      loaded.has(keyAt(chunk.x, chunk.y - 1))
+    ) {
+      continue;
+    }
+
     const originX = chunk.x * size;
     const originY = chunk.y * size;
     for (let local = 0; local < size; local += 1) {
@@ -265,11 +301,12 @@ function ringTiles(regions: RoomRegionReader): readonly TilePosition[] {
       for (const candidate of candidates) {
         const key = tileKey(candidate);
         if (seen.has(key) || !regions.tileToRegion.has(key)) continue;
+        const { x, y } = candidate;
         const hasMissingNeighbour =
-          !regions.tileToRegion.has(tileKey(tileAt(candidate.x + 1, candidate.y))) ||
-          !regions.tileToRegion.has(tileKey(tileAt(candidate.x - 1, candidate.y))) ||
-          !regions.tileToRegion.has(tileKey(tileAt(candidate.x, candidate.y + 1))) ||
-          !regions.tileToRegion.has(tileKey(tileAt(candidate.x, candidate.y - 1)));
+          !regions.tileToRegion.has(keyAt(x + 1, y)) ||
+          !regions.tileToRegion.has(keyAt(x - 1, y)) ||
+          !regions.tileToRegion.has(keyAt(x, y + 1)) ||
+          !regions.tileToRegion.has(keyAt(x, y - 1));
         if (!hasMissingNeighbour) continue;
         seen.add(key);
         ring.push(candidate);
@@ -356,7 +393,7 @@ export function roomReachability(
 
       for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) {
         for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
-          const region = regions.tileToRegion.get(tileKey(tileAt(x, y)));
+          const region = regions.tileToRegion.get(keyAt(x, y));
           if (region !== undefined && reachedRegions.has(region)) return true;
         }
       }
