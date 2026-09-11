@@ -89,6 +89,15 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
     // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`;
     // this file is about whether the control beside it can be pressed.
     cancelRefundMinorUnits: 80,
+    // ADR 0107 made this a required field on the view model after this file
+    // was written, and the two branches only met here. A fixed value is
+    // right for this file's question: `revision` is what a Cancel press
+    // carries so the worker can refuse a press aimed at a state the order
+    // has already left, and this file asks whether the control can be
+    // pressed at all, not what the press then pays. The refusal's own
+    // behaviour is measured in
+    // `tests/integration/construction-cancel-order-stale-revision.test.ts`.
+    revision: 1,
   };
 }
 
@@ -331,7 +340,14 @@ test.describe('every queued order has a control a player can reach', () => {
 
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: last })]);
+      // `revision` joined this intent in ADR 0107, after this file was
+      // written; the two branches only met at integration. It is the order's
+      // revision as the row was published at, and it is what lets the worker
+      // refuse a press aimed at a state the order has already left. The
+      // fixture publishes 1, so the press carries 1 -- asserted whole rather
+      // than loosened to a substring, because the shape of what a press sends
+      // is exactly what this file is for.
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: last, revision: 1 })]);
 
     // One order, and not an undo. `Undo` takes the whole run back and is the
     // control #862 measured as the only one a player had for eleven of these.
