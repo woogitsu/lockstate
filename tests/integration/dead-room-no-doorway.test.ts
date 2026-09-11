@@ -175,7 +175,9 @@ function readout(prisonUnderTest: Prison): ReturnType<typeof roomNeedsFromProjec
   const { runtime } = prisonUnderTest;
   const options = {
     placedObjects: runtime.placedObjects,
-    perimeter: { edges: runtime.world, doors: runtime.navigation.doors },
+    // `getGraph()` and not a stashed graph: it refreshes a stale one on the
+    // spot, so every read here is of the prison as it stands (ADR 0108).
+    perimeter: { edges: runtime.world, doors: runtime.navigation.doors, regions: runtime.navigation.getGraph() },
   };
   const list = projectRoomList(runtime.prisoners, {}, options);
   const details = unfinishedRoomIds(list)
@@ -188,7 +190,7 @@ function showerRow(prisonUnderTest: Prison): ReturnType<typeof projectRoomList>[
   const { runtime } = prisonUnderTest;
   const list = projectRoomList(runtime.prisoners, {}, {
     placedObjects: runtime.placedObjects,
-    perimeter: { edges: runtime.world, doors: runtime.navigation.doors },
+    perimeter: { edges: runtime.world, doors: runtime.navigation.doors, regions: runtime.navigation.getGraph() },
   });
   const row = list.rooms.rows.find((candidate) => candidate.roomCatalogId === 'room.shower-room');
   expect(row, 'the shower room must be registered in both prisons').not.toBeUndefined();
@@ -239,7 +241,11 @@ describe('the same room with no door is dead, and now says so (#938)', () => {
     expect(showerRow(prison(false)).access).toBe('no-way-in');
     expect(projectRoomDetail(prison(false).runtime.prisoners, showerRow(prison(false)).instanceId, {
       placedObjects: prison(false).runtime.placedObjects,
-      perimeter: { edges: prison(false).runtime.world, doors: prison(false).runtime.navigation.doors },
+      perimeter: {
+        edges: prison(false).runtime.world,
+        doors: prison(false).runtime.navigation.doors,
+        regions: prison(false).runtime.navigation.getGraph(),
+      },
     })?.access).toBe('no-way-in');
   });
 

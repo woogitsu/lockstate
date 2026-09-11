@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DoorRegistry } from '../../src/simulation/navigation/door';
+import { buildNavigationGraph } from '../../src/simulation/navigation/region-graph';
 import { roomInstanceIdFor } from '../../src/simulation/rooms/zoning';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
@@ -411,7 +412,12 @@ describe('a room with no way into it (#938)', () => {
     world: SparseWorld,
     doors: DoorRegistry,
   ): { readonly list: RoomListViewModel; readonly details: readonly RoomDetailViewModel[] } {
-    const options = { perimeter: { edges: world, doors } };
+    // A real region graph over the real world and the real registry, not a
+    // stub: ADR 0108 made `access` an answer about both, so a fixture that
+    // stubbed the region half would be asserting the panel against a prison
+    // that does not exist.
+    const graph = buildNavigationGraph(world, doors, [world.getChunk({ x: chunkCoordinate(0), y: chunkCoordinate(0) })!]);
+    const options = { perimeter: { edges: world, doors, regions: graph } };
     const list = projectRoomList(source, {}, options);
     const details: RoomDetailViewModel[] = [];
     for (const id of unfinishedRoomIds(list).slice(0, ROOM_NEEDS_ROOMS_LIMIT)) {
