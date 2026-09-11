@@ -172,8 +172,16 @@ canvas {
    only signal. */
 .save-panel__status[data-kind='saved'] { color: var(--status-success); }
 .save-panel__status[data-kind='recovered'] { color: var(--status-warning); }
+/* `changed-elsewhere` sits with these three rather than with `error` because
+   it is the same kind of state they are: the save did not happen, the
+   previous one is intact, and there is something the player can do. ADR 0109
+   Decision 5's sentence is "Could not save: this prison was changed
+   elsewhere." -- a refusal, not a fault. Without a rule here it would have
+   rendered in the default body colour while its peers render as warnings,
+   which is the one status line a player most needs to notice. */
 .save-panel__status[data-kind='quota-exceeded'],
 .save-panel__status[data-kind='storage-unavailable'],
+.save-panel__status[data-kind='changed-elsewhere'],
 .save-panel__status[data-kind='transaction-aborted'] { color: var(--status-warning); }
 .save-panel__status[data-kind='error'] { color: var(--status-danger); }
 .save-panel__status[data-kind='idle'],
