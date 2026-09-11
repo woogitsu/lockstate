@@ -164,10 +164,19 @@ export class BuildQueueReader {
    *
    * The window is named rather than defaulted, and it is the panel's own row
    * budget: `BUILD_QUEUE_ROW_LIMIT` is how many rows the block can show, so
-   * asking for the projection's default hundred would build ninety-odd rows
-   * nothing can render, twice a second. `total` still comes back over the whole
-   * queue, so the header tells the truth about the prison while the rows tell
-   * the truth about the panel.
+   * asking for the projection's default hundred would build rows nothing can
+   * render, twice a second. `total` still comes back over the whole queue, so
+   * the header tells the truth about the prison while the rows tell the truth
+   * about the panel.
+   *
+   * **That sentence used to say "ninety-odd rows", and the arithmetic behind it
+   * moved with #862 while the rule did not.** The budget was three rows and is
+   * now sixty-four -- the longest queue one gesture can place -- so the default
+   * hundred would waste thirty-six rows rather than ninety-seven. What is
+   * unchanged is *why* the window is this number: it is the panel's, and asking
+   * for rows the panel has nowhere to put is paid for on the worker, where the
+   * projection prices each row by walking the whole order book. That price is
+   * measured in `BUILD_QUEUE_ROW_LIMIT`'s own docblock.
    *
    * **"twice a second" is the counts cadence and this reader does not ride
    * it (corrected 2026-09-02, issues #718 and #765).** The sentence is kept
