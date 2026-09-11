@@ -188,21 +188,51 @@ ensure_full_history
 # of assuming it -- the checks below look at what is actually on disk, because
 # some container images ship a pre-baked Chromium even though this hook never
 # installs one, and "not provisioned" would then be false.
+#
+# AND THE PARAGRAPH ABOVE WAS WRONG ABOUT THE CHEAPEST HALF OF IT, MEASURED
+# 2026-09-11. It reasons entirely about `git lfs pull`, which is fetch plus
+# checkout and is indeed metered. But a container image can arrive with the
+# objects ALREADY in `.git/lfs` and only the working tree left as pointers --
+# this one did, holding 55 MiB of them -- and in that state `git lfs checkout`
+# writes the real bytes from LOCAL storage and touches the network not at all.
+# Measured here: 16.5 s, 94 MiB, at 7.6 MB/s, which is disk rather than a
+# transfer.
+#
+# The cost of the old text is the reason this is fixed rather than noted: it
+# told six agent briefs in one session that a genuinely red `verify:assets` and
+# a genuinely red atlas-decode test were an "EXPECTED BASELINE ... not
+# something to debug or work around". Telling somebody to ignore a red is the
+# expensive direction to be wrong in, and one agent caught it by running the
+# command instead of believing the sentence.
+#
+# `git lfs checkout` is safe to run unconditionally: with no local objects it
+# leaves the pointers exactly as it found them and still spends no bandwidth,
+# so there is no state in which running it costs what the paragraph above is
+# protecting.
 report_unprovisioned() {
   local lfs_sample="${PROJECT_DIR}/public/assets/actors/actor.guard.base.idle.png"
 
+  if [ -f "$lfs_sample" ] && head -c 64 "$lfs_sample" | grep -q 'git-lfs.github.com' \
+     && command -v git-lfs >/dev/null 2>&1; then
+    log "Git LFS pointers in the working tree; trying a local-only checkout"
+    git -C "$PROJECT_DIR" lfs checkout >/dev/null 2>&1 || true
+  fi
+
   if [ -f "$lfs_sample" ] && head -c 64 "$lfs_sample" | grep -q 'git-lfs.github.com'; then
-    log "NOT provisioned: Git LFS content. The atlas PNGs under public/assets/ and"
-    log "  public/game-content/ are ~131-byte LFS pointer text files, not images."
-    log "  This DISABLES 'pnpm verify:assets' -- the atlas validator correctly"
-    log "  refuses a pointer -- and it makes the browser suite's \"the art is real"
-    log "  image data\" test in tests/browser/app-shell.spec.ts fail on a decode"
-    log "  error. Both are the EXPECTED BASELINE in this container, not a"
-    log "  regression, and not something to debug or work around."
-    log "  To get the real bytes: bash scripts/provision-git-lfs.sh && git lfs pull"
-    log "  (metered bandwidth -- that is why this hook leaves it to you)."
+    log "NOT provisioned: Git LFS content, and the objects are not local either."
+    log "  The atlas PNGs under public/assets/ and public/game-content/ are"
+    log "  ~131-byte LFS pointer text files, not images. This DISABLES"
+    log "  'pnpm verify:assets' -- the atlas validator correctly refuses a"
+    log "  pointer -- and it makes the browser suite's \"the art is real image"
+    log "  data\" test in tests/browser/app-shell.spec.ts fail on a decode error."
+    log "  A local checkout was tried first and did not help, so the bytes are"
+    log "  genuinely absent rather than merely unwritten."
+    log "  To fetch them: bash scripts/provision-git-lfs.sh && git lfs pull"
+    log "  (metered bandwidth -- that is why this hook fetches nothing)."
   else
-    log "Git LFS content looks present; pnpm verify:assets can run."
+    log "Git LFS content present; pnpm verify:assets and the atlas-decode test"
+    log "  both run. If the working tree held pointers a moment ago, the"
+    log "  local-only checkout above wrote the real bytes -- no bandwidth spent."
   fi
 
   local browsers="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
