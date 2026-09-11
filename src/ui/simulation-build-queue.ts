@@ -129,6 +129,7 @@ export function buildQueueFromProjection(
       edge: row.edge,
       state: row.state,
       cancelRefundMinorUnits: row.cancelRefundMinorUnits,
+      revision: row.revision,
     };
   });
 

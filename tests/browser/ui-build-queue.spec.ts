@@ -68,6 +68,11 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
     // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
     // are where that is measured.
     cancelRefundMinorUnits: 80,
+    // `revision` (ADR 0107): distinct per order (`index + 1`) so the
+    // aiming assertions below -- which check the whole `cancel-build-order`
+    // intent, revision included -- are not vacuously true of rows sharing
+    // one value.
+    revision: index + 1,
   };
 }
 
@@ -292,7 +297,7 @@ test.describe('the Build panel queue', () => {
 
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01' })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01', revision: 2 })]);
 
     // One intent, for one order, and *not* an undo. The two are different
     // requests and the panel must never substitute one for the other.
@@ -425,7 +430,7 @@ test.describe('the Build panel queue', () => {
     await page.mouse.click(target.x, target.y);
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01' })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-01', revision: 2 })]);
 
     /*
      * The freed place stays blank for `BUILD_QUEUE_ROW_SETTLE_MS`, and
@@ -549,7 +554,7 @@ test.describe('the Build panel queue', () => {
     expect(await page.evaluate(() => window.lockstateUiHarness.pressBuildQueueCancel('order-02'))).toBe(true);
     await expect
       .poll(async () => (await intents(page)).filter((intent) => intent.includes('cancel-build-order')))
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-02' })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: 'order-02', revision: 3 })]);
   });
 
   test('leaves every revealed cancel inside the panel, scrolling to them where it has to', async ({ page }) => {
