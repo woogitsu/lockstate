@@ -903,10 +903,12 @@ export class SessionController {
      * both land on one number. `durableRevision === session.revision`
      * therefore means "the write that beat me was mine", and anything else
      * means another writer holds the slot and must be surfaced rather than
-     * overwritten -- `AGENTS.md`-adjacent, and the rule
+     * overwritten. That is the rule this project already committed to on the
+     * cloud side on 2026-08-22, and the local store is now held to it too:
      * `supabase/migrations/20260822190300_create_save_version_rpc.sql:6-8`
-     * states for the cloud: "never a silent overwrite, never a silent 'latest
-     * wins'".
+     * requires `p_new_revision` to be exactly `current_revision + 1`,
+     * "anything else is a conflict the caller must resolve (never a silent
+     * overwrite, never a silent 'latest wins')".
      *
      * Re-checked rather than assumed: the write above crossed an await, and a
      * session that went stale during it has lost its claim to a retry.
