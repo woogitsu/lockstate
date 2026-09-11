@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 445 authored sentences
+## The 448 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -203,274 +203,277 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.alert.event.economy.wages-unpaid` | Payday went unpaid — your staff are owed {total}. | `src/content/default-locale-en.ts:1063` |
 | `hud.alert.event.economy.deliveries-refused` | Deliveries refused — the treasury cannot cover a purchase right now. | `src/content/default-locale-en.ts:1073` |
 | `hud.alert.event.economy.construction-refused` | Construction halted — the treasury cannot fund the build queue right now. | `src/content/default-locale-en.ts:1074` |
-| `hud.alert.event.construction.order-cancelled` | The order was cancelled — the money it cost is refunded. | `src/content/default-locale-en.ts:1193` |
-| `hud.alert.event.construction.order-cancelled-underway` | The order was cancelled. Anything already spent past the point of no return stays spent. | `src/content/default-locale-en.ts:1194` |
-| `hud.alert.event.construction.undo-refused-newer-action` | Nothing was undone — Undo takes back a change to the build queue, and something else has happened since the last one. | `src/content/default-locale-en.ts:1224` |
-| `hud.alert.event.construction.undone` | The last change to the build queue was undone. | `src/content/default-locale-en.ts:1226` |
-| `hud.alert.event.construction.undone-spend-destroyed` | The last change to the build queue was undone — anything already spent past the point of no return stays spent. | `src/content/default-locale-en.ts:1227` |
-| `hud.alert.event.construction.redone` | The last change to the build queue was redone. | `src/content/default-locale-en.ts:1229` |
-| `hud.alert.event.economy.delivery-cancelled` | The delivery was cancelled — {total} back. | `src/content/default-locale-en.ts:1230` |
-| `hud.alert.event.objects.removed-spend-destroyed` | The object was removed — the money it cost does not come back. | `src/content/default-locale-en.ts:1313` |
-| `hud.alert.event.prisoners.relocated` | {name} had nowhere to sleep and moved to {room}. | `src/content/default-locale-en.ts:1336` |
-| `hud.alert.event.rooms.zoned` | {room} designated. | `src/content/default-locale-en.ts:1391` |
-| `hud.alert.event.rooms.needs-cleared` | {room} is no longer short anything the Rooms panel checks for — that is not a claim anyone can get in. | `src/content/default-locale-en.ts:1470` |
-| `hud.alert.event.rooms.unzoned` | {room} removed. | `src/content/default-locale-en.ts:1507` |
-| `hud.alert.event.incidents.riot-opened` | A riot has broken out — {count} prisoners have stopped taking orders. | `src/content/default-locale-en.ts:1530` |
-| `hud.alert.event.incidents.assault-opened` | A fight has broken out between two prisoners. | `src/content/default-locale-en.ts:1531` |
-| `hud.alert.event.incidents.escape-attempt-opened` | A prisoner is trying to break out. | `src/content/default-locale-en.ts:1532` |
-| `hud.alert.event.incidents.gang-retaliation-opened` | Two gangs are settling a score. | `src/content/default-locale-en.ts:1533` |
-| `hud.alert.event.incidents.all-clear` | The prison is under control again — no incident is still open. | `src/content/default-locale-en.ts:1534` |
-| `hud.alert.event.incidents.all-clear-after-lapse` | No incident is still open — but the last one ran out of time instead of being contained, and everyone caught in it was hurt. | `src/content/default-locale-en.ts:1585` |
-| `hud.alert.event.incidents.escape-succeeded` | {name} broke out — no guard reached them in time. | `src/content/default-locale-en.ts:1622` |
-| `hud.alert.event.contraband.discovered` | Contraband found: {item}. | `src/content/default-locale-en.ts:1657` |
-| `hud.unavailable.simulation` | Simulation unavailable — this browser could not start it, so nothing can run or be saved | `src/content/default-locale-en.ts:1683` |
-| `hud.panel.collapse` | Collapse | `src/content/default-locale-en.ts:1685` |
-| `hud.panel.expand` | Expand | `src/content/default-locale-en.ts:1686` |
-| `hud.build.title` | Build | `src/content/default-locale-en.ts:1688` |
-| `hud.build.catalogue` | What to build | `src/content/default-locale-en.ts:1689` |
-| `hud.build.catalogue-empty` | Nothing is available to build | `src/content/default-locale-en.ts:1690` |
-| `hud.build.selected` | Selected | `src/content/default-locale-en.ts:1691` |
-| `hud.build.catalogue-row-price` | {buildable} · {total} | `src/content/default-locale-en.ts:1726` |
-| `hud.build.catalogue-row-price-segment` | {buildable} · {total} per segment | `src/content/default-locale-en.ts:1747` |
-| `hud.build.placement` | Where | `src/content/default-locale-en.ts:1748` |
-| `hud.build.tile-x` | Tile X | `src/content/default-locale-en.ts:1749` |
-| `hud.build.tile-y` | Tile Y | `src/content/default-locale-en.ts:1750` |
-| `hud.build.step-down` | Decrease {field} | `src/content/default-locale-en.ts:1751` |
-| `hud.build.step-up` | Increase {field} | `src/content/default-locale-en.ts:1752` |
-| `hud.build.edge` | Edge | `src/content/default-locale-en.ts:1753` |
-| `hud.build.submit` | Place order | `src/content/default-locale-en.ts:1754` |
-| `hud.build.note` | An order is queued now and built while the clock runs. | `src/content/default-locale-en.ts:1755` |
-| `hud.build.arm` | Place on map | `src/content/default-locale-en.ts:1756` |
-| `hud.build.remove` | Remove | `src/content/default-locale-en.ts:1797` |
-| `hud.build.remove-active` | Stop removing | `src/content/default-locale-en.ts:1798` |
-| `hud.build.remove-hint` | Press any tile of an object, or a finished wall, to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded. | `src/content/default-locale-en.ts:1822` |
-| `hud.build.remove-submit` | Remove object here | `src/content/default-locale-en.ts:1823` |
-| `hud.build.disarm` | Stop placing | `src/content/default-locale-en.ts:1824` |
-| `hud.build.arm-hint` | Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera. | `src/content/default-locale-en.ts:1825` |
-| `hud.build.arm-hint-object` | Click a tile inside a designated room to place it. One press, one object. Two fingers, the middle button or the arrow keys still move the camera. | `src/content/default-locale-en.ts:1861` |
-| `hud.build.target-none` | Point at the world | `src/content/default-locale-en.ts:1863` |
-| `hud.build.target-value` | {x}, {y} · {edge} | `src/content/default-locale-en.ts:1864` |
-| `hud.build.target-run` | {count} × {edge} from {x}, {y} | `src/content/default-locale-en.ts:1865` |
-| `hud.build.target-tile` | {x}, {y} | `src/content/default-locale-en.ts:1866` |
-| `hud.build.coordinates` | Enter coordinates | `src/content/default-locale-en.ts:1867` |
-| `hud.build.coordinates-hint` | The keyboard route. Pointing at the map is quicker. | `src/content/default-locale-en.ts:1868` |
-| `hud.build.buy` | Buy | `src/content/default-locale-en.ts:1869` |
-| `hud.build.buy-quantity` | Quantity | `src/content/default-locale-en.ts:1870` |
-| `hud.build.buy-submit` | Buy {count} × {material} · {total} | `src/content/default-locale-en.ts:1871` |
-| `hud.build.buy-hint` | Arrives while the clock runs, into the stock a build draws from. | `src/content/default-locale-en.ts:1872` |
-| `hud.build.sell` | Sell | `src/content/default-locale-en.ts:1907` |
-| `hud.build.sell-submit` | Sell {count} × {material} · {total} | `src/content/default-locale-en.ts:1908` |
-| `hud.build.buy-shortfall` | Not enough money — you need {amount} more. | `src/content/default-locale-en.ts:1948` |
-| `hud.build.queue` | Queued | `src/content/default-locale-en.ts:2015` |
-| `hud.build.queue-count` | {count} waiting · {started} being built | `src/content/default-locale-en.ts:2016` |
-| `hud.build.queue-order` | {buildable} · {x}, {y} · {edge} · {total} back | `src/content/default-locale-en.ts:2017` |
-| `hud.build.queue-cancel` | Cancel | `src/content/default-locale-en.ts:2018` |
-| `hud.build.queue-unnamed` | Unnamed order | `src/content/default-locale-en.ts:2019` |
-| `hud.build.queue-more` | and {count} more behind these — undo takes back a whole run. | `src/content/default-locale-en.ts:2020` |
-| `hud.build.queue-shortfall` | Waiting for {total} to unblock the next order. | `src/content/default-locale-en.ts:2021` |
-| `hud.build.deliveries` | On the way | `src/content/default-locale-en.ts:2048` |
-| `hud.build.deliveries-count` | {count} bought · {total} back if cancelled | `src/content/default-locale-en.ts:2049` |
-| `hud.build.delivery` | {count} × {material} · {total} back | `src/content/default-locale-en.ts:2050` |
-| `hud.build.delivery-cancel` | Cancel | `src/content/default-locale-en.ts:2051` |
-| `hud.build.delivery-unnamed` | Unnamed material | `src/content/default-locale-en.ts:2052` |
-| `hud.build.deliveries-more` | and {count} more on the way — these arrive first, and the rest come into view as they land. | `src/content/default-locale-en.ts:2053` |
-| `hud.build.buildable.wall-brick` | Brick wall | `src/content/default-locale-en.ts:2054` |
-| `hud.build.buildable.door-wooden` | Wooden door | `src/content/default-locale-en.ts:2055` |
-| `hud.build.category` | Category | `src/content/default-locale-en.ts:2068` |
-| `hud.build.category-all` | Everything | `src/content/default-locale-en.ts:2069` |
-| `hud.build.category.structure` | Walls and doors | `src/content/default-locale-en.ts:2070` |
-| `hud.intake.title` | Intake | `src/content/default-locale-en.ts:2089` |
-| `hud.intake.admit` | Admit a prisoner | `src/content/default-locale-en.ts:2090` |
-| `hud.intake.hint` | A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free. | `src/content/default-locale-en.ts:2091` |
-| `hud.intake.no-place` | {count} waiting with no bed to sleep in | `src/content/default-locale-en.ts:2099` |
-| `hud.intake.pipeline` | In intake | `src/content/default-locale-en.ts:2104` |
-| `hud.intake.pipeline-count` | {waiting} of {total} | `src/content/default-locale-en.ts:2105` |
-| `hud.intake.pipeline-stage` | {count} at {stage} | `src/content/default-locale-en.ts:2106` |
-| `hud.intake.pipeline-failed` | {count} cannot be housed at all | `src/content/default-locale-en.ts:2111` |
-| `hud.security.staff` | Staff | `src/content/default-locale-en.ts:2119` |
-| `hud.security.roles` | Who to hire | `src/content/default-locale-en.ts:2120` |
-| `hud.security.roles-empty` | Nobody can be hired yet. | `src/content/default-locale-en.ts:2121` |
-| `hud.security.selected` | Selected | `src/content/default-locale-en.ts:2122` |
-| `hud.security.hire` | Hire {role} · {total} | `src/content/default-locale-en.ts:2123` |
-| `hud.security.hire-hint` | Costs {total} now and {wage} a day in wages, including today. | `src/content/default-locale-en.ts:2181` |
-| `hud.security.hire-shortfall` | Not enough money — you need {amount} more. | `src/content/default-locale-en.ts:2193` |
-| `hud.security.hire-unassigned` | A new guard starts unassigned. | `src/content/default-locale-en.ts:2216` |
-| `hud.security.held` | On duty | `src/content/default-locale-en.ts:2224` |
-| `hud.security.held-summary` | {held} held · {unassigned} free | `src/content/default-locale-en.ts:2225` |
-| `hud.security.held-empty` | Nobody is assigned right now. | `src/content/default-locale-en.ts:2226` |
-| `hud.security.held-row` | {name} · {claim} | `src/content/default-locale-en.ts:2227` |
-| `hud.security.held-row-unnamed` | Guard {id} · {claim} | `src/content/default-locale-en.ts:2228` |
-| `hud.security.held-release` | Release | `src/content/default-locale-en.ts:2229` |
-| `hud.security.held-more` | and {count} more | `src/content/default-locale-en.ts:2230` |
-| `hud.security.held-hint` | A released guard stays hired and goes back to the pool. | `src/content/default-locale-en.ts:2231` |
-| `hud.security.roster` | On the payroll | `src/content/default-locale-en.ts:2270` |
-| `hud.security.roster-wage-bill` | {total} a day | `src/content/default-locale-en.ts:2291` |
-| `hud.security.roster-dismiss` | Dismiss | `src/content/default-locale-en.ts:2292` |
-| `hud.security.roster-dismiss-confirm` | Dismiss {name}? Their wage stops and they do not come back. | `src/content/default-locale-en.ts:2321` |
-| `hud.security.roster-hint` | A dismissed staff member leaves the prison for good, and their wage stops. | `src/content/default-locale-en.ts:2322` |
-| `hud.security.coverage` | Guard coverage | `src/content/default-locale-en.ts:2332` |
-| `hud.security.coverage-summary` | {assigned} of {required} | `src/content/default-locale-en.ts:2333` |
-| `hud.security.coverage-met` | Covered | `src/content/default-locale-en.ts:2334` |
-| `hud.security.coverage-met-hint` | Incidents and searches need free guards. | `src/content/default-locale-en.ts:2507` |
-| `hud.security.coverage-short` | Understaffed | `src/content/default-locale-en.ts:2508` |
-| `hud.security.coverage-short-hint` | Hire {count} more to cover this population. | `src/content/default-locale-en.ts:2509` |
-| `hud.security.coverage-unguarded` | Unguarded | `src/content/default-locale-en.ts:2510` |
-| `hud.security.coverage-unguarded-hint` | Nobody is on duty. Hire {count} to cover this population. | `src/content/default-locale-en.ts:2511` |
-| `hud.security.coverage-unguarded-consequence` | No guard is posted here, so nobody in this sector is kept safe. | `src/content/default-locale-en.ts:2559` |
-| `hud.regime.title` | Regime | `src/content/default-locale-en.ts:2575` |
-| `hud.regime.blocks` | Today's blocks | `src/content/default-locale-en.ts:2576` |
-| `hud.regime.block-allows` | Allows {categories} | `src/content/default-locale-en.ts:2577` |
-| `hud.regime.block-progress` | {percent}% through | `src/content/default-locale-en.ts:2578` |
-| `hud.regime.category-separator` | ,  | `src/content/default-locale-en.ts:2581` |
-| `hud.regime.roster` | Prisoners | `src/content/default-locale-en.ts:2594` |
-| `hud.regime.roster-count` | {shown} of {total} | `src/content/default-locale-en.ts:2595` |
-| `hud.regime.roster-name` | {given} {family} | `src/content/default-locale-en.ts:2596` |
-| `hud.regime.roster-unnamed` | Prisoner {id} | `src/content/default-locale-en.ts:2597` |
-| `hud.regime.roster-heading` | Heading to {activity} | `src/content/default-locale-en.ts:2598` |
-| `hud.regime.roster-more` | and {count} more | `src/content/default-locale-en.ts:2599` |
-| `hud.regime.roster-empty` | No prisoners yet. Build a cell with a bed to take somebody in. | `src/content/default-locale-en.ts:2631` |
-| `hud.regime.roster-emptied` | This prison is empty. Take somebody in to start again. | `src/content/default-locale-en.ts:2668` |
-| `hud.refusal.set-clock` | The clock did not change — the request was refused. | `src/content/default-locale-en.ts:2683` |
-| `hud.refusal.place-build-order` | The build order was not placed — the request was refused. | `src/content/default-locale-en.ts:2684` |
-| `hud.refusal.purchase-materials` | Nothing was bought — the purchase was refused and no money was spent. | `src/content/default-locale-en.ts:2685` |
-| `hud.refusal.hire-staff` | Nobody was hired — the request was refused and no money was spent. | `src/content/default-locale-en.ts:2686` |
-| `hud.refusal.purchase-materials-past-floor` | Nothing was bought — deliveries are refused until the prison earns the money. | `src/content/default-locale-en.ts:2709` |
-| `hud.refusal.hire-staff-past-floor` | Nobody was hired — hiring is refused until the prison earns the money. | `src/content/default-locale-en.ts:2710` |
-| `hud.refusal.undo` | Nothing was undone — the request was refused. | `src/content/default-locale-en.ts:2711` |
-| `hud.refusal.redo` | Nothing was redone — the request was refused. | `src/content/default-locale-en.ts:2712` |
-| `hud.refusal.zone-room` | The room was not designated — the request was refused. | `src/content/default-locale-en.ts:2713` |
-| `hud.refusal.unzone-room` | Nothing was removed — the request was refused. | `src/content/default-locale-en.ts:2714` |
-| `hud.refusal.admit-prisoner` | Nobody was admitted — the request was refused. | `src/content/default-locale-en.ts:2715` |
-| `hud.refusal.admit-prisoner-no-room` | Nobody was admitted — this prison has no room to hold anybody. | `src/content/default-locale-en.ts:2731` |
-| `hud.refusal.cancel-build-order` | The order is still queued — the request was refused. | `src/content/default-locale-en.ts:2732` |
-| `hud.refusal.cancel-material-purchase` | Nothing was refunded — the request was refused and the delivery is still on its way. | `src/content/default-locale-en.ts:2738` |
-| `hud.refusal.sell-materials` | Nothing was sold — the request was refused and nothing was taken from stock. | `src/content/default-locale-en.ts:2745` |
-| `hud.refusal.release-guard` | Nobody was released — the request was refused and the guard is still assigned. | `src/content/default-locale-en.ts:2746` |
-| `hud.rooms.title` | Rooms | `src/content/default-locale-en.ts:2748` |
-| `hud.rooms.catalogue` | Room type and area | `src/content/default-locale-en.ts:2752` |
-| `hud.rooms.catalogue-empty` | No room types are available | `src/content/default-locale-en.ts:2753` |
-| `hud.rooms.selected` | Selected | `src/content/default-locale-en.ts:2754` |
-| `hud.rooms.arm` | Draw on map | `src/content/default-locale-en.ts:2755` |
-| `hud.rooms.disarm` | Stop drawing | `src/content/default-locale-en.ts:2756` |
-| `hud.rooms.arm-hint` | Drag a rectangle across the tiles this room should cover. | `src/content/default-locale-en.ts:2757` |
-| `hud.rooms.remove` | Remove rooms | `src/content/default-locale-en.ts:2758` |
-| `hud.rooms.remove-active` | Stop removing | `src/content/default-locale-en.ts:2759` |
-| `hud.rooms.remove-hint` | Drag across any part of a room to remove all of it. | `src/content/default-locale-en.ts:2768` |
-| `hud.rooms.area` | Area | `src/content/default-locale-en.ts:2769` |
-| `hud.rooms.area-none` | Nothing selected | `src/content/default-locale-en.ts:2770` |
-| `hud.rooms.area-value` | {width} × {height} tiles at {x}, {y} | `src/content/default-locale-en.ts:2771` |
-| `hud.rooms.confirm` | Designate {width} × {height} | `src/content/default-locale-en.ts:2772` |
-| `hud.rooms.confirm-remove` | Remove {width} × {height} | `src/content/default-locale-en.ts:2775` |
-| `hud.rooms.cancel` | Discard | `src/content/default-locale-en.ts:2776` |
-| `hud.rooms.minimum` | Needs at least {width} × {height} tiles | `src/content/default-locale-en.ts:2777` |
-| `hud.rooms.minimum-none` | No minimum size | `src/content/default-locale-en.ts:2778` |
-| `hud.rooms.too-small` | Too small — this room needs at least {width} × {height} tiles. | `src/content/default-locale-en.ts:2779` |
-| `hud.rooms.enclosure` | Enclosure | `src/content/default-locale-en.ts:2780` |
-| `hud.rooms.enclosure-none` | Not evaluated yet | `src/content/default-locale-en.ts:2781` |
-| `hud.rooms.enclosure-sealed` | Walled in — not a door check | `src/content/default-locale-en.ts:2824` |
-| `hud.rooms.enclosure-open` | Open on at least one side | `src/content/default-locale-en.ts:2825` |
-| `hud.rooms.requirement-enclosed` | Must be enclosed | `src/content/default-locale-en.ts:2826` |
-| `hud.rooms.requirement-outdoors` | Must be outdoors | `src/content/default-locale-en.ts:2827` |
-| `hud.rooms.requirement-none` | No enclosure rule | `src/content/default-locale-en.ts:2828` |
-| `hud.rooms.requires-object` | Needs {count} × {object} | `src/content/default-locale-en.ts:2835` |
-| `hud.rooms.requires-none` | No objects needed | `src/content/default-locale-en.ts:2840` |
-| `hud.rooms.coordinates` | Enter coordinates | `src/content/default-locale-en.ts:2844` |
-| `hud.rooms.coordinates-hint` | The keyboard route. Dragging on the map is quicker. | `src/content/default-locale-en.ts:2845` |
-| `hud.rooms.coordinates-submit` | Use these tiles | `src/content/default-locale-en.ts:2850` |
-| `hud.rooms.tile-x` | Tile X | `src/content/default-locale-en.ts:2851` |
-| `hud.rooms.tile-y` | Tile Y | `src/content/default-locale-en.ts:2852` |
-| `hud.rooms.width` | Width | `src/content/default-locale-en.ts:2853` |
-| `hud.rooms.height` | Height | `src/content/default-locale-en.ts:2854` |
-| `hud.rooms.step-down` | Decrease {field} | `src/content/default-locale-en.ts:2855` |
-| `hud.rooms.step-up` | Increase {field} | `src/content/default-locale-en.ts:2856` |
-| `hud.rooms.needs` | Not ready | `src/content/default-locale-en.ts:2861` |
-| `hud.rooms.needs-count` | {unfinished} of {total} | `src/content/default-locale-en.ts:2862` |
-| `hud.rooms.needs-room` | {room} at {x}, {y} is missing | `src/content/default-locale-en.ts:2867` |
-| `hud.rooms.needs-object` | {count} × {object} | `src/content/default-locale-en.ts:2871` |
-| `hud.rooms.needs-object-uncounted` | {object} | `src/content/default-locale-en.ts:2876` |
-| `hud.rooms.needs-item-more` | and {count} more | `src/content/default-locale-en.ts:2881` |
-| `hud.rooms.needs-object-unknown` | something this build cannot name | `src/content/default-locale-en.ts:2885` |
-| `hud.rooms.needs-doorway` | a door — nobody can get in | `src/content/default-locale-en.ts:2912` |
-| `hud.rooms.at-capacity` | At capacity | `src/content/default-locale-en.ts:2972` |
-| `hud.rooms.at-capacity-count` | {full} of {total} | `src/content/default-locale-en.ts:2973` |
-| `hud.rooms.at-capacity-room` | {room} at {x}, {y} is full | `src/content/default-locale-en.ts:2974` |
-| `hud.rooms.at-capacity-places` | places in use: {inUse} of {capacity} | `src/content/default-locale-en.ts:2975` |
-| `hud.severity.info` | Info | `src/content/default-locale-en.ts:2977` |
-| `hud.severity.warning` | Warning | `src/content/default-locale-en.ts:2978` |
-| `hud.severity.danger` | Critical | `src/content/default-locale-en.ts:2979` |
-| `save.panel.region` | Prison saves | `src/content/default-locale-en.ts:2994` |
-| `save.panel.title` | Prisons | `src/content/default-locale-en.ts:2995` |
-| `save.action.create` | New prison | `src/content/default-locale-en.ts:2997` |
-| `save.action.save` | Save now | `src/content/default-locale-en.ts:2998` |
-| `save.action.export` | Export | `src/content/default-locale-en.ts:2999` |
-| `save.action.import` | Import | `src/content/default-locale-en.ts:3000` |
-| `save.action.load` | Load | `src/content/default-locale-en.ts:3001` |
-| `save.action.delete` | Delete | `src/content/default-locale-en.ts:3002` |
-| `save.list.empty` | No prisons yet. | `src/content/default-locale-en.ts:3004` |
-| `save.list.item` | {name} ({count} gen) | `src/content/default-locale-en.ts:3005` |
-| `save.status.idle` | Local saves only — no network required. | `src/content/default-locale-en.ts:3007` |
-| `save.status.saved` | Saved (generation {generation}). | `src/content/default-locale-en.ts:3008` |
-| `save.status.quota-exceeded` | Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact. | `src/content/default-locale-en.ts:3013` |
-| `save.status.transaction-aborted` | The browser interrupted the save. Your previous save is intact — try saving again. | `src/content/default-locale-en.ts:3015` |
-| `save.status.save-failed` | Save failed: {detail} | `src/content/default-locale-en.ts:3017` |
-| `save.status.list-unreadable` | Could not read the local prison list (private browsing or an unreadable slot record can cause this): {detail} | `src/content/default-locale-en.ts:3021` |
-| `save.status.creating` | Creating prison… | `src/content/default-locale-en.ts:3023` |
-| `save.status.create-failed` | Could not create a prison: {detail} | `src/content/default-locale-en.ts:3024` |
-| `save.status.no-active-prison` | No active prison — create or load one first. | `src/content/default-locale-en.ts:3025` |
-| `save.status.saving` | Saving… | `src/content/default-locale-en.ts:3026` |
-| `save.status.loading` | Loading… | `src/content/default-locale-en.ts:3027` |
-| `save.status.not-found` | That prison no longer exists. | `src/content/default-locale-en.ts:3028` |
-| `save.status.no-readable-generation` | No readable save generation remains for this prison. Every retained copy failed validation. | `src/content/default-locale-en.ts:3029` |
-| `save.status.recovered` | The most recent save was unreadable — recovered an earlier verified generation. | `src/content/default-locale-en.ts:3031` |
-| `save.status.loaded` | Loaded. | `src/content/default-locale-en.ts:3032` |
-| `save.status.deleted` | Prison deleted. | `src/content/default-locale-en.ts:3033` |
-| `save.status.nothing-to-export` | Nothing to export — no valid active save. | `src/content/default-locale-en.ts:3034` |
-| `save.status.exported` | Exported the current save. | `src/content/default-locale-en.ts:3035` |
-| `save.status.importing` | Reading the save file… | `src/content/default-locale-en.ts:3042` |
-| `save.status.imported` | Imported the save file into this prison (generation {generation}). | `src/content/default-locale-en.ts:3043` |
-| `save.status.imported-migrated` | Imported a save from an older version of Lockstate and brought it up to date (generation {generation}). | `src/content/default-locale-en.ts:3044` |
-| `save.status.import-not-a-save` | That file is not a Lockstate save — choose a file exported from this game. | `src/content/default-locale-en.ts:3046` |
-| `save.status.import-unsupported-version` | That save was written by a newer version of Lockstate than this one. Update the game, then import it again. | `src/content/default-locale-en.ts:3047` |
-| `save.status.import-corrupt` | That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported. | `src/content/default-locale-en.ts:3049` |
-| `save.status.import-invalid` | That save file could not be read: {detail} | `src/content/default-locale-en.ts:3051` |
-| `save.failure.create` | Creating the prison failed: {detail} | `src/content/default-locale-en.ts:3053` |
-| `save.failure.save` | Saving failed: {detail} | `src/content/default-locale-en.ts:3054` |
-| `save.failure.load` | Loading failed: {detail} | `src/content/default-locale-en.ts:3055` |
-| `save.failure.delete` | Deleting failed: {detail} | `src/content/default-locale-en.ts:3056` |
-| `save.failure.export` | Exporting failed: {detail} | `src/content/default-locale-en.ts:3057` |
-| `save.failure.import` | Importing failed: {detail} | `src/content/default-locale-en.ts:3058` |
-| `save.failure.unknown` | The action failed: {detail} | `src/content/default-locale-en.ts:3059` |
-| `save.detail.restored-scope` | Restored: {restored}. Not carried by this save version: {notCarried}. | `src/content/default-locale-en.ts:3066` |
-| `save.scope.kernel` | kernel tick and command queue | `src/content/default-locale-en.ts:3085` |
-| `save.scope.rng-streams` | RNG stream states | `src/content/default-locale-en.ts:3086` |
-| `save.scope.world` | world terrain and ownership | `src/content/default-locale-en.ts:3087` |
-| `save.scope.construction` | construction orders and undo/redo | `src/content/default-locale-en.ts:3088` |
-| `save.scope.entity-liveness` | entity id liveness | `src/content/default-locale-en.ts:3089` |
-| `save.scope.prisoners` | prisoners, needs, actions and cell assignments | `src/content/default-locale-en.ts:3090` |
-| `save.scope.operations` | jobs, containers and utility networks | `src/content/default-locale-en.ts:3091` |
-| `save.scope.security` | doors, security sectors, guards and patrols | `src/content/default-locale-en.ts:3092` |
-| `save.scope.contraband` | contraband, intelligence and searches | `src/content/default-locale-en.ts:3093` |
-| `save.scope.incidents` | incidents, gangs and tunnels | `src/content/default-locale-en.ts:3094` |
-| `save.scope.names` | prisoner and staff names | `src/content/default-locale-en.ts:3095` |
-| `save.scope.room-caches` | room and topology caches (recomputed from the world) | `src/content/default-locale-en.ts:3100` |
-| `save.scope.navigation-caches` | navigation caches and in-flight path requests (re-issued on the next tick) | `src/content/default-locale-en.ts:3101` |
-| `input.action.camera.up` | Pan camera up | `src/content/default-locale-en.ts:3109` |
-| `input.action.camera.down` | Pan camera down | `src/content/default-locale-en.ts:3110` |
-| `input.action.camera.left` | Pan camera left | `src/content/default-locale-en.ts:3111` |
-| `input.action.camera.right` | Pan camera right | `src/content/default-locale-en.ts:3112` |
-| `input.action.camera.zoom.in` | Zoom in | `src/content/default-locale-en.ts:3113` |
-| `input.action.camera.zoom.out` | Zoom out | `src/content/default-locale-en.ts:3114` |
-| `input.action.selection.primary` | Select | `src/content/default-locale-en.ts:3115` |
-| `input.action.build.confirm` | Confirm placement | `src/content/default-locale-en.ts:3116` |
-| `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:3119` |
-| `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:3123` |
-| `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:3124` |
-| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:3129` |
-| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:3132` |
-| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:3140` |
-| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:3149` |
-| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:3153` |
-| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:3169` |
-| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:3170` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3180` |
+| `hud.alert.event.economy.deliveries-restored` | The treasury has climbed back above the deliveries floor. | `src/content/default-locale-en.ts:1104` |
+| `hud.alert.event.economy.construction-restored` | The treasury has climbed back above the construction floor. | `src/content/default-locale-en.ts:1105` |
+| `hud.alert.event.construction.order-cancelled` | The order was cancelled — the money it cost is refunded. | `src/content/default-locale-en.ts:1224` |
+| `hud.alert.event.construction.order-cancelled-underway` | The order was cancelled. Anything already spent past the point of no return stays spent. | `src/content/default-locale-en.ts:1225` |
+| `hud.alert.event.construction.undo-refused-newer-action` | Nothing was undone — Undo takes back a change to the build queue, and something else has happened since the last one. | `src/content/default-locale-en.ts:1255` |
+| `hud.alert.event.construction.undone` | The last change to the build queue was undone. | `src/content/default-locale-en.ts:1257` |
+| `hud.alert.event.construction.undone-spend-destroyed` | The last change to the build queue was undone — anything already spent past the point of no return stays spent. | `src/content/default-locale-en.ts:1258` |
+| `hud.alert.event.construction.redone` | The last change to the build queue was redone. | `src/content/default-locale-en.ts:1260` |
+| `hud.alert.event.economy.delivery-cancelled` | The delivery was cancelled — {total} back. | `src/content/default-locale-en.ts:1261` |
+| `hud.alert.event.objects.removed-spend-destroyed` | The object was removed — the money it cost does not come back. | `src/content/default-locale-en.ts:1344` |
+| `hud.alert.event.prisoners.relocated` | {name} had nowhere to sleep and moved to {room}. | `src/content/default-locale-en.ts:1367` |
+| `hud.alert.event.prisoners.housed` | {name} has a place in {room}. | `src/content/default-locale-en.ts:1420` |
+| `hud.alert.event.rooms.zoned` | {room} designated. | `src/content/default-locale-en.ts:1475` |
+| `hud.alert.event.rooms.needs-cleared` | {room} is no longer short anything the Rooms panel checks for — that is not a claim anyone can get in. | `src/content/default-locale-en.ts:1554` |
+| `hud.alert.event.rooms.unzoned` | {room} removed. | `src/content/default-locale-en.ts:1591` |
+| `hud.alert.event.incidents.riot-opened` | A riot has broken out — {count} prisoners have stopped taking orders. | `src/content/default-locale-en.ts:1614` |
+| `hud.alert.event.incidents.assault-opened` | A fight has broken out between two prisoners. | `src/content/default-locale-en.ts:1615` |
+| `hud.alert.event.incidents.escape-attempt-opened` | A prisoner is trying to break out. | `src/content/default-locale-en.ts:1616` |
+| `hud.alert.event.incidents.gang-retaliation-opened` | Two gangs are settling a score. | `src/content/default-locale-en.ts:1617` |
+| `hud.alert.event.incidents.all-clear` | The prison is under control again — no incident is still open. | `src/content/default-locale-en.ts:1618` |
+| `hud.alert.event.incidents.all-clear-after-lapse` | No incident is still open — but the last one ran out of time instead of being contained, and everyone caught in it was hurt. | `src/content/default-locale-en.ts:1669` |
+| `hud.alert.event.incidents.escape-succeeded` | {name} broke out — no guard reached them in time. | `src/content/default-locale-en.ts:1706` |
+| `hud.alert.event.contraband.discovered` | Contraband found: {item}. | `src/content/default-locale-en.ts:1741` |
+| `hud.unavailable.simulation` | Simulation unavailable — this browser could not start it, so nothing can run or be saved | `src/content/default-locale-en.ts:1767` |
+| `hud.panel.collapse` | Collapse | `src/content/default-locale-en.ts:1769` |
+| `hud.panel.expand` | Expand | `src/content/default-locale-en.ts:1770` |
+| `hud.build.title` | Build | `src/content/default-locale-en.ts:1772` |
+| `hud.build.catalogue` | What to build | `src/content/default-locale-en.ts:1773` |
+| `hud.build.catalogue-empty` | Nothing is available to build | `src/content/default-locale-en.ts:1774` |
+| `hud.build.selected` | Selected | `src/content/default-locale-en.ts:1775` |
+| `hud.build.catalogue-row-price` | {buildable} · {total} | `src/content/default-locale-en.ts:1810` |
+| `hud.build.catalogue-row-price-segment` | {buildable} · {total} per segment | `src/content/default-locale-en.ts:1831` |
+| `hud.build.placement` | Where | `src/content/default-locale-en.ts:1832` |
+| `hud.build.tile-x` | Tile X | `src/content/default-locale-en.ts:1833` |
+| `hud.build.tile-y` | Tile Y | `src/content/default-locale-en.ts:1834` |
+| `hud.build.step-down` | Decrease {field} | `src/content/default-locale-en.ts:1835` |
+| `hud.build.step-up` | Increase {field} | `src/content/default-locale-en.ts:1836` |
+| `hud.build.edge` | Edge | `src/content/default-locale-en.ts:1837` |
+| `hud.build.submit` | Place order | `src/content/default-locale-en.ts:1838` |
+| `hud.build.note` | An order is queued now and built while the clock runs. | `src/content/default-locale-en.ts:1839` |
+| `hud.build.arm` | Place on map | `src/content/default-locale-en.ts:1840` |
+| `hud.build.remove` | Remove | `src/content/default-locale-en.ts:1881` |
+| `hud.build.remove-active` | Stop removing | `src/content/default-locale-en.ts:1882` |
+| `hud.build.remove-hint` | Press any tile of an object, or a finished wall, to take it away. One still being built is cancelled and refunds its money — but nothing comes back once the crew has started it. A finished one is not refunded. | `src/content/default-locale-en.ts:1906` |
+| `hud.build.remove-submit` | Remove object here | `src/content/default-locale-en.ts:1907` |
+| `hud.build.disarm` | Stop placing | `src/content/default-locale-en.ts:1908` |
+| `hud.build.arm-hint` | Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera. | `src/content/default-locale-en.ts:1909` |
+| `hud.build.arm-hint-object` | Click a tile inside a designated room to place it. One press, one object. Two fingers, the middle button or the arrow keys still move the camera. | `src/content/default-locale-en.ts:1945` |
+| `hud.build.target-none` | Point at the world | `src/content/default-locale-en.ts:1947` |
+| `hud.build.target-value` | {x}, {y} · {edge} | `src/content/default-locale-en.ts:1948` |
+| `hud.build.target-run` | {count} × {edge} from {x}, {y} | `src/content/default-locale-en.ts:1949` |
+| `hud.build.target-tile` | {x}, {y} | `src/content/default-locale-en.ts:1950` |
+| `hud.build.coordinates` | Enter coordinates | `src/content/default-locale-en.ts:1951` |
+| `hud.build.coordinates-hint` | The keyboard route. Pointing at the map is quicker. | `src/content/default-locale-en.ts:1952` |
+| `hud.build.buy` | Buy | `src/content/default-locale-en.ts:1953` |
+| `hud.build.buy-quantity` | Quantity | `src/content/default-locale-en.ts:1954` |
+| `hud.build.buy-submit` | Buy {count} × {material} · {total} | `src/content/default-locale-en.ts:1955` |
+| `hud.build.buy-hint` | Arrives while the clock runs, into the stock a build draws from. | `src/content/default-locale-en.ts:1956` |
+| `hud.build.sell` | Sell | `src/content/default-locale-en.ts:1991` |
+| `hud.build.sell-submit` | Sell {count} × {material} · {total} | `src/content/default-locale-en.ts:1992` |
+| `hud.build.buy-shortfall` | Not enough money — you need {amount} more. | `src/content/default-locale-en.ts:2032` |
+| `hud.build.queue` | Queued | `src/content/default-locale-en.ts:2099` |
+| `hud.build.queue-count` | {count} waiting · {started} being built | `src/content/default-locale-en.ts:2100` |
+| `hud.build.queue-order` | {buildable} · {x}, {y} · {edge} · {total} back | `src/content/default-locale-en.ts:2101` |
+| `hud.build.queue-cancel` | Cancel | `src/content/default-locale-en.ts:2102` |
+| `hud.build.queue-unnamed` | Unnamed order | `src/content/default-locale-en.ts:2103` |
+| `hud.build.queue-more` | and {count} more behind these — undo takes back a whole run. | `src/content/default-locale-en.ts:2104` |
+| `hud.build.queue-shortfall` | Waiting for {total} to unblock the next order. | `src/content/default-locale-en.ts:2105` |
+| `hud.build.deliveries` | On the way | `src/content/default-locale-en.ts:2132` |
+| `hud.build.deliveries-count` | {count} bought · {total} back if cancelled | `src/content/default-locale-en.ts:2133` |
+| `hud.build.delivery` | {count} × {material} · {total} back | `src/content/default-locale-en.ts:2134` |
+| `hud.build.delivery-cancel` | Cancel | `src/content/default-locale-en.ts:2135` |
+| `hud.build.delivery-unnamed` | Unnamed material | `src/content/default-locale-en.ts:2136` |
+| `hud.build.deliveries-more` | and {count} more on the way — these arrive first, and the rest come into view as they land. | `src/content/default-locale-en.ts:2137` |
+| `hud.build.buildable.wall-brick` | Brick wall | `src/content/default-locale-en.ts:2138` |
+| `hud.build.buildable.door-wooden` | Wooden door | `src/content/default-locale-en.ts:2139` |
+| `hud.build.category` | Category | `src/content/default-locale-en.ts:2152` |
+| `hud.build.category-all` | Everything | `src/content/default-locale-en.ts:2153` |
+| `hud.build.category.structure` | Walls and doors | `src/content/default-locale-en.ts:2154` |
+| `hud.intake.title` | Intake | `src/content/default-locale-en.ts:2173` |
+| `hud.intake.admit` | Admit a prisoner | `src/content/default-locale-en.ts:2174` |
+| `hud.intake.hint` | A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free. | `src/content/default-locale-en.ts:2175` |
+| `hud.intake.no-place` | {count} waiting with no bed to sleep in | `src/content/default-locale-en.ts:2183` |
+| `hud.intake.pipeline` | In intake | `src/content/default-locale-en.ts:2188` |
+| `hud.intake.pipeline-count` | {waiting} of {total} | `src/content/default-locale-en.ts:2189` |
+| `hud.intake.pipeline-stage` | {count} at {stage} | `src/content/default-locale-en.ts:2190` |
+| `hud.intake.pipeline-failed` | {count} cannot be housed at all | `src/content/default-locale-en.ts:2195` |
+| `hud.security.staff` | Staff | `src/content/default-locale-en.ts:2203` |
+| `hud.security.roles` | Who to hire | `src/content/default-locale-en.ts:2204` |
+| `hud.security.roles-empty` | Nobody can be hired yet. | `src/content/default-locale-en.ts:2205` |
+| `hud.security.selected` | Selected | `src/content/default-locale-en.ts:2206` |
+| `hud.security.hire` | Hire {role} · {total} | `src/content/default-locale-en.ts:2207` |
+| `hud.security.hire-hint` | Costs {total} now and {wage} a day in wages, including today. | `src/content/default-locale-en.ts:2265` |
+| `hud.security.hire-shortfall` | Not enough money — you need {amount} more. | `src/content/default-locale-en.ts:2277` |
+| `hud.security.hire-unassigned` | A new guard starts unassigned. | `src/content/default-locale-en.ts:2300` |
+| `hud.security.held` | On duty | `src/content/default-locale-en.ts:2308` |
+| `hud.security.held-summary` | {held} held · {unassigned} free | `src/content/default-locale-en.ts:2309` |
+| `hud.security.held-empty` | Nobody is assigned right now. | `src/content/default-locale-en.ts:2310` |
+| `hud.security.held-row` | {name} · {claim} | `src/content/default-locale-en.ts:2311` |
+| `hud.security.held-row-unnamed` | Guard {id} · {claim} | `src/content/default-locale-en.ts:2312` |
+| `hud.security.held-release` | Release | `src/content/default-locale-en.ts:2313` |
+| `hud.security.held-more` | and {count} more | `src/content/default-locale-en.ts:2314` |
+| `hud.security.held-hint` | A released guard stays hired and goes back to the pool. | `src/content/default-locale-en.ts:2315` |
+| `hud.security.roster` | On the payroll | `src/content/default-locale-en.ts:2354` |
+| `hud.security.roster-wage-bill` | {total} a day | `src/content/default-locale-en.ts:2375` |
+| `hud.security.roster-dismiss` | Dismiss | `src/content/default-locale-en.ts:2376` |
+| `hud.security.roster-dismiss-confirm` | Dismiss {name}? Their wage stops and they do not come back. | `src/content/default-locale-en.ts:2405` |
+| `hud.security.roster-hint` | A dismissed staff member leaves the prison for good, and their wage stops. | `src/content/default-locale-en.ts:2406` |
+| `hud.security.coverage` | Guard coverage | `src/content/default-locale-en.ts:2416` |
+| `hud.security.coverage-summary` | {assigned} of {required} | `src/content/default-locale-en.ts:2417` |
+| `hud.security.coverage-met` | Covered | `src/content/default-locale-en.ts:2418` |
+| `hud.security.coverage-met-hint` | Incidents and searches need free guards. | `src/content/default-locale-en.ts:2591` |
+| `hud.security.coverage-short` | Understaffed | `src/content/default-locale-en.ts:2592` |
+| `hud.security.coverage-short-hint` | Hire {count} more to cover this population. | `src/content/default-locale-en.ts:2593` |
+| `hud.security.coverage-unguarded` | Unguarded | `src/content/default-locale-en.ts:2594` |
+| `hud.security.coverage-unguarded-hint` | Nobody is on duty. Hire {count} to cover this population. | `src/content/default-locale-en.ts:2595` |
+| `hud.security.coverage-unguarded-consequence` | No guard is posted here, so nobody in this sector is kept safe. | `src/content/default-locale-en.ts:2643` |
+| `hud.regime.title` | Regime | `src/content/default-locale-en.ts:2659` |
+| `hud.regime.blocks` | Today's blocks | `src/content/default-locale-en.ts:2660` |
+| `hud.regime.block-allows` | Allows {categories} | `src/content/default-locale-en.ts:2661` |
+| `hud.regime.block-progress` | {percent}% through | `src/content/default-locale-en.ts:2662` |
+| `hud.regime.category-separator` | ,  | `src/content/default-locale-en.ts:2665` |
+| `hud.regime.roster` | Prisoners | `src/content/default-locale-en.ts:2678` |
+| `hud.regime.roster-count` | {shown} of {total} | `src/content/default-locale-en.ts:2679` |
+| `hud.regime.roster-name` | {given} {family} | `src/content/default-locale-en.ts:2680` |
+| `hud.regime.roster-unnamed` | Prisoner {id} | `src/content/default-locale-en.ts:2681` |
+| `hud.regime.roster-heading` | Heading to {activity} | `src/content/default-locale-en.ts:2682` |
+| `hud.regime.roster-more` | and {count} more | `src/content/default-locale-en.ts:2683` |
+| `hud.regime.roster-empty` | No prisoners yet. Build a cell with a bed to take somebody in. | `src/content/default-locale-en.ts:2715` |
+| `hud.regime.roster-emptied` | This prison is empty. Take somebody in to start again. | `src/content/default-locale-en.ts:2752` |
+| `hud.refusal.set-clock` | The clock did not change — the request was refused. | `src/content/default-locale-en.ts:2767` |
+| `hud.refusal.place-build-order` | The build order was not placed — the request was refused. | `src/content/default-locale-en.ts:2768` |
+| `hud.refusal.purchase-materials` | Nothing was bought — the purchase was refused and no money was spent. | `src/content/default-locale-en.ts:2769` |
+| `hud.refusal.hire-staff` | Nobody was hired — the request was refused and no money was spent. | `src/content/default-locale-en.ts:2770` |
+| `hud.refusal.purchase-materials-past-floor` | Nothing was bought — deliveries are refused until the prison earns the money. | `src/content/default-locale-en.ts:2793` |
+| `hud.refusal.hire-staff-past-floor` | Nobody was hired — hiring is refused until the prison earns the money. | `src/content/default-locale-en.ts:2794` |
+| `hud.refusal.undo` | Nothing was undone — the request was refused. | `src/content/default-locale-en.ts:2795` |
+| `hud.refusal.redo` | Nothing was redone — the request was refused. | `src/content/default-locale-en.ts:2796` |
+| `hud.refusal.zone-room` | The room was not designated — the request was refused. | `src/content/default-locale-en.ts:2797` |
+| `hud.refusal.unzone-room` | Nothing was removed — the request was refused. | `src/content/default-locale-en.ts:2798` |
+| `hud.refusal.admit-prisoner` | Nobody was admitted — the request was refused. | `src/content/default-locale-en.ts:2799` |
+| `hud.refusal.admit-prisoner-no-room` | Nobody was admitted — this prison has no room to hold anybody. | `src/content/default-locale-en.ts:2815` |
+| `hud.refusal.cancel-build-order` | The order is still queued — the request was refused. | `src/content/default-locale-en.ts:2816` |
+| `hud.refusal.cancel-material-purchase` | Nothing was refunded — the request was refused and the delivery is still on its way. | `src/content/default-locale-en.ts:2822` |
+| `hud.refusal.sell-materials` | Nothing was sold — the request was refused and nothing was taken from stock. | `src/content/default-locale-en.ts:2829` |
+| `hud.refusal.release-guard` | Nobody was released — the request was refused and the guard is still assigned. | `src/content/default-locale-en.ts:2830` |
+| `hud.rooms.title` | Rooms | `src/content/default-locale-en.ts:2832` |
+| `hud.rooms.catalogue` | Room type and area | `src/content/default-locale-en.ts:2836` |
+| `hud.rooms.catalogue-empty` | No room types are available | `src/content/default-locale-en.ts:2837` |
+| `hud.rooms.selected` | Selected | `src/content/default-locale-en.ts:2838` |
+| `hud.rooms.arm` | Draw on map | `src/content/default-locale-en.ts:2839` |
+| `hud.rooms.disarm` | Stop drawing | `src/content/default-locale-en.ts:2840` |
+| `hud.rooms.arm-hint` | Drag a rectangle across the tiles this room should cover. | `src/content/default-locale-en.ts:2841` |
+| `hud.rooms.remove` | Remove rooms | `src/content/default-locale-en.ts:2842` |
+| `hud.rooms.remove-active` | Stop removing | `src/content/default-locale-en.ts:2843` |
+| `hud.rooms.remove-hint` | Drag across any part of a room to remove all of it. | `src/content/default-locale-en.ts:2852` |
+| `hud.rooms.area` | Area | `src/content/default-locale-en.ts:2853` |
+| `hud.rooms.area-none` | Nothing selected | `src/content/default-locale-en.ts:2854` |
+| `hud.rooms.area-value` | {width} × {height} tiles at {x}, {y} | `src/content/default-locale-en.ts:2855` |
+| `hud.rooms.confirm` | Designate {width} × {height} | `src/content/default-locale-en.ts:2856` |
+| `hud.rooms.confirm-remove` | Remove {width} × {height} | `src/content/default-locale-en.ts:2859` |
+| `hud.rooms.cancel` | Discard | `src/content/default-locale-en.ts:2860` |
+| `hud.rooms.minimum` | Needs at least {width} × {height} tiles | `src/content/default-locale-en.ts:2861` |
+| `hud.rooms.minimum-none` | No minimum size | `src/content/default-locale-en.ts:2862` |
+| `hud.rooms.too-small` | Too small — this room needs at least {width} × {height} tiles. | `src/content/default-locale-en.ts:2863` |
+| `hud.rooms.enclosure` | Enclosure | `src/content/default-locale-en.ts:2864` |
+| `hud.rooms.enclosure-none` | Not evaluated yet | `src/content/default-locale-en.ts:2865` |
+| `hud.rooms.enclosure-sealed` | Walled in — not a door check | `src/content/default-locale-en.ts:2908` |
+| `hud.rooms.enclosure-open` | Open on at least one side | `src/content/default-locale-en.ts:2909` |
+| `hud.rooms.requirement-enclosed` | Must be enclosed | `src/content/default-locale-en.ts:2910` |
+| `hud.rooms.requirement-outdoors` | Must be outdoors | `src/content/default-locale-en.ts:2911` |
+| `hud.rooms.requirement-none` | No enclosure rule | `src/content/default-locale-en.ts:2912` |
+| `hud.rooms.requires-object` | Needs {count} × {object} | `src/content/default-locale-en.ts:2919` |
+| `hud.rooms.requires-none` | No objects needed | `src/content/default-locale-en.ts:2924` |
+| `hud.rooms.coordinates` | Enter coordinates | `src/content/default-locale-en.ts:2928` |
+| `hud.rooms.coordinates-hint` | The keyboard route. Dragging on the map is quicker. | `src/content/default-locale-en.ts:2929` |
+| `hud.rooms.coordinates-submit` | Use these tiles | `src/content/default-locale-en.ts:2934` |
+| `hud.rooms.tile-x` | Tile X | `src/content/default-locale-en.ts:2935` |
+| `hud.rooms.tile-y` | Tile Y | `src/content/default-locale-en.ts:2936` |
+| `hud.rooms.width` | Width | `src/content/default-locale-en.ts:2937` |
+| `hud.rooms.height` | Height | `src/content/default-locale-en.ts:2938` |
+| `hud.rooms.step-down` | Decrease {field} | `src/content/default-locale-en.ts:2939` |
+| `hud.rooms.step-up` | Increase {field} | `src/content/default-locale-en.ts:2940` |
+| `hud.rooms.needs` | Not ready | `src/content/default-locale-en.ts:2945` |
+| `hud.rooms.needs-count` | {unfinished} of {total} | `src/content/default-locale-en.ts:2946` |
+| `hud.rooms.needs-room` | {room} at {x}, {y} is missing | `src/content/default-locale-en.ts:2951` |
+| `hud.rooms.needs-object` | {count} × {object} | `src/content/default-locale-en.ts:2955` |
+| `hud.rooms.needs-object-uncounted` | {object} | `src/content/default-locale-en.ts:2960` |
+| `hud.rooms.needs-item-more` | and {count} more | `src/content/default-locale-en.ts:2965` |
+| `hud.rooms.needs-object-unknown` | something this build cannot name | `src/content/default-locale-en.ts:2969` |
+| `hud.rooms.needs-doorway` | a door — nobody can get in | `src/content/default-locale-en.ts:2996` |
+| `hud.rooms.at-capacity` | At capacity | `src/content/default-locale-en.ts:3056` |
+| `hud.rooms.at-capacity-count` | {full} of {total} | `src/content/default-locale-en.ts:3057` |
+| `hud.rooms.at-capacity-room` | {room} at {x}, {y} is full | `src/content/default-locale-en.ts:3058` |
+| `hud.rooms.at-capacity-places` | places in use: {inUse} of {capacity} | `src/content/default-locale-en.ts:3059` |
+| `hud.severity.info` | Info | `src/content/default-locale-en.ts:3061` |
+| `hud.severity.warning` | Warning | `src/content/default-locale-en.ts:3062` |
+| `hud.severity.danger` | Critical | `src/content/default-locale-en.ts:3063` |
+| `save.panel.region` | Prison saves | `src/content/default-locale-en.ts:3078` |
+| `save.panel.title` | Prisons | `src/content/default-locale-en.ts:3079` |
+| `save.action.create` | New prison | `src/content/default-locale-en.ts:3081` |
+| `save.action.save` | Save now | `src/content/default-locale-en.ts:3082` |
+| `save.action.export` | Export | `src/content/default-locale-en.ts:3083` |
+| `save.action.import` | Import | `src/content/default-locale-en.ts:3084` |
+| `save.action.load` | Load | `src/content/default-locale-en.ts:3085` |
+| `save.action.delete` | Delete | `src/content/default-locale-en.ts:3086` |
+| `save.list.empty` | No prisons yet. | `src/content/default-locale-en.ts:3088` |
+| `save.list.item` | {name} ({count} gen) | `src/content/default-locale-en.ts:3089` |
+| `save.status.idle` | Local saves only — no network required. | `src/content/default-locale-en.ts:3091` |
+| `save.status.saved` | Saved (generation {generation}). | `src/content/default-locale-en.ts:3092` |
+| `save.status.quota-exceeded` | Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact. | `src/content/default-locale-en.ts:3097` |
+| `save.status.transaction-aborted` | The browser interrupted the save. Your previous save is intact — try saving again. | `src/content/default-locale-en.ts:3099` |
+| `save.status.save-failed` | Save failed: {detail} | `src/content/default-locale-en.ts:3101` |
+| `save.status.list-unreadable` | Could not read the local prison list (private browsing or an unreadable slot record can cause this): {detail} | `src/content/default-locale-en.ts:3105` |
+| `save.status.creating` | Creating prison… | `src/content/default-locale-en.ts:3107` |
+| `save.status.create-failed` | Could not create a prison: {detail} | `src/content/default-locale-en.ts:3108` |
+| `save.status.no-active-prison` | No active prison — create or load one first. | `src/content/default-locale-en.ts:3109` |
+| `save.status.saving` | Saving… | `src/content/default-locale-en.ts:3110` |
+| `save.status.loading` | Loading… | `src/content/default-locale-en.ts:3111` |
+| `save.status.not-found` | That prison no longer exists. | `src/content/default-locale-en.ts:3112` |
+| `save.status.no-readable-generation` | No readable save generation remains for this prison. Every retained copy failed validation. | `src/content/default-locale-en.ts:3113` |
+| `save.status.recovered` | The most recent save was unreadable — recovered an earlier verified generation. | `src/content/default-locale-en.ts:3115` |
+| `save.status.loaded` | Loaded. | `src/content/default-locale-en.ts:3116` |
+| `save.status.deleted` | Prison deleted. | `src/content/default-locale-en.ts:3117` |
+| `save.status.nothing-to-export` | Nothing to export — no valid active save. | `src/content/default-locale-en.ts:3118` |
+| `save.status.exported` | Exported the current save. | `src/content/default-locale-en.ts:3119` |
+| `save.status.importing` | Reading the save file… | `src/content/default-locale-en.ts:3126` |
+| `save.status.imported` | Imported the save file into this prison (generation {generation}). | `src/content/default-locale-en.ts:3127` |
+| `save.status.imported-migrated` | Imported a save from an older version of Lockstate and brought it up to date (generation {generation}). | `src/content/default-locale-en.ts:3128` |
+| `save.status.import-not-a-save` | That file is not a Lockstate save — choose a file exported from this game. | `src/content/default-locale-en.ts:3130` |
+| `save.status.import-unsupported-version` | That save was written by a newer version of Lockstate than this one. Update the game, then import it again. | `src/content/default-locale-en.ts:3131` |
+| `save.status.import-corrupt` | That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported. | `src/content/default-locale-en.ts:3133` |
+| `save.status.import-invalid` | That save file could not be read: {detail} | `src/content/default-locale-en.ts:3135` |
+| `save.failure.create` | Creating the prison failed: {detail} | `src/content/default-locale-en.ts:3137` |
+| `save.failure.save` | Saving failed: {detail} | `src/content/default-locale-en.ts:3138` |
+| `save.failure.load` | Loading failed: {detail} | `src/content/default-locale-en.ts:3139` |
+| `save.failure.delete` | Deleting failed: {detail} | `src/content/default-locale-en.ts:3140` |
+| `save.failure.export` | Exporting failed: {detail} | `src/content/default-locale-en.ts:3141` |
+| `save.failure.import` | Importing failed: {detail} | `src/content/default-locale-en.ts:3142` |
+| `save.failure.unknown` | The action failed: {detail} | `src/content/default-locale-en.ts:3143` |
+| `save.detail.restored-scope` | Restored: {restored}. Not carried by this save version: {notCarried}. | `src/content/default-locale-en.ts:3150` |
+| `save.scope.kernel` | kernel tick and command queue | `src/content/default-locale-en.ts:3169` |
+| `save.scope.rng-streams` | RNG stream states | `src/content/default-locale-en.ts:3170` |
+| `save.scope.world` | world terrain and ownership | `src/content/default-locale-en.ts:3171` |
+| `save.scope.construction` | construction orders and undo/redo | `src/content/default-locale-en.ts:3172` |
+| `save.scope.entity-liveness` | entity id liveness | `src/content/default-locale-en.ts:3173` |
+| `save.scope.prisoners` | prisoners, needs, actions and cell assignments | `src/content/default-locale-en.ts:3174` |
+| `save.scope.operations` | jobs, containers and utility networks | `src/content/default-locale-en.ts:3175` |
+| `save.scope.security` | doors, security sectors, guards and patrols | `src/content/default-locale-en.ts:3176` |
+| `save.scope.contraband` | contraband, intelligence and searches | `src/content/default-locale-en.ts:3177` |
+| `save.scope.incidents` | incidents, gangs and tunnels | `src/content/default-locale-en.ts:3178` |
+| `save.scope.names` | prisoner and staff names | `src/content/default-locale-en.ts:3179` |
+| `save.scope.room-caches` | room and topology caches (recomputed from the world) | `src/content/default-locale-en.ts:3184` |
+| `save.scope.navigation-caches` | navigation caches and in-flight path requests (re-issued on the next tick) | `src/content/default-locale-en.ts:3185` |
+| `input.action.camera.up` | Pan camera up | `src/content/default-locale-en.ts:3193` |
+| `input.action.camera.down` | Pan camera down | `src/content/default-locale-en.ts:3194` |
+| `input.action.camera.left` | Pan camera left | `src/content/default-locale-en.ts:3195` |
+| `input.action.camera.right` | Pan camera right | `src/content/default-locale-en.ts:3196` |
+| `input.action.camera.zoom.in` | Zoom in | `src/content/default-locale-en.ts:3197` |
+| `input.action.camera.zoom.out` | Zoom out | `src/content/default-locale-en.ts:3198` |
+| `input.action.selection.primary` | Select | `src/content/default-locale-en.ts:3199` |
+| `input.action.build.confirm` | Confirm placement | `src/content/default-locale-en.ts:3200` |
+| `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:3203` |
+| `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:3207` |
+| `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:3208` |
+| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:3213` |
+| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:3216` |
+| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:3224` |
+| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:3233` |
+| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:3237` |
+| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:3253` |
+| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:3254` |
+| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3264` |
 
