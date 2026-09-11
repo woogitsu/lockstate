@@ -15215,9 +15215,19 @@ swapped: **99** counts linked rows and files on disk, which is what the
 previous anchor's 98 counted; **100** adds the unlinked, file-less `0018` row,
 still at `docs/adr/README.md:174`.
 
-And **Next free number: 0107** — **unmoved across this window's own endpoints,
-which is the first time in seven anchors this restatement has had nothing to
-correct.** `git show 374543cc:docs/adr/README.md` states **0106** and
+And **Next free number: 0109** — **edited in place a seventh time, and the
+sentence it replaces is kept verbatim below because this restatement's whole
+value is that it records each move rather than only the latest number.** It
+read: *"And **Next free number: 0107** — unmoved across this window's own
+endpoints, which is the first time in seven anchors this restatement has had
+nothing to correct."* That was true when it was written. Two ADR rows have
+landed since, both from agents working in parallel on unmerged branches:
+`0107-what-a-stale-build-order-cancellation-is-refused-for.md` on
+`agent/853-stale-cancel`, and `0108-what-nobody-can-get-in-should-mean.md` on
+`agent/1006-reachability`, which is the branch carrying this edit and which was
+itself drafted as 0107 before the collision was found. **So the index now
+states 0109 and this restatement matches it.** The paragraph below is the
+original account of the 0106 → 0107 move and is unchanged: `git show 374543cc:docs/adr/README.md` states **0106** and
 `git show e9d5e500:docs/adr/README.md` states **0107**, the move being ADR
 0106's own row landing in `e9d5e500`/#1123 — and the previous anchor's live
 section had **already** restated 0107, having caught the move after its own

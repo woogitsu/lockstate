@@ -1,19 +1,40 @@
-# ADR 0107: What "nobody can get in" should mean, and what knowing it costs
+# ADR 0108: What "nobody can get in" should mean, and what knowing it costs
 
 > **The number is provisional and this document pre-commits to renumbering.**
 > `AGENTS.md`'s rule is that a number is not reserved until it appears in
 > `docs/adr/README.md`, and a branch nobody has merged is invisible from that
-> index — so if another branch turns up holding 0107, this file, its row and
+> index — so if another branch turns up holding 0108, this file, its row and
 > every citation of it get renumbered without argument, exactly as 0031, 0034,
 > 0035, 0037, 0048, 0049, 0074, 0075, 0076, 0083 and 0096 each pre-committed.
 >
-> **The arithmetic, and this time all three answers agree.** Disk maxes at
-> **0106**, so `max + 1` off disk is 0107. The index's own bolded **Next free
-> number** line reads **0107**. And the sweep was performed rather than
-> trusted, on 2026-09-11 from this branch:
-> `git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune`, then
-> `git ls-remote --refs --heads origin` (**289 heads**, up from the 269 the
-> ADR 0106 row records).
+> **THIS DOCUMENT WAS DRAFTED AS 0107 AND THE PRE-COMMITMENT ABOVE WAS CALLED
+> IN WITHIN THE HOUR. BOTH DIRECTIONS ARE MARKED RATHER THAN THE FIRST BEING
+> OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4), because the sequence is the
+> whole argument for why the rule is worded the way it is.
+>
+> **What the first sweep found, and it was correct when it was taken.** On
+> 2026-09-11, disk maxed at **0106**, so `max + 1` off disk was 0107; the
+> index's own bolded **Next free number** line read **0107**; and a sweep of
+> every fetched ref agreed, over **289 heads**, with nothing at 0107 or above
+> anywhere. **All three answers agreed**, which the entries below the index's
+> next-free line record as the uncommon case.
+>
+> **What made it wrong was another agent working in parallel, not staleness.**
+> `agent/853-stale-cancel` pushed
+> `docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md`
+> while this document was being written, and moved the index's next-free line
+> to 0108 on its own branch. Re-checked here rather than taken on report:
+> `git ls-tree --name-only` over that branch names the file, and a re-run of
+> the sweep below over **298 heads** now finds **two** documents at 0107 — that
+> one and this one — and **nothing at 0108 on any ref**. So this document takes
+> **0108** and the index's next-free line moves to **0109**.
+>
+> **That is `docs/AGENT_WORKFLOW.md` §2's recorded failure happening again and
+> being caught**: *"Two agents took `0034` within an hour, each having
+> correctly enumerated the open pull requests first — the number is not
+> reserved until it is in `docs/adr/README.md`."* Both sweeps here were
+> correct about the moment they were taken. A sweep is a photograph, and the
+> only thing that makes it safe is the pre-commitment above.
 >
 > **The sweep method here is not the one the previous entries used, and the
 > difference is stated rather than glossed.** Those read `git ls-tree` over
@@ -21,11 +42,20 @@
 > `git log --all --diff-filter=A --name-only -- 'docs/adr/[0-9][0-9][0-9][0-9]-*.md'`
 > over every fetched ref's *history*, which is a superset: it also catches a
 > number that was added on some branch and later renamed or removed, and so
-> cannot miss a hold that a tip-only read would. The highest four-digit prefix
-> ever added on any fetched ref is **0106**; nothing at 0107 or above appears
-> anywhere. **0095 is still held and still not on disk**, on the head the
-> entries below the index's next-free line name; this sweep did not re-derive
-> its holder and changes nothing about it.
+> cannot miss a hold that a tip-only read would. **0095 is still held and still
+> not on disk**, on the head the entries below the index's next-free line name;
+> neither sweep re-derived its holder and neither changes anything about it.
+>
+> **One defect in `docs/adr/README.md` is deliberately NOT repaired here, and a
+> reader of this branch needs to know why.** ADR 0106's row is missing its
+> closing `|`, which makes the numbering contract's row regex swallow whatever
+> follows it — invisible while 0106 was the last row on disk, and the reason
+> the first run of that gate on this branch reported *"no row in
+> docs/adr/README.md links to it"* about this document's own row, which does
+> end in a pipe. `agent/853-stale-cancel` found and fixed it, and the fix is
+> on that branch. Repairing the same line on two branches is how a trivial
+> one-character change becomes a merge to reason about, so this branch leaves
+> it alone and records the dependency instead.
 
 ## Status
 
