@@ -102,8 +102,8 @@ interface Pending {
  * things about them.
  */
 const IMPORT_OUTCOMES: Readonly<Record<ImportOutcomeName, SaveImportResult>> = {
-  ok: { ok: true, generationId: 'imported-gen-1', migrated: false },
-  'ok-migrated': { ok: true, generationId: 'imported-gen-2', migrated: true },
+  ok: { ok: true, generationId: 'imported-gen-1', revision: 1, migrated: false },
+  'ok-migrated': { ok: true, generationId: 'imported-gen-2', revision: 1, migrated: true },
   'not-a-save': {
     ok: false,
     error: { code: 'unknown-error', message: 'Import rejected: Save envelope is missing a numeric saveSchemaVersion.' },
@@ -222,7 +222,7 @@ class StubSessions implements SavePanelSessions {
     const pending = this.pendingCreate;
     this.pendingCreate = undefined;
     if (pending === undefined) return;
-    if (outcome === 'ok') pending.resolve({ ok: true, generationId: 'gen-1' });
+    if (outcome === 'ok') pending.resolve({ ok: true, generationId: 'gen-1', revision: 1 });
     // The exact rejection issue #65 leaked to the console.
     else pending.reject(new Error('The simulation worker did not reply within 15000ms'));
   }
