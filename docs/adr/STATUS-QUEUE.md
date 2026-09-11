@@ -754,63 +754,106 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `24b96881` (**v0.0.577**) by the delta method this
-header describes, from the v0.0.568 anchor kept below. **This anchor is again
-a merge commit rather than a `chore(release)` commit** — `24b96881` is #1132's
-merge; `1fa8d09e` (`chore(release): v0.0.577`) sits one commit *below* it and
-`f87c9a61` (`chore(release): v0.0.578`) one commit above, and neither is what
+Re-anchored at `main` @ `b0cf1beb` (**v0.0.584**) by the delta method this
+header describes, from the v0.0.577 anchor kept below. **This anchor is again
+a merge commit rather than a `chore(release)` commit** — `b0cf1beb` is #1139's
+merge; `e10ae96d` (`chore(release): v0.0.584`) sits one commit *below* it and
+`e53b6873` (`chore(release): v0.0.585`) one commit above, and neither is what
 this line names, for the reason every anchor in this chain has repeated: a
 `chore(release)` commit starts no CI run at all and a reader who followed one
 out to verify it would find nothing to verify against. `package.json` ships
-**0.0.577** at `24b96881`.
+**0.0.584** at `b0cf1beb`.
 
-**THIS PASS WAS DISPATCHED WITH THE GATE STILL GREEN, FOR THE FOURTH ANCHOR
-RUNNING — AND AT THE FULL WIDTH OF THE BUDGET ON ONE OF ITS TWO READINGS.** The
-spend is **NINE of the ten releases the budget allows** counted against the
-merge this line names (577 − 568), and **TEN** — the entire budget, to the
-unit — counted against the tree this branch is written on
-(`origin/main` @ `f87c9a61`, v0.0.578: 578 − 568). Both readings are stated
-rather than reconciled to one, as every anchor in this chain states its own
-pair, and the second of them is the closest this chain has cut it while the
-gate was still green: one more release commit landing before this pass had
-pushed would have turned `main` red on this test rather than merely narrowed
-its margin. `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at **10**: the
-gate's own message forbids raising it in words, the brief that dispatched this
-pass forbade it independently — the fourth brief running to carry the
-prohibition — and a budget widened the first time it costs something is not a
-budget. Once the anchor line above moves, the same assertion reads
-578 − 577 = **one**.
+**THIS PASS WAS DISPATCHED WITH THE GATE STILL GREEN IN BOTH UNITS, AND IT IS
+THE FIRST ANCHOR RUNNING UNDER THE SECOND ONE.** `ANCHOR_STALENESS_BUDGET_COMMITS`
+(#1134) landed inside this very window, so this is the first re-anchor to read
+it against a live spend rather than the synthetic 154-commit control its own
+docblock records. **Releases:** **SEVEN of the ten the budget allows** counted
+against the merge this line names (584 − 577), and **EIGHT** counted against
+the tree this branch was written on (`origin/main` @ `e53b6873`, v0.0.585:
+585 − 577) — matching the brief that dispatched this pass exactly. **Commits:**
+`git rev-list --count 24b96881..b0cf1beb` is **45** against the merge, and
+`git rev-list --count 24b96881..origin/main` is **46** against the tip — also
+matching the brief exactly, and both comfortably inside the **100** the second
+budget allows. All four readings are stated rather than reconciled to one, as
+every anchor in this chain states its release pair and this is now true of the
+commit pair too. **Neither budget constant moved**:
+`ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at **10** and
+`ANCHOR_STALENESS_BUDGET_COMMITS` is unmoved at **100** — both gates' own
+failure messages forbid raising them in words, the brief that dispatched this
+pass forbade it independently of both, and a budget widened the first time it
+costs something is not a budget. Once the anchor line above moves, the release
+assertion reads 585 − 584 = **one**.
 
-**`main` IS GREEN AT `24b96881`, ALL THREE JOBS, WITH NO PENDING JOB THIS TIME —
-THE FIRST ANCHOR SINCE `374543cc` AT WHICH THAT WAS TRUE ON THE FIRST READING.**
-`CI` run 34584025390 on `head_sha` `24b96881`, created 2026-09-11T09:24:19Z:
-`verify` concluded `success` (09:24:22Z–09:25:48Z, on `lockstate-wsl-DOM-NEW-01`);
-`assets` concluded `success` (09:25:49Z–09:26:02Z, on `-01`); `browser`
-concluded `success` (09:26:05Z–09:39:25Z, on `-02`), its own
-*"Run the real-browser suite"* step running 09:26:13Z–09:39:12Z (12m 59s).
-Read via `GET /repos/woogitsu/lockstate/commits/<sha>/check-runs` and
-job-by-job via the Actions jobs API, per this header's own standing
-instruction that `list_workflow_runs`'s `status` filter is not to be trusted;
-no filter was applied here, only a direct read of the one run whose `head_sha`
-is this anchor. The other eight merges of this window each carry their own
-completed, `success` run on `main`, tabulated in §3 below. The runner pool is
-still `lockstate-wsl-DOM-NEW-01/02/03`, user `mateusz` — the same pool the
-previous anchor's own header fixed `AGENTS.md` to name — and nothing in this
-window's diff touches `.github/workflows/` at all, so there was no fresh
-runner-pool claim to check against reservation 3's entries this time.
+**`main`'s OWN RUN AT THIS ANCHOR WAS STILL `in_progress` WHEN THIS PASS FIRST
+READ IT, AND THAT IS REPORTED RATHER THAN GUESSED PAST, ON THIS HEADER'S OWN
+RULE FOR EXACTLY THAT SHAPE.** `CI` run 34644090106 on `head_sha` `b0cf1beb`,
+created 2026-09-11T20:24:59Z, read job-by-job via the Actions jobs API (not
+`list_workflow_runs`'s `status` filter, which this chain's briefs record as
+giving wrong answers): `verify` concluded `success` (20:25:00Z–20:26:47Z, on
+`lockstate-wsl-DOM-NEW-03`); `assets` concluded `success`
+(20:26:47Z–20:27:03Z, on `-03`); `browser` was **`in_progress`** at the moment
+of this reading, its own *"Run the real-browser suite"* step started
+20:27:16Z and not yet concluded. This pass did not wait on it before pushing
+— `AGENTS.md` and `docs/AGENT_WORKFLOW.md` §2 both name ending a turn on a
+background run as the expensive mistake — so a reader who wants the finished
+`browser` verdict for this exact commit should re-read run 34644090106 rather
+than trust `verify`/`assets` alone as a stand-in for it.
 
-**THE SEQUENCE SENTENCE, EXTENDED BY ONE AGAIN.** The previous anchor left it
-reading *"five, five, nine, five, six, five, six, five, eight, FOURTEEN,
-ELEVEN, EIGHT, NINE, TEN, EIGHT, TEN, SEVEN, SIX, TWELVE, EIGHT, SEVEN,
-SEVEN"* — twenty-two entries. This anchor spent **nine**, read back off the
-pair above rather than recomputed, so the sequence now reads five, five, nine,
-five, six, five, six, five, eight, FOURTEEN, ELEVEN, EIGHT, NINE, TEN, EIGHT,
-TEN, SEVEN, SIX, TWELVE, EIGHT, SEVEN, SEVEN, NINE — **twenty-three entries,
-one added here.** Nine is the second-highest value this sequence has ever
-recorded (TEN, at the `3399b1f9` anchor, is still the only one higher, and
-that anchor was the one dispatched by the gate's own failure rather than
-ahead of it) — consistent with the tree-tip reading landing at the full ten
-above.
+The other six merges of this window each carry their own completed, `success`
+run on `main`:
+
+| merge | run | conclusion |
+| --- | --- | --- |
+| `e7724ed3`/#1133 | 34588043552 | success |
+| `e6eecbb3`/#1134 | 34614580527 | success |
+| `99b4e25a`/#1135 | 34617439469 | success |
+| `8e328fd5`/#1136 | 34635803763 | success |
+| `24d4d6b2`/#1137 | 34638570861 | success |
+| `eefef7f8`/#1138 | 34641752960 | success |
+
+**NONE OF THIS WINDOW'S SEVEN MERGES CARRIES A `net::ERR_NETWORK_CHANGED`
+RE-RUN (#616), CHECKED RATHER THAN ASSUMED ONE WAY OR THE OTHER.** Every run
+above and the anchor's own run report `run_attempt: 1`; nothing in this window
+was re-run. The runner pool is still `lockstate-wsl-DOM-NEW-01/02/03`, user
+`mateusz`, and nothing in this window's diff touches `.github/workflows/` at
+all (`git diff --name-only 24b96881..origin/main -- .github/` returns
+nothing), so there is no fresh runner-pool claim to check against reservation
+3's entries this time either.
+
+**THE MERGE COUNT: SEVEN, NOT THE DISPATCHING BRIEF'S "ROUGHLY THIRTEEN" —
+CHECKED RATHER THAN TRUSTED, AND SAID FIRST BECAUSE IT DISAGREES.** `git log
+--oneline --merges 24b96881..origin/main` returns exactly **seven** two-parent
+merges, `#1133` through `#1139`, matching `git rev-list --count
+24b96881..origin/main`'s **46** commits used above. The brief named "roughly
+thirteen merges (#1126 through #1139)" — but `#1126`–`#1132` are the
+*previous* window's own merges, closed at this file's own `24b96881` anchor
+and accounted for in that anchor's §3 below; none of them is a member of the
+window this pass re-anchors. Thirteen is wrong for this window; seven is
+right.
+
+**THE SEQUENCE SENTENCE, EXTENDED BY ONE AGAIN, IN RELEASES SPENT AGAINST THE
+MERGE.** The previous anchor left it reading *"five, five, nine, five, six,
+five, six, five, eight, FOURTEEN, ELEVEN, EIGHT, NINE, TEN, EIGHT, TEN, SEVEN,
+SIX, TWELVE, EIGHT, SEVEN, SEVEN, NINE"* — twenty-three entries. This anchor
+spent **seven**, so the sequence now reads five, five, nine, five, six, five,
+six, five, eight, FOURTEEN, ELEVEN, EIGHT, NINE, TEN, EIGHT, TEN, SEVEN, SIX,
+TWELVE, EIGHT, SEVEN, SEVEN, NINE, SEVEN — **twenty-four entries, one added
+here.**
+
+> **The v0.0.577 anchor's own opening, kept rather than overwritten**
+> (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @
+> `24b96881` (**v0.0.577**) by the delta method this header describes, from
+> the v0.0.568 anchor kept below."* That anchor was `24b96881`/#1132's merge
+> rather than the `chore(release): v0.0.577` commit (`1fa8d09e`) below it or
+> the `chore(release): v0.0.578` commit (`f87c9a61`) above it, `package.json`
+> shipped **0.0.577** there, and that pass was dispatched with the gate still
+> green at **NINE of the ten releases the budget allows** counted against the
+> merge and **TEN** — the entire budget, to the unit — against `f87c9a61`. Its
+> own CI run (34584025390) had already finished by its first reading, `success`
+> on `verify`, `assets` and `browser` alike — the first anchor in this chain
+> for which that was true the first time it was read. The anchor it replaced
+> named v0.0.568. `ANCHOR_STALENESS_BUDGET_RELEASES` was unmoved at **10**.
 
 > **The v0.0.568 anchor's own opening, kept rather than overwritten**
 > (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @
@@ -10463,24 +10506,42 @@ of that table was re-read against the file at this commit: `:45` and `:91`,
 `:71-73`'s `as $$ select 4194304 $$;`. Both
 absences **had been** re-verified at `3399b1f9` — **and that was the second anchor at which the evidence command had stopped returning nothing, so the phrasing was corrected rather than repeated**: `git diff --name-only ebdcb317..3399b1f9 -- supabase/` returns **one** path, `supabase/tests/001_rls_and_save_version_rpc.test.sql`, a pgTAP suite that moves `select plan(54)` to `select plan(56)` and adds the row an unsaved prison's conflict answers with — nothing about total bytes and nothing about revision retention — while `git diff --name-only ebdcb317..3399b1f9 -- supabase/migrations/` returns nothing, and `supabase/migrations/` is the directory every cell of the table above scopes its absence to. It still holds **24** migrations at both ends, every row of the table resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`, each opened individually on `20260823100000_bound_free_tier_capacity.sql` rather than inferred from the diff, and `cmp` reports the whole file byte-identical between the two anchors), and the absences themselves were re-run rather than inherited: over the 24 migrations at `3399b1f9`, `grep -rn '268435456\|256 MiB\|max_total\|total_bytes'` returns nothing and `grep -rin 'retain\|prune\|delete from public.save_versions\|20 revision'` returns nothing outside telemetry — and at `ebdcb317`, `1e7c63c7`, `4cc8a12f`, `0b8af9f8`, `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
 
-**RE-VERIFIED AT `24b96881`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
-FOUR.** `git diff --name-only e9d5e500..24b96881 -- supabase/` returns **no
-path at all**, so `supabase/` is absent from this window's 53 files in its
+**RE-VERIFIED AT `b0cf1beb`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+FIVE.** `git diff --name-only 24b96881..origin/main -- supabase/` returns **no
+path at all**, so `supabase/` is absent from this window's seven merges in its
 entirety. `supabase/migrations/` holds **24** migrations at both ends
 (`ls supabase/migrations/ | wc -l`, run at each), `cmp` reports
 `20260823100000_bound_free_tier_capacity.sql` byte-identical between the two
-anchors, and every row of the table above was opened on it at `24b96881`
+anchors, and every row of the table above was opened on it at `b0cf1beb`
 anyway rather than inferred from that: `:45`, `:91`, `:71-73`, `:150`, `:178`
 and `:188` all still read exactly what the paragraph below records. Over the
-24 migrations at `24b96881`, `grep -rn '268435456\|256 MiB\|max_total\|total_bytes'`
+24 migrations at `b0cf1beb`, `grep -rn '268435456\|256 MiB\|max_total\|total_bytes'`
 exits 1 with no output, and `grep -rin 'retain\|prune\|delete from public.save_versions\|20 revision'`
 returns the same two lines, unmoved, inside
-`20260904090000_create_telemetry_events.sql` (`:268`, `:815`). **Four
+`20260904090000_create_telemetry_events.sql` (`:268`, `:815`). **Five
 absence-based readings in a row is the run extended by one**, still for the
 reason the previous reading gives: producing the stronger form needs a commit
-that edits `supabase/`, and this window's nine merges did not carry one either.
+that edits `supabase/`, and this window's seven merges did not carry one
+either.
 
 **THE PREVIOUS HEAD IS KEPT BELOW RATHER THAN OVERWRITTEN**
+(`docs/AGENT_WORKFLOW.md` §4), and it read:
+
+**RE-VERIFIED AT `24b96881`, AND THE RUN OF ABSENCE-BASED READINGS WAS THEN AT
+FOUR.** `git diff --name-only e9d5e500..24b96881 -- supabase/` returned **no
+path at all**, so `supabase/` was absent from that window's 53 files in its
+entirety. `supabase/migrations/` held **24** migrations at both ends
+(`ls supabase/migrations/ | wc -l`, run at each), `cmp` reported
+`20260823100000_bound_free_tier_capacity.sql` byte-identical between those two
+anchors, and every row of the table above was opened on it at `24b96881`
+anyway rather than inferred from that: `:45`, `:91`, `:71-73`, `:150`, `:178`
+and `:188` all read exactly what the paragraph below records. Over the
+24 migrations at `24b96881`, `grep -rn '268435456\|256 MiB\|max_total\|total_bytes'`
+exited 1 with no output, and `grep -rin 'retain\|prune\|delete from public.save_versions\|20 revision'`
+returned the same two lines, unmoved, inside
+`20260904090000_create_telemetry_events.sql` (`:268`, `:815`).
+
+**THE HEAD BEFORE THAT IS KEPT BELOW RATHER THAN OVERWRITTEN**
 (`docs/AGENT_WORKFLOW.md` §4), and it read:
 
 **WAS RE-VERIFIED AT `e9d5e500`, AND THE READING WAS THE WEAKER, ABSENCE-BASED
@@ -15748,6 +15809,138 @@ procurement's own new figures (`#1127`, `#1128`) were spot-checked against
 from first principles, because neither is cited by `file:line` anywhere in
 §§3-6 today.
 
+## 3. What the anchor pass of 2026-09-11 (second, evening) opened with `main`'s own run still mid-flight: seven merges, two ADRs implemented, an amended ADR 0031, and the second budget unit's first live reading
+
+Taken at `b0cf1beb` (v0.0.584), from `24b96881` (v0.0.577). Seven merges,
+`#1133`–`#1139` (the header above corrects the dispatching brief's "roughly
+thirteen" — `#1126`–`#1132` belong to the *previous* window, already closed at
+this file's own `24b96881` anchor). `git diff --name-only 24b96881..origin/main`
+returns **82** raw paths; this pass did not de-duplicate that into a per-merge
+union the way the previous three windows' accounts did, and says so rather
+than presenting an unearned number — what follows opens the coordinates the
+dispatching brief named and the ones this pass's own reading turned up, not
+every line of every one of the 82 files.
+
+**ADR 0108 — ACCEPTED AND AMENDED THE SAME DAY, BOTH CONFIRMED ON DISK.**
+`docs/adr/0108-what-nobody-can-get-in-should-mean.md:65-68`: *"Accepted in
+full by the owner, 2026-09-11 — AND AMENDED THE SAME DAY BY THE PROBE THIS
+DOCUMENT ASKED FOR AND DID NOT RUN"* — decision 1 amended to **R4** after
+`tests/research/0108-exterior-anchor-falsifier.research.ts` defeated the
+accepted version (`9b84bdb2`, merge `#1139`). `roomPerimeterAccess`
+(`src/simulation/rooms/enclosure.ts`) now answers reachability rather than
+mere perimeter geometry; `RoomAccess` grew a fourth member —
+`export type RoomAccess = 'gap' | 'doorway' | 'unreachable' | 'no-way-in';`
+at `src/simulation/rooms/reachability.ts:177`, with the distinction argued at
+`:166` and `:174`. **Both copies of the readiness predicate moved together**,
+confirmed by opening both rather than assuming one followed the other:
+`row.access === 'no-way-in' || row.access === 'unreachable'` at
+`src/ui/simulation-room-needs.ts:163` (and again, the panel-detail form, at
+`:371`) and at `src/simulation/rooms/room-needs-cleared-notice.ts:179`.
+
+**ADR 0107 — IMPLEMENTED, STILL `Proposed. Not self-approved.`, NOT
+CONFLATED WITH ACCEPTANCE.** `docs/adr/0107-…md:24` still opens
+*"**Proposed. Not self-approved.**"* — implemented and accepted are different
+facts and this window only did the first. `CancelBuildOrder` carries
+`expectedRevision`: the schema field at `src/simulation/protocol/commands.ts:76`
+(`expectedRevision: z.number().int().nonnegative()`), the refusal comparison
+at `src/simulation/construction/handler.ts:168`
+(`constructionSystem.revisionOf(simCommand.orderId) !== simCommand.expectedRevision`),
+and the field carried into the wire-serialised command at `commands.ts:769`
+(old `:757` — the file's one twelve-line hunk at old `:65` shifts everything
+below it by **+12**, confirmed by opening `simulationCommandSchema`'s own
+declaration at both ends: old `:719` → new **`:731`**, exactly the predicted
+shift rather than assumed from it). `REFUSAL_REASONS` grew **45 → 46**
+(`src/simulation/protocol/types.ts:1348-1395`), the one new member being
+`'cancel-build-order.stale-cancellation'`, confirmed by `diff`-ing the array
+at both ends rather than trusting the count. A per-command lead exists
+(`ADR 0107`'s own "measured not to help" framing, `tests/browser/command-lead-at-speed.spec.ts`)
+and this pass took that measurement on the docblocks' own authority rather
+than re-deriving it, in the same spirit the previous window's account states
+for its own unread items.
+
+**#862 / ADR 0031 — AMENDED, WITH DECISION 4'S ROW-COUNT REASONING NAMED AS
+FALSIFIED RATHER THAN QUIETLY DROPPED.** `docs/adr/0031-build-queue-cancellation-surface.md`
+gained an *"Amendment — 2026-09-11"* section (`:487` onward at `origin/main`;
+absent at `24b96881`) withdrawing decision 4's "row count is the price" step:
+with fourteen orders queued, opening the fold reached three of fourteen at
+every viewport the browser suite visits, and `Undo` pops the whole batch
+rather than restoring one. `BUILD_QUEUE_ROW_LIMIT` is now **64**
+(`src/ui/hud/build-panel.ts:740`) — the amendment's own prose cites `:737` for
+the same declaration, which is **wrong by three lines on the tree it
+describes**, confirmed by opening the file rather than trusting the ADR's own
+citation; this is a citation inside `docs/adr/0031-…md` itself; `STATUS-QUEUE.md`
+does not otherwise cite that line and so carries no matching error to
+correct, and it is recorded here as a found defect rather than corrected in
+that file, which is not this pass's document to edit under this task's
+scope. `tests/browser/ui-build-queue-reach.spec.ts` is the gate #862 added,
+and `#1137`'s own merge message records `5/5` and `ui-build-queue.spec.ts`
+`12/12` on the combined tree.
+
+**#966 — THREE NEW EVENT TYPES, NOT TWO, AND THE WORD-REMOVAL CONFIRMED.**
+`SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts`) gained
+`'economy.construction-restored'`, `'economy.deliveries-restored'` and
+`'prisoners.housed'` — three members, matching the dispatching brief's
+phrasing read as "two new event types, **and** `prisoners.housed`" rather
+than as a claim of two in total. `c94fc9ea` (merge `#1136`) drops *"finally"*
+from the housed notice — confirmed by the commit's own message rather than
+re-derived — because the code has no per-entity wait signal to back the
+word; the docblock's own word-arithmetic moved with it, old figures kept
+beside the new ones in that commit per this file's own convention.
+
+**THE SESSION-START HOOK — CONFIRMED CHANGED EXACTLY AS BRIEFED.**
+`8a42f33b` (merge `#1137`) makes `.claude/hooks/session-start.sh` try
+`git lfs checkout` (local storage, no bandwidth) before declaring Git LFS
+content unprovisioned, and removes the six-brief-costing *"EXPECTED
+BASELINE ... not something to debug or work around"* language for a red
+`verify:assets`/atlas-decode pair, replacing it with a paragraph that
+distinguishes "genuinely absent" from "merely unwritten". `diff`-ed against
+`24b96881`'s copy directly rather than assumed from the commit message.
+
+**§2 IS UNMOVED AT NINE ENTRIES.** None of its nine subjects (ADR 0008 §§2-3,
+the telemetry entry point, ADR 0056, 0059, 0074, 0071, 0077, 0093) names a
+file this window's 82 touch, and `docs/adr/0099-…md` gained a small
+self-contained correction of its own inside this window (ADR 0107's private
+`setState` mutator replacing a direct `order.state =` assignment its passage
+quoted, corrected in place with the old quote marked rather than deleted) that
+does not bear on any of the nine either.
+
+**ADR 0109 AND "NEXT FREE NUMBER: 0110" ARE NOT THIS WINDOW'S FINDINGS, AND
+THE PREVIOUS ANCHOR'S OWN §3 SAYS OTHERWISE — A DISCREPANCY FOUND WHILE
+DATING THIS WINDOW'S CONTENTS RATHER THAN INVENTED BY IT.** `docs/adr/0109-…md`
+does not exist at `24b96881` (`git show 24b96881:docs/adr/0109-…md` fails,
+*"exists on disk, but not in `24b96881`"*), and `docs/adr/README.md` at
+`24b96881` still carried the digits **0109** on its own next-free-number
+line, not 0110. Both `#1133`
+(`62bb347f`, filing the ADR) and `#1135`
+(`e2192247`/`5738b935`, correcting its own citation and this file's stale
+restatement of 0109) are members of *this* window, not the previous one. The
+previous anchor's own §3 above nonetheless says its next-free line *"has
+since moved"* to the digits 0110, as part of an account dated to `24b96881` — true of
+`origin/main` at the moment that account was drafted, false of the tree the
+account is anchored to and of the anchor's own §2's closing "§2 IS UNMOVED"
+tally, which this pass leaves standing rather than rewrites, per
+`docs/AGENT_WORKFLOW.md` §4: it is a closed, dated record now, and the
+finding belongs here rather than as a silent edit to someone else's dated
+account.
+
+**AND THE `Next free number` RESTATEMENT THIS ANCHOR OWES ITS OWN LIVE COPY —
+EXACTLY ONE, THIS TIME.** No ADR was filed in this window (`0107`, `0108` and
+`0109` all pre-date it): **Next free number: 0110**, unmoved, cross-checked
+against `docs/adr/README.md`'s own live line at `:268` and against
+`ls docs/adr/[0-9][0-9][0-9][0-9]-*.md | wc -l`, which returns **102** files
+on disk, the highest-numbered being `0109` and none at `0110`. This is the
+one live restatement this section states.
+
+**Where this pass ran with something unread, named rather than smoothed
+over.** The full 82-file diff was not reconciled into a per-merge union the
+way the three preceding windows' accounts did; the coordinates opened above
+are the ones the dispatching brief named plus the ones this pass's own
+reading of the merge list turned up, not an exhaustive sweep of every file
+`hud.ts`/`types.ts`/`commands.ts`-style citation elsewhere in §§2, 4-6 that
+this window's 82 files might also touch. `main`'s own `browser` job for this
+anchor was still running at the time of writing (see the header above) and
+is not part of what this section can certify.
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -15920,19 +16113,32 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
-**RE-VERIFIED AT `24b96881`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
-FOUR.** All four citations hold at the new anchor, each opened rather than
+**RE-VERIFIED AT `b0cf1beb`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+FIVE.** All four citations hold at the new anchor, each opened rather than
 inherited: `:20` is the ADR 0016 §2 comment, `:34` is `workflow_dispatch:`,
 `:41` is `confirm_project_ref:`, `:65` is `environment:`, the `on:` key at
 `:33` still has `workflow_dispatch:` as its only child, and
 `grep -c '^\s*push:'` over the file returns **0**. `cmp` reports
-`.github/workflows/migrate-database.yml` **byte-identical at `e9d5e500` and at
-`24b96881`**, and `git diff --name-only e9d5e500..24b96881 -- .github/`
+`.github/workflows/migrate-database.yml` **byte-identical at `24b96881` and at
+`b0cf1beb`**, and `git diff --name-only 24b96881..origin/main -- .github/`
 returns **nothing at all** — no `.github/` path of any kind is a member of
-this window's 53, `branch-gc.yml` included — so this is the weaker,
-absence-based form again, for the fourth anchor running.
+this window's seven merges, `branch-gc.yml` included — so this is the weaker,
+absence-based form again, for the fifth anchor running.
 
 **THE PREVIOUS HEAD IS KEPT BELOW RATHER THAN OVERWRITTEN**
+(`docs/AGENT_WORKFLOW.md` §4), and it **read**: *"RE-VERIFIED AT `24b96881`,
+AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT FOUR.** All four citations
+held at that anchor, each opened rather than inherited: `:20` is the ADR 0016
+§2 comment, `:34` is `workflow_dispatch:`, `:41` is `confirm_project_ref:`,
+`:65` is `environment:`, the `on:` key at `:33` still had `workflow_dispatch:`
+as its only child, and `grep -c '^\s*push:'` over the file returned **0**.
+`cmp` reported `.github/workflows/migrate-database.yml` byte-identical at
+`e9d5e500` and at `24b96881`, and `git diff --name-only e9d5e500..24b96881 --
+.github/` returned nothing at all — no `.github/` path of any kind was a
+member of that window's 53, `branch-gc.yml` included — so that was the
+weaker, absence-based form again, for the fourth anchor running."*
+
+**THE HEAD BEFORE THAT IS KEPT BELOW RATHER THAN OVERWRITTEN**
 (`docs/AGENT_WORKFLOW.md` §4), and it **read**: *"RE-VERIFIED AT `e9d5e500`,
 AND THE RUN OF ABSENCE-BASED READINGS THE PARAGRAPH BELOW RESTARTED IS NOW AT
 THREE.** All four citations hold at the new anchor, each opened rather than
