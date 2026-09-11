@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -64,6 +65,43 @@ import { describe, expect, it } from 'vitest';
  * to make visible, and it would pass — that is the honest boundary, and it is
  * why the failure message says what work the number stands for.
  *
+ * ## The assumption this number rests on, stated because it had never been
+ *
+ * [#449](https://github.com/woogitsu/lockstate/issues/449)'s second item asked
+ * for exactly this and it went untaken for two weeks while the first item was
+ * discharged over and over: **a release is a proxy for unread history, and
+ * the proxy holds only while releases are roughly uniform in size.** That is
+ * the sentence the argument above needs and did not have. It is not true here
+ * — see `ANCHOR_STALENESS_BUDGET_COMMITS` below, which measures the spread at
+ * six-fold across the anchor chain and names #449's own case as worse than
+ * either end of it — so the release budget is kept for the reason it was
+ * chosen, that a release is a decision point a human made, and a second
+ * assertion in the unit it cannot see is added beside it rather than
+ * replacing it.
+ *
+ * ## The two budgets are independent, proved rather than argued
+ *
+ * On 2026-09-11, with the anchor at `24b96881` (v0.0.577) and the tree at
+ * v0.0.579, the header's sha alone was pointed at a commit **154** commits
+ * back while its version string was left reading v0.0.577:
+ *
+ * - `has not fallen more than the staleness budget behind the shipped release`
+ *   **passed** — two releases behind, comfortably inside ten.
+ * - `has not fallen more than the staleness budget behind in commits either`
+ *   **failed** — *"154 commits past it"*, against a budget of 100.
+ *
+ * That is #449's measured defect reproduced in this repository's own gate: the
+ * release budget green over history nobody has read. Restored afterwards and
+ * the restoration verified by an empty `git diff`.
+ *
+ * **And the honest other half: on every window this repository has actually
+ * had, the commit budget would never have fired first.** Swept the same day,
+ * the most history ever carried by a window inside the release budget is
+ * **63** commits historically and **35** today. So this second assertion is
+ * currently slack, and it is deliberately not tuned to fire on ordinary work
+ * — its value is prospective, for the regime #449 measured, where one release
+ * carried 169 commits and this gate reported nine releases of headroom.
+ *
  * ## It bites, and it is not vacuous
  *
  * Proved by three controls run against the tree that landed it, not asserted:
@@ -88,6 +126,96 @@ const INDEX_PATH = join(REPOSITORY_ROOT, 'docs/adr/README.md');
 
 /** See the header. A bound on unreviewed history, not a freshness requirement. */
 const ANCHOR_STALENESS_BUDGET_RELEASES = 10;
+
+/**
+ * The same bound in the other unit, because a release is a proxy for unread
+ * history and the proxy is not stable.
+ *
+ * ## Why a second number rather than a better single one
+ *
+ * [#449](https://github.com/woogitsu/lockstate/issues/449) is the whole
+ * argument and it opens with the measurement: the anchor was **one release**
+ * behind while **169 commits** sat unread, and this gate was green. The budget
+ * above was chosen in releases because a release is a decision point a human
+ * made, which is a real argument and is why it is kept rather than replaced —
+ * but it holds only while releases are roughly uniform in size, and they are
+ * not.
+ *
+ * **MEASURED OVER THE WHOLE ANCHOR CHAIN, 39 CONSECUTIVE WINDOWS, ON
+ * 2026-09-11.** Every `Re-anchored at` sha this file still carries was
+ * resolved and each consecutive pair counted with `git rev-list --count`:
+ *
+ * | | commits per release |
+ * | --- | --- |
+ * | minimum | **1.9** |
+ * | median | **2.0** |
+ * | maximum | **12.0** |
+ *
+ * So ten releases of headroom has meant anywhere from **20 to 120 commits**,
+ * a six-fold spread, and #449's own case was worse than either end of it.
+ * The median sits at 2.0 for a mechanical reason worth knowing: an ordinary
+ * merge is two commits, the merge itself and the `chore(release)` bump
+ * `.github/workflows/version.yml` writes after it.
+ *
+ * ## Where 100 comes from, and it is derived rather than chosen
+ *
+ * Two numbers bound it from opposite sides, both read out of the same sweep:
+ *
+ * - **63** is the most history ever observed inside the release budget — the
+ *   largest commit count of any window in the chain spanning ten releases or
+ *   fewer. A commit budget at or under that would have fired on a window this
+ *   gate was right to leave alone.
+ * - **169** is #449's measured defect, the case that has to fire.
+ *
+ * **100** is the round number between them, 1.6x the observed ceiling and
+ * 0.6x the known defect. It is the same method the release budget used on
+ * itself — *"the largest round number that would have fired before either
+ * became a defect"* — applied to the unit that budget cannot see.
+ *
+ * ## What this does not fix, stated because the issue's own author measured it
+ *
+ * Neither unit at any value reaches the errors a re-anchor finds that are not
+ * changes to any file. #480's pass found six; **the two sharpest could not
+ * have come from a diff** — §5's preamble saying *"§2 holds three entries"*
+ * while §2's own heading said four, and a previous pass's correction that was
+ * false on the tree it was written against. This file is not in its own
+ * dependency set, so no intersection of any size puts it in front of a reader.
+ * A budget bounds how much history goes unread. It does not make anybody read
+ * the document against itself, and #449 item 2 is discharged by this constant
+ * only in the sense that the unit is now two units; the scheduled read that
+ * issue's author recommended is a separate thing and is not this.
+ *
+ * **When it fires, the fix is to re-read the file, not to edit this number** —
+ * exactly as for the release budget above.
+ */
+const ANCHOR_STALENESS_BUDGET_COMMITS = 100;
+
+/**
+ * `git` is the authority on what a sha resolves to, and re-implementing any
+ * part of that here is how this gate would become a fiction that agrees with
+ * itself. A missing or failing `git` is a failure rather than a skip: every
+ * checkout of this repository is a git checkout, and CI runs on one. Same rule
+ * and same wording as `documentation-commit-citation-contract.test.ts`, which
+ * established that a foundation test may shell out to git and that
+ * `.github/workflows/ci.yml` checks out all history precisely so it can.
+ */
+function git(args: readonly string[]): string {
+  const result = spawnSync('git', [...args], {
+    cwd: REPOSITORY_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+
+  if (result.error !== undefined) {
+    throw new Error(`git ${args.join(' ')} could not be run: ${result.error.message}`);
+  }
+
+  if (result.status !== 0) {
+    throw new Error(`git ${args.join(' ')} exited ${String(result.status)}: ${result.stderr.trim()}`);
+  }
+
+  return result.stdout;
+}
 
 /**
  * The re-anchoring line: a short commit sha and the version it shipped.
@@ -292,6 +420,41 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
       behind,
       `STATUS-QUEUE.md is anchored at v${anchorVersion} and package.json ships ${packageVersion}: ${String(behind)} releases of history that no entry in that file has been read against. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_RELEASES to make this pass, because the number is what the budget is for`,
     ).toBeLessThanOrEqual(ANCHOR_STALENESS_BUDGET_RELEASES);
+  });
+
+  it('runs on a checkout deep enough to count, and fails rather than skipping when it is not', () => {
+    // The convention `documentation-commit-citation-contract` set and the
+    // reason it set it: a shallow checkout cannot answer, and a gate that
+    // quietly skips when it cannot answer is a gate that reports green for
+    // the one configuration it was built to protect against. CI checks out
+    // all history on purpose -- `.github/workflows/ci.yml` says so in
+    // capitals -- so a shallow tree here is a local configuration to fix,
+    // not a case to tolerate.
+    expect(
+      git(['rev-parse', '--is-shallow-repository']).trim(),
+      'this gate counts commits between the anchor and HEAD, which a shallow checkout cannot do. Fetch full history (`git fetch --unshallow`) rather than making this pass',
+    ).toBe('false');
+  });
+
+  it('has not fallen more than the staleness budget behind in commits either, which is the unit a release does not track', () => {
+    const anchorSha = anchors[0]![1]!;
+
+    // Resolved rather than assumed present: the anchor names a commit on
+    // `main`, and a tree that cannot see it cannot be measured against it.
+    // Reported as its own failure so it is never mistaken for the budget
+    // being blown.
+    const resolved = spawnSync('git', ['cat-file', '-e', `${anchorSha}^{commit}`], { cwd: REPOSITORY_ROOT });
+    expect(
+      resolved.status,
+      `STATUS-QUEUE.md is anchored at ${anchorSha} and this checkout does not contain that commit, so the commit budget cannot be counted. That is a broken citation rather than stale history -- see documentation-commit-citation-contract for the same failure in the other direction`,
+    ).toBe(0);
+
+    const behind = Number.parseInt(git(['rev-list', '--count', `${anchorSha}..HEAD`]).trim(), 10);
+
+    expect(
+      behind,
+      `STATUS-QUEUE.md is anchored at ${anchorSha} and HEAD is ${String(behind)} commits past it: history that no entry in that file has been read against. The release budget beside this one can be well inside its bound while this one is not -- that is the whole of issue #449, which measured one release carrying 169 commits while this gate was green. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_COMMITS to make this pass, because the number is what the budget is for`,
+    ).toBeLessThanOrEqual(ANCHOR_STALENESS_BUDGET_COMMITS);
   });
 
   it('is not anchored ahead of the tree, which would mean it cites a commit that does not exist here', () => {
