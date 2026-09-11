@@ -253,7 +253,7 @@ comparison read from two ends.
 `session.revision` then stops being an allocator and becomes a cache of what the
 last write returned. `SaveResult`'s success arm already carries `generationId`;
 it gains the revision actually written, and the two call sites that do
-`session.revision += 1` today (`session-controller.ts:167` and `:719`) assign
+`session.revision += 1` today (`session-controller.ts:167` and `:720`) assign
 from the result instead of incrementing. **That alone closes the third line of
 the FINAL-004 measurement in Context §2**, because a stale writer's result can
 no longer advance a counter it does not own.
