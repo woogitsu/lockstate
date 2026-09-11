@@ -250,9 +250,14 @@ Every write to a layer the painter reads already bumps a per-chunk counter:
 `setTerrain` call `markContentChanged`, and both counters are already published
 in the render projection (`RenderChunk.geometryRevision`,
 `RenderChunk.contentRevision`) and already persisted in the save schema. A
-completed build order reaches them through `ConstructionSystem`:
-`order.state = 'completed'; this.finalizeConstruction(order);` (verbatim in
-`src/simulation/construction/system.ts`), and `finalizeConstruction` either
+completed build order reaches them through `ConstructionSystem` --
+**the direct assignment this line originally quoted moved behind one private
+mutator every write to `order.state` now goes through (ADR 0107 Decision §3),
+without changing what this passage argues: the write still happens on the
+same line, immediately before `finalizeConstruction`** --
+`this.setState(order, 'completed'); this.finalizeConstruction(order);`
+(verbatim in `src/simulation/construction/system.ts`), and
+`finalizeConstruction` either
 writes an edge — which bumps the chunk — or, for a buildable that places an
 object, calls it directly: `this.markGeometryChanged(order.location);`
 (verbatim in `src/simulation/construction/system.ts`).
