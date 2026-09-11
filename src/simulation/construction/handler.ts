@@ -3,15 +3,17 @@ import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
 import {
   BUILD_REFUSAL_REASONS,
+  CANCEL_BUILD_ORDER_REFUSAL_REASONS,
   CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   buildSupersessionKey,
+  cancelBuildOrderSupersessionKey,
   materialsFundingSupersessionKey,
   type RefusalLog,
 } from '../refusals';
 import { tileCoordinate } from '../world/coordinates';
 import { createBuildOrder, resolveBuildEdge } from './build-order';
 import type { MaterialsProcurementReport } from './materials-procurement';
-import type { ConstructionSystem } from './system';
+import { isCancellable, type ConstructionSystem } from './system';
 
 /**
  * @param refusals Where an order the construction system fails is recorded so
@@ -143,6 +145,31 @@ export function createConstructionCommandHandler(
          * fixed.
          */
         const stateAtCancellation = constructionSystem.getOrder(simCommand.orderId)?.state;
+        /*
+         * ADR 0107's stale-cancellation check, read **before** `cancelOrder`
+         * so a mismatch never mutates the order.
+         *
+         * Only for an order that is both found and still cancellable: an
+         * unknown or already-terminal id falls straight through to the
+         * `try`/`catch` below exactly as it did before this document, which
+         * is the pre-existing idempotency the comment above it argues for at
+         * length and this document does not touch (Decision §4 item 1). A
+         * found, cancellable order whose revision no longer matches what the
+         * press was aimed at is refused instead of cancelled -- the order,
+         * its state, its allocation and its revision are left exactly as
+         * they were the instant before the press, so the queue's next
+         * publication reads the order's honest current state and honest
+         * current `previewCancelRefundMinorUnits` figure.
+         */
+        const cancelKey = cancelBuildOrderSupersessionKey(simCommand.orderId);
+        if (
+          stateAtCancellation !== undefined &&
+          isCancellable(stateAtCancellation) &&
+          constructionSystem.revisionOf(simCommand.orderId) !== simCommand.expectedRevision
+        ) {
+          refusals.record(CANCEL_BUILD_ORDER_REFUSAL_REASONS['stale-cancellation'], context.tick, cancelKey);
+          break;
+        }
         try {
           constructionSystem.cancelOrder(simCommand.orderId);
         } catch {
@@ -154,6 +181,13 @@ export function createConstructionCommandHandler(
         // construction -- `cancelOrder` throws for an id it cannot find -- and
         // the guard states that to the compiler rather than doubting it.
         if (stateAtCancellation !== undefined) events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
+        // Issue #492's shape, mirrored from every other refusal family in
+        // this handler: a cancellation that just succeeded must not leave a
+        // standing `stale-cancellation` about this same order on screen --
+        // the press that follows it, aimed at the row's own honest republish,
+        // is a different press against the same id and deserves to be read
+        // without yesterday's refusal still hanging under it.
+        refusals.supersede(cancelKey);
         break;
       }
 

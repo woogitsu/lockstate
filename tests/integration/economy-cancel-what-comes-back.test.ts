@@ -175,6 +175,20 @@ function placements(orderIds: readonly string[]): readonly SimulationCommand[] {
   }));
 }
 
+/**
+ * A `CancelBuildOrder` aimed at `orderId`'s true current revision (ADR 0107),
+ * read off `runtime` at the moment this is called -- this file's subject is
+ * what a cancellation gives back, not whether a press is stale, so every
+ * press here is built to succeed rather than risk `stale-cancellation`.
+ */
+function cancelOrder(runtime: SimulationRuntime, orderId: string): SimulationCommand {
+  return { type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) };
+}
+
+function cancels(runtime: SimulationRuntime, orderIds: readonly string[]): readonly SimulationCommand[] {
+  return orderIds.map((orderId) => cancelOrder(runtime, orderId));
+}
+
 /** The 328 walls the overdraft funds: 26,240 out of a 25,000 facility, ending at −1,240. */
 const DRAG = 328;
 
@@ -195,7 +209,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     );
     expect(session.runtime.procurement.pendingDeliveries, 'one delivery per funded order').toHaveLength(DRAG);
 
-    session.atOneTick(orderIds.map((orderId) => ({ type: 'CancelBuildOrder' as const, orderId })));
+    session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
@@ -255,7 +269,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
 
     // The undo. This moved neither figure until the ruling of 2026-09-02; it
     // now moves both.
-    session.atOneTick(orderIds.map((orderId) => ({ type: 'CancelBuildOrder' as const, orderId })));
+    session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.stateCounts(orderIds), 'every order really was cancelled').toEqual(
       new Map([['cancelled', DRAG]]),
     );
@@ -296,7 +310,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     const onTheRoad = createSession();
     onTheRoad.atOneTick(placements(['wall-0']));
     expect(onTheRoad.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
-    onTheRoad.atOneTick([{ type: 'CancelBuildOrder', orderId: 'wall-0' }]);
+    onTheRoad.atOneTick([cancelOrder(onTheRoad.runtime, 'wall-0')]);
     expect(onTheRoad.runtime.treasury.balanceMinorUnits, 'money').toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(onTheRoad.stock(WALL_REQUIREMENT.itemId)).toBe(0);
 
@@ -311,7 +325,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(landed.stock(WALL_REQUIREMENT.itemId), 'on the shelf, allocated to nothing').toBe(
       WALL_REQUIREMENT.quantity,
     );
-    landed.atOneTick([{ type: 'CancelBuildOrder', orderId: 'wall-0' }]);
+    landed.atOneTick([cancelOrder(landed.runtime, 'wall-0')]);
     expect(landed.runtime.treasury.balanceMinorUnits, 'money — this read 24,920, bricks and no money, before the ruling').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
@@ -335,7 +349,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(ticksHolding, 'ten ticks of holding bricks nothing has claimed').toBe(10);
 
     expect(measured.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
-    measured.atOneTick([{ type: 'CancelBuildOrder', orderId: 'wall-0' }]);
+    measured.atOneTick([cancelOrder(measured.runtime, 'wall-0')]);
     expect(measured.runtime.treasury.balanceMinorUnits, 'money again, one state later').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );

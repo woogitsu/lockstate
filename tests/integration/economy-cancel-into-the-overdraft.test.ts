@@ -204,6 +204,19 @@ function placements(orderIds: readonly string[]): readonly SimulationCommand[] {
   }));
 }
 
+/**
+ * A `CancelBuildOrder` aimed at `orderId`'s true current revision (ADR 0107),
+ * read off `runtime` at the moment this is called -- this file's subject is
+ * what a cancellation gives back, not whether a press is stale.
+ */
+function cancelOrder(runtime: SimulationRuntime, orderId: string): SimulationCommand {
+  return { type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) };
+}
+
+function cancels(runtime: SimulationRuntime, orderIds: readonly string[]): readonly SimulationCommand[] {
+  return orderIds.map((orderId) => cancelOrder(runtime, orderId));
+}
+
 describe('cancelling a drag that spent into the standing overdraft (#717)', () => {
   it('gives back every minor unit when the bricks are still on the road', () => {
     /*
@@ -222,7 +235,7 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     expect(session.runtime.treasury.balanceMinorUnits, 'and it is under water').toBeLessThan(0);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'nothing has landed yet').toBe(0);
 
-    session.atOneTick(orderIds.map((orderId) => ({ type: 'CancelBuildOrder' as const, orderId })));
+    session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
@@ -267,7 +280,7 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     expect(shelf, 'the head\'s bricks, all of them landed').toBe(funded * WALL_REQUIREMENT.quantity);
     expect(shelf, 'and short of what the whole queue still wants').toBeLessThan(walls * WALL_REQUIREMENT.quantity);
 
-    session.atOneTick([{ type: 'CancelBuildOrder', orderId: orderIds[0]! }]);
+    session.atOneTick([cancelOrder(session.runtime, orderIds[0]!)]);
     expect(session.runtime.treasury.balanceMinorUnits, 'nothing back: the tail needs those bricks').toBe(
       strandedBalance,
     );
@@ -328,7 +341,7 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
     expect(session.stock(PLANK), 'and no plank arrived').toBe(0);
 
     // The undo. Before #717 this moved neither figure: −1,240 and 656 bricks.
-    session.atOneTick(orderIds.map((orderId) => ({ type: 'CancelBuildOrder' as const, orderId })));
+    session.atOneTick(cancels(session.runtime, orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
       TREASURY_STARTING_BALANCE_MINOR_UNITS,
     );
@@ -378,7 +391,7 @@ describe('cancelling a drag that spent into the standing overdraft (#717)', () =
         { type: 'PlaceBuildOrder', orderId, definitionId: WALL, x: 3 + gesture, y: 3, edge: 'north', transactionId: `t${String(gesture)}` },
       ]);
       expect(session.runtime.procurement.pendingDeliveries, 'it bought nothing').toHaveLength(0);
-      session.atOneTick([{ type: 'CancelBuildOrder', orderId }]);
+      session.atOneTick([cancelOrder(session.runtime, orderId)]);
     }
 
     expect(session.runtime.treasury.balanceMinorUnits, 'four gestures, four walls\' worth of money').toBe(

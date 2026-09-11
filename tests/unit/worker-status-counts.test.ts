@@ -918,7 +918,21 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // The bound is not what stops a list arriving -- the scalar assertion
       // above is, at any length, which is why that was added the last time
       // this bound was relaxed.
-      expect(JSON.stringify(payload).length).toBeLessThan(710);
+      //
+      // **728 and not 710, and the raise is a longer refusal reason rather
+      // than a new field.** ADR 0107 (`cancel-build-order.stale-cancellation`,
+      // 37 characters) replaced `place-object.not-a-placeable-object` (35) as
+      // the longest member of `REFUSAL_REASONS` -- the same string this test's
+      // own `[...REFUSAL_REASONS].sort(...)[0]` picks up automatically, so
+      // nothing here had to be told the new value. Re-measured on this tree:
+      // `payloadJsonBytes=708` at 250 actors and `710` at 1,000, 2,500 and
+      // 5,000 -- two bytes over the previous tier's own worst case, which is
+      // exactly the two-character difference between the two reasons and
+      // nothing more, so this is the `contrabandNameKey`/
+      // `treasuryOverdraftFloorMinorUnits` shape again: a field's *spelling*
+      // moving the bound, not the population or the count of fields. 710 + 18
+      // = **728**, the same headroom every previous raise in this file left.
+      expect(JSON.stringify(payload).length).toBeLessThan(728);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

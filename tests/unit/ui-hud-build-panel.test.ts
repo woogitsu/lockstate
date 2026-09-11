@@ -567,6 +567,7 @@ describe('a queued row names its own order', () => {
     edge: 'north',
     state: 'assigned',
     cancelRefundMinorUnits: 80,
+    revision: 1,
     ...overrides,
   });
 

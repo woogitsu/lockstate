@@ -1,6 +1,6 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { ConstructionFundingRefusalReason } from '../construction/materials-procurement';
-import type { RemoveWallRefusalReason } from '../construction/system';
+import type { CancelBuildOrderRefusalReason, RemoveWallRefusalReason } from '../construction/system';
 import type { PurchaseCancelRefusalReason, PurchaseRefusalReason, SellStockRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
@@ -323,6 +323,26 @@ export const REMOVE_OBJECT_REFUSAL_REASONS: Readonly<Record<RemoveObjectRefusalR
  */
 export const REMOVE_WALL_REFUSAL_REASONS: Readonly<Record<RemoveWallRefusalReason, RefusalReason>> = {
   'nothing-to-remove': 'remove-wall.nothing-to-remove',
+};
+
+/**
+ * `CancelBuildOrderRefusalReason`, mapped onto the wire's. Exhaustive for the
+ * same reason as above (ADR 0107).
+ *
+ * **One entry, and the table exists anyway**, for the argument
+ * `REMOVE_WALL_REFUSAL_REASONS` records of its own single member.
+ *
+ * `stale-cancellation` is namespaced apart from `cancel-purchase.not-pending`
+ * (Context §8's nearest precedent -- a pure identity check, which this is not)
+ * and apart from the unrelated main-thread-only `hud.refusal.cancel-build-order`
+ * (Context §9 -- a different channel entirely, fired before any command reaches
+ * the wire) for the same reason every other collision in `REFUSAL_REASONS` is:
+ * a player who pressed a queue row's `Cancel` and lost the race described in
+ * ADR 0107 Context §3 must not read a sentence that could be confused with
+ * either.
+ */
+export const CANCEL_BUILD_ORDER_REFUSAL_REASONS: Readonly<Record<CancelBuildOrderRefusalReason, RefusalReason>> = {
+  'stale-cancellation': 'cancel-build-order.stale-cancellation',
 };
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */
@@ -699,6 +719,16 @@ export function removeObjectSupersessionKey(x: number, y: number): string {
  */
 export function removeWallSupersessionKey(x: number, y: number, edge: string): string {
   return `remove-wall:${x}:${y}:${edge}`;
+}
+
+/**
+ * `cancel-build-order.*`'s key: the order id, mirroring
+ * `purchaseCancelSupersessionKey`'s own reasoning (ADR 0107 Decision §5) --
+ * `CancelBuildOrder` names one order id and a refusal about it must not be
+ * silenced by a cancellation of a different one.
+ */
+export function cancelBuildOrderSupersessionKey(orderId: string): string {
+  return `cancel-build-order:${orderId}`;
 }
 
 /** `release-guard.*`'s key: the guard id, which is the one thing `ReleaseGuardAssignment` names. */

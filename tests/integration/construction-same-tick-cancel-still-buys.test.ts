@@ -106,7 +106,14 @@ describe('a cancel at the same tick must not make the next order look like a rep
     pressWhilePaused(runtime, wall('order-1', 3));
     standing.push('order-1');
     pressWhilePaused(runtime, wall('order-2', 4));
-    pressWhilePaused(runtime, { type: 'CancelBuildOrder', orderId: 'order-2' });
+    pressWhilePaused(runtime, {
+      type: 'CancelBuildOrder',
+      orderId: 'order-2',
+      // ADR 0107: aimed at the order's true current revision, so this press
+      // succeeds rather than risking `stale-cancellation` -- this file's
+      // subject is same-tick purchasing, not staleness.
+      expectedRevision: runtime.construction.revisionOf('order-2'),
+    });
     for (let index = 3; index <= 8; index += 1) {
       pressWhilePaused(runtime, wall(`order-${index}`, 2 + index));
       standing.push(`order-${index}`);
@@ -154,7 +161,14 @@ describe('a cancel at the same tick must not make the next order look like a rep
     pressWhilePaused(runtime, wall('order-1', 3));
     standing.push('order-1');
     pressWhilePaused(runtime, wall('order-2', 4));
-    pressWhilePaused(runtime, { type: 'CancelBuildOrder', orderId: 'order-2' });
+    pressWhilePaused(runtime, {
+      type: 'CancelBuildOrder',
+      orderId: 'order-2',
+      // ADR 0107: aimed at the order's true current revision, so this press
+      // succeeds rather than risking `stale-cancellation` -- this file's
+      // subject is same-tick purchasing, not staleness.
+      expectedRevision: runtime.construction.revisionOf('order-2'),
+    });
     for (let index = 3; index <= 8; index += 1) {
       pressWhilePaused(runtime, wall(`order-${index}`, 2 + index));
       standing.push(`order-${index}`);
@@ -220,7 +234,14 @@ describe('a cancel at the same tick must not make the next order look like a rep
     const runtime = createNewSimulationRuntime(SEED);
     pressWhilePaused(runtime, wall('order-1', 3));
     pressWhilePaused(runtime, wall('order-2', 4));
-    pressWhilePaused(runtime, { type: 'CancelBuildOrder', orderId: 'order-2' });
+    pressWhilePaused(runtime, {
+      type: 'CancelBuildOrder',
+      orderId: 'order-2',
+      // ADR 0107: aimed at the order's true current revision, so this press
+      // succeeds rather than risking `stale-cancellation` -- this file's
+      // subject is same-tick purchasing, not staleness.
+      expectedRevision: runtime.construction.revisionOf('order-2'),
+    });
     pressWhilePaused(runtime, wall('order-3', 5));
 
     /*

@@ -5,6 +5,7 @@ import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protoc
 import {
   ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
+  CANCEL_BUILD_ORDER_REFUSAL_REASONS,
   CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
@@ -110,11 +111,12 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the fourteen domains can produce', () => {
-  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, wall removal, sale, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the fifteen domains can produce', () => {
+  it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, wall removal, sale, purchase, cancellation, guard release, build-order cancellation and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(CANCEL_BUILD_ORDER_REFUSAL_REASONS),
       ...Object.values(CONSTRUCTION_FUNDING_REFUSAL_REASONS),
       ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
@@ -172,6 +174,15 @@ describe('the wire vocabulary is exactly what the fourteen domains can produce',
       'unowned-land': 'build.unowned-land',
       'water-blocked': 'build.water-blocked',
     });
+    /*
+     * The fifteenth table (ADR 0107). One member, transcribed here like
+     * `REMOVE_OBJECT_REFUSAL_REASONS` and `REMOVE_WALL_REFUSAL_REASONS`
+     * above for the same reason: a one-member table is exactly the case
+     * where this pairing test is the only thing that could notice
+     * `cancel-build-order.stale-cancellation` written as, say,
+     * `cancel-build-order.stale-cancelled`.
+     */
+    expect(CANCEL_BUILD_ORDER_REFUSAL_REASONS).toEqual({ 'stale-cancellation': 'cancel-build-order.stale-cancellation' });
     // Issue #533. One member, transcribed here like the other ten tables --
     // and a one-member table is exactly the case where a pairing test earns its
     // keep, because there is no set-size check anywhere that could notice
@@ -286,6 +297,7 @@ describe('the wire vocabulary is exactly what the fourteen domains can produce',
     const paired = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(CANCEL_BUILD_ORDER_REFUSAL_REASONS),
       ...Object.values(CONSTRUCTION_FUNDING_REFUSAL_REASONS),
       ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
@@ -318,7 +330,7 @@ describe('the wire vocabulary is exactly what the fourteen domains can produce',
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the fourteen vocabularies it can answer, so they cannot collide', () => {
+  it('names the fifteen vocabularies it can answer, so they cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -389,10 +401,16 @@ describe('the wire vocabulary is exactly what the fourteen domains can produce',
     // like two of `purchase`'s own members -- the same catalogue lookup and
     // the same integer guard, for the opposite direction of money -- and a
     // player who pressed Sell must not read that a delivery was refused.
+    // `cancel-build-order` is the fifteenth (ADR 0107), namespaced apart from
+    // `cancel-purchase` for the reason every such pair here is: `Cancel` on a
+    // build order and `Cancel` on a purchase are two different controls over
+    // two different records, and a player who lost the stale-cancellation
+    // race must not read a sentence about a delivery.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
       'build',
+      'cancel-build-order',
       'cancel-purchase',
       'construction',
       'dismiss',
@@ -1034,7 +1052,13 @@ describe('issue #514: a repeated build order at the same tile and edge is refuse
     placeWall(runtime, 0, OWNED_TILE);
     expect(runtime.refusals.last).toBeUndefined();
 
-    submit(runtime, 1, packCommand({ type: 'CancelBuildOrder', orderId: 'order-0' }));
+    submit(
+      runtime,
+      1,
+      // ADR 0107: the order's true current revision, read fresh off the
+      // system this test already holds a reference to.
+      packCommand({ type: 'CancelBuildOrder', orderId: 'order-0', expectedRevision: runtime.construction.revisionOf('order-0') }),
+    );
     expect(runtime.construction.getOrder('order-0')?.state).toBe('cancelled');
 
     placeWall(runtime, 2, OWNED_TILE);

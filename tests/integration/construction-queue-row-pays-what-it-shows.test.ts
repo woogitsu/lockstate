@@ -79,7 +79,12 @@ function expectRowPaysWhatItShows(runtime: SimulationRuntime, orderId: string, e
   expect(row.state, `${orderId} is expected to be ${expectedState} when its row is read`).toBe(expectedState);
 
   const balanceBefore = runtime.treasury.balanceMinorUnits;
-  dispatch(runtime, [{ type: 'CancelBuildOrder', orderId }]);
+  // `expectedRevision` read fresh off the system this instant, exactly the
+  // read a row's own press would carry (ADR 0107): this file's subject is
+  // whether the row's figure and the treasury agree, not whether the press
+  // is stale, so every press here is aimed at the order's true current
+  // revision and never refused for that reason.
+  dispatch(runtime, [{ type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) }]);
   const movedBy = runtime.treasury.balanceMinorUnits - balanceBefore;
 
   expect(movedBy, `${orderId}'s row promised ${String(row.cancelRefundMinorUnits)} and the press moved ${String(movedBy)}`).toBe(

@@ -533,10 +533,12 @@ export type HudIntent =
   /**
    * The player asked for **one particular** queued order to be withdrawn.
    *
-   * One id and nothing else -- the host turns this into a `CancelBuildOrder`
-   * command; the HUD does not know that such a command exists, and the id is not
-   * one it could mint. It came *in*, on the build-queue view model, from the
-   * projection that names the pending orders.
+   * One id, one revision and nothing else -- the host turns this into a
+   * `CancelBuildOrder` command carrying both; the HUD does not know that such
+   * a command exists, that it carries `expectedRevision`, or what that field
+   * is compared against (ADR 0107). Both came *in*, on the build-queue view
+   * model, from the projection that names the pending orders -- `revision` is
+   * the row's own `BuildQueueOrderViewModel.revision`, carried out unchanged.
    *
    * **Why this is not `undo`.** Both take a wall back, and that is where the
    * resemblance stops. `Undo` is payload-free by protocol and reverses the last
@@ -554,7 +556,7 @@ export type HudIntent =
    * swallowed -- so the refusal this can paint is about *this thread* (no worker,
    * no session), which is what `hud.refusal.cancel-build-order` says.
    */
-  | { readonly kind: 'cancel-build-order'; readonly orderId: string }
+  | { readonly kind: 'cancel-build-order'; readonly orderId: string; readonly revision: number }
   /**
    * The player asked for **one particular** purchase to be cancelled and its
    * money returned (#285).
@@ -1956,8 +1958,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * which is the surface #220 established as the one that is on screen at
      * every viewport.
      */
-    onCancelOrder: (orderId) => {
-      dispatchCommand({ kind: 'cancel-build-order', orderId });
+    onCancelOrder: (orderId, revision) => {
+      dispatchCommand({ kind: 'cancel-build-order', orderId, revision });
     },
     /*
      * Cancelling one purchase, which is the surface `ProcurementSystem.cancel`

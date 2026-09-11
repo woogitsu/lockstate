@@ -118,6 +118,69 @@ export interface SimulationCommandSenderOptions {
 const DEFAULT_LEAD_TICKS = 20;
 /** `FixedStepClock`'s step. The worker converts `elapsed * speed` into whole steps of this size. */
 const TICK_MILLISECONDS = 50;
+
+/**
+ * `CancelBuildOrder`'s own, narrower margin (ADR 0107) -- **12 ticks, 600 ms
+ * of real time at every speed**, in place of `DEFAULT_LEAD_TICKS`'s 20 (1000
+ * ms). Passed as `submit`'s `options.leadTicks`; see that parameter's own
+ * docblock before reusing this pattern for another command.
+ *
+ * ## Why 12 rather than 20, and why not lower
+ *
+ * ADR 0107 Context §3: a `CancelBuildOrder` aimed at a row that just read
+ * `'assigned'` races `ConstructionSystem.schedule.intervalTicks` (10) -- the
+ * order can flip to `'in-progress'` at most ten ticks after the row was
+ * priced, and ruling 20 pays `0` for `'in-progress'`. `DEFAULT_LEAD_TICKS`
+ * alone already exceeds that whole window (20 > 10) before a single
+ * millisecond of real elapsed time is added, which is *why* the race is
+ * closer to the modal outcome than the exception at 1x (Context §7). Halving
+ * it to 12 still exceeds the window on its own, but by less -- narrowing, not
+ * closing, how often a press outruns it.
+ *
+ * **Measured, and the honest answer is that it does not close the gap at
+ * all.** `tests/browser/adr-0107-cancel-press-rate.playtest.ts` ran the same
+ * 10-press-at-1x-against-a-freshly-`assigned`-row protocol #859 used, once
+ * against this tree (12 ticks, this file's own commit) and once against the
+ * unmodified tree before this ADR (20 ticks, no refusal): **0 of 9 valid
+ * presses paid what the row advertised at 12 ticks, and 0 of 4 did at 20** --
+ * both samples smaller than #859's own ten because several presses missed
+ * the row-repaint window entirely (recorded separately). Halving the margin
+ * from 20 to 12 made no measured difference, and the reason is arithmetic
+ * rather than luck: 12 still exceeds the 10-tick transition window on its
+ * own, before any real elapsed time is added, so **every** press this
+ * measurement caught still executed after the transition regardless of
+ * which of the two margins was in effect. Only a margin *below* ten ticks
+ * could land before the transition even some of the time, and the floor two
+ * paragraphs below is why this file does not go there. This is why ADR 0107
+ * treats the revision-based refusal as the fix and this constant as a
+ * bounded, measured mitigation rather than a substitute for it.
+ *
+ * The floor is `#942`'s own worst-case figure: `tests/browser
+ * /command-lead-at-speed.spec.ts` stalls a tick report's own listener for
+ * **400 ms** -- standing in for the renderer's heaviest per-message work,
+ * not a typical figure -- and asserts a press riding that stall is still
+ * accepted under `DEFAULT_LEAD_TICKS`'s 1000 ms margin. 12 ticks (600 ms)
+ * keeps 200 ms of headroom over that same 400 ms stall -- verified by the
+ * same-shaped stress in `tests/browser/command-lead-at-speed.spec.ts`,
+ * `'a stale-cancellation press survives the same stall #942 tests, at its own
+ * narrower margin'` -- where `DEFAULT_LEAD_TICKS`'s headroom is 600 ms. **A
+ * value below roughly 8 ticks (400 ms) would give this stall no headroom at
+ * all** and risks reproducing #942's own defect for `CancelBuildOrder`
+ * specifically: a press rejected as `past-tick` on a slow or backgrounded tab
+ * is a worse failure than the silent-zero this document exists to fix,
+ * because a `past-tick` rejection also drops the sequence baseline and can
+ * cascade into the *next* press failing too (#942's own finding), while a
+ * silent zero or an explicit `stale-cancellation` refusal costs one press and
+ * leaves the sender in good standing.
+ *
+ * **What this narrower margin costs, stated rather than left implicit.** On a
+ * tab whose message-processing latency exceeds 600 ms -- a heavier renderer
+ * stall than #942's own 400 ms figure, or a slower device -- a `Cancel` press
+ * can now be rejected as `past-tick` where the sender's default 1000 ms
+ * margin would have accepted it. No other command's margin changes: this
+ * value is passed only at `CancelBuildOrder`'s own call site.
+ */
+export const CANCEL_BUILD_ORDER_LEAD_TICKS = 12;
 /**
  * The fault code a `past-tick` refusal arrives as. See `observeRejection` for
  * why that is `invalid-state` and what makes reading it back sound.
@@ -218,9 +281,14 @@ export class SimulationCommandSender {
    * is not a correctness failure -- overshooting only makes the order start a
    * fraction of a second later, while undershooting is the one that gets the
    * command rejected. Hence the estimate plus a margin, and `ceil`.
+   *
+   * @param leadTicksOverride A per-command margin (see `submit`'s own
+   * `options.leadTicks`), used in place of the constructor's `leadTicks` for
+   * this one projection. Omitted for every command that has not asked for a
+   * narrower one.
    */
-  private projectExecuteTick(): number {
-    return Math.max(this.projectFromClock(), this.highestSubmittedTick);
+  private projectExecuteTick(leadTicksOverride?: number): number {
+    return Math.max(this.projectFromClock(leadTicksOverride), this.highestSubmittedTick);
   }
 
   /**
@@ -242,11 +310,16 @@ export class SimulationCommandSender {
    * At ×1 this is arithmetically the expression it replaces, tick for tick:
    * `leadTicks * speed` is an integer, so moving it inside `Math.ceil` cannot
    * change the result.
+   *
+   * @param leadTicksOverride Replaces `this.leadTicks` for this one call when
+   * given (ADR 0107). Still a *real-time* margin, converted by the same rule:
+   * a per-command override is not a second kind of number, it is the same
+   * kind read from a different source.
    */
-  private projectFromClock(): number {
+  private projectFromClock(leadTicksOverride?: number): number {
     if (!this.clockRunning) return this.lastTick;
     const elapsed = Math.max(0, this.now() - this.lastTickAt);
-    const margin = this.leadTicks * TICK_MILLISECONDS;
+    const margin = (leadTicksOverride ?? this.leadTicks) * TICK_MILLISECONDS;
     return this.lastTick + Math.ceil(((elapsed + margin) * this.clockSpeed) / TICK_MILLISECONDS);
   }
 
@@ -302,8 +375,21 @@ export class SimulationCommandSender {
    * raise here and both are reported the same way. There is no control to mark
    * for a drag, because the player pressed none; the refusal line is the whole
    * report, and it is laid out at every viewport.
+   *
+   * @param options.leadTicks A per-command override of the constructor's own
+   * `leadTicks` (ADR 0107), for a command whose own race is narrower than the
+   * generic one this sender's default margin is tuned against. **Read the
+   * constructor option's own docblock before passing anything here**: the
+   * margin exists to cover real message latency between a tick report
+   * arriving and this class reading it, scaled by clock speed precisely so a
+   * throttled or backgrounded tab does not have every command refused as
+   * `past-tick` (#942) -- shrinking it for one command narrows that same
+   * protection for that command alone, and the caller is asserting the
+   * narrower margin is still enough for the latency this command can
+   * plausibly meet. Omitted, this behaves exactly as it did before this
+   * parameter existed.
    */
-  public submit(command: SimulationCommand): void {
+  public submit(command: SimulationCommand, options: { readonly leadTicks?: number } = {}): void {
     if (!this.ready) {
       throw new Error('No simulation session is running yet, so the order cannot be submitted.');
     }
@@ -312,7 +398,7 @@ export class SimulationCommandSender {
     }
 
     const sequence = this.nextSequence;
-    const executeAtTick = this.projectExecuteTick();
+    const executeAtTick = this.projectExecuteTick(options.leadTicks);
     /*
      * The floor is raised *before* the send, and on the attempt rather than on
      * the acknowledgement.
