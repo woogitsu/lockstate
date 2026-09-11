@@ -877,9 +877,42 @@ export class SessionController {
     }
     if (first.error.code !== 'stale-revision' || first.stale === undefined) return first;
 
-    // Re-checked rather than assumed: the write above crossed an await, and a
-    // session that went stale during it has lost its claim to a retry.
+    /*
+     * **THE RETRY IS NARROWER THAN ADR 0109 DECISION 4'S WORDING, AND THIS IS
+     * WHY.** Taken literally -- "an epoch-current writer that lost a revision
+     * race re-captures and retries once" -- the retry re-opens FINAL-006, the
+     * two-tab defect the same document says the revision CAS closes. It was
+     * measured doing exactly that while this was being built:
+     * `tests/unit/persistence-stale-save-refusal.test.ts`'s two-tab case had
+     * tab B refused at expectation 1 against durable 2, then retry, then
+     * succeed at 3 -- tab A's hundred ticks overwritten anyway, by a slower
+     * route.
+     *
+     * The epoch cannot tell those cases apart on its own, because it is
+     * per-process: **both tabs are epoch-current in their own process.** What
+     * separates them is the ADR's own justification for the retry -- "it is
+     * live, and its state is the newest there is". That is true when the
+     * writer lost the race to *itself* (its own other save path, which is
+     * FINAL-005) and false when it lost to another tab, whose state it has
+     * never seen.
+     *
+     * So the test is whether the slot moved to exactly where this session's
+     * own bookkeeping already stands. `session.revision` is only ever assigned
+     * from a write *this session* completed, and revisions are allocated as
+     * `durable + 1` inside a serialised transaction, so two writers cannot
+     * both land on one number. `durableRevision === session.revision`
+     * therefore means "the write that beat me was mine", and anything else
+     * means another writer holds the slot and must be surfaced rather than
+     * overwritten -- `AGENTS.md`-adjacent, and the rule
+     * `supabase/migrations/20260822190300_create_save_version_rpc.sql:6-8`
+     * states for the cloud: "never a silent overwrite, never a silent 'latest
+     * wins'".
+     *
+     * Re-checked rather than assumed: the write above crossed an await, and a
+     * session that went stale during it has lost its claim to a retry.
+     */
     if (this.session !== session) return undefined;
+    if (first.stale.durableRevision !== session.revision) return first;
 
     const recaptured = await this.buildEnvelope();
     if (recaptured === undefined || this.session !== session) return undefined;
