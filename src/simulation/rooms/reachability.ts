@@ -409,17 +409,41 @@ export function roomReachability(
  *
  * Enclosure first, from `roomPerimeterEnclosure`, so there is exactly one
  * definition of "every perimeter edge holds geometry" and a rectangle it calls
- * `'open'` is `'gap'` here with no door read and no region walk at all. Then the
- * door read, from `roomPerimeterHoldsDoor`: no door anywhere on a closed
- * perimeter is `'no-way-in'`, and `traversal.ts` states why that is certain
- * rather than likely -- *"any non-zero value with no registered door is an
- * impassable wall"*.
+ * `'open'` is `'gap'` here with no door read and no region walk at all. That one
+ * must stay first: `'gap'` is a fact about the boundary and says nothing about
+ * what is beyond it, so a rectangle open on one side is `'gap'` whether or not
+ * anybody can reach it.
  *
- * **Only then reachability, and only for a rectangle that has a door.** That
- * ordering is what keeps `'no-way-in'` meaning what it has always meant: a
- * doorless sealed room is never reachable either, so asking the region question
- * first would swallow it into `'unreachable'` and the panel would stop telling
- * that player to build a door.
+ * **Then reachability, and the door read only for a room nothing reached.** The
+ * door read is up to `2 * (width + height)` registry lookups and it is skipped
+ * for every room somebody can get into -- which in a prison that is working is
+ * nearly all of them. It is sound to skip, and the proof is short:
+ *
+ * > A sealed rectangle's interior regions are confined to it.
+ * > `roomPerimeterEnclosure` answering `'sealed'` means every perimeter edge
+ * > holds geometry, and `buildNavigationGraph`'s flood fill crosses an edge only
+ * > when the edge value is `0` **and** no door is registered on it -- so it can
+ * > cross no perimeter edge, in either direction. Therefore the exterior walk
+ * > can only have reached an interior tile through a chain of portals whose last
+ * > hop crosses a perimeter edge, and a portal **is** a registered door.
+ * > Reachable and sealed entails a door on the perimeter, so reading the
+ * > registry to confirm it asks a question whose answer is already known.
+ *
+ * **`'no-way-in'` still means what it always meant**, which is what this
+ * ordering has to protect: a doorless sealed room cannot be reached (the same
+ * proof, contrapositive), so it falls past the reachability test to the door
+ * read, finds nothing, and is `'no-way-in'` rather than `'unreachable'`. The
+ * panel goes on telling that player to build a door rather than to take down a
+ * wall somewhere else.
+ *
+ * **What this costs, stated because it is a real trade.** `'doorway'` is no
+ * longer backed by an independent door read; it rests on the graph. That is not
+ * the loss of a cross-check -- the graph is built from the same `DoorRegistry`
+ * the read would have consulted, so the two were never independent -- but it
+ * does mean a caller handing over a **stale** graph would get `'doorway'` for a
+ * room whose door has since gone. No caller can:
+ * `NavigationSystem.getGraph()` rebuilds a stale graph on the spot, which is
+ * what `RoomRegionGraphSource` exists to state.
  */
 export function roomAccess(
   world: RoomEdgeReader,
@@ -428,6 +452,6 @@ export function roomAccess(
   rectangle: TileRectangle,
 ): RoomAccess {
   if (roomPerimeterEnclosure(world, rectangle).enclosure === 'open') return 'gap';
-  if (!roomPerimeterHoldsDoor(doors, rectangle)) return 'no-way-in';
-  return reachability.reaches(rectangle) ? 'doorway' : 'unreachable';
+  if (reachability.reaches(rectangle)) return 'doorway';
+  return roomPerimeterHoldsDoor(doors, rectangle) ? 'unreachable' : 'no-way-in';
 }

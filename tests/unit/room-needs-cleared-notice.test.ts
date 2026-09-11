@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { DoorRegistry } from '../../src/simulation/navigation/door';
+import { buildNavigationGraph } from '../../src/simulation/navigation/region-graph';
 import { SimulationEventLog } from '../../src/simulation/events';
 import type { SimulationContext } from '../../src/simulation/kernel/system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
@@ -87,13 +89,51 @@ function oneOpenRegion(): RoomRegionGraphSource {
   return { getGraph: () => graph };
 }
 
-/** A door reader whose answer can be flipped after construction, isolating the doorway-side crossing from the object side. */
-function toggledDoorReader(): { reader: RoomDoorReader; setPresent: (value: boolean) => void } {
-  let present = false;
+/**
+ * A REAL door registry and a REAL region graph over the fixture world, with the
+ * door registered on demand -- the doorway-side crossing driven by the same two
+ * objects a running session drives it with.
+ *
+ * **It was a pair of independent fakes until 2026-09-11 and could not stay
+ * one.** `roomAccess` skips the door read for a rectangle that is sealed and
+ * reached, because being both entails a perimeter door (its own docblock
+ * carries the proof). A fake region source that called a *doorless* sealed room
+ * reachable therefore described a world that cannot exist, and the old question
+ * order was the only thing hiding it. Building the graph from the same world
+ * and the same registry the system reads makes the fixture answer the way a
+ * prison does: no door, no portal, nothing reaches the room, `'no-way-in'`;
+ * door registered, one portal onto open ground, `'doorway'`.
+ *
+ * `getGraph` rebuilds per call, which is what `NavigationSystem.getGraph` does
+ * through `ensureGraph` -- so registering the door mid-test is visible to the
+ * next `update()` exactly as a completed door order would be.
+ */
+function toggledDoorRegistry(world: SparseWorld): {
+  doors: DoorRegistry;
+  regions: RoomRegionGraphSource;
+  setPresent: (value: boolean) => void;
+} {
+  const doors = new DoorRegistry();
   return {
-    reader: { getByEdge: () => (present ? {} : undefined) },
+    doors,
+    regions: {
+      getGraph: () => buildNavigationGraph(world, doors, [world.getChunk({ x: chunkCoordinate(0), y: chunkCoordinate(0) })!]),
+    },
     setPresent: (value: boolean) => {
-      present = value;
+      if (value) {
+        // The 2x2's south boundary: the north edge of the row below it, which
+        // is where `wall2x2` put the wall this door now crosses.
+        doors.register({
+          id: 'holding-cell-door',
+          position: TILE(0, 2),
+          side: 'top',
+          state: 'closed',
+          requiredSecurityClearance: 0,
+          costMultiplier: 1,
+        });
+      } else if (doors.getById('holding-cell-door') !== undefined) {
+        doors.unregister('holding-cell-door');
+      }
     },
   };
 }
@@ -196,13 +236,15 @@ describe('RoomNeedsClearedNoticeSystem: the doorway side of shortfallOf, the obj
     const world = ownedWorld();
     wall2x2(world);
     const events = new SimulationEventLog();
-    const { reader: doors, setPresent } = toggledDoorReader();
-    const system = new RoomNeedsClearedNoticeSystem({ roomInstances }, placedObjects, world, doors, oneOpenRegion(), events);
+    const { doors, regions, setPresent } = toggledDoorRegistry(world);
+    const system = new RoomNeedsClearedNoticeSystem({ roomInstances }, placedObjects, world, doors, regions, events);
 
     // Sealed with no door: `roomAccess` reads `'no-way-in'`, exactly the state
-    // issue #1006's own comment and #938 describe. Once the door appears it
-    // reads `'doorway'` rather than `'unreachable'`, because `oneOpenRegion`
-    // puts this room in a region that escapes the loaded area (ADR 0108).
+    // issue #1006's own comment and #938 describe. Once the door is registered
+    // it reads `'doorway'` rather than `'unreachable'`, because the door opens
+    // onto open ground that runs to the edge of the loaded chunk (ADR 0108) --
+    // and that is now a fact about the fixture's own world rather than a stub's
+    // assertion about it.
     system.update(context(0));
     expect(events.since(0), 'no door yet: nothing to announce on the seeding tick').toEqual([]);
 
