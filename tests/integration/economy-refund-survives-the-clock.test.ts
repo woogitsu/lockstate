@@ -831,7 +831,13 @@ describe('a refund survives the clock (#687)', () => {
      * one order still stalled.
      */
     expect(ids[3]).toBe('order-003');
-    send(withCancel, { type: 'CancelBuildOrder', orderId: ids[3]! });
+    send(withCancel, {
+      type: 'CancelBuildOrder',
+      orderId: ids[3]!,
+      // ADR 0107: aimed at the order's true current revision, so this press
+      // succeeds rather than risking `stale-cancellation`.
+      expectedRevision: withCancel.construction.revisionOf(ids[3]!),
+    });
     step(withCancel, PROCUREMENT_DELIVERY_DELAY_TICKS * 6);
     expect(orderStates(withCancel).completed).toBe(3);
     expect(balanceOf(withCancel)).toBe(DRAINED_AFTER_SIX_BRICKS);
