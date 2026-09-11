@@ -15218,7 +15218,7 @@ still at `docs/adr/README.md:174`.
 And **Next free number: 0109** — **edited in place a seventh time, and the
 sentence it replaces is kept verbatim below because this restatement's whole
 value is that it records each move rather than only the latest number.** It
-read: *"And **Next free number: 0107** — unmoved across this window's own
+read: *"And **Next free number** — then **0107** — unmoved across this window's own
 endpoints, which is the first time in seven anchors this restatement has had
 nothing to correct."* That was true when it was written. Two ADR rows have
 landed since, both from agents working in parallel on unmerged branches:
