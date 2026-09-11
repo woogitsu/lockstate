@@ -605,7 +605,12 @@ rather than #859's pre-fix one (see "Weakest claim").
    acceptable as designed**, or whether it is itself the trigger for the
    follow-up named in Decision §8 to be taken up now rather than later. This
    document takes no position beyond recording the number and naming the
-   follow-up as separable.
+   follow-up as separable. **Sharper as of 2026-09-11's falsifier run
+   ("Weakest claim", below): the follow-up itself is now answered — the lead
+   fix measurably does not lower the rate — and what remains open is whether
+   `Cancel` should be disabled for the ~1-second window instead of pressable
+   and mostly refused, which is a new question for the owner and not decided
+   here either.**
 5. **Whether keeping the revision counter unpersisted (Decision §2, §6) is
    the right call**, given it is the reason this document does not ask
    reservation 2 to release anything. See "Weakest claim."
@@ -629,6 +634,40 @@ rate near 100% would make the row's own advertised figure close to
 decorative at 1× speed and might argue for revisiting whether `Cancel`
 should be disabled for the ~1-second window rather than pressable and mostly
 refused.
+
+**THE FALSIFIER WAS RUN, 2026-09-11, AND IT ANSWERS TOWARD THE SECOND OF
+THOSE TWO READINGS.** The owner's ruling of 2026-09-11 (Status, above) was
+"fix the lead first, then the refusal" — a per-command lead was built
+(`CANCEL_BUILD_ORDER_LEAD_TICKS`, `src/ui/simulation-commands.ts`, 12 ticks in
+place of the sender's default 20) and this protocol run once against the
+unmodified tree and once against this design, both after that lead landed.
+Against the unmodified tree (`be5061f9`, `DEFAULT_LEAD_TICKS=20`, no refusal):
+**0 of 4** valid presses on a freshly-`assigned` row paid what the row
+advertised. Against this design (12 ticks, refusal wired): **0 of 9** did,
+every one instead reading the authored `stale-cancellation` sentence rather
+than a silent zero. Both samples are smaller than #859's own ten because
+several presses missed the row's own repaint window entirely (#859's own
+side-finding 1, reproduced rather than escaped) — recorded as misses, not
+folded into either count.
+
+**Read plainly, that is *higher* than 70%, not lower, in both samples** —
+small ones, and not a replacement for a larger run, but they answer the
+"what would change my mind" test this section names in the direction it says
+matters most: **the lead-tick mismatch is not a live-vs-curiosity question
+any more (Decision §8's own follow-up), because halving the margin measurably
+changed nothing.** The reason is arithmetic, checked rather than assumed: 12
+ticks still exceeds `ConstructionSystem.schedule.intervalTicks` (10) before a
+single millisecond of real elapsed time is added, so every press either
+sample caught still executed after the transition regardless of which margin
+was in effect. A margin low enough to matter (below ten ticks) would drop
+under the only documented real-latency floor this repository has —
+`tests/browser/command-lead-at-speed.spec.ts`'s own 400 ms stress figure
+(#942) — and risk exactly the worse defect this document's Decision §8
+warned the follow-up would have to weigh. **This document's own suggestion
+that a near-100% rate "might argue for revisiting whether `Cancel` should be
+disabled for the ~1-second window" is therefore live and is not decided
+here** — it is a new question for the owner, not an implementation detail,
+and nothing above builds it.
 
 **The second weakest claim is Decision §2's own**, named there and repeated
 here because it is what keeps this document outside reservation 2: that
