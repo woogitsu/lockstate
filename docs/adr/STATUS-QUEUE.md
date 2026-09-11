@@ -15626,11 +15626,15 @@ THAN BY OFFSETTING THE DIFF.**
   inside this window (`dcd337fd`/#1125, *"Two ADRs accepted — and one of them
   had been contradicting its own status word four hundred lines down"*), and
   ADR 0107 and ADR 0108 both arrive new, `Proposed. Not self-approved.`
-  (`863a736d`/#1129, `9085231d`/#1131). `docs/adr/README.md`'s own
-  `**Next free number: 0109.**` line was already current at `e9d5e500` (0107
-  and 0108 had *already* landed there, in the same window the previous
-  anchor's own account describes at length as a two-drafts-in-parallel race)
-  and needed no edit here. Cross-checked against disk rather than trusted:
+  (`863a736d`/#1129, `9085231d`/#1131). `docs/adr/README.md`'s own next-free
+  line read **0109** and was already current at `e9d5e500` (0107 and 0108 had
+  *already* landed there, in the same window the previous anchor's own account
+  describes at length as a two-drafts-in-parallel race), so it needed no edit
+  when this pass ran. **It has since moved to Next free number: 0110**, by ADR
+  0109 (`what-a-stale-local-save-is-refused-for.md`, filed against #582,
+  `Proposed. Not self-approved.`) landing its row in the same index edit. The
+  clause before this one is kept rather than overwritten, per
+  `docs/AGENT_WORKFLOW.md` §4's rule that both directions are marked. Cross-checked against disk rather than trusted:
   `grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` returns **41**
   (unmoved — two left the population by acceptance, two arrived by filing,
   cancelling to zero exactly as the previous anchor's own account records a
@@ -15692,11 +15696,26 @@ its own acceptance rather than editing it now.
 
 **AND THE `Next free number` RESTATEMENT THIS ANCHOR OWES ITS OWN LIVE
 COPY.** Cross-checked against `docs/adr/README.md` above: **Next free number:
-0109**, unmoved from `e9d5e500`, because ADR 0107 and ADR 0108 — the two
-documents that would have moved it — had already landed there. This is the
-one live restatement this section states, per this header's own rule that a
-second live copy inside one anchor's section is the exact trap
-`tests/foundation/adr-status-queue-anchor-contract.test.ts` exists to catch.
+0110**, moved by ADR 0109 (`what-a-stale-local-save-is-refused-for.md`, filed
+against #582, `Proposed. Not self-approved.`) landing its row. **This
+paragraph first carried 0109 — unmoved, because ADR 0107 and ADR 0108, the two
+documents that would have moved it, had already landed — and is corrected
+rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4).
+
+**AND THE SENTENCE THAT FOLLOWED IT WAS ALREADY FALSE WHEN IT WAS WRITTEN,
+WHICH THE GATE CANNOT SEE AND DID NOT REPORT.** It read: *"This is the one
+live restatement this section states, per this header's own rule that a second
+live copy inside one anchor's section is the exact trap
+`tests/foundation/adr-status-queue-anchor-contract.test.ts` exists to catch."*
+This section carries **two** live restatements rather than one — the
+`docs/adr/README.md` bullet above is the other — and
+`adr-status-queue-anchor-contract` named both of them by line when the index
+moved to 0110. The gate compares every live restatement against the index and
+says nothing whatever about how many exist, so two copies agreeing on one
+number pass it exactly as one copy does. The rule that sentence invokes is a
+writing convention this file did not keep, not a thing the test enforces, and
+a reader drafting an ADR should expect to find and move both. Found
+2026-09-11, by the gate failing on the number and listing two offenders.
 
 **THE `documentation-commit-citation-contract` BASELINE HELD AT THE GOOD
 VALUE, FIFTH ANCHOR RUNNING.** `git rev-parse --is-shallow-repository`
