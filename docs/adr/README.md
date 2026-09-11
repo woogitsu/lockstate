@@ -270,8 +270,10 @@ and both directions are marked rather than the first being overwritten**
 (`docs/AGENT_WORKFLOW.md` §4). When the sweep for this document was first
 taken — 2026-09-11, **289 heads** — all three answers agreed on 0107: disk
 maxed at 0106, this line read 0107, and no ref held 0107 or above. **Another
-agent working in parallel then pushed `agent/853-stale-cancel` holding
-`0107-what-a-stale-build-order-cancellation-is-refused-for.md`**, and a re-run
+agent working in parallel then pushed `agent/853-stale-cancel` holding a 0107
+document on what a stale build-order cancellation is refused for**, whose
+filename is not written out here because that branch is unmerged and a path
+citation to it would dangle. A re-run
 of the sweep over **298 heads** finds **two** documents at 0107 and **nothing
 at 0108 on any ref**. So 0107 is held by an unmerged branch, this row takes
 **0108**, and the hold is a hold rather than a gap. **That is this file's

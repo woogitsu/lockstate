@@ -20,14 +20,19 @@
 > next-free line record as the uncommon case.
 >
 > **What made it wrong was another agent working in parallel, not staleness.**
-> `agent/853-stale-cancel` pushed
-> `docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md`
-> while this document was being written, and moved the index's next-free line
-> to 0108 on its own branch. Re-checked here rather than taken on report:
-> `git ls-tree --name-only` over that branch names the file, and a re-run of
-> the sweep below over **298 heads** now finds **two** documents at 0107 — that
-> one and this one — and **nothing at 0108 on any ref**. So this document takes
-> **0108** and the index's next-free line moves to **0109**.
+> `agent/853-stale-cancel` pushed a **0107** document — on what a stale
+> build-order cancellation is refused for — while this one was being written,
+> and moved the index's next-free line to 0108 on its own branch. Its filename
+> is deliberately not written out here: that branch is unmerged, so a path
+> citation to it would be a dangling one on this branch and
+> `tests/foundation/documentation-links-contract.test.ts` says so, which is the
+> same "a document is invisible from the index until it merges" fact this
+> paragraph is about, arriving through a different gate. Re-checked here rather
+> than taken on report: `git ls-tree --name-only` over that branch names the
+> file, and a re-run of the sweep below over **298 heads** now finds **two**
+> documents at 0107 — that one and this one — and **nothing at 0108 on any
+> ref**. So this document takes **0108** and the index's next-free line moves
+> to **0109**.
 >
 > **That is `docs/AGENT_WORKFLOW.md` §2's recorded failure happening again and
 > being caught**: *"Two agents took `0034` within an hour, each having
