@@ -74,6 +74,68 @@ mechanism on 2026-09-10.
 > document argued the case as a proposal and a reader should see it in the form
 > it was argued in.
 
+**Amendment, 2026-09-11 — two magnitudes ruled, and decision 1 discharged by
+measurement rather than by argument.**
+
+**RULING A — the sell-back ratio is 50%.** Decision 3(b) left the ratio to #29
+and this document declined to name a candidate above the ~12% arithmetic floor
+it derives. The implementing session chose one half so the mechanism would be
+usable, flagged it in `src/simulation/economy/procurement.ts` as its own choice
+rather than a ruling, and put the flag to the owner with four options: 50%
+(leave it), 25% (matching the already-ruled diversion magnitude), 12.5% (just
+above the floor), and measure a sweep first. **The owner chose 50%.**
+`SELL_BACK_RATIO_NUMERATOR / _DENOMINATOR` now carries a ruling, and its
+docblock says which half of it is the ruling and which half is still only the
+implementation's argument.
+
+**RULING B — decision 1's "strictly positive state income" is read literally,
+and not as net income.** The question was put because the two readings give
+completely different bounds: under the literal one a prison is recovering the
+moment a single place is occupied and earning; under the net one it is
+recovering only once inflows exceed the daily wage bill, which against this
+document's own act B (60 guards at 80 a day) needs seventeen occupied places.
+**The owner chose the literal reading — what this document actually wrote.**
+Decision 1 stands unchanged, its proposed ten-day bound stands, and nothing
+about the mechanism moves.
+
+**AND THE BOUND HOLDS, MEASURED THROUGH THE REAL KERNEL RATHER THAN ARGUED.**
+On this document's own act B — a new prison, 60 × *Hire Guard* on day one, and
+nothing else ever pressed — with decision 2's wages rung in place, the balance
+pins at **−55** with arrears at the 2,500 bound, and from that reached state a
+player who then builds one cell reaches strictly positive state income in
+**861 ticks, which is 0.36 in-game days** (all ten build orders completed at
+0.29 days, `residentCapacity` at 0.35, income strictly positive at 0.36) —
+**in-game day 8.36 counting from zero, with all sixty guards still employed and
+not one dismissed.** Against a bound of ten days that is roughly twenty-eight
+times the margin. The measurement is committed as the third case of
+`tests/integration/economy-way-back-reserve.test.ts` rather than left as this
+paragraph.
+
+> **A FIGURE THAT WAS REPORTED TO THE INTEGRATOR AND IS WRONG, KEPT HERE
+> BESIDE THE RIGHT ONE.** The session that implemented decisions 2, 3(b) and
+> 3(c) reported that decision 1's ten-day bound was measured at **~13.4 days**
+> on this document's own worst case, and that the furnished-and-occupied case
+> reached day 8.36 but needed 59 of 60 guards dismissed to get there. The 8.36
+> is right and the rest of that sentence is not: the measurement above reaches
+> day 8.36 with **no** dismissal at all, and 13.4 appears nowhere in this
+> repository — no test, no script, no document — so nothing could be opened at
+> either end of it. What the 13.4 most plausibly measures is the **net** income
+> reading that ruling B has now declined. It is recorded because the integrator
+> was about to put that number to the owner as a reason to doubt decision 1,
+> and the thing that stopped it was re-measuring rather than re-reading:
+> `CLAUDE.md`'s own standing warning is about paraphrases outliving the thing
+> they paraphrase, and an unwritten measurement is the same failure with no
+> document to rot.
+
+> **THE PROVENANCE OF BOTH RULINGS IS THE WEAKER KIND, AS IT WAS FOR THE
+> ACCEPTANCE ABOVE.** Each is the label of a clickable option this session
+> wrote and the owner selected — *"50% — zostaw jak jest"* ("50% — leave it as
+> it is") and *"Dosłownie »state income« (rekomendacja)"* ("Literally 'state
+> income' (recommended)") — not sentences they typed. Ruling B was given
+> against the measured 0.36 rather than against the reported 13.4, which is the
+> one thing about its provenance that is stronger than usual and is the reason
+> the measurement was taken before the question was asked.
+
 **Proposed, 2026-09-04. Not self-approved.**
 
 **The decision this document designs against is the owner's, ruled on

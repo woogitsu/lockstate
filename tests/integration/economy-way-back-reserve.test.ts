@@ -131,6 +131,95 @@ describe('ADR 0096 decision 2: a fresh, unfurnished prison can still build one c
     expect(runtime.prisoners.roomInstances.totalOccupancy, 'housed').toBe(1);
   });
 
+  /**
+   * **ADR 0096 decision 1's ten-day bound, measured rather than argued, and
+   * under the reading the owner ruled on 2026-09-11.**
+   *
+   * Decision 1 guarantees that *"from every state a player can reach, the
+   * prison can reach a strictly positive state income within a bounded number
+   * of in-game days"*, and proposes ten. This case reads that sentence the way
+   * the owner ruled it — **state income, not net income**: the prison is
+   * recovering the moment one place is occupied and earning, not once inflows
+   * exceed the wage bill. Under the other reading act B's sixty guards at 80 a
+   * day would need seventeen occupied places, which is a different bound
+   * entirely; ruling B declined that reading.
+   *
+   * **What this case exists to stop.** The session that implemented decisions
+   * 2, 3(b) and 3(c) reported the bound as measured at ~13.4 days, a figure
+   * that was written down nowhere and could not be opened at either end. The
+   * measurement below is committed so the next reader re-runs it instead of
+   * re-quoting it. Its figures, from the run that produced them: the balance
+   * pins at -55, the ten build orders complete 691 ticks after the first
+   * corrective press, `residentCapacity` arrives at 841, and state income goes
+   * strictly positive at **861 ticks -- 0.36 in-game days** from the reached
+   * state, in-game day 8.36 absolute, with **all sixty guards still
+   * employed**.
+   *
+   * The assertion is deliberately the bound and not the measured figure: 0.36
+   * is what this kernel does today and a build-time change may move it, while
+   * ten days is the thing ADR 0096 promises and the thing a regression must
+   * not cross. `DAY_BOUND_IN_GAME_DAYS` is that promise, not a tuning knob --
+   * raising it to accommodate a slower kernel would be deleting the guarantee
+   * and calling it maintenance.
+   *
+   * **WHICH ASSERTION ACTUALLY GUARDS THE BOUND, SAID PLAINLY BECAUSE THE
+   * RED-THEN-GREEN RUN SHOWED IT IS NOT THE OBVIOUS ONE.** Mutating
+   * `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` to 0 failed this case on
+   * `positiveAt` being -1, not on the `toBeLessThanOrEqual` below -- because
+   * the stepping loop's own exit condition *is* `deadline`, so a recovery that
+   * arrived on day eleven would never be seen at all and would read as "never
+   * arrived". The bound therefore lives in the loop; the explicit comparison
+   * below restates it for a reader and would only ever fire on its own if that
+   * loop condition were later loosened. Both are kept: the comparison is the
+   * sentence a reader needs, the loop is the gate.
+   */
+  it('decision 1: strictly positive state income inside the ten-day bound, from act B`s own reached state', () => {
+    const DAY_BOUND_IN_GAME_DAYS = 10;
+
+    const runtime = hireOnly(60);
+    stepTo(runtime, 8 * DAY_LENGTH_TICKS);
+    expect(runtime.treasury.balanceMinorUnits, 'the reached state this measurement starts from').toBe(
+      INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS + WAGES_STARTER_RESERVE_MINOR_UNITS,
+    );
+    expect(runtime.payroll.unpaidWagesMinorUnits, 'arrears standing, at the bound decision 3(c) sets').toBeGreaterThan(0);
+
+    // The clock starts at the player's FIRST corrective action, because that is
+    // what "from every state a player can reach" measures: the eight days of
+    // pressing nothing are how the state was reached, not part of the recovery.
+    const reachedAt = runtime.kernel.tick;
+    const deadline = reachedAt + DAY_BOUND_IN_GAME_DAYS * DAY_LENGTH_TICKS;
+    const wageBillAtReachedState = runtime.payroll.dailyWageBillMinorUnits();
+
+    queueTheWholeCell(runtime);
+    stepTo(runtime, runtime.kernel.tick + 5_000);
+    submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+    submit(runtime, 'bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y }));
+    stepTo(runtime, runtime.kernel.tick + 2_000);
+    submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 400_000, priorIncidents: 0, ...ARRIVAL }));
+
+    let positiveAt = -1;
+    while (runtime.kernel.tick < deadline) {
+      runtime.kernel.step();
+      if (runtime.stateIncome.accruedThisDay(runtime.kernel.tick) > 0) {
+        positiveAt = runtime.kernel.tick;
+        break;
+      }
+    }
+
+    expect(positiveAt, 'state income never went strictly positive inside the bound ADR 0096 decision 1 promises').toBeGreaterThan(-1);
+    expect(
+      (positiveAt - reachedAt) / DAY_LENGTH_TICKS,
+      'ADR 0096 decision 1: bounded in in-game days, and the proposed bound is ten',
+    ).toBeLessThanOrEqual(DAY_BOUND_IN_GAME_DAYS);
+    // Not a headcount read -- the daily wage bill IS the headcount for this
+    // purpose, and an unchanged bill is what "without dismissing anybody"
+    // means to the economy the bound is about.
+    expect(
+      runtime.payroll.dailyWageBillMinorUnits(),
+      'and the bound is met without dismissing a single guard: the wage bill never moved',
+    ).toBe(wageBillAtReachedState);
+  });
+
   it('the same class with twenty guards -- the reserve is a bound, not a per-guard allowance', () => {
     // ADR 0096 decision 2 sizes the reserve off the earning unit's own cost,
     // never off headcount -- `Treasury.canAfford` is one comparison against a

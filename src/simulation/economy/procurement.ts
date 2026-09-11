@@ -154,6 +154,23 @@ export type PurchaseCancelOutcome =
  * decisions free and turns the treasury into a warehouse; a loss keeps the
  * decision to buy a real one."* No other value is measured or argued for
  * here — see this repository's report for ADR 0096 for the flag.
+ *
+ * **THE FLAG WAS RAISED AND THE OWNER RULED, 2026-09-11: 50% stands.** The
+ * paragraph above is kept as written rather than rewritten, because what it
+ * says was true when it was written — the ratio was this session's choice and
+ * nothing else — and a reader should be able to see which half of this
+ * docblock is an implementation's guess and which half is a ruling. It is now
+ * the ruling: presented with 50% (leave it), 25% (matching the already-ruled
+ * diversion magnitude), 12.5% (just above the floor) and "measure a sweep
+ * first and come back", the owner chose 50%.
+ *
+ * **Its provenance is the weaker kind, and this comment says so rather than
+ * letting a later reader assume otherwise.** It is the label of a clickable
+ * option this session wrote and the owner selected — not a sentence they
+ * typed, and not a measurement. `AGENTS.md` records two earlier rulings of
+ * exactly this shape and warns against treating them as precedent for
+ * anything wider. So: the VALUE is settled and no longer needs a flag; the
+ * ARGUMENT for it is still only the one above.
  */
 export const SELL_BACK_RATIO_NUMERATOR = 1;
 export const SELL_BACK_RATIO_DENOMINATOR = 2;
