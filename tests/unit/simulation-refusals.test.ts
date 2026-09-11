@@ -330,7 +330,7 @@ describe('the wire vocabulary is exactly what the fifteen domains can produce', 
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the fourteen vocabularies it can answer, so they cannot collide', () => {
+  it('names the fifteen vocabularies it can answer, so they cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -401,10 +401,16 @@ describe('the wire vocabulary is exactly what the fifteen domains can produce', 
     // like two of `purchase`'s own members -- the same catalogue lookup and
     // the same integer guard, for the opposite direction of money -- and a
     // player who pressed Sell must not read that a delivery was refused.
+    // `cancel-build-order` is the fifteenth (ADR 0107), namespaced apart from
+    // `cancel-purchase` for the reason every such pair here is: `Cancel` on a
+    // build order and `Cancel` on a purchase are two different controls over
+    // two different records, and a player who lost the stale-cancellation
+    // race must not read a sentence about a delivery.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
       'build',
+      'cancel-build-order',
       'cancel-purchase',
       'construction',
       'dismiss',

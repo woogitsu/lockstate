@@ -135,10 +135,25 @@ const TICK_MILLISECONDS = 50;
  * millisecond of real elapsed time is added, which is *why* the race is
  * closer to the modal outcome than the exception at 1x (Context §7). Halving
  * it to 12 still exceeds the window on its own, but by less -- narrowing, not
- * closing, how often a press outruns it. **Whether it closes enough of the
- * gap to matter is measured, not assumed**; see this repository's own
- * before/after press-rate figures for `CancelBuildOrder` (ADR 0107's named
- * weakest claim asked for exactly that measurement).
+ * closing, how often a press outruns it.
+ *
+ * **Measured, and the honest answer is that it does not close the gap at
+ * all.** `tests/browser/adr-0107-cancel-press-rate.playtest.ts` ran the same
+ * 10-press-at-1x-against-a-freshly-`assigned`-row protocol #859 used, once
+ * against this tree (12 ticks, this file's own commit) and once against the
+ * unmodified tree before this ADR (20 ticks, no refusal): **0 of 9 valid
+ * presses paid what the row advertised at 12 ticks, and 0 of 4 did at 20** --
+ * both samples smaller than #859's own ten because several presses missed
+ * the row-repaint window entirely (recorded separately). Halving the margin
+ * from 20 to 12 made no measured difference, and the reason is arithmetic
+ * rather than luck: 12 still exceeds the 10-tick transition window on its
+ * own, before any real elapsed time is added, so **every** press this
+ * measurement caught still executed after the transition regardless of
+ * which of the two margins was in effect. Only a margin *below* ten ticks
+ * could land before the transition even some of the time, and the floor two
+ * paragraphs below is why this file does not go there. This is why ADR 0107
+ * treats the revision-based refusal as the fix and this constant as a
+ * bounded, measured mitigation rather than a substitute for it.
  *
  * The floor is `#942`'s own worst-case figure: `tests/browser
  * /command-lead-at-speed.spec.ts` stalls a tick report's own listener for
