@@ -1365,6 +1365,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * is the record of that exact conflation), not that it is reachable, not
    * that it is permanent.
    *
+   * **AND NOT "FINALLY", WHICH THIS SENTENCE CARRIED UNTIL THE INTEGRATOR
+   * CHECKED IT AGAINST THE CALL SITE.** It read *"{name} finally has a place
+   * in {room}."* The paragraph above verifies "has a place" with care and
+   * says nothing at all about "finally" -- and "finally" is a claim about a
+   * wait. The notice fires on **every** assignment the accommodation stage
+   * makes, including the first attempt, where `accommodationBacklogTicks` was
+   * never incremented and the arrival waited nothing at all. There is no
+   * per-entity wait signal to gate it on: that counter is aggregate. So the
+   * word claimed something the computation does not know, which is exactly
+   * what the fourth reservation's released half does not cover -- the choice
+   * of words is ours, the requirement that the sentence be true is not.
+   *
+   * Kept as a correction rather than a silent edit because the shape is the
+   * one this repository keeps paying for: the verification was real and
+   * careful, and it was performed on the words the author was thinking about
+   * rather than on every word they wrote.
+   *
    * **Not `prisoners.relocated`'s own "had nowhere to sleep and moved to",
    * even though that is exactly this prisoner's situation too.** Both
    * placeholders can each expand to two words, and the twelve-word ceiling
@@ -1373,12 +1390,13 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *
    * **Kept under the twelve-word ceiling `EVENT_BAND_HOLD_CEILING_MS`
    * (`src/ui/hud/event-band-dwell.ts`) is derived against**, at its fullest
-   * expansion: a two-word given-and-family name, five literal words and a
-   * two-word room type total nine, three under the ceiling's own twelve-word
-   * reference (measured against `economy.construction-refused`, that
+   * expansion: a two-word given-and-family name, four literal words and a
+   * two-word room type total eight, four under the ceiling's own twelve-word
+   * reference -- this read "five literal words" and "total nine" while
+   * "finally" was in the sentence, and both were right then (measured against `economy.construction-refused`, that
    * reference's own docblock).
    */
-  'hud.alert.event.prisoners.housed': '{name} finally has a place in {room}.',
+  'hud.alert.event.prisoners.housed': '{name} has a place in {room}.',
 
   /*
    * The first thing this game says when a player gets something right (issue

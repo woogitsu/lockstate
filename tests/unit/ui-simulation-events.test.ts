@@ -254,7 +254,7 @@ describe('what the prison says when nothing went wrong', () => {
       notice.labelKey,
       resolveHudLabelParameters((key, parameters) => localizer.format(key, parameters), notice),
     );
-    expect(sentence).toBe('Prisoner 3 finally has a place in Cell.');
+    expect(sentence).toBe('Prisoner 3 has a place in Cell.');
     expect(sentence, 'and no placeholder survives the fallback').not.toContain('{');
   });
 
