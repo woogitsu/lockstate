@@ -597,6 +597,69 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that the treasury just climbed back above one insolvency rung's
+   * floor -- the mirror `recordInsolvencyRungCrossed` above never had
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1).
+   *
+   * **The one call site is `InsolvencyRungSystem`'s `else` arm**, which has
+   * existed since that system was written and deleted the rung from
+   * `standing` with nothing published -- the same edge-detected shape as the
+   * `if` arm `recordInsolvencyRungCrossed` backs, just the other direction of
+   * the same comparison. No `this.seeded` guard is needed here the way that
+   * method's caller applies one to the crossing: `standing` can hold a rung
+   * only after a previous call added it, and every call after the first sets
+   * `this.seeded = true` before returning, so the very call that could first
+   * reach this arm is never the seeding call.
+   *
+   * @param rung Which of ADR 0017 decision 8's ladder the balance just
+   * climbed back above. `'wages'` never reaches here, for the same reason it
+   * never reaches `recordInsolvencyRungCrossed`: the third rung is the
+   * treasury's own floor, and `PayrollSystem` announces a missed payday on its
+   * own schedule rather than through a crossing on this one.
+   */
+  public recordInsolvencyRungCleared(rung: 'deliveries' | 'construction', tick: number): void {
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: rung === 'deliveries' ? 'economy.deliveries-restored' : 'economy.construction-restored',
+    });
+  }
+
+  /**
+   * Records that a queued arrival who had nowhere to sleep has just been
+   * assigned a place ([#966](https://github.com/matmaxalez/lockstate/issues/966)
+   * site 3) -- the housing mirror of `recordResidentRelocated` above.
+   *
+   * **One call per housed arrival**, like `recordResidentRelocated`: the
+   * caller is `createIntakeHousedNotice`'s adapter
+   * (`src/simulation/events/intake-housed-notice.ts`), invoked from
+   * `IntakeSystem`'s `'accommodation-assignment'` stage on the tick
+   * `RoomInstanceRegistry.assign` succeeds -- once per prisoner, so a batch of
+   * arrivals housed on the same scheduled pass is that many calls.
+   *
+   * @param housed Who was housed and where. `name` is absent only in a
+   * session wired without an identity registry, exactly as
+   * `recordResidentRelocated`'s own parameter is.
+   */
+  public recordPrisonerHoused(
+    housed: {
+      readonly entityId: number;
+      readonly name?: { readonly givenName: string; readonly familyName: string };
+      readonly roomNameKey: string;
+    },
+    tick: number,
+  ): void {
+    this.append({
+      sequence: this._sequence + 1,
+      tick,
+      type: 'prisoners.housed',
+      entityId: housed.entityId,
+      ...(housed.name === undefined ? {} : { name: { ...housed.name } }),
+      roomNameKey: housed.roomNameKey,
+    });
+  }
+
+  /**
    * Records that an incident opened (issue #555).
    *
    * **A `switch` over `IncidentType` rather than a lookup**, because the
