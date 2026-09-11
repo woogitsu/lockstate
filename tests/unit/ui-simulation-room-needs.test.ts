@@ -457,6 +457,62 @@ describe('a room with no way into it (#938)', () => {
     });
   });
 
+  /*
+   * **The state ADR 0108 added, and it was a surviving mutation until this
+   * case existed.** Deleting `'unreachable'` from the branch that emits this
+   * entry -- so a room whose door is walled up from outside contributed to the
+   * *count* and appeared in no *list* -- passed all 19 tests in this file.
+   * Decision 5 names that exact disagreement ("or the count and the list
+   * disagree") and nothing here was holding it.
+   *
+   * The cell has both its objects and a real door, so every readout that
+   * existed before this was silent about it: `missingCapability` is 0, the
+   * perimeter is sealed, and there is a doorway in it. What is wrong is the
+   * tile that doorway opens onto, walled in on its three other sides -- which
+   * is #1006's own screenshot, reduced to the smallest world that holds it.
+   */
+  it('counts a room whose door is walled up from outside, and says a way in is what it is short', () => {
+    const source = registryOf(cell(4, 4, ['sleep-surface', 'sanitation']));
+    const world = ownedWorld();
+    wallRoomPerimeter(world, { x: 4, y: 4, width: 2, height: 3 });
+    const doors = new DoorRegistry();
+    // A door on the cell's south boundary: the north edge of the row below it.
+    doors.register({
+      id: 'cell-door',
+      position: { x: tileCoordinate(4), y: tileCoordinate(7) },
+      side: 'top',
+      state: 'closed',
+      requiredSecurityClearance: 0,
+      costMultiplier: 1,
+    });
+    // ...and the one tile it opens onto, boxed in on its other three sides.
+    world.setTopEdge({ x: tileCoordinate(4), y: tileCoordinate(8) }, 7);
+    world.setLeftEdge({ x: tileCoordinate(4), y: tileCoordinate(7) }, 7);
+    world.setLeftEdge({ x: tileCoordinate(5), y: tileCoordinate(7) }, 7);
+
+    const { list, details } = projectWithWalls(source, world, doors);
+
+    // The premise: nothing below rides on an unmet object or a missing door.
+    expect(list.rooms.rows[0]?.requirementSummary.missingCapability).toBe(0);
+    expect(list.rooms.rows[0]?.access, 'a door is there; nothing can get to it').toBe('unreachable');
+
+    const needs = roomNeedsFromProjections(list, details);
+    expect(needs).toEqual({
+      unfinishedRooms: 1,
+      totalRooms: 1,
+      totalNeeds: 1,
+      atCapacity: [],
+      needs: [
+        {
+          kind: 'unreachable',
+          instanceId: 'room.cell:4:4',
+          roomLabelKey: 'room.cell.name',
+          tile: { x: 4, y: 4 },
+        },
+      ],
+    });
+  });
+
   it('names the doorway before the objects, because nothing can be carried into a room nobody can enter', () => {
     // An empty cell -- two unmet object requirements -- that is also sealed
     // shut. Three things short, and the order is the assertion.
