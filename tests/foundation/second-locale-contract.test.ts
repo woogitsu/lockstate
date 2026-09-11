@@ -155,6 +155,11 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.build.delivery',
   'hud.build.queue-count',
   'hud.build.queue-more',
+  // The Sell control's own label (ADR 0075 decision 3, invoked by ADR 0096
+  // decision 3(b)), in `hud.build.buy-submit`'s own flat shape and for the
+  // same reason: it is player-visible copy, and authoring plural forms for
+  // it is the owner's under `AGENTS.md` exclusion 4.
+  'hud.build.sell-submit',
   'hud.build.target-run',
   'hud.intake.no-place',
   'hud.intake.pipeline-failed',

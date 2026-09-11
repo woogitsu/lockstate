@@ -323,11 +323,21 @@ describe('every declared simulation command either has a producer or is accounte
     // -- with its producer, in the same `case 'remove-object':` branch
     // `RemoveObject` already had, distinguished by whether the intent carries
     // an `edge`. The sixth correction of the same shape.
+    // **And it read `all sixteen` until `SellMaterials`** (ADR 0075 decision
+    // 3, invoked by ADR 0096 decision 3(b)), which arrived with its producer
+    // in the same change -- `case 'sell-materials':` beside
+    // `case 'purchase-materials':` -- rather than spending time on the list
+    // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(16);
+    expect(COMMAND_TYPES.length).toBe(17);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
+    // The seventeenth, which made an unreachable *credit path* reachable a
+    // second time (#285 made the first, for a cancelled delivery): the only
+    // caller of `ProcurementSystem.sellStock` and `previewSellStock` in the
+    // repository was a test.
+    expect(producersOf('SellMaterials')).toEqual(['src/main.ts']);
     expect(producersOf('AdmitPrisoner')).toEqual(['src/main.ts']);
     expect(producersOf('HireStaff')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
@@ -459,7 +469,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures fifteen produced and none unproduced, which this file has now been able to say five times', () => {
+  it('measures sixteen produced and none unproduced, which this file has now been able to say six times', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -494,13 +504,17 @@ describe('every declared simulation command either has a producer or is accounte
     // modules in `src/ui/` had each recorded as missing, and **zero and
     // sixteen** once `RemoveWall` arrived the same way (ADR 0106) and put a
     // pointer route in front of `ConstructionSystem.completedOrderClaimingEdge`
-    // for a finished wall, which until then had none.
+    // for a finished wall, which until then had none, and **zero and
+    // seventeen** once `SellMaterials` arrived the same way (ADR 0075
+    // decision 3, invoked by ADR 0096 decision 3(b)) and put the first
+    // caller in `src/` in front of `ProcurementSystem.sellStock` and
+    // `previewSellStock`.
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a seventeenth command
+    // stay green. Note the denominator moves too, so an eighteenth command
     // added with no producer fails here as well as failing the accounting
     // above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(16);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(17);
   });
 });

@@ -327,17 +327,82 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
     ]);
   });
 
-  it('offers no command that turns stock, or anything else, back into money', () => {
+  it('now offers exactly one command that turns stock back into money, at a loss the class does not reopen from empty', () => {
     /*
-     * The exhaustive half of "there is no escape". `simulationCommandSchema` is
-     * the whole of what a session can be told to do, so enumerating its members
-     * is the one assertion that cannot be defeated by a route nobody thought
-     * of: a `SellMaterials`, a `ProduceItem` or a `RequestGrant` added later
-     * fails this line and sends its author here.
+     * **This test's own title used to be "offers no command that turns stock,
+     * or anything else, back into money", and that claim is the one this
+     * change falsifies on purpose.** ADR 0075 decision 3 named the day this
+     * would happen before it did: "A `SellMaterials` added by decision 3
+     * below fails that assertion and sends its author here, deliberately."
+     * This is that day. The title is corrected rather than the old one kept
+     * silently wrong, per `docs/AGENT_WORKFLOW.md` §4 -- a reader who meets
+     * the retired claim elsewhere needs to see which half of it survived.
      *
-     * Of these sixteen, exactly one credits the treasury --
-     * `CancelMaterialPurchase` -- and the test below measures that it refuses
-     * once the delivery has landed.
+     * **What survives.** The exhaustive half of "there is no escape" is still
+     * the enumeration below: `simulationCommandSchema` is the whole of what a
+     * session can be told to do, so a `ProduceItem` or a `RequestGrant` added
+     * later still fails this line and sends its author here. What no longer
+     * survives is "exactly one credits the treasury" -- `SellMaterials` is a
+     * second, and deliberately so (ADR 0075 decision 3, invoked by ADR 0096
+     * decision 3(b)): it sells stock a container holds back at
+     * `SELL_BACK_RATIO_NUMERATOR / SELL_BACK_RATIO_DENOMINATOR` (1/2) of the
+     * catalogue price, floored per unit (`ProcurementSystem.sellStock`).
+     *
+     * **Why no assertion below moves, stated from measurement rather than
+     * assumed -- and the first draft of this comment assumed wrong.** It
+     * read that neither fixture in this file ever holds a saleable surplus,
+     * on the theory that a `wallRoomPerimeter` call must have spent what a
+     * `PurchaseMaterials` press bought. Instrumented rather than trusted:
+     * the payroll-route case below buys 616 bricks and 1 plank and builds
+     * nothing with either -- `residentCapacity` stays `0` for the whole
+     * case by its own comment, and no `PlaceBuildOrder`, `ZoneRoom` or
+     * `PlaceObject` is ever sent -- so the container holds all 616 bricks
+     * and the 1 plank, unconsumed, at every point in the case including its
+     * final assertions (measured: `final brick stock 616`, `final plank
+     * stock 1`, beside `final balance -55`). That is a real, reachable
+     * surplus, and `SellMaterials` reaches it: 616 bricks at
+     * `Math.floor(40 * 1/2) = 20` each is 12,320 minor units, over four
+     * times the 2,500 the arrears bound bounds *and* enough on its own to
+     * clear the entire capped debt this case ends holding.
+     *
+     * **None of that turns the payroll-route case's own assertions false,
+     * which is the reason this file's numbers are untouched even though the
+     * premise above was wrong.** ADR 0096 decision 2's reserve and decision
+     * 3(c)'s arrears bound are read passively here -- nothing in this file
+     * presses `SellMaterials`, so nothing about the mechanism existing
+     * changes what a session that never presses it does. And the case was
+     * never locked to begin with, on its own text: *"The player is not
+     * locked either way, which is the finding this route exists to
+     * report."* `SellMaterials` reaching a real surplus in an unlocked case
+     * is not the class ECON-002 names reopening -- it is decision 3 doing
+     * exactly what ADR 0075 built it for, "the general answer to 'the money
+     * is in the wrong shape'", faster than the income line the case is
+     * shown recovering by instead. Recorded here because a comment that
+     * measured wrong stays wrong until somebody re-measures it, which is
+     * `docs/AGENT_WORKFLOW.md` §4's whole argument for marking a correction
+     * rather than silently fixing the number.
+     *
+     * The 654-brick case above it is the true instance of the theory that
+     * prompted the wrong first draft: it walls a room, places a bed and a
+     * toilet, and the bricks the wall and the toilet consume really do come
+     * out of what was bought, leaving no comparable surplus at the point its
+     * own assertions run. The two cases are not the same shape, and treating
+     * them as though they were is exactly the mistake this correction fixes.
+     *
+     * **What this does not settle.** Whether a position combining a floor
+     * this deep with a surplus large enough to matter is reachable *while a
+     * session is actually locked* (rather than merely deep and unpressed,
+     * as here) is a real question, and this file does not construct that
+     * case either way -- named per `docs/AGENT_WORKFLOW.md` §3's "name your
+     * weakest claim" rather than assumed shut in either direction.
+     *
+     * Of these seventeen, two credit the treasury --
+     * `CancelMaterialPurchase` and `SellMaterials` -- and the test below
+     * measures the first refusing once the delivery has landed.
+     * `tests/unit/economy-procurement-sellback.test.ts` pins the second's
+     * economics at the `ProcurementSystem` layer and
+     * `tests/integration/economy-sellback-command.test.ts` drives the command
+     * itself through the real kernel, which this file does not re-do.
      *
      * **This said "fourteen" until the owner's decisions of 2026-09-01 on
      * [ADR 0084](../../docs/adr/0084-what-the-alerts-channel-owes-a-player.md).**
@@ -352,6 +417,10 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * geometry away and, for a `'completed'` order, destroys whatever was
      * spent on it -- `destroysSpendOnCancel` -- which is a loss, not a route
      * back into money.
+     *
+     * **And it said "sixteen" until `SellMaterials`.** `SellMaterials` is the
+     * seventeenth, and it is the first in this list that both moves money
+     * *and* credits the treasury -- see the correction above.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
@@ -368,6 +437,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'ReleaseGuardAssignment',
       'RemoveObject',
       'RemoveWall',
+      'SellMaterials',
       'Undo',
       'UnzoneRoom',
       'ZoneRoom',
