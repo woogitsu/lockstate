@@ -27,8 +27,18 @@ const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinat
 function stubSource(
   orders: readonly BuildOrder[],
   previewOf: (orderId: string) => number = () => 0,
-): { allOrders: () => readonly BuildOrder[]; previewCancelRefundMinorUnits: (orderId: string) => number } {
-  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf };
+): {
+  allOrders: () => readonly BuildOrder[];
+  previewCancelRefundMinorUnits: (orderId: string) => number;
+  revisionOf: (orderId: string) => number;
+} {
+  // These tests are about ordering, not revisions (ADR 0107 concerns
+  // `ConstructionSystem` itself, exercised by
+  // `tests/unit/construction-preview-cancel-refund.test.ts`'s sibling and by
+  // `construction.test.ts`'s own revision tests), so every order stubs the
+  // same fixed value rather than a fixture supplying both sides of a
+  // comparison this file never makes.
+  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf, revisionOf: () => 0 };
 }
 
 /**
@@ -93,7 +103,10 @@ function cancel(runtime: SimulationRuntime, orderId: string): void {
     `cmd-cancel-${orderId}`,
     runtime.kernel.expectedSequence,
     runtime.kernel.tick,
-    packCommand({ type: 'CancelBuildOrder', orderId }),
+    // ADR 0107: aimed at the order's true current revision, read fresh at
+    // the moment of the press -- this file's subject is aiming a cancel by
+    // id, not staleness, so no press here is ever refused for that reason.
+    packCommand({ type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) }),
   );
 }
 
@@ -164,8 +177,12 @@ describe('the pending build queue, as a read model', () => {
       // the row must name it, because `CancelBuildOrder` pays it.
       // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
       // is where that agreement is proved against the treasury itself.
-      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 80 },
-      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 80 },
+      // `revision: 2` for both (ADR 0107): `submitOrder`'s own
+      // `'approved'` write is each order's first (revision 1), and the
+      // scheduled pass `runTo(runtime, 1)` steps through moves it on to
+      // `'materials-pending'`, its second (revision 2).
+      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: 2 },
+      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: 2 },
     ]);
   });
 

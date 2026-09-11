@@ -172,7 +172,23 @@ describe('a build order that is cancelled says so, and says which of two things 
     const session = createSession();
     session.sendAtOneTick([
       { type: 'PlaceBuildOrder', orderId: 'order-a', definitionId: WALL, x: 4, y: 6, edge: 'north' },
-      { type: 'CancelBuildOrder', orderId: 'order-a' },
+      /*
+       * ADR 0107's `expectedRevision`, hard-coded to **1** rather than read
+       * off `session.runtime` -- deliberately, because `order-a` does not
+       * exist on the construction system at all when this array is built.
+       * `sendAtOneTick` queues both commands for the same tick before
+       * either runs, and inside that one `kernel.step()` `PlaceBuildOrder`'s
+       * handler runs first (lower sequence): `submitOrder` writes exactly
+       * one state (`'approved'`, since nothing here refuses it), which is
+       * this new order's first and only write before the cancel below runs
+       * in the same step -- so its revision is **1** by the time
+       * `CancelBuildOrder`'s branch reads it, never 0. A revision read from
+       * `session.runtime` *now* would answer 0 (no such order yet) and this
+       * cancel would be refused as stale, for a row that could never have
+       * displayed anything at all -- exactly the "planned order, no control
+       * can reach it" case the comment above this test already names.
+       */
+      { type: 'CancelBuildOrder', orderId: 'order-a', expectedRevision: 1 },
     ]);
 
     expect(session.stateOf('order-a')).toBe('cancelled');
@@ -184,7 +200,7 @@ describe('a build order that is cancelled says so, and says which of two things 
     placeWall(session, 'order-b', 5);
     expect(session.stateOf('order-b')).toBe('materials-pending');
 
-    session.send({ type: 'CancelBuildOrder', orderId: 'order-b' });
+    session.send({ type: 'CancelBuildOrder', orderId: 'order-b', expectedRevision: session.runtime.construction.revisionOf('order-b') });
     expect(session.types()).toEqual(['construction.order-cancelled']);
   });
 
@@ -193,7 +209,7 @@ describe('a build order that is cancelled says so, and says which of two things 
     placeWall(session, 'order-c', 6);
     session.runUntilState('order-c', 'assigned');
 
-    session.send({ type: 'CancelBuildOrder', orderId: 'order-c' });
+    session.send({ type: 'CancelBuildOrder', orderId: 'order-c', expectedRevision: session.runtime.construction.revisionOf('order-c') });
     expect(session.types()).toEqual(['construction.order-cancelled']);
   });
 
@@ -202,7 +218,7 @@ describe('a build order that is cancelled says so, and says which of two things 
     placeWall(session, 'order-d', 7);
     session.runUntilState('order-d', 'in-progress');
 
-    session.send({ type: 'CancelBuildOrder', orderId: 'order-d' });
+    session.send({ type: 'CancelBuildOrder', orderId: 'order-d', expectedRevision: session.runtime.construction.revisionOf('order-d') });
     expect(session.stateOf('order-d')).toBe('cancelled');
     expect(session.types()).toEqual(['construction.order-cancelled-underway']);
   });
@@ -239,7 +255,7 @@ describe('a build order that is cancelled says so, and says which of two things 
     placeWall(session, 'order-e', 8);
     session.runUntilState('order-e', 'completed');
 
-    session.send({ type: 'CancelBuildOrder', orderId: 'order-e' });
+    session.send({ type: 'CancelBuildOrder', orderId: 'order-e', expectedRevision: session.runtime.construction.revisionOf('order-e') });
     expect(session.stateOf('order-e')).toBe('cancelled');
     expect(session.types(), 'the larger loss gets the loss sentence').toEqual([
       'construction.order-cancelled-underway',
@@ -255,7 +271,7 @@ describe('a build order that is cancelled says so, and says which of two things 
      * `AGENTS.md`'s fourth exclusion reserves.
      */
     const session = createSession();
-    session.send({ type: 'CancelBuildOrder', orderId: 'order-that-never-was' });
+    session.send({ type: 'CancelBuildOrder', orderId: 'order-that-never-was', expectedRevision: 0 });
     expect(session.types()).toEqual([]);
   });
 });

@@ -62,6 +62,18 @@ export const placeBuildOrderSchema = z.object({
 export const cancelBuildOrderSchema = z.object({
   type: z.literal('CancelBuildOrder'),
   orderId: z.string(),
+  /**
+   * The order's own revision counter (`ConstructionSystem.revisionOf`) as it
+   * read when the row that produced this press was painted.
+   *
+   * ADR 0107: `ConstructionSystem` bumps a private, unpersisted counter on
+   * every `order.state` write, so a value that no longer matches the order's
+   * current one means the order has transitioned since the row was read --
+   * deterministically, in the ~2 seconds of simulation time a running-clock
+   * command's lead can cost (Context §3). The handler refuses rather than
+   * cancelling on a mismatch, leaving the order untouched.
+   */
+  expectedRevision: z.number().int().nonnegative(),
 }).strict();
 
 export const zoneRoomSchema = z.object({
@@ -754,7 +766,7 @@ function commandJson(command: SimulationCommand): JsonValue {
       };
 
     case 'CancelBuildOrder':
-      return { type: command.type, orderId: command.orderId };
+      return { type: command.type, orderId: command.orderId, expectedRevision: command.expectedRevision };
 
     case 'ZoneRoom':
       return {

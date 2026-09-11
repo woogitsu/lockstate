@@ -368,7 +368,11 @@ function createSession(seed = 7) {
   const stock = (itemId: string): number =>
     runtime.containers.getById(CONSTRUCTION_MATERIALS_CONTAINER_ID)!.quantityOf(itemId);
 
-  const cancel = (orderId: string, label: string): void => send({ type: 'CancelBuildOrder', orderId }, label);
+  const cancel = (orderId: string, label: string): void =>
+    // ADR 0107: aimed at the order's true current revision, read fresh at the
+    // moment of the press -- this file's subject is money conservation, not
+    // staleness, so no press here is ever refused for that reason.
+    send({ type: 'CancelBuildOrder', orderId, expectedRevision: runtime.construction.revisionOf(orderId) }, label);
 
   const runUntilState = (orderId: string, state: string, label: string): void =>
     runUntil(() => stateOf(orderId) === state, `${label} (waiting for ${state})`);
@@ -1011,7 +1015,16 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
     session.sendAtOneTick(
       [
         { type: 'PlaceBuildOrder', orderId: 'order-wall-1', definitionId: WALL, x: 4, y: 6, edge: 'north', transactionId: 'build-1' },
-        { type: 'CancelBuildOrder', orderId: 'order-wall-1' },
+        /*
+         * `expectedRevision: 1`, not read off `session.runtime` -- `order-wall-1`
+         * does not exist yet when this array is built. Both commands are
+         * dispatched at the same tick and `PlaceBuildOrder` runs first (lower
+         * sequence): `submitOrder` writes exactly one state
+         * (`'approved'`), which is this order's first write, so its revision
+         * is 1 by the time this `CancelBuildOrder` runs in the same step.
+         * Exactly `command-success-notices.test.ts`'s `order-a` case.
+         */
+        { type: 'CancelBuildOrder', orderId: 'order-wall-1', expectedRevision: 1 },
       ],
       'place and cancel at one tick',
     );

@@ -44,8 +44,15 @@ export interface ConstructionSnapshot {
  * `completed` is in the set: completing now writes world geometry, and
  * geometry that cannot be removed would make the first wall a player places
  * permanent. `cancelled` and `failed` are terminal.
+ *
+ * **Exported since ADR 0107**, so `createConstructionCommandHandler`'s
+ * `CancelBuildOrder` branch can tell "not found or already terminal, the
+ * pre-existing idempotency `handler.ts` argues for at length" apart from "found,
+ * cancellable, and possibly stale" without a second copy of this predicate --
+ * exactly the hazard `destroysSpendOnCancel`'s own docblock argues against for
+ * its own two states.
  */
-function isCancellable(state: BuildOrder['state']): boolean {
+export function isCancellable(state: BuildOrder['state']): boolean {
   return state !== 'cancelled' && state !== 'failed';
 }
 
@@ -308,14 +315,50 @@ const MOCK_CREW_WORKER_ID = 'mock-worker-1';
  */
 export type RemoveWallRefusalReason = 'nothing-to-remove';
 
+/**
+ * What a `CancelBuildOrder` press can be refused for
+ * ([ADR 0107](../../../docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md)).
+ *
+ * **One entry, and the table exists anyway**, for the reason
+ * `RemoveWallRefusalReason` records of its own single member: a table is what
+ * makes a *second* reason a compile error at the mapping in
+ * `src/simulation/refusals/refusal-log.ts` rather than a silent `undefined` on
+ * the wire.
+ *
+ * `stale-cancellation` fires when the order's own revision counter
+ * (`revisionOf`, below) has moved past the value the press was aimed at --
+ * the row that produced the press was painted from a state this order has
+ * since transitioned out of, deterministically, in the ~2 seconds of
+ * simulation time ADR 0107 Context §3 measures between a row being priced and
+ * a running-clock command executing. Namespaced `cancel-build-order.*` apart
+ * from every other refusal family for the reason every such namespace in this
+ * file is: a player who pressed a queue row's `Cancel` and lost that race must
+ * not read a sentence that could be confused with `cancel-purchase.not-pending`
+ * or the unrelated main-thread-only `hud.refusal.cancel-build-order` (ADR 0107
+ * Context §9).
+ */
+export type CancelBuildOrderRefusalReason = 'stale-cancellation';
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
-  
+
   // Run every 10 ticks (2 times per second)
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
 
   private orders = new Map<string, BuildOrder>();
+  /**
+   * A per-order monotonic counter, bumped once for every write to
+   * `order.state` (`setState`, below) -- ADR 0107 Decision §1's answer to
+   * "what did the row's Cancel button see". Never serialized: it lives
+   * outside `ConstructionSnapshot`, is never read by `snapshot()` or
+   * `restore()`, and never touches `BuildOrder`'s persisted shape (ADR 0107
+   * Decision §2 and §6). Its usefulness is bounded to one live worker
+   * session's few-second window between a row being painted and a press
+   * executing on it, and a restore rebuilds every row from scratch, so there
+   * is nothing pre-restore for a post-restore press to compare against.
+   */
+  private orderRevisions = new Map<string, number>();
 
   // A transaction is just a list of order IDs.
   private undoStack: string[][] = [];
@@ -501,14 +544,14 @@ export class ConstructionSystem implements SystemRegistration {
 
     const definition = BUILDABLE_REGISTRY.get(order.definitionId);
     if (definition === undefined) {
-      order.state = 'failed';
+      this.setState(order, 'failed');
       order.failReason = 'unknown-buildable';
       this.orders.set(order.id, order);
       return;
     }
 
     if (this.duplicateClaim(order, definition) !== undefined) {
-      order.state = 'failed';
+      this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
       this.orders.set(order.id, order);
       return;
@@ -518,14 +561,14 @@ export class ConstructionSystem implements SystemRegistration {
     if (refusal !== undefined) {
       const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
       if (across === undefined || this.admits(across) !== undefined) {
-        order.state = 'failed';
+        this.setState(order, 'failed');
         order.failReason = refusal;
         this.orders.set(order.id, order);
         return;
       }
     }
 
-    order.state = 'approved';
+    this.setState(order, 'approved');
     this.orders.set(order.id, order);
   }
 
@@ -814,7 +857,7 @@ export class ConstructionSystem implements SystemRegistration {
       
       if (order.state === 'cancelled') {
         // We restore it to approved
-        order.state = 'approved';
+        this.setState(order, 'approved');
         undoTransaction.push(orderId);
       }
     }
@@ -967,7 +1010,7 @@ export class ConstructionSystem implements SystemRegistration {
 
     const stateAtCancellation = order.state;
     const hadGeometry = stateAtCancellation === 'completed';
-    order.state = 'cancelled';
+    this.setState(order, 'cancelled');
     if (hadGeometry) this.revertConstruction(order);
 
     if (order.materialsAllocated.length > 0) {
@@ -1387,6 +1430,37 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /**
+   * The revision `order.state` is currently at, for an `expectedRevision` on
+   * the wire to be compared against (ADR 0107 Decision §1-§2).
+   *
+   * Mirrors `previewCancelRefundMinorUnits`'s own contract: never throws, `0`
+   * for an id this system holds no order under (a mismatch a caller already
+   * treats as "cancellable at all" fails on `getOrder` first, not on this).
+   */
+  public revisionOf(orderId: string): number {
+    return this.orderRevisions.get(orderId) ?? 0;
+  }
+
+  /**
+   * The one place `order.state` is written (ADR 0107 Decision §3).
+   *
+   * Eleven sites wrote `order.state =` directly before this existed --
+   * `submitOrder`'s three failure arms and its `'approved'` line, `redo()`,
+   * `cancelOrder`, and five in the scheduled tick loop -- and a revision
+   * counter a twelfth site could forget to bump would be worse than no
+   * counter at all: a silently-stale key is indistinguishable from a correct
+   * one until somebody measures it, exactly the argument
+   * `destroysSpendOnCancel`'s own docblock makes about its two states. Every
+   * one of the eleven now calls this instead, so a new site that assigns the
+   * field directly is a `grep -n "order\.state ="` away from being caught in
+   * review rather than a defect a future #859 has to re-discover.
+   */
+  private setState(order: BuildOrder, next: BuildOrder['state']): void {
+    order.state = next;
+    this.orderRevisions.set(order.id, this.revisionOf(order.id) + 1);
+  }
+
+  /**
    * The completed order, if any, claiming this tile edge -- what a
    * `RemoveWall` press resolves to
    * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
@@ -1597,7 +1671,7 @@ export class ConstructionSystem implements SystemRegistration {
       // section, and both are decisions for whoever owns the HUD contract.
       const def = BUILDABLE_REGISTRY.get(order.definitionId);
       if (def === undefined) {
-        order.state = 'failed';
+        this.setState(order, 'failed');
         order.failReason = 'unknown-buildable';
         // A ghost stops being drawn: `structuresFromConstruction` maps
         // `failed` to no phase at all, so this tile had a translucent block on
@@ -1612,7 +1686,7 @@ export class ConstructionSystem implements SystemRegistration {
       switch (order.state) {
         case 'approved':
           // Auto-transition to materials pending
-          order.state = 'materials-pending';
+          this.setState(order, 'materials-pending');
           break;
           
         case 'materials-pending': {
@@ -1632,7 +1706,7 @@ export class ConstructionSystem implements SystemRegistration {
           const satisfied = this.materialsProvider.tryAllocate(def.materialsRequired);
           if (!satisfied) break; // stays materials-pending, retried next scheduled tick
           order.materialsAllocated = def.materialsRequired.map((req) => ({ itemId: req.itemId, quantity: req.quantity }));
-          order.state = 'assigned';
+          this.setState(order, 'assigned');
           break;
         }
 
@@ -1653,7 +1727,7 @@ export class ConstructionSystem implements SystemRegistration {
           if (crewBusy) break;
           crewBusy = true;
           order.assignedWorkerId = MOCK_CREW_WORKER_ID;
-          order.state = 'in-progress';
+          this.setState(order, 'in-progress');
           // The first of an order's two drawn phase changes: the `planned`
           // ghost becomes the `building` one (`structuresFromConstruction`).
           // ADR 0099 decision 3's second bullet, and the reason that bullet
@@ -1669,7 +1743,7 @@ export class ConstructionSystem implements SystemRegistration {
           
           if (order.progress >= def.workRequired) {
             order.progress = def.workRequired;
-            order.state = 'completed';
+            this.setState(order, 'completed');
             this.finalizeConstruction(order);
             // The second, and the one issue #1037 is about: the `building`
             // ghost becomes the finished thing. `finalizeConstruction` bumps a

@@ -684,7 +684,10 @@ describe('a command submitted against a paused clock', () => {
         commandId: 'cancel-command-0',
         sequence: 1,
         executeAtTick: 0,
-        command: packCommand({ type: 'CancelBuildOrder', orderId }),
+        // ADR 0107: `order-0`'s only write so far is `submitOrder`'s own
+        // (`'approved'`, from `placeWall` above, dispatched immediately
+        // against the paused clock) -- its first, so its revision is 1.
+        command: packCommand({ type: 'CancelBuildOrder', orderId, expectedRevision: 1 }),
       },
     });
 

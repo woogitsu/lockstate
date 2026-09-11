@@ -1355,6 +1355,7 @@ export const REFUSAL_REASONS = [
   'build.unknown-buildable',
   'build.unowned-land',
   'build.water-blocked',
+  'cancel-build-order.stale-cancellation',
   'cancel-purchase.not-pending',
   'construction.materials-unfunded',
   'dismiss.unknown-staff',

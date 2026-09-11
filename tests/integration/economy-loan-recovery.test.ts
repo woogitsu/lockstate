@@ -355,7 +355,14 @@ describe('what a loan does to the locked position, and what it does not', () => 
 
     // And the cancelling player, measured rather than assumed.
     const cancelled = lockedPosition();
-    for (const orderId of cancelled.unfunded) send(cancelled.runtime, { type: 'CancelBuildOrder', orderId });
+    for (const orderId of cancelled.unfunded) {
+      send(cancelled.runtime, {
+        type: 'CancelBuildOrder',
+        orderId,
+        // ADR 0107: the true current revision, so the press succeeds.
+        expectedRevision: cancelled.runtime.construction.revisionOf(orderId),
+      });
+    }
     expect(
       cancelled.runtime.treasury.balanceMinorUnits,
       // Not "bricks, never money" any more (#746) -- the treasury balance is
