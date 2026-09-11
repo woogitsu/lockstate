@@ -38,6 +38,7 @@ import {
 } from '../incidents';
 import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
 import { SimulationEventLog } from '../events';
+import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
 import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
@@ -597,6 +598,16 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     navigation,
     events,
     identity: actorIdentity,
+    /*
+     * Issue #966 site 3: what the player is told once a queued arrival gets a
+     * bed. Composed here rather than handed the raw registry and catalog,
+     * exactly as `createResidentRelocationNotice` below is for the identical
+     * reason -- `actorIdentity` is the same registry that adapter reads from,
+     * typed narrower here (`ActorIdentitySource`) than `identity:
+     * actorIdentity` above (`ActorIdentityLifecycle`) because this port only
+     * ever reads a name back, never mints or releases one.
+     */
+    housedNotice: createIntakeHousedNotice({ identity: actorIdentity, rooms: defaultRoomContentRegistry, events }),
     disciplinaryEvidence,
     /*
      * The riot's effect on its participants' day

@@ -1739,6 +1739,29 @@ const snapshotMessageSchema = z
  * `MAX_EVENT_ALERT_ROWS`; carrying the rectangle or the anchor tile -- both in
  * hand -- would make every press a distinct row, which is a real cost for a
  * fact the player supplied themselves by dragging.
+ *
+ * ## Three more members close the other two sites issue #966 named, and the
+ * fourth site it named was already closed before this landed
+ *
+ * `rooms.zoned` above is site 2. Sites 1 and 3 are `economy.deliveries-restored`
+ * / `economy.construction-restored` and `prisoners.housed`; `hud.alert.event.
+ * rooms.needs-cleared` and `.rooms.unzoned`, added for #1006 findings 3 and 5,
+ * had already published the fourth and fifth places the same census counted, so
+ * nothing further was owed there.
+ *
+ * **The restored pair report the mirror of a crossing this channel already had
+ * one direction of.** `deliveriesRefusedEventSchema` and
+ * `constructionRefusedEventSchema` above fire on `InsolvencyRungSystem`'s
+ * `if (crossed)` arm; the `else` arm existed since that system was written and
+ * deleted the rung from `standing` with nobody told. See
+ * `deliveriesRestoredEventSchema`'s own docblock for what the sentence may and
+ * may not claim on the way back up.
+ *
+ * **`prisoners.housed` is the housing mirror of `prisoners.relocated`
+ * above**: that one moves an already-housed resident when their place is taken
+ * away; this one houses an arrival for the first time, at `IntakeSystem`'s
+ * `'accommodation-assignment'` stage. See its own docblock for the two facts a
+ * sentence here must keep separate.
  */
 export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled',
@@ -1749,7 +1772,9 @@ export const SIMULATION_EVENT_TYPES = [
   'construction.undone-spend-destroyed',
   'contraband.discovered',
   'economy.construction-refused',
+  'economy.construction-restored',
   'economy.deliveries-refused',
+  'economy.deliveries-restored',
   'economy.delivery-cancelled',
   'economy.wages-unpaid',
   'incidents.all-clear',
@@ -1761,6 +1786,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.riot-opened',
   'objects.removed-spend-destroyed',
   'prisoners.discharged',
+  'prisoners.housed',
   'prisoners.relocated',
   'rooms.needs-cleared',
   'rooms.unzoned',
@@ -1857,6 +1883,63 @@ const residentRelocatedEventSchema = z
       .strict()
       .optional(),
     /** The room they now live in, as the catalog's own `nameKey`. */
+    roomNameKey: identifierSchema,
+  })
+  .strict();
+
+/**
+ * A queued arrival who had nowhere to sleep has just been assigned a place
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+ * `IntakeSystem`'s mirror of `residentRelocatedEventSchema` above, in both
+ * directions: that one moves a *housed* resident when their place is taken
+ * away, this one houses somebody for the very first time.
+ *
+ * ## What "assigned a place" proves, and what it stops short of
+ *
+ * `IntakeSystem.update`'s `'accommodation-assignment'` stage reaches this the
+ * tick `RoomInstanceRegistry.findBestAvailable` returns an instance and
+ * `roomInstances.assign` claims it -- which cannot happen unless a unit of
+ * `residentCapacity` genuinely exists in that instance *right now*, matching
+ * the target's `requiredObjectCapability`. `src/simulation/economy/income.ts`'s
+ * own definition of an "occupied place" is exactly this fact, read fresh at
+ * the next day boundary: *"a prisoner housed in a furnished cell is backed by
+ * definition. It costs nothing at the moment of assignment."* So both halves
+ * issue #966 site 3 asks for are true at the instant this fires: the prisoner
+ * has a place, and it is one the state will pay for unless it is later taken
+ * away -- ADR 0076 decision A(ii)'s concern, not this event's.
+ *
+ * **What it does not claim.** Not that the room is complete by the catalog's
+ * own requirement list ([#933](https://github.com/matmaxalez/lockstate/issues/933)
+ * measured exactly this conflation between "holds a `sleep-surface`" and "is a
+ * valid room"), and not that the place is comfortable, reachable or permanent
+ * -- only that a bed exists and this prisoner now has it. `roomNameKey` is the
+ * type they were housed under, not a promise about it.
+ *
+ * ## Why identity is optional and no capacity is minted here
+ *
+ * `name` is absent only in a session wired without an identity registry, the
+ * same fallback `residentRelocatedEventSchema` documents. Resolving it needs a
+ * *read* of an already-minted name, which is deliberately not something
+ * `IntakeSystem` can do on its own: `ActorIdentityMinter`'s own comment says it
+ * is narrow "so that `IntakeSystem` cannot rename or release, only name a new
+ * arrival" -- read access is a different capability and is composed at the
+ * session root instead, in `createIntakeHousedNotice`
+ * (`src/simulation/events/intake-housed-notice.ts`), exactly as
+ * `createResidentRelocationNotice` is for the same reason.
+ */
+const prisonerHousedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('prisoners.housed'),
+    entityId: sequenceSchema,
+    name: z
+      .object({
+        givenName: z.string().min(1).max(128),
+        familyName: z.string().min(1).max(128),
+      })
+      .strict()
+      .optional(),
+    /** The room type they were housed in, as the catalog's own `nameKey`. */
     roomNameKey: identifierSchema,
   })
   .strict();
@@ -2141,6 +2224,55 @@ const constructionRefusedEventSchema = z
   .object({
     ...simulationEventEnvelopeFields,
     type: z.literal('economy.construction-refused'),
+  })
+  .strict();
+
+/**
+ * The treasury has climbed back above the deliveries rung it had fallen to or
+ * below ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1) --
+ * the recovery `deliveriesRefusedEventSchema` above never had a mirror for.
+ *
+ * **What this claims, and what it deliberately does not.** `InsolvencyRungSystem`
+ * fires this on exactly the transition `crossed === true, then false` for the
+ * `'deliveries'` rung -- the same edge-detected `else` arm that already deletes
+ * the rung from `standing`, just never told anyone. That arm knows only that
+ * `this.treasury.balanceMinorUnits` is back above `rungFloorMinorUnits('deliveries',
+ * ...)`; it does not know the size of any purchase a player might attempt next.
+ * `deliveriesRefusedEventSchema`'s own sentence gets away with "the treasury
+ * cannot cover a purchase right now" because that claim is universal at the
+ * crossing -- `canAfford` refuses every positive amount once `balance <= floor`
+ * -- but the mirror is not universal in reverse: clearing the floor by one
+ * minor unit affords a purchase of one minor unit and nothing larger. So the
+ * sentence this schema backs says only that the floor is cleared, the same
+ * narrow fact `treasury.deliveries-refused` on `statusCountsSchema.conditions`
+ * already exists to keep answering in more precise terms after this notice has
+ * scrolled away -- it does not say "you can afford it now", which would claim
+ * more than the crossing knows.
+ *
+ * No figure carried, for the same reason `deliveriesRefusedEventSchema` carries
+ * none: the sentence names what changed and the standing condition beside it is
+ * where the number lives.
+ */
+const deliveriesRestoredEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.deliveries-restored'),
+  })
+  .strict();
+
+/**
+ * The construction mirror of `deliveriesRestoredEventSchema` above, for the
+ * `'construction'` rung `constructionRefusedEventSchema` crosses back over
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1). A member
+ * of its own rather than a shared `rung` field, for the identical reason
+ * `constructionRefusedEventSchema` is: `EVENT_PRESENTATION` grades a sentence
+ * by `type` alone, and "deliveries can be paid for again" and "the build queue
+ * can be funded again" are two different sentences, not one with a slot.
+ */
+const constructionRestoredEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('economy.construction-restored'),
   })
   .strict();
 
@@ -2733,8 +2865,11 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   wagesUnpaidEventSchema,
   deliveriesRefusedEventSchema,
   constructionRefusedEventSchema,
+  deliveriesRestoredEventSchema,
+  constructionRestoredEventSchema,
   dischargedEventSchema,
   residentRelocatedEventSchema,
+  prisonerHousedEventSchema,
   roomNeedsClearedEventSchema,
   roomUnzonedEventSchema,
   roomZonedEventSchema,

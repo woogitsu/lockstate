@@ -145,16 +145,33 @@ describe('InsolvencyRungSystem: the boundary is inclusive, and a crossing fires 
     expect(events.since(0)).toHaveLength(2);
 
     // Recover strictly above the floor: neither rung is standing any more.
+    //
+    // **This used to assert `toHaveLength(2)`, "recovering above the floor
+    // must not itself announce anything" -- true before
+    // [#966](https://github.com/matmaxalez/lockstate/issues/966) site 1 gave
+    // the `else` arm a call of its own, false now that it does.** The
+    // recovery is exactly as real a transition as the crossing, and now says
+    // so: two more events, `economy.deliveries-restored` and
+    // `economy.construction-restored`.
     treasury.restore({ balanceMinorUnits: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS + 1 });
     system.update(context(2));
-    expect(events.since(0), 'recovering above the floor must not itself announce anything').toHaveLength(2);
+    expect(events.since(0), 'recovering above the floor now announces the recovery, on both rungs').toHaveLength(4);
 
     // Cross again: a second, genuine crossing of both rungs at once.
     treasury.restore({ balanceMinorUnits: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS });
     system.update(context(3));
+    // **This asserted a four-element array before #966 site 1**:
+    //
+    // > ['economy.deliveries-refused', 'economy.construction-refused',
+    // >  'economy.deliveries-refused', 'economy.construction-refused']
+    //
+    // The two recovery events land between the two crossings, in the same
+    // `WATCHED_RUNGS` order every other pair here does.
     expect(events.since(0).map((event) => event.type)).toEqual([
       'economy.deliveries-refused',
       'economy.construction-refused',
+      'economy.deliveries-restored',
+      'economy.construction-restored',
       'economy.deliveries-refused',
       'economy.construction-refused',
     ]);
@@ -189,7 +206,17 @@ describe('InsolvencyRungSystem: the boundary is inclusive, and a crossing fires 
     system.update(context(1));
     treasury.restore({ balanceMinorUnits: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS });
     system.update(context(2));
+    // **This asserted a two-element array before
+    // [#966](https://github.com/matmaxalez/lockstate/issues/966) site 1**:
+    //
+    // > ['economy.deliveries-refused', 'economy.construction-refused']
+    //
+    // The `context(1)` recovery (seeded standing, both rungs, straight back to
+    // `0`) now announces itself first, on both rungs, before the `context(2)`
+    // re-crossing announces itself again.
     expect(events.since(0).map((event) => event.type)).toEqual([
+      'economy.deliveries-restored',
+      'economy.construction-restored',
       'economy.deliveries-refused',
       'economy.construction-refused',
     ]);
@@ -243,9 +270,15 @@ describe('InsolvencyRungSystem: the starter rung (#771, fixed 2026-09-01)', () =
 
     // Recover to a balance the starter floor calls solvent but the mature one
     // would not yet reach either, so the rung drops before the room is built.
+    //
+    // **This asserted `[]` before
+    // [#966](https://github.com/matmaxalez/lockstate/issues/966) site 1**: the
+    // starter-floor crossing seeded at `context(0)` now has a recovery to
+    // announce, one event on `'deliveries'` (construction never stood, since
+    // `-1,185` never reached its own, unmoved, `-1,250` floor).
     treasury.restore({ balanceMinorUnits: 0 });
     system.update(context(1));
-    expect(events.since(0)).toEqual([]);
+    expect(events.since(0)).toEqual([{ sequence: 1, tick: 1, type: 'economy.deliveries-restored' }]);
 
     // A bed completes mid-session: `totalResidentCapacity` moves off zero the
     // same way `RoomCapacityResolver` would move it, live, with no new
@@ -263,10 +296,14 @@ describe('InsolvencyRungSystem: the starter rung (#771, fixed 2026-09-01)', () =
     // -1,250 is what governs from this tick on.
     treasury.restore({ balanceMinorUnits: INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS });
     system.update(context(2));
+    // **This asserted `[]` before #966 site 1 too** -- unaffected in what this
+    // tick itself announces (nothing crosses or recovers here), but the
+    // cumulative `events.since(0)` now carries the one recovery event from
+    // `context(1)` above.
     expect(
       events.since(0),
       'furnished now, so -1,185 is above the mature floor and nothing has crossed',
-    ).toEqual([]);
+    ).toEqual([{ sequence: 1, tick: 1, type: 'economy.deliveries-restored' }]);
 
     // The mature deliveries floor is also, exactly, the construction floor
     // since the owner's ruling on #771 (2026-09-01) equalised them, so both
@@ -274,9 +311,17 @@ describe('InsolvencyRungSystem: the starter rung (#771, fixed 2026-09-01)', () =
     // tests assert.
     treasury.restore({ balanceMinorUnits: INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS });
     system.update(context(3));
+    // **This asserted a two-element array before #966 site 1**:
+    //
+    // > [{ sequence: 1, tick: 3, type: 'economy.deliveries-refused' },
+    // >  { sequence: 2, tick: 3, type: 'economy.construction-refused' }]
+    //
+    // Sequence numbers shift by one because the `context(1)` recovery above
+    // is now sequence 1.
     expect(events.since(0), 'the mature floor now fires, exactly as a furnished prison always has').toEqual([
-      { sequence: 1, tick: 3, type: 'economy.deliveries-refused' },
-      { sequence: 2, tick: 3, type: 'economy.construction-refused' },
+      { sequence: 1, tick: 1, type: 'economy.deliveries-restored' },
+      { sequence: 2, tick: 3, type: 'economy.deliveries-refused' },
+      { sequence: 3, tick: 3, type: 'economy.construction-refused' },
     ]);
   });
 });
