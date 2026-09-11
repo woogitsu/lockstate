@@ -1707,6 +1707,33 @@ export interface CreateSaveEnvelopeInput {
   readonly masterSeed?: number;
   readonly gameVersion: string;
   readonly prisonId: string;
+  /**
+   * What the composing session believes the next revision is -- **a proposal,
+   * not an allocation** (ADR 0109 Decision 1).
+   *
+   * `PrisonSaveRepository.writeGeneration` re-stamps this inside the
+   * `readwrite` transaction that compares the slot's `currentRevision`, so the
+   * number that reaches storage is allocated where it can be compared rather
+   * than where it was guessed. The only case that keeps what is passed here is
+   * the first write to a slot that has no `currentRevision` to allocate from.
+   *
+   * **Re-stamping costs this schema nothing, and that is why the design is
+   * affordable.** `createSaveEnvelope` below hashes the *payload* and puts
+   * this field in the metadata beside the digest, so changing it invalidates
+   * no checksum, moves no `saveSchemaVersion`, and leaves `decodeSaveEnvelope`
+   * unaffected. ADR 0105 left the choice between "a lock, a queue, or
+   * allocating the revision at write time" open because it did not have that
+   * fact; ADR 0109 Context 4 established it.
+   *
+   * **This docblock exists partly because ADR 0109 said it already did.** The
+   * document's "Consequences for existing sentences" names a *"'not this
+   * issue' note about caller-managed revisions"* in this file as a sentence
+   * that would go false. There was no such note here and there never had been
+   * -- `git log -S` over this file finds neither phrase -- and the sentence it
+   * meant lives in `docs/PERSISTENCE.md`'s own envelope-shape block. Rather
+   * than record only that the ADR was wrong, the note it expected is now
+   * written, stating what is true.
+   */
   readonly revision: number;
   readonly createdAt: number;
   readonly updatedAt: number;
