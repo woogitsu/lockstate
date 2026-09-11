@@ -13,6 +13,7 @@ import {
   RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
   REMOVE_WALL_REFUSAL_REASONS,
+  SELL_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
@@ -24,6 +25,7 @@ import {
   releaseGuardSupersessionKey,
   removeObjectSupersessionKey,
   removeWallSupersessionKey,
+  sellSupersessionKey,
   unzoneSupersessionKey,
   zoneAreaSupersessionKey,
   zoneRefusalSupersessionKey,
@@ -647,6 +649,41 @@ export function createSessionCommandHandler(
          * right without doing the arithmetic. Both halves now speak.
          */
         events.recordDeliveryCancelled(outcome.refundedMinorUnits, context.tick);
+      }
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'SellMaterials') {
+      /*
+       * `SellMaterials`, the command `ProcurementSystem.sellStock` had been
+       * waiting for since #1127 (ADR 0075 decision 3, invoked by ADR 0096
+       * decision 3(b)). The method already withdrew through
+       * `reserve`/`withdrawReserved` against the container this system
+       * deposits into and credited the treasury at
+       * `SELL_BACK_RATIO_NUMERATOR / SELL_BACK_RATIO_DENOMINATOR` of the
+       * catalogue price -- nothing about the economics changes here, only
+       * that a command now reaches it.
+       *
+       * **No pre-check on the main thread**, for `CancelMaterialPurchase`'s
+       * own reason: whether the container holds enough unreserved stock to
+       * sell is not something this thread's cadence-stale copy may decide --
+       * there is no live stock projection to check it against at all (unlike
+       * a purchase's balance, which `simulation/status-counts` publishes).
+       * So this line is the only route a refused sale reaches the player by,
+       * and the whole `SellStockRefusalReason` union is mapped rather than
+       * the subset a panel press can provoke.
+       *
+       * Keyed on the item and the quantity, exactly as `PurchaseMaterials`
+       * is and for the same reason: `SellMaterials` carries no id of its own,
+       * and a fresh press of the same item and quantity is the same request
+       * landing.
+       */
+      const outcome = procurement.sellStock(simCommand.itemId, simCommand.quantity);
+      const sellKey = sellSupersessionKey(simCommand.itemId, simCommand.quantity);
+      if (!outcome.ok) {
+        refusals.record(SELL_REFUSAL_REASONS[outcome.reason], context.tick, sellKey);
+      } else {
+        refusals.supersede(sellKey);
       }
       return;
     }

@@ -2972,6 +2972,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           return;
         }
 
+        /*
+         * The `SellMaterials` producer -- ADR 0075 decision 3, invoked by ADR
+         * 0096 decision 3(b), and the last of the three things
+         * `ProcurementSystem.sellStock`'s own docblock named as missing: a
+         * command, a refusal reason and a HUD control. `tests/foundation/
+         * unconsumed-command-contract.test.ts` is the gate that measures this,
+         * exactly as it measured `PurchaseMaterials` for #89.
+         *
+         * **No pre-check, unlike `purchase-materials`.** A purchase is
+         * checked here against `viewModel.counts.treasuryMinorUnits`, a
+         * balance the worker publishes on a cadence -- there is no equivalent
+         * published count of what a container holds, so this thread has
+         * nothing honest to compare a quantity against. That is exactly
+         * `cancel-material-purchase`'s own reason for carrying no pre-check,
+         * applied to stock instead of to a delivery's flight status: the
+         * simulation decides, and `insufficient-stock` reaches the player
+         * through the refusal route every other command's refusal does.
+         *
+         * **No id minted here**, for `cancel-material-purchase`'s reason
+         * stated the other way round: a sale creates no record for a later
+         * command to name, so there is nothing to mint an id for in the first
+         * place.
+         */
+        case 'sell-materials':
+          requireSimulation(commands).submit({
+            type: 'SellMaterials',
+            itemId: intent.itemId,
+            quantity: intent.quantity,
+          });
+          return;
+
         case 'admit-prisoner': {
           const sender = requireSimulation(commands);
           /*

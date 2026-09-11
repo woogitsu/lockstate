@@ -911,6 +911,26 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
   /*
+   * `sell.*`, the third namespace beside `purchase.*` and `cancel-purchase.*`
+   * on the same treasury (ADR 0075 decision 3, invoked by ADR 0096 decision
+   * 3(b)) -- verified against `ProcurementSystem.sellStock`
+   * (`src/simulation/economy/procurement.ts`) before being written, per
+   * `AGENTS.md`'s reservation-4 release: the choice of words is ours, the
+   * truth of the sentence is not.
+   *
+   * `unknown-material` and `invalid-quantity` read `procurableMaterial(itemId)
+   * === undefined` and `!Number.isSafeInteger(quantity) || quantity <= 0` --
+   * the same two guards `purchase.*`'s own sentences answer, for the same
+   * catalogue and the same integer check, in the other direction of money.
+   * `insufficient-stock` reads `this.destination.availableOf(itemId) <
+   * quantity`, the container's *unreserved* balance, so "does not have that
+   * much in store" is exact rather than approximate: a quantity already
+   * reserved by a pending allocation is not double-counted as sellable.
+   */
+  'hud.alert.refusal.sell.insufficient-stock': 'Nothing was sold — the prison does not have that much in store.',
+  'hud.alert.refusal.sell.invalid-quantity': 'Nothing was sold — that quantity cannot be sold.',
+  'hud.alert.refusal.sell.unknown-material': 'Nothing was sold — that material has no buyer.',
+  /*
    * ADR 0034's two. `not-held` is the one a player provokes by pressing a row
    * the list had already stopped being true about -- a response that closed or a
    * search that finished between the publication and the press -- so it says the
@@ -1830,6 +1850,35 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buy-submit': 'Buy {count} × {material} · {total}',
   'hud.build.buy-hint': 'Arrives while the clock runs, into the stock a build draws from.',
   /*
+   * The Sell control (ADR 0075 decision 3, invoked by ADR 0096 decision
+   * 3(b)), beside Buy in the same disclosure and sharing its quantity
+   * stepper: selling belongs next to buying because both name the same
+   * material, the same stock, and the same treasury.
+   *
+   * `hud.build.sell` is `sellSubmit`'s placeholder label, on `hud.build.buy`'s
+   * own pattern -- overwritten the moment a material is selected, so a player
+   * never reads the bare word.
+   *
+   * `hud.build.sell-submit` states the quantity, the material and what it
+   * would credit, in `hud.build.buy-submit`'s own shape and for the same
+   * reason: no currency symbol (#96 named none) and the same figure the
+   * balance on the status strip is counted in. Verified against
+   * `sellBackUnitPriceMinorUnits` (`src/simulation/economy/procurement.ts`),
+   * the one formula both `ProcurementSystem.previewSellStock` and this
+   * control's own arithmetic derive from -- see
+   * `src/ui/hud/build-panel.ts`'s `paintSellTotal`.
+   *
+   * `hud.build.sell-hint` states the ratio and the source in one line, on
+   * `hud.build.buy-hint`'s pattern: "Half" is `SELL_BACK_RATIO_NUMERATOR /
+   * SELL_BACK_RATIO_DENOMINATOR` = 1/2 (the owner's ruling of 2026-09-11,
+   * the clickable option "50% — zostaw jak jest"), and "that same stock" is
+   * `this.destination` in `ProcurementSystem` -- the one container both
+   * `update`'s deliveries and `sellStock`'s withdrawal touch.
+   */
+  'hud.build.sell': 'Sell',
+  'hud.build.sell-submit': 'Sell {count} × {material} · {total}',
+  'hud.build.sell-hint': 'Half the catalogue price, credited at once out of that same stock.',
+  /*
    * **The sentence a refused Buy press shows, and it is the owner's own.**
    *
    * Authored 2026-09-03. It was put to the owner as a clickable choice among
@@ -2659,6 +2708,13 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // simulation's own refusal and reads differently
   // (`hud.alert.refusal.cancel-purchase.not-pending`).
   'hud.refusal.cancel-material-purchase': 'Nothing was refunded — the request was refused and the delivery is still on its way.',
+  // This line is painted when the host refuses before submitting, which for a
+  // sale means there is no session at all -- `SellMaterials` has no
+  // pre-flight check of its own, for `cancel-material-purchase`'s reason
+  // above: there is no live stock projection this thread could honestly check
+  // a quantity against. A refusal the simulation itself makes reads
+  // differently (`hud.alert.refusal.sell.*`).
+  'hud.refusal.sell-materials': 'Nothing was sold — the request was refused and nothing was taken from stock.',
   'hud.refusal.release-guard': 'Nobody was released — the request was refused and the guard is still assigned.',
 
   'hud.rooms.title': 'Rooms',

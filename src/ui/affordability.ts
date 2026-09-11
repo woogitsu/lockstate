@@ -1,4 +1,4 @@
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, rungFloorMinorUnits } from '../simulation/economy';
+import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, rungFloorMinorUnits, sellBackUnitPriceMinorUnits } from '../simulation/economy';
 
 /**
  * **Whether the host should refuse a charge before it sends the command, and
@@ -378,4 +378,24 @@ export function pressAffordabilityVerdict(
     balanceMinorUnits,
     pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, isFreshUnfurnishedPrison),
   );
+}
+
+/**
+ * **What selling `quantity` units at `unitPriceMinorUnits` each would credit**
+ * (ADR 0075 decision 3, invoked by ADR 0096 decision 3(b)) -- the Sell
+ * control's own preview, composed the identical way
+ * `ProcurementSystem.previewSellStock` is so the label a player reads and the
+ * credit `sellStock` actually pays can never disagree.
+ *
+ * Exists here rather than in `src/ui/hud/build-panel.ts`, for
+ * `pressAffordabilityVerdict`'s own reason: `src/ui/hud/` may not import
+ * `src/simulation/**` (`AGENTS.md` boundary 1, pinned by
+ * `tests/unit/ui-hud-messages.test.ts`), and this module already may. There is
+ * no floor to cross here and therefore no verdict -- a sale is never refused
+ * for want of money, only for want of stock this thread has no published count
+ * of, so the Sell control previews a figure rather than an availability the
+ * way `pressAffordabilityVerdict` does for Buy.
+ */
+export function sellBackPreviewMinorUnits(unitPriceMinorUnits: number, quantity: number): number {
+  return sellBackUnitPriceMinorUnits(unitPriceMinorUnits) * quantity;
 }

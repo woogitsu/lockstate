@@ -159,6 +159,19 @@ export const SELL_BACK_RATIO_NUMERATOR = 1;
 export const SELL_BACK_RATIO_DENOMINATOR = 2;
 
 /**
+ * `SELL_BACK_RATIO_NUMERATOR / SELL_BACK_RATIO_DENOMINATOR` of one unit's
+ * catalogue price, floored -- the one formula `previewSellStock` and
+ * `sellStock` both price a sale by, pulled out so the HUD can preview the same
+ * figure without a `ProcurementSystem` instance to ask. A second copy of this
+ * arithmetic in the UI layer would be exactly the hazard this repository's
+ * "derive it from the same code path" rule exists to close -- see
+ * `src/ui/hud/build-panel.ts`'s sell control, the one other caller.
+ */
+export function sellBackUnitPriceMinorUnits(unitPriceMinorUnits: number): number {
+  return Math.floor((unitPriceMinorUnits * SELL_BACK_RATIO_NUMERATOR) / SELL_BACK_RATIO_DENOMINATOR);
+}
+
+/**
  * Why a sell-back credited nothing.
  *
  * Named as a union for the same reason `PurchaseRefusalReason` is: a fifth
@@ -469,16 +482,23 @@ export class ProcurementSystem implements SystemRegistration {
    * batch-dependent rounding), and per-unit is the reading that cannot be
    * gamed by splitting one sale into many or combining many into one.
    *
-   * **What this deliberately does not yet do, named because it is the whole
-   * of what is missing rather than a detail:** there is no `SellMaterials` (or
-   * similarly named) entry in `simulationCommandSchema`, no refusal reason
-   * registered on `src/simulation/refusals/refusal-log.ts`'s exhaustive
-   * `Record`, and no HUD control — `src/simulation/protocol/commands.ts` and
-   * the Build panel are another agent's surface this hour (ADR 0106), and
-   * wiring a command needs a decision about where a `SellMaterials` command
-   * belongs relative to that work rather than a unilateral edit to a shared
-   * file. This method and `previewSellStock` are the economics ADR 0075
-   * decision 3 already priced, ready for that command to call.
+   * **What this paragraph used to say was missing is wired now, and the
+   * paragraph is corrected rather than deleted for the reason
+   * `docs/AGENT_WORKFLOW.md` §4 gives: a reader who meets the old sentence
+   * elsewhere needs to see which half of it survived.** It read: *"there is no
+   * `SellMaterials` (or similarly named) entry in `simulationCommandSchema`,
+   * no refusal reason registered on `src/simulation/refusals/refusal-log.ts`'s
+   * exhaustive `Record`, and no HUD control … wiring a command needs a
+   * decision about where a `SellMaterials` command belongs relative to that
+   * work rather than a unilateral edit to a shared file."* `RemoveWall` (ADR
+   * 0106) landed and released the shared files this method's own comment was
+   * waiting on: `SellMaterials` is now a member of `simulationCommandSchema`,
+   * `SellStockRefusalReason` is mapped through
+   * `src/simulation/refusals/refusal-log.ts`'s `SELL_REFUSAL_REASONS`, and the
+   * Build panel's Buy disclosure carries a Sell control beside Buy
+   * (`src/ui/hud/build-panel.ts`). This method and `previewSellStock` are
+   * unchanged by any of it — they were the economics ADR 0075 decision 3
+   * already priced, and the command above calls them exactly as written.
    */
   public sellStock(itemId: string, quantity: number): SellStockOutcome {
     if (!Number.isSafeInteger(quantity) || quantity <= 0) return { ok: false, reason: 'invalid-quantity' };
@@ -503,8 +523,7 @@ export class ProcurementSystem implements SystemRegistration {
     if (!Number.isSafeInteger(quantity) || quantity <= 0) return 0;
     const material = procurableMaterial(itemId);
     if (material === undefined) return 0;
-    const perUnitMinorUnits = Math.floor((material.unitPriceMinorUnits * SELL_BACK_RATIO_NUMERATOR) / SELL_BACK_RATIO_DENOMINATOR);
-    return perUnitMinorUnits * quantity;
+    return sellBackUnitPriceMinorUnits(material.unitPriceMinorUnits) * quantity;
   }
 
   /** Deliveries not yet arrived, in the order they will arrive. */

@@ -520,6 +520,17 @@ export const HUD_MESSAGE_KEY = {
   buildBuySubmit: 'hud.build.buy-submit',
   buildBuyHint: 'hud.build.buy-hint',
   /**
+   * The Sell control (ADR 0075 decision 3, invoked by ADR 0096 decision
+   * 3(b)), on `buildBuy`/`buildBuySubmit`/`buildBuyHint`'s own three-key
+   * shape: a placeholder label overwritten the moment a material is
+   * selected, the sentence stating what a press would credit, and the hint
+   * naming the ratio and the source. See `src/content/default-locale-en.ts`
+   * for the wording and the arithmetic that proves it.
+   */
+  buildSell: 'hud.build.sell',
+  buildSellSubmit: 'hud.build.sell-submit',
+  buildSellHint: 'hud.build.sell-hint',
+  /**
    * **What stops a Buy press, and what would lift it** -- the wording half of
    * issue #772, authored by the owner on 2026-09-03.
    *
@@ -1436,6 +1447,20 @@ export const HUD_MESSAGE_KEY = {
    * produces exactly one of them and never both.
    */
   refusalCancelMaterialPurchase: 'hud.refusal.cancel-material-purchase',
+  /**
+   * A sale the host refused before it was sent -- which here means only
+   * "there is no session", exactly as `refusalCancelMaterialPurchase`'s does:
+   * `SellMaterials` has no pre-flight check of its own, because there is no
+   * live stock projection this thread could honestly check a quantity
+   * against (ADR 0075 decision 3, invoked by ADR 0096 decision 3(b)).
+   *
+   * It is **not** the sentence a player sees when the simulation itself
+   * refuses the sale -- that is `hud.alert.refusal.sell.*`, decided at the
+   * tick the command executes, and it arrives in the alerts list. The two sit
+   * on opposite sides of `sender.submit`, so one press produces exactly one
+   * of them and never both.
+   */
+  refusalSellMaterials: 'hud.refusal.sell-materials',
 
   /**
    * What a refused *dispatch* of a release says, on the control that was pressed

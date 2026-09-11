@@ -196,6 +196,61 @@ export const cancelMaterialPurchaseSchema = z.object({
 }).strict();
 
 /**
+ * Sell stock back to the depot at a loss
+ * ([ADR 0075](../../../docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md)
+ * decision 3, invoked by
+ * [ADR 0096](../../../docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md)
+ * decision 3(b)). `ProcurementSystem.sellStock` had the arithmetic and the
+ * container mutation since #1127; this is the command that reaches it,
+ * closing the gap that method's own docblock named -- "no `SellMaterials` (or
+ * similarly named) entry in `simulationCommandSchema`".
+ *
+ * ## Why it is a command of its own and not a negative `PurchaseMaterials`
+ *
+ * Because the two name different treasury directions and different container
+ * operations -- `purchase` spends and queues a delivery, `sellStock` withdraws
+ * through `reserve`/`withdrawReserved` and credits at once, no delivery and no
+ * delay -- and folding them into one schema keyed by the sign of a field would
+ * be exactly the ambiguity `PurchaseSpendClass` exists to keep out of
+ * `Treasury`, one layer up. `hud.alert.refusal.sell.*` also has to be a
+ * namespace of its own against `purchase.*` for the reason every such pair in
+ * this file is: buying and selling are opposite gestures on the same
+ * material, and somebody who pressed Sell must not read that a delivery was
+ * not ordered.
+ *
+ * ## What it carries, and what it deliberately does not
+ *
+ * `itemId` and `quantity`, and nothing else.
+ *
+ * `itemId` is `identifierSchema` rather than `z.string()`, matching
+ * `PurchaseMaterials.itemId`: a malformed id refused here never reaches the
+ * kernel, which is the only place a fix can sit next to its cause. There is no
+ * save-side counterpart to disagree with -- a sale writes nothing to a save,
+ * unlike a purchase's pending delivery -- so this is a plain adoption of the
+ * sibling command's convention rather than the closing of a window.
+ *
+ * `quantity` is bounded by `MAX_PURCHASE_QUANTITY`, the same ceiling
+ * `PurchaseMaterials.quantity` uses: it is `ProcurementSystem`'s own overflow
+ * guard against `unitPriceMinorUnits * quantity`, and that arithmetic runs
+ * whichever direction the money moves.
+ *
+ * **No `orderId`, unlike `PurchaseMaterials`.** A purchase mints one because
+ * something downstream is keyed by it: `ProcurementSystem.purchase` refuses a
+ * duplicate, and `CancelMaterialPurchase` names the pending delivery to
+ * reverse. A sale creates no pending record for a later command to name or a
+ * replay to duplicate -- `sellStock` withdraws from the container and credits
+ * the treasury in the same tick, nothing is queued, and two identical sales in
+ * a row are simply two sales, not a duplicate of one. An id here would be a
+ * field with no reader, the same argument `AdmitPrisoner`'s own comment makes
+ * for carrying none.
+ */
+export const sellMaterialsSchema = z.object({
+  type: z.literal('SellMaterials'),
+  itemId: identifierSchema,
+  quantity: z.number().int().positive().max(MAX_PURCHASE_QUANTITY),
+}).strict();
+
+/**
  * Admit one prisoner (#261 step 4).
  *
  * ## What it carries, and what it deliberately does not
@@ -636,7 +691,7 @@ export const dismissStaffSchema = z.object({
  * deliberately **not** cross-validated here: this schema is a member of a
  * discriminated union whose options every consumer reads `.shape.type` off
  * (`tests/foundation/unconsumed-command-contract.test.ts`), and a `.refine`
- * would make this one a different kind of schema than its thirteen siblings
+ * would make this one a different kind of schema than its sixteen siblings
  * for a rule that costs nothing anyway -- a `throughSequence` below its
  * `fromSequence` names an empty range, so `SimulationEventLog.dismiss` marks
  * nothing and reports it, which is the same outcome the check would have
@@ -668,6 +723,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   unzoneRoomSchema,
   purchaseMaterialsSchema,
   cancelMaterialPurchaseSchema,
+  sellMaterialsSchema,
   admitPrisonerSchema,
   hireStaffSchema,
   placeObjectSchema,
@@ -732,6 +788,9 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'CancelMaterialPurchase':
       return { type: command.type, orderId: command.orderId };
+
+    case 'SellMaterials':
+      return { type: command.type, itemId: command.itemId, quantity: command.quantity };
 
     case 'AdmitPrisoner':
       return {
