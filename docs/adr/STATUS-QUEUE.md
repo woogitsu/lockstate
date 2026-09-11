@@ -15226,9 +15226,23 @@ swapped: **99** counts linked rows and files on disk, which is what the
 previous anchor's 98 counted; **100** adds the unlinked, file-less `0018` row,
 still at `docs/adr/README.md:174`.
 
-And **Next free number: 0109** — **moved again, and this time by two drafts
-written in parallel in the same hour, which is new in this paragraph's
-history.** `git show e9d5e500:docs/adr/README.md` states **0107**, and
+And **Next free number: 0110** — **moved again, and by two drafts written in
+parallel in the same hour before that, which was new in this paragraph's
+history.**
+
+> **THIS RESTATEMENT READ 0109 FOR A FEW HOURS AFTER THE ANCHOR MOVED, AND THE
+> GATE DID NOT MIND, WHICH IS THE PART WORTH RECORDING.** ADR 0109
+> (`what-a-stale-local-save-is-refused-for.md`, filed against #582) landed its
+> row and moved the index to 0110; the §3 restatement was updated in the same
+> change and this one was not. `adr-status-queue-anchor-contract` stayed green
+> throughout, because it classifies a restatement as live or historical by
+> where it falls and then compares only the live ones — so this paragraph sat
+> reading a superseded number **in a sentence that reads as current**, one the
+> gate had decided was history. **That is not a hole in the contract**: what it
+> checks, it checks correctly. It is a reader being misled by a sentence no
+> assertion was ever pointed at, and it is named here because §3 claims the
+> file carries "exactly one live restatement" while the honest count near the
+> live end was **two**. `git show e9d5e500:docs/adr/README.md` states **0107**, and
 `docs/adr/README.md` has since moved to **0109**: ADR 0107
 (`what-a-stale-build-order-cancellation-is-refused-for.md`, filed against
 #853, `Proposed. Not self-approved.`) took the number the index's own line
