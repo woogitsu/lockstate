@@ -57,6 +57,32 @@ export interface IntakeGangAssigner {
   assign(entityId: EntityId, classificationGroupId: string, tick: number): void;
 }
 
+/**
+ * What the player is told when a queued arrival finally gets a bed
+ * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3) --
+ * `IntakeSystem`'s mirror of `ResidentRelocationNotice`
+ * (`src/simulation/events/resident-relocation-notice.ts`), and optional and
+ * port-shaped for the same two reasons `IntakeContrabandIntroducer` above is:
+ * the identity registry and the room catalog are session state that outlives
+ * the prisoner slice, and a fixture that stands up prisoners alone has neither
+ * to hand over. Absent, intake houses people exactly as it did before this
+ * port existed and simply says nothing about it.
+ *
+ * **A port rather than `SimulationEventLog` and `ActorIdentityMinter` taken
+ * directly**, because naming this prisoner needs a *read* of an already-minted
+ * name and `ActorIdentityMinter`'s own comment says it is narrow "so that
+ * `IntakeSystem` cannot rename or release, only name a new arrival" -- read
+ * access is a different capability than mint access, and this system is not
+ * the place to widen it. `createIntakeHousedNotice`
+ * (`src/simulation/events/intake-housed-notice.ts`) is where the identity
+ * registry's read side, the room catalog and the event log meet, composed at
+ * the session root exactly as `createResidentRelocationNotice` is.
+ */
+export interface IntakeHousedNotice {
+  /** Called once per arrival, at the tick their `RoomInstanceRegistry.assign` succeeds and from the stage that calls it. */
+  announce(entityId: EntityId, roomCatalogId: string, tick: number): void;
+}
+
 export interface IntakeMetrics {
   readonly completedCount: number;
   readonly failedCount: number;
@@ -285,6 +311,15 @@ export class IntakeSystem implements SystemRegistration {
      * existing call site's positional arguments move.
      */
     private readonly gangAssigner?: IntakeGangAssigner,
+    /**
+     * What the player is told once this arrival gets a bed
+     * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3).
+     * Absent, intake houses people exactly as it always has and says nothing.
+     *
+     * Last in the list, after the five optional collaborators above, so no
+     * existing call site's positional arguments move.
+     */
+    private readonly housedNotice?: IntakeHousedNotice,
   ) {}
 
   /**
@@ -615,6 +650,12 @@ export class IntakeSystem implements SystemRegistration {
         this.coldState.setAccommodation(entityId, instance.instanceId);
         this.records.intakeStage[index] = intakeStageIndex('completed');
         this.completedCount += 1;
+        // Issue #966 site 3: the tick a queued arrival stops waiting is the
+        // tick a bed exists to say so about -- `target.roomCatalogId` is the
+        // type `findBestAvailable` just matched `instance` against, so this
+        // names the room the assignment above actually claimed rather than
+        // re-deriving it from the instance afterwards.
+        this.housedNotice?.announce(entityId, target.roomCatalogId, context.tick);
       }
     }
   }

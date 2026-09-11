@@ -521,9 +521,25 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'warning',
     surfaces: 'band-and-log',
   },
+  // Issue #966 site 1: the mirror of the crossing above, on the ADR 0087
+  // decision 2 nudge the owner's #767 ruling asked for -- so the recovery gets
+  // the same visibility as the fall, `'band-and-log'`, rather than being
+  // relegated to the log the way `rooms.needs-cleared` below is. `'info'`
+  // because it is good news, exactly as `rooms.zoned` and `incidents.all-clear`
+  // are.
+  'economy.construction-restored': {
+    labelKey: 'hud.alert.event.economy.construction-restored',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
   'economy.deliveries-refused': {
     labelKey: 'hud.alert.event.economy.deliveries-refused',
     severity: 'warning',
+    surfaces: 'band-and-log',
+  },
+  'economy.deliveries-restored': {
+    labelKey: 'hud.alert.event.economy.deliveries-restored',
+    severity: 'info',
     surfaces: 'band-and-log',
   },
   'economy.delivery-cancelled': {
@@ -578,6 +594,14 @@ const EVENT_PRESENTATION: Readonly<
   },
   'prisoners.discharged': {
     labelKey: 'hud.alert.event.prisoners.discharged',
+    severity: 'info',
+    surfaces: 'band-and-log',
+  },
+  // Issue #966 site 3: the housing mirror of `prisoners.relocated` below --
+  // same grade, same surfaces, for the identical reason. This is the first
+  // time this prisoner has anything to say to the player at all.
+  'prisoners.housed': {
+    labelKey: 'hud.alert.event.prisoners.housed',
     severity: 'info',
     surfaces: 'band-and-log',
   },
@@ -1212,10 +1236,21 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'economy.deliveries-refused':
     case 'economy.construction-refused':
       return {};
+    // Issue #966 site 1's mirror of the two crossings above: the recovery is
+    // the whole sentence, and it carries no figure for the identical reason --
+    // the standing `treasury.*-refused` condition is where a player still
+    // reads a number, until it stops standing at all.
+    case 'economy.deliveries-restored':
+    case 'economy.construction-restored':
+      return {};
     // Both of this one's parameters are messages rather than figures, so they
     // are resolved at render time by `eventParameterMessages` below. Nothing
     // is substituted from here.
     case 'prisoners.relocated':
+      return {};
+    // Issue #966 site 3's mirror of `prisoners.relocated` above: both of its
+    // parameters are messages too, resolved by `eventParameterMessages` below.
+    case 'prisoners.housed':
       return {};
     // And this one's single parameter is, for the same reason: `{item}` is a
     // contraband category, whose word lives in the catalog under a `nameKey`.
@@ -1348,6 +1383,12 @@ function eventParameterMessages(
 ): Readonly<Record<string, HudMessageParameterViewModel>> | undefined {
   switch (event.type) {
     case 'prisoners.relocated':
+      return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
+    // Issue #966 site 3's `{name}` and `{room}`: the housing mirror of
+    // `prisoners.relocated` immediately above, resolved the identical way --
+    // `prisonerName` for the same fallback, `roomNameKey` passed through
+    // unresolved.
+    case 'prisoners.housed':
       return { name: prisonerName(event.entityId, event.name), room: { key: event.roomNameKey } };
     case 'incidents.escape-succeeded':
       return { name: prisonerName(event.entityId, event.name) };

@@ -30,6 +30,7 @@ import {
   IntakeSystem,
   type IntakeContrabandIntroducer,
   type IntakeGangAssigner,
+  type IntakeHousedNotice,
 } from './intake-system';
 import {
   releasePrisoner,
@@ -253,6 +254,23 @@ export interface PrisonerOperationsRuntimeOptions {
    */
   readonly gangAssigner?: IntakeGangAssigner;
   /**
+   * What the player is told once a queued arrival gets a bed
+   * ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 3),
+   * called by `IntakeSystem` at the same `'accommodation-assignment'` stage
+   * `resolveExistingTarget` decides. Absent, intake houses people exactly as
+   * it always has and says nothing about it.
+   *
+   * Not owned here, for the reason `identity` above is not: naming this
+   * prisoner needs a *read* of an already-minted name and the room catalog's
+   * own `nameKey`, neither of which this runtime holds -- `identity` here is
+   * typed `ActorIdentityLifecycle`, the mint-and-release pair, and carries no
+   * read access either. `createIntakeHousedNotice`
+   * (`src/simulation/events/intake-housed-notice.ts`) is composed at the
+   * session root, which already holds the identity registry, the room
+   * catalog and the event log for `createResidentRelocationNotice`.
+   */
+  readonly housedNotice?: IntakeHousedNotice;
+  /**
    * How long a solitary sanction runs (issue #80,
    * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
    * Defaults to
@@ -403,6 +421,7 @@ export class PrisonerOperationsRuntime {
       options.contrabandRngStreamName,
       undefined,
       options.gangAssigner,
+      options.housedNotice,
     );
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
     this.classificationReviewSystem = new ClassificationReviewSystem(

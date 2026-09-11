@@ -1053,6 +1053,37 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.economy.construction-refused': 'Construction halted — the treasury cannot fund the build queue right now.',
 
   /*
+   * The recovery half of the two sentences directly above, which never had
+   * one ([#966](https://github.com/matmaxalez/lockstate/issues/966) site 1) --
+   * authored under `AGENTS.md` reservation 4's partial release of 2026-09-04:
+   * the choice of words is ours, the requirement that the sentence be TRUE is
+   * not.
+   *
+   * **What is verified before either word was chosen.**
+   * `InsolvencyRungSystem`'s `else` arm (`src/simulation/economy/insolvency-rung-system.ts`)
+   * fires `SimulationEventLog.recordInsolvencyRungCleared` on exactly the tick
+   * `this.treasury.balanceMinorUnits` is measured back above
+   * `rungFloorMinorUnits(rung, ...)` -- the same comparison the refused
+   * sentence's own crossing reads, run in reverse. That is a fact about the
+   * *floor*, not about any purchase: `Treasury.canAfford` refuses every
+   * positive amount while `balance <= floor`, which is why "cannot cover a
+   * purchase right now" is exactly true of the crossing, and clearing the
+   * floor by one minor unit only affords a purchase of one minor unit. A
+   * sentence claiming "you can afford it now" would say more than the crossing
+   * knows -- exactly the shape of false promise reservation 4's release warns
+   * against -- so both sentences below name only the floor, the same fact the
+   * standing `treasury.deliveries-refused` / `treasury.construction-refused`
+   * conditions keep answering in more precise terms afterward.
+   *
+   * **Kept under the twelve-word ceiling `EVENT_BAND_HOLD_CEILING_MS`
+   * (`src/ui/hud/event-band-dwell.ts`) is derived against**, so this pair adds
+   * no sentence longer than the ones that ceiling was sized to read: nine
+   * words each, against `economy.construction-refused`'s twelve.
+   */
+  'hud.alert.event.economy.deliveries-restored': 'The treasury has climbed back above the deliveries floor.',
+  'hud.alert.event.economy.construction-restored': 'The treasury has climbed back above the construction floor.',
+
+  /*
    * What a control says when it *works* (issue #749, the owner's ruling of
    * 2026-09-01).
    *
@@ -1313,6 +1344,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // prison had nowhere to move -- and there must not be one until the owner
   // writes it.
   'hud.alert.event.prisoners.relocated': '{name} had nowhere to sleep and moved to {room}.',
+
+  /*
+   * The housing mirror of the sentence directly above -- an arrival who had
+   * nowhere to sleep gets a place for the first time, rather than an
+   * already-housed resident losing one ([#966](https://github.com/matmaxalez/lockstate/issues/966)
+   * site 3). Authored under `AGENTS.md` reservation 4's partial release of
+   * 2026-09-04: the choice of words is ours, the requirement that the sentence
+   * be TRUE is not.
+   *
+   * **What is verified before either clause was chosen.** `IntakeSystem`'s
+   * `'accommodation-assignment'` stage (`src/simulation/prisoners/intake-system.ts`)
+   * reaches `createIntakeHousedNotice`'s adapter
+   * (`src/simulation/events/intake-housed-notice.ts`) only on the tick
+   * `RoomInstanceRegistry.assign` succeeds, which cannot happen unless a unit
+   * of `residentCapacity` matching the target's `requiredObjectCapability`
+   * genuinely exists in that instance right now. "Has a place" is exactly
+   * that fact and no more: not that the room satisfies the catalog's full
+   * requirement list ([#933](https://github.com/matmaxalez/lockstate/issues/933)
+   * is the record of that exact conflation), not that it is reachable, not
+   * that it is permanent.
+   *
+   * **Not `prisoners.relocated`'s own "had nowhere to sleep and moved to",
+   * even though that is exactly this prisoner's situation too.** Both
+   * placeholders can each expand to two words, and the twelve-word ceiling
+   * below leaves less room for literal text once two placeholders share it,
+   * so this key spends five literal words rather than that sentence's eight.
+   *
+   * **Kept under the twelve-word ceiling `EVENT_BAND_HOLD_CEILING_MS`
+   * (`src/ui/hud/event-band-dwell.ts`) is derived against**, at its fullest
+   * expansion: a two-word given-and-family name, five literal words and a
+   * two-word room type total nine, three under the ceiling's own twelve-word
+   * reference (measured against `economy.construction-refused`, that
+   * reference's own docblock).
+   */
+  'hud.alert.event.prisoners.housed': '{name} finally has a place in {room}.',
 
   /*
    * The first thing this game says when a player gets something right (issue
