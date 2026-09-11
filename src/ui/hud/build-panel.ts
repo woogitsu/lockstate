@@ -1907,20 +1907,29 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const buyShortfallId = nextUiId('hud-build-buy-shortfall');
   buyShortfall.id = buyShortfallId;
 
+  /*
+   * Buy and Sell, side by side rather than stacked (issue measured live: a
+   * second full-width row here pushes `deliveriesBlock` -- a *sibling* of
+   * `buyRow`, not a child of it -- far enough down that its third delivery
+   * row's Cancel control lands outside `.hud-build`'s visible box at 900x600.
+   * `tests/browser/app-shell.spec.ts`'s "a pending delivery is on the panel
+   * with the fold shut … (#285, #703)" measures exactly that box and caught
+   * it. One row of the same height Buy alone used to take, on
+   * `.hud-build__actions`'s own pattern (two buttons, `flex: 1 1 0`,
+   * `min-width: 0`), is what keeps this addition height-neutral.
+   */
+  const buySellRow = element('div', {
+    className: 'hud-build__buy-sell',
+    children: [buySubmit.element, sellSubmit.element],
+  });
+
   const buyRow = element('div', {
     className: 'hud-build__buy',
     children: [
       quantityField.element,
-      buySubmit.element,
+      buySellRow,
       buyShortfall,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
-      // Sell, immediately below Buy's own hint: the two controls share the
-      // stepper above them, so the row reads "buy this many, or sell this
-      // many back" in one pass rather than as two disclosures. Opened only
-      // (`buyRow` starts `hidden`), so this costs nothing at arrival -- see
-      // `buyToggle`'s own comment for the height budget this stays inside.
-      sellSubmit.element,
-      eyebrowText(t(HUD_MESSAGE_KEY.buildSellHint), 'hud-build__note'),
       /*
        * `deliveriesBlock` used to be the last child of this row, and the
        * paragraph that put it here read:
