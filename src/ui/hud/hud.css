@@ -3997,7 +3997,14 @@
  * doorway sentence is among them. `data-kind` is set by `rooms-panel.ts` beside
  * the sentence, for the reason recorded there.
  */
-.hud-rooms__needs-item[data-kind='doorway'] { flex-basis: 100%; }
+/*
+ * `'unreachable'` joins `'doorway'` here rather than getting a rule of its own
+ * (ADR 0108): both are a whole sentence on the row where the object entries are
+ * chips, and both are drawn by the same `needSentence` branch shape. A separate
+ * selector with the same declaration would be two places to keep in step.
+ */
+.hud-rooms__needs-item[data-kind='doorway'],
+.hud-rooms__needs-item[data-kind='unreachable'] { flex-basis: 100%; }
 
 /*
  * What the *selected room type* will need standing in it (#529).
