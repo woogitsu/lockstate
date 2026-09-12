@@ -429,7 +429,7 @@
   /* The active rule lives on the top edge; a transparent one at rest keeps
      the label from shifting by a pixel when a tab is selected. */
   border-top: 2px solid transparent;
-  color: var(--text-muted);
+  color: var(--text-subtle);
   cursor: pointer;
 }
 
@@ -449,6 +449,8 @@
   background: var(--accent-soft);
   border-top-color: var(--accent);
 }
+
+.ui-tab[data-active='true'] .ui-tab__label { font-weight: 600; }
 
 .ui-tab:disabled { color: var(--text-muted); cursor: default; }
 
@@ -474,8 +476,9 @@
   /* Tall enough that the collapse control inside it is a real tap target;
      a 24px chevron is not hittable on a touch screen. */
   min-height: var(--tap-target);
-  border-bottom: var(--hairline) solid var(--border-hairline);
-  color: var(--text-subtle);
+  border-bottom: var(--hairline) solid var(--border);
+  background: var(--surface-overlay);
+  color: var(--text-heading);
 }
 
 .ui-panel[data-collapsed='true'] .ui-panel__header { border-bottom-color: transparent; }
@@ -484,11 +487,11 @@
   flex: 1;
   margin: 0;
   font-family: var(--font-ui);
-  font-size: var(--text-size-label);
-  font-weight: 500;
-  letter-spacing: var(--label-tracking);
-  text-transform: uppercase;
-  color: var(--text-subtle);
+  font-size: var(--text-size-body);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-heading);
 }
 
 .ui-panel__toggle .ui-icon { transition: transform 120ms linear; }
@@ -513,12 +516,12 @@
   box-sizing: border-box;
   background: transparent;
   border: 0;
-  color: var(--text-muted);
+  color: var(--text-subtle);
   text-align: left;
   cursor: pointer;
 }
 
-.ui-section__header:hover { color: var(--text-subtle); }
+.ui-section__header:hover { color: var(--text-heading); }
 
 /*
  * A header that shares its row with a control (`headerAction`).
