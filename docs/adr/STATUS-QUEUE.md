@@ -754,7 +754,41 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `b0cf1beb` (**v0.0.584**) by the delta method this
+Re-anchored at `main` @ `5459254c` (**v0.0.591**) by the delta method,
+from `b0cf1beb`. This is #1150's merge commit; its package version is
+read from that tree. Its pull-request head `30ff888c` completed its own
+`verify`, `assets` and `browser` checks before merging. The merge's separate
+push workflow is not certified by those results.
+
+**2026-09-12 census at `5459254c`: 42 Proposed, 62 Accepted, 104 ADR
+documents.** The index agrees with each document's own leading status,
+including the bullet-form statements. The previous anchor counted 41 and
+61 out of 102: ADR 0109 moved to Accepted, and ADRs 0110 and 0111 arrived
+Proposed. Their scope ruling does not accept either decision. §2 still has
+nine live entries; its contents are byte-identical across this window.
+The title, introductory queue count, §2 heading and §5 preamble therefore
+continue to name the same queue. The four Proposed-count mirrors are
+updated below without deleting their dated history.
+
+**Scope and measurement.** This session has no authenticated local Git
+checkout. The owner explicitly allowed this re-anchor through GitHub API
+on a new branch, with verification in CI. History counts below come from
+GitHub's compare API, not from a locally executed `git rev-list`; source
+reads use pinned blobs. The original `tooling/anchor-budget-spend.mjs`
+ran in scratch against the fetched document and package version: at
+`52787ad1` (v0.0.591), the old anchor spent **7/10 releases**; the compare
+API measured **28/100 commits**. Closing #1150 makes the reviewed window
+**30 commits and 38 changed paths**. The branch starts at `cbaa455f`
+(v0.0.592), the next release-only commit:
+**8/10 releases and 31/100 commits** from the previous anchor, measured
+again by the original spend script and compare API. The new anchor leaves
+one release and one commit of that base beyond its reading. Both constants
+remain **10** and **100**. §3 records the dependency intersection, findings and limits.
+
+**The previous anchor's account is retained as history. Its opening named
+`b0cf1beb` (v0.0.584):**
+
+The previous pass anchored its reading at `b0cf1beb` (**v0.0.584**) by the delta method this
 header describes, from the v0.0.577 anchor kept below. **This anchor is again
 a merge commit rather than a `chore(release)` commit** — `b0cf1beb` is #1139's
 merge; `e10ae96d` (`chore(release): v0.0.584`) sits one commit *below* it and
@@ -9171,6 +9205,11 @@ to stop claiming a queue; §6 records what was corrected and what was left.
 
 ## 3. Still outstanding: ADR 0013 §§5-6
 
+**2026-09-12 census at `5459254c`: 42 Proposed, 62 Accepted, 104 ADR
+documents**, agreeing with the index. This supersedes the dated counts below;
+§2 still has nine entries, five attached to Proposed ADRs. The detailed pass
+at the end of this section records the changes and its verification limits.
+
 **This section opened *"The one genuinely open decision left in the corpus"* and
 that is false at `bb3a01e`.** It was true at `54418b6`, when no document in
 `docs/adr/` was `Proposed`; nine were at `bb3a01e` (0042, 0043, 0046-0052, all
@@ -10505,6 +10544,19 @@ of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
 absences **had been** re-verified at `3399b1f9` — **and that was the second anchor at which the evidence command had stopped returning nothing, so the phrasing was corrected rather than repeated**: `git diff --name-only ebdcb317..3399b1f9 -- supabase/` returns **one** path, `supabase/tests/001_rls_and_save_version_rpc.test.sql`, a pgTAP suite that moves `select plan(54)` to `select plan(56)` and adds the row an unsaved prison's conflict answers with — nothing about total bytes and nothing about revision retention — while `git diff --name-only ebdcb317..3399b1f9 -- supabase/migrations/` returns nothing, and `supabase/migrations/` is the directory every cell of the table above scopes its absence to. It still holds **24** migrations at both ends, every row of the table resolves on the file unchanged (`:45`, `:71-73`, `:91`, `:150`, `:178`, `:188`, each opened individually on `20260823100000_bound_free_tier_capacity.sql` rather than inferred from the diff, and `cmp` reports the whole file byte-identical between the two anchors), and the absences themselves were re-run rather than inherited: over the 24 migrations at `3399b1f9`, `grep -rn '268435456\|256 MiB\|max_total\|total_bytes'` returns nothing and `grep -rin 'retain\|prune\|delete from public.save_versions\|20 revision'` returns nothing outside telemetry — and at `ebdcb317`, `1e7c63c7`, `4cc8a12f`, `0b8af9f8`, `4e489701` (by the same command against `c57f5fa8..4e489701`), `c57f5fa8`, `829d3c11`, `413def1c`, `4c00eaba`, `0e614c71`, `2732e81e`, `14f37a60`, `33cf0701`, `ac58c457`, `a0348955` and `1e9b0a6a` before it — **and at `413def1c` the evidence command stopped returning what this paragraph says it returns, for the first time in the twenty-one anchors it now names.**
+
+**RE-VERIFIED AT `5459254c`.** The recursive Git trees contain the same
+24 SQL migrations with identical blob SHAs at both endpoints. Scanning all
+24 fetched texts with `268435456|256 MiB|max_total|total_bytes` returns
+zero matches. The case-insensitive pattern
+`retain|prune|delete from public.save_versions|20 revision` returns only
+the telemetry comments at lines 268 and 815. In
+`20260823100000_bound_free_tier_capacity.sql`, lines 45, 71–73, 91, 150,
+178 and 188 were opened; the per-payload limit remains 4194304 bytes.
+These are source-text/API checks, not a local SQL execution or a statement
+about a hosted database.
+
+The previous entry **read**:
 
 **RE-VERIFIED AT `b0cf1beb`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
 FIVE.** `git diff --name-only 24b96881..origin/main -- supabase/` returns **no
@@ -15974,6 +16026,99 @@ this window's 82 files might also touch. `main`'s own `browser` job for this
 anchor was still running at the time of writing (see the header above) and
 is not part of what this section can certify.
 
+## 3. What the 2026-09-12 pass checked through #1150
+
+Taken at `5459254c` (v0.0.591), from `b0cf1beb`. GitHub's compare API
+reports **30 commits and 38 changed paths**. The window includes
+#1140, #1141, #1144, #1146, #1147, #1148 and #1150; the release-only commits
+are included in the commit count. The 278 candidate paths were derived
+from §§3–6's backticked existing paths and bare four-digit ADR references,
+including the 01-prefix documents. Their intersection with the changed
+paths has **18 members**:
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- `docs/AGENT_WORKFLOW.md`
+- `docs/PERSISTENCE.md`
+- `docs/PLAYER_STRINGS.md`
+- `docs/adr/0031-build-queue-cancellation-surface.md`
+- `docs/adr/0097-what-the-world-view-is-required-to-communicate.md`
+- `docs/adr/0109-what-a-stale-local-save-is-refused-for.md`
+- `docs/adr/0110-what-security-sector-a-room-is-in.md`
+- `docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md`
+- `docs/adr/README.md`
+- `docs/research/README.md`
+- `package.json`
+- `src/content/default-locale-en.ts`
+- `src/persistence/local/repository.ts`
+- `src/persistence/save-schema.ts`
+- `src/persistence/session/session-controller.ts`
+- `tests/foundation/adr-status-queue-anchor-contract.test.ts`
+
+This is a candidate set, not a claim that every mention is a semantic
+dependency. The pass opened the changed documents and source relevant to
+the claims below at both ends, plus the unchanged sources those claims
+cite. It did not rerun gameplay experiments, SQL suites or every historical
+measurement in this document. Earlier measurements remain attributed to
+their authors. Full repository verification belongs to this PR's CI.
+
+- **The census moves in both directions.** The 104 documents' own leading
+  statuses and their index rows agree: **42 Proposed and 62 Accepted**.
+  The old index had 41 and 61 across 102 documents. ADR 0109 is now Accepted;
+  0110 and 0111 are Proposed and unaccepted. ADR 0107's partial direction
+  ruling does not change its leading status. **Next free number: 0112**,
+  as the index states; 0030 is retired and 0095 remains held according to
+  the index and handover. This pass does not claim a new remote-head sweep.
+  §2's nine entries are unchanged byte for byte, including the five rows
+  for Proposed ADRs 0056, 0059, 0074, 0071 and 0077.
+- **ADR 0031's reported coordinate debt is discharged.**
+  `src/ui/hud/build-panel.ts:740` declares
+  `export const BUILD_QUEUE_ROW_LIMIT = 64;` at both ends. The ADR's
+  amendment now cites 740, replacing 737, which is comment text on both
+  trees. The earlier pass's finding is a record of the defect it
+  found, not an outstanding correction.
+- **ADR 0109 changes the save mechanism, not only its status.**
+  `src/persistence/local/repository.ts:585` compares the expected and
+  durable revisions inside the transaction; `:634` allocates durable
+  plus one, with the caller's revision retained for a legacy slot lacking
+  `currentRevision`. `src/persistence/session/session-controller.ts:871`
+  drops an obsolete session before writing, `:875` guards bookkeeping,
+  and `:916-925` allow one recapture only when the durable revision equals
+  this session's bookkeeping. Another tab's winning write is returned as a
+  refusal at `:917`, without retry. The save-schema change adds a comment
+  to the revision input; the master-seed boundary sentence remains at
+  `src/persistence/save-schema.ts:1380-1382` on both trees.
+- **Two new persistence sentences overstate that implementation.**
+  `docs/PERSISTENCE.md:2649-2650` says the manual refusal is reached only
+  after retry, but the other-tab branch at `session-controller.ts:917`
+  returns the first refusal directly. `docs/PERSISTENCE.md:2654-2656`
+  says an obsolete session produces no report, but manual
+  `saveNow` maps the dropped submission to a failed result at
+  `session-controller.ts:965-974`. These are documentation discrepancies,
+  recorded again beside §5's current scope; this pass does not alter the
+  approved behavior.
+- **The room-render work adds questions, not accepted implementations.**
+  ADR 0097's amendments record six dirty triggers and the missing
+  room-instance transport; ADRs 0110 and 0111 split the sector question
+  from that transport question. Their own Status blocks explicitly limit
+  the owner's ruling to the split. The window's implementation diff is
+  persistence/UI save handling, not a room-condition overlay.
+- **The absence claims still hold within their stated scope.**
+  All 24 migration paths and blob SHAs match both endpoints; scans of all
+  their fetched text find no total-byte quota terms, and the retention
+  pattern still finds only telemetry comments. The capacity SQL citations
+  and migration workflow inputs were opened rather than inferred from
+  that absence. The fresh evidence blocks in §§3–4 state the commands'
+  API/text equivalents and keep their predecessors as history.
+- **The process documents changed too.** AGENTS remains the contract;
+  reservation 2 covers `supabase/migrations/`, not every saved field.
+  The WORKFLOW correction in #1150 names `self-hosted` as the runner
+  label and 16.6 minutes as a suite result. This session checked attempt 1
+  of run 34687887280: the browser job lasted 18 minutes 20 seconds, while
+  its log reported 429 passing tests in 16.6 minutes and three failures.
+  Those are different measurements. Attempt 2's log is separate evidence,
+  not permission to relabel the first attempt green.
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -16146,6 +16291,16 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
+**RE-VERIFIED AT `5459254c`.** The migration workflow has the same blob
+at both endpoints. The fetched `.github/workflows/migrate-database.yml`
+still has the ADR 0016 comment at line 20, `on:` at 33,
+`workflow_dispatch:` at 34, `confirm_project_ref:` at 41 and
+`environment:` at 65. Scanning its text with `^\s*push:` returns zero
+matches. The compare contains no changed `.github/` path. This checks the
+committed workflow, not whether a second hosted project has been created.
+
+The previous entry **read**:
+
 **RE-VERIFIED AT `b0cf1beb`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
 FIVE.** All four citations hold at the new anchor, each opened rather than
 inherited: `:20` is the ADR 0016 §2 comment, `:34` is `workflow_dispatch:`,
@@ -16280,6 +16435,15 @@ thing to watch for is the creation of a second Supabase project.
 ---
 
 ## 5. Where an accepted decision and the code disagree
+
+**2026-09-12 scope at `5459254c`.** §2 still holds nine live entries.
+Two new documentation discrepancies are recorded by this pass:
+`docs/PERSISTENCE.md:2649-2650` requires a retry before every manual refusal,
+but `src/persistence/session/session-controller.ts:917` returns another tab's
+conflict immediately. Its lines 2654–2656 also describe obsolete sessions
+as producing no report, whereas manual `saveNow` returns a failed result at
+`session-controller.ts:965-974`. These qualify the prose, not the approved
+mechanism; the current implementation is the evidence for both.
 
 Everything below describes a mechanism `main` does not exercise, or documents
 that disagree with each other. **None is a status defect.** This paragraph used
@@ -16609,7 +16773,14 @@ one direction.
   > > measured here. It is a member of the window with **no `file:line`
   > > citation anywhere in this file**, so the delta method reaches it only as a
   > > name.
-- **NEW at the previous anchor — nine ADRs are `Proposed` on `main` and not one
+- **2026-09-12 census at `5459254c`: 42 Proposed, 62 Accepted across 104
+  ADR documents**, agreeing with the index. Five of the Proposed documents
+  have §2 rows; the queue has nine entries overall. The change since the
+  previous anchor is one acceptance (0109) and two arrivals (0110, 0111).
+
+  **This bullet's previous opening read:**
+
+  **NEW at the previous anchor — nine ADRs are `Proposed` on `main` and not one
   of them has a §2 row.** At `54418b6` the directory held no `Proposed` document at all;
   at `bb3a01e` it holds **0042, 0043, 0046, 0047, 0048, 0049, 0050, 0051 and
   0052**, plus 0013's standing §§5-6 split. Every one of them arrived in that
@@ -19532,7 +19703,12 @@ never recorded before this round:
   same question and #458's discharge work moved it again. **Three anchors, three
   numbers, one unchanged sentence** — so the quotation above is the citation and
   the number is the aid.)
-- `src/simulation/economy/income.ts` — *"a ninth `Proposed` document in
+- `src/simulation/economy/income.ts` — **2026-09-12 census at `5459254c`:
+  42 Proposed and 62 Accepted across 104 ADR documents**, matching the index.
+  This source file is unchanged in the window and its fetched text contains
+  zero occurrences of `Proposed`. The count remains a document-level mirror.
+
+  **The original sentence and dated corrections follow:** *"a ninth `Proposed` document in
   `docs/adr/`"*. **This entry then said "there is exactly one, and it is 0029",
   which was falsified when 0029 was accepted on 2026-08-26 (#356); the
   replacement said the one `Proposed` document was ADR 0031, and that was
