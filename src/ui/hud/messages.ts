@@ -1365,6 +1365,7 @@ export const HUD_MESSAGE_KEY = {
   regimeBlockAllows: 'hud.regime.block-allows',
   regimeBlockProgress: 'hud.regime.block-progress',
   regimeCategorySeparator: 'hud.regime.category-separator',
+  regimeSentenceRemaining: 'hud.regime.sentence-remaining',
   regimeRoster: 'hud.regime.roster',
   regimeRosterCount: 'hud.regime.roster-count',
   regimeRosterName: 'hud.regime.roster-name',
@@ -1507,3 +1508,4 @@ export const HUD_MESSAGE_KEY = {
 export type HudMessageKey = (typeof HUD_MESSAGE_KEY)[keyof typeof HUD_MESSAGE_KEY];
 
 export const HUD_MESSAGE_KEYS: readonly HudMessageKey[] = Object.values(HUD_MESSAGE_KEY);
+

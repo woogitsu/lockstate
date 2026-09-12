@@ -5485,6 +5485,7 @@ test.describe('the Regime panel (issue #451)', () => {
    */
   const DETAIL_FIRST: HudPrisonerDetailViewModel = {
     entityId: 3,
+    remainingSentenceTicks: 3600,
     name: { givenName: 'Mara', familyName: 'Ostrowska' },
     standingLabelKey: 'risk-tier.1.name',
     classificationGroupId: 'general-population',
@@ -5507,6 +5508,7 @@ test.describe('the Regime panel (issue #451)', () => {
   const DETAIL_SECOND: HudPrisonerDetailViewModel = {
     ...DETAIL_FIRST,
     entityId: 5,
+    remainingSentenceTicks: 7200,
     name: { givenName: 'Delphine', familyName: 'Vanderweghe' },
     standingLabelKey: 'risk-tier.3.name',
     classificationGroupId: 'high-risk',
@@ -6212,6 +6214,10 @@ test.describe('the Regime panel (issue #451)', () => {
       expect(stale.probe.detail.prisoner).toBeNull();
       expect(stale.probe.detail.nameText).toBe('');
       expect(stale.probe.detail.needs).toEqual([]);
+      const sentence = page.locator('[data-sentence-remaining]');
+      await expect(sentence).toBeHidden();
+      await expect(sentence).toHaveText('');
+      expect(await sentence.getAttribute('data-remaining-days')).toBeNull();
 
       // And the right answer still lands.
       await page.evaluate(
@@ -6221,6 +6227,24 @@ test.describe('the Regime panel (issue #451)', () => {
       const settled = await rowsByPrisoner(page);
       expect(settled.probe.detail.laidOut).toBe(true);
       expect(settled.probe.detail.prisoner).toBe('3');
+      await expect(sentence).toHaveText('Sentence remaining (in-game days): 1.5');
+      // A later detail observation carries less time; repeating it while
+      // paused must not invent wall-time progress between replies.
+      for (let refresh = 0; refresh < 2; refresh += 1) {
+        await page.evaluate(
+          ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+          [TIMETABLE, ROSTER, { ...DETAIL_FIRST, remainingSentenceTicks: 1200 }] as const,
+        );
+        await expect(sentence).toHaveText('Sentence remaining (in-game days): 0.5');
+      }
+      // A subsequent choice must replace this prisoner's duration too.
+      await page.locator('.hud-regime__roster-row[data-prisoner="5"]').click();
+      await expect(sentence).toBeHidden();
+      await page.evaluate(
+        ([regime, roster, detail]) => window.lockstateUiHarness.reportRegime(regime, roster, detail),
+        [TIMETABLE, ROSTER, DETAIL_SECOND] as const,
+      );
+      await expect(sentence).toHaveText('Sentence remaining (in-game days): 3');
     });
 
     test('a prisoner who drops out of the four-row window is still the prisoner on screen', async ({ page }) => {
@@ -6288,6 +6312,11 @@ test.describe('the Regime panel (issue #451)', () => {
        */
       await page.evaluate(() => window.lockstateUiHarness.clearPrisonerSelection());
       const { probe, rows } = await rowsByPrisoner(page);
+
+      const sentence = page.locator('[data-sentence-remaining]');
+      await expect(sentence).toBeHidden();
+      await expect(sentence).toHaveText('');
+      expect(await sentence.getAttribute('data-remaining-days')).toBeNull();
 
       expect(probe.detail.laidOut).toBe(false);
       expect(probe.detail.prisoner).toBeNull();
@@ -6437,6 +6466,32 @@ test.describe('the Regime panel (issue #451)', () => {
           probe.lastLineBottom,
           `the roster's last line is below the fold at ${width}x${height} once a prisoner is chosen`,
         ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+
+        // #958: measure the text itself, not just its wrapping container.
+        const sentence = page.locator('[data-sentence-remaining]');
+        await expect(sentence).toHaveText('Sentence remaining (in-game days): 1.5');
+        await sentence.scrollIntoViewIfNeeded();
+        await expect(sentence).toBeVisible();
+        const readout = await sentence.evaluate((node) => {
+          const panel = node.closest('.hud-regime')!;
+          const panelBox = panel.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          return {
+            left: panelBox.left, right: panelBox.right,
+            top: panelBox.top, bottom: panelBox.bottom,
+            text: [...range.getClientRects()].map((rect) => ({
+              left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+            })),
+          };
+        });
+        expect(readout.text.length).toBeGreaterThan(0);
+        for (const line of readout.text) {
+          expect(line.left).toBeGreaterThanOrEqual(readout.left);
+          expect(line.right).toBeLessThanOrEqual(readout.right);
+          expect(line.top).toBeGreaterThanOrEqual(readout.top);
+          expect(line.bottom).toBeLessThanOrEqual(readout.bottom);
+        }
       }
       // Printed for the next change to this panel: the figures, not the verdict.
       console.log(`[#895 inspector] ${JSON.stringify(measured)}`);

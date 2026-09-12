@@ -2663,6 +2663,9 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // A list separator, which is vocabulary rather than punctuation: it is `، `
   // in Arabic and `、` in Japanese.
   'hud.regime.category-separator': ', ',
+  // #958: remaining ticks at the detail reply divided by the published day
+  // length; a duration, not a real-world date or a promise of discharge now.
+  'hud.regime.sentence-remaining': 'Sentence remaining (in-game days): {days}',
   // The roster. `{shown} of {total}` in the shape `hud.status.occupancy-value`
   // set, because the panel draws a window and the prison is the ceiling.
   //

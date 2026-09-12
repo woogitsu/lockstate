@@ -465,3 +465,51 @@ describe('choosing a prisoner is chrome', () => {
     expect(refusalMessageKey('select-prisoner')).toBeUndefined();
   });
 });
+
+describe('the sentence shown in the inspector (#958)', () => {
+  it('forwards the deadline at the observed tick and counts down with simulation time', () => {
+    const { runtime, entityId } = oneSettledPrisoner();
+    const detail = detailOf(runtime, entityId);
+    const tick = runtime.kernel.tick;
+    expect(detail.classified).toBe(true);
+    expect(detail.sentence.endTick).toBeGreaterThan(tick + 2400);
+    const first = prisonerDetailFromProjection(detail, tick);
+    expect(first.remainingSentenceTicks).toBe(detail.sentence.endTick - tick);
+    // Same authoritative tick, as on a paused refresh: no wall clock advances it.
+    expect(prisonerDetailFromProjection(detail, tick).remainingSentenceTicks).toBe(first.remainingSentenceTicks);
+    stepTo(runtime, tick + 2400);
+    expect(prisonerDetailFromProjection(detailOf(runtime, entityId), runtime.kernel.tick).remainingSentenceTicks)
+      .toBe(first.remainingSentenceTicks! - 2400);
+  });
+
+  it('does not turn an unclassified arrival or a wrapped deadline into a release forecast', () => {
+    const { runtime, entityId } = oneSettledPrisoner();
+    const detail = detailOf(runtime, entityId);
+    expect(prisonerDetailFromProjection({ ...detail, classified: false }, runtime.kernel.tick).remainingSentenceTicks)
+      .toBeUndefined();
+    expect(prisonerDetailFromProjection({
+      ...detail, sentence: { ...detail.sentence, endTick: 10, lengthTicks: 0xffff_ffff },
+    }, runtime.kernel.tick).remainingSentenceTicks).toBeUndefined();
+    expect(prisonerDetailFromProjection(detail).remainingSentenceTicks).toBeUndefined();
+  });
+
+  it('reads the tick from the correlated reply, and keeps the released path', async () => {
+    const { runtime, entityId } = oneSettledPrisoner();
+    const detail = detailOf(runtime, entityId);
+    const channel = new FakeChannel();
+    const reader = new PrisonerDetailReader(channel, { generateMessageId: () => 'sentence', replyTimeoutMs: 1000 });
+    const pending = reader.read(entityId);
+    await settle();
+    channel.deliver(reply(channel.idOf(0), detail));
+    const result = await pending;
+    expect(result.kind).toBe('detail');
+    if (result.kind !== 'detail') throw new Error('Expected the selected prisoner.');
+    expect(result.detail.remainingSentenceTicks).toBe(detail.sentence.endTick - 7);
+    const after = reader.read(entityId);
+    await settle();
+    channel.deliver(releasedReply(channel.idOf(1)));
+    await expect(after).resolves.toEqual({ kind: 'released' });
+    reader.dispose();
+  });
+});
+

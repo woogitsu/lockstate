@@ -552,6 +552,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/display-scale.ts',
       'src/ui/host-refusal.ts',
       'src/ui/object-tool.ts',
+      'src/ui/prisoner-sentence.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',

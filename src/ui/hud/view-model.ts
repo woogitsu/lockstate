@@ -1965,7 +1965,11 @@ export interface HudPrisonerRosterViewModel {
  * either figure is new player-facing copy -- `AGENTS.md`'s fourth exclusion,
  * the owner's.
  */
+/** #958 corrects the historical sentence refusal above: wording is released;
+ * the existing detail reply and clock now provide an in-game-day readout. */
 export interface HudPrisonerDetailViewModel {
+  /** Remaining ticks at the detail reply's tick; absent before classification or for an unreadable deadline. */
+  readonly remainingSentenceTicks?: number;
   /**
    * The prisoner this answer is about, so a panel can refuse to paint a reply
    * about somebody the player has since moved off. It is the projection's
@@ -2089,3 +2093,4 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
   clock: UNKNOWN_HUD_CLOCK,
   alerts: [],
 };
+

@@ -2603,7 +2603,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // After the roster deliberately, so that a snapshot carrying both leaves the
     // checked row and the block below it agreeing about the same prisoner rather
     // than one tick apart.
-    regimePanel.setPrisonerDetail(next.prisonerDetail);
+    regimePanel.setPrisonerDetail(next.prisonerDetail, next.clock.dayLengthTicks);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
@@ -2717,3 +2717,4 @@ export function transportIntent(kind: TransportIntentKind, viewModel: HudViewMod
       return { kind: 'set-clock', mode: 'running', speed: nextFastForwardSpeed(viewModel.clock.speed) };
   }
 }
+

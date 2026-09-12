@@ -7,6 +7,7 @@ import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { createSegmentedBar, type SegmentedBar } from '../primitives/segmented-bar';
 import { createStatusBadge, type BadgeTone, type StatusBadge } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
+import { remainingSentenceDays } from '../prisoner-sentence';
 import type {
   HudActorNameViewModel,
   HudLocalizer,
@@ -80,6 +81,10 @@ import type {
  * still not a date. The rest is copy: naming the sentence, the current action
  * or the gang needs words nobody has authored, and authoring one here would be
  * `AGENTS.md`'s fourth exclusion.
+ *
+ * **#958 correction:** the inspector now adds a sentence-remaining readout
+ * from its own projection tick and the existing clock's day length. The old
+ * refusal below predates the owner's release of wording choice.
  *
  * **So the inspector adds no player-facing sentence at all.** Its heading is
  * the prisoner's *name*, which is state rather than copy (ADR 0015), its badge
@@ -750,7 +755,7 @@ export interface RegimePanel {
    * the *player* is not, so a reply that was in flight while they moved to
    * another row would otherwise put somebody else's needs under their name.
    */
-  setPrisonerDetail(detail: HudPrisonerDetailViewModel | undefined): void;
+  setPrisonerDetail(detail: HudPrisonerDetailViewModel | undefined, dayLengthTicks?: number): void;
   /**
    * Forget which prisoner is selected, because the worker says there is no such
    * live prisoner any more (issue #895).
@@ -1532,6 +1537,11 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     },
   );
 
+  // #958: pooled with the inspector; no wall-time extrapolation and no live
+  // region announcing a countdown on every projection refresh.
+  const detailSentence = eyebrowText('', 'hud-regime__detail-sentence');
+  detailSentence.dataset['sentenceRemaining'] = '';
+  let detailDayLengthTicks = 0;
   const detailName = valueText('', 'hud-regime__detail-name');
   const detailBadge = createStatusBadge({ tone: 'neutral', text: '' });
   const detailBlock = element('div', {
@@ -1542,6 +1552,7 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
         children: [detailName, detailBadge.element],
       }),
       detailNeedList,
+      detailSentence,
     ],
   });
 
@@ -1601,6 +1612,13 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
     // rather than an omission (see this module's header).
     const shown = detail !== undefined && detail.entityId === selectedPrisonerId ? detail : undefined;
     detailBlock.hidden = shown === undefined;
+    const sentenceDays = remainingSentenceDays(shown?.remainingSentenceTicks, detailDayLengthTicks);
+    detailSentence.hidden = sentenceDays === undefined;
+    detailSentence.textContent = sentenceDays === undefined ? '' : t(HUD_MESSAGE_KEY.regimeSentenceRemaining, {
+      days: localizer.formatNumber(sentenceDays, { maximumFractionDigits: 1 }),
+    });
+    if (sentenceDays === undefined) delete detailSentence.dataset['remainingDays'];
+    else detailSentence.dataset['remainingDays'] = String(sentenceDays);
     if (shown === undefined) {
       delete detailBlock.dataset['prisoner'];
       detailName.textContent = '';
@@ -1727,7 +1745,8 @@ export function createRegimePanel(options: RegimePanelOptions): RegimePanel {
       // two questions, and this is the answer to only one of them.
       paintRoster();
     },
-    setPrisonerDetail(next: HudPrisonerDetailViewModel | undefined): void {
+    setPrisonerDetail(next: HudPrisonerDetailViewModel | undefined, dayLengthTicks = 0): void {
+      detailDayLengthTicks = dayLengthTicks;
       detail = next;
       paintDetail();
     },
