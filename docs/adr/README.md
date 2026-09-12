@@ -4,6 +4,20 @@ This file is the index of every ADR in this directory, and the only recorded
 statement of which numbers are taken. Adding an ADR means adding its row here
 in the same commit — the number is not reserved until it appears below.
 
+> **That second clause overstates what this table delivers, and the gap is
+> named here rather than left for a reader to trip over.** Swept 2026-09-12
+> with `git log --all --diff-filter=A --name-only -- 'docs/adr/[0-9]*.md'`
+> against the files on disk: **`0055`, `0058`, `0060`, `0072` and `0095` have
+> neither a file nor a row**, so about those five this table is silent while
+> claiming to be the record. Four of them never existed on any ref; `0095` is
+> **held** on `origin/measure/893-coverage-and-response-draw-from-one-pool`,
+> unmerged and with no pull request since 2026-09-03 — which is why the
+> next-free line has stepped over it since ADR 0096. `0030` was in that
+> condition too and now has a row; the other five are a decision nobody has
+> taken, not an oversight this commit could close. **Releasing a held number
+> discards somebody's drafted decision, so it is the owner's and not an
+> agent's.**
+
 `tests/foundation/adr-numbering-contract.test.ts` enforces the mechanical part
 of that: filenames are `NNNN-kebab-case.md`, each four-digit prefix is unique,
 the number in the filename matches the number in the `# ADR…` heading, every
@@ -183,6 +197,7 @@ Nothing here changes a status; this table only reports them.
 | [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Accepted, 2026-08-25 — as the mechanism; its three questions stay open, and its subject became reachable when 0028 shipped (measured 2026-08-26) |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
+| 0030 | *Retired — held by two unmerged drafts; both subjects decided elsewhere, and the number does not return to the pool* | Never on disk and never free. **Two branches took it within a day of each other**, each having correctly enumerated the open pull requests first and each moving this index's next-free line to 0031 — the collision [ADR 0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) records as *"two collisions on 0024/0025 and one on 0030"*. `0030-restoring-an-interrupted-incident-response.md` sits on `origin/fix/352-incident-response-record-persistence` ([PR #361](https://github.com/woogitsu/lockstate/pull/361), closed unmerged) and was **superseded by ADR 0033**, Accepted 2026-08-26, which names that branch as the holder and argues against its decisions rather than inheriting them. `0030-concurrent-use-ceiling-scope.md` sits on `origin/claude/concurrent-use-ceiling-research`; its subject — ADR 0028 decision 2 and the objectless `room.yard` of that ADR's open question 4 — was decided by [ADR 0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md). **The number is retired rather than freed, and that is the decision rather than bookkeeping.** Thirteen references to "ADR 0030" stand on `main`, three of them in production source — `src/persistence/save-migrations.ts`, `src/simulation/rooms/bounds-recovery.ts`, `src/simulation/runtime/session-systems.ts` — and each cites *decision 3* to explain why the shipped design differs from it (`bounds-recovery.ts`: *"the premise ADR 0030 decision 3 rested on, that the restored session could not reach the facts, turned out false"*). Freeing it the way 0018 was freed would let a future ADR take 0030 and silently re-point all thirteen at an unrelated document. 0018 could be freed because nothing cited it. **Ruled by the owner on 2026-09-12** from a clickable option — *"Wycofany — zastąpiony przez 0033 i 0071"* ("Retired — superseded by 0033 and 0071"), the weaker kind of provenance, recorded as such. Do not delete `origin/fix/352-incident-response-record-persistence` or `origin/claude/concurrent-use-ceiling-research`: neither has an open pull request, so `deletebranches.sh`'s `open_heads` guard does not protect them, and they are the only copies of what this row describes. |
 | [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Accepted, 2026-08-26 — with open question 4 promoted to blocking |
 | [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Accepted, 2026-08-26 |
 | [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Accepted, 2026-08-26 — **amended in place**: its open question 1 was commissioned and is now answered (a restored session re-dispatches) |

@@ -16,6 +16,31 @@ owner had already given, which is the expensive direction.** What follows is
 correct as of 2026-09-05; `AGENTS.md` is the contract and wins wherever the two
 differ.
 
+> **FIVE TIMES, AND THE SENTENCE ABOVE IS ITSELF ONE OF THEM. Corrected
+> 2026-09-12; the original is kept because a file that miscounts its own
+> mistakes is the best available demonstration of why it should not be
+> trusted over `AGENTS.md`.**
+>
+> **The date stamp was wrong by five days, refuted by this file's own
+> headings.** *"Correct as of 2026-09-05"* — and the paragraphs below it are
+> dated 2026-09-06, -07, -08, -09 and -10. No diff finds that;
+> `docs/AGENT_WORKFLOW.md` §4's *"reading a file's own headings against each
+> other"* finds it in a minute. **Correct as of 2026-09-12**, and this is the
+> line the next editor must touch.
+>
+> **The count contradicted itself in three places.** *"twice"* here,
+> *"the third time"* below, *"three recorded mistakes"* further down. A tally
+> is the sentence form §4 says rots first, and this one rotted inside the file
+> that quotes the rule. **Five**, listed so the number stops being the claim:
+> the three this file already records, plus the two found on 2026-09-12 — the
+> stale CI pool below, and this stamp.
+>
+> **And the self-description no longer holds either.** *"Both times in the
+> direction of asking for permission"* was true of the first errors and is not
+> true of the new ones: a stale runner pool and a stale date are wrong about
+> **measurements**, not about permission breadth. Both directions are now on
+> the list, so neither is the one to watch for.
+
 **The first of those four was released on 2026-09-03, narrowly.** The owner
 authorised the one `main` and the one Worker module that carry ADR 0046's
 telemetry ingest, in their own words and dated, in that section. Nothing else
@@ -103,6 +128,32 @@ its 3.0-minute cap on three of the four runs** while its neighbours held
 1.5-2.7m and the file moved under 3% — the variance was the test's own.
 **#1093 fixed it** (merged `8a35167b`): `#331` **1.5m** on the next finished
 run, `app-shell.spec.ts` 21.3m → 18.6m.
+
+**AND EVERY RUNNER NAME AND EVERY TIMING ABOVE IS FROM A POOL CI NO LONGER
+RUNS ON — this file never received `AGENTS.md`'s correction of 2026-09-10, and
+that is the fourth of the five mistakes the preamble now counts.** It is the
+first that is wrong about a *measurement* rather than about the breadth of a
+permission.
+
+`AGENTS.md`'s entry reads `runner_name` off the API: the pool is
+**`lockstate-wsl-DOM-NEW-01`, `-02` and `-03`**, the runner user is
+**`mateusz`** rather than `matma`, and whether it grants passwordless sudo is
+**untested** rather than known-absent. Read every `woogitsu-linux-*` figure
+above as history.
+
+**Dated to the minute, because the gap is the lesson.** `dbd70cff` added that
+correction to `AGENTS.md` at 2026-09-10 14:00:12Z and did not touch this file;
+this file's own last commit before the correction was `f95c2d9f`, 11:25:01Z the
+same day.
+
+**Re-measured 2026-09-12 on the pool that is actually serving**, off the job
+logs of PR #1147 (runner path `/home/mateusz/actions-runner-lockstate-01/`):
+the whole `browser` suite is **16.6m** for 429 tests, and a green run the same
+morning took **18.3m**. Against the 35.6–42.0 minutes `AGENTS.md` records for
+finished runs on the retired pool, that is **roughly half** — so the
+90-minute budget has far more headroom than the 2026-09-08 entry assumes, and
+any argument resting on "the suite needs ~40 minutes" is resting on the old
+pool.
 
 **A SIXTH RELEASE LANDED ON 2026-09-09, AND IT IS THE FOURTH INSIDE
 RESERVATION 3 — the first that adds a gate rather than widening or resizing

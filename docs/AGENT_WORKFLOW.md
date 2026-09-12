@@ -480,6 +480,34 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   like a broken test file or a broken install. Omit the flag; the default
   reporter is fine. Recorded because the failure mode is expensive to diagnose
   and cheap to avoid.
+- **THE PREMISE OF THIS ENTIRE BULLET HAS EXPIRED, AND EVERYTHING BELOW IT IS
+  HISTORY. Re-measured 2026-09-12 in `/workspace/lockstate` at `2d21c8a5`:**
+  `git rev-parse --is-shallow-repository` is **`false`**, `.git/shallow` does
+  **not exist**, `git rev-list --count HEAD` is **2,639**, and the root commit
+  is **`b9a51c15 chore: initialize Lockstate repository`** rather than a graft.
+  `git branch -r --contains` resolves `c56e18bd` and `24ef7aec` to **183 refs
+  each**, where this bullet records 0. `tests/foundation/` is **fully green**
+  inside `pnpm verify` — 436 files, 5045 passed, 2 skipped, **0 failed** — so
+  the baseline is zero, not three and not two. **`git log -S`,
+  `--diff-filter=A` and `--contains` are usable again.**
+  - **This bullet predicted its own rot and was right, one direction further
+    than it guessed.** It says *"the number to distrust here is not the count
+    of failures, it is the word 'three'"*, and that the `2` *"is due to go
+    stale exactly the way the `3` above it did."* It went to **0**, and the
+    *reason* went with it rather than the count alone.
+  - **The count above is already rotting, which is the demonstration.** An
+    audit measured 2,633 on this same container earlier the same day; `main`
+    moved and it is 2,639 now. **The durable claim is the boolean, not the
+    tally** — so run `git rev-parse --is-shallow-repository` yourself and
+    believe neither state written here. That is the one instruction in this
+    bullet that never went stale, and it is now the only one to follow.
+  - **It is left in place rather than deleted for §4's reason** — the chain of
+    six nested corrections below is this document's best worked example of how
+    a guess becomes a mechanism — **and because it is the most expensive
+    sentence in these docs while it stands.** It does not merely mislead: it
+    instructs an agent to refuse questions it can answer. A brief written for
+    this very pass repeated it verbatim, and every agent that obeyed it would
+    have reported a datable commit as *undecidable*.
 - **This container's clone is SHALLOW, which turns three of
   `tests/foundation/`'s tests red on plain `main` and quietly breaks
   `git log -S` as an answer to "was this ever here?"** Measured 2026-09-05 in a
