@@ -1509,6 +1509,15 @@
   overflow-y: auto;
 }
 
+/* Keep the current building or room choice visible across the whole row,
+   using the same selected-state tokens as tabs and choice buttons. The badge
+   and aria-checked remain the non-colour carriers; no row geometry changes. */
+.hud-build__list > .ui-row[aria-checked='true'],
+.hud-rooms__rows > .ui-row[aria-checked='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 /* ------------------------------------------------------------------ */
 /* Staff panel (ADR 0025)                                              */
 /* ------------------------------------------------------------------ */
