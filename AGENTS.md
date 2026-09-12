@@ -574,6 +574,37 @@ that Worker — so a merge updates the public site with no further approval gate
 ordinary increments under the mandate. Anything touching the four above goes to
 the owner with the evidence, not to `main`.
 
+> **THE CLAUSE ABOUT `lockstate.io` IS FALSE AND HAS BEEN SINCE THE EVENING IT
+> WAS WRITTEN. It is kept rather than rewritten, per `docs/AGENT_WORKFLOW.md`
+> §4's rule about marking both directions, and because what it got wrong is
+> instructive: it is the paragraph that tells an agent what a merge costs.**
+>
+> A merge publishes to **`https://lockstate-staging.matmaxalez94.workers.dev/`**
+> and **not** to `lockstate.io`. The section this paragraph cites says so
+> itself, and has since 2026-08-27: *"`lockstate.io` does not receive the
+> deploy, and that is deliberate — the owner has it switched off."* — recorded
+> there in the owner's own words, *"Nikt nie gra, tylko ja znam tę domenę.
+> Lockstate.io ma wyłączony deploy, to nie błąd."*
+>
+> **Dated, because the interval is the point.** The paragraph above landed in
+> `9a391bb1` at 2026-08-27 20:10:02Z. `b8a642eb` — *"Correct the lockstate.io
+> note: the domain's deploy is off on purpose, not broken"* — landed at
+> 20:19:56Z and did not touch this file. **Nine minutes and fifty-four
+> seconds**, and then sixteen days.
+>
+> **It is wrong in the expensive direction, which is why it is worth a block
+> rather than a clause.** It overstates what a merge does, so an agent reads
+> every green merge as a publication to a domain players could reach, and buys
+> caution with a false premise. `docs/DEPLOYMENT.md` already warns that *"Any
+> sentence below or in an ADR that treats a merge as 'updating the public site'
+> is describing the arrangement, not today"* — and that warning could not reach
+> this sentence, because this sentence is neither below it nor in an ADR. **A
+> warning scoped to where its author expected the error is not a warning.**
+>
+> Nothing else in the paragraph moves: a merge still publishes without a further
+> gate, green ordinary increments are still merged under the mandate, and
+> anything touching the four reservations above still goes to the owner.
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.
