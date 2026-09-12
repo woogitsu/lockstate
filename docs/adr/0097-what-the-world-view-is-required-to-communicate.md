@@ -524,7 +524,7 @@ competing.
 > can satisfy with the existing technique — it is a hard requirement the
 > existing technique cannot meet, because **no room-instance identity or
 > rectangle reaches the render side of the worker boundary at all today.**
-> `RenderFrame` (`src/rendering/feed/render-feed.ts:41-46`) has exactly three
+> `RenderFrame` (`src/rendering/feed/render-feed.ts:42-51`) has exactly three
 > data fields — `world`, `structures`, `actors` — and none of them carries a
 > room instance id or rectangle; `RenderStructure` (`src/rendering/world/structures.ts`)
 > is walls, doors and build orders, not rooms. `roomAccess` and the rectangle
