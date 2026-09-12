@@ -492,6 +492,67 @@ edge, at `src/rendering/phaser/tile-layer.ts:374-386`. A boundary uses a
 different visual channel from a floor wash, so identity and condition stop
 competing.
 
+> **AMENDMENT, 2026-09-11 (issue #1022) — the owned-land precedent this
+> paragraph cites is a technique, not a transport, and Option A is still
+> unimplemented because the transport it needs does not exist.** VERIFIED,
+> read, and checked against a mutation. `tile-layer.ts:374-389`'s owned-land
+> outline draws by asking `world.isTileOwned(tileX, tileY ± 1)` **per tile** —
+> ownership is a boolean field on `TileSample` (`owned`, one of the six fields
+> `world-view.ts:36-46` enumerates), with no concept of *which parcel*, only
+> *owned or not*. That is the same shape `src/rendering/world/room-labels.ts`
+> uses for a room's **type**: a 4-connected flood fill over one scalar field
+> (`zoning`), boundary drawn where the field's value changes. Neither reads a
+> wall or a door edge, and `room-labels.ts`'s own docblock says why for its
+> case: *"The renderer has no room-instance identity."* (verbatim in
+> `src/rendering/world/room-labels.ts`) Its test suite pins the consequence as a passing assertion
+> (`tests/unit/rendering-room-labels.test.ts:106-122`, *"gives two adjacent
+> rooms of the SAME type one name, and it is true of every tile under it"*) —
+> mutated here (`fillRegion`'s neighbour check forced to `continue`
+> unconditionally) and watched go red, 9 of 14 in that file including this one
+> (`AssertionError: expected … to have a length of 1 but got 12`), then
+> reverted to a clean `git diff`.
+>
+> **A condition mark cannot be built the same way, and this is why it
+> matters here rather than being a tidiness note.** Two adjacent `room.cell`
+> instances sharing a wall are two different answers to `roomAccess`
+> (ADR 0108) — one may be `'doorway'`, the other `'unreachable'` — and a mark
+> derived from a per-tile scalar field the way the owned-land outline and the
+> room-name flood fill both are would merge them into one boundary and one
+> verdict, exactly the class of false claim this document's decision 4 and
+> `AGENTS.md` reservation 4 both refuse. So decision 2's *"keyed by room
+> instance rather than by tile"* is not a stylistic preference this paragraph
+> can satisfy with the existing technique — it is a hard requirement the
+> existing technique cannot meet, because **no room-instance identity or
+> rectangle reaches the render side of the worker boundary at all today.**
+> `RenderFrame` (`src/rendering/feed/render-feed.ts:41-46`) has exactly three
+> data fields — `world`, `structures`, `actors` — and none of them carries a
+> room instance id or rectangle; `RenderStructure` (`src/rendering/world/structures.ts`)
+> is walls, doors and build orders, not rooms. `roomAccess` and the rectangle
+> it is asked about both live worker-side, in `room-projection.ts`, and reach
+> only the HUD's `RoomListRowViewModel` (ADR 0108's own wiring, confirmed live
+> in `docs/research/2026-09-11-does-unreachable-show-in-the-world.md`) — never
+> the render channel `TileLayer` reads.
+>
+> **What this changes about Option A's cost, which this document did not
+> price.** Before a condition ordinal can ride the delta channel per
+> instance, an instance's *identity and rectangle* have to reach the render
+> side by some channel first — a fact Option A's costing (§8) assumed away by
+> citing a same-shaped technique that in fact solves a different problem
+> (a global boolean, or a room *type*, neither of which needs telling two
+> instances apart). Whether that channel is a new field on the geometry
+> snapshot (instance rectangles change rarely, so the 30-second net may be
+> the right cadence for the shape while the condition ordinal beside it still
+> needs the delta cadence decision 2 requires) or something else is a design
+> question this document did not ask and should not be answered inside
+> implementation code — `AGENTS.md`'s rule on architecture absent from an ADR.
+> **Nothing is implemented under this ADR as of 2026-09-11** (confirmed by
+> reading `RenderFrame`, `TileLayer`, the render-actors payload at
+> `RENDER_ACTORS_SCHEMA_VERSION = 3` with no room-condition record, and
+> `docs/adr/STATUS-QUEUE.md`'s own accounting of the window that merged this
+> ADR, which lists no follow-on implementation commit); this amendment is
+> filed so the next attempt starts from the real cost rather than the priced
+> one.
+
 ### 4. What the world view is *not* required to carry
 
 **Recommended, and it is the half that keeps this decision bounded.** Obligation
