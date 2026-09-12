@@ -2884,6 +2884,16 @@
 
 .hud-regime__detail[hidden] { display: none; }
 
+/* A duration sentence must wrap in the narrow rail, including at larger UI
+   scales. The shared eyebrow's single-line heading treatment would clip it. */
+.hud-regime__detail-sentence {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-subtle);
+}
+
 /* The name left and the badge right: the shape every readout line in this HUD
    uses. `align-items: center` so a wrapped name keeps the badge beside its
    middle, exactly as `.hud-regime__roster-row` does. */

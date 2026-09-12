@@ -1,5 +1,6 @@
 import type { PrisonerDetailViewModel } from '../simulation/presentation/prisoner-projection';
 import type { HudPrisonerDetailViewModel } from './hud';
+import { remainingSentenceTicks } from './prisoner-sentence';
 import { prisonerNeed, prisonerStandingLabelKey } from './simulation-prisoner-roster';
 import {
   SimulationProjectionRequester,
@@ -72,6 +73,12 @@ import {
  *   machine name with no locale key, and rendering it would put raw dotted text
  *   in front of a player. ADR 0103 decision 1 declines a `nameKey` on exactly
  *   this reading and its open question 8 is where one would come back.
+ * **Correction, #958:** the sentence part of the following historical refusal
+ * no longer applies. AGENTS released wording choice on 2026-09-04. The reader
+ * now carries remaining ticks measured at the reply's tick; the panel uses
+ * the existing clock's day length. An unclassified or wrapped deadline stays
+ * absent, and a missing detail still takes the existing released path.
+ *
  * - **`sentence` and `currentAction`.** Both are renderable and neither can be
  *   *said*: a tick count is not a date (`regime.ts` says outright that
  *   `DAY_LENGTH_TICKS` is a tick budget rather than a mapping onto a clock
@@ -113,8 +120,10 @@ import {
  * put a second definition of "which need is worst" on this thread, where the
  * roster's `lowestNeed` is the projection's answer to exactly that question.
  */
-export function prisonerDetailFromProjection(view: PrisonerDetailViewModel): HudPrisonerDetailViewModel {
+export function prisonerDetailFromProjection(view: PrisonerDetailViewModel, observedTick?: number): HudPrisonerDetailViewModel {
+  const sentenceTicks = remainingSentenceTicks(view, observedTick);
   return {
+    ...(sentenceTicks === undefined ? {} : { remainingSentenceTicks: sentenceTicks }),
     entityId: view.entityId,
     ...(view.name === undefined ? {} : { name: { givenName: view.name.givenName, familyName: view.name.familyName } }),
     standingLabelKey: prisonerStandingLabelKey(view),
@@ -204,7 +213,7 @@ export class PrisonerDetailReader {
         target: { kind: 'entity', entityId },
       });
       if (reply.view === undefined) return { kind: 'released' };
-      return { kind: 'detail', detail: prisonerDetailFromProjection(reply.view) };
+      return { kind: 'detail', detail: prisonerDetailFromProjection(reply.view, reply.tick) };
     } finally {
       this.reading = false;
     }
@@ -215,3 +224,4 @@ export class PrisonerDetailReader {
     this.requester.dispose();
   }
 }
+
