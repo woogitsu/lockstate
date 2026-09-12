@@ -289,6 +289,38 @@ unsolicited `clock-state` reporting a tick at or past the highest
 `queued` (`:311`), and a request presumed lost (`:361`). `docs/RENDERING.md:170-178` states the same set
 in prose.
 
+> **AMENDMENT, 2026-09-12 — the count is six, not five, and none of those five
+> line numbers still lands.** The paragraph above is kept rather than corrected,
+> per `docs/AGENT_WORKFLOW.md` §4, because it is a worked example of the
+> sentence form that section says rots first: a tally plus five anchors, every
+> part of which was true when written.
+> [ADR 0111](./0111-how-a-room-instances-rectangle-reaches-the-render-side.md)
+> §3 carries the re-read list, each site opened.
+>
+> **The sixth is the one that matters and it did not exist when this was
+> written:** ADR 0099's world-revision marker, read off a delta, at
+> `src/rendering/feed/simulation-snapshot-feed.ts:560`. It makes a *geometry*
+> change prompt rather than 30 seconds stale, because `SparseWorld.setZoning`
+> moves that marker (`src/simulation/world/sparse-world.ts:908`).
+>
+> **And the last clause above — that `docs/RENDERING.md` states the same set in
+> prose — is the half worth reading, because the two documents have since moved
+> apart and the other one moved correctly.** That file today says the marker
+> *"sets the feed's sixth `dirty` mark"* and lists all six triggers, *"when a
+> delta reports that the drawn world changed"* among them. So a reader who
+> checked this paragraph against its own cross-reference would have found the
+> disagreement without opening any code — which is exactly the cheap check
+> `docs/AGENT_WORKFLOW.md` §4 recommends when it says reading a file's own
+> headings against each other catches what a diff cannot.
+>
+> **This does not weaken decision 2 and must not be read as doing so.** Its
+> subject is a *condition* cue — occupancy, need satisfaction, reachability —
+> and none of those is a drawn-world write, so none moves the marker. The
+> sentence below this one, that every trigger is a fact about a message rather
+> than about the simulation, is exactly what the sixth trigger does **not**
+> change: a marker that moves on a zoning write is still a fact about a message,
+> and still says nothing about a tick.
+
 **Every one of them is a fact about a message the main thread sent or received.
 None of them is a fact about the simulation.** So a quantity that changes
 because the simulation ticked — occupancy, need satisfaction, a requirement
@@ -524,7 +556,7 @@ competing.
 > can satisfy with the existing technique — it is a hard requirement the
 > existing technique cannot meet, because **no room-instance identity or
 > rectangle reaches the render side of the worker boundary at all today.**
-> `RenderFrame` (`src/rendering/feed/render-feed.ts:41-46`) has exactly three
+> `RenderFrame` (`src/rendering/feed/render-feed.ts:42-51`) has exactly three
 > data fields — `world`, `structures`, `actors` — and none of them carries a
 > room instance id or rectangle; `RenderStructure` (`src/rendering/world/structures.ts`)
 > is walls, doors and build orders, not rooms. `roomAccess` and the rectangle
