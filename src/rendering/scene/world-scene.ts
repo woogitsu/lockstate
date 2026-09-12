@@ -582,11 +582,15 @@ export class WorldScene extends Phaser.Scene {
         this.touchGestures.begin({ id: pointer.id, x: pointer.x, y: pointer.y });
         // One finger builds only while a tool is armed *and* it is the only
         // finger down; a second finger arriving hands the gesture back to the
-        // camera (see `pointermove`).
+        // camera before either finger can commit a placement on release.
         if (this.activeTouchCount() === 1) {
           if (this.isBuildArmed()) this.beginBuild(pointer);
           else if (this.isObjectArmed()) this.beginObject(pointer);
           else if (this.isRoomArmed()) this.beginArea(pointer);
+        } else {
+          // Cancel on arrival, not on the first pinch move: either finger may
+          // lift before moving, and its release must not place the old preview.
+          this.cancelAllGestures();
         }
         return;
       }
@@ -1225,8 +1229,8 @@ export class WorldScene extends Phaser.Scene {
    * Abandons whichever of the three pointer gestures is in progress, without
    * placing anything.
    *
-   * Exists so the three call sites that need "all three, unconditionally" --
-   * a second finger arriving mid-pinch, `Escape` (`build.cancel`), and now
+   * Exists so the call sites that need "all three, unconditionally" --
+   * a second finger arriving or moving mid-pinch, `Escape` (`build.cancel`), and
    * `blur` (#516) -- say so once rather than repeating the same three calls
    * each time a fourth needed them. Each `cancel*` already returns immediately
    * when its own pointer id is `undefined` (see `cancelBuild`), so calling all
@@ -1490,3 +1494,4 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 }
+

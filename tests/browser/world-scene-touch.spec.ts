@@ -494,3 +494,51 @@ test.describe('the world scene two-finger gestures', () => {
     expect(afterPreceded.scroll.y - beforePreceded.scroll.y).toBeCloseTo(afterAlone.scroll.y - beforeAlone.scroll.y, SCROLL_PRECISION);
   });
 });
+
+/**
+ * The second finger claims the camera before it moves. The pan/pinch tests
+ * above always send touchMove and cannot see a placement committed between
+ * touchStart and touchEnd. Exercise the shared arbitration for every tool.
+ */
+test.describe('a second stationary finger abandons placement', () => {
+  for (const tool of ['build', 'room', 'object'] as const) {
+    test(`cancels ${tool} on second touch down before any pinch movement`, async ({ page }) => {
+      await openHarness(page);
+      await page.evaluate((kind) => {
+        const h = window.lockstateWorldSceneHarness!;
+        if (kind === 'build') h.armBuildTool(true);
+        else if (kind === 'room') h.armRoomTool(true);
+        else h.armObjectTool(true);
+      }, tool);
+      const client = await page.context().newCDPSession(page);
+      const first = { id: 0, x: 400, y: 300 };
+      const second = { id: 1, x: 500, y: 300 };
+      const preview = () => page.evaluate((kind) => {
+        const h = window.lockstateWorldSceneHarness!;
+        return kind === 'build' ? h.targetedRun() : kind === 'room' ? h.targetedArea() : h.targetedObject();
+      }, tool);
+      const placements = () => page.evaluate(() => {
+        const h = window.lockstateWorldSceneHarness!;
+        return h.placedRuns().length + h.placedAreas().length + h.placedObjects().length;
+      });
+
+      // Separate starts prove a real one-finger preview preceded the takeover.
+      await dispatch(client, 'touchStart', [first]);
+      expect(await preview(), 'no placement was in progress').toBeDefined();
+      await dispatch(client, 'touchStart', [first, second]);
+      // No touchMove at all: cancellation must happen at second-finger arrival.
+      expect(await preview(), 'the second finger left the placement armed for release').toBeUndefined();
+      await dispatch(client, 'touchEnd', []);
+      expect(await placements()).toBe(0);
+
+      // Cancelling the gesture must not disarm or permanently mute the tool.
+      expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.isAnyToolArmed())).toBe(true);
+      await dispatch(client, 'touchStart', [first]);
+      expect(await preview()).toBeDefined();
+      await dispatch(client, 'touchEnd', []);
+      expect(await placements()).toBe(1);
+      await client.detach();
+    });
+  }
+});
+
