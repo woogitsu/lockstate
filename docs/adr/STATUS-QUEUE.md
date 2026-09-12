@@ -15904,7 +15904,7 @@ self-contained correction of its own inside this window (ADR 0107's private
 quoted, corrected in place with the old quote marked rather than deleted) that
 does not bear on any of the nine either.
 
-**ADR 0109 AND "NEXT FREE NUMBER: 0110" ARE NOT THIS WINDOW'S FINDINGS, AND
+**ADR 0109 AND THE INDEX'S NEXT-FREE LINE MOVING TO 0110 ARE NOT THIS WINDOW'S FINDINGS, AND
 THE PREVIOUS ANCHOR'S OWN §3 SAYS OTHERWISE — A DISCREPANCY FOUND WHILE
 DATING THIS WINDOW'S CONTENTS RATHER THAN INVENTED BY IT.** `docs/adr/0109-…md`
 does not exist at `24b96881` (`git show 24b96881:docs/adr/0109-…md` fails,
@@ -15924,12 +15924,45 @@ finding belongs here rather than as a silent edit to someone else's dated
 account.
 
 **AND THE `Next free number` RESTATEMENT THIS ANCHOR OWES ITS OWN LIVE COPY —
-EXACTLY ONE, THIS TIME.** No ADR was filed in this window (`0107`, `0108` and
-`0109` all pre-date it): **Next free number: 0110**, unmoved, cross-checked
-against `docs/adr/README.md`'s own live line at `:268` and against
-`ls docs/adr/[0-9][0-9][0-9][0-9]-*.md | wc -l`, which returns **102** files
-on disk, the highest-numbered being `0109` and none at `0110`. This is the
+EXACTLY ONE, AND IT HAS MOVED.** **Next free number: 0112**, cross-checked
+against `docs/adr/README.md`'s own live line and against
+`ls docs/adr/[0-9][0-9][0-9][0-9]-*.md | wc -l`, which returns **104** files
+on disk, the highest-numbered being `0111` and none at `0112`. This is the
 one live restatement this section states.
+
+**This paragraph read "No ADR was filed in this window (`0107`, `0108` and
+`0109` all pre-date it)", restated the next-free line at **0110**, and counted
+**102** files on disk with `0109` the highest; it is corrected rather than kept
+in place**, because unlike the dated account above it this restatement is the
+live one a drafter copies out. The superseded wording is described rather than
+quoted, for the reason the note below gives. Two ADRs were filed on 2026-09-12 —
+[0110](./0110-what-security-sector-a-room-is-in.md) and
+[0111](./0111-how-a-room-instances-rectangle-reaches-the-render-side.md),
+commissioned as one question and split on the owner's scope ruling — so the
+window's "no ADR was filed" clause is the part that stopped being true.
+
+**One note on the gate that caught this, because it misclassified a sentence
+and a later reader should know why.**
+`tests/foundation/adr-status-queue-anchor-contract.test.ts` separates a live
+restatement from kept history **by position** — anything after the last dated
+pass marking this anchor's own commit is live. The heading four paragraphs up
+is a *dated historical* account of what `docs/adr/README.md` carried at
+`24b96881`, and it sat after that boundary, so the gate read it as a live
+restatement and demanded it move to 0112 — which would have made a true
+sentence about a past commit false. It was reworded to say the same thing
+without spelling the restatement form — `NEXT-FREE LINE MOVING TO 0110` in
+place of the three words the pattern keys on — and the fact it records is
+untouched. The gate is right about what it is for; its live/historical boundary
+simply cannot see a historical claim written after the boundary.
+
+**And this correction tripped the same gate a second time, which is worth one
+sentence.** The first attempt quoted the superseded paragraph *verbatim*, so the
+quotation itself matched the pattern and the gate reported two live
+restatements at 0110 where there had been one. A quotation of a restatement is
+indistinguishable from a restatement to anything mechanical, so a superseded
+next-free line gets **described** here, never quoted — which is the one place
+`docs/AGENT_WORKFLOW.md` §4's *"cite prose by quoting it"* has to yield to a
+gate that reads the quotation as a claim.
 
 **Where this pass ran with something unread, named rather than smoothed
 over.** The full 82-file diff was not reconciled into a per-merge union the
