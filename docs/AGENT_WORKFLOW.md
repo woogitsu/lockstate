@@ -867,7 +867,17 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     `labels` array in the jobs API is the `runs-on` list the *workflow asked
     for*, not the runner's own label set: every job on `main` reports
     `["self-hosted","Linux","X64","wsl2","woogitsu"]` whichever machine it
-    landed on. So it cannot say whether any runner has a GPU, and a reading
+    landed on.
+    **THAT LITERAL IS STALE AND THE CONCLUSION IS STRONGER WITHOUT IT.**
+    Measured 2026-09-12 off the jobs API for run 34687887280, all three jobs:
+    `"labels":["self-hosted"]`, with `runner_name` `lockstate-wsl-DOM-NEW-01`.
+    It read the five-term array until `80b54a97` (2026-09-09 08:16:26Z), the
+    owner's *"ci: route jobs to generic self-hosted runners"*, which rewrote
+    every `runs-on` to the bare `self-hosted`. That commit updated the identical
+    sentence in `AGENTS.md` and did not touch this file — the same omission
+    shape as the pool correction three days later. **The array now carries one
+    term and still names no machine, so the point this bullet makes holds a
+    fortiori**; only the quoted literal was wrong. So it cannot say whether any runner has a GPU, and a reading
     that it can is how PR #1073's comment came to say the old pool "carried an
     `nvidia-gtx1070` label" — PR #1071's own text has that label as one of the
     two terms the retired pool **cannot** satisfy, and #1071 states in terms
@@ -882,6 +892,16 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
     `woogitsu-linux-09` — job `101909314164`, on a branch whose entire diff is
     shell scripts — and this test there exceeded its 180 s cap. Same requested
     labels, same commit family, different machine.
+    **Both pools named here are retired, and the figures are kept as dated
+    evidence rather than edited, because the argument they support is about
+    variance between machines and does not depend on which machines.** See
+    `AGENTS.md`'s 2026-09-10 entry for the pool change. Measured on the pool
+    actually serving, 2026-09-12: the whole `browser` suite reached the end in
+    **16.6 m** — 429 passed and 3 failed, all three on #616's
+    `net::ERR_NETWORK_CHANGED` signature — on `lockstate-wsl-DOM-NEW-01`
+    (run 34687887280). That sits between the two figures above, so the
+    *"differ by more than 3×"* framing is a historical observation and not a
+    live one.
   - **The commands, so the count can be retaken.** `git worktree add <dir>
     origin/main --detach`,
     `ln -sfn /workspace/lockstate/node_modules <dir>/node_modules`,
