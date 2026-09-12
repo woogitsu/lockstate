@@ -10,9 +10,63 @@ import { SnapshotRestoreFaultError, SnapshotRestoreRejectedError, type SessionRu
 /** Directional default: the informal probe in `docs/PERSISTENCE.md` puts a representative save well under a second, so a 30s trailing-edge cadence costs little while bounding worst-case loss. Not a tuned figure -- see `docs/BENCHMARKING.md`. */
 export const DEFAULT_AUTOSAVE_INTERVAL_MS = 30_000;
 
+/**
+ * The live session, and **the session epoch itself** (ADR 0109 Decisions 2
+ * and 3).
+ *
+ * ### Why this object is the epoch
+ *
+ * ADR 0109 Decision 2 asks for "a counter minted per `adoptSession`" whose
+ * job is to answer *"is the writer that submitted this write still the session
+ * this process authorised?"*, and Decision 3 then says to express it as
+ * **object identity rather than an id**, *"because that pattern is already in
+ * this file"* -- `deletePrison` captures this object before its `await` and
+ * compares it by identity after, under a docblock headed "Why the guard after
+ * the `await` is an identity check". `adoptSession` already mints exactly one
+ * fresh object per session, so a separate counter beside it would be a second
+ * token saying the same thing, with the extra failure mode that the two could
+ * disagree.
+ *
+ * ### Why it is not durable, and what was run to check
+ *
+ * It never reaches disk, which is what keeps this work outside `AGENTS.md`
+ * reservation 2. Both parties to the question are live objects in one process
+ * at the moment it is asked: the stale capture is an in-flight promise inside
+ * this controller, and the session that replaced it is the one in
+ * `this.session`. ADR 0109 names its own falsifier for that -- a capture that
+ * survives its own *page*, flushed by `pagehide` during teardown, which would
+ * leave nothing live to compare against and force a durable lease.
+ *
+ * It was run before this was built, against the real `WorkerPerSessionHost`
+ * rather than the in-process host the ADR's own measurements used
+ * (`tests/browser/lifecycle-save-epoch.spec.ts`). Both real lifecycle events
+ * reached the handler and **no write was issued at all**: `saveNow` cannot
+ * reach `repository.save` without awaiting `host.capture()`, a round trip to
+ * the simulation worker, and the page dies long before the worker answers. A
+ * capture cannot outlive its own page, because the capture is the part that
+ * dies first.
+ */
 export interface ActiveSession {
   readonly prisonId: string;
-  /** Incremented on every successful save; persisted in the envelope so #20's sync can order revisions. */
+  /**
+   * The revision the last successful write actually allocated -- **a cache,
+   * not an allocator** (ADR 0109 Decision 1).
+   *
+   * This used to be incremented on every successful save and read as
+   * `revision + 1` to build the next envelope, and issue #582 measured both
+   * halves of that going wrong. FINAL-005: two overlapping saves read the same
+   * value and both built revision 2, the counter was advanced twice while one
+   * of them survived, and the third save landed on 4 -- on disk, 1, 2, 4.
+   * FINAL-004: a *stale* writer's completion callback advanced a **newer**
+   * session's counter, because the callback was guarded by `prisonId` and a
+   * same-slot reload does not change one, so the next ordinary save built a
+   * perfectly consecutive successor to a durable state it had never seen.
+   *
+   * The number is now allocated inside the transaction that compares it and
+   * reported back on `SaveResult`, so this field is assigned from that result
+   * and never incremented. A writer that loses the comparison can no longer
+   * move it at all.
+   */
   revision: number;
   readonly createdAt: number;
 }
@@ -57,6 +111,26 @@ interface SuspendedAutosave {
   /** Set by the scheduler's `buildEnvelope` callback when it actually declined a save that had come due. */
   declined: boolean;
 }
+
+/**
+ * The value the autosave path hands back when it declined to write because
+ * the writer was no longer the authorised session (ADR 0109 Decision 4).
+ *
+ * `AutosaveScheduler.save` must return a `SaveResult` -- it has no third
+ * outcome -- but a drop is emphatically not a failure to report: the session
+ * it belonged to no longer exists, so there is nobody to tell and a status
+ * line about it would be a message to whoever is playing *now* about a save
+ * they never asked for. Compared by **identity** in `onResult` rather than by
+ * its code, so an ordinary `'stale-revision'` refusal that genuinely needs
+ * reporting can never be mistaken for one of these.
+ */
+const DROPPED_STALE_WRITE: SaveResult = Object.freeze({
+  ok: false,
+  error: Object.freeze({
+    code: 'stale-revision',
+    message: 'Declined: the session that captured this save is no longer the active one.',
+  }),
+} as const);
 
 export interface SessionControllerOptions {
   readonly gameVersion: string;
@@ -135,6 +209,20 @@ export class SessionController {
    */
   private readonly deletionsInFlight = new Map<string, SuspendedAutosave>();
 
+  /**
+   * The `ActiveSession` each in-flight autosave capture was taken against, by
+   * prison (ADR 0109 Decision 3).
+   *
+   * A map for the same reason `deletionsInFlight` is one, and safe as a
+   * single entry per prison because `AutosaveScheduler` guarantees at most one
+   * in-flight write per prison -- a dirty marker arriving during a capture
+   * coalesces into one follow-up rather than starting a second, overlapping
+   * save. It exists at all because the scheduler splits capture and write into
+   * two callbacks, so the identity the write has to check cannot simply be a
+   * local variable spanning both.
+   */
+  private readonly capturesInFlight = new Map<string, ActiveSession>();
+
   public constructor(
     private readonly repository: PrisonSaveRepository,
     private readonly host: SessionRuntimeHost,
@@ -147,7 +235,7 @@ export class SessionController {
 
     this.autosave = new AutosaveScheduler({
       intervalMs: options.autosaveIntervalMs ?? DEFAULT_AUTOSAVE_INTERVAL_MS,
-      buildEnvelope: (prisonId) => {
+      buildEnvelope: async (prisonId) => {
         // A deletion of this prison is mid-transaction, so decline: writing a
         // generation into a slot that is being removed either wastes the work
         // or, if it lands after the delete commits, fails with "does not
@@ -159,12 +247,57 @@ export class SessionController {
           suspended.declined = true;
           return undefined;
         }
-        return this.session?.prisonId === prisonId ? this.buildEnvelope() : undefined;
+        const session = this.session;
+        if (session === undefined || session.prisonId !== prisonId) return undefined;
+
+        const envelope = await this.buildEnvelope();
+
+        /*
+         * THE EPOCH CHECK (ADR 0109 Decisions 2, 3 and 4), and it is here
+         * rather than beside the write for a reason that is easy to get
+         * backwards.
+         *
+         * The capture above crosses an `await` -- it is a round trip to the
+         * simulation worker -- and `adoptSession` can put a **new**
+         * `ActiveSession` in the field during it. Comparing at *write* time
+         * against whatever is in the field then would compare the new session
+         * with itself and pass. What has to be compared is the session the
+         * capture **began** against, held in a local across the await, exactly
+         * as `deletePrison` holds one across its own.
+         *
+         * That is issue #582's FINAL-004, measured for ADR 0109: an autosave
+         * captured at tick 10, the prison was reloaded to tick 0 underneath
+         * it, and the stale capture's write landed as the durable current
+         * generation -- *and* advanced the fresh session's revision counter,
+         * because the completion callback was guarded by `prisonId`, which a
+         * same-slot reload does not change.
+         *
+         * Returning `undefined` is the drop. ADR 0109 Decision 4: an
+         * epoch-stale writer is dropped "without a retry and without a report,
+         * because it belongs to a session that no longer exists and has nobody
+         * to tell", and this callback's `undefined` is already the scheduler's
+         * "no write was attempted, nothing to report" channel
+         * (`AutosaveScheduler.performSave`). So the one case where silence is
+         * right reuses the one channel that is already silent.
+         */
+        if (this.session !== session) return undefined;
+        if (envelope !== undefined) this.capturesInFlight.set(prisonId, session);
+        return envelope;
       },
-      save: (prisonId, envelope) => this.repository.save(prisonId, envelope),
+      save: async (prisonId, envelope) => {
+        const captured = this.capturesInFlight.get(prisonId);
+        this.capturesInFlight.delete(prisonId);
+        const result = await this.submitSave(captured, envelope);
+        // `undefined` means the writer went stale between the capture and
+        // here -- another await boundary, so it is re-checked rather than
+        // assumed. Nothing is written and nothing is reported; the scheduler
+        // needs a value, so it gets the same refusal the repository would
+        // have produced, which `onResult` below then declines to forward.
+        return result ?? DROPPED_STALE_WRITE;
+      },
       onResult: (prisonId, result) => {
+        if (result === DROPPED_STALE_WRITE) return;
         this.lastSaveResult = result;
-        if (result.ok && this.session?.prisonId === prisonId) this.session.revision += 1;
         options.onSaveResult?.(prisonId, result);
       },
     });
@@ -692,6 +825,108 @@ export class SessionController {
     });
   }
 
+  /**
+   * The write half of both save paths: refuse a writer that is no longer the
+   * authorised session, compare-and-swap on the revision, and retry exactly
+   * once for a live writer that lost a race (ADR 0109 Decision 4).
+   *
+   * ### The three outcomes, and why one of them is `undefined`
+   *
+   * ADR 0109 Decision 4 rules **refuse and surface, plus retry for exactly one
+   * case**, and it is able to tell the two callers apart only because Decision
+   * 2 gives it a second token:
+   *
+   * - **Epoch-stale** -- the session that captured this state is not the one
+   *   in the field any more. Dropped: no write, no retry, no report. Returned
+   *   as `undefined`, because there is no result to give anybody. "A refusal
+   *   that reaches neither the player nor a retry is then only possible for a
+   *   writer that is already gone, which is the one case where silence is the
+   *   right answer."
+   * - **Epoch-current but revision-stale** -- this session is live and lost a
+   *   race for the revision number. Re-captured and re-submitted **once**,
+   *   against the revision the refusal just reported, because its state is the
+   *   newest there is.
+   * - **Anything else** -- returned as-is for the caller to surface.
+   *
+   * ### Why the retry is bounded at one, and what that leaves open
+   *
+   * ADR 0109's own second-weakest claim is that one retry converges: *"Under
+   * sustained two-tab contention it may not, and the failure mode of a retry
+   * that always loses is an autosave that never writes while reporting nothing
+   * -- silence again, by a different route."* A second refusal is therefore
+   * **returned rather than retried again**, so it reaches
+   * `describeSaveResult` on the manual path and `getLastSaveResult` on the
+   * autosave one. The unbounded version would convert a visible refusal into
+   * an invisible livelock, which is the failure ADR 0105 exists to prevent.
+   *
+   * ### Why `session.revision` is assigned and never incremented
+   *
+   * The number comes back from the transaction that allocated it
+   * (`SaveResult.revision`), so this field can only ever hold a value some
+   * write actually wrote. Incrementing is what let a *stale* writer advance a
+   * *newer* session's counter in issue #582's FINAL-004 measurement; an
+   * assignment guarded by the epoch cannot.
+   */
+  private async submitSave(session: ActiveSession | undefined, envelope: SaveEnvelope): Promise<SaveResult | undefined> {
+    if (session === undefined || this.session !== session) return undefined;
+
+    const first = await this.repository.save(session.prisonId, envelope, session.revision);
+    if (first.ok) {
+      if (this.session === session) session.revision = first.revision;
+      return first;
+    }
+    if (first.error.code !== 'stale-revision' || first.stale === undefined) return first;
+
+    /*
+     * **THE RETRY IS NARROWER THAN ADR 0109 DECISION 4'S WORDING, AND THIS IS
+     * WHY.** Taken literally -- "an epoch-current writer that lost a revision
+     * race re-captures and retries once" -- the retry re-opens FINAL-006, the
+     * two-tab defect the same document says the revision CAS closes. It was
+     * measured doing exactly that while this was being built:
+     * `tests/unit/persistence-stale-save-refusal.test.ts`'s two-tab case had
+     * tab B refused at expectation 1 against durable 2, then retry, then
+     * succeed at 3 -- tab A's hundred ticks overwritten anyway, by a slower
+     * route.
+     *
+     * The epoch cannot tell those cases apart on its own, because it is
+     * per-process: **both tabs are epoch-current in their own process.** What
+     * separates them is the ADR's own justification for the retry -- "it is
+     * live, and its state is the newest there is". That is true when the
+     * writer lost the race to *itself* (its own other save path, which is
+     * FINAL-005) and false when it lost to another tab, whose state it has
+     * never seen.
+     *
+     * So the test is whether the slot moved to exactly where this session's
+     * own bookkeeping already stands. `session.revision` is only ever assigned
+     * from a write *this session* completed, and revisions are allocated as
+     * `durable + 1` inside a serialised transaction, so two writers cannot
+     * both land on one number. `durableRevision === session.revision`
+     * therefore means "the write that beat me was mine", and anything else
+     * means another writer holds the slot and must be surfaced rather than
+     * overwritten. That is the rule this project already committed to on the
+     * cloud side on 2026-08-22, and the local store is now held to it too:
+     * `supabase/migrations/20260822190300_create_save_version_rpc.sql:6-8`
+     * requires `p_new_revision` to be exactly `current_revision + 1`,
+     * "anything else is a conflict the caller must resolve (never a silent
+     * overwrite, never a silent 'latest wins')".
+     *
+     * Re-checked rather than assumed: the write above crossed an await, and a
+     * session that went stale during it has lost its claim to a retry.
+     */
+    if (this.session !== session) return undefined;
+    if (first.stale.durableRevision !== session.revision) return first;
+
+    const recaptured = await this.buildEnvelope();
+    if (recaptured === undefined || this.session !== session) return undefined;
+
+    // Against the revision the refusal reported, not against `session.revision`
+    // -- that is what "re-submit against the revision just found" means, and
+    // resubmitting the same expectation would guarantee the same refusal.
+    const second = await this.repository.save(session.prisonId, recaptured, first.stale.durableRevision);
+    if (second.ok && this.session === session) session.revision = second.revision;
+    return second;
+  }
+
   /** Manual save. Returns durable success/failure evidence (issue #19: "manual save returns durable success/failure evidence"). */
   public async saveNow(): Promise<SaveResult> {
     const session = this.session;
@@ -714,10 +949,26 @@ export class SessionController {
       return { ok: false, error: { code: 'unknown-error', message: 'Failed to build a save envelope for the active session.' } };
     }
 
-    const result = await this.repository.save(session.prisonId, envelope);
+    /*
+     * Through the shared write path, so a manual save gets the same epoch
+     * check and the same compare-and-swap as an autosave (ADR 0109
+     * Decision 4). `session` was read before `buildEnvelope`'s await, so it is
+     * the session this press began against and not merely whatever is in the
+     * field now.
+     *
+     * `undefined` is the epoch-stale drop, and on this path it is reachable
+     * only when the player started or loaded another prison while their own
+     * Save was still capturing. They pressed a button, so unlike the autosave
+     * they do get an answer -- but the answer is about the save they asked
+     * for, which did not happen, rather than a claim that it did.
+     */
+    const submitted = await this.submitSave(session, envelope);
+    const result: SaveResult = submitted ?? {
+      ok: false,
+      error: { code: 'stale-revision', message: 'The session this save was captured from is no longer the active one.' },
+    };
     this.lastSaveResult = result;
     if (result.ok) {
-      session.revision += 1;
       await this.repository.markPendingSync(session.prisonId, { dirtySinceRevision: session.revision, markedAt: this.now() });
     }
     return result;

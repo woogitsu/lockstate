@@ -14,8 +14,8 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   saveSchemaVersion: 5,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
-  revision: number,        // caller-managed monotonic counter; optimistic-concurrency
-                            // enforcement belongs to the storage backend (#20), not this schema
+  revision: number,        // allocated by the local store at write time, inside the
+                            // transaction that compares it (ADR 0109); see below
   createdAt: number,       // unix ms
   updatedAt: number,       // unix ms, must not precede createdAt
   checksum: string,        // 16 hex chars, see "Checksum" below
@@ -50,6 +50,27 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   },
 }
 ```
+
+**The `revision` comment above used to say something else, and ADR 0109 made
+it false.** It read:
+
+> `revision: number,  // caller-managed monotonic counter; optimistic-concurrency
+> enforcement belongs to the storage backend (#20), not this schema`
+
+Both halves are now wrong, and the second is the one worth naming: it deferred
+enforcement to "the storage backend (#20)", i.e. to Supabase, which left the
+**local** store — the one every offline player actually writes to — with no
+enforcement at all, and `docs/CLOUD_SAVE.md` holding the only copy of a rule
+this document said belonged elsewhere. `PrisonSaveRepository` now enforces it
+too, so both sides of the boundary hold one position rather than two. The old
+comment is kept here rather than deleted because ADR 0105 quotes this
+document's exclusion as evidence that the asymmetry was deliberate.
+
+**`revision` is still outside the checksum**, which is what makes write-time
+allocation cost nothing: `createSaveEnvelope` hashes the payload only
+(`checksum: computeSaveChecksum(payload as JsonValue)`), so re-stamping the
+number invalidates no checksum and moves no schema version. See "What is out of
+scope here" below for the mechanism and its one fail-open case.
 
 `payload` is exactly the union of the existing per-subsystem snapshot
 contracts (Issues #5, #12, #16/#17 and, since V3, #24–#28), re-validated at
@@ -2557,12 +2578,96 @@ end of this document.
 
 ### What is out of scope here
 
-Supabase execution (#20); full service-worker asset caching; simulating
-elapsed time while the browser was closed; and any cross-tab/multi-writer
-concurrency control beyond the single-process autosave/manual-save
-coalescing above — `revision` is caller-managed and this repository does
-not yet enforce optimistic concurrency on it, matching the "not this issue"
-scope in `save-schema.ts`'s own documentation.
+Supabase execution (#20); full service-worker asset caching; and simulating
+elapsed time while the browser was closed.
+
+**This list used to end with a fourth exclusion, and ADR 0109 made it false.**
+It read:
+
+> and any cross-tab/multi-writer concurrency control beyond the
+> single-process autosave/manual-save coalescing above — `revision` is
+> caller-managed and this repository does not yet enforce optimistic
+> concurrency on it, matching the "not this issue" scope in
+> `save-schema.ts`'s own documentation.
+
+It is kept above rather than deleted because it is the position that changed,
+and because a reader of ADR 0105 will meet it quoted there as the reason
+FINAL-006 was a documented exclusion rather than a defect.
+
+**What is true now.** `PrisonSaveRepository.writeGeneration` enforces
+optimistic concurrency on `revision`, and `revision` is no longer
+caller-managed: the caller submits an envelope and the revision it *last saw*,
+and the repository compares that against `metadata.currentRevision` inside the
+`readwrite` transaction it already opens, refuses with `'stale-revision'` on
+mismatch, and stamps `currentRevision + 1` on the record it writes. Two tabs
+over one IndexedDB are ordered by that comparison; the second is refused rather
+than told it succeeded. See "Two writers, and what each token answers" below.
+
+**One sub-clause of the old sentence was wrong about this repository when it
+was written, and is not merely out of date.** There is no "not this issue"
+scope in `save-schema.ts`'s documentation and there never has been:
+`git log -S` over that file finds no such note and no occurrence of
+"optimistic". The sentence it was pointing at is the one in this document's own
+"Envelope shape" block, one level up rather than one level down. Both have now
+been rewritten.
+
+### Two writers, and what each token answers
+
+Two different questions are asked on the way into a durable write, and neither
+subsumes the other (ADR 0109 Decision 2):
+
+| question | token | durable? | what it closes |
+| --- | --- | --- | --- |
+| what did the writer last see? | `currentRevision` on the slot | **yes** | #582 FINAL-005, FINAL-006 |
+| is the writer still the authorised session? | the `ActiveSession` object itself | **no** | #582 FINAL-004 |
+
+**The session epoch is deliberately not durable, and that is a load-bearing
+claim rather than a convenience.** Both parties to "is this writer still
+current?" are live objects in one process at the moment it is asked: the stale
+capture is an in-flight promise inside one `SessionController`, and the session
+that replaced it is the one in its field. Object identity rather than an id,
+because `prisonId` cannot prove the session in the field is the one the capture
+began against — a same-slot reload does not change one. `SessionController`
+compares by identity, exactly as `deletePrison` already does across its own
+`await`.
+
+That claim has a named falsifier and it was run: a capture that survives its
+own *page* would leave nothing live to compare against and would force a
+durable lease, i.e. a slot-schema change. Against the real
+`WorkerPerSessionHost`, a `pagehide` during genuine page teardown issues **no
+write at all** — `saveNow` cannot reach `repository.save` without first
+awaiting `host.capture()`, a round trip to the simulation worker, and the page
+dies long before the worker answers. A capture cannot outlive its own page,
+because the capture is the part that dies first.
+`tests/browser/lifecycle-save-epoch.spec.ts` keeps that measurement as a
+standing gate.
+
+### What a refusal does
+
+- **A refused manual save tells the player**, through
+  `describeSaveResult`'s `'stale-revision'` arm:
+  *"Could not save: this prison was changed elsewhere."* It is reached only
+  after the one retry below has been tried and refused.
+- **A refused autosave says nothing.** It fires on a timer the player did not
+  press, and a periodic warning about a condition they cannot influence is
+  noise.
+- **A writer whose session is gone is dropped without a write, a retry or a
+  report**, because it belongs to a session that no longer exists and has
+  nobody to tell.
+- **A writer that lost the race to its own session retries exactly once**,
+  re-capturing rather than re-submitting what was refused. It retries only when
+  the slot moved to exactly where its own bookkeeping already stands — proof
+  that the write that beat it was its own. A writer that lost to *another tab*
+  is refused and surfaced, never retried: its state is not the newest there is,
+  and retrying it would re-open FINAL-006 through a slower route.
+
+**A slot with no `currentRevision` fails open exactly once**, in both the
+comparison and the allocation. The field is optional, nothing repairs it
+retroactively, and a slot written before #1097 can hold generations at revision
+40 — so the first write to such a slot carries the caller's sequence forward
+instead of restarting it at 1, and every write after that is allocated by the
+transaction. Refusing there instead would make every pre-#1097 prison
+unsaveable.
 
 ## Session wiring (`src/persistence/session/`)
 

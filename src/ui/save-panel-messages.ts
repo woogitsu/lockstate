@@ -52,6 +52,17 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   statusSaved: 'save.status.saved',
   statusQuotaExceeded: 'save.status.quota-exceeded',
   statusTransactionAborted: 'save.status.transaction-aborted',
+  /**
+   * A save refused because the slot moved under this session (ADR 0109
+   * Decisions 4 and 5).
+   *
+   * Its own key rather than `statusSaveFailed`'s `{detail}`, for the reason
+   * issue #19 gave quota and abort their own: this is a distinct recoverable
+   * state with distinct advice, and the alternative the ADR offers -- reporting
+   * it through the generic failure status -- would tell the player "save
+   * failed" while a truthful sentence naming the cause was available.
+   */
+  statusChangedElsewhere: 'save.status.changed-elsewhere',
   statusSaveFailed: 'save.status.save-failed',
   statusListUnreadable: 'save.status.list-unreadable',
   statusCreating: 'save.status.creating',

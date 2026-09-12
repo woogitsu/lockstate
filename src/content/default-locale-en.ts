@@ -3140,6 +3140,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
     'Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact.',
   'save.status.transaction-aborted':
     'The browser interrupted the save. Your previous save is intact — try saving again.',
+  // ADR 0109 Decision 5, ruled by the owner on 2026-09-11 over a warmer
+  // alternative. The rejected candidate read "That save is out of date — the
+  // game is open somewhere else. Your progress here is safe; try again.", and
+  // the half that disqualified it is "your progress here is safe": that is a
+  // promise about the player's *memory*, and nothing on the save path
+  // verifies it. This sentence makes no claim the code does not keep. It says
+  // only what the refusing transaction actually established -- that the slot's
+  // durable revision is not the one this session last wrote, i.e. that
+  // something else wrote to this prison -- and it is reached only after the
+  // single retry of ADR 0109 Decision 4 has already been tried and refused.
+  // See `PrisonSaveRepository.writeGeneration`'s comparison and
+  // `SessionController.submitSave`.
+  'save.status.changed-elsewhere': 'Could not save: this prison was changed elsewhere.',
   'save.status.save-failed': 'Save failed: {detail}',
   // Two different causes reach this line -- storage being unusable at all and
   // a slot record that fails validation -- so the wording names the outcome

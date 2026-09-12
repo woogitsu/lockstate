@@ -35,7 +35,106 @@
 
 ## Status
 
-**Proposed, 2026-09-11. Not self-approved.** `docs/AGENT_WORKFLOW.md` §3:
+**Accepted by the owner on 2026-09-11, in two rulings.**
+
+1. **The mechanism, accepted in full** — Decisions 1, 2, 4 and 6, from the
+   option labelled *"Przyjmij mechanizm w całości"* ("Accept the mechanism in
+   full").
+2. **The sentence of Decision 5, ruled** — this document's own recommended
+   candidate, verbatim:
+
+   > **"Could not save: this prison was changed elsewhere."**
+
+   Chosen over the warmer alternative for the reason Decision 5 gives: the
+   other candidate asserts *"your progress here is safe"*, which is a promise
+   about memory the save path does not verify. A refused **autosave** still
+   says nothing.
+
+> **THE PROVENANCE IS THE WEAKER KIND AND IS DISCLOSED RATHER THAN DRESSED
+> UP.** Both rulings are the labels of clickable options this session wrote and
+> the owner chose, not sentences they typed, and they were given against a
+> summary rather than against this document's full text. That is the same
+> shape [ADR 0105](./0105-what-makes-a-local-save-the-newest-one.md) discloses
+> of its own acceptance one day earlier, and that `CLAUDE.md` flags about the
+> 2026-09-08, 2026-09-09 and 2026-09-10 releases of `AGENTS.md` reservation 3.
+> ADRs 0096, 0104, 0106, 0107 and 0108 each carry the same disclosure about
+> themselves. The same caution applies here.
+>
+> **What the acceptance binds, exactly.** The mechanism of Decisions 1, 2 and
+> 4, the wording of Decision 5, and that LS-03 leaves this document
+> (Decision 6). It authorises nothing about `supabase/migrations/` or the save
+> format, and item 5 of "What the owner must approve" was not needed: see
+> "What the implementation found" below.
+>
+> **The `Proposed. Not self-approved.` record is kept below rather than
+> overwritten**, for the reason ADR 0105 gives for keeping its own: the
+> document argued the case as a proposal and a reader should see it in the form
+> it was argued in.
+
+## What the implementation found, 2026-09-11
+
+Three things this document asserts turned out to be wrong, and they are
+recorded here rather than corrected silently.
+
+**1. The falsifier was run first, and failed to falsify — more strongly than
+"Weakest claim" hoped.** That section asks for *"a `WorkerSessionHost` run that
+unloads the page between capture and write and observes whether the write
+lands"*. Run at `tests/browser/lifecycle-save-epoch.spec.ts`, with
+`SimulationWorkerChannel` + `WorkerPerSessionHost` rather than the
+`InProcessSessionHost` this document's own measurements used:
+
+```
+triggers: ["pagehide","visibility-hidden"]
+writes:   [{"trigger":"manual","envelopeRevision":1,"authorisingSessionAlive":true,...}]
+durableRevision: 1   durableGenerations: 1
+```
+
+Both real lifecycle events reached the handler and **no write was issued at
+all**. The reason is structural rather than lucky: `saveNow` cannot reach
+`repository.save` without first awaiting `host.capture()`, a round trip to the
+simulation worker, and the page dies long before the worker answers. **A
+capture cannot outlive its own page, because the capture is the part that dies
+first**, so the falsifier's premise has no route through this code. The epoch
+stays non-durable and nothing here needs `AGENTS.md` reservation 2.
+
+**2. Decision 4's retry, taken literally, re-opens FINAL-006 — which
+Decision 2's own table says the revision CAS closes.** Measured: tab B refused
+at expectation 1 against durable 2, epoch-current so retried, re-submitted
+against 2, **succeeded at 3**. Tab A's hundred ticks overwritten anyway, by a
+slower route.
+
+The epoch cannot separate the cases, because it is per-process and **both tabs
+are epoch-current in their own**. What separates them is this document's own
+justification for the retry — *"it is live, and its state is the newest there
+is"* — which holds when the writer lost the race to *itself* (FINAL-005) and
+fails when it lost to another tab whose state it has never seen. The
+implementation therefore retries only when the slot moved to exactly where the
+session's own bookkeeping already stands, which is proof that the write that
+beat it was its own. **Narrower than this document's wording and faithful to
+its reasoning**; a reader of Decision 4 who finds the code stricter should read
+this paragraph rather than assume drift.
+
+**3. "Consequences for existing sentences" names a sentence that does not
+exist.** It says *"`save-schema.ts`'s own 'not this issue' note about
+caller-managed revisions is the same sentence one level down"*. There is no
+such note in that file and there never was: `git log -S` over it finds neither
+*"not this issue"* nor *"optimistic"*. The sentence it meant is in
+`docs/PERSISTENCE.md`'s **envelope-shape block** — one level *up* from the
+exclusion this document quotes, not down — and it is the more interesting of
+the two, because it deferred enforcement to *"the storage backend (#20)"*, i.e.
+to Supabase, leaving the local store every offline player writes to with none.
+Both `docs/PERSISTENCE.md` sentences were rewritten with the originals kept
+beside them, and the note this document expected in `save-schema.ts` was
+written rather than merely reported missing.
+
+**A fourth finding, about the allocation rule rather than this document.**
+`(durableRevision ?? 0) + 1` resets a pre-#1097 slot's sequence to 1 behind
+generations at revision 40, and drops the number
+`src/ui/account/save-list-projection.ts:156` classifies cloud drift by. The
+allocation fails open exactly once per slot, as the comparison does. Open
+question 2 anticipated the comparison's half of this and not the allocation's.
+
+**Proposed. Not self-approved.** `docs/AGENT_WORKFLOW.md` §3:
 *"**Propose an ADR rather than deciding architecture inside implementation
 code, and never self-approve one** outside a recorded delegation from the
 owner."*
@@ -118,7 +217,13 @@ advanced the *new* session's revision counter from 1 to 2, because that callback
 is guarded by `prisonId`, which a same-slot reload does not change:
 
   `if (result.ok && this.session?.prisonId === prisonId) this.session.revision += 1;`
-  (verbatim in `src/persistence/session/session-controller.ts`).
+  — the line exactly as it stood at `be5061f95f6eacdcd8114efd43f4f37154330e81`,
+  and **deleted by the branch that implements this document**, which is why the
+  attribution above no longer reads *"verbatim in"*: it would be a false claim
+  about the present tree, and
+  `tests/foundation/adr-quotation-verbatim-contract.test.ts` is what caught it
+  saying so. The autosave's `onResult` no longer touches the revision at all;
+  `SessionController.submitSave` assigns it from what the write returned.
 
 So the next ordinary save from the fresh session builds **revision 3** — a
 perfectly consecutive successor to a durable state that session never saw. The
@@ -168,6 +273,16 @@ save, and read today in exactly one place — `src/ui/account/save-list-projecti
 where it classifies cloud drift.
 
 ### 4. `revision` is outside the checksum, which is what makes write-time allocation cheap — VERIFIED, and ADR 0105 did not have it
+
+> **The two line numbers in this section are correct at
+> `be5061f95f6eacdcd8114efd43f4f37154330e81`, as this document's claim tiers
+> promise, and are stale on `main` — because the branch implementing this
+> document wrote the `revision` docblock §"Consequences for existing sentences"
+> asked for, immediately above them.** `createSaveEnvelope` now opens at
+> `:1774` and the `checksum:` line is `:1792`. Recorded here rather than
+> silently renumbered: the citations below are evidence for a claim taken at a
+> named commit, and a reader who greps rather than trusting either number is
+> doing the right thing. Both ends were re-opened to get these.
 
 `createSaveEnvelope` (`src/persistence/save-schema.ts:1747-1769`) hashes the
 **payload** and puts `revision` in the metadata beside it, not inside it:

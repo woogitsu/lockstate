@@ -19,9 +19,41 @@ import { classifyStoreError, type SaveWriteError } from './errors';
 import { decodePrisonSlotMetadata, encodePrisonSlotMetadata, requirePrisonSlotMetadata } from './slot-metadata-schema';
 import type { LocalSaveStore, LocalSaveTransaction, PendingSyncState, PrisonSlotMetadata } from './store';
 
+/**
+ * What a compare-and-swap refusal found, so the caller can act on the fact
+ * rather than on prose (ADR 0109 Decision 4).
+ *
+ * Mirrors the cloud client's `conflict` arm, which hands back `cloudCurrent`
+ * for exactly the same reason (`src/persistence/cloud/memory-client.ts:90-92`):
+ * "refuse and drop" is the failure ADR 0105 exists to prevent wearing a new
+ * costume, and a caller cannot retry or report a refusal it cannot read.
+ */
+export interface StaleRevisionRefusal {
+  /** `metadata.currentRevision` as the refusing transaction found it. */
+  readonly durableRevision: number;
+  /** What the caller said it had last seen, and which no longer matches. */
+  readonly expectedRevision: number;
+}
+
+/**
+ * `revision` on the success arm is ADR 0109 Decision 1, and it is the half
+ * that stops a stale writer laundering its own divergence.
+ *
+ * The revision is now allocated **inside the transaction that compares it**,
+ * so the caller cannot know what was written until the write returns. Before
+ * this, `SessionController` allocated it from a counter it incremented on
+ * every successful save, and issue #582's FINAL-004 measured what that cost:
+ * a stale write's completion callback advanced a *different, newer* session's
+ * counter, because the callback was guarded by `prisonId` and a same-slot
+ * reload does not change one. The next ordinary save then built a perfectly
+ * consecutive successor to a durable state that session had never seen.
+ *
+ * Reporting the number back makes `session.revision` a cache of what the last
+ * write returned instead of an allocator, which is what closes that.
+ */
 export type SaveResult =
-  | { readonly ok: true; readonly generationId: string }
-  | { readonly ok: false; readonly error: SaveWriteError };
+  | { readonly ok: true; readonly generationId: string; readonly revision: number }
+  | { readonly ok: false; readonly error: SaveWriteError; readonly stale?: StaleRevisionRefusal };
 
 /**
  * The outcome of an import, which has two things to report that a save does
@@ -47,8 +79,8 @@ export type SaveResult =
  * worth being able to assert in a test.
  */
 export type SaveImportResult =
-  | { readonly ok: true; readonly generationId: string; readonly migrated: boolean }
-  | { readonly ok: false; readonly error: SaveWriteError; readonly rejected?: SaveDecodeError };
+  | { readonly ok: true; readonly generationId: string; readonly revision: number; readonly migrated: boolean }
+  | { readonly ok: false; readonly error: SaveWriteError; readonly rejected?: SaveDecodeError; readonly stale?: StaleRevisionRefusal };
 
 /**
  * What `demoteGeneration` did, and when it did nothing, why.
@@ -457,9 +489,23 @@ export class PrisonSaveRepository {
    * import, a value read back from storage, anything that crossed a process
    * or serialization boundary, and anything merely *cast* to the trusted type
    * — is still fully validated here before it can reach storage.
+   *
+   * **`expectedRevision` is the caller's claim about what it last saw**, and
+   * the write is refused with `'stale-revision'` when the slot disagrees (ADR
+   * 0109 Decision 1). The envelope's own `revision` is ignored on the way in
+   * and re-stamped on the way down; see `writeGeneration` for why that is
+   * cheap and for what happens on a slot that has no `currentRevision` yet.
+   *
+   * It is optional because two callers legitimately have no claim to make: a
+   * brand-new prison's first generation, whose slot has no durable revision at
+   * all, and the browser harness's direct writes. Passing nothing is "write
+   * whatever is next", which is what this method did unconditionally before
+   * and is therefore the behaviour-preserving default -- **and it is not a
+   * safe default for a session**, which is why `SessionController` always
+   * passes one.
    */
-  public async save(prisonId: string, envelope: SaveEnvelope): Promise<SaveResult> {
-    return this.writeGeneration(prisonId, envelope, applyGenerationRetention);
+  public async save(prisonId: string, envelope: SaveEnvelope, expectedRevision?: number): Promise<SaveResult> {
+    return this.writeGeneration(prisonId, envelope, applyGenerationRetention, expectedRevision);
   }
 
   /**
@@ -484,6 +530,7 @@ export class PrisonSaveRepository {
     prisonId: string,
     envelope: SaveEnvelope,
     retentionFor: (existing: readonly string[], newGenerationId: string, keep: number) => GenerationRetentionResult,
+    expectedRevision: number | undefined,
   ): Promise<SaveResult> {
     const decoded = decodeSaveEnvelopeUnlessTrusted(envelope);
     if (!decoded.ok) {
@@ -500,6 +547,8 @@ export class PrisonSaveRepository {
       return { ok: false, error: { code: 'unknown-error', message: `Refusing to write generation "${generationId}": that id is reserved for a quarantined generation.` } };
     }
 
+    let refusal: StaleRevisionRefusal | undefined;
+    let allocatedRevision = decoded.value.revision;
     try {
       await this.store.runTransaction('readwrite', async (tx) => {
         const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
@@ -507,7 +556,85 @@ export class PrisonSaveRepository {
           throw new Error(`Prison "${prisonId}" does not exist. Call create() first.`);
         }
 
-        await tx.putGeneration(prisonId, generationId, decoded.value);
+        const durableRevision = metadata.currentRevision;
+
+        /*
+         * THE COMPARISON (ADR 0109 Decision 1, ADR 0105 option 2).
+         *
+         * The slot is already read inside this transaction, so the comparison
+         * costs no extra round trip -- that is the whole of why option 2 was
+         * cheap. IndexedDB serialises the transaction, so the read and the
+         * write below cannot be interleaved by another writer: atomicity was
+         * never the missing property, the comparison was.
+         *
+         * `durableRevision === undefined` FAILS OPEN, exactly once per slot,
+         * and that is deliberate rather than an oversight. `currentRevision`
+         * is optional and "nothing repairs it retroactively; the slot's next
+         * durable save populates it" (`slot-metadata-schema.ts`), so a slot
+         * written before #1097 -- or the sliver between `create()` and its
+         * first generation -- has nothing to compare against. Refusing there
+         * would make every pre-#1097 prison unsaveable, which is a worse
+         * failure than the one this guards. ADR 0109's open question 2 records
+         * that this is a hole one tab can drive through on such a slot, and
+         * that whether to backfill on read instead is not settled.
+         *
+         * `expectedRevision === undefined` is the caller declining to make a
+         * claim -- see `importSave`, which is handed a file rather than a
+         * session's own state and so has no "what did I last see" to offer.
+         */
+        if (expectedRevision !== undefined && durableRevision !== undefined && expectedRevision !== durableRevision) {
+          refusal = { durableRevision, expectedRevision };
+          return;
+        }
+
+        /*
+         * THE ALLOCATION (ADR 0109 Decision 1).
+         *
+         * Stamped here rather than taken from the envelope, because the
+         * caller's number was read before this transaction opened and is
+         * therefore a guess about a slot it does not hold. `session.revision +
+         * 1` computed in `SessionController.buildEnvelope` is what issue
+         * #582's FINAL-005 measured going wrong: two overlapping saves both
+         * built revision 2 from the same counter value, both reported success,
+         * and the third landed on 4 because the counter had been advanced
+         * twice while one revision-2 write survived. On-disk: 1, 2, 4.
+         *
+         * **This is affordable because `revision` sits outside the checksum.**
+         * `createSaveEnvelope` hashes the payload only --
+         * `checksum: computeSaveChecksum(payload as JsonValue)` at
+         * `save-schema.ts:1792` -- and puts `revision` in the metadata beside
+         * it. So re-stamping it invalidates no checksum, moves no schema
+         * version, and leaves `decodeSaveEnvelope` unaffected. ADR 0105 left
+         * the choice between "a lock, a queue, or allocating the revision at
+         * write time" open because it did not have that fact; ADR 0109
+         * Context 4 establishes it and this is what it buys.
+         *
+         * The spread rather than a mutation is not a style choice: a trusted
+         * envelope is `Object.freeze`d by `markTrusted`, so assigning to it
+         * would throw in strict mode and silently do nothing outside it.
+         */
+        /*
+         * **A slot that cannot speak for itself keeps the caller's number**,
+         * and this is not a shortcut -- allocating 1 there is a defect, found
+         * by `tests/unit/persistence-local-repository.test.ts`'s #1097 backfill
+         * case going red on `expected 1 to be 4`.
+         *
+         * `currentRevision` is absent on a slot written before #1097, and such
+         * a slot can hold generations at revision 40. Allocating `0 + 1` would
+         * make the *newest* generation revision 1 while an older retained one
+         * is 40 -- an ordering inversion on disk -- and would drop the slot's
+         * `currentRevision` from 40 to 1 under
+         * `src/ui/account/save-list-projection.ts:156`, which classifies cloud
+         * drift by exactly that number. So the first write to such a slot
+         * carries the sequence forward instead, and every write after it is
+         * allocated here, because by then the slot has a revision to speak
+         * with. That is the same "fail open exactly once" this method's
+         * comparison does, applied to the allocation.
+         */
+        allocatedRevision = durableRevision === undefined ? decoded.value.revision : durableRevision + 1;
+        const record: SaveEnvelope = { ...decoded.value, revision: allocatedRevision };
+
+        await tx.putGeneration(prisonId, generationId, record);
 
         const retention = retentionFor(metadata.generationIds, generationId, this.keepGenerations);
         await writeSlot(tx, {
@@ -520,7 +647,11 @@ export class PrisonSaveRepository {
           // that cannot drift behind the durable generation it describes,
           // because it is written in the same transaction as that generation
           // rather than by a separate, easily-missed call.
-          currentRevision: decoded.value.revision,
+          //
+          // It is now also written in the same transaction that *allocated*
+          // it, so the pointer and the generation cannot disagree even in
+          // principle: they are the same number, not two computations of it.
+          currentRevision: allocatedRevision,
           generationIds: retention.generationIds,
           updatedAt: this.now(),
         });
@@ -533,7 +664,19 @@ export class PrisonSaveRepository {
       return { ok: false, error: classifyStoreError(error) };
     }
 
-    return { ok: true, generationId };
+    if (refusal !== undefined) {
+      const found: StaleRevisionRefusal = refusal;
+      return {
+        ok: false,
+        error: {
+          code: 'stale-revision',
+          message: `Refusing to persist a stale generation of "${prisonId}": the caller last saw revision ${found.expectedRevision}, and the slot is at revision ${found.durableRevision}.`,
+        },
+        stale: found,
+      };
+    }
+
+    return { ok: true, generationId, revision: allocatedRevision };
   }
 
   /**
@@ -971,7 +1114,27 @@ export class PrisonSaveRepository {
         rejected: decoded.error,
       };
     }
-    const result = await this.writeGeneration(prisonId, decoded.value, applyProvisionalRetention);
+    /*
+     * **No expected revision, which is ADR 0109's open question 1 answered
+     * the way it guessed an implementer might.**
+     *
+     * That question is *"Does `importSave` take the same CAS? It writes a
+     * generation the player was handed rather than one a session produced, so
+     * 'what did the writer last see' has no obvious answer for it."* It has
+     * none here either: the file's own `revision` describes the slot it was
+     * exported from, which may be a different prison on a different machine,
+     * and the player pressing Import is asking for this file to become the
+     * newest generation rather than asserting anything about the slot. So
+     * import is an explicit overwrite arm and passes no claim.
+     *
+     * It still takes the *allocation* half, and that is the part that matters:
+     * `writeGeneration` stamps `currentRevision + 1` regardless, so an
+     * imported file cannot land carrying a revision from another slot's
+     * sequence and cannot leave a hole behind it. Before this, a file exported
+     * at revision 40 imported into a slot at revision 3 wrote `currentRevision:
+     * 40` and the next ordinary save built 4 -- a pointer that went backwards.
+     */
+    const result = await this.writeGeneration(prisonId, decoded.value, applyProvisionalRetention, undefined);
     return result.ok ? { ...result, migrated: decoded.migrated } : result;
   }
 
