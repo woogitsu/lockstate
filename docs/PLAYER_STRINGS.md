@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 451 authored sentences
+## The 455 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -478,5 +478,9 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:3295` |
 | `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:3311` |
 | `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:3312` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3322` |
+| `display.theme.region` | Theme | `src/content/default-locale-en.ts:3328` |
+| `display.theme.system` | System | `src/content/default-locale-en.ts:3329` |
+| `display.theme.light` | Light | `src/content/default-locale-en.ts:3330` |
+| `display.theme.dark` | Dark | `src/content/default-locale-en.ts:3331` |
+| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3341` |
 

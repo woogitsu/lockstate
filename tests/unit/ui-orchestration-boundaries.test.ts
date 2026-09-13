@@ -251,6 +251,34 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `DisplayScaleLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `save-panel.ts` and `telemetry-consent-prompt.ts` carry; the control constructs no localizer of its own and never falls back to one.",
   },
   {
+    file: 'src/ui/theme-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the theme control's four message keys and nothing else, in the shape `display-scale-messages.ts` and `brand-messages.ts` use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
+  },
+  {
+    file: 'src/ui/theme.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the control's `ThemeLocalizer` port and the keys it resolves. The same erased naming-of-a-key-type `display-scale.ts` and `brand-badge.ts` make; no content code runs because of it.",
+  },
+  {
+    file: 'src/ui/theme.ts',
+    tree: 'input',
+    kind: 'value',
+    reason:
+      "Value: `THEME_PREFERENCES`, `isThemePreference` and `resolveTheme` from `src/input/theme-preference`, plus the erased `Theme` and `ThemePreference`. **The same shape as `display-scale.ts`'s entry above, and deliberately not one step further.** Which preferences exist, and which theme each resolves to given what the device asks for, are properties of the persisted record -- they live beside the decoder that checks a stored value against them, so the storage key and the control cannot end up with two vocabularies. All three are pure: `resolveTheme` is a function of a string and a boolean, and this module reads `prefers-color-scheme` through a port it is handed rather than inside them. That entry names the erosion to catch -- \"a value import of `src/input/storage.ts` ... would mean the control had started reading and writing the settings store itself instead of being handed a scale by the composition root\" -- and an earlier draft of this module did exactly that. This gate is what found it: `createThemeController` now takes the stored preference and a `persist` callback, and `src/main.ts` owns both ends.",
+  },
+  {
+    file: 'src/ui/theme.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `ThemeLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `display-scale.ts` and `save-panel.ts` carry; the control constructs no localizer of its own and never falls back to one.",
+  },
+  {
     file: 'src/ui/simulation-clock.ts',
     tree: 'simulation',
     kind: 'value',
@@ -574,6 +602,8 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-staff-roster.ts',
       'src/ui/simulation-zoning.ts',
       'src/ui/telemetry-consent-prompt.ts',
+      'src/ui/theme-messages.ts',
+      'src/ui/theme.ts',
     ]);
     // And the import scanner really is reading them.
     expect(orchestrationFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);

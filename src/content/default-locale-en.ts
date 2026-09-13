@@ -3311,6 +3311,25 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'display.scale.region': 'Interface scale',
   'display.scale.cycle': 'Change the interface scale',
 
+  // The theme control beside it (`src/ui/theme.ts`, #1157). Same `display.`
+  // namespace and the same reason: it changes a browser preference.
+  //
+  // **"Light" and "Dark" rather than "Day" and "Night"**, although the owner's
+  // delivery names the two palettes Day and Night and `docs/VISUAL_IDENTITY.md`
+  // follows it. Constitution article 19 says a theme does not change the
+  // simulated time of day, and offering a player "Day" while the prison clock
+  // reads 23:40 would be the interface claiming something about the world that
+  // the code does not do. The palettes keep their names where the reader is a
+  // developer and the claim is about colour.
+  //
+  // "System" is a claim too, and it is kept true by `resolveSystemThemeQuery`:
+  // the control follows `prefers-color-scheme` and keeps following it while
+  // this option is the selected one.
+  'display.theme.region': 'Theme',
+  'display.theme.system': 'System',
+  'display.theme.light': 'Light',
+  'display.theme.dark': 'Dark',
+
   // The accessible name of `<main id="app">` -- the whole application, not one
   // region of it, which is why the namespace is `app.` and not `hud.` or
   // `brand.`. It used to be `aria-label="Lockstate game application"` baked

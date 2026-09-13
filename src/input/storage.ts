@@ -6,6 +6,11 @@ import {
 } from './accessibility';
 import { DEFAULT_KEYBOARD_BINDINGS } from './bindings';
 import {
+  type ThemeSettings,
+  DEFAULT_THEME_SETTINGS,
+  decodeThemeSettings,
+} from './theme-preference';
+import {
   type InputSettings,
   type InputSettingsValidationResult,
   INPUT_SETTINGS_VERSION,
@@ -32,6 +37,14 @@ export const DEFAULT_INPUT_SETTINGS: InputSettings = {
 
 const INPUT_SETTINGS_STORAGE_KEY = 'lockstate.settings.input';
 const ACCESSIBILITY_SETTINGS_STORAGE_KEY = 'lockstate.settings.accessibility';
+/**
+ * The theme's **own** key, which is the whole of constitution article 13 as it
+ * applies here (#1157): the theme is a preference, it is not part of the save,
+ * and resetting it resets nothing else. Folding it into
+ * `lockstate.settings.accessibility` would have been fewer lines and would
+ * have made one `removeItem` clear a player's interface scale as well.
+ */
+const THEME_SETTINGS_STORAGE_KEY = 'lockstate.settings.theme';
 
 /**
  * Reads and parses one entry, treating **any** failure as "no entry".
@@ -151,4 +164,22 @@ export function remapAndPersistKeyboardBinding(
   const result = remapKeyboardBinding(settings, bindingIndex, code);
   if (result.ok) saveInputSettings(store, result.value);
   return result;
+}
+
+/**
+ * The theme preference, through the same guarded read as every other setting.
+ *
+ * A store that throws on access is the case `resolveBrowserKeyValueStore`
+ * already answers with an in-memory `Map`, and `readJson` answers a corrupt
+ * value with `undefined` -- so a browser with site data blocked still gets a
+ * theme, still switches it, and simply does not remember it. That is the
+ * behaviour #1157 requires, and it is inherited rather than reimplemented.
+ */
+export function loadThemeSettings(store: KeyValueStore): ThemeSettings {
+  return decodeThemeSettings(readJson(store, THEME_SETTINGS_STORAGE_KEY)) ?? DEFAULT_THEME_SETTINGS;
+}
+
+/** Returns whether the write landed, so a caller that wants to say so can. */
+export function saveThemeSettings(store: KeyValueStore, settings: ThemeSettings): boolean {
+  return writeJson(store, THEME_SETTINGS_STORAGE_KEY, settings);
 }
