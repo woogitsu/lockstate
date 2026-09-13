@@ -155,6 +155,24 @@ finished runs on the retired pool, that is **roughly half** — so the
 any argument resting on "the suite needs ~40 minutes" is resting on the old
 pool.
 
+**One sentence in this block is no longer history and is checkable rather than
+measured by hand: every `runs-on:` in every workflow reads the bare
+`self-hosted` selector, not a label list naming a pool.** Checked directly,
+2026-09-13: `grep -rn "runs-on" .github/workflows/` returns ten job selectors
+(plus four comment lines that only discuss the setting) across six workflow
+files, and every one of the ten is `self-hosted` — none names
+`woogitsu-*`, `lockstate-wsl-DOM-NEW-*`, or any other label. That is now pinned
+by `tests/foundation/ci-configuration-contract.test.ts`'s "runner selector
+contract" (`describe('runner selector contract'` at
+`tests/foundation/ci-configuration-contract.test.ts:2837`), added on the
+owner's instruction of 2026-09-13 — *"runnery to po prostu self hosted i tak
+ustaw wszędzie"* ("the runners are just self-hosted, set it that way
+everywhere"). So the runner **names** above (`woogitsu-linux-03`,
+`lockstate-wsl-DOM-NEW-01/-02/-03`, `mateusz`) stay history exactly as this
+block already says; the **selector** stops being something a reader has to
+take on faith, because a label list or a hosted runner added to any workflow
+now fails that test.
+
 **A SIXTH RELEASE LANDED ON 2026-09-09, AND IT IS THE FOURTH INSIDE
 RESERVATION 3 — the first that adds a gate rather than widening or resizing
 one.** The owner authorised ONE step in `.github/workflows/ci.yml`'s `verify`
@@ -207,6 +225,28 @@ that are now wrong.** The telemetry migration landed on 2026-09-04
 (`supabase/migrations/20260904090000_create_telemetry_events.sql`), and
 reservation 4 is no longer whole. `supabase/migrations/` itself is still the
 owner's: that migration was authorised one at a time, not as a category.
+
+## The 2026-09-13 visual identity delivery — a pointer, not a summary
+
+A full new visual identity, HUD direction and twenty-article product
+constitution was delivered by the owner on 2026-09-13. It is vendored verbatim
+at `docs/design/2026-09-13-identity-v5/` and is never edited there.
+
+This paragraph is not the source and is not trying to be: given this file's own
+history above, treat nothing here as authoritative about the delivery's
+content. The three documents that are the source, in the order to read them:
+
+1. `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md` — **Accepted
+   by the owner on 2026-09-13, in five rulings**, two of them against the
+   document's own recommendation. It was `Proposed` for part of that day and
+   this list said so; the Status block keeps both states, and it is the block to
+   read rather than any summary of it, including this one.
+2. `docs/VISUAL_IDENTITY.md` — the repository's reading of what binds, what
+   does not, and the measured gap against today's `src/ui/` code.
+3. `docs/IDENTITY_V5_ROLLOUT.md` — the staged plan for getting there.
+
+**Read `docs/VISUAL_IDENTITY.md` before making any change under `src/ui/`.** It
+is the thing to check a UI change against, not this file.
 
 Additional Claude-specific rules:
 - Use repository docs and ADRs as the source of truth.

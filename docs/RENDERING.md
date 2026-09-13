@@ -49,6 +49,20 @@ authored 256px wide for a 1x1 tile footprint
 them at quarter scale and the closest zoom approaches their authored
 resolution.
 
+## World reference art is not a runtime asset (identity v5, 2026-09-13)
+
+`docs/design/2026-09-13-identity-v5/ASSETY/wizja-mapy.png` (`dist/world.png` in
+the delivered prototype) is one 1536×1024 illustration of the whole campus, and
+nothing under `src/rendering/` reads it: it declares no id
+`src/rendering/assets/environment-sprites.ts` resolves and is absent from the
+atlas registry and both `public/game-content/*.v1.json` catalogs (checked
+2026-09-13). `docs/ART_PIPELINE.md`'s "World illustration reference" section
+carries the delivery's own words for why — it is an artistic reference for
+producing individual objects, explicitly not a source to cut a sprite set out
+of. Anything the renderer draws of what it depicts still comes from a `.blend`
+through the character or environment-object pipeline above, at this file's
+projection, pivots and `depthForAnchor` occlusion rule.
+
 ## Depth
 
 A top-down view in which objects have visible sides needs a draw order, not

@@ -2796,3 +2796,70 @@ describe('python3 availability diagnosis contract (#1089)', () => {
     ).toBeLessThan(useIndex);
   });
 });
+
+/**
+ * Every job in every workflow asks for the bare `self-hosted` pool, and nothing
+ * else.
+ *
+ * ## Why this is a repository-wide gate rather than two spot checks
+ *
+ * The selector was already pinned in exactly two places -- `version.yml`'s job
+ * in this file's "version bump workflow contract", and `deploy.yml`'s
+ * `staging-blocked` in `tests/foundation/deploy-blocked-announcement-contract.test.ts`
+ * -- each with the same argument attached: `ubuntu-latest` has never worked in
+ * this repository, and the two workflows that asked for it failed in four
+ * seconds with no step recorded and no log. Both comments say they pin the
+ * policy; neither could see the other seven jobs.
+ *
+ * The gap that leaves is not hypothetical in the other direction either. Until
+ * `80b54a97` every `runs-on:` here was a **label list** -- `[self-hosted,
+ * Linux, X64, wsl2]` and similar -- and a label list is a claim about which
+ * machines exist. Those claims rot: `AGENTS.md` and `CLAUDE.md` between them
+ * carry three generations of runner names (`woogitsu-host-*`,
+ * `woogitsu-linux-*`, `lockstate-wsl-DOM-NEW-*`), each correct when written and
+ * each wrong now, and a job pinned to a label that no longer exists does not
+ * fail loudly -- it queues forever.
+ *
+ * ## The instruction
+ *
+ * Recorded 2026-09-13, in the owner's own words, when they were told what the
+ * workflows currently ask for:
+ *
+ * > runnery to po prostu self hosted i tak ustaw wszędzie
+ *
+ * ("the runners are just self-hosted, so set it that way everywhere.") Every
+ * `runs-on:` on disk already read `self-hosted` when that was said, so this
+ * test changes no workflow and is not a release inside `AGENTS.md`'s third
+ * reservation. It is the instruction written down where a future change has to
+ * walk past it: a label list, a matrix, or a hosted runner added to any
+ * workflow now fails here and names the sentence above.
+ */
+describe('runner selector contract', () => {
+  it('asks for the bare self-hosted pool in every job of every workflow', async () => {
+    const workflows = await readWorkflows();
+    const selectors: string[] = [];
+    const wrong: string[] = [];
+
+    for (const [workflow, contents] of workflows) {
+      const lines = contents.split(/\r?\n/u);
+      for (const [index, line] of lines.entries()) {
+        const match = /^\s*runs-on:\s*(?<value>.*?)\s*$/u.exec(line);
+        if (match === null) continue;
+        const value = match.groups?.['value'] ?? '';
+        selectors.push(`${workflow}:${index + 1}`);
+        if (value !== 'self-hosted') wrong.push(`${workflow}:${index + 1} -> ${value}`);
+      }
+    }
+
+    // Not vacuous: six workflows, and every one of them has at least one job.
+    expect(
+      selectors.length,
+      'no `runs-on:` was found in any workflow, so this contract is checking nothing',
+    ).toBeGreaterThanOrEqual(6);
+
+    expect(
+      wrong,
+      'these jobs do not ask for the bare `self-hosted` pool. The owner\'s instruction of 2026-09-13 is that the runners are just self-hosted and that it be set that way everywhere; a label list additionally pins the job to machine names that have already changed three times in this repository, and a job pinned to a label nothing carries queues forever rather than failing',
+    ).toEqual([]);
+  });
+});

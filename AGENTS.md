@@ -605,6 +605,104 @@ the owner with the evidence, not to `main`.
 > gate, green ordinary increments are still merged under the mandate, and
 > anything touching the four reservations above still goes to the owner.
 
+## What the owner has delivered from outside this repository
+
+Design and direction material the owner makes elsewhere and hands over is kept
+under `docs/design/`, one dated subdirectory per delivery, **verbatim and never
+edited** — `docs/design/README.md` carries that rule and the reason for it. A
+delivery is evidence of what the owner asked for on a date; an edited copy is
+no longer that. Corrections to a delivery are written outside it.
+
+**The 2026-09-13 visual identity delivery.** A ZIP of five prototype
+iterations, an interactive design prototype, a full specification, a
+twenty-article product constitution, an audit and a world illustration, at
+`docs/design/2026-09-13-identity-v5/`. It arrived with this instruction, in the
+owner's own words:
+
+> z gpt 6 wygenerowałem nowy styl, wygląd, sposób komunikacji, przedstawiania,
+> nowa identyfikacja wizualna, itp itd, wyślij plik na repo, zapoznaj się z nim,
+> napisz kompletny rozbudowany plan wdrożenia, zmodyfikuj wszystkie pliki bazowe
+> repo, żeby nigdy nie zaginęło po zakończeniu tej sesji
+
+("with gpt 6 I generated a new style, look, way of communicating, of presenting,
+a new visual identity, etc. etc., put the file on the repo, read it, write a
+complete extensive implementation plan, modify all the base repo files so it is
+never lost after this session ends.")
+
+Three documents read it, and they are the ones to open rather than the delivery
+itself:
+
+- `docs/VISUAL_IDENTITY.md` — what the direction binds, what it explicitly does
+  not, and the measured gap against today's interface.
+- `docs/IDENTITY_V5_ROLLOUT.md` — the nine-stage plan, with the owner-reserved
+  steps named.
+- `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md` — the
+  decision record.
+
+The nine stages are tracked as issues under epic #1155, with the five open
+decisions collected in #1165; `docs/IDENTITY_V5_ROLLOUT.md` carries the map
+between the two. Stage 0, an inventory of every HUD surface that exists today,
+gates every other stage and needs no decision from the owner.
+
+**THAT INSTRUCTION WAS NOT AN ACCEPTANCE, AND THE PARAGRAPH IS KEPT IN ITS
+ORIGINAL FORM BELOW BECAUSE THE DISTINCTION IT DRAWS OUTLIVES THE DAY IT WAS
+WRITTEN.** "Put it on the repo and write a plan" is a different sentence from
+"adopt these twenty articles as product rules", and the next delivery will
+arrive with the same ambiguity.
+
+**The five decisions were then put to the owner and answered the same day, and
+ADR 0112 is Accepted.** In short: the constitution binds, as a product contract
+subordinate to this file; the light palette is the default theme with the dark
+one kept; the navigation moves to the delivery's five sections **now**, without
+waiting for the inventory; the type scale goes to **15 / 13 / 11** and article 8
+of the constitution is amended to 15 px rather than excepted; the world
+illustration stays a reference and production prompts for tiles and objects are
+commissioned beside it. Two of those went against the recommendation. **Read
+that ADR's Status block rather than this summary** — it carries each ruling, its
+provenance, and the one residual ambiguity.
+
+**What did not change is the thing an agent is likeliest to over-read.** The
+constitution binding does not make the delivery's sample numbers real, its build
+loop a design, or its `localStorage` save a pattern; and article 5 binding makes
+the *truth* of a player-visible sentence more constrained, not less — the fourth
+reservation below still governs it.
+
+**And the four reservations above are untouched by it.** Nothing in this
+delivery reaches a server surface, a migration or deploy configuration, and the
+fourth reservation is the one it presses hardest against: the delivery's
+constitution makes *"every sentence is true"* its fifth article, which is a
+demand on the code, not on the copywriting. The wording of a player-visible
+string has been ours since 2026-09-04; its truth has not.
+
+## Instructions recorded that are not releases
+
+An instruction from the owner that changes nothing inside the four reservations
+still has to survive the session it was given in. It is recorded here, in their
+words and dated, in the same shape as a release — the difference being stated
+rather than left for a reader to infer.
+
+**The runner selector, 2026-09-13.** Told what the workflows currently ask for,
+the owner answered:
+
+> runnery to po prostu self hosted i tak ustaw wszędzie
+
+("the runners are just self-hosted, so set it that way everywhere.") **Every
+`runs-on:` on disk already read `self-hosted` when that was said** — the label
+lists went in `80b54a97` — so no workflow file moved, and this is not a release
+inside reservation 3. What it bought is a gate: `tests/foundation/ci-configuration-contract.test.ts`
+now carries a "runner selector contract" that reads every `runs-on:` in
+`.github/workflows/` and fails on anything that is not the bare selector,
+watched going red on a mutation before it was believed. The two pre-existing
+pins covered one job each, in `version.yml` and `deploy.yml`, and neither could
+see the others.
+
+**Why a label list is the thing being kept out, rather than a preference being
+expressed.** A label list is a claim about which machines exist, and those
+claims have rotted here three times: this file and `CLAUDE.md` between them
+carry `woogitsu-host-*`, `woogitsu-linux-*` and `lockstate-wsl-DOM-NEW-*`, each
+correct when written. A job pinned to a label nothing carries does not fail
+loudly — it queues.
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.

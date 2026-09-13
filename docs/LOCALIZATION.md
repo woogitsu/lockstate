@@ -141,6 +141,111 @@ A test asserts that every content definition's `nameKey` resolves in the
 default catalog, so an unlocalized catalog entry fails CI rather than
 shipping.
 
+## The 2026-09-13 identity delivery's voice and localization requirements
+
+`docs/design/2026-09-13-identity-v5/` (vendored verbatim, never edited) sets a
+product voice and repeats a localization requirement `docs/VISUAL_IDENTITY.md`
+and `docs/IDENTITY_V5_ROLLOUT.md` stage 6 already record. This section checks
+that requirement against what this repository already does, rather than
+restating it from memory.
+
+### Voice: fact → place → next step
+
+`DOKUMENTACJA/projekt.md` §"Głos produktu" states the pattern as **fakt →
+miejsce → następny krok** ("fact → place → next step", `projekt.md:101`) and
+names four direct verbs: *Wybierz, Sprawdź, Zaplanuj, Zapisz* (Choose, Check,
+Plan, Save, `projekt.md:103`). It carries a ten-row table of example messages
+(`projekt.md:105-116`).
+
+**Those rows are shapes, not strings to paste.** The delivery says so of
+itself, verbatim: *"Liczby są przykładowe. Komunikaty i akcje wymagają dowodu w
+kodzie przed integracją."* ("Numbers are illustrative. Messages and actions
+need proof in code before integration," `projekt.md:118`.) The 350, the six
+wall segments, the 14:32 save time, the three people waiting on a bed — every
+number in that table is invented for the mock. Shipping one unchanged would be
+exactly the promise `AGENTS.md`'s fourth reservation exists to stop: a
+sentence with a number nothing in `src/` produced.
+
+**`AGENTS.md`'s fourth reservation governs every string this voice motivates.**
+The choice of words has been ours since the owner's release of 2026-09-04;
+whether the sentence is *true* has not. So for such a string:
+
+1. Open the code that makes it true, and cite it.
+2. Quote the string verbatim in the commit message **and** in the pull
+   request body, beside that citation.
+3. If the code does not make it true, the string does not ship.
+
+**`docs/PLAYER_STRINGS.md` cannot carry this argument, and that is worth being
+explicit about.** It is the record that release promises the owner, but its
+entire content — including its own header — is
+`tooling/player-string-inventory.mjs`'s `renderInventory()` output, and
+`tests/foundation/player-string-inventory-contract.test.ts` requires the
+committed file to equal that output byte-for-byte; there is no room in it for
+hand-written prose about a voice, and adding any would fail that gate the next
+time the generator runs. The three-step rule above is recorded here instead,
+and applies regardless of which of this repository's documents a reader opened
+first.
+
+### The three sentences article 5 names as never to write
+
+`konstytucja.md` article 5, "Każde zdanie jest prawdziwe" ("every sentence is
+true"), gives three worked examples, and `docs/IDENTITY_V5_ROLLOUT.md` stage 6
+already quotes them. Each already has a shipped answer in this tree, cited
+here rather than restated from memory:
+
+- *"Nie mów „zapisano", zanim zapis zostanie potwierdzony."* — do not say
+  "saved" before a write is confirmed. `save.status.saved`
+  (`src/content/default-locale-en.ts:3137`, "Saved (generation
+  {generation})") already ships only after a confirmed write; see
+  `docs/PERSISTENCE.md` for the save/load contract this rests on.
+- *"Nie mów „wolne miejsce", jeśli znana jest wyłącznie liczba łóżek."* — do
+  not say "free space" from a bed count alone. `hud.status.prisoners-without-bed`
+  (`src/content/default-locale-en.ts:167`) already counts people with no bed,
+  not beds — its own comment says the alternative "counts what is missing
+  rather than what is fine".
+- *"„Brak incydentów" i „brak danych" to różne stany."* — "no incidents" and
+  "no data" are different states. `hud.alert.event.incidents.all-clear`
+  (`src/content/default-locale-en.ts:1618`) and
+  `hud.alert.event.incidents.all-clear-after-lapse` (`:1669`) already
+  distinguish a handled incident from one that expired unhandled and hurt
+  everyone in it — the distinction issue #914 forced.
+
+None of the three is a gap in this repository today; a new string that
+reintroduces one of these three shapes, not the absence of the shapes
+themselves, is the failure mode to watch for.
+
+### The mechanical requirements, checked against what exists
+
+`projekt.md:120` states four requirements together: *"Lokalizacja: stabilne
+klucze, pełne zdania, bez konkatenacji; odmiana 1 osoba / 2 osoby / 5 osób;
+liczby i daty zgodne z locale."* ("Localization: stable keys, whole sentences,
+no concatenation; the 1 osoba / 2 osoby / 5 osób inflection; locale-correct
+numbers and dates.") `docs/IDENTITY_V5_ROLLOUT.md` stage 6 repeats the same
+four and names the gates; this is what each one is against the tree, checked
+rather than assumed:
+
+- **Stable keys.** Already the architecture — "Three namespaces that never
+  merge" above — gated by
+  `tests/foundation/localization-key-completeness.test.ts`. Not new.
+- **Whole sentences, no concatenation.** Already the authoring checklist's
+  rule 4 below, and gated the same way, with two known exceptions this file
+  already tracks under "Not done here" (two accessible names still assembled
+  in code). Mostly in force, not fully clean.
+- **Polish plural forms (1 osoba / 2 osoby / 5 osób).** The *mechanism* is
+  already here — `Intl.PluralRules` on the resolved locale, under
+  "Formatting" above — but the *content* is not. No `pl` catalog exists
+  anywhere in this tree; `defaultMessageCatalogEn` carries exactly **two**
+  plural-form entries and both are English-only demonstration values
+  (`src/services/localization/default-catalog.ts:25`, `:29`); and
+  `tests/foundation/second-locale-contract.test.ts` pins the 24 flat
+  `{count}` messages (see "Not done here" below) that would each need real
+  plural forms — including a
+  Polish `few`/`many` split — before a Polish catalog could resolve them
+  correctly. This is genuinely outstanding work, not a restatement of
+  something already built.
+- **Locale-formatted numbers and dates.** Already `Intl.NumberFormat` /
+  `Intl.DateTimeFormat`, under "Formatting" above. Not new.
+
 ## Not done here
 
 Issue #36 explicitly excludes translating the game before content
@@ -150,13 +255,19 @@ locale is authored, and no translation vendor process is defined yet.
 Two things the infrastructure owes a translator, recorded rather than fixed
 because both mean authoring player-visible copy:
 
-- **22 messages interpolate `{count}` into a flat string** (21 when this was
-  first counted; `hud.alert.occurrences` arrived with #754 and is a `×`
-  formula like the other two, not a sentence). English reads correctly;
-  Polish needs `few` and `many` for 2, 3, 4, 22 … and a translator cannot add
-  a form to a key that has none. Pinned in
-  `tests/foundation/second-locale-contract.test.ts` so the list cannot grow
-  unnoticed. Only 2 of 591 messages are plural entries today.
+- **24 messages interpolate `{count}` into a flat string** (22 when this
+  section was last corrected, 21 when first counted; `hud.alert.occurrences`
+  arrived with #754 and is a `×` formula like the other two, not a sentence).
+  **Re-measured while writing the 2026-09-13 identity-delivery section
+  above**: `FLAT_MESSAGES_WITH_COUNT` in
+  `tests/foundation/second-locale-contract.test.ts` currently pins 24 keys,
+  not 22 — this paragraph is the sentence `docs/AGENT_WORKFLOW.md` §4 warns
+  about, a tally that rots on the next addition and not on the next edit
+  here. English reads correctly; Polish needs `few` and `many` for 2, 3, 4,
+  22 … and a translator cannot add a form to a key that has none. Pinned in
+  that same file so the list cannot grow unnoticed. Only 2 of 644 messages
+  are plural entries today (`defaultMessageCatalogEn.messages` — this said
+  591; re-measured the same pass).
 - **2 accessible names are assembled in code** from a localized word, a
   hard-coded `": "` and another element's text. Rule 4 above forbids it;
   the same gate pins both sites.
