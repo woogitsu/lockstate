@@ -597,10 +597,25 @@
 
 .ui-action:hover { background: var(--surface-active); color: var(--text-heading); }
 
+/* `--accent-contrast` in BOTH states, and the resting one used to read
+ * `--text-heading` (#1157).
+ *
+ * A heading colour is by definition close to the theme's *text*, and a filled
+ * accent button is not the theme's background -- so that pairing was only ever
+ * legible because there was one theme and it was dark. Measured on the day
+ * palette: `--text-heading` `#122c3a` on `--accent-deep` `#005c5f` is
+ * **1.81:1**, against `--accent-contrast` `#ffffff`'s **7.79:1**. It was not
+ * free in the night theme either -- the old pairing measured 3.72:1 there,
+ * under the 4.5:1 floor for text, where the token pair now measures 5.51:1.
+ * `tests/unit/ui-design-tokens.test.ts` computes both states in both themes.
+ *
+ * `--accent-contrast` is the alias whose entire job is "the colour that reads
+ * on the accent", so the hover rule below already used it; this is the
+ * resting state catching up rather than a new idea. */
 .ui-action[data-tone='primary'] {
   background: var(--accent-deep);
   border-color: var(--accent);
-  color: var(--text-heading);
+  color: var(--accent-contrast);
 }
 
 .ui-action[data-tone='primary']:hover { background: var(--accent); color: var(--accent-contrast); }
