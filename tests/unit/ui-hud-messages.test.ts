@@ -90,6 +90,7 @@ const PRIMITIVE_MODULE_NAMES = [
   'list-row.ts',
   'number-field.ts',
   'panel.ts',
+  'resize-separator.ts',
   'roving-focus-keydown.ts',
   'roving-focus.ts',
   'segmented-bar.ts',
