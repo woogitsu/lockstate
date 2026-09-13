@@ -318,6 +318,60 @@ canvas {
  * A control that stayed 44px while everything around it grew would be the one
  * thing a player at 200 % could not hit.
  */
+/*
+ * The rail's chrome row: the interface scale and the theme, side by side
+ * (#1157).
+ *
+ * The wrapper owns the box -- border, background, rail width, the margin under
+ * it -- and the two controls inside it own only their contents. That is what
+ * makes a second chrome control cost **no** rail height, which
+ * `app-shell.spec.ts` measured as the binding constraint: a second row put the
+ * HUD under the centre of a 375x812 viewport, covered 26 controls on the Build
+ * tab at 1280x720 (#88) and scrolled the rail 57px at 200 % (#545).
+ *
+ * Neither control is told it is in a row. They are styled standalone below and
+ * give their box up here, so either one can go back to being a row of its own
+ * by being mounted outside this wrapper.
+ */
+.hud-chrome-prefs {
+  display: flex;
+  align-items: stretch;
+  flex: none;
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--space-2);
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 720px) {
+  .hud-chrome-prefs {
+    width: 100%;
+  }
+}
+
+/* Inside the row, each control is a half that may shrink: `min-width: 0` is
+   what lets the legend's own `text-overflow: ellipsis` actually engage, since
+   a flex item's automatic minimum size is otherwise its content. */
+.hud-chrome-prefs > .display-scale,
+.hud-chrome-prefs > .theme-control {
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  margin-bottom: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* One hairline between the two, which is how everything else in this
+   interface separates neighbours. */
+.hud-chrome-prefs > .theme-control {
+  border-left: var(--hairline) solid var(--border-hairline);
+}
+
 .display-scale,
 .theme-control {
   display: flex;
