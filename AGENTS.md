@@ -639,6 +639,11 @@ itself:
 - `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md` — the
   decision record.
 
+The nine stages are tracked as issues under epic #1155, with the five open
+decisions collected in #1165; `docs/IDENTITY_V5_ROLLOUT.md` carries the map
+between the two. Stage 0, an inventory of every HUD surface that exists today,
+gates every other stage and needs no decision from the owner.
+
 **THAT INSTRUCTION IS NOT AN ACCEPTANCE, AND THIS IS THE SENTENCE A LATER
 SESSION WILL BE TEMPTED TO SKIP.** "Put it on the repo and write a plan" is a
 different sentence from "adopt these twenty articles as product rules". ADR

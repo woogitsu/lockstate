@@ -10,6 +10,31 @@ It is written to be picked up by an agent that has never seen the delivery, in a
 container that will be thrown away, with the delivery as the only thing it can
 rely on being there.
 
+## Where the work is tracked
+
+The nine stages are filed as GitHub issues under one epic, so a session that
+dies mid-stage leaves its state somewhere a later one can read. **The issues are
+the tracker and this document is the record**: where the two disagree, this
+document is right and the issue is what gets edited.
+
+| Stage | Issue |
+|---|---|
+| — | [#1155](https://github.com/woogitsu/lockstate/issues/1155) — the epic, with the dependency graph |
+| 0 — inventory | [#1156](https://github.com/woogitsu/lockstate/issues/1156) |
+| 1 — two themes | [#1157](https://github.com/woogitsu/lockstate/issues/1157) |
+| 2 — type scale | [#1158](https://github.com/woogitsu/lockstate/issues/1158) |
+| 3 — HUD shell | [#1159](https://github.com/woogitsu/lockstate/issues/1159) |
+| 4 — build loop | [#1160](https://github.com/woogitsu/lockstate/issues/1160) |
+| 5 — operations | [#1161](https://github.com/woogitsu/lockstate/issues/1161) |
+| 6 — language | [#1162](https://github.com/woogitsu/lockstate/issues/1162) |
+| 7 — world art | [#1163](https://github.com/woogitsu/lockstate/issues/1163) |
+| 8 — acceptance | [#1164](https://github.com/woogitsu/lockstate/issues/1164) |
+| the five open decisions | [#1165](https://github.com/woogitsu/lockstate/issues/1165) |
+
+**Stage 0 needs no decision from the owner and is safe to start now.** Everything
+after it wants at least decisions 1 and 2 of ADR 0112 answered, which is what
+#1165 asks for.
+
 ## The shape of the whole thing, in one paragraph
 
 Nine stages. Stage 0 is an inventory that must exist before anything is deleted,
