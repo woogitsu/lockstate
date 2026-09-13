@@ -1,4 +1,4 @@
-import { expect, test } from './network-changed-fixture';
+import { type Page, expect, test } from './network-changed-fixture';
 
 /**
  * The theme, in a real browser (#1157).
@@ -33,11 +33,11 @@ const HARNESS_URL = '/tests/browser/theme-harness.html';
 const DAY_BACKGROUND = 'rgb(242, 246, 248)';
 const NIGHT_BACKGROUND = 'rgb(16, 35, 46)';
 
-async function paintedBackground(page: import('@playwright/test').Page): Promise<string> {
+async function paintedBackground(page: Page): Promise<string> {
   return page.evaluate(() => globalThis.getComputedStyle(document.body).backgroundColor);
 }
 
-async function paintedBodyText(page: import('@playwright/test').Page): Promise<string> {
+async function paintedBodyText(page: Page): Promise<string> {
   return page.evaluate(() => globalThis.getComputedStyle(document.body).color);
 }
 
