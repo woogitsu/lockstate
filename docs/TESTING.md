@@ -483,6 +483,72 @@ Deployment-sensitive work also requires `pnpm verify:deployment`. Work touching 
 
 There is no arbitrary repository-wide percentage threshold during the pre-alpha foundation. New behavior still requires tests. Coverage thresholds may be introduced only after representative systems exist and uncovered risk can be mapped to meaningful gates rather than a vanity number.
 
+## The 2026-09-13 identity delivery's acceptance plan
+
+`docs/design/2026-09-13-identity-v5/` (vendored verbatim, never edited) ships
+its own acceptance plan,
+`DOKUMENTACJA/06-PLAN-TESTOW.md`, and `docs/VISUAL_IDENTITY.md` and
+`docs/IDENTITY_V5_ROLLOUT.md` stage 8 already point at it. This section is
+what that plan is and is not, checked rather than summarised from memory.
+
+**What it is.** A table of thirteen screen-level areas to exercise once the
+direction is integrated — layout, resize, collapse (*zwijanie*), slider/reset,
+keyboard, build, modal, schedule (*harmonogram*), save, embed, theme, text
+zoom (200%) and touch (`06-PLAN-TESTOW.md:9-23`) — each with the actions to
+take and the expected result, plus a further paragraph of post-integration
+checks against the real simulation (refusals, room readiness, staff, incidents,
+persistence and migrations, `06-PLAN-TESTOW.md:25-27`). None of the thirteen
+rows is executable today; they are a checklist for a person once the rollout
+stages land, not a suite this repository runs.
+
+**What it also carries, and what that proves.** The same document opens with
+*"Wykonane testy"* ("Tests executed"): `node tests/audit.cjs` in
+`AKTUALNY_PROTOTYP`, reporting **9/9 PASS**
+(`docs/design/2026-09-13-identity-v5/AKTUALNY_PROTOTYP/tests/audit.cjs`). Read
+the file rather than the count: it loads `dist/app.js` as text, slices out the
+`actions` object and two standalone functions, and runs that fragment inside a
+Node `vm.Context` against a hand-built `state` object and stub UI hooks — `$`
+returns one fixed fake DOM node, `$$` returns an empty array, and `drawPlacements`,
+`updateStats`, `updateClock`, `renderPanel`, `closeModal` and `showGuide` are
+all no-ops (`audit.cjs:6`). No browser opens, nothing is laid out, and nothing
+about touch, resize, keyboard parity, or contrast is exercised — the file's own
+closing line says so: *"9 behavioral checks passed (VM, not browser tests)."*
+(`audit.cjs:21`, verbatim). `DOKUMENTACJA/06-PLAN-TESTOW.md` says the same
+thing about its own evidence, in its first line: *"Testy uruchamiają fragmenty
+kodu w Node VM z atrapami UI; nie przeglądarkę."* ("The tests run fragments of
+the code in a Node VM with UI stand-ins; not the browser.")
+
+**What the nine checks establish, precisely.** Save-then-mutate marks the
+footer dirty; undo restores a subtracted cost; load restores valid data and
+disarms an in-progress tool; malformed JSON, a tampered price, and a
+fractional clock minute are all rejected without mutating state; a blocked
+`localStorage` write does not report success; a wraparound schedule window
+(21:00–06:00) is evaluated correctly at both edges; and an embedded preview's
+storage cannot reach the main save (`audit.cjs:12-20`). Those are real
+assertions about the mock's own logic, proven the way this repository proves
+logic — and they prove nothing about layout, dotyk (touch), keyboard parity,
+or any of the thirteen screen-level areas above, because none of that exists
+in a Node `vm.Context` with a stubbed `$`.
+
+**This is exactly what constitution article 20 says of itself.**
+`konstytucja.md` article 20, "Dowód ma nazwany zakres" ("evidence has a named
+scope"): *"Test logiki nie dowodzi działania layoutu ani dotyku."* ("A logic
+test does not prove layout or touch working.") The same article separates
+integration-readiness from production-readiness as different stages, and
+requires re-checking touched behaviour after any code change — which is this
+repository's own rule under a different name (`docs/AGENT_WORKFLOW.md` §3, "a
+green suite is not a guarded suite").
+
+**None of it replaces this repository's own gates.** `docs/IDENTITY_V5_ROLLOUT.md`
+stage 8 lists them: `pnpm typecheck`, `pnpm test`, `pnpm test:browser`,
+`pnpm test:artifact`, `pnpm verify`, `pnpm verify:assets`, `pnpm verify:sql`,
+`pnpm test:perf`, `pnpm verify:benchmark` — every layer described elsewhere in
+this file. A rollout stage that only re-ran the delivery's own nine-case VM
+harness would have proven nothing about any of the thirteen screen-level
+areas, and nothing at all about the real simulation, persistence, or the
+worker boundary this document's "Worker and renderer boundaries" section
+requires.
+
 ## Current executable baseline
 
 `tests/foundation/repository-contract.test.ts` guards the pinned Node/pnpm metadata, strict compiler options, test-source inclusion and the rule that an empty suite cannot pass. It is a foundation contract, not a substitute for system-specific tests.

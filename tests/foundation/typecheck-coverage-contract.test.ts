@@ -65,12 +65,36 @@ function readProject(relativePath: string): ProjectContract {
   return JSON.parse(readFileSync(path.join(repositoryRoot, relativePath), 'utf8')) as ProjectContract;
 }
 
+/**
+ * Vendored material, which is tracked and is not this repository's to check.
+ *
+ * `docs/design/` holds design deliveries the owner made outside this
+ * repository, kept **verbatim and never edited** -- `docs/design/README.md`
+ * carries that rule and the reason for it. The 2026-09-13 delivery brought two
+ * copies of its prototype's own nine-case logic suite, `audit.cjs`, and they
+ * are the first tracked `.cjs` files here that no tsconfig could sensibly
+ * cover: adding them to a project would point `checkJs` at somebody else's
+ * mock, and any error it found could not be acted on without editing a
+ * delivery that must not be edited.
+ *
+ * **This is an exclusion from the file list, not a hole in the gate**, and the
+ * difference matters because the docblock above argues against naming
+ * directories. What is excluded is a tree that is by construction not part of
+ * the build: nothing under `docs/` is imported by `src/`, `tests/`,
+ * `benchmarks/`, `scripts/` or `tooling/`, and #602's defect -- a benchmark
+ * calling a production signature that had moved -- cannot occur in a file the
+ * product never loads. A delivery that ever does become a module has to move
+ * out of `docs/design/` first, which is a visible change rather than a silent
+ * one.
+ */
+const VENDORED = 'docs/design/';
+
 function trackedModuleFiles(): readonly string[] {
   const listed = spawnSync('git', ['ls-files', '-z'], { cwd: repositoryRoot, encoding: 'utf8' });
   expect(listed.status, `git ls-files failed: ${listed.stderr}`).toBe(0);
   return listed.stdout
     .split('\0')
-    .filter((entry) => entry !== '' && CHECKABLE.test(entry));
+    .filter((entry) => entry !== '' && CHECKABLE.test(entry) && !entry.startsWith(VENDORED));
 }
 
 /** `include` entries here are plain paths -- a directory covers its whole subtree, a file covers itself. */
