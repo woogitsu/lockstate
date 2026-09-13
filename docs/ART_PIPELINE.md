@@ -171,6 +171,14 @@ catalog that disagrees with the bytes it names, in either kind of checkout
 
 ## World illustration reference (identity v5, 2026-09-13)
 
+> **Prompts for the rest of the catalogue live in
+> [`docs/ART_CONCEPT_PROMPTS.md`](./ART_CONCEPT_PROMPTS.md)**, commissioned by
+> the owner's ruling of 2026-09-13 and scoped by a second ruling the same day:
+> a generated image is a **concept reference to model from**, never a shipped
+> sprite. That file states the invariants a reference must respect — camera,
+> the two suns' angles, north up, the tile scale, transparency — so a reference
+> cannot quietly ask for a model this pipeline is unable to render.
+
 `docs/design/2026-09-13-identity-v5/ASSETY/wizja-mapy.png` — the same file as
 `dist/world.png` in the delivered prototype — is one 1536×1024 illustration of
 the whole campus from a near-top-down camera. `DOKUMENTACJA/08-PROMPT-GRAFIKI.md`
