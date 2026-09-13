@@ -16066,19 +16066,21 @@ their authors. Full repository verification belongs to this PR's CI.
   statuses and their index rows agree: **42 Proposed and 62 Accepted**.
   The old index had 41 and 61 across 102 documents. ADR 0109 is now Accepted;
   0110 and 0111 are Proposed and unaccepted. ADR 0107's partial direction
-  ruling does not change its leading status. **Next free number: 0113**,
-  as the index states; 0030 is retired and 0095 remains held according to
+  ruling does not change its leading status. **Next free number: 0114**,
+  as the index now states; 0030 is retired and 0095 remains held according to
   the index and handover. This pass does not claim a new remote-head sweep.
-  **The two numbers in the three sentences above moved on 2026-09-13, one day
-  after this pass, and are corrected in place rather than left to contradict
-  the index — which is the one thing this bullet may not do, because it is the
-  number a reader drafting an ADR copies out of here.** ADR 0112 landed that
-  day, Proposed, filing the owner's visual-identity delivery
-  (`docs/design/2026-09-13-identity-v5/`), so the census this pass measured as
-  **42 Proposed and 62 Accepted across 104 documents** is now **43 and 62
-  across 105**, and the free number is one further on. What the pass actually
-  read is preserved in this sentence rather than in the restatement above,
-  because a restatement that disagrees with the index is the defect
+  **The two numbers in the three sentences above moved twice since this pass
+  was taken, on 2026-09-13, and are corrected in place rather than left to
+  contradict the index — which is the one thing this bullet may not do,
+  because it is the number a reader drafting an ADR copies out of here.**
+  ADR 0112 landed that day, Proposed, filing the owner's visual-identity
+  delivery (`docs/design/2026-09-13-identity-v5/`); ADR 0113 landed the same
+  day, Proposed, proposing per-group regime editing off issue #1156's stage 0
+  inventory. So the census this pass measured as **42 Proposed and 62 Accepted
+  across 104 documents** is now **44 and 62 across 106**, and the free number
+  moved 0113 → 0114. What the pass actually read is preserved in this sentence
+  rather than in the restatement above, because a restatement that disagrees
+  with the index is the defect
   `tests/foundation/adr-status-queue-anchor-contract.test.ts` exists to catch
   and a historical note is not.
   §2's nine entries are unchanged byte for byte, including the five rows
