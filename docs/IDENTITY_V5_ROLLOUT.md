@@ -31,22 +31,27 @@ document is right and the issue is what gets edited.
 | 8 — acceptance | [#1164](https://github.com/woogitsu/lockstate/issues/1164) |
 | the five open decisions | [#1165](https://github.com/woogitsu/lockstate/issues/1165) |
 
-**Stage 0 needs no decision from the owner and is safe to start now.** Everything
-after it wants at least decisions 1 and 2 of ADR 0112 answered, which is what
-#1165 asks for.
+**All five decisions were answered on 2026-09-13** (#1165), so every stage is
+unblocked as far as the owner is concerned. What remains are the technical
+dependencies below.
 
 ## The shape of the whole thing, in one paragraph
 
-Nine stages. Stage 0 is an inventory that must exist before anything is deleted,
-because the delivery's prototype is narrower than the game and the cheapest way
-to lose a feature is to redraw the HUD around a mock that never had it. Stages 1
+Nine stages. Stage 0 is an inventory of what exists today — **the owner ruled on
+2026-09-13 that the navigation moves without waiting for it**, so it is a record
+rather than a gate, and the reason is worth carrying: nobody is playing, so a
+surface lost in a re-skin costs nobody a session. It is still produced, and a
+surface the direction does not place is still not an agent's to delete. Stages 1
 and 2 are the token architecture — a second theme, then the type scale — and
 they are the only stages that touch every pixel at once. Stages 3–5 are the HUD
 shell, the tools and operations: layout geometry, then the build loop, then the
 panels the prototype does not show. Stage 6 is language. Stage 7 is world art,
 which is a pipeline problem rather than a UI one and is the longest. Stage 8 is
-acceptance. **Stage 0 gates everything; 1 gates 2 and 3; 3 gates 4 and 5; 6 and
-7 run beside the rest.**
+acceptance. **Stage 1 gates 2 and 3; 3 gates 4 and 5; 0, 6 and 7 run beside the
+rest.** Stage 0 gated everything until the owner's ruling of 2026-09-13 released
+the navigation from waiting on it; it is now a record produced alongside, and
+the sentence it used to carry is kept in its own section so the change is
+visible rather than silent.
 
 Nothing here may be merged as one change. `docs/AGENT_WORKFLOW.md` §2 is the
 method: an implementing agent takes its own worktree, pushes after its first
@@ -55,9 +60,18 @@ coherent chunk, and parallel agents work on unrelated surfaces. Two agents in
 
 ---
 
-## Stage 0 — Inventory before demolition
+## Stage 0 — Inventory, produced alongside rather than first
 
-**Why it is first.** `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` opens with it,
+> **This section said "Inventory before demolition" and made itself the gate on
+> every other stage. The owner ruled otherwise on 2026-09-13** — *"tak, od razu,
+> nikt nie gra w grę więc nikt nie zauważy problemu"* ("yes, right away, nobody
+> plays the game so nobody will notice a problem") — and the argument below is
+> kept unchanged, because it is the argument that was overruled and because it
+> is still the reason the document is worth producing at all. What changed is
+> its position, not its content: it is written while the navigation moves, and
+> it is what says where each of today's surfaces went.
+
+**Why it was first.** `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` opens with it,
 in the delivery's own words: *"Zanotuj brakujące powierzchnie, zanim zaczniesz
 usuwać stary UI"* — note the missing surfaces before you start removing the old
 UI. The prototype has five sections; this repository has five different ones,
@@ -133,8 +147,12 @@ a screenshot pair per device tier is *not* evidence and the delivery says so.
 ## Stage 2 — The type scale
 
 Body and value text are 13 px and labels 11 px, each multiplied by `--ui-scale`
-(`src/ui/tokens.css:371-373`). The direction asks for 16 / 14 / 12 inside a 32 /
-24 / 20 / 16 / 14 / 12 ramp.
+(`src/ui/tokens.css:371-373`). The delivery asks for 16 / 14 / 12; **the owner
+ruled on 2026-09-13 for 15 / 13 / 11**, and amended constitution article 8 to 15
+px rather than excepting it. That is the target. The option label carrying the
+ruling said *"e.g."*, so a surface that needs a different intermediate step is
+inside the ruling provided the step is recorded with its reason — what is not
+open is the direction.
 
 This is not a token edit. Three steps of body text changes what fits in every
 panel at every breakpoint, and `--ui-scale` multiplies whatever it is given, so
@@ -257,6 +275,14 @@ compare translated text. That is a determinism rule, not a style preference.
 `ASSETY/wizja-mapy.png` is one 1536×1024 illustration and is a reference, not an
 atlas. `DOKUMENTACJA/08-PROMPT-GRAFIKI.md` carries the exact prompt that made
 it, which is what makes it reproducible.
+
+**The owner extended this stage on 2026-09-13:** beyond keeping the illustration
+as a reference, production prompts are to be written for tiles and objects in
+the same style, so the catalogue can be produced rather than improvised. Those
+prompts are repository content and belong beside `docs/ART_PIPELINE.md`; each
+must name the projection, the pivot convention, the light direction and the
+scale the existing pipeline already fixes, or it will produce art that cannot be
+used.
 
 Production work is the existing pipeline's: `docs/ART_PIPELINE.md`,
 `docs/RENDERING.md`, consistent pivots and light direction, eight facings,

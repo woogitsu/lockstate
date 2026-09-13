@@ -16,7 +16,54 @@
 
 ## Status
 
-**Proposed, 2026-09-13. Not self-approved.**
+**Accepted by the owner on 2026-09-13, in five rulings, two of which went
+against this document's recommendation.** The `Proposed` line below is kept
+rather than replaced, because `docs/AGENT_WORKFLOW.md` §4's rule is to mark both
+directions, and because what each decision looked like before it was answered is
+the part a later reader needs in order to judge the answer.
+
+**The provenance is the weaker kind, and is disclosed here exactly as the
+2026-09-08, 2026-09-09 and 2026-09-10 entries in `AGENTS.md` disclose their
+own.** Four of the five rulings are the *label of a clickable option this
+session wrote and the owner chose*, not a sentence they typed. One is not, and
+it is the one that overturned a recommendation — decision 3 carries the owner's
+own words and they are reproduced verbatim below.
+
+| Decision | Ruling | Against the recommendation? |
+|---|---|---|
+| 1 — the constitution binds | *"Tak, jako kontrakt produktowy pod AGENTS.md"* | no |
+| 2 — light palette default, dark kept | *"Tak, dwa motywy, jasny domyślny"* | no |
+| 3 — navigation moves to the delivery's five sections | **now**, in the owner's own words | **yes** |
+| 4 — type scale | *"Tak, ale mniejszy krok — np. 15/13/11"*, and article 8 amended to 15 px | **yes** |
+| 5 — world illustration | *"Referencja + zrób nowy prompt na kafelki i obiekty"* | extends it |
+
+**Decision 3's ruling, verbatim, typo included:**
+
+> tak, od razu, nikt nie gra w grę więc nikt nie zauważy problemu, a dzięki tmeu
+> szybciej skończymy wdrożenie
+
+("yes, right away, nobody plays the game so nobody will notice a problem, and
+thanks to that we will finish the rollout faster.") **The recommendation it
+overturned was to wait for the stage 0 inventory, and the reason it gives is a
+fact about this project that is recorded elsewhere in this repository and is
+easy for an agent to forget: `docs/DEPLOYMENT.md` carries the owner's earlier
+statement that `lockstate.io` has its deploy switched off deliberately —
+*"Nikt nie gra, tylko ja znam tę domenę"* — so a surface lost in a re-skin costs
+nobody a session. It is a ruling about cost, not about whether the risk is
+real.** The inventory is therefore still produced; what changed is that it stops
+being a gate and becomes a record of what moved where.
+
+**One residual ambiguity, named rather than resolved by guessing.** Decision 4's
+option label reads *"np. 15/13/11"* — *"e.g. 15/13/11"*. It is taken here as the
+scale, and an implementing agent that finds one surface needing a different
+intermediate step is inside the ruling rather than outside it, provided the step
+is recorded with its reason. What is not open is the direction: smaller than the
+delivery's 16/14/12, larger than today's 13/11.
+
+---
+
+**Proposed, 2026-09-13. Not self-approved.** *(The state of this document before
+the rulings above.)*
 
 What follows is a reading of an owner delivery, a recommendation, and the
 decisions the delivery forces. The delivery itself is not in question: the owner
@@ -70,6 +117,11 @@ Each is stated so the owner can answer yes or no. None is taken here.
 
 **Recommendation: yes, as a product contract subordinate to `AGENTS.md`.**
 
+> **RULED 2026-09-13: yes.** The constitution binds this repository as a product
+> contract subordinate to `AGENTS.md`. Article 5 — every sentence the game shows
+> is true — is now a standing contract rather than an aspiration, and the open
+> issues already failing it are failing a rule rather than a preference.
+
 Six of the twenty articles (1, 2, 4, 7, 10, 13) restate constraints this
 repository already holds — the map is the game, projections are the single
 source, the UI does not recompute simulation state, touch is first-class, input
@@ -91,6 +143,10 @@ binding, and `docs/VISUAL_IDENTITY.md` says so in one sentence.
 
 **Recommendation: yes, with the dark theme kept and both gated on contrast.**
 
+> **RULED 2026-09-13: yes.** Two themes, the light one default, the dark one
+> kept. The contrast ratios recorded in `src/ui/tokens.css` from the three owner
+> rulings of 2026-09-02 hold in both, or the change does not land.
+
 The delivery designs the day palette as the primary surface and the night
 palette as a real alternative, switchable, system-following and remembered. This
 repository has only the dark one and no switch.
@@ -110,6 +166,15 @@ change does not land.
 
 **Recommendation: not until the stage 0 inventory exists.**
 
+> **RULED 2026-09-13, AGAINST THIS RECOMMENDATION: move now.** The owner's
+> words are in the Status block above. The navigation moves to the delivery's
+> five sections without waiting for the inventory; the inventory is still
+> produced, as the record of what landed where and of what the direction does
+> not place. **The rule that survives unchanged is that a surface the direction
+> does not place is still not an agent's to delete** — it goes on that list and
+> comes back to the owner. Nobody playing is a reason to accept the risk, not a
+> reason the risk is absent.
+
 The direction's five (Overview, Build, Zones, Manage, Day plan) are not this
 repository's five (`overview`, `build`, `rooms`, `security`, `regime`), and the
 prototype is narrower than the game — it shows no intake, contraband, incident
@@ -123,6 +188,16 @@ marks as a naming proposal rather than a module move. That much is ours.
 
 **Recommendation: yes, surface by surface, with the default flipped last.**
 
+> **RULED 2026-09-13, WITH A SMALLER STEP THAN RECOMMENDED: 15 / 13 / 11.**
+> And, in a second ruling on the same question, **article 8 of the constitution
+> is amended to 15 px** rather than the change being recorded as an exception to
+> it. That amendment is written here and in `docs/VISUAL_IDENTITY.md`, **never
+> in the delivery** — `docs/design/README.md`'s rule is that a delivery is not
+> edited after it lands, and an amended copy would stop being the evidence it
+> was vendored to be. Everything else in article 8 — contrast, visible focus,
+> 200 % text, a status carrying a label and an icon as well as a colour — is
+> untouched.
+
 The honest risk is that some panels do not have the room, and the honest outcome
 may be that a few keep a denser step with the reason written down. Saying that
 now is cheaper than discovering it after every panel has been rebuilt.
@@ -130,6 +205,13 @@ now is cheaper than discovering it after every panel has been rebuilt.
 ### Decision 5 — What happens to the world illustration?
 
 **Recommendation: it is a reference, and nothing is cut out of it.**
+
+> **RULED 2026-09-13: reference, and produce new production prompts beside it.**
+> The illustration stays a reference and nothing is cut out of it; on top of
+> that, the owner asked for prompts covering tiles and objects in the same
+> style, so the catalogue can be produced rather than improvised. That work is
+> stage 7's and is tracked in #1163; the CI include-list constraint on it is
+> unchanged and is still the owner's to release.
 
 The delivery says so, `docs/ART_PIPELINE.md` says how production art is made
 here, and the mechanical trap is worth restating because it costs a CI cycle

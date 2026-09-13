@@ -42,10 +42,14 @@ exactly the silent promotion this section exists to rule out, and the
 delivery's own second rank (repo rules above its own supporting documents)
 does not ask for that either.
 
-Until the owner rules on ADR 0112 (in whole or in part, per its own "Consequences"
-section), no HUD, token or navigation change may cite the delivery or these
-two documents as settling a design question on its own; it can only motivate
-an issue, which then carries the decision at level 3.
+**The owner ruled on ADR 0112 on 2026-09-13, accepting all five decisions**, so
+the paragraph above describes where these documents sit *as documents* and no
+longer describes what may be built from them: the direction is settled to the
+extent the Status block of that ADR records, and the twenty-article
+constitution is now a product contract subordinate to `AGENTS.md`. What has not
+changed is the ranking — a question the ADR does not answer is still settled in
+an issue at level 3, and the delivery is still advisory on everything its
+rulings do not reach.
 
 ## Delivery sequence
 

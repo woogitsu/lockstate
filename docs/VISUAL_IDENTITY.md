@@ -7,8 +7,10 @@ never edited; this file says what it binds *here*, what it does not, and where
 this repository's code disagrees with it today.
 
 [ADR 0112](./adr/0112-what-the-2026-09-13-identity-delivery-decides.md) is the
-decision record — what is settled, what is still open, and what an agent may not
-decide alone. [`docs/IDENTITY_V5_ROLLOUT.md`](./IDENTITY_V5_ROLLOUT.md) is the
+decision record. **The owner ruled on all five of its decisions on 2026-09-13**,
+two of them against its recommendations; its Status block carries each ruling
+and its provenance, and the three sentences of this document that the rulings
+changed say so where they stand. [`docs/IDENTITY_V5_ROLLOUT.md`](./IDENTITY_V5_ROLLOUT.md) is the
 staged plan for getting from today's UI to this one.
 
 ## The three-line summary, before any detail
@@ -104,8 +106,11 @@ sprawdzeniu kontrastu. Nie wracać do pierwszej wartości."*
 
 ### Typography, shape and motion
 
-Target scale 32 / 24 / 20 / 16 / 14 / 12 px, with 16 px body, 14 px labels and
-12 px metadata. Tabular figures for money and the clock. **The spacing and
+**The delivery's target scale is 32 / 24 / 20 / 16 / 14 / 12 px with 16 px body,
+and the owner ruled on 2026-09-13 for a smaller step: 15 / 13 / 11.** The
+delivery's figure is kept in this sentence rather than overwritten, because the
+gap between what was asked for and what was chosen is the thing a later reader
+needs. The ramp is rebuilt around the ruling; the upper steps scale with it. Tabular figures for money and the clock. **The spacing and
 motion values below come from `DOKUMENTACJA/projekt.md`, not from
 `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`, which has no section for either** — worth
 saying because the contents table above calls that file the binding visual
@@ -136,9 +141,18 @@ below has the mapping.
 Twenty articles, in `DOKUMENTACJA/konstytucja.md`, with a tie-break order for
 design disputes: data truth and save safety first, then reachability of the
 needed action, then legibility, then naming consistency, and aesthetics last.
-Six of the twenty (1, 2, 4, 7, 10, 13) restate constraints this repository
-already holds in `AGENTS.md` or an accepted ADR; the other fourteen are new
-product rules and are what ADR 0112 puts to the owner. **Article 5 — every
+**The owner accepted the constitution on 2026-09-13, as a product contract
+subordinate to `AGENTS.md`.** Six of the twenty (1, 2, 4, 7, 10, 13) restate
+constraints this repository already held; the other fourteen are new, and are
+now binding rather than proposed.
+
+**Article 8 is amended, by the same ruling and in the same breath as the type
+scale.** It reads *"tekst podstawowy 16 px"*; the owner chose 15 px and chose to
+amend the article rather than record an exception to it. **That amendment lives
+here and in ADR 0112 and never in the delivery** — `docs/design/README.md`'s
+rule is that a delivery is not edited after it lands. Everything else in article
+8 stands: contrast measured rather than assumed, visible focus, 200 % text, and
+a status that carries a label and an icon as well as a colour. **Article 5 — every
 sentence the game shows is true — was in the first list when this document was
 written, and it does not belong there.** The nearest thing `AGENTS.md` holds is
 the fourth reservation, which is about the truth of a *player-visible string*

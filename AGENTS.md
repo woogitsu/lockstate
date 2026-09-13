@@ -644,15 +644,28 @@ decisions collected in #1165; `docs/IDENTITY_V5_ROLLOUT.md` carries the map
 between the two. Stage 0, an inventory of every HUD surface that exists today,
 gates every other stage and needs no decision from the owner.
 
-**THAT INSTRUCTION IS NOT AN ACCEPTANCE, AND THIS IS THE SENTENCE A LATER
-SESSION WILL BE TEMPTED TO SKIP.** "Put it on the repo and write a plan" is a
-different sentence from "adopt these twenty articles as product rules". ADR
-0112 is **Proposed**; its five decisions — whether the constitution binds,
-whether the light palette becomes the default theme, whether the navigation
-moves to the delivery's five sections, whether the type scale moves to
-16/14/12, and what happens to the world illustration — are open. An agent that
-starts re-skinning `src/ui/` on the authority of the delivery being *present*
-has read the file and not the status line.
+**THAT INSTRUCTION WAS NOT AN ACCEPTANCE, AND THE PARAGRAPH IS KEPT IN ITS
+ORIGINAL FORM BELOW BECAUSE THE DISTINCTION IT DRAWS OUTLIVES THE DAY IT WAS
+WRITTEN.** "Put it on the repo and write a plan" is a different sentence from
+"adopt these twenty articles as product rules", and the next delivery will
+arrive with the same ambiguity.
+
+**The five decisions were then put to the owner and answered the same day, and
+ADR 0112 is Accepted.** In short: the constitution binds, as a product contract
+subordinate to this file; the light palette is the default theme with the dark
+one kept; the navigation moves to the delivery's five sections **now**, without
+waiting for the inventory; the type scale goes to **15 / 13 / 11** and article 8
+of the constitution is amended to 15 px rather than excepted; the world
+illustration stays a reference and production prompts for tiles and objects are
+commissioned beside it. Two of those went against the recommendation. **Read
+that ADR's Status block rather than this summary** — it carries each ruling, its
+provenance, and the one residual ambiguity.
+
+**What did not change is the thing an agent is likeliest to over-read.** The
+constitution binding does not make the delivery's sample numbers real, its build
+loop a design, or its `localStorage` save a pattern; and article 5 binding makes
+the *truth* of a player-visible sentence more constrained, not less — the fourth
+reservation below still governs it.
 
 **And the four reservations above are untouched by it.** Nothing in this
 delivery reaches a server surface, a migration or deploy configuration, and the

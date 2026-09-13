@@ -10,6 +10,8 @@ For Antigravity agents:
 - Prefer durable architecture over quick prototypes that require later migration.
 - A new visual identity/HUD/voice direction was delivered 2026-09-13, vendored
   verbatim at `docs/design/2026-09-13-identity-v5/`. `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md`
-  is **Proposed** — nothing in it is settled or self-approved.
+  is **Accepted by the owner**, in five rulings recorded in its Status block;
+  two went against its recommendations, so read the block rather than the
+  headline.
 - Before touching `src/ui/`, read `docs/VISUAL_IDENTITY.md` first: it is the
   binding reading of that delivery and the gap against today's code.

@@ -236,10 +236,11 @@ This paragraph is not the source and is not trying to be: given this file's own
 history above, treat nothing here as authoritative about the delivery's
 content. The three documents that are the source, in the order to read them:
 
-1. `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md` — status
-   **Proposed**, dated 2026-09-13, explicitly "Not self-approved." Nothing in
-   the delivery is a settled decision for this repository until the owner
-   answers the decisions that ADR records.
+1. `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md` — **Accepted
+   by the owner on 2026-09-13, in five rulings**, two of them against the
+   document's own recommendation. It was `Proposed` for part of that day and
+   this list said so; the Status block keeps both states, and it is the block to
+   read rather than any summary of it, including this one.
 2. `docs/VISUAL_IDENTITY.md` — the repository's reading of what binds, what
    does not, and the measured gap against today's `src/ui/` code.
 3. `docs/IDENTITY_V5_ROLLOUT.md` — the staged plan for getting there.
