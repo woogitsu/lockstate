@@ -60,7 +60,11 @@ the owner's, not ours, however free we are with its wording.
 
 ### The palettes
 
-Day (the default the delivery designs for):
+Day (the default the delivery designs for). Eleven of these rows are
+`DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`'s own table; **"secondary ink" is not** —
+it appears as *"Drugorzędny atrament #244454"* in `DOKUMENTACJA/projekt.md`'s
+iteration-01 section, and is kept here because the prototype's light theme
+carries the value as a live custom property:
 
 | Role | Value |
 |---|---|
@@ -101,8 +105,12 @@ sprawdzeniu kontrastu. Nie wracać do pierwszej wartości."*
 ### Typography, shape and motion
 
 Target scale 32 / 24 / 20 / 16 / 14 / 12 px, with 16 px body, 14 px labels and
-12 px metadata. Tabular figures for money and the clock. Spacing 4 / 8 / 12 / 16
-/ 24 / 32. Radii as revised by iteration 02: **2–4 px for tools, 8 px for
+12 px metadata. Tabular figures for money and the clock. **The spacing and
+motion values below come from `DOKUMENTACJA/projekt.md`, not from
+`DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`, which has no section for either** — worth
+saying because the contents table above calls that file the binding visual
+system, and a reader who goes there for a spacing scale will not find one.
+Spacing 4 / 8 / 12 / 16 / 24 / 32. Radii as revised by iteration 02: **2–4 px for tools, 8 px for
 windows, 12 px on the top edge of the mobile inspector** — the larger radii in
 the original specification are explicitly history. Motion 160–200 ms, honouring
 `prefers-reduced-motion`. Shadow means "floating above the map"; fixed panels
@@ -128,9 +136,14 @@ below has the mapping.
 Twenty articles, in `DOKUMENTACJA/konstytucja.md`, with a tie-break order for
 design disputes: data truth and save safety first, then reachability of the
 needed action, then legibility, then naming consistency, and aesthetics last.
-Seven of the twenty (1, 2, 4, 5, 7, 10, 13) restate constraints this repository
-already holds in `AGENTS.md` or an accepted ADR; the rest are new product rules
-and are what ADR 0112 puts to the owner.
+Six of the twenty (1, 2, 4, 7, 10, 13) restate constraints this repository
+already holds in `AGENTS.md` or an accepted ADR; the other fourteen are new
+product rules and are what ADR 0112 puts to the owner. **Article 5 — every
+sentence the game shows is true — was in the first list when this document was
+written, and it does not belong there.** The nearest thing `AGENTS.md` holds is
+the fourth reservation, which is about the truth of a *player-visible string*
+that somebody is already writing; article 5 is a standing demand on what the
+interface may display at all, and it is the most expensive of the fourteen.
 
 ## What is explicitly **not** binding
 
@@ -195,8 +208,8 @@ an impression.
    storage key — article 13's hard rule. The mechanism for that key already
    exists and should be reused rather than rebuilt: `src/input/storage.ts` is a
    `localStorage` wrapper written around the browsers that throw on access, and
-   `src/main.ts:259` already passes a key-value store into `WorldScene` for
-   exactly this class of preference.
+   `src/main.ts:431` already passes a key-value store into `WorldScene` for
+   exactly this class of preference (`:259` is the docblock that explains why).
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked

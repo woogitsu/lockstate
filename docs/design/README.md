@@ -43,8 +43,10 @@ nothing else:
 FAILED: AKTUALNY_PROTOTYP/.openai/hosting.json, HISTORIA/01-pierwszy-kierunek/.openai/hosting.json, HISTORIA/02-warsztat-i-research/.openai/hosting.json, HISTORIA/03-panele-i-resize/.openai/hosting.json, HISTORIA/04-tryb-nocny/.openai/hosting.json, HISTORIA/05-audyt-i-konstytucja/.openai/hosting.json
 ```
 
-85 files were delivered and 79 are here; the other 78 manifest entries match
-their files' SHA-256. Re-running that script is how a future reader establishes
+The counting, spelled out because it is the kind of tally that rots: the
+delivery is **85 files** on disk, and `MANIFEST.json` lists the other **84** —
+it does not list itself. Six were removed, **79** are here, and **78** of the 84
+manifest entries match their files' SHA-256. Re-running that script is how a future reader establishes
 that this tree is still the delivery, and a failure naming anything but those
 six lines means it is not.
 

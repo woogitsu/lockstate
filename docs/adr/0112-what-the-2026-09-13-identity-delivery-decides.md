@@ -70,14 +70,14 @@ Each is stated so the owner can answer yes or no. None is taken here.
 
 **Recommendation: yes, as a product contract subordinate to `AGENTS.md`.**
 
-Seven of the twenty articles (1, 2, 4, 5, 7, 10, 13) restate constraints this
+Six of the twenty articles (1, 2, 4, 7, 10, 13) restate constraints this
 repository already holds — the map is the game, projections are the single
 source, the UI does not recompute simulation state, touch is first-class, input
 stays remappable, preferences are not world state. Adopting those costs nothing
 and makes them legible to a designer rather than only to an agent reading
 `AGENTS.md`.
 
-The other thirteen are new, and article 5 is the expensive one: *every sentence
+The other fourteen are new, and article 5 is the expensive one: *every sentence
 is true*. It is expensive because this repository already has open issues about
 sentences that are not — a state grant withheld silently, a refusal still on
 screen days later, a cost note that disagrees with the cost. Adopting article 5
