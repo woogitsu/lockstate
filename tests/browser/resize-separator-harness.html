@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Lockstate resize separator harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #0b0e12;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      The world first, and the separator on top of it. The canvas fills the
+      window, so every pixel of the handle is also a pixel of the map -- which
+      is the arrangement the running game has, and the only one in which
+      "a resize drag must not place a building" is a claim that can fail.
+    -->
+    <div id="world-scene-harness-root"></div>
+    <script type="module" src="/tests/browser/world-scene-harness.ts"></script>
+    <script type="module" src="/tests/browser/resize-separator-harness.ts"></script>
+  </body>
+</html>
