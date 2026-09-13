@@ -103,10 +103,28 @@ leaves a prisoner's classification group unset, and none that could put a
 prisoner in two — the value is a single `Uint8Array` slot, not a set.
 
 This directly answers the question the brief poses about a prisoner who
-belongs to none or to two: **under this axis, that case cannot occur.** It is
-not merely handled, it is unreachable, because `classificationGroupIdForTier`
-is exhaustive over the only four values `RiskTier` can hold, and every
-prisoner is always classified into exactly one tier from admission onward.
+belongs to none or to two: **under this axis, no regime read can see either
+case.** "In two" is unreachable outright — the value is one `Uint8Array` slot.
+
+**"In none" needs a sharper sentence than the one this document first carried,
+and the difference is worth the paragraph.** That sentence claimed no code path
+leaves the group unset, on the strength of `classificationGroupIdForTier` being
+total over `RiskTier`. Total it is — `classification.ts:58-60` is a ternary over
+a closed `0|1|2|3` domain — but classification runs at the `classification`
+intake stage, and a prisoner in `queued` or `reception` has not reached it. What
+their slot holds until then is the `Uint8Array`'s default `0`, which decodes to
+`general-population`: **a default array value that happens to be a legal id, not
+a decision anyone took.**
+
+What makes that harmless is one line further out rather than the totality
+argument: `ACTION_ELIGIBLE_INTAKE_STAGE_INDICES` (`action-system.ts:74-75`)
+admits only `accommodation-assignment` and `completed`, so `findRegimeSchedule`
+is never called for a prisoner still queued or in reception. **The conclusion
+holds and its reason moved**, which is worth recording because the two reasons
+fail differently: a stage gate is a line somebody could widen, and a totality
+argument is not. If a future change lets an earlier stage take actions, the
+default-zero slot becomes a silent assignment to `general-population`, and this
+paragraph is the one to re-read.
 
 `resolveActiveRegimeBlock`, `findRegimeSchedule` and `ActionSystem`'s two
 regime reads (`action-system.ts:1306`, `:1353`) already key off this id. This
@@ -126,9 +144,24 @@ and no notion of "the prisoners inside it" beyond what
 `SectorOccupantResolver` computes at read time from room residency
 (`sector-occupancy.ts`). More decisively, ADR 0110 — read and verified rather
 than taken on trust — established that **exactly one security sector exists in
-any session a player can start** (`docs/adr/0110-what-security-sector-a-room-is-in.md`:
-"VERIFIED four ways that exactly one sector exists in any session a player can
-start"; zero sector-authoring commands exist in the whole protocol). A
+any session a player can start**. Its §4 heading is
+*"In every session a player can start there is exactly one sector, and the
+repository already says so twice"*, and the sentence under it says the finding
+is *"evidenced four ways rather than asserted"*, above a `VERIFIED, read:` list;
+its evidence table records the run that produced it as *"two sites, neither
+player-driven; zero sector commands"*.
+
+> **The sentence quoted here in this document's first draft did not exist in
+> ADR 0110.** It read *"VERIFIED four ways that exactly one sector exists in
+> any session a player can start"*, which is two of the three fragments above
+> stitched into one string and presented inside quotation marks. The claim it
+> carried is true and ADR 0110 does support it; the quotation was manufactured.
+> It is corrected in place and recorded here rather than silently replaced,
+> because a fabricated quotation is the defect this repository is least able to
+> detect by grep and most damaged by: `docs/AGENT_WORKFLOW.md` §4 says to cite
+> prose by quoting it precisely because a quotation is the durable citation,
+> and a quotation that was assembled is worse than the paraphrase it was
+> dressed up to beat. A
 "per-wing" schedule keyed to sector today would be a schedule of exactly one
 row — it does not give the owner two schedules, it gives them the one they
 just rejected, with sector-shaped plumbing bolted underneath it for a
