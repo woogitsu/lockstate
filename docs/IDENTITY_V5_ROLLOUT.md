@@ -279,10 +279,22 @@ it, which is what makes it reproducible.
 **The owner extended this stage on 2026-09-13:** beyond keeping the illustration
 as a reference, production prompts are to be written for tiles and objects in
 the same style, so the catalogue can be produced rather than improvised. Those
-prompts are repository content and belong beside `docs/ART_PIPELINE.md`; each
-must name the projection, the pivot convention, the light direction and the
-scale the existing pipeline already fixes, or it will produce art that cannot be
-used.
+prompts are repository content and are written:
+[`docs/ART_CONCEPT_PROMPTS.md`](./ART_CONCEPT_PROMPTS.md), with an invariants
+table taken from the renderer rather than from taste — the two suns' angles come
+out of `tooling/blender/render-environment-objects.py`, the tile scale out of
+`src/rendering/assets/environment-sprites.ts`.
+
+**A second ruling the same day scoped what those prompts are for**, after the
+question was put to the owner: a generated image is a **concept reference to
+model from in Blender**, never a sprite published straight to
+`public/game-content/source-art/`. The reason is mechanical — this repository's
+environment renders satisfy `tests/unit/environment-art.test.ts`'s two aspect
+checks by construction, with a recorded drift of `0`, and a generated image
+satisfies them by luck; a Blender render can also be produced again from a
+pinned toolchain, and a generated image cannot be produced again at all. There
+is a precedent for externally produced PNGs — the 23 sheets on disk are
+owner-supplied files from 2026-08-22 — and the ruling is that we do not take it.
 
 Production work is the existing pipeline's: `docs/ART_PIPELINE.md`,
 `docs/RENDERING.md`, consistent pivots and light direction, eight facings,

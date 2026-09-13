@@ -1,0 +1,213 @@
+# Concept prompts for world art
+
+Prompts that produce **reference images to model from**, in the visual language
+the owner's 2026-09-13 delivery establishes. Commissioned by that delivery's
+fifth ruling (ADR 0112, decision 5) and scoped by a second ruling the same day.
+
+## What a prompt here is for, and the one thing it is not
+
+**A generated image is a concept reference. It is never a shipped sprite.**
+
+Asked whether these prompts should feed Blender modelling or produce sprites
+directly, the owner chose the first, from an option labelled *"Referencje
+koncepcyjne pod modelowanie w Blenderze"*. The reason is mechanical rather than
+aesthetic, and it is worth carrying because it is what a later session will be
+tempted to shortcut:
+
+- `tests/unit/environment-art.test.ts` checks two aspect ratios within 3 % — the
+  source crop against the packed frame, and the packed frame against the
+  declared footprint. `tooling/blender/render-environment-objects.py` satisfies
+  both **by construction**: every footprint is an exact multiple of 1/20 of a
+  tile, so the pixel rectangle is derived from the footprint reduced to lowest
+  terms and the drift is `0`. A generated image satisfies them by luck.
+- The render is orthographic, straight down, on transparent film, with a stated
+  6 % transparent margin on each side — not a tight crop, because the alpha scan
+  in `src/rendering/assets/environment-sprites.ts` shrinks a rectangle inwards
+  while its rim is not fully opaque, which is right for a tiling frame and wrong
+  for a discrete object whose outermost pixels are its own silhouette (#1028).
+- A Blender render can be produced again, byte for byte, from a pinned
+  toolchain. A generated image cannot be produced again at all. `docs/ART_PIPELINE.md`
+  §"Reproducibility" is the whole argument.
+
+There is a precedent for externally produced PNGs — the 23 sheets under
+`public/game-content/source-art/` are owner-supplied files from 2026-08-22, not
+output of this repository's renderer — so the path exists. **The ruling is that
+we do not take it.** If that changes, it changes in an ADR, not in a prompt.
+
+## The invariants every prompt states
+
+These are not style preferences. Each one is a fact about how the renderer and
+the pipeline already work, and a reference that contradicts one produces a model
+that cannot be used.
+
+| Invariant | Value | Where it comes from |
+|---|---|---|
+| Camera | Orthographic, pointing straight down, **slight visible object sides**, never isometric | `docs/ART_PIPELINE.md` §"Environment objects"; the delivery's own world brief |
+| Key light | Sun from the **north-west**, elevation 62°, azimuth −40° | `tooling/blender/render-environment-objects.py` |
+| Fill light | Elevation 34°, azimuth 150°, soft | same |
+| Ground plane | North is **up**, east is **right** (`+x` east, `+y` south) | `docs/ART_PIPELINE.md` §"Character directions" |
+| Scale | One tile is 128 px of authored art, drawn at 64 px on screen | `src/rendering/assets/environment-sprites.ts` |
+| Background | Transparent. Never a scene, never a floor under a discrete object | the alpha scan, above |
+| Palette | The day palette in `docs/VISUAL_IDENTITY.md` — blue-grey walls, pale cool floors, restrained emerald planting, muted orange furnishings | the delivery |
+| Forbidden | UI, text, labels, logos, watermarks; any Prison Architect asset, layout or styling | `AGENTS.md` §"Prohibited behavior" |
+
+**Two things a prompt must never try to do.** It must not produce a sheet of
+variants — variants are separate models and separate frames, and a generated
+contact sheet cannot be cut into them at the aspect the tests demand. And it
+must not include a character: actors are the other half of the pipeline, with a
+versioned eight-direction contract and a foot pivot at `(128, 352)`.
+
+## The template
+
+Fill the four bracketed fields and leave everything else alone. The tail is the
+part that keeps the set coherent; editing it per object is how a catalogue
+drifts.
+
+> Use case: stylized-concept. Asset type: **reference image for a 3D model** in
+> a top-down prison management simulation. Generate one original
+> **[OBJECT]**, **[FOOTPRINT]** tiles seen from directly above with its sides
+> slightly visible, centred on a fully transparent background with nothing else
+> in frame.
+> **[MATERIALS AND DISTINGUISHING DETAIL]**
+> Orthographic, nearly vertical camera, never isometric. Key light from the
+> upper left at a steep angle, soft fill from the lower right, soft contact
+> shadow only directly beneath the object. Blue-grey institutional palette, pale
+> cool floors, muted orange for fabric and plastic, restrained emerald for
+> planting. Semi-realistic pre-rendered look, crisp readable silhouette,
+> **[READABILITY NOTE]**. No UI, no text, no labels, no logos, no watermark.
+> No characters. One object only, not a sheet of variants. Do not copy Prison
+> Architect assets, layouts or styling.
+
+`[READABILITY NOTE]` is the field that does the most work and the one most often
+left empty. It says what must survive being drawn at 64 px: *"the bunk's frame
+and the blanket fold must stay separable at thumbnail size"* is a usable note;
+*"high detail"* is not.
+
+## The catalogue, and a prompt body for each group
+
+The ids are the ones on disk under `public/game-content/source-art/`. A new
+object needs a catalogue entry before it needs a prompt — `docs/CONTENT.md` and
+`src/rendering/assets/environment-sprites.ts` are where that happens, and the
+footprint it declares is what `[FOOTPRINT]` must repeat.
+
+### Floors — `floor.concrete.variants`, `floor.linoleum.institutional`
+
+A floor is a **tiling** frame, not a discrete object: its rim is meant to meet
+its neighbour with no seam, and the 6 % margin rule does not apply to it.
+
+> a seamless institutional floor surface, 1×1 tile, seen from directly above
+> with no perspective at all
+> — worn poured concrete with faint trowel arcs and hairline cracks, or pale
+> green-grey linoleum in 300 mm squares with darkened grout lines and scuffing
+> along the traffic line
+> …the pattern must tile edge to edge with no visible seam and no lighting
+> gradient across the frame, and must not read as a repeating motif when nine
+> copies sit side by side.
+
+Note the one place a floor prompt contradicts the template: **no directional
+key light**, because a gradient that is right for one tile is wrong for the
+tile beside it.
+
+### Walls and doors — `wall.interior.modules`, `wall.exterior.modules`, `door.interior.variants`, `door.security.variants`
+
+> a straight section of interior partition wall, a quarter tile deep, seen from
+> above with its top coping and both side faces visible
+> — painted blockwork, a darker skirting line where it meets the floor, a
+> shallow chamfer on the coping
+> …the coping must stay distinguishable from the floor it sits on at thumbnail
+> size, and the two side faces must differ in value so the wall reads as having
+> thickness.
+
+Doors take the same body plus their leaf state; a security door is heavier, with
+a vision panel and a visible frame rebate. **Both wall and door frames legally
+overhang their declared footprint** — the renderer grows the frame uniformly and
+records `overhangsFootprint` in the sidecar — so the reference may show the
+coping proud of the quarter-tile edge.
+
+### Cell furniture — `furniture.cell.bed.single.variants`, `furniture.cell.locker.variants`, `furniture.cell.table_stool`, `fixture.cell.toilet_sink`
+
+> a single institutional bunk, 2×1 tiles, seen from directly above with its
+> sides slightly visible
+> — tubular steel frame, thin mattress, folded blanket in muted orange, head and
+> foot rails proud of the mattress
+> …the head and foot rails are the silhouette and must not be cropped; the
+> blanket fold must stay separable from the mattress at 64 px.
+
+`fixture.cell.toilet_sink` is the one to read `docs/ART_PIPELINE.md` about
+before prompting: it declares `(1, 1)` while the shipped sheet is a 1:2.5
+combined column, and its basin overhangs its own tile by 0.02.
+
+### Dining, kitchen and corridor — `furniture.corridor.bench.variants`
+
+> a fixed corridor bench, 2×1 tiles, seen from directly above with its sides
+> slightly visible
+> — slatted seat on a steel underframe, bolted feet, no backrest
+> …the slat gaps must stay visible at thumbnail size rather than merging into a
+> solid plank.
+
+### Reception and offices — `furniture.office.desk.employee.variants`, `furniture.reception.counter.variants`, `furniture.visitor.chair.variants`
+
+> an employee desk, 2×1 tiles, seen from directly above with its sides slightly
+> visible
+> — laminate top with a visible edge band, steel legs, a shallow drawer pedestal
+> on one side, a cable grommet
+> …the pedestal must read as a separate mass from the top; the desk must be
+> recognisable at 128×64 px without the grommet being legible.
+
+### Security — `security.access_reader.variants`, `security.camera.wall.variants`, `security.checkpoint.turnstile.variants`
+
+These carry the palette's action teal as an indicator colour and nothing else
+does — a reader's status light is the one warm-cool contrast in an otherwise
+grey object, and it is how a player finds it.
+
+> a wall-mounted card reader, a quarter tile, seen from above at a steep angle
+> — moulded housing, a single indicator light, a bevelled card slot
+> …the indicator must be the only saturated element in the frame.
+
+Camera and turnstile **overhang their footprints** by design; the reference
+should show the lens and the arms outside the declared rectangle.
+
+### Perimeter and yard — `perimeter.fence.modules`, `perimeter.light.pole.variants`, `perimeter.vehicle_gate.sliding.variants`, `perimeter.watchtower.variants`
+
+> a section of perimeter fence, one tile wide, seen from directly above with its
+> posts and mesh visible
+> — galvanised mesh on square posts, a tensioning wire top and bottom
+> …the mesh must read as a texture rather than as individual wires at 64 px, and
+> the posts must stay countable.
+
+The watchtower's roof is 2.35 tiles across a two-tile footprint; the reference
+should show that overhang rather than a tower cropped to its base.
+
+### Lighting and storage — `fixture.ceiling_light.panel.variants`, `storage.container.variants`
+
+A ceiling light is the one object drawn **above** everything else and its
+housing is 1.4 tiles across a one-tile footprint. It must read as emitting
+without a bloom that a downsample turns to mush.
+
+## What to do with the image once it exists
+
+1. Check it against the invariants table before anything else. A reference that
+   lit the object from the south will produce a model lit from the south, and
+   the error is cheapest here.
+2. Model it in `assets/source/blender/environment.mvp.catalog.blend` to the
+   declared footprint. **The reference is a target, not a thing to trace** —
+   `AGENTS.md` requires the implementation be ours.
+3. Render it through `tooling/blender/render-environment-objects.py`. The
+   footprint aspect, the margin, the transparency and the vertical flip are its
+   job, not yours.
+4. Publish it under `public/game-content/source-art/` — the decode step in CI
+   fails closed on any sprite published elsewhere.
+5. **Ask the owner to add the id to the `git lfs pull --include=` list in
+   `.github/workflows/ci.yml`.** That list is literal rather than a pattern, and
+   the file is inside `AGENTS.md`'s third reservation. Until that lands, CI
+   fetches an LFS pointer and the decode step fails with a message naming the
+   id. This is a scheduling dependency on a person, and it is the one step in
+   this document that cannot be worked around.
+
+## Where the campus render came from
+
+`docs/design/2026-09-13-identity-v5/DOKUMENTACJA/08-PROMPT-GRAFIKI.md` carries
+the exact prompt that produced the delivery's single 1536×1024 world
+illustration. It is the model for the shape of a prompt here, and the
+illustration itself stays a reference with nothing cut out of it — the other
+half of the same ruling.
