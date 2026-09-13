@@ -169,6 +169,59 @@ writes. `tests/contract/art-pipeline-contract.test.ts` is what catches a
 catalog that disagrees with the bytes it names, in either kind of checkout
 (issue #141).
 
+## World illustration reference (identity v5, 2026-09-13)
+
+`docs/design/2026-09-13-identity-v5/ASSETY/wizja-mapy.png` — the same file as
+`dist/world.png` in the delivered prototype — is one 1536×1024 illustration of
+the whole campus from a near-top-down camera. `DOKUMENTACJA/08-PROMPT-GRAFIKI.md`
+in that delivery says outright what it is and is not:
+
+> Jeden finalny asset, bez osobnych wariantów i atlasów.
+
+("One final asset, without separate variants or atlases.")
+
+> Nie próbować udawać pełnego atlasu przez użycie pojedynczego obrazu kampusu.
+
+("Do not try to fake a full atlas by using the single campus image.")
+
+`02-SYSTEM-WIZUALNY.md`'s "Świat" ("World") section says the same thing again:
+
+> Nie jest produkcyjnym atlasem.
+
+("It is not a production atlas.")
+
+The same delivery file preserves the exact prompt that generated the image,
+verbatim, under its own "Prompt:" heading — that is what makes the reference
+reproducible rather than a one-off nobody could regenerate or extend
+consistently.
+
+Nothing in this repository's pipeline reads the file: it declares no
+`assetId`/`renderedArtId` `src/rendering/assets/environment-sprites.ts`
+resolves, and it is absent from `public/game-content/source-art.v1.json`,
+`public/game-content/rendered-art.v1.json` and the atlas registry (checked
+2026-09-13 — a repository-wide search for `world.png` and `wizja-mapy` outside
+`docs/design/` and `dist/` returns nothing). Production art for anything the
+illustration depicts — a cell, a corridor, the yard fence, a desk — still goes
+through the pipeline this file already describes below: the character
+8-direction contract above, or "Environment objects"' Blender render for a
+static object, at this project's fixed projection, pivots, scale and (for an
+animated role) eight facings, with layering/occlusion handled at draw time by
+`depthForAnchor` (`docs/RENDERING.md`), the same atlas memory budget, and the
+same Git LFS handling. The delivery's own production note says the same thing
+from the producing side:
+
+> Przy wdrożeniu użyć tego jako odniesienia artystycznego. Osobno wyprodukować
+> obiekty zgodne z katalogiem, spójne pivoty, kierunek światła, skalę,
+> materiały i warianty. Weryfikować czytelność przy oddaleniu.
+
+("On implementation, use this as an artistic reference. Produce the objects
+separately, matching the catalogue, with consistent pivots, light direction,
+scale, materials and variants. Verify legibility at a distance.")
+
+Publishing any such object as runtime art still has to clear the CI mechanics
+"Publishing a render (ADR 0100)" documents further below — this delivery does
+not change them, and they are not repeated here.
+
 ## Environment objects
 
 The character half of this pipeline renders eight directions of an animated

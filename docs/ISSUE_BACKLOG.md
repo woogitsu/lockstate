@@ -14,6 +14,39 @@ criteria, comments, or accepted ADRs.
 5. Research records are advisory until their decisions are incorporated into
    an issue or ADR.
 
+**Where the 2026-09-13 identity delivery sits in this order.**
+`docs/VISUAL_IDENTITY.md`, `docs/IDENTITY_V5_ROLLOUT.md` and the vendored tree
+under `docs/design/2026-09-13-identity-v5/` sit at level 5, alongside research
+records: advisory until their decisions are incorporated into an issue or an
+accepted ADR. They are neither of the two things above them — not an accepted
+ADR, since
+[ADR 0112](./adr/0112-what-the-2026-09-13-identity-delivery-decides.md) states
+its own status as "**Proposed, 2026-09-13. Not self-approved.**"
+(`docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md:19`), and not
+`docs/ARCHITECTURE.md`.
+
+The delivery itself agrees with this placement rather than contradicting it.
+`docs/design/2026-09-13-identity-v5/DOKUMENTACJA/01-BRIEF-I-DECYZJE.md`'s own
+"Hierarchia źródeł" section ranks its sources as "Aktualny brief właściciela →
+aktualne reguły docelowego repo → najnowsza dokumentacja audytu i iteracji →
+źródła aktualnego prototypu → historyczne makiety" ("Current owner brief →
+current rules of the target repo → latest audit and iteration documentation →
+current prototype sources → historical mockups") — putting this repository's
+own rules second, above the delivery's own audit, prototype and history. That
+hierarchy resolves conflicts *inside* the delivery's bundle (its brief against
+its audit, its prototype, its old mockups); it says nothing about GitHub
+Issues, `docs/ROADMAP.md` or this file, so it cannot be read onto the list
+above without inventing a rung. Folding the two lists together — reading the
+delivery's top rank as outranking `AGENTS.md` and accepted ADRs here — would be
+exactly the silent promotion this section exists to rule out, and the
+delivery's own second rank (repo rules above its own supporting documents)
+does not ask for that either.
+
+Until the owner rules on ADR 0112 (in whole or in part, per its own "Consequences"
+section), no HUD, token or navigation change may cite the delivery or these
+two documents as settling a design question on its own; it can only motivate
+an issue, which then carries the decision at level 3.
+
 ## Delivery sequence
 
 | Phase | Area | Primary issues |
