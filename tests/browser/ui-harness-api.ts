@@ -1250,7 +1250,26 @@ export interface LockstateUiHarness {
    */
   laidOut(selector: string): boolean;
 
-  mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void;
+  /**
+   * `nowMs` freezes the panel's clock, which is what makes the delete
+   * confirmation's age sentence deterministic (#1142): the age is
+   * `nowMs - updatedAt` and nothing else. Omitted, the panel reads `Date.now`
+   * exactly as the application's own construction does.
+   */
+  mountSavePanel(options?: { readonly pseudoLocale?: boolean; readonly nowMs?: number }): void;
+  /** Puts a prison on the stub's list with a chosen name and a chosen age (#1142). */
+  seedPrison(prisonId: string, displayName: string, updatedAt: number): void;
+  /**
+   * Every prison the panel has asked the controller to delete, in order.
+   *
+   * The only reading that separates "asked first" from "deleted first and said
+   * so afterwards": both leave the same rows on screen.
+   */
+  deletedPrisons(): readonly string[];
+  /** The delete confirmation's question as rendered, or `''` when none is on the page. */
+  deleteConfirmationText(): string;
+  /** What the keyboard is standing on, by label; `''` for `<body>` (article 16's failure state). */
+  focusedControlLabel(): string;
   clickSaveButton(label: string): boolean;
   saveButtonState(label: string): ButtonState;
   savePanelStatus(): string;

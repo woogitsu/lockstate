@@ -3129,6 +3129,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.action.import': 'Import',
   'save.action.load': 'Load',
   'save.action.delete': 'Delete',
+  // The confirmation step's two controls (#1142). They are rendered only
+  // while a deletion is armed, so neither is on the page in the panel's
+  // resting state.
+  'save.action.delete-confirm': 'Delete permanently',
+  'save.action.delete-cancel': 'Keep',
 
   'save.list.empty': 'No prisons yet.',
   'save.list.item': '{name} ({count} gen)',
@@ -3173,6 +3178,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.status.recovered': 'The most recent save was unreadable — recovered an earlier verified generation.',
   'save.status.loaded': 'Loaded.',
   'save.status.deleted': 'Prison deleted.',
+  // Backing out of the confirmation. It says only what happened, because
+  // nothing else did: `pressDeleteConfirmation` never reached `'deletes'`, so
+  // `SessionController.deletePrison` was never called.
+  'save.status.delete-kept': 'Nothing was deleted.',
   'save.status.nothing-to-export': 'Nothing to export — no valid active save.',
   'save.status.exported': 'Exported the current save.',
 
@@ -3206,6 +3215,35 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // entries since #226; before that the frame was localized and the items were
   // English prose spliced in from the simulation.
   'save.detail.restored-scope': 'Restored: {restored}. Not carried by this save version: {notCarried}.',
+
+  // The delete confirmation (#1142), and what makes each clause true.
+  //
+  // "Every saved copy of this prison goes" -- `PrisonSaveRepository.delete`
+  // (`src/persistence/local/repository.ts:467-476`) walks `generationIds` and
+  // deletes every generation, then deletes the slot record, in one
+  // `readwrite` transaction. Nothing is retained and there is no second copy
+  // anywhere: the cloud tier is unreachable from the production import graph
+  // (`tests/foundation/trusted-tier-reachability-contract.test.ts`).
+  //
+  // "this cannot be undone" -- true of this tree as it stands. There is no
+  // undo mechanism for a deletion anywhere in `src/`, and the ADR that would
+  // decide where a held copy lives has not been written. The day an undo
+  // window ships, this clause is the one that becomes false and has to be
+  // rewritten in the same change.
+  //
+  // "Its saves last changed {age}" -- `PrisonSlotMetadata.updatedAt`, which
+  // is not the same fact as "last saved"; `describeSaveAge` in
+  // `src/ui/save-panel-delete.ts` names the six writers of that field and why
+  // the weaker word is the true one.
+  'save.delete.confirm':
+    'Delete {name}? Every saved copy of this prison goes, and this cannot be undone. Its saves last changed {age}.',
+  // `{age}`'s four forms. Abbreviated units, because
+  // `src/content/default-locale-en.ts` cannot carry plural forms at all and an
+  // abbreviated unit symbol does not inflect for number.
+  'save.delete.age.moments': 'less than a minute ago',
+  'save.delete.age.minutes': '{count} min ago',
+  'save.delete.age.hours': '{count} h ago',
+  'save.delete.age.days': '{count} d ago',
 
   // The thirteen lines a restore report is built from. `CURRENT_SAVE_RESTORED_SCOPE`
   // (`src/simulation/runtime/restore-session.ts`) held these as English prose

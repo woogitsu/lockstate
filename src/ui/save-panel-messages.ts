@@ -32,6 +32,20 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   actionImport: 'save.action.import',
   actionLoad: 'save.action.load',
   actionDelete: 'save.action.delete',
+  /**
+   * The two controls the confirmation step adds (#1142), and they exist only
+   * while a deletion is armed.
+   *
+   * Two controls rather than a second press of `actionDelete`, which is the
+   * shape `src/ui/hud/dismiss-arming.ts` chose for the roster --
+   * `src/ui/save-panel-delete.ts` carries the argument for the difference.
+   * The labels name the outcome rather than answering a question ("Yes"/"No"),
+   * because a control read out of context by a screen reader has to carry its
+   * own meaning, and because the destructive one should be the one that reads
+   * as destructive.
+   */
+  actionDeleteConfirm: 'save.action.delete-confirm',
+  actionDeleteCancel: 'save.action.delete-cancel',
 
   listEmpty: 'save.list.empty',
   /**
@@ -75,6 +89,8 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   statusRecovered: 'save.status.recovered',
   statusLoaded: 'save.status.loaded',
   statusDeleted: 'save.status.deleted',
+  /** Reported when the player backs out of a confirmation (#1142). */
+  statusDeleteKept: 'save.status.delete-kept',
   statusNothingToExport: 'save.status.nothing-to-export',
   statusExported: 'save.status.exported',
 
@@ -123,6 +139,23 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   failureUnknown: 'save.failure.unknown',
 
   detailRestoredScope: 'save.detail.restored-scope',
+
+  /**
+   * The confirmation question, and the four ages it can end with (#1142).
+   *
+   * The age is four keys rather than a formatted timestamp because the
+   * question is *how old is this*, not *when exactly was this*, and because
+   * the panel's localizer port is `format`/`formatNumber` -- it has no date
+   * formatter and this panel is not the place to introduce one.
+   * `describeSaveAge` in `src/ui/save-panel-delete.ts` carries why the
+   * sentence says "changed" rather than "saved", which is the half of this
+   * that is a claim about the code rather than a choice of words.
+   */
+  deleteConfirm: 'save.delete.confirm',
+  deleteAgeMoments: 'save.delete.age.moments',
+  deleteAgeMinutes: 'save.delete.age.minutes',
+  deleteAgeHours: 'save.delete.age.hours',
+  deleteAgeDays: 'save.delete.age.days',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;
 
 export type SavePanelMessageKey = (typeof SAVE_PANEL_MESSAGE_KEY)[keyof typeof SAVE_PANEL_MESSAGE_KEY];

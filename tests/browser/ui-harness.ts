@@ -146,6 +146,14 @@ class StubSessions implements SavePanelSessions {
   public saveCalls = 0;
   public readonly importedRaw: string[] = [];
   public readonly loadedPrisons: string[] = [];
+  /**
+   * Every prison the panel has actually asked to delete, in order (#1142).
+   *
+   * The proof a confirmation is real: a Delete control that armed nothing and
+   * deleted immediately leaves the same list on screen as one that asks first,
+   * right up until the moment this array is read.
+   */
+  public readonly deletedPrisons: string[] = [];
   private readonly prisons: PrisonSlotMetadata[] = [];
   private pendingCreate: Pending | undefined;
   private session: ActiveSession | undefined;
@@ -210,8 +218,28 @@ class StubSessions implements SavePanelSessions {
   }
 
   public async deletePrison(prisonId: string): Promise<void> {
+    this.deletedPrisons.push(prisonId);
     const index = this.prisons.findIndex((prison) => prison.prisonId === prisonId);
     if (index >= 0) this.prisons.splice(index, 1);
+  }
+
+  /**
+   * Puts a prison on the list with a chosen name and a chosen age (#1142).
+   *
+   * `createPrison` cannot do this: it stamps `Date.now()` and blocks on a
+   * pending promise, so every prison it makes is seconds old and the
+   * confirmation's age sentence would only ever have one reachable form.
+   */
+  public seedPrison(prisonId: string, displayName: string, updatedAt: number): void {
+    this.prisons.push({
+      prisonId,
+      gameVersion: GAME_VERSION,
+      displayName,
+      currentGenerationId: 'gen-1',
+      generationIds: ['gen-1'],
+      createdAt: updatedAt,
+      updatedAt,
+    });
   }
 
   public async exportActive(): Promise<undefined> {
@@ -980,14 +1008,48 @@ window.lockstateUiHarness = {
     return nodes.length > 0 && nodes.every((node) => node.getClientRects().length > 0);
   },
 
-  mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void {
+  mountSavePanel(options?: { readonly pseudoLocale?: boolean; readonly nowMs?: number }): void {
     panel?.dispose();
     sessions = new StubSessions();
     // The host's localizer is passed in rather than left to the panel's
     // default, which is what `src/main.ts` should also do (issue #208).
     // `en-XA` is ADR 0011's own tool for the question this panel failed: a
     // string that is not in the catalog stays unaccented and unbracketed.
-    panel = new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer);
+    // A frozen clock where one is asked for, so the confirmation's age
+    // sentence is a function of the seeded timestamp and nothing else -- the
+    // application's own construction passes no clock and gets `Date.now`.
+    const nowMs = options?.nowMs;
+    panel =
+      nowMs === undefined
+        ? new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer)
+        : new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer, () => nowMs);
+  },
+
+  seedPrison(prisonId: string, displayName: string, updatedAt: number): void {
+    sessions?.seedPrison(prisonId, displayName, updatedAt);
+  },
+
+  deletedPrisons(): readonly string[] {
+    return [...(sessions?.deletedPrisons ?? [])];
+  },
+
+  /** The text of the delete confirmation now on the page, or `''` if there is none. */
+  deleteConfirmationText(): string {
+    return document.querySelector('[data-delete-confirm] .save-panel__item-label')?.textContent ?? '';
+  },
+
+  /**
+   * What the keyboard is standing on, as a label rather than an element.
+   *
+   * `''` for `<body>`, which is where the browser parks focus when the control
+   * holding it is removed or disabled -- the exact state constitution article
+   * 16 forbids leaving a player in, so it has to be distinguishable from a
+   * real control rather than merely absent.
+   */
+  focusedControlLabel(): string {
+    const active = document.activeElement;
+    if (active === null || active === document.body) return '';
+    return active.textContent ?? '';
   },
 
   clickSaveButton(label: string): boolean {
