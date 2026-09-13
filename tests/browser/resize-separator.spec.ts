@@ -209,8 +209,6 @@ test.describe('the drag-resizable separator', () => {
     await page.mouse.move(start.x + 400, start.y, { steps: 8 });
 
     const during = await separator(page);
-    expect(during.dragging, 'the drag never started, so nothing below is a test of one').toBe(true);
-    expect(during.size).toBe(RANGE.max);
 
     await page.mouse.up({ button: 'left' });
     await settle(page);
@@ -218,19 +216,33 @@ test.describe('the drag-resizable separator', () => {
     const after = await separator(page);
     const world_ = await world(page);
 
-    expect(after.dragging).toBe(false);
-    expect(after.size).toBe(RANGE.max);
-    expect(after.panelWidth).toBe(RANGE.max);
-    expect(after.valueNow).toBe(String(RANGE.max));
-    expect(after.ends).toEqual(['released']);
-    expect(after.reports.at(-1)).toEqual({ size: RANGE.max, reason: 'pointer' });
-
+    /*
+     * THE WORLD FIRST, AND THE ORDER IS EVIDENCE RATHER THAN TASTE.
+     *
+     * This test first asserted the panel's size before the world's silence,
+     * and a mutation run proved that hid the very thing it exists to catch:
+     * with `setPointerCapture` removed the drag stops tracking at all, so the
+     * size assertion failed at `120` and the run never reached
+     * `expect(world_.runs).toBe(0)`. A gate whose own subject is unreachable
+     * under the mutation that breaks its subject is not a gate for it.
+     */
     expect(world_.runs).toBe(0);
     expect(world_.areas).toBe(0);
     expect(world_.objects).toBe(0);
     expect(world_.targeted).toBe(false);
     expect(world_.scroll).toEqual(before.scroll);
     expect(pressesOnCanvas(after.underlay)).toEqual([]);
+
+    // And then that there was a drag at all, which is what stops every line
+    // above from passing on a page where nothing happened.
+    expect(during.dragging, 'the drag never started, so nothing above is a test of one').toBe(true);
+    expect(during.size).toBe(RANGE.max);
+    expect(after.dragging).toBe(false);
+    expect(after.size).toBe(RANGE.max);
+    expect(after.panelWidth).toBe(RANGE.max);
+    expect(after.valueNow).toBe(String(RANGE.max));
+    expect(after.ends).toEqual(['released']);
+    expect(after.reports.at(-1)).toEqual({ size: RANGE.max, reason: 'pointer' });
   });
 
   /**
