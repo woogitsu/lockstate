@@ -1265,6 +1265,12 @@ export interface LockstateUiHarness {
    * The only reading that separates "asked first" from "deleted first and said
    * so afterwards": both leave the same rows on screen.
    */
+  /**
+   * `SavePanel.confirmDelete` called directly, returning its decision as a
+   * string. The only reachable route to the unconfirmed case from a browser:
+   * the confirming control exists only while a deletion is armed.
+   */
+  confirmDeleteDirect(prisonId: string): string;
   deletedPrisons(): readonly string[];
   /** The delete confirmation's question as rendered, or `''` when none is on the page. */
   deleteConfirmationText(): string;

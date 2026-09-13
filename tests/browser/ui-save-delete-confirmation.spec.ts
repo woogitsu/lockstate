@@ -196,6 +196,35 @@ test.describe('a prison is not destroyed by one press (#1142)', () => {
     await expect(page.locator('[data-prison="prison-keep"]')).toHaveCount(1);
   });
 
+  test('the guard refuses a deletion no confirmation ever armed', async ({ page }) => {
+    await mountTwoPrisons(page);
+
+    const reading = await page.evaluate(() => ({
+      // Nothing armed at all.
+      nothingArmed: window.lockstateUiHarness.confirmDeleteDirect('prison-1142'),
+      deletedAfterFirst: window.lockstateUiHarness.deletedPrisons(),
+    }));
+    expect(reading.nothingArmed).toBe('refused-unconfirmed');
+    expect(reading.deletedAfterFirst).toEqual([]);
+
+    // And armed, but for a different prison.
+    await rowDelete(page, 'prison-1142').click();
+    const crossed = await page.evaluate(() => ({
+      outcome: window.lockstateUiHarness.confirmDeleteDirect('prison-keep'),
+      deleted: window.lockstateUiHarness.deletedPrisons(),
+    }));
+    expect(crossed.outcome).toBe('refused-unconfirmed');
+    expect(crossed.deleted).toEqual([]);
+
+    // The control is not inert: the same call for the armed prison is taken.
+    const armed = await page.evaluate(() => window.lockstateUiHarness.confirmDeleteDirect('prison-1142'));
+    expect(armed).toBe('started');
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+    expect(await page.evaluate(() => window.lockstateUiHarness.deletedPrisons())).toEqual(['prison-1142']);
+  });
+
   test('a confirmation aimed at one prison cannot be spent on another', async ({ page }) => {
     await mountTwoPrisons(page);
     // Arm the older prison, then press the *other* row's Delete. That is a

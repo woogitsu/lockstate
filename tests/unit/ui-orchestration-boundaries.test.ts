@@ -188,6 +188,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Value: `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` from `src/simulation/economy`, and nothing else -- one integer constant, used as a default argument. This module is the host's pre-flight on the two intents that cost money, and it exists because the comparison it makes lived inline in `src/main.ts`, which `vitest.config.ts` cannot reach at all (`environment: 'node'`, and that file touches `document`), so #703 ruling A silently made it wrong: it refused presses the simulation accepts. Importing the constant rather than restating `-2_500` is the point of the entry -- the host's echo and the treasury's own floor derive from one definition, which is the same argument `simulation-clock.ts` makes below about the calendar. It runs no simulation code, holds no state, constructs nothing and has no dependency on the runtime: a value import of `Treasury` itself, or of anything that could build one, would mean the interface had started keeping a second treasury instead of echoing the published balance, and that is the erosion this entry exists to catch.",
   },
   {
+    file: 'src/ui/save-panel-delete.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the message shape this module's three `describe*` functions return. It is `save-panel.ts`'s own content entry one module over and for the same reason -- these functions were extracted *out* of that file so `pnpm test` could reach them (`environment: 'node'` makes anything touching `document` unobservable, #445's argument), and an extraction that needed a wider dependency than the file it came from would be the wrong extraction. Erased, so no content code runs on this module's account.",
+  },
+  {
+    file: 'src/ui/save-panel-delete.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, the parameter bag beside the key. Same reading as the `content` entry above and as `save-panel.ts`'s own `services` entry: this module chooses a key and its parameters and resolves nothing, so it needs no value from the localization runtime. A `value` import appearing here would mean a decision module had started formatting text, which is the composing layer's job and the thing ADR 0011's last-possible-moment rule keeps out of pure functions.",
+  },
+  {
     file: 'src/ui/save-panel.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -554,6 +568,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
       'src/ui/room-tool.ts',
+      'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
       'src/ui/simulation-alerts.ts',
