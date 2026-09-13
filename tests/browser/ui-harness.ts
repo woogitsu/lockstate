@@ -1029,6 +1029,19 @@ window.lockstateUiHarness = {
     sessions?.seedPrison(prisonId, displayName, updatedAt);
   },
 
+  /**
+   * Calls `SavePanel.confirmDelete` directly, with whatever is armed.
+   *
+   * The only way to reach the guard from a browser at all: the confirming
+   * control exists only while a deletion is armed, so a press can never be the
+   * unconfirmed case. `request*` methods are the panel's own test seam and
+   * return the gate's decision for exactly this reason -- a refusal is
+   * asserted rather than inferred from a prison still being on the list.
+   */
+  confirmDeleteDirect(prisonId: string): string {
+    return panel?.confirmDelete(prisonId) ?? 'no-panel';
+  },
+
   deletedPrisons(): readonly string[] {
     return [...(sessions?.deletedPrisons ?? [])];
   },
