@@ -3,6 +3,7 @@ import type { KeyValueStore } from '../../src/shared/key-value-store';
 import {
   type ThemePreference,
   DEFAULT_THEME_SETTINGS,
+  nextThemePreference,
   THEME_PREFERENCES,
   decodeThemeSettings,
   resolveTheme,
@@ -88,6 +89,23 @@ describe('the theme preference vocabulary', () => {
     // and a boolean cannot hold it.
     expect([...THEME_PREFERENCES]).toEqual(['system', 'light', 'dark']);
     expect(DEFAULT_THEME_SETTINGS.preference).toBe('system');
+  });
+
+  it('cycles through every preference and back, so one button can offer all three', () => {
+    // The control beside it is a cycling button, so "the next one" has to
+    // reach every value and return: a cycle that skipped one would hide a
+    // preference behind no press at all.
+    expect(nextThemePreference('system')).toBe('light');
+    expect(nextThemePreference('light')).toBe('dark');
+    expect(nextThemePreference('dark')).toBe('system');
+    const seen = new Set<ThemePreference>();
+    let at: ThemePreference = 'system';
+    for (let step = 0; step < THEME_PREFERENCES.length; step += 1) {
+      seen.add(at);
+      at = nextThemePreference(at);
+    }
+    expect([...seen].sort()).toEqual([...THEME_PREFERENCES].sort());
+    expect(at).toBe('system');
   });
 
   it('resolves every preference against both device states', () => {

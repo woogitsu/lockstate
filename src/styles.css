@@ -318,7 +318,8 @@ canvas {
  * A control that stayed 44px while everything around it grew would be the one
  * thing a player at 200 % could not hit.
  */
-.display-scale {
+.display-scale,
+.theme-control {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -337,7 +338,8 @@ canvas {
 /* The same breakpoint and the same reason as `.save-panel` directly above:
    the rail stops being a fixed-width column, so its contents stop being one. */
 @media (max-width: 720px) {
-  .display-scale {
+  .display-scale,
+  .theme-control {
     width: 100%;
   }
 }
@@ -345,7 +347,8 @@ canvas {
 /* Takes the row and pushes the button to the end, and truncates rather than
    wrapping: this is a legend, and a legend that wraps makes the row two tap
    targets tall for no gain. */
-.display-scale__legend {
+.display-scale__legend,
+.theme-control__legend {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -353,7 +356,8 @@ canvas {
   white-space: nowrap;
 }
 
-.display-scale__cycle {
+.display-scale__cycle,
+.theme-control__cycle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -371,12 +375,14 @@ canvas {
   cursor: pointer;
 }
 
-.display-scale__cycle:hover {
+.display-scale__cycle:hover,
+.theme-control__cycle:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }
 
-.display-scale__cycle:focus-visible {
+.display-scale__cycle:focus-visible,
+.theme-control__cycle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
@@ -387,6 +393,21 @@ canvas {
    already sets, so it tracks the scaled font size without being told about it. */
 .display-scale__value {
   min-width: 4ch;
+  text-align: center;
+  color: var(--text-heading);
+}
+
+/*
+ * The theme control's readout (#1157). Its own rule rather than a share of
+ * `.display-scale__value` above, because the two reserve width for different
+ * reasons: that one holds a *number* in a monospace face and reserves 4ch of
+ * it; this one holds a word, in the interface face, and reserves nothing --
+ * the three words are one press apart and the row is right-aligned, so a
+ * button that changes width changes it at the end of a row nothing else sits
+ * in. What it does share is every geometry rule above, which is why the
+ * selectors are paired there and not duplicated.
+ */
+.theme-control__value {
   text-align: center;
   color: var(--text-heading);
 }

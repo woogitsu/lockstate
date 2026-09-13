@@ -31,6 +31,8 @@ const HARNESS_URL = '/tests/browser/theme-harness.html';
 
 /** `--surface-base` in each theme, as `getComputedStyle` reports a colour. */
 const DAY_BACKGROUND = 'rgb(242, 246, 248)';
+/** The one control: a button that cycles `System` -> `Light` -> `Dark`. */
+const CYCLE = '.theme-control__cycle';
 const NIGHT_BACKGROUND = 'rgb(16, 35, 46)';
 
 async function paintedBackground(page: Page): Promise<string> {
@@ -75,14 +77,25 @@ test.describe('the theme follows the device until the player says otherwise', ()
   test('stops following the device once the player has chosen', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto(HARNESS_URL);
-    await page.locator("[data-choice='dark']").click();
+    // Two presses: `system` -> `light` -> `dark`. The first is the one worth
+    // noticing -- it changes nothing on screen, because the device already
+    // says light, and it still has to be recorded as a preference.
+    await page.locator(CYCLE).click();
+    await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'light');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await page.locator(CYCLE).click();
+    await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'dark');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     // A player who has said "dark" is not moved by a device that says light.
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(await paintedBackground(page)).toBe(NIGHT_BACKGROUND);
-    await expect(page.locator("[data-choice='dark']")).toHaveAttribute('aria-checked', 'true');
+    await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'dark');
+    // The readout is the button's own content, so it is also its accessible
+    // name: a control announcing "System" while painting the night theme is
+    // the defect this pins.
+    await expect(page.locator(CYCLE)).toHaveText('Dark');
   });
 });
 
@@ -101,7 +114,8 @@ test.describe('switching repaints the interface, not just an attribute', () => {
     const dayBody = await paintedBodyText(page);
     const dayCaution = await readCaution();
 
-    await page.locator("[data-choice='dark']").click();
+    await page.locator(CYCLE).click();
+    await page.locator(CYCLE).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     const nightBody = await paintedBodyText(page);
@@ -132,7 +146,8 @@ test.describe('switching repaints the interface, not just an attribute', () => {
   test('remembers the choice across a reload, under its own storage key', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto(HARNESS_URL);
-    await page.locator("[data-choice='dark']").click();
+    await page.locator(CYCLE).click();
+    await page.locator(CYCLE).click();
 
     const stored = await page.evaluate(() => ({
       theme: globalThis.localStorage.getItem('lockstate.settings.theme'),
@@ -173,10 +188,11 @@ test.describe('a browser that will not store anything', () => {
 
     // It booted at all, which is issue #199's lesson: a hostile store used to
     // abort the rest of the module and leave an empty page.
-    await expect(page.locator("[data-choice='dark']")).toBeVisible();
+    await expect(page.locator(CYCLE)).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-    await page.locator("[data-choice='dark']").click();
+    await page.locator(CYCLE).click();
+    await page.locator(CYCLE).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(await paintedBackground(page)).toBe(NIGHT_BACKGROUND);
 

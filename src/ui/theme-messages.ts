@@ -24,6 +24,17 @@ export const THEME_MESSAGE_KEY = {
   system: 'display.theme.system',
   light: 'display.theme.light',
   dark: 'display.theme.dark',
+  /**
+   * The `title` on the one button, which is what says the button *does*
+   * something.
+   *
+   * The button's accessible name is its own content -- the theme it is on --
+   * so that a screen reader announces the current one, and this is the tooltip
+   * beside it rather than an `aria-label`, which would replace that name
+   * instead of adding to it. The same arrangement as
+   * `display.scale.cycle`, for the same reason.
+   */
+  cycle: 'display.theme.cycle',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;
 
 export type ThemeMessageKey = (typeof THEME_MESSAGE_KEY)[keyof typeof THEME_MESSAGE_KEY];

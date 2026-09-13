@@ -2,12 +2,12 @@ import type { LocalizationKey } from '../content/localization';
 import {
   type Theme,
   type ThemePreference,
-  THEME_PREFERENCES,
-  isThemePreference,
+  nextThemePreference,
   resolveTheme,
 } from '../input/theme-preference';
 import type { MessageParameters } from '../services/localization/format';
-import { createChoiceGroup, type ChoiceGroup } from './primitives/choice-group';
+import { element, eyebrowText } from './primitives/dom';
+import { createIcon } from './primitives/icon';
 import { THEME_MESSAGE_KEY } from './theme-messages';
 
 /**
@@ -216,42 +216,98 @@ const LABEL_KEY: Readonly<Record<ThemePreference, LocalizationKey>> = {
 };
 
 /**
- * Three options, all visible: system, light, dark.
+ * One button that cycles `System` -> `Light` -> `Dark`, in the same row shape
+ * as the interface-scale control beside it.
  *
- * `createChoiceGroup` rather than a cycling button of the kind the interface
- * scale uses, and rather than a two-state toggle. A toggle cannot express the
- * third value at all -- "follow the device" is not the absence of a choice,
- * it is a choice -- and a cycling button would hide two thirds of a vocabulary
- * whose options are one word each. It is also already styled and already
- * keyboard- and touch-reachable, so this control adds no CSS.
+ * **This was a three-option `createChoiceGroup` and the rail could not afford
+ * it**, which is a measurement rather than a preference and is recorded here
+ * because the next reader will reach for the choice group too -- all three
+ * options visible at once is the better control in the abstract. Measured on
+ * the assembled application with the group in `HudHandle.asideSlot`
+ * (`app-shell.spec.ts`, 19.3 minutes, three failures that are all one cause):
  *
- * **Controlled**, like every other choice group here: a tap reports what was
- * asked for and changes nothing. The owner applies it and calls
+ *   - *"a click in the middle of the screen reaches the world, not the HUD"* --
+ *     the centre of a 375x812 viewport landed on the HUD instead of the world.
+ *   - *"every control can actually be pressed ... (#88)"* -- **26** controls
+ *     covered by something else on the Build tab at 1280x720, against the 1
+ *     the assertion tolerates.
+ *   - *"every interface scale step keeps the HUD inside the viewport (#545)"* --
+ *     the rail scrolled 75px at 375x812 and 200 %.
+ *
+ * The aside is a fixed budget the Build panel, the Rooms panel and the save
+ * panel are all sharing (`hud.css`'s short-viewport block does the arithmetic),
+ * and a legend plus three tap targets is roughly two rows of it. A cycling
+ * button is one tap target and one row -- which is exactly the trade
+ * `display-scale.ts` records making, against a `-`/readout/`+` trio, for the
+ * neighbouring slot.
+ *
+ * What it costs is honest and worth stating: two of the three values are
+ * hidden behind a press at any moment, and a player looking for "dark" has to
+ * cycle to find it. Three values is one press at worst.
+ *
+ * **Controlled**, like every other control here: a press reports the *next*
+ * preference and changes nothing. The owner applies it and calls
  * `setPreference`, which is what stops the DOM becoming a second source of
  * truth about a setting whose real home is a storage key.
  */
 export function createThemeControl(options: ThemeControlOptions): ThemeControl {
   const { localizer } = options;
-  const group: ChoiceGroup = createChoiceGroup({
-    legend: localizer.format(THEME_MESSAGE_KEY.region),
-    options: THEME_PREFERENCES.map((preference) => ({
-      id: preference,
-      label: localizer.format(LABEL_KEY[preference]),
-    })),
-    selectedId: options.preference,
-    onSelect: (id) => {
-      // The group hands back the id it was given, so this can only fail if the
-      // vocabulary and the options drift apart -- in which case doing nothing
-      // is better than writing a preference nothing can decode.
-      if (isThemePreference(id)) options.onSelect(id);
+  const t = (key: LocalizationKey): string => localizer.format(key);
+  let current = options.preference;
+
+  /*
+   * The readout is the button's own content, and therefore its accessible
+   * name: a screen reader announces "Theme, System, button" from the group's
+   * label plus this. `role="status"` on top of that is what makes a *change*
+   * announced -- a button whose name changes under a press says nothing by
+   * itself. The same arrangement as the interface-scale control's readout.
+   */
+  const readout = element('span', {
+    className: 'theme-control__value',
+    attributes: { role: 'status' },
+  });
+
+  const button = element('button', {
+    className: 'theme-control__cycle',
+    attributes: { type: 'button', title: t(THEME_MESSAGE_KEY.cycle) },
+    children: [readout],
+  });
+
+  const apply = (): void => {
+    readout.textContent = t(LABEL_KEY[current]);
+    // The value a test or a stylesheet can read without parsing a sentence in
+    // whatever locale the page is in.
+    button.dataset['preference'] = current;
+  };
+  apply();
+
+  button.addEventListener('click', () => {
+    options.onSelect(nextThemePreference(current));
+  });
+
+  const legend = eyebrowText(t(THEME_MESSAGE_KEY.region), 'theme-control__legend');
+  legend.setAttribute('aria-hidden', 'true');
+
+  const root = element('div', {
+    className: 'theme-control',
+    attributes: {
+      role: 'group',
+      // Names the control "theme" rather than leaving a bare word like
+      // "System" beside a game that also has a display scale. The same words
+      // are on screen in the legend below, so this is a machine-readable copy
+      // of a visible label rather than the only place the meaning exists.
+      'aria-label': t(THEME_MESSAGE_KEY.region),
     },
+    children: [createIcon('theme', 'sm'), legend, button],
   });
 
   return {
-    element: group.element,
-    controls: group.controls,
+    element: root,
+    controls: [button],
     setPreference(preference: ThemePreference): void {
-      group.setSelected(preference);
+      if (preference === current) return;
+      current = preference;
+      apply();
     },
   };
 }

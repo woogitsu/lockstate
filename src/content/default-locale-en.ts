@@ -3329,6 +3329,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'display.theme.system': 'System',
   'display.theme.light': 'Light',
   'display.theme.dark': 'Dark',
+  'display.theme.cycle': 'Change the interface theme',
 
   // The accessible name of `<main id="app">` -- the whole application, not one
   // region of it, which is why the namespace is `app.` and not `hud.` or

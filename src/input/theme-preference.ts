@@ -81,6 +81,20 @@ export function decodeThemeSettings(input: unknown): ThemeSettings | undefined {
  * #199), and a pure function is one a `node` test can drive through all six
  * combinations without a DOM.
  */
+/**
+ * The preference after this one, wrapping -- `system` -> `light` -> `dark` ->
+ * `system`.
+ *
+ * Beside the vocabulary rather than in the control, exactly as
+ * `nextUiScaleStep` sits beside `UI_SCALE_STEPS`: which values exist, and what
+ * "the next one" means, are properties of the record. A control that decided
+ * for itself could offer a value the decoder rejects.
+ */
+export function nextThemePreference(preference: ThemePreference): ThemePreference {
+  const index = THEME_PREFERENCES.indexOf(preference);
+  return THEME_PREFERENCES[(index + 1) % THEME_PREFERENCES.length] ?? 'system';
+}
+
 export function resolveTheme(preference: ThemePreference, prefersDark: boolean): Theme {
   if (preference === 'system') return prefersDark ? 'dark' : 'light';
   return preference;
