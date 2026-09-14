@@ -331,6 +331,51 @@ The one semantic move the direction proposes — staff from Security to Manage �
 is a UI grouping, not a move of simulation modules, and the delivery says so in
 its own words. Anything beyond regrouping is a separate decision.
 
+### The navigation moved on 2026-09-14, ahead of this stage and by the owner's ruling
+
+ADR 0112 decision 3 says the navigation moves **now** rather than after the
+inventory, in the owner's own typed words, and stage 3's shell landing is what
+unblocked it. So the five sections are already the delivery's five, and this
+stage is checked against that arrangement rather than against today's HUD:
+
+| Was | Is | Holds |
+|---|---|---|
+| `overview` | `overview` — Overview | the Finances readout (#1183) |
+| `build` | `build` — Build | the Build panel, materials and deliveries included |
+| `rooms` | `zones` — Zones | the Rooms panel |
+| `security` | `manage` — Manage | the Staff panel **and** the Intake panel |
+| `regime` | `day-plan` — Day plan | the Regime panel |
+
+**Three rulings of 2026-09-14 decided the contents**, each the label of a
+clickable option the owner chose rather than a sentence they typed — the weaker
+provenance `AGENTS.md`'s 2026-09-08, -09 and -10 entries draw of themselves, and
+recorded as such in
+[`docs/research/2026-09-14-the-mechanical-navigation-move.md`](./research/2026-09-14-the-mechanical-navigation-move.md)
+§7:
+
+1. **Intake moves to Zarządzaj** — *"Zarządzaj (zgodnie z dostawą)"*.
+2. **Materials and deliveries stay in Buduj** — *"Buduj"*.
+3. **Przegląd gets a new Overview-native readout, and `src/ui/save-panel.ts`
+   stays in the rail aside slot** — *"Nowy odczyt w Przeglądzie, panel zapisu
+   zostaje w szynie"*. Rulings 1 and 3 landed in one commit, because intake was
+   the only thing Overview held and a section that opens onto nothing is what
+   article 5 objects to.
+
+**Two things this stage still owes, and neither is a decision:**
+
+- **The Regime panel has to split.** The delivery's table puts *osadzeni*
+  (inmates) under Zarządzaj and keeps only *Harmonogram i edycja bloków* under
+  Plan dnia; the panel paints the day blocks, the prisoner roster and the
+  prisoner inspector together, so Day plan carries all three today. This is the
+  one place where a section's contents do not yet match the delivery's own
+  table, and it is a code change rather than a mount move.
+- **The eleven unplaced surfaces are still unplaced.** Status strip, events
+  band, refusal and unavailable lines, alerts list, minimap and zoom, save panel,
+  display scale, brand badge, telemetry consent prompt, `src/ui/account/`, and
+  the four read models with a route and no reader. A surface the direction does
+  not place is not an agent's to delete; each goes to the owner if and when a
+  stage needs an answer for it.
+
 ---
 
 ## Stage 6 — Language

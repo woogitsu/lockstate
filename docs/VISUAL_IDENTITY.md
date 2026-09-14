@@ -247,11 +247,40 @@ an impression.
    `tests/unit/ui-design-tokens.test.ts` *computes* those ratios from the file
    rather than pinning literals. A palette swap that ignores them fails that
    test, which is the intended behaviour.
-5. **The five HUD sections are `overview`, `build`, `rooms`, `security` and
-   `regime`.** The direction's five are Overview, Build, Zones, Manage and Day
-   plan, and moving staff out of Security into Manage is described in the
-   delivery itself as a UI-semantic proposal rather than a move of simulation
-   modules.
+5. **The five HUD sections were `overview`, `build`, `rooms`, `security` and
+   `regime`, and since 2026-09-14 they are the direction's own five.** The
+   measurement this item carried is kept above rather than overwritten, because
+   it is what the move was measured against.
+
+   > The direction's five are Overview, Build, Zones, Manage and Day plan, and
+   > moving staff out of Security into Manage is described in the delivery
+   > itself as a UI-semantic proposal rather than a move of simulation modules.
+
+   Today `HUD_TAB_IDS` is `['overview', 'build', 'zones', 'manage', 'day-plan']`
+   in the delivery's own order, on ADR 0112 decision 3 — which the owner ruled,
+   in their own typed words, happens **now** rather than after the inventory.
+   The ids moved with the labels because they are read as
+   `hud.dataset.activeTab`, as `.ui-tab[data-tab="…"]`, and as `activeTab ===`
+   gates; no tab id is persisted anywhere, re-checked on this branch at `d5137d5d` (v0.0.613), so nothing
+   about it was a migration.
+
+   Three rulings of 2026-09-14 decided the contents, and
+   [`docs/IDENTITY_V5_ROLLOUT.md`](./IDENTITY_V5_ROLLOUT.md)'s stage 5 carries
+   them with their provenance: intake moved to Manage, materials and deliveries
+   stayed in Build, and Overview got a readout of its own rather than the save
+   panel, which stays in the rail and is reachable from every section. Staff
+   moved with the tab it was already on and no simulation module moved with it,
+   exactly as the delivery said.
+
+   **Two gaps remain and are named there rather than here:** the Regime panel
+   still carries the prisoner roster and inspector on Day plan, where the
+   delivery puts them under Zarządzaj; and the eleven surfaces the direction
+   does not place are still unplaced.
+
+   **What the move cost, measured:** the Manage tab is the first in this rail's
+   life to lay out two panels at once, and at 900x600 the Intake panel came out
+   42px shorter than its own content beside the Staff panel. `hud.css` carries
+   the remedy and the one that was tried first and did not work.
 6. **The layout system landed on 2026-09-14 (#1159), and the measurement this
    item used to carry is kept below rather than overwritten** — it is what the
    stage was measured against, and a reader needs to see what moved.
