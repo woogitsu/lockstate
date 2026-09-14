@@ -1900,7 +1900,15 @@ where `idb`'s helpers would materially reduce risk.
 
 ### Schema
 
-Database `lockstate-saves`, version 1, two object stores:
+Database `lockstate-saves`, version 2, three object stores.
+
+> **This read "version 1, two object stores" until 2026-09-14**, when ADR 0114's
+> undo window added the third. The version moved 1 → 2 in the same change;
+> `SAVE_SCHEMA_VERSION` did **not** move and no save envelope changed shape.
+> Those are two persisted formats one layer apart, each with its own number and
+> its own migration mechanism — `onupgradeneeded` in `indexeddb-store.ts` for
+> this one, the step functions in `save-schema.ts` for the other — and the ADR
+> spends a section heading on not conflating them.
 
 - `prisons` (keyPath `prisonId`) — one `PrisonSlotMetadata` record per slot:
   game version, display name, `currentGenerationId`, the ordered
@@ -1911,6 +1919,66 @@ Database `lockstate-saves`, version 1, two object stores:
   bump" below and that field's doc comment in `store.ts`).
 - `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
   validated `SaveEnvelope` per generation.
+- `tombstones` (keyPath `prisonId`) — one `TombstoneRecord` per prison the
+  player has deleted and can still bring back (ADR 0114): the slot record
+  verbatim, every generation `generationIds` named, `deletedAt`, and the
+  `expiresAt` the undo closes at.
+
+#### The `tombstones` store, and why deletion is a move (ADR 0114)
+
+`PrisonSaveRepository.delete` no longer destroys a prison. It reads the slot and
+every generation it references, writes one `TombstoneRecord`, then deletes the
+originals — **all inside the single `readwrite` transaction it already
+opened**, never a second one. That is the property the whole feature rests on,
+and it is why the copy lives in this database rather than in one of its own: a
+real IndexedDB transaction cannot span two databases, so a copy held elsewhere
+would need a second transaction with no way to commit both as one unit, and a
+crash between them either leaves a prison and a spurious copy or — the defect
+the feature exists to prevent — deletes the prison with the copy unwritten.
+
+`list()`'s observable contract is untouched: the slot is gone from `prisons`,
+so the prison leaves the list exactly as it did before.
+
+**The migration is forward-only and pure.** The upgrade creates an empty object
+store and reads, rewrites and deletes nothing; the new store starts empty for
+every existing player, because nothing could have written a tombstone under a
+schema with nowhere to put one. That is the same "absence is unambiguous"
+argument this document makes for `masterSeed` under "Adding an optional field
+without a version bump", one layer below where that rule is stated.
+`tests/integration/persistence-local-indexeddb.test.ts` builds a real v1
+database, writes a prison into it, and opens it through
+`openLockstateDatabase`: the slot record comes back field for field including
+its timestamps, the generation still decodes to the same envelope, and
+`tombstones` exists and is empty.
+
+**Expiry is lazy and read-time, because this application has no scheduler.**
+`listTombstones()` deletes every copy past its `expiresAt` in the transaction
+that reads them, and `SavePanel.refresh()` — awaited once at startup in
+`src/main.ts` and run after every action — is what calls it. The gate on a
+restore is `restoreFromTombstone`'s own clock reading against the stored
+`expiresAt`, inside the transaction that would do the writing, never a
+displayed countdown; a refusal for a closed window deletes the copy as it
+refuses. The cost, named rather than hidden: **a copy can physically outlive
+its window by as long as the player goes between sessions.** It is never
+*offered* late, which is the half that reaches the player, and a
+`setTimeout`-based window would be strictly worse — it dies with the tab,
+taking the sweep with it.
+
+**A tombstone that fails validation is swept, where a slot record is refused.**
+The opposite treatment, for three reasons `src/persistence/local/tombstone-schema.ts`
+states in full: a tombstone indexes nothing the player still has, it expires by
+construction, and a copy this build cannot read is a copy it can never restore.
+Holding bytes that can serve no undo is exactly the quota cost the "Free its
+space now" control exists to keep off a player's disk.
+
+**Quota.** An undo window holds bytes, and `save.status.quota-exceeded` already
+tells the player that deleting a prison is how space is freed. ADR 0114 §6
+named that as an open trade-off and the owner closed it on 2026-09-14 with a
+visible control in the saves panel — `forgetTombstone` — that frees a held copy
+immediately, rather than by shortening the window near quota or skipping the
+copy. Production still has no proactive `navigator.storage.estimate()` check
+anywhere in `src/`; quota is discovered reactively, by `classifyStoreError`,
+exactly as it was.
 
 #### Slot metadata is validated, and what happens when it is not valid
 
