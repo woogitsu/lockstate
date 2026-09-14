@@ -557,6 +557,22 @@ const BUILD_MODEL: HudBuildViewModel = {
         quantityPerPlacement: 2,
         maxQuantity: 100_000,
       },
+      // What `placementCostMinorUnits` (`src/simulation/economy/placement-cost.ts`)
+      // answers for this buildable's one requirement, which is what
+      // `buildCatalogue` in `src/main.ts` now puts on the row.
+      //
+      // **It is a separate figure from `material` above rather than a
+      // derivation of it, which is the whole reason the field exists** (issue
+      // #1160): the panel used to multiply that material's two numbers itself,
+      // over the first purchasable requirement rather than all of them. A
+      // fixture that omits this renders a row with no price at all -- measured,
+      // when it was omitted: `is reachable from the Build tab and hidden from
+      // every other one` failed on `Brick wall · 80 per segment`.
+      //
+      // Written out rather than imported for the reason the prices above are:
+      // this harness exercises the panel, and `app-shell.spec.ts` plus
+      // `ui-build-catalogue-price.spec.ts` drive the real projection.
+      placementCostMinorUnits: 80,
     },
     {
       definitionId: 'door-wooden',
@@ -584,6 +600,8 @@ const BUILD_MODEL: HudBuildViewModel = {
         quantityPerPlacement: 1,
         maxQuantity: 100_000,
       },
+      // One plank at 65, the same way the row above carries two bricks at 40.
+      placementCostMinorUnits: 65,
     },
   ],
   origin: { x: 16, y: 16 },
