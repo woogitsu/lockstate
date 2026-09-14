@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 494 authored sentences
+## The 499 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -521,5 +521,10 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `display.theme.light` | Light | `src/content/default-locale-en.ts:3634` |
 | `display.theme.dark` | Dark | `src/content/default-locale-en.ts:3635` |
 | `display.theme.cycle` | Change the interface theme | `src/content/default-locale-en.ts:3636` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3646` |
+| `display.language.region` | Language | `src/content/default-locale-en.ts:3661` |
+| `display.language.automatic` | Automatic ({language}) | `src/content/default-locale-en.ts:3662` |
+| `display.language.english` | English | `src/content/default-locale-en.ts:3663` |
+| `display.language.polish` | Polski | `src/content/default-locale-en.ts:3664` |
+| `display.language.cycle` | Change the interface language and reload the game | `src/content/default-locale-en.ts:3672` |
+| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3682` |
 
