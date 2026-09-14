@@ -619,3 +619,66 @@ describe('no player-visible sentence is assembled from a localized fragment and 
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// 4. The catalogue this file audits and the catalogue a player can reach
+// ---------------------------------------------------------------------------
+
+/**
+ * The two registries agree: everything audited above is published, and
+ * everything published is audited (#662).
+ *
+ * **This is the drift the first three sections cannot see.** Section 1 judges
+ * whatever `NON_DEFAULT_CATALOGS` names; `src/main.ts`'s `CATALOG_CHUNKS`
+ * decides what a player can actually load. Two lists of locale tags, edited in
+ * different issues by different people, and nothing tied them together -- so a
+ * second locale published without a row here would ship unaudited, and a
+ * catalogue audited here but never registered is the state `pl` sat in from
+ * #661 until #662 (a module `tests/foundation/trusted-tier-reachability-contract.test.ts`
+ * had to park in `UNREACHABLE_MODULES` to record).
+ *
+ * The pseudo-locale is the one deliberate asymmetry and is asserted as such:
+ * it is audited here and must never be publishable, which
+ * `tests/foundation/pseudo-locale-contract.test.ts` enforces from the other
+ * side.
+ */
+describe('every catalogue this file audits is one a player can reach, and vice versa (#662)', () => {
+  const mainSource = stripComments(readFileSync(join(SRC_ROOT, 'main.ts'), 'utf8'));
+
+  /** The locale tags `src/main.ts` registers a chunk thunk for. */
+  function publishedLocales(source: string): readonly string[] {
+    const registry = /const CATALOG_CHUNKS: Readonly<Record<string, CatalogChunkImporter>> = \{([^}]*)\}/.exec(source);
+    if (registry === null) return [];
+    return [...registry[1]!.matchAll(/(?:^|\s)'?([A-Za-z][A-Za-z0-9-]*)'?\s*:\s*\(\)\s*=>/g)].map((match) => match[1]!);
+  }
+
+  it('publishes exactly the non-default catalogues audited above, minus the pseudo-locale', () => {
+    const published = [...publishedLocales(mainSource)].sort();
+    const audited = Object.keys(NON_DEFAULT_CATALOGS)
+      .filter((locale) => locale !== PSEUDO_LOCALE)
+      .sort();
+
+    expect(
+      published,
+      'src/main.ts publishes a different set of locales than this file audits. A locale a player can load and nobody audits is the defect this pairing exists for; a locale audited and never registered is code no production path reaches (ADR 0044).',
+    ).toEqual(audited);
+    // Not vacuous in either direction: there is at least one of them, and the
+    // pseudo-locale is not it.
+    expect(published).toContain('pl');
+    expect(published).not.toContain(PSEUDO_LOCALE);
+  });
+
+  it('reads a real registry, so the pairing above cannot pass by finding nothing', () => {
+    // The scanner against a written-out registry, both directions -- the
+    // failure mode this whole section guards against is a regex that has
+    // quietly stopped matching, which looks exactly like agreement.
+    expect(
+      publishedLocales(
+        "const CATALOG_CHUNKS: Readonly<Record<string, CatalogChunkImporter>> = {\n  pl: () => import('./x'),\n  'pt-BR': () => import('./y'),\n};",
+      ),
+    ).toEqual(['pl', 'pt-BR']);
+    expect(publishedLocales('const OTHER = { pl: () => 1 };')).toEqual([]);
+    // And the real file really does carry the declaration this reads.
+    expect(mainSource).toContain('const CATALOG_CHUNKS: Readonly<Record<string, CatalogChunkImporter>> = {');
+  });
+});

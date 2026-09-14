@@ -13,6 +13,20 @@ import { type MessageCatalog, type MessageEntry, buildMessageCatalog } from './c
  * so a `pl` catalogue that stopped at `src/content/` would leave sixteen
  * English sentences on a Polish screen.
  *
+ * **THIS IS NOW ALSO THE CHUNK, AND THE PARAGRAPH BELOW IS KEPT BECAUSE IT IS
+ * WHAT WAS TRUE FOR A DAY.** Since #662 (2026-09-14) this module is the target
+ * of the only entry in `src/main.ts`'s catalogue-chunk registry --
+ * `pl: () => import('./services/localization/pl-catalog')` -- so it is a
+ * separate code-split chunk that a player who never asks for Polish never
+ * downloads, and `src/services/localization/pl-catalog.ts` has left
+ * `UNREACHABLE_MODULES` in
+ * `tests/foundation/trusted-tier-reachability-contract.test.ts` in the same
+ * change. The **default export** at the bottom is what that registry consumes:
+ * `unwrapCatalogModule` takes a module namespace's `default` and hands the
+ * plain value to `decodeMessageCatalog`, exactly as a `fetch(...).json()` body
+ * would be handed over. The named exports are unchanged and are what the tests
+ * import.
+ *
  * **This is not the delivery half.** Nothing here registers a chunk loader, a
  * supported-locale list or a picker: that is #662 and #663. What this module
  * is for today is being a real `MessageCatalog` that
@@ -99,3 +113,16 @@ export function buildMessageCatalogPl(): MessageCatalog {
 }
 
 export const messageCatalogPl = buildMessageCatalogPl();
+
+/**
+ * The catalogue chunk's payload, as `CatalogChunkImporter` promises it: a
+ * module whose `default` is the catalogue data. It is the *same object* as
+ * `messageCatalogPl` rather than a second build -- one evaluation per page,
+ * whichever specifier reached it.
+ *
+ * A default export rather than a named one because that is the port's stated
+ * contract (`chunk-catalog-loader.ts`, `unwrapCatalogModule`), which exists so
+ * a locale authored as a `.json` file and a locale authored as a `.ts` module
+ * arrive in the same shape.
+ */
+export default messageCatalogPl;

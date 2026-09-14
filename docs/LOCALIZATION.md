@@ -63,6 +63,51 @@ always needed and what a picker has to render, so `ChunkCatalogLoader` adds
 `locales` and `has()` beside it. Nothing in `src/main.ts` registers a locale
 yet: that, and the re-render, are the language picker's work.
 
+> **Half of that last sentence is false since #662 (2026-09-14) and the
+> paragraph is kept as it stood** (`docs/AGENT_WORKFLOW.md` §4). `src/main.ts`
+> **does** register a locale: `CATALOG_CHUNKS` holds one thunk, `pl: () =>
+> import('./services/localization/pl-catalog')`. The half that still holds is
+> the re-render, which is still #663's — and the reason both halves were in one
+> sentence is that they looked like one job and are not.
+
+### Which locale a page starts in, and who decides
+
+`resolveStartupLocale(bundled, loader, navigator.languages)` — composed in
+`src/main.ts` from `selectSupportedLocale` and `switchLocale`, and awaited at
+the top level, **before** the page's one `Localizer` is constructed. That
+ordering is `Localizer`'s own stated contract (*"catalogs are loaded before a
+`Localizer` is constructed, so rendering never awaits a translation"*), and it
+is what keeps a re-render path out of this: the HUD, the save panel and the
+world scene are handed one instance that is already in the right language.
+
+Three properties of it are load-bearing and each is gated:
+
+- **A player no published locale matches downloads nothing.** The thunk is not
+  called at all, which is the whole point of the split. Measured on the
+  production build of 2026-09-14: the Polish catalogue is 42,746 raw / 12,442
+  gzipped bytes in a chunk `dist/client/index.html` neither names nor preloads,
+  and the initial download moves 481,322 → 483,313 gzipped bytes for everyone.
+- **A load that fails leaves the player in complete English, with a report.**
+  `switchLocale` returns the caller's own localizer, and `src/main.ts` warns
+  with the reason. `tests/browser/locale-delivery.spec.ts` blocks the chunk at
+  the network and asserts the page comes up whole and raises nothing.
+- **A bundled localizer that is already non-default is handed back untouched**
+  rather than re-tagged `en`. One caller depends on it today:
+  `tests/browser/pseudo-locale-sweep.spec.ts` patches the bundled localizer to
+  `en-XA`, and the sweep would have been silently undone otherwise.
+
+**The registry is in the composition root and not in
+`src/services/localization/`**, because that layer performs no I/O and a
+dynamic `import()` is a network fetch in a browser —
+`tests/unit/services-layer-boundaries.test.ts` has counted it as one since
+#664. The port takes an injected thunk; the entry point writes the import.
+
+**What publishes and what is audited are pinned to each other.**
+`tests/foundation/second-locale-contract.test.ts` reads `CATALOG_CHUNKS` out of
+`src/main.ts` and requires it to equal the set of non-default catalogues it
+audits, minus the pseudo-locale — so a locale a player can load and nobody
+audits fails, and so does a catalogue audited and never registered.
+
 ## Fallback
 
 `buildLocaleFallbackChain('pt-BR')` → `['pt-BR', 'pt', 'en']`. Lookup walks
@@ -303,6 +348,17 @@ rather than assumed:
 Issue #36 explicitly excludes translating the game before content
 stabilizes. This is the infrastructure plus the default locale; no second
 locale is authored, and no translation vendor process is defined yet.
+
+> **The middle clause is false twice over and the sentence is kept**
+> (`docs/AGENT_WORKFLOW.md` §4). A second locale **is** authored — `pl`, 669 of
+> 669 keys, #661, 2026-09-14 — and since #662 a player whose browser asks for
+> it gets it. What survives is the last clause: no translation vendor process
+> exists, and none was needed, because `AGENTS.md`'s fourth reservation was
+> partly released on 2026-09-04 and the wording of a player-visible string has
+> been ours since. Its *truth* has not been, which is why every Polish sentence
+> translates an English one already gated by
+> `tests/foundation/localization-key-completeness.test.ts` rather than making a
+> new claim.
 
 Two things the infrastructure owes a translator, recorded rather than fixed
 because both mean authoring player-visible copy:
