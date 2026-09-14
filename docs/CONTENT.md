@@ -136,6 +136,12 @@ empty allow-list."*
   a player asks for it. Still nothing *registers* a locale, so "nothing yet
   fetches a catalog" holds — the sentence that stopped being true is the one
   about the interface, not the one about the fetch.
+  - **And that has stopped being true too, since #662 (2026-09-14).**
+    `src/main.ts` registers `pl`, and a Polish browser fetches the catalogue
+    chunk on boot. **The claim about this layer is unaffected, which is the
+    point of where the registry was put**: the `import()` is written in the
+    composition root, `chunk-catalog-loader.ts` still takes its importer
+    injected, and the gate below would fail if that moved.
 - **The allow-list has not been empty since `bb23e3f3` (2026-08-27)**, which
   wrote down `services/telemetry/http-transport.ts` as the one module in the
   layer that leaves the device. The claim above was written against
