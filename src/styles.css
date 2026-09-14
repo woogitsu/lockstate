@@ -545,29 +545,20 @@ canvas {
 }
 
 /*
- * The language control's readout (#663). It shares the theme readout's rules
- * and adds the one the third control in the row made necessary: it may
- * ellipsis.
+ * The language control's readout (#663), which shares the theme readout's
+ * rules and nothing else -- the truncation all three get inside the chrome
+ * block is up beside `.hud-chrome-prefs`, because it is a property of sharing
+ * a row rather than of any one control.
  *
- * The other two readouts never need to. `100%` is four characters and `System`
- * is six, both chosen to fit; this one holds an endonym, and an endonym is not
- * a word this repository gets to pick the length of -- `Automatic (English)`
- * is nineteen characters today, and the next locale offered decides its own.
- * A readout that cannot shrink would push the row wider than the rail, and the
- * rail is the fixed budget everything above records not having spare. The
- * `min-width: 0` here is what lets the truncation engage against the
- * `min-width: var(--tap-target)` the shared `.…__cycle` rule sets, and the
- * button itself keeps that 44px floor -- so what shrinks is the text, never
- * the target.
+ * It is the readout that made that rule necessary, which is why it is worth
+ * saying here. `100%` is four characters and `System` is six, both chosen to
+ * fit; this one holds an endonym, and an endonym is not a word this repository
+ * gets to pick the length of. `Automatic (English)` is nineteen characters
+ * today and the next locale offered decides its own, so a rule that depended
+ * on the text being short would be a rule that depended on nobody publishing
+ * Portuguese.
  */
 .language-control__value {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   text-align: center;
   color: var(--text-heading);
 }
-
-
-
