@@ -687,6 +687,20 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   load averages between 5.6 and 10.7, timing out in four different places (a
   staff-roster click, a wheel poll, a canvas poll, a page load). A red there is
   worth reading for *where* it stopped before it is worth reading as a defect.
+  **The first of the three is five tests as of 2026-09-14 (#1181), one per
+  viewport**, named *"every control can actually be pressed, on every tab at
+  1280x720 (#88)"* and so on for the other four in `HUD_LAYOUT_VIEWPORTS`. The
+  substring every earlier log and every `-g` filter uses is unchanged, and so
+  is the work; what changed is that the 3.0-minute cap is now spent on one
+  viewport. It is still a canary — it still waits on the simulation — but the
+  margin is no longer six seconds: measured at load average 12-13 with two
+  other agents' suites live, the five parts pass at 1.1-2.0 m each while the
+  unsplit test fails at the cap in the third viewport of five. Why nothing was
+  made cheaper instead is priced call by call in
+  `docs/research/2026-09-14-where-88s-three-minutes-go.md`: 55 % of that test
+  is `click`, and a press costs 1390 ms rather than 75 because SwiftShader
+  rasterising the world canvas saturates the renderer's main thread, so every
+  Playwright call on this page queues behind a frame.
   Its delivery setup also had a real race of its own — it pressed Play before
   buying, so the three `Buy` presses and the poll for `data-pending="9"` sat
   inside the 5s a delivery takes to land, and on a loaded machine they do not fit:

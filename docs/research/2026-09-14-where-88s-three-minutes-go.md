@@ -137,6 +137,51 @@ which already carries its own complete accounting assertion
 Splitting per viewport leaves each part at 15–45 s against the same 3.0-minute
 cap instead of one part at 176 s, and costs the repeated 30.8 s setup.
 
+## What the split measured, after the fact (same day)
+
+The change #1181 got is the second shape: one test per viewport, generated from
+`HUD_LAYOUT_VIEWPORTS`, each running the 30.8 s setup on its own page. Measured
+back to back on the same container **while two other agents' browser suites
+were running** — load average 12.06 when the first started, 13.49 when the
+second finished, which is the caveat #1181's own comment insists on and the
+reason these two runs are a pair rather than two numbers:
+
+| Tree | Result |
+| --- | --- |
+| this branch, five parts | **1.8, 2.0, 1.8, 1.8 and 1.1 m — 5/5 passed** (8.5 m for the family) |
+| `f6c35a52` (the split's parent, spec unmodified) | **FAILED at the cap**, `Test timeout of 180000ms exceeded` |
+
+**VERIFIED**, one run each, minutes apart, no tree change between them other
+than the split itself. The failing run's own retained trace says how far it
+got: setup done at 32.4 s, 1280x720 done at 66.6 s, 1440x900 done at 160.2 s,
+and the clock ran out inside the third viewport of five — at the wheel poll,
+which is the *fourteenth* state of that viewport and not a place anything is
+wrong. `click` was 102.5 s of the 180 in that trace too.
+
+So under a load this container reaches routinely, the whole fails and every
+part passes with at least a minute to spare. That is the headroom #1181 asked
+for, and it is the same work: no cap raised, nothing skipped, the same
+`test.slow()` budget each part always had.
+
+## That the parts still catch what the whole caught
+
+Asserted by construction in the test's own comment (the parts are the same
+`for` over the same constant, and the accounting assertion at the foot of the
+body was always per viewport), and watched going red once, which is the part
+that is evidence rather than argument:
+
+- **Mutation**, `src/styles.css`, `.save-panel__item .save-panel__button` given
+  `width/height/min-height/padding: 0` — the per-prison Load and Delete
+  collapse, which is exactly #88's defect class (a control that exists and
+  cannot be pressed). The single part `... at 375x812 (#88)` went **red in
+  26.1 s**, naming both controls and what the pointer reached instead:
+  `save-panel__item > button.save-panel__button "Load"` → `aside.save-panel`.
+  Reverted immediately; `git status` clean afterwards.
+- An earlier, cruder mutation (`pointer-events: none` on every
+  `.save-panel__button`) also went red, but in the *setup* rather than in the
+  sweep — the `New prison` press never lands — so it proves nothing about
+  reach and is recorded here only because it was run.
+
 **Weakest claim here:** all of the above is one traced run and one probe run on
 one container. The comparison the conclusion rests on — presses against
 everything else, and a rasterising canvas against a non-rasterising one — is
