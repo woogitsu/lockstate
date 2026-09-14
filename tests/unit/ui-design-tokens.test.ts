@@ -708,11 +708,11 @@ describe('the type ramp', () => {
    * is exactly the drift ADR 0112's ruling is not open to, so the list is
    * closed here and a new entry has to arrive with its reason in the diff.
    */
-  it('keeps the denser step on exactly two surfaces, and nowhere else', () => {
+  it('keeps the denser step on exactly four surfaces, and nowhere else', () => {
     const kept = [...tokensSource.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
       .filter((block) => /--text-size-(?:body|value):\s*var\(--type-secondary\)/.test(block[2]!))
       .map((block) => block[1]!.trim().replace(/\s+/g, ' '));
-    expect(kept).toEqual(['.hud-build', '.hud-alerts__list']);
+    expect(kept).toEqual(['.hud-build', '.hud-alerts__list', '.hud-rooms', '.hud__event']);
   });
 
   it('gives each kept surface a font-size to spend the pin on', () => {
@@ -732,7 +732,9 @@ describe('the type ramp', () => {
       [...hud.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find(
         (block) => block[1]!.trim().replace(/\s+/g, ' ') === selector,
       )?.[2];
-    for (const selector of ['.ui-panel.hud-build', '.hud-alerts__list']) {
+    // `.hud__event` is not in this list and does not need to be: it declares
+    // its own `font-size` already, being a standalone band of prose.
+    for (const selector of ['.ui-panel.hud-build', '.hud-alerts__list', '.ui-panel.hud-rooms']) {
       const rule = ruleFor(selector);
       expect(rule, `${selector}'s own rule`).toBeDefined();
       expect(rule!, `${selector} does not spend --text-size-body`).toMatch(/font-size:\s*var\(--text-size-body\)/);

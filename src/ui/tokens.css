@@ -728,26 +728,32 @@
   --hud-rooms-gutter: var(--space-2);}
 
 /* ------------------------------------------------------------------ */
-/* Layer 1b: the two surfaces that keep the denser step                */
+/* Layer 1b: the four surfaces that keep the denser step               */
 /*                                                                     */
 /* Stage 2 moved the interface to 15px one surface at a time -- the     */
 /* status strip, the rail, the HUD's remaining chrome, and the one      */
 /* thing outside the HUD -- and the scaffolding that made each move     */
 /* separately visible went out with the flip above. What is left here   */
-/* is the honest residue: two surfaces measured as not having the room, */
-/* each keeping `--type-secondary` with the assertion that says so.     */
+/* is the honest residue: four surfaces measured as not having the      */
+/* room, each keeping `--type-secondary` with the assertion that says   */
+/* so. Two were found by the panel specs, one only by the whole browser */
+/* suite, and the fourth rests on a recording rather than a floor and   */
+/* says so in its own block.                                           */
 /*                                                                     */
-/* Both are INSIDE ADR 0112's ruling rather than exceptions to it. The  */
+/* All four are INSIDE ADR 0112's ruling rather than exceptions to it.  */
+/* The                                                                 */
 /* option label carrying it read *"np. 15/13/11"* -- "e.g." -- and 13   */
 /* is a step on the ramp the owner named. What the ruling does not      */
-/* leave open is the direction, and neither of these moves it: 13px is  */
-/* what both surfaces already had.                                     */
+/* leave open is the direction, and none of these moves it: 13px is     */
+/* what all four surfaces already had.                                 */
 /*                                                                     */
-/* Each also declares `font-size` on its own root in `hud.css`. That is */
-/* not decoration: nothing inside either surface sets a `font-size`, so */
-/* without an anchor to spend the scoped token both would simply        */
-/* inherit the 15px `styles.css` puts on `body` and the pin would be    */
-/* silently inert. Measured -- with the token alone, only               */
+/* Three of them also declare `font-size` on their own root in          */
+/* `hud.css`. That is not decoration: nothing inside those surfaces     */
+/* sets a `font-size`, so without an anchor to spend the scoped token   */
+/* they would simply inherit the 15px `styles.css` puts on `body` and   */
+/* the pin would be silently inert. `.hud__event` needs no anchor --    */
+/* it already declares its own size, being a band of prose.            */
+/* Measured -- with the token alone, only                              */
 /* `.hud-clock__day` moved when the strip was scoped, because it is the */
 /* one element in that strip declaring a size of its own.               */
 /* ------------------------------------------------------------------ */
@@ -811,6 +817,59 @@
  * partition, and this is the one place in stage 2 where they came apart.
  */
 .hud-alerts__list {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
+/*
+ * THE ROOMS PANEL KEEPS 13px (#1158).
+ *
+ * The third keep, and the only one the targeted spec runs missed: it was
+ * found by the whole suite rather than by the panel specs, which is why the
+ * whole suite is what a stage like this has to be checked against.
+ *
+ * Two assertions in `app-shell.spec.ts` went red at 15px, and they are not
+ * the same kind of thing:
+ *
+ *   1. **A real overflow.** *"the Rooms panel says what a zoned room is
+ *      missing (#331)"* reports `.hud-rooms > .ui-panel__body is 15px
+ *      shorter than its own content` at 900x600 -- a box holding more than it
+ *      has room for, which is the failure this stage exists not to cause.
+ *   2. **A recording.** *"the Rooms panel yields the world it is drawn on"*
+ *      pins the panel's arrival height per viewport, and 1280x720 moved
+ *      397.3 -> 395.6. The panel got *shorter*, because at 15px one more of
+ *      its rows fits on one line -- which is a reminder that "bigger type" is
+ *      not "bigger everything".
+ *
+ * (1) is sufficient on its own, so the keep does not rest on (2).
+ */
+.hud-rooms {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
+/*
+ * THE EVENTS BAND KEEPS 13px (#1158) -- AND THIS ONE RESTS ON A RECORDING
+ * RATHER THAN A FLOOR, WHICH IS SAID OUT LOUD BECAUSE IT IS THE WEAKEST OF
+ * THE FOUR KEEPS.
+ *
+ * `ui-shell.spec.ts` (#985) asserts the band's grid row is exactly **32px**
+ * while it speaks and 0 when it stops, and that the 32 comes out of the
+ * middle row rather than from anywhere else. At 15px the band is **35px**.
+ * Nothing overflows and nothing is unreachable: the band is simply three
+ * pixels taller, and the invariant #985 is about -- that the band borrows a
+ * definite row and gives it back -- holds at 35 exactly as it holds at 32.
+ *
+ * **So the honest description is that changing that 32 to a 35 would be
+ * re-recording a measurement, not weakening an assertion -- and it is still
+ * not done here.** `AGENTS.md` and this stage's brief both put editing a
+ * pinned number to match new code on the wrong side of the line, and an agent
+ * deciding for itself which pinned numbers are "only recordings" is how that
+ * line stops meaning anything. The band keeps 13px; re-recording the 32 is a
+ * decision for whoever reviews this, with this paragraph as the argument for
+ * it.
+ */
+.hud__event {
   --text-size-body: var(--type-secondary);
   --text-size-value: var(--type-secondary);
 }

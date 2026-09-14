@@ -999,11 +999,39 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  * The sentence above is left standing rather than rewritten because its
  * *reason* is still the reason, and a reader who meets only the correction
  * would not know what 900x600 is still exempt from.
+ *
+ * **`1280x720` moved 397.3 -> 395.6 and `375x812` 441 -> 439.3 in #1158, and
+ * both 1.7px are the strip's again.** Stage 2 of the identity rollout took
+ * body and value type from 13px to 15px (ADR 0112 decision 4, the owner's
+ * ruling of 2026-09-13). This panel is **not** one of the surfaces that took
+ * it -- `tokens.css` pins `.hud-rooms` to the denser step, because at 15px
+ * its own body measured 15px shorter than its content at 900x600 -- so every
+ * pixel here arrives from upstream, exactly as the 375x812 entry above
+ * describes for #545.
+ *
+ * The arithmetic, measured on this page and this prison in two worktrees, the
+ * unmodified base at `a6565239` against the branch:
+ *
+ *     viewport    strip           rail            aside          this panel
+ *     1280x720    78.5 -> 80.7    572.3 -> 570.1  143.1 -> 142.5  397.3 -> 395.6
+ *     900x600     48.0 -> 48.0    482.8 -> 482.8  120.7 -> 120.7  338.1 -> 338.1
+ *     375x812    101.5 -> 103.7   641.3 -> 639.1  160.3 -> 159.8  441.0 -> 439.3
+ *
+ * The strip grows 2.2px wherever it grows at all, because its rows are one
+ * line of body type taller; the middle grid row loses the same 2.2; and the
+ * aside slot's `min-height: 25%` keeps taking its quarter, so 1.7 of the 2.2
+ * lands here. **900x600 does not move at all**, because `--hud-strip-height`'s
+ * 48px floor is still above the strip's content there -- the same reason that
+ * viewport sat out #634.
+ *
+ * So this is a budget being spent rather than a defect being paid off, which
+ * is the other of the two cases the paragraph at the top of this block names,
+ * and it comes with the measurement that caused it as that paragraph requires.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
-  '1280x720': 397.3,
+  '1280x720': 395.6,
   '900x600': 338.1,
-  '375x812': 441,
+  '375x812': 439.3,
 };
 
 /**
