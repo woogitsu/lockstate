@@ -421,6 +421,14 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * **And it said "sixteen" until `SellMaterials`.** `SellMaterials` is the
      * seventeenth, and it is the first in this list that both moves money
      * *and* credits the treasury -- see the correction above.
+     *
+     * **And it said "seventeen" until ADR 0113.** `EditRegimeBlock` is the
+     * eighteenth and it is the second in this list that moves no money at all,
+     * beside `DismissAlert` -- it rewrites what one block of one classification
+     * group's day allows. It is in this list for the same reason `DismissAlert`
+     * is: the list is every command the protocol declares, and the claim this
+     * test defends is about which of them can turn stock back into money.
+     * Editing a timetable cannot, in either direction.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
@@ -429,6 +437,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'CancelMaterialPurchase',
       'DismissAlert',
       'DismissStaff',
+      'EditRegimeBlock',
       'HireStaff',
       'PlaceBuildOrder',
       'PlaceObject',

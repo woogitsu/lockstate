@@ -255,6 +255,22 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   // three in one change (ADR 0034). A fourteenth added with no producer belongs
   // here with a reason, and fails the count below until it is either wired or
   // written down.
+  //
+  // **It stopped being empty on 2026-09-14, and the entry below is the first
+  // in this list that is deliberate rather than a gap somebody meant to close
+  // later.** It is written down rather than argued around, which is what the
+  // paragraph above asks for.
+  EditRegimeBlock:
+    'ADR 0113 slice 1 (#1167). The command, its consumer in `session-commands.ts`, its two '
+    + 'refusals and the V6 save section it edits all landed together; the producer did not, '
+    + 'because the Day-plan panel that would send it is stage 3 of the identity-v5 rollout '
+    + '(epic #1155) and `src/ui/` was held by two other agents while this landed -- so a '
+    + 'producer written here would have been written blind against a panel being rewritten. '
+    + 'What is true today: `tests/integration/regime-editing.test.ts` drives it through the '
+    + 'real kernel command path, both refusals reach `RefusalLog` with their own wire ids, and '
+    + '`hud/status-strip` already reports the edited schedule, so the panel has something to '
+    + 'read and something to send. This entry is expected to be deleted by the panel change, '
+    + 'not by a second thought about the command.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -329,7 +345,7 @@ describe('every declared simulation command either has a producer or is accounte
     // `case 'purchase-materials':` -- rather than spending time on the list
     // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(17);
+    expect(COMMAND_TYPES.length).toBe(18);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -469,7 +485,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures sixteen produced and none unproduced, which this file has now been able to say six times', () => {
+  it('measures seventeen produced and one unproduced, the first entry this list has held in six passes', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -514,7 +530,13 @@ describe('every declared simulation command either has a producer or is accounte
     // stay green. Note the denominator moves too, so an eighteenth command
     // added with no producer fails here as well as failing the accounting
     // above.
-    expect(unproducedTypes.length).toBe(0);
+    // **One and seventeen since 2026-09-14**, and the streak of zeroes above
+    // ends deliberately: ADR 0113's `EditRegimeBlock` landed with its consumer,
+    // its refusals and its save section and without its panel, for the reason
+    // `AWAITING_PRODUCER` records. Both numbers still move together, which is
+    // what this pair of assertions is for -- a nineteenth command added with no
+    // producer fails here as well as failing the accounting above.
+    expect(unproducedTypes.length).toBe(1);
     expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(17);
   });
 });

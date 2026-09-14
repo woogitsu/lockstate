@@ -138,8 +138,15 @@ function saveAndLoad(
   // Stated rather than assumed: ADR 0082's save-format argument is that one
   // optional key costs no version bump, and a test that let the version drift
   // would be the first place that argument stopped being true.
+  //
+  // The number moved 5 -> 6 on ADR 0113, which is a different section entirely
+  // (`simulation.regimeSchedules`, required, because a timetable a command can
+  // edit cannot be recovered from an absent field). ADR 0082's own claim is
+  // unchanged: the placement ordinal is still an optional key that cost no
+  // bump, and it is the surrounding assertions rather than this literal that
+  // establish it.
   expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-  expect(SAVE_SCHEMA_VERSION).toBe(5);
+  expect(SAVE_SCHEMA_VERSION).toBe(6);
 
   // Exactly what a stored save is by the time it is read back: a plain value
   // of unknown provenance, fully re-validated and checksum-verified.
