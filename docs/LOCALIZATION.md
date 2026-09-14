@@ -186,6 +186,25 @@ time the generator runs. The three-step rule above is recorded here instead,
 and applies regardless of which of this repository's documents a reader opened
 first.
 
+**Where this catalogue already stands against the pattern, measured rather
+than assumed** (`docs/research/2026-09-14-stage-6-language-gap.md`): the
+English strings already do the first two beats. Every sampled refusal reads
+`<outcome> — <reason>` and every sampled event reads `<what happened> —
+<consequence>` — fact, then place/consequence. **What nothing in the codebase
+wires is the third beat: a next-step action attached to a message.** No code
+under `src/ui/` attaches a "jump to this tile/room" or "open this panel"
+handler to an alert or refusal row; the row renderer takes a label and an icon,
+never a destination. A voice guide that asks authors for a next-step verb no
+mechanism can carry out is a guide that will be ignored, or — worse — obeyed by
+wiring an action-verb button to nothing on press, which is precisely the
+anti-pattern constitution article 6 names: *"Przycisk naprawczy musi mieć
+rzeczywistą implementację; inaczej tekst tylko wyjaśnia stan"* ("A repair
+button must have a real implementation; otherwise the text only explains the
+state," `konstytucja.md`). **So: author fact → place now. Do not author a
+next-step action verb on any control until the navigation mechanism it presses
+exists** — that mechanism is its own, larger piece of stage 6's cost, not a
+wording exercise.
+
 ### The three sentences article 5 names as never to write
 
 `konstytucja.md` article 5, "Każde zdanie jest prawdziwe" ("every sentence is
@@ -210,9 +229,20 @@ here rather than restated from memory:
   distinguish a handled incident from one that expired unhandled and hurt
   everyone in it — the distinction issue #914 forced.
 
-None of the three is a gap in this repository today; a new string that
-reintroduces one of these three shapes, not the absence of the shapes
-themselves, is the failure mode to watch for.
+**The third of the three is not clean, and this file said so wrongly until
+now.** `'hud.alerts.empty'` ("No active alerts",
+`src/content/default-locale-en.ts:541`) renders from the same `alerts: []`
+literal that `EMPTY_HUD_VIEW_MODEL` (`src/ui/hud/view-model.ts:2094`) carries
+**before the first worker snapshot arrives** — the render path
+(`src/ui/hud/hud.ts:2509-2517`) tests only `viewModel.alerts.length === 0` and
+has no branch for "no snapshot yet". The sibling `clock` field in that same
+empty view model was deliberately given a sentinel for exactly this state
+(`clock: UNKNOWN_HUD_CLOCK`, `:2097`); `alerts` was not. Filed as
+[#1184](https://github.com/woogitsu/lockstate/issues/1184). So two of the
+three named anti-patterns are held today, and the third has a live, filed
+instance — a new string that reintroduces any of the three shapes, "no
+incidents" included, is the failure mode to watch for, and this one already
+has.
 
 ### The mechanical requirements, checked against what exists
 
