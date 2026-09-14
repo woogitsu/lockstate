@@ -2474,10 +2474,95 @@
  * wraps like `.hud-build__note` does, because an eyebrow's default
  * single-line uppercase treatment would clip a sentence.
  */
-.hud-intake {
+/*
+ * The Overview section's readout (issue #1183).
+ *
+ * Three rules, and all three are borrowed rather than invented, for the reason
+ * `.hud-intake` below states: it is the same rail panel, in the same column,
+ * at the same fixed width, and a readout of three label/value pairs needs no
+ * geometry of its own beyond a row.
+ *
+ * The row is `space-between` rather than a grid, because the label is
+ * translated and the value is a number whose width grows with the treasury --
+ * `hud.css` already records `FUNDS` growing 85.8px -> 110.2px on a seven-figure
+ * balance in the status strip -- so a fixed label column would either clip a
+ * long label or strand a short one. `flex-wrap` lets the value drop under its
+ * own label rather than overflow the panel, which is what a nine-character
+ * locale label plus a seven-figure number does at the rail's narrowest.
+ */
+.ui-panel.hud-overview {
   width: var(--hud-rail-panel-width);
   max-width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+
+.hud-overview__figures[hidden] { display: none; }
+
+.hud-overview__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Tabular figures, because three money rows read as a column and a
+   proportional font makes them ragged -- the treatment
+   `.hud-intake__pipeline-count` already takes for the same reason. */
+.hud-overview__value { font-variant-numeric: tabular-nums; }
+
+/* The sentinel sentence. An eyebrow's default single-line uppercase treatment
+   would clip it, so it wraps and keeps its case, exactly as
+   `.hud-intake__note` does one panel down. */
+.hud-overview__none:not([hidden]) {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/*
+ * **`flex: 0 0 auto` and the two-class selector arrived on 2026-09-14, and the
+ * 42px that bought them is the whole reason.**
+ *
+ * This panel was alone in `.hud__side` for its tab from #261 until then, so
+ * whatever the rail had, it had. The owner's ruling of that day put the
+ * admission control on the Manage tab beside the Staff panel, and two panels in
+ * one bottom-anchored flex column share a height that used to be one panel's:
+ * measured immediately after the move, at 900x600, with the fullest readout
+ * this panel can draw, `.hud-intake` came out **42px shorter than its own
+ * content** -- which is `tests/browser/ui-shell.spec.ts`'s
+ * "is a line the panel can afford at every viewport" failing on exactly the
+ * overflow ADR 0022 refused. 1280x720 and 375x812 were unaffected.
+ *
+ * **The remedy is not the `overflow-y: auto` the four panels beside it use, and
+ * that was tried first and measured.** Scrolling makes a panel responsible for
+ * its own excess, which is the right answer for a panel whose height grows with
+ * a catalogue or a roster; it does not make the content fit, and the 42px was
+ * unchanged by it, because what the assertion states is that this panel never
+ * has to scroll at all. A player pressing Admit must not have to scroll to read
+ * how many people have nowhere to sleep.
+ *
+ * What fits instead is a decision about *which* of the two panels on the Manage
+ * tab gives way, and the answer is not this one. This panel's height is bounded
+ * by `INTAKE_STAGES` -- six stages, two terminal, so four lines plus a warning,
+ * and it cannot grow past that however big the prison gets. The Staff panel's
+ * grows with the roster, is already `overflow-y: auto`, and already carries a
+ * two-row floor under the list it scrolls. So this one keeps its natural height
+ * and the one built to absorb a squeeze absorbs it.
+ *
+ * Written `.ui-panel.hud-intake` for `.ui-panel.hud-staff`'s reason -- the
+ * bare class ties `.ui-panel`'s own rules on specificity and leaves the winner
+ * to the order `styles.css` happens to import the two files in (issue #143).
+ */
+.ui-panel.hud-intake {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
 }
 
 .hud-intake__actions {
@@ -4618,10 +4703,14 @@
      rail. */
   .ui-panel.hud-rooms { width: 100%; }
 
-  /* The Intake panel occupies the same rail slot on the Overview tab and has
+  /* The Intake panel occupies the same rail slot on the Manage tab and has
      to follow it: two classes for the same specificity reason, or it would
      stay 264px in a 343px rail. */
   .ui-panel.hud-intake { width: 100%; }
+
+  /* And the Overview panel, on the same slot on the first tab, for the same
+     specificity reason. */
+  .ui-panel.hud-overview { width: 100%; }
 
   /* And the Regime panel, which shares the same rail slot on the fifth tab:
      two classes for the same specificity reason, or it would stay 264px in a

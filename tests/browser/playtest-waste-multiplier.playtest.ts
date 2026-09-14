@@ -477,7 +477,7 @@ async function designateCell(
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -708,7 +708,7 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     // 3. A guard, hired on day 1, with nobody to guard.
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     await session.press('hire a guard on day 1, with no prisoners', 'hire', async () => {
       const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
       if ((await guardRow.count()) > 0) await guardRow.first().click();

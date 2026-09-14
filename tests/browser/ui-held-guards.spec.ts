@@ -108,7 +108,7 @@ function heldGuards(held = 5): HudHeldGuardsViewModel {
 
 async function openSecurityTab(page: Page): Promise<void> {
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 }
 
 const probe = (page: Page) => page.evaluate(() => window.lockstateUiHarness.staffProbe());

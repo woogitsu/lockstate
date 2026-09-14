@@ -350,7 +350,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     // Fast forward, so intake, wages and incidents have time to happen.
     await page.locator('.hud-strip__transport button').nth(2).click();
 
-    await page.locator('.ui-tab[data-tab="security"]').click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
     await expandEverythingVisible(page);
     const hire = page.locator('.hud-staff__hire');
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -364,7 +364,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     console.log(
       `PSEUDO-LOCALE SWEEP :: staff roster rows = ${await page.locator('.hud-staff__roster .hud-staff__held-row[data-staff]').count()}`,
     );
-    await page.locator('.ui-tab[data-tab="regime"]').click();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
     await expandEverythingVisible(page);
     await sweep(page, 'populated prison: regime, second pass');
   });
@@ -419,7 +419,7 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
     );
 
     // A room waiting to be confirmed, through the panel's typed route.
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
     if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
     const roomFields = page.locator('.hud-rooms__coordinates .ui-number__input');

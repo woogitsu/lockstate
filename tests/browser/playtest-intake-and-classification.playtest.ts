@@ -92,7 +92,7 @@ test('intake shortage, then classification tones over time (#549, #609, #788)', 
   }
 
   await fastForwardToMax(page);
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
 
   interface RowSnap {
     readonly tick: number;

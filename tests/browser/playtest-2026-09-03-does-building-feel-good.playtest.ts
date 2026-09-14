@@ -353,7 +353,7 @@ test('act B: how many presses is one cell with a bed and a toilet', async ({ pag
   await shot(page, 'B03-walls-up');
 
   // Zone it as a cell. Every press counted.
-  await presses.click(tab(page, 'rooms'), 'Rooms tab');
+  await presses.click(tab(page, 'zones'), 'Rooms tab');
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
     await presses.click(page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle'), 'expand the Rooms panel');
   }
@@ -714,7 +714,7 @@ test('act F: cost, regret, and being told what to do', async ({ page }) => {
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
   /* --- F5 first, because it is about the prison before anything happens --- */
-  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+  for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
     await tab(page, id).click();
     await page.waitForTimeout(200);
     note(`[F5] the ${id} tab on an empty prison:\n${(await panelText(page, '.hud__side')).replace(/^/gm, '      ')}`);
@@ -922,7 +922,7 @@ test('act G: the refuting samples', async ({ page }) => {
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
   /* --- G4: every tab, panel by panel --- */
-  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+  for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
     await tab(page, id).click();
     await page.waitForTimeout(250);
     const panels = await page.evaluate(() =>
@@ -1708,7 +1708,7 @@ test('act M: the interaction budget for one usable cell', async ({ page }) => {
   await shot(page, 'M02-walls-up');
 
   /* ---- part two: zoning it ---- */
-  await presses.click(tab(page, 'rooms'), 'Rooms tab');
+  await presses.click(tab(page, 'zones'), 'Rooms tab');
   note(`[M] the Rooms panel as it arrives:\n${await panelText(page, '.hud-rooms')}`);
   await presses.click(page.locator('.hud-rooms__list [data-room="room.cell"]'), 'select Cell');
   note(`[M] with Cell selected the panel says:\n${await panelText(page, '.hud-rooms')}`);

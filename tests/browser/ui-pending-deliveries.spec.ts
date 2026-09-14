@@ -491,7 +491,7 @@ test.describe('the Build panel deliveries block', () => {
     await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle());
     expect((await probe(page)).blockLaidOut).toBe(true);
 
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
     expect((await probe(page)).blockLaidOut).toBe(false);
 
     // Coming back shows nothing until the host answers again, which is the honest

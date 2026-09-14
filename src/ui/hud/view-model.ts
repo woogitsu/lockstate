@@ -1711,6 +1711,35 @@ export interface HudViewModel {
    */
   readonly intakePipeline?: HudIntakePipelineViewModel;
   /**
+   * What the Overview section states, or **absent because no prison has
+   * reported** (issue #1183).
+   *
+   * The field exists so that "no session has said anything" cannot be spelled
+   * with the same zeros a poor prison publishes. `counts` above cannot answer
+   * that question: `EMPTY_HUD_VIEW_MODEL.counts` is a confident
+   * `treasuryMinorUnits: 0` and is what a first paint holds *and* what
+   * `hudCountsFromWorkerMessage` returns for `simulation/stopped`, so a readout
+   * keyed on it would state a balance of zero for a prison that has never
+   * spoken. That is exactly the defect #1184 found in `'hud.alerts.empty'`,
+   * rendered from the same empty literal that stands in before the first worker
+   * snapshot, beside a `clock` field that was deliberately given
+   * `UNKNOWN_HUD_CLOCK` for that state.
+   *
+   * So this readout gets the `clock`'s treatment rather than the alerts list's,
+   * and gets it by construction: the host sets it only from a
+   * `simulation/status-counts` publication and deletes it on
+   * `simulation/stopped`, and the panel says so in words rather than drawing a
+   * figure.
+   *
+   * **Published, never computed.** Its three figures are copied out of the
+   * publication one for one. The HUD may not derive a simulation figure
+   * (`AGENTS.md` boundary 1, and constitution article 4 from the other side),
+   * and a finance readout is where that is most tempting: a net-for-today line
+   * would be one subtraction and a second, drifting authority on what the
+   * prison is making.
+   */
+  readonly overview?: HudOverviewViewModel;
+  /**
    * What has been bought and has not arrived, or absent because nothing asked.
    *
    * The fourth pulled field, on the same terms as the three above: absent is
@@ -1999,6 +2028,47 @@ export interface HudPrisonerDetailViewModel {
    * unit test holding it against `NEED_IDS.length`.
    */
   readonly needs: readonly HudPrisonerNeedViewModel[];
+}
+
+/**
+ * The three figures the Overview section states (issue #1183).
+ *
+ * Every one of them already crosses the worker boundary on
+ * `simulation/status-counts` and is read off `HudCountsViewModel` unchanged --
+ * this is a *narrowing* of that payload to what one panel states, not a second
+ * copy of it. The narrowing is the point: a panel handed the whole counts
+ * object is a panel that can compute with it, and the one thing a finance
+ * readout must not do is become a second authority on the money
+ * (`AGENTS.md` boundary 1; constitution article 4).
+ *
+ * All three are required, deliberately. The only absence this readout has is
+ * the whole of it -- see `HudViewModel.overview` -- because
+ * `status-strip-projection.ts` publishes all three on every publication, so an
+ * optional field here would be a branch the running game cannot reach and a
+ * sentence nothing proves (ADR 0044).
+ */
+export interface HudOverviewViewModel {
+  /**
+   * The balance, in the minor units the simulation holds it in, exactly as the
+   * status strip's `FUNDS` chip states it. Not divided into a major unit and
+   * given no symbol, for that chip's recorded reason: #96 named no currency and
+   * ADR 0017 is Accepted without naming one, so dividing by a hundred would
+   * decide one in a readout.
+   */
+  readonly treasuryMinorUnits: number;
+  /**
+   * What the in-game day in progress has earned so far, in the same units
+   * (#29) -- `stateIncomeAccruedByTick`, derived by the simulation from the
+   * tick and the occupied-place count and published, never recomputed here.
+   */
+  readonly stateIncomeAccruedTodayMinorUnits: number;
+  /**
+   * What one in-game day of the current roster costs, in the same units
+   * (issue #639 ruling 2) -- `PayrollSystem`'s own `dailyWageBillMinorUnits`.
+   * Which end of an authored wage band is money owed is a simulation fact, and
+   * a HUD that decided it again would be a second definition of the charge.
+   */
+  readonly dailyWageBillMinorUnits: number;
 }
 
 /**

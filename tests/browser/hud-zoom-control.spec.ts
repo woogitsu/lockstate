@@ -223,7 +223,7 @@ test.describe('the HUD names the zoom, and the control it names it with works (#
 
     // On every tab, because `.hud__corner` is not tab-scoped and a zoom that
     // was only on one tab would be a hidden feature on the other four.
-    for (const id of ['overview', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await expect(page.locator('.hud-zoom'), `the zoom control is not laid out on the ${id} tab`).toBeVisible();
     }

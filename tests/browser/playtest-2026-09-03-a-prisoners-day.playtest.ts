@@ -299,7 +299,7 @@ async function zoneRoom(
 ): Promise<number> {
   const before = (await latestCounts(page))?.rooms ?? 0;
   for (let attempt = 1; attempt <= attemptsAllowed; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator(`.hud-rooms__list [data-room="${roomCatalogId}"]`).click();
@@ -369,7 +369,7 @@ test.describe('a prisoner’s day', () => {
     const origin = await buildAndPopulate(page, { beds: 3, admits: 3, guards: 0, label: 'day' });
     log(`origin ${JSON.stringify(origin)}`);
 
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     log(`timetable on arrival: ${JSON.stringify(await readTimetable(page))}`);
     log(`regime panel: ${await panelText(page, '.hud-regime')}`);
 
@@ -726,7 +726,7 @@ test.describe('a prisoner’s day', () => {
     log(`band after the placements: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
     log(`queue empty ${await waitForQueueEmpty(page, 300_000)}ms later, tick ${await currentTick(page)}`);
     await page.waitForTimeout(2000);
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     log(`ROOMS PANEL WITH ALL THREE ROOMS FURNISHED:\n${await panelText(page, '.hud-rooms')}`);
     log(`counts: ${JSON.stringify(await latestCounts(page))}`);
 
@@ -735,7 +735,7 @@ test.describe('a prisoner’s day', () => {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(3000);
     log(`intake after one admission: ${await panelText(page, '.hud-intake')}`);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     let housed = await readRoster(page);
     for (let attempt = 0; attempt < 30; attempt += 1) {
       housed = await readRoster(page);
@@ -762,7 +762,7 @@ test.describe('a prisoner’s day', () => {
     log(`a lone wall segment at (${BAY.x1 + 2},${BAY.y0}): ${JSON.stringify(await press(page, spare.x, spare.y))}`);
     log(`queue with the order placed: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     const errandSamples: RosterSample[] = [];
     const queueTexts: string[] = [];
     const startedAt = Date.now();
@@ -777,7 +777,7 @@ test.describe('a prisoner’s day', () => {
       if (errandSamples.length % 25 === 0) {
         await tab(page, 'build').click();
         queueTexts.push(`t=${sample.tick} queue ${(await panelText(page, '.hud-build__queue')).replace(/\n/g, ' | ')}`);
-        await tab(page, 'regime').click();
+        await tab(page, 'day-plan').click();
       }
       await page.waitForTimeout(500);
     }
@@ -828,7 +828,7 @@ test.describe('a prisoner’s day', () => {
     await buildAndPopulate(page, { beds: 3, admits: 3, guards: 0, label: 'reload' });
 
     await fastForwardToMax(page);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     // Run until every row names an action rather than the idle word, so the
     // comparison is about a routine and not about an empty state.
     let before = await readRoster(page);
@@ -859,7 +859,7 @@ test.describe('a prisoner’s day', () => {
       loaded = await latestCounts(page);
     }
     await page.waitForTimeout(2000);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     const onArrival = await readRoster(page);
     log(`ON LOAD at tick ${onArrival.tick}, day ${onArrival.day}: ${JSON.stringify(onArrival.rows)}`);
     log(`counts: ${JSON.stringify(loaded)}`);

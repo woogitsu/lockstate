@@ -215,7 +215,7 @@ test.describe('the first ten minutes', () => {
 
     // The five tabs, each dumped whole, with nothing else pressed. This is the
     // whole of what a player can read in their first minute.
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(200);
       const text = await screen(page);
@@ -247,7 +247,7 @@ test.describe('the first ten minutes', () => {
     });
     console.log(`[act1] Build catalogue fold: ${buildFold}`);
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const roomsFold = await page.evaluate(() => {
       const list = document.querySelector<HTMLElement>('.hud-rooms__list');
       if (list === null) return 'ABSENT';
@@ -290,7 +290,7 @@ test.describe('the first ten minutes', () => {
 
     // ---- N2. The hint says "cell". Find a tab with that word on it.
     const tabsWithCell: string[] = [];
-    for (const id of ['build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       tally.step(`open the ${id} tab, hunting for the word "cell"`);
       await page.waitForTimeout(200);
@@ -300,7 +300,7 @@ test.describe('the first ten minutes', () => {
     console.log(`[act2] N2 tabs whose visible text contains "cell": ${JSON.stringify(tabsWithCell)}`);
 
     // ---- N3. Zone a cell on open ground. The natural first mistake.
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
@@ -331,7 +331,7 @@ test.describe('the first ten minutes', () => {
     await tab(page, 'build').click();
     const origin = await calibrate(page);
     console.log(`[act2] calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     await cellRow.click();
     await page.locator('.hud-rooms__arm').click();
 
@@ -446,7 +446,7 @@ test.describe('the first ten minutes', () => {
     console.log(`[act2] N6 where each explanatory word lives (visible vs only in the DOM): ${hunt}`);
 
     // ---- N7. Try to zone again. Still refused?
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     tally.step('go back to Rooms and try again');
     const collapsed2 = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed2 === 'true') {
@@ -525,7 +525,7 @@ test.describe('the first ten minutes', () => {
     // ---- N10. Zone, for the third time.
     let zoned = 0;
     for (let attempt = 1; attempt <= 6; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       tally.step('Rooms tab');
       const shut = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (shut === 'true') {
@@ -710,7 +710,7 @@ test.describe('the first ten minutes', () => {
     // 5. Designate.
     let zoned = 0;
     for (let attempt = 1; attempt <= 8; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       tally.step('Rooms tab');
       const shut = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (shut === 'true') {

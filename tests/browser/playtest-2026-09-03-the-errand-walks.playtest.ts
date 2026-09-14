@@ -495,7 +495,7 @@ async function runUntilTick(page: Page, target: number, timeoutMs = 200_000): Pr
 async function rosterActivities(page: Page, options: { readonly alreadyOnTheRegimeTab?: boolean } = {}): Promise<readonly string[]> {
   // The tab click is skipped in the fine-grained watch: it costs a round trip
   // per sample, and at 1x a round trip is a tick.
-  if (options.alreadyOnTheRegimeTab !== true) await tab(page, 'regime').click();
+  if (options.alreadyOnTheRegimeTab !== true) await tab(page, 'day-plan').click();
   return page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')]
       // The rows are pooled: the panel lays out `PRISONER_ROSTER_ROW_LIMIT` of
@@ -650,7 +650,7 @@ test.describe('the errand, watched through the interface', () => {
      */
     const zone = async (roomId: string, x: number, y: number, width: number, height: number): Promise<boolean> => {
       for (let attempt = 1; attempt <= 8; attempt += 1) {
-        await tab(page, 'rooms').click();
+        await tab(page, 'zones').click();
         const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
         if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
         await page.locator(`.hud-rooms__list [data-room="${roomId}"]`).click();
@@ -689,7 +689,7 @@ test.describe('the errand, watched through the interface', () => {
     await place(page, 'bed-wooden', CELL_LEFT, ROOM_TOP);
     await place(page, 'toilet-brick', CELL_LEFT + 1, ROOM_TOP);
     await waitForQueueEmpty(page, 'cell-furniture');
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     log(`rooms panel with the cell furnished: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
 
     // ---- act 4: one prisoner ----------------------------------------------
@@ -728,7 +728,7 @@ test.describe('the errand, watched through the interface', () => {
     await waitForQueueEmpty(page, 'logistics-furniture');
     reading = await readWorker(page);
     log(`after furnishing both ends at tick ${reading.tick}: orders ${JSON.stringify(reading.orderStates)}`);
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     log(`rooms panel with both ends furnished: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
 
     // ---- act 6: buy something, and watch it land in the bay ---------------
@@ -787,7 +787,7 @@ test.describe('the errand, watched through the interface', () => {
     };
     // Still used by act 8's fallback, where the second delivery has to be
     // bought inside a block and the block may already be over.
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
 
     let lastLine = '';
     let jobAnnouncedAt = -1;
@@ -906,7 +906,7 @@ test.describe('the errand, watched through the interface', () => {
     await buy(page, 'wall-brick', 10);
     await playAtNormalSpeed(page);
     log(`bought the second delivery at tick ${await currentTick(page)} (day-tick ${dayTickOf(await currentTick(page))}), clock at 1x`);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
 
     let capture: { readonly reading: WorkerReading; readonly roster: readonly string[] } | undefined;
     let captureLine = '';
@@ -973,7 +973,7 @@ test.describe('the errand, watched through the interface', () => {
     log(`AFTER LOAD ROSTER: ${JSON.stringify(await rosterActivities(page))}`);
 
     await playAtNormalSpeed(page);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     let resumeLine = '';
     let restoredCompletedAt = -1;
     const resumeStarted = Date.now();

@@ -216,7 +216,7 @@ async function buildABareCell(page: Page, label: string): Promise<{ originX: num
   // The enclosure verdict is read off a world view a snapshot replaces, so the
   // designation is retried; how many attempts it takes is itself a reading.
   for (let attempt = 1; ; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -236,7 +236,7 @@ async function buildABareCell(page: Page, label: string): Promise<{ originX: num
 
 /** The Regime tab's roster, which is where a player would look to see a need going unmet. */
 async function readRoster(page: Page, label: string, tag: string): Promise<void> {
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   note(`[${label}] ${tag} regime panel: ${JSON.stringify(await panelText(page, '.hud-regime'))}`);
 }
 
@@ -294,7 +294,7 @@ test.describe('Can this prison fail', () => {
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
     logScreen(label, 'OPENING', await readScreen(page, startedAt));
 
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     note(`[${label}] staff panel on arrival: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
     let hires = 0;
     let lastFunds = Number.NaN;
@@ -378,7 +378,7 @@ test.describe('Can this prison fail', () => {
         ` buyRow=${JSON.stringify(await panelText(page, '.hud-build__buy'))}`,
     );
 
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const hire = page.locator('.hud-staff__hire');
     note(
       `[${label}] LEVER 3 hire: aria-disabled=${await hire.getAttribute('aria-disabled')}` +

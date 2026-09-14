@@ -141,7 +141,7 @@ test('act 1: the first screen a player sees, and the default tab', async ({ page
   // below would otherwise have printed `null`.
   const activeTab = await page.locator('.hud').getAttribute('data-active-tab');
   log('act1', `.hud data-active-tab: ${activeTab}`);
-  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+  for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
     const el = tab(page, id);
     const label = (await el.innerText()).trim();
     const active = await el.getAttribute('aria-current');
@@ -205,7 +205,7 @@ test('act 3: what the Rooms tab tells a player before they draw anything', async
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
     await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
   }
@@ -242,7 +242,7 @@ test('act 4: zoning a cell on open ground before any wall exists', async ({ page
   const origin = await calibrate(page);
   log('act4', `calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
     await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
   }
@@ -445,7 +445,7 @@ test('act 5: build the walls, then zone the same rectangle — does the stale re
   // in seconds rather than by another silent hang.
   await tab(page, 'build').click();
   const origin0 = await calibrate(page);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
     await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
   }
@@ -468,7 +468,7 @@ test('act 5: build the walls, then zone the same rectangle — does the stale re
   let zoned = false;
   let attempts = 0;
   for (; attempts < 12 && !zoned; attempts += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -517,7 +517,7 @@ test('act 6: a bed with no toilet — reachable resident, and what "Not ready" s
 
   let zoned = false;
   for (let attempts = 0; attempts < 12 && !zoned; attempts += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -542,7 +542,7 @@ test('act 6: a bed with no toilet — reachable resident, and what "Not ready" s
   const afterBed = await latestCounts(page);
   log('act6', `after one bed, no toilet, tick ${afterBed?.tick}: roomCapacity=${afterBed?.roomCapacity} accommodationCapacity=${afterBed?.accommodationCapacity}`);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   log('act6', `Rooms panel with a bed and no toilet: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
   await tab(page, 'overview').click();
@@ -575,7 +575,7 @@ test('act 7: the whole chain end to end, and what the nine status-strip chips ex
 
   let zoned = false;
   for (let attempts = 0; attempts < 12 && !zoned; attempts += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }

@@ -96,7 +96,7 @@ test('a deployed guard: does it walk to its post? (#740)', async ({ page }) => {
   // element to appear for the whole test timeout rather than failing fast --
   // confirmed hanging at exactly this line, three runs in a row, on a fresh
   // worktree with nothing else editing it.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const rosterSection = page.locator('.hud-staff__roster');
   if ((await rosterSection.getAttribute('data-collapsed')) === 'true') {
     await rosterSection.locator('> .ui-section__header').click();

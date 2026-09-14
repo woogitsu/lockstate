@@ -165,7 +165,7 @@ function coveredPrison(coverage: HudViewModel['staffCoverage']): HudViewModel {
  */
 async function paintCoveredPrison(page: Page): Promise<void> {
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
   await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), coveredPrison(COVERED));
 }
 

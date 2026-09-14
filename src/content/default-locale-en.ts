@@ -413,15 +413,80 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.transport.fast-forward': 'Fast forward',
 
   'hud.tabs.title': 'Prison sections',
+  /*
+   * The five section names, moved on 2026-09-14 to the ones the 2026-09-13
+   * identity delivery names -- Przeglad / Buduj / Strefy / Zarzadzaj / Plan
+   * dnia -- on the owner's ruling recorded as ADR 0112 decision 3. The
+   * delivery's names are Polish; the shipped catalogue is English, and the
+   * CHOICE of English words is ours under `AGENTS.md`'s fourth reservation as
+   * released on 2026-09-04. The requirement that each be TRUE of what its
+   * section contains is not ours, so each is recorded here against the code
+   * that fills the section:
+   *
+   * - `Overview` -- `src/ui/hud/intake-panel.ts` today, which is what this
+   *   section has held since #261 and is the one name in this list that is
+   *   **not yet true of its contents**: the owner ruled on 2026-09-14 that
+   *   intake moves to Manage and that Overview gets a readout of its own, and
+   *   those two land in the commit after this one, together, so that the
+   *   section is never empty in between (issue #1183).
+   * - `Build` -- `src/ui/hud/build-panel.ts`: the catalogue, the materials
+   *   purchase and sell blocks, the build queue and the deliveries. The owner
+   *   ruled on 2026-09-14 that materials and deliveries stay here.
+   * - `Zones` -- `src/ui/hud/rooms-panel.ts`, whose two commands are
+   *   `ZoneRoom` and `UnzoneRoom`: the section's controls literally zone and
+   *   unzone an area, which is why the plural noun is true of it and not
+   *   merely a translation of *Strefy*.
+   * - `Manage` -- `src/ui/hud/staff-panel.ts`: hiring, releasing a guard from
+   *   a post, and dismissal. Every control in the section acts on a person,
+   *   and the admission control joins them in the commit after this one.
+   * - `Schedule` -- `src/ui/hud/regime-panel.ts`, which paints each
+   *   classification group's blocks for the day in progress. **It also still
+   *   carries the prisoner roster and the prisoner inspector**, which the
+   *   delivery's own table puts under Zarzadzaj; splitting that panel in two
+   *   is a real code change rather than a mount move
+   *   (`docs/research/2026-09-14-the-mechanical-navigation-move.md` SS6 step
+   *   4) and is not done here. Named so that a reader does not take this
+   *   sentence's absence for the split having happened.
+   *
+   * Widths, because ADR 0022's measurement is what limits a label here. It
+   * measured the tab bar at 375x812 spanning x = 1.8 .. 373.2 with a fifth tab
+   * injected -- 1.8px of margin per side -- so a nine-character label such as
+   * "Logistics" would put the bar at x = -9.5 and fail
+   * `tests/browser/ui-shell.spec.ts`'s `tabs.x >= 0` / `tabs.right <= 375`
+   * pair. In characters the set does not grow: the longest was 8
+   * (`Overview`, `Security`) and the longest is 8 (`Overview`, `Schedule`),
+   * with `Rooms` -> `Zones` exactly equal at 5.
+   *
+   * **`Schedule` is one word because `Day plan` was two, and the two words
+   * cost 13.2px of rail.** The delivery's section is *Plan dnia* and the
+   * obvious English is `Day plan`, which is 8 characters and passes every
+   * width assertion ADR 0022's measurement is about. It fails on **height**,
+   * which no measurement here had ever taken: `.ui-tab__label` sets no
+   * `white-space`, so at 375x812, where five tabs are squeezed to their
+   * `min-width`, a label breaks at its space. Measured on 2026-09-14 --
+   * `Day plan`'s label box is 26.4px against every other tab's 13.2px and the
+   * tab bar is 82.4px instead of 69.2px -- and those 13.2px come off the rail:
+   * `tests/browser/build-deliveries-outside-the-fold.spec.ts` went red at
+   * 375x812 with a delivery row's Cancel outside the Build panel's visible
+   * box, and is green on `2e5cac4e`. A one-word label cannot break, and
+   * `ui-shell.spec.ts`'s "no section name wraps to a second line at 375x812"
+   * is the gate that keeps a two-word one from coming back unmeasured.
+   *
+   * `Schedule` rather than `Timetable`, which is the word this catalogue's own
+   * refusal sentences use for this panel's content
+   * (`hud.alert.refusal.edit-regime-block.*`, *"not a block on this
+   * timetable"*). Naming consistency is the tie-break the constitution puts
+   * *below* legibility, and `Timetable` is the nine characters ADR 0022
+   * measured as putting the bar off the left edge of a 375px viewport. The
+   * eight-character `Schedule` is what both constraints leave, and it is true
+   * of the panel: what the section shows is each classification group's blocks
+   * for the day in progress.
+   */
   'hud.tab.overview': 'Overview',
   'hud.tab.build': 'Build',
-  'hud.tab.security': 'Security',
-  'hud.tab.regime': 'Regime',
-  // Six characters. ADR 0022 measured the tab bar at 375x812 spanning
-  // x = 1.8 .. 373.2 with a fifth tab injected -- 1.8px of margin per side --
-  // so a nine-character label such as "Logistics" would put the bar at
-  // x = -9.5 and fail the assertions in `tests/browser/ui-shell.spec.ts`.
-  'hud.tab.rooms': 'Rooms',
+  'hud.tab.zones': 'Zones',
+  'hud.tab.manage': 'Manage',
+  'hud.tab.day-plan': 'Schedule',
 
   /*
    * The Layout menu and the three collapse arrows (#1159, stage 3).
@@ -2255,6 +2320,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // "a cell" and not "a room": every accommodation target
   // `DEFAULT_ACCOMMODATION_POLICY` names is one, and a canteen or a yard has
   // never made an admission possible.
+  /*
+   * The Overview section's readout (issue #1183, and the owner's ruling of
+   * 2026-09-14: *"Nowy odczyt w Przeglądzie, panel zapisu zostaje w szynie"* --
+   * a new readout in Overview, the save panel stays in the rail).
+   *
+   * Three sentences, each checked against the code that renders it:
+   *
+   * - `hud.overview.title` -- *Finances*. The panel states three money
+   *   figures and nothing else (`src/ui/hud/overview-panel.ts`), so the noun
+   *   is the panel's contents rather than a second copy of the section's own
+   *   name.
+   * - `hud.overview.none` -- rendered exactly when `HudViewModel.overview` is
+   *   absent, which `src/ui/simulation-counts.ts`'s
+   *   `hudOverviewFromWorkerMessage` makes true in precisely two states: no
+   *   `simulation/status-counts` publication has arrived yet, and the session
+   *   has stopped. In both, no prison is reporting, so the sentence is true in
+   *   both and it is a sentence rather than a figure -- a `0` there would be a
+   *   claim about money belonging to a prison that has not spoken. It states
+   *   the condition and promises nothing, because nothing the player can press
+   *   ends it: a session starting does.
+   * - `hud.overview.wages` -- *Wages a day*. The period belongs in the label
+   *   because the figure is a **rate**: `dailyWageBillMinorUnits` is what one
+   *   in-game day of the current roster will cost
+   *   (`src/simulation/economy/payroll.ts`), not money already paid. `a day`
+   *   is the wording `hud.security.roster-wage-bill` already uses for the same
+   *   figure, and the two are deliberately the same words.
+   *
+   * The other two rows carry no string of their own: they reuse
+   * `hud.status.funds` and `hud.status.earned-today`, the status strip's own
+   * labels for the very same two published figures. One number under two
+   * different words on one screen is the split naming consistency forbids.
+   */
+  'hud.overview.title': 'Finances',
+  'hud.overview.none': 'No prison is reporting.',
+  'hud.overview.wages': 'Wages a day',
+
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
   'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.',

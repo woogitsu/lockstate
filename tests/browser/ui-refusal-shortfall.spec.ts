@@ -355,7 +355,7 @@ test.describe('a refused press says how much more money the prison needs (#772, 
   }) => {
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 
     const push = async (treasuryMinorUnits: number) => {
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), viewModelAt(treasuryMinorUnits));

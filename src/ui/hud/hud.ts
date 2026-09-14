@@ -17,6 +17,7 @@ import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
+import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
 import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
 import {
@@ -88,9 +89,14 @@ export interface HudTabDefinition {
 export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'overview', icon: 'overview', labelKey: HUD_MESSAGE_KEY.tabOverview },
   { id: 'build', icon: 'build', labelKey: HUD_MESSAGE_KEY.tabBuild },
-  { id: 'rooms', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabRooms },
-  { id: 'security', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabSecurity },
-  { id: 'regime', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabRegime },
+  // The icons keep their own ids. `IconId` is a drawing's name, not a
+  // section's: the shape the `zones` tab shows is still the floor-plan glyph
+  // `rooms` names in `src/ui/primitives/icon.ts`, and renaming a path set to
+  // follow a navigation change would be a second, unrelated diff over every
+  // other consumer of the same glyph.
+  { id: 'zones', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabZones },
+  { id: 'manage', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabManage },
+  { id: 'day-plan', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabDayPlan },
 ];
 
 /**
@@ -2166,14 +2172,34 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
 
-  // ---- bottom-right intake panel (Overview tab) ---------------------
-  // Shares `.hud__side` with the Build, Rooms, Staff and Regime panels and is
-  // never laid out beside any of them: exactly one of the five is visible,
-  // keyed on the active tab, so the always-visible budget ADR 0022 measured for
-  // the Build tab is unchanged. No tab is bound to no panel any more -- the
-  // Regime panel below took the last one (issue #451). See `intake-panel.ts`
-  // for why the Overview tab rather than a Build-panel row or a tab of its own,
-  // with the measurements behind it.
+  // ---- bottom-right intake panel (Manage tab) -----------------------
+  /*
+   * Shares `.hud__side` with the Overview, Build, Rooms, Staff and Regime
+   * panels. Six panels and five tabs, and that is the one thing about this
+   * column that changed on 2026-09-14: the Manage tab lays out **two** of them
+   * -- this one and the Staff panel -- where every tab before showed exactly
+   * one. They stack in the same flex column and cannot overlap, and the
+   * always-visible budget ADR 0022 measured for the Build tab is untouched,
+   * because that budget is about the *Build* tab and no tab gained a panel it
+   * did not have except this one.
+   *
+   * `intake-panel.ts`'s own header explains why this panel was on the Overview
+   * tab from #261 until now, and the reason was pixels rather than subject:
+   * the Build panel had no room and the Overview tab showed nothing. The
+   * owner's ruling of 2026-09-14 places it by subject instead -- the delivery's
+   * navigation table names *przyjęcia* (admissions) under Zarządzaj, beside
+   * staff and inmates -- and every control on the Manage tab now acts on a
+   * person.
+   */
+  // ---- bottom-right overview panel (Overview tab) -------------------
+  /*
+   * What the Overview section holds now that intake has left it (issue #1183).
+   * It issues no command, so it joins no busy group; it is fed from
+   * `simulation/status-counts` rather than pulled per tab, which is why it is
+   * the one panel here that does not clear itself when its tab is left.
+   */
+  const overviewPanel: OverviewPanel = createOverviewPanel({ localizer });
+
   const intakePanel: IntakePanel = createIntakePanel({
     localizer,
     // Admitting is a *command*: it asks the host to change the simulation,
@@ -2208,7 +2234,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   const side = element('div', {
     className: 'hud__side',
-    children: [intakePanel.element, buildPanel.element, roomsPanel.element, staffPanel.element, regimePanel.element],
+    children: [
+      overviewPanel.element,
+      intakePanel.element,
+      buildPanel.element,
+      roomsPanel.element,
+      staffPanel.element,
+      regimePanel.element,
+    ],
   });
 
   /**
@@ -2451,16 +2484,17 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
     buildPanel.setVisible(state.activeTab === 'build');
-    roomsPanel.setVisible(state.activeTab === 'rooms');
-    staffPanel.setVisible(state.activeTab === 'security');
+    roomsPanel.setVisible(state.activeTab === 'zones');
+    staffPanel.setVisible(state.activeTab === 'manage');
     // The fourth occupant of `.hud__side`, and the reason the five can share
     // one box: the conditions are mutually exclusive, so exactly one panel is
     // ever laid out there and none pays for the others' height.
-    intakePanel.setVisible(state.activeTab === 'overview');
+    overviewPanel.setVisible(state.activeTab === 'overview');
+    intakePanel.setVisible(state.activeTab === 'manage');
     // The fifth, on the tab that had none (issue #451). With this line every
     // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
     // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
-    regimePanel.setVisible(state.activeTab === 'regime');
+    regimePanel.setVisible(state.activeTab === 'day-plan');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
@@ -2681,6 +2715,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // many are at each stage and which stage is terminal; the panel decides the
     // sentences; this line decides nothing.
     intakePanel.setPipeline(next.intakePipeline);
+    // And what the prison is worth, on terms that are *not* identical to the
+    // eight lines above it, which is the point of the field rather than an
+    // inconsistency (issue #1183). Those are pulled per tab and absent when
+    // nothing asked; this rides the counts publication and is absent when no
+    // prison has reported at all. The projection decided all three figures, the
+    // panel decides whether to draw them or to say nobody is reporting, and
+    // this line decides nothing.
+    overviewPanel.setReadout(next.overview);
     // And what each classification group's day allows at this tick, on
     // identical terms (issue #451). `resolveActiveRegimeBlock` picked the
     // block, the schedule decided what it permits, the panel decides the

@@ -50,10 +50,12 @@ import { installTee, openApp, press, tab } from './playtest-harness';
  * narrowing the opt-in the way this file narrows `.hud__corner` would trade
  * #1054's defect for its mirror image: a scroll gesture that silently pans or
  * zooms the camera instead of scrolling the panel the player is looking at.
- * (The Intake panel, `.hud__side`'s fifth occupant, sets no `overflow` of its
- * own and stays covered by the same blanket rule regardless -- it costs
- * nothing to leave it there, and nothing here argues it should be singled
- * out.) `.hud-tabs__inner` is `gap: 0` with every tab `align-items: stretch`,
+ * (The Intake panel sets no `overflow` of its own and stays covered by the
+ * same blanket rule regardless -- it costs nothing to leave it there, and
+ * nothing here argues it should be singled out. It was `.hud__side`'s fifth
+ * occupant when this was written; the Overview panel made six on 2026-09-14
+ * and is `overflow-y: auto` on its own root like the four above, so the
+ * finding is unchanged in both directions.) `.hud-tabs__inner` is `gap: 0` with every tab `align-items: stretch`,
  * so there is no blank interior between its buttons to begin with.
  *
  * `.hud__corner`'s two panels are neither. Nothing in `.hud-zoom` or

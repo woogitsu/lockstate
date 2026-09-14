@@ -30,8 +30,51 @@
  * Ordered by when a player reaches for them, not alphabetically: you look, you
  * build the walls, you say what the rooms inside them are for, and the last two
  * are the running prison.
+ *
+ * ---
+ *
+ * **THREE OF THOSE FIVE IDS CHANGED ON 2026-09-14, AND THE PARAGRAPHS ABOVE ARE
+ * KEPT RATHER THAN REWRITTEN** -- every sentence in them is still a true record
+ * of why the bar holds five and of what each slot was for when it was taken.
+ * What moved is the naming and one panel's home, on
+ * [ADR 0112](../../../docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md)
+ * decision 3, which the owner ruled in their own typed words happens **now**
+ * rather than after the inventory:
+ *
+ * | Was | Is | The delivery's own name |
+ * |---|---|---|
+ * | `rooms` | `zones` | Strefy |
+ * | `security` | `manage` | Zarządzaj |
+ * | `regime` | `day-plan` | Plan dnia (`Schedule` in English -- see the locale) |
+ *
+ * `overview` and `build` keep their ids because the delivery keeps their
+ * subjects (Przegląd, Buduj). The **order** is unchanged: the delivery lists
+ * its five in exactly the order this array already held them in, so the
+ * "when a player reaches for them" paragraph above survives whole.
+ *
+ * **The ids are renamed rather than left alone on purpose.** They are not
+ * player-visible strings -- the labels are, and they live in
+ * `src/content/default-locale-en.ts` -- but they are read as
+ * `hud.dataset.activeTab`, as `.ui-tab[data-tab="..."]` in the browser suite,
+ * and as `activeTab === '<id>'` gates in `src/main.ts`. An id spelling
+ * `security` on the section that holds hiring, dismissal and admissions, or
+ * `rooms` on the one the player draws zones in, is a comment that lies in a
+ * place the compiler cannot check. Renaming them makes every one of those
+ * gates a compile error until it is re-read, which is why this change is safe
+ * to make mechanically: `HudTabId` is a union of literals, so a site left on
+ * an old spelling does not silently stop firing, it fails to build.
+ *
+ * **No id here is persisted, so this is not a migration.** Checked at v0.0.613
+ * rather than assumed: `activeTab` is produced by `hudShellReducer` from
+ * `INITIAL_HUD_SHELL_STATE` below and mutated only by the in-memory
+ * `select-tab` action; `src/input/storage.ts` declares four keys
+ * (`lockstate.settings.input`, `.accessibility`, `.theme` and `.layout`, the
+ * last added by #1159 since this was first measured) and none of them carries
+ * a tab id; and no field of `src/persistence/save-schema.ts` names one. A
+ * player who had `security` open yesterday gets the reducer's initial tab
+ * today, exactly as they do on every page load.
  */
-export const HUD_TAB_IDS = ['overview', 'build', 'rooms', 'security', 'regime'] as const;
+export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];
 
 export const HUD_PANEL_IDS = ['minimap', 'alerts'] as const;

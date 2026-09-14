@@ -204,7 +204,7 @@ test('act 0 — recon: what the page offers, and what the empty world looks like
 
   console.log(`ambient: ${JSON.stringify(await ambient(page))}`);
 
-  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+  for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
     await tab(page, id).click();
     await page.waitForTimeout(250);
     console.log(`\n----- TAB ${id} -----\n${await panelText(page, '.hud__panels')}`);
@@ -221,7 +221,7 @@ test('act 0 — recon: what the page offers, and what the empty world looks like
     ).join('\n')}`,
   );
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   console.log(
     `\nROOM CATALOGUE:\n${(
       await page.evaluate(() =>
@@ -232,7 +232,7 @@ test('act 0 — recon: what the page offers, and what the empty world looks like
     ).join('\n')}`,
   );
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   console.log(
     `\nSTAFF CATALOGUE:\n${(
       await page.evaluate(() =>
@@ -421,7 +421,7 @@ test('act 2 — the showroom: what each buildable actually draws', async ({ page
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -516,7 +516,7 @@ async function cellRun(page: Page, options: { readonly door: boolean; readonly l
     await page.waitForTimeout(2000);
   }
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(300);
   console.log(`[${options.label}] rooms panel: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
 
@@ -694,7 +694,7 @@ async function designateOnly(page: Page, roomId: string, label: string): Promise
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -804,7 +804,7 @@ test('act 8 — does anything move once the cell has a door', async ({ page }) =
   console.log(`door order: ${JSON.stringify(await press(page, point.x, point.y + TILE / 2 - 4))}`);
   await waitForQueueEmpty(page);
   await page.waitForTimeout(2000);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(300);
   console.log(`rooms panel: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ').slice(0, 400)}`);
 

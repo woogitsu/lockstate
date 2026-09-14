@@ -233,7 +233,7 @@ test('no label in the HUD paints outside its own control (#926)', async ({ page 
     await page.setViewportSize({ width, height });
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
-    for (const tab of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const tab of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       expect(
         await page.evaluate((name) => window.lockstateUiHarness.clickTab(name), tab),
         `the ${tab} tab has no control to press at ${width}x${height}`,

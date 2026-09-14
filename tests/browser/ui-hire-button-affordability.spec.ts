@@ -160,7 +160,7 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
   }) => {
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+    expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 
     /*
      * **Solvent**: nothing refuses an 80 hire at a balance of 24,920. The

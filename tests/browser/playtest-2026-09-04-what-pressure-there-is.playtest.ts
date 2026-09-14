@@ -158,7 +158,7 @@ function logScreen(label: string, tag: string, screen: Screen): void {
  * mechanism, and the treasury delta is its price.
  */
 async function readNeeds(page: Page, label: string, tag: string): Promise<void> {
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   const rows = page.locator('.hud-regime__roster-row[data-prisoner]');
   const count = await rows.count();
   note(`[${label}] ${tag} roster rows: ${count}`);
@@ -305,7 +305,7 @@ async function buildTheReasonablePrison(page: Page, label: string): Promise<{ or
   // Retried, because the Rooms panel's enclosure verdict is read off a world
   // view a snapshot replaces and a completed wall does not mark it dirty.
   for (let attempt = 1; ; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -373,7 +373,7 @@ async function buildTheReasonablePrison(page: Page, label: string): Promise<{ or
     `[${label}] furnished: rooms=${String(furnished?.rooms)} roomCapacity=${String(furnished?.roomCapacity)}` +
       ` accommodationCapacity=${String(furnished?.accommodationCapacity)}`,
   );
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   note(`[${label}] rooms panel: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
   return origin;
 }
@@ -391,7 +391,7 @@ async function buildTheReasonablePrison(page: Page, label: string): Promise<{ or
  */
 async function zoneTheYard(page: Page, label: string, origin: { originX: number; originY: number }): Promise<boolean> {
   for (let attempt = 1; attempt <= 6; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -441,7 +441,7 @@ async function admit(page: Page, label: string, wanted: number): Promise<number>
 }
 
 async function hire(page: Page, label: string, wanted: number): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   note(`[${label}] hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -489,7 +489,7 @@ async function playTheReasonablePrison(page: Page, label: string, days: number, 
   const samples = await runAndWatch(page, label, admittedAt + TICKS_PER_DAY * days, startedAt);
   logScreen(label, 'FINAL', await readScreen(page, startedAt));
   await readNeeds(page, label, 'FINAL');
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   note(`[${label}] staff panel at the end: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   printCurve(label, await countsSeries(page));
   note(`[${label}] ${samples.length} day sample(s) in ${((Date.now() - startedAt) / 1000).toFixed(1)}s wall clock`);

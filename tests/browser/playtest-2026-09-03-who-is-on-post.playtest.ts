@@ -316,7 +316,7 @@ test.describe('who is on post', () => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     await page.waitForTimeout(1200);
 
     // ---- ACT 1: a fresh prison, with nobody in it -------------------------
@@ -401,7 +401,7 @@ test.describe('who is on post', () => {
      * reach is reached instead by the third test, which builds a cell first.
      */
     note(`refusal band after three Admit presses: ${JSON.stringify(await refusalBand(page))}`);
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const withPrisoners = await pollUntil(
       page,
       async () => await rawCounts(page),
@@ -556,7 +556,7 @@ test.describe('who is on post', () => {
     note(`FUNDS chip: ${String(await funds(page))}; whole strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
     note(`the FUNDS chip's badge: ${JSON.stringify(await chip(page, 'funds'))}`);
 
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     await page.waitForTimeout(1200);
     await page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]').first().click();
     await page.waitForTimeout(400);
@@ -630,7 +630,7 @@ test.describe('the unguarded rung, reached by playing', () => {
     // this act is about can exist at all.
     await buildAndPopulate(page, { beds: 4, admits: 4, guards: 0, label: 'unguarded' });
 
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     note('=== a built, populated, unstaffed prison ===');
     note(`counts: ${JSON.stringify(await rawCounts(page))}`);
 
