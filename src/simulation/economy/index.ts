@@ -21,6 +21,7 @@ export {
   type PayrollStaffSource,
 } from './payroll';
 export { InsolvencyRungSystem } from './insolvency-rung-system';
+export { placementCostMinorUnits } from './placement-cost';
 export {
   JUST_IN_TIME_ORDER_ID_PREFIX,
   JustInTimeMaterialsService,
@@ -48,6 +49,7 @@ export {
   ProcurementSystem,
   SELL_BACK_RATIO_DENOMINATOR,
   SELL_BACK_RATIO_NUMERATOR,
+  purchaseChargeMinorUnits,
   sellBackUnitPriceMinorUnits,
   type PendingDelivery,
   type ProcurementSnapshot,
