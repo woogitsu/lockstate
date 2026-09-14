@@ -6,6 +6,11 @@ import {
 } from './accessibility';
 import { DEFAULT_KEYBOARD_BINDINGS } from './bindings';
 import {
+  type LanguageSettings,
+  DEFAULT_LANGUAGE_SETTINGS,
+  decodeLanguageSettings,
+} from './language-preference';
+import {
   type LayoutSettings,
   DEFAULT_LAYOUT_SETTINGS,
   decodeLayoutSettings,
@@ -63,6 +68,26 @@ const THEME_SETTINGS_STORAGE_KEY = 'lockstate.settings.theme';
  * width.
  */
 const LAYOUT_SETTINGS_STORAGE_KEY = 'lockstate.settings.layout';
+
+/**
+ * The interface language's **own** key, for the reason the theme and the
+ * layout each have one (#663).
+ *
+ * Constitution article 13 asks for *"oddzielne klucze pamięci i niezależny
+ * reset"* -- separate memory keys and an independent reset -- and the Layout
+ * menu already ships a Reset control that clears the layout key. A language
+ * folded into that record would be reset by a player putting their panels
+ * back, which is the one preference they are least likely to expect to lose:
+ * a player who cannot read English would land on an English page with the
+ * control they need to undo it labelled in English.
+ *
+ * It is also why the language is **not** a field of the save payload.
+ * `docs/LOCALIZATION.md`'s standing rule is that no translated string may be
+ * persisted, and the tag itself is not prison state either: a save carried to
+ * another machine must not change that machine's language, and
+ * `SAVE_SCHEMA_VERSION` does not move for a device preference.
+ */
+const LANGUAGE_SETTINGS_STORAGE_KEY = 'lockstate.settings.language';
 
 /**
  * Reads and parses one entry, treating **any** failure as "no entry".
@@ -218,4 +243,33 @@ export function loadLayoutSettings(store: KeyValueStore): LayoutSettings {
 /** Returns whether the write landed, so a caller that wants to say so can. */
 export function saveLayoutSettings(store: KeyValueStore, settings: LayoutSettings): boolean {
   return writeJson(store, LAYOUT_SETTINGS_STORAGE_KEY, settings);
+}
+
+/**
+ * The language preference, through the same guarded read as every other
+ * setting.
+ *
+ * Nothing new is defended here and that is the point: a store that throws on
+ * access is answered by `resolveBrowserKeyValueStore`'s in-memory `Map`, and a
+ * corrupt value by `readJson`'s `undefined` -- which decodes to `'auto'`, so a
+ * browser with site data blocked still boots in the language its own
+ * `navigator.languages` asks for.
+ */
+export function loadLanguageSettings(store: KeyValueStore): LanguageSettings {
+  return decodeLanguageSettings(readJson(store, LANGUAGE_SETTINGS_STORAGE_KEY)) ?? DEFAULT_LANGUAGE_SETTINGS;
+}
+
+/**
+ * Returns whether the write landed, and **this caller is the first that must
+ * not ignore it.**
+ *
+ * A theme that fails to persist still switches; the page is simply back to the
+ * old one after a reload. A language change *is* a reload (see the ADR draft
+ * `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), so a
+ * refused write would reload the page straight back into the language the
+ * player just asked to leave -- a control that appears to do nothing. The
+ * composition root reads this and declines to reload instead.
+ */
+export function saveLanguageSettings(store: KeyValueStore, settings: LanguageSettings): boolean {
+  return writeJson(store, LANGUAGE_SETTINGS_STORAGE_KEY, settings);
 }

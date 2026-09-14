@@ -30,6 +30,7 @@ export const ICON_IDS = [
   'brand',
   'ui-scale',
   'theme',
+  'language',
   'dismiss',
   'zoom-in',
   'zoom-out',
@@ -85,6 +86,25 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
     'M12 7.5h5.9',
     'M12 12h7.7',
     'M12 16.5h5.9',
+  ],
+  // The interface language (#663): a globe -- outline, one meridian drawn as a
+  // narrowed ellipse, two latitudes -- which is the glyph a player already
+  // reads as a language choice in every other application. That matters more
+  // here than elsewhere in this set: the legend beside it says "Language" in
+  // whatever language the page is currently in, so for exactly the player this
+  // control exists for, the icon is the only readable part of it.
+  //
+  // Strokes only and on the same 24-unit grid and 4.25/19.75 inset as `theme`
+  // beside it, so the two sit level in the chrome row. Deliberately not a flag
+  // and deliberately not two letterforms: a flag names a country rather than a
+  // language and gets the mapping wrong the moment a language has more than
+  // one, and letterforms would be text this icon set does not draw.
+  language: [
+    'M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z',
+    'M12 4.25c-2.2 2.1-3.3 4.7-3.3 7.75s1.1 5.65 3.3 7.75',
+    'M12 4.25c2.2 2.1 3.3 4.7 3.3 7.75s-1.1 5.65-3.3 7.75',
+    'M4.6 9.5h14.8',
+    'M4.6 14.5h14.8',
   ],
   'ui-scale': [
     'M3.25 18.75 8 5.25l4.75 13.5',

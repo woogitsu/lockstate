@@ -5125,6 +5125,25 @@
   border-bottom: var(--hairline) solid var(--border-hairline);
 }
 
+/*
+ * The host's own box in this menu (#663), above "Map only" and "Reset layout"
+ * so the two controls that act on the *layout* stay together at the end.
+ *
+ * Empty unless the composition root mounts something, and `:empty` is what
+ * keeps a menu with nothing in it exactly as tall as it was -- the same
+ * arrangement `.hud__aside:empty` has in the rail.
+ */
+.hud-layout__preferences {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--space-2);
+  border-bottom: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-layout__preferences:empty {
+  display: none;
+}
+
 /* The strip's own type for the three readouts, and its own greying for a
    stopped clock (#639's second channel). Named rather than inherited by class
    reuse: two elements answering `.hud-clock__day` broke three specs on a

@@ -70,6 +70,20 @@ yet: that, and the re-render, are the language picker's work.
 > the re-render, which is still #663's — and the reason both halves were in one
 > sentence is that they looked like one job and are not.
 
+> **And the other half is settled since #663 (2026-09-14), by being decided
+> rather than built.** There is no re-render. A language change takes effect on
+> **reload**: the control persists the preference, awaits a save of the running
+> prison, and reloads, so the boot path #662 built is the only path that ever
+> applies a language. The decision, the measurement behind it (19 modules under
+> `src/ui/` hold the one `Localizer`, across 331 formatting call sites, and none
+> of them exposes a way to be handed a different one) and the two rejected
+> alternatives are in
+> [the ADR draft](./adr/drafts/how-a-language-change-reaches-a-running-page.md).
+>
+> So the sentence above is now wrong in a third way, and this is the useful
+> one: *"that, and the re-render, are the language picker's work"* assumed the
+> re-render was work. It was a question.
+
 ### Which locale a page starts in, and who decides
 
 `resolveStartupLocale(bundled, loader, navigator.languages)` — composed in
@@ -107,6 +121,58 @@ dynamic `import()` is a network fetch in a browser —
 `src/main.ts` and requires it to equal the set of non-default catalogues it
 audits, minus the pseudo-locale — so a locale a player can load and nobody
 audits fails, and so does a catalogue audited and never registered.
+
+### How a player chooses, and what "has not chosen" means
+
+The picker is one cycling button in the HUD's **settings drawer**
+(`src/ui/language.ts`, mounted through `HudHandle.preferencesSlot`) — the menu
+that already holds the clock and the three region controls, and which was
+renamed from *Layout* to *Settings* with it. It is not in the rail beside the
+interface scale and the theme, and that is measured rather than chosen: 264px
+holds two of those controls and not three, and a second line costs 54px the
+aside does not have at 900×600 or 375×812. `src/main.ts` and `src/styles.css`
+carry the numbers and the two failures they came from.
+
+Its preference is `'auto' | 'en' | 'pl'`, stored under its own key
+`lockstate.settings.language` (`src/input/language-preference.ts`,
+`src/input/storage.ts`).
+
+**`'auto'` is a value, not an absence**, and that is the whole of what the
+storage shape buys. A stored locale tag alone cannot distinguish *"the player
+chose English"* from *"the player has not chosen and their browser asked for
+English"*, and the two must behave differently the moment the browser's list
+changes. So the composition root turns a preference into the input
+`selectSupportedLocale` already takes:
+
+```ts
+languagePreferenceRequest('auto', navigator.languages) // -> navigator.languages
+languagePreferenceRequest('en',   navigator.languages) // -> ['en']
+```
+
+There is no second negotiator. A chosen locale is a preference list of one,
+which is what makes the choice immune to the browser changing its mind.
+
+Three properties are gated rather than asserted in prose:
+
+- **The offered set equals the published set.** `OFFERED_LOCALES` beside the
+  preference, `CATALOG_CHUNKS` in the composition root, and this file's audit
+  registry are pinned to each other by
+  `tests/foundation/second-locale-contract.test.ts` — so a picker entry that
+  would silently fall back to English, and a catalogue a player can be
+  negotiated into but never choose to leave, both fail.
+- **Every language is named in itself.** `display.language.english` is
+  `English` and `display.language.polish` is `Polski` in *every* catalogue,
+  byte for byte, and the same test compares them. A picker that named languages
+  in the current interface language would be unusable to exactly the player
+  looking for one.
+- **The endonyms still go through the catalogue.**
+  `tests/browser/pseudo-locale-sweep.spec.ts` fails on any run of ASCII letters
+  that did not come out of `Localizer.format`, so a string literal `'English'`
+  in `src/ui/language.ts` would need an exemption added to that test to ship.
+
+`PSEUDO_LOCALE` is never offered: it is not in `OFFERED_LOCALES`, and
+`tests/browser/ui-language-picker.spec.ts` presses the whole cycle and asserts
+it never appears.
 
 ## Fallback
 

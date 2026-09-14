@@ -272,6 +272,34 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `DisplayScaleLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `save-panel.ts` and `telemetry-consent-prompt.ts` carry; the control constructs no localizer of its own and never falls back to one.",
   },
   {
+    file: 'src/ui/language-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the language control's five message keys and nothing else, in the shape `theme-messages.ts` and `display-scale-messages.ts` use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer.",
+  },
+  {
+    file: 'src/ui/language.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey`, to type the control's `LanguageLocalizer` port and the endonym table it resolves through. The same erased naming-of-a-key-type `theme.ts` and `display-scale.ts` make; no content code runs because of it.",
+  },
+  {
+    file: 'src/ui/language.ts',
+    tree: 'input',
+    kind: 'value',
+    reason:
+      "Value: `nextLanguagePreference` from `src/input/language-preference`, plus the erased `LanguagePreference` and `OfferedLocale`. **The same shape as `theme.ts`'s entry above and no step further**, which is the comparison that matters because the erosion it names is the one this control is most exposed to. Which preferences exist, and what \"the next one\" means, are properties of the persisted record and live beside the decoder that checks a stored value against them. `nextLanguagePreference` is pure -- a function of a string. What this module deliberately does **not** import is `src/input/storage.ts`: a language change is the one preference here whose write must be *read back* by the caller (a refused write cancels the reload), and a control that stored it itself would be deciding to reload as well as asking to. `src/main.ts` owns both ends, exactly as it does for the theme.",
+  },
+  {
+    file: 'src/ui/language.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      "Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `LanguageLocalizer` port the composition root satisfies with the page's one `Localizer`. The same erased dependency `theme.ts` and `display-scale.ts` carry; the control constructs no localizer of its own and never falls back to one -- which matters more here than elsewhere, since a language control holding a second localizer would be the one surface guaranteed to disagree with the page.",
+  },
+  {
     file: 'src/ui/theme-messages.ts',
     tree: 'content',
     kind: 'type-only',
@@ -600,6 +628,8 @@ describe('UI orchestration boundaries', () => {
       'src/ui/display-scale-messages.ts',
       'src/ui/display-scale.ts',
       'src/ui/host-refusal.ts',
+      'src/ui/language-messages.ts',
+      'src/ui/language.ts',
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
       'src/ui/room-tool.ts',

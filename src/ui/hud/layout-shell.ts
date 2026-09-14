@@ -155,8 +155,26 @@ export interface HudLayoutShellOptions {
 export interface HudLayoutShell {
   /** Every control, for a caller that wants to walk them. Never gated by the busy group. */
   readonly controls: readonly HTMLButtonElement[];
-  /** The Layout menu's root, for the strip to lay out. */
+  /** The settings menu's root, for the strip to lay out. */
   readonly menu: HTMLElement;
+  /**
+   * The host's own box inside the menu, below everything the shell puts there
+   * (#663).
+   *
+   * The same arrangement `HudHandle.asideSlot` is for the rail, and for the
+   * same reason: a preference the composition root owns end to end -- it reads
+   * the store, it decides what a press does -- has no business being
+   * constructed in here, and this shell has no business knowing a language
+   * exists. What it does own is *where* things sit, which is this box.
+   *
+   * It is in this menu rather than in the rail because the rail has no room,
+   * and that is a measurement rather than a preference: `src/styles.css` and
+   * the pull request carry it. A drawer is also the right home for a control
+   * a player uses once -- the clock beside it is here for the mirror-image
+   * reason, that folding the strip must not cost a player the ability to read
+   * the time.
+   */
+  readonly preferencesSlot: HTMLElement;
   /** Re-resolves the geometry -- after a viewport change, or a restored preference. */
   refresh(): void;
   setSettings(settings: LayoutSettings): void;
@@ -518,6 +536,12 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     ],
   });
 
+  /**
+   * Where the host puts its own preference controls (#663). Empty unless one
+   * is mounted, and `:empty` costs nothing.
+   */
+  const preferencesSlot = element('div', { className: 'hud-layout__preferences' });
+
   menuBody.append(
     ...[
       // The visible legend lives **here**, not beside the button.
@@ -535,6 +559,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       navigationSlider.root,
       inspectorSlider.root,
       metricsRow,
+      preferencesSlot,
       mapOnly,
       reset,
     ],
@@ -679,6 +704,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       reset,
     ],
     menu,
+    preferencesSlot,
     refresh,
     getSettings: () => settings,
     setSettings(next: LayoutSettings): void {

@@ -1014,6 +1014,16 @@ export interface HudHandle {
    * HUD supplies a box in its own layout and never looks inside it.
    */
   readonly brandSlot: HTMLElement;
+  /**
+   * The settings menu's own box for host-owned preference controls (#663).
+   *
+   * `HudLayoutShell.preferencesSlot` passed straight through, exactly as
+   * `brandSlot` passes the strip's through. It is where a preference goes when
+   * the rail cannot afford it: measured, `--hud-rail-panel-width` holds two
+   * chrome controls and a second line costs 54px the aside does not have at
+   * 900x600 or at 375x812.
+   */
+  readonly preferencesSlot: HTMLElement;
   update(viewModel: HudViewModel): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
@@ -2798,6 +2808,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     element: hud,
     asideSlot: aside,
     brandSlot: strip.brandSlot,
+    preferencesSlot: layout.preferencesSlot,
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,

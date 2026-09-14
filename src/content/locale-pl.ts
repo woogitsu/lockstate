@@ -1216,6 +1216,28 @@ const plMessages: Readonly<Record<string, string>> = {
   'display.theme.light': 'Jasny',
   'display.theme.dark': 'Ciemny',
   'display.theme.cycle': 'Zmień motyw interfejsu',
+  // The language control (#663). `display.language.english` and
+  // `display.language.polish` are **endonyms and are byte-identical to the
+  // English catalogue's**, which is the point of them rather than an oversight:
+  // a language named in the language the page is currently in is unreadable to
+  // the one player looking for it. `Polski` is `Polski` on an English page and
+  // `English` is `English` on a Polish one.
+  // `tests/foundation/second-locale-contract.test.ts` compares them and fails
+  // if either is translated here.
+  'display.language.region': 'Język',
+  // *Automatycznie* (adverb, "automatically") rather than *Automatyczny*
+  // (adjective): the entry describes how the language is chosen, and there is
+  // no noun on screen beside it for an adjective to agree with -- the legend
+  // above the row says *Język* (masculine), so *Automatyczny* would read as an
+  // adjective describing the language itself, which is not what the option
+  // means.
+  'display.language.automatic': 'Automatycznie ({language})',
+  'display.language.english': 'English',
+  'display.language.polish': 'Polski',
+  // *Przeładuj* rather than *odśwież*: the page really is reloaded, not
+  // refreshed in place, and `src/main.ts` saves the prison and awaits that
+  // save first -- so both halves of the sentence are true of the code.
+  'display.language.cycle': 'Zmień język interfejsu i przeładuj grę',
   'app.shell.label': 'Aplikacja gry Lockstate',
 };
 

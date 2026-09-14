@@ -8,6 +8,9 @@ import { buildMessageCatalog } from '../../src/services/localization/catalog';
 import { defaultMessageCatalogEn } from '../../src/services/localization/default-catalog';
 import { PSEUDO_LOCALE } from '../../src/services/localization/locale';
 import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { OFFERED_LOCALES } from '../../src/input/language-preference';
+import { LANGUAGE_MESSAGE_KEY } from '../../src/ui/language-messages';
 import { buildPseudoLocaleCatalog } from '../../src/services/localization/pseudo';
 
 /**
@@ -93,8 +96,21 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
    * says a partial locale should -- and the floor stays where the last
    * deliberate measurement put it.
    */
-  pl: 670,
+  pl: 675,
 };
+
+/*
+ * **Raised 669 -> 674 on 2026-09-14 by #663**, which is the deliberate act
+ * this row's own docblock reserves and not a re-measurement of drift. The
+ * language picker authored five `display.language.*` keys and translated all
+ * five in the same change, so the number moved by exactly what was added.
+ * `auditLocaleCatalog` reports `pl` at 677 translated keys against the
+ * reference on this tree; the floor is deliberately left at the total this
+ * issue is accountable for rather than raised to that, because the three keys
+ * of difference were translated by #661 and #1190 after the 669 measurement
+ * and ratcheting somebody else's work under this issue's name would misreport
+ * who is holding the line.
+ */
 
 describe('every non-default catalogue is well-formed, without being required to be complete (#664)', () => {
   it('audits each registered catalogue clean', () => {
@@ -673,6 +689,65 @@ describe('every catalogue this file audits is one a player can reach, and vice v
     // pseudo-locale is not it.
     expect(published).toContain('pl');
     expect(published).not.toContain(PSEUDO_LOCALE);
+  });
+
+  it('offers a player exactly the locales it publishes, and no others (#663)', () => {
+    // A third list of locale tags joined the two above when the language
+    // picker landed: `OFFERED_LOCALES` is what the control can name. All three
+    // have to agree or the picker lies in one of two directions -- an entry
+    // that falls back to English silently, or a catalogue a player can be
+    // negotiated into and can never choose to leave.
+    const published = [...publishedLocales(mainSource)].sort();
+    expect(
+      [...OFFERED_LOCALES].sort(),
+      'the language picker offers a different set of locales than src/main.ts publishes',
+    ).toEqual([DEFAULT_LOCALE, ...published].sort());
+    // The default is offerable without a chunk, which is why it is added
+    // rather than expected in the registry.
+    expect(published).not.toContain(DEFAULT_LOCALE);
+  });
+
+  it('names every offered language in itself, identically in every catalogue (#663)', () => {
+    /*
+     * The endonym rule, gated. A picker that names languages in the *current*
+     * interface language is unusable to exactly the player who needs it, so
+     * `display.language.english` is `English` and `display.language.polish` is
+     * `Polski` in every catalogue this repository ships -- byte for byte.
+     *
+     * This is the one place in the tree where two catalogues agreeing is the
+     * requirement rather than a translation not having been done yet, which is
+     * why it is asserted here and not left to a reviewer to notice. The
+     * pseudo-locale is excluded because it is derived: it accents *every*
+     * message mechanically, so it cannot agree with anything and is not a
+     * translator's work to get wrong.
+     */
+    const endonymKeys = [LANGUAGE_MESSAGE_KEY.english, LANGUAGE_MESSAGE_KEY.polish] as const;
+    const reference = Object.fromEntries(
+      endonymKeys.map((key) => [key, defaultMessageCatalogEn.messages[key]]),
+    );
+
+    expect(reference, 'the endonym keys are missing from the bundled catalogue').toEqual({
+      [LANGUAGE_MESSAGE_KEY.english]: 'English',
+      [LANGUAGE_MESSAGE_KEY.polish]: 'Polski',
+    });
+
+    const disagreements: string[] = [];
+    for (const [locale, build] of Object.entries(NON_DEFAULT_CATALOGS)) {
+      if (locale === PSEUDO_LOCALE) continue;
+      const messages = build().messages;
+      for (const key of endonymKeys) {
+        const value = messages[key];
+        // A catalogue that has not translated the key yet falls back per key
+        // and is fine; one that has *changed* it is the defect.
+        if (value !== undefined && value !== reference[key]) {
+          disagreements.push(`${locale}: ${key} is ${JSON.stringify(value)}, not ${JSON.stringify(reference[key])}`);
+        }
+      }
+    }
+    expect(
+      disagreements,
+      'a language name was translated. Each language is named in itself so the player looking for it can read it.',
+    ).toEqual([]);
   });
 
   it('reads a real registry, so the pairing above cannot pass by finding nothing', () => {

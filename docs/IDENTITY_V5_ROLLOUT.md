@@ -403,6 +403,26 @@ So for every string this rollout authors:
 Simulation code may branch on a stable id and may never read, persist, hash or
 compare translated text. That is a determinism rule, not a style preference.
 
+**What has landed under this stage, and the one thing it did not do.** The
+Polish catalogue is #661 (669 keys, no English string changed to make one
+fit); it reaches a running page through `CATALOG_CHUNKS` in the composition
+root (#662); and a player can choose a language since #663 — one cycling
+control in the HUD's chrome row, over `lockstate.settings.language`, applied by
+reloading rather than by re-rendering
+([the ADR draft](./adr/drafts/how-a-language-change-reaches-a-running-page.md)
+records why, with the count).
+
+**Fifteen keys are English on a Polish page and it is worth naming them here
+rather than leaving them to be rediscovered.** #1159's Layout menu added
+`hud.layout.*` to the English catalogue after #661 authored the Polish one, so
+all fifteen fall back per key — three of them (`Open the layout menu`, `Hide the
+sections`, `Hide the panels`) are on screen at boot.
+`tests/browser/ui-language-picker.spec.ts` records them in its own docblock and
+deliberately does **not** assert them away: #664's rule is that no gate may be
+passable only by completing a translation. They are ordinary catalogue work for
+whoever carries the Polish catalogue forward, and the stage is not finished
+while they stand.
+
 ---
 
 ## Stage 7 — World art

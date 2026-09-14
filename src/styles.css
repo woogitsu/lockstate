@@ -354,7 +354,17 @@ canvas {
 
 /* Inside the row, each control is a half that may shrink: `min-width: 0` is
    what lets the legend's own `text-overflow: ellipsis` actually engage, since
-   a flex item's automatic minimum size is otherwise its content. */
+   a flex item's automatic minimum size is otherwise its content.
+
+   A HALF, and a third control does not fit. Measured in Chromium at 1280x720
+   with the language picker (#663) added here: 264px over three gives 87-88px
+   each, 44 of which is each button's `min-width: var(--tap-target)` floor, and
+   the readouts overflowed their own control -- the theme's spanning
+   x=1137..1209 inside a control ending at 1179 -- which `app-shell.spec.ts`'s
+   #88 sweep reported as the theme button being covered. There was nothing to
+   give up: the legends are already 0px wide with two. The picker is in the
+   settings menu instead; `src/main.ts` carries the second measurement, of the
+   second row that was tried after this one. */
 .hud-chrome-prefs > .display-scale,
 .hud-chrome-prefs > .theme-control {
   width: auto;
@@ -372,8 +382,32 @@ canvas {
   border-left: var(--hairline) solid var(--border-hairline);
 }
 
+/*
+ * No readout in this row may overflow its own control, at any width.
+ *
+ * The buttons are `flex: none` in their standalone form, which is right when a
+ * control owns the whole rail and is what let them spill out of a shared one
+ * when a third arrived. `min-width: var(--tap-target)` is a floor and stays
+ * one, so what gives way under pressure is the text and never the target -- a
+ * truncated readout is a readable control, and a button lying outside its own
+ * box is one the player cannot press. Kept although the third control moved
+ * out: the defect it fixes is a property of a shared row, and this row is one.
+ */
+.hud-chrome-prefs > * > button {
+  flex: 0 1 auto;
+}
+
+.hud-chrome-prefs .display-scale__value,
+.hud-chrome-prefs .theme-control__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .display-scale,
-.theme-control {
+.theme-control,
+.language-control {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -398,11 +432,30 @@ canvas {
   }
 }
 
+/*
+ * The language control lives in the settings menu (#663), which is a drawer of
+ * its own width rather than a rail panel -- so it takes the width it is given
+ * instead of `--hud-rail-panel-width`, and carries no box of its own: the
+ * drawer is already a surface, and a second border inside it would read as a
+ * panel within a panel. `hud.css` owns `.hud-layout__preferences`, which is
+ * the box it sits in.
+ */
+.language-control {
+  width: auto;
+  align-self: stretch;
+  margin-bottom: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
 /* Takes the row and pushes the button to the end, and truncates rather than
    wrapping: this is a legend, and a legend that wraps makes the row two tap
    targets tall for no gain. */
 .display-scale__legend,
-.theme-control__legend {
+.theme-control__legend,
+.language-control__legend {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -411,7 +464,8 @@ canvas {
 }
 
 .display-scale__cycle,
-.theme-control__cycle {
+.theme-control__cycle,
+.language-control__cycle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -430,13 +484,15 @@ canvas {
 }
 
 .display-scale__cycle:hover,
-.theme-control__cycle:hover {
+.theme-control__cycle:hover,
+.language-control__cycle:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }
 
 .display-scale__cycle:focus-visible,
-.theme-control__cycle:focus-visible {
+.theme-control__cycle:focus-visible,
+.language-control__cycle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
@@ -462,6 +518,25 @@ canvas {
  * selectors are paired there and not duplicated.
  */
 .theme-control__value {
+  text-align: center;
+  color: var(--text-heading);
+}
+
+/*
+ * The language control's readout (#663), which shares the theme readout's
+ * rules and nothing else -- the truncation all three get inside the chrome
+ * block is up beside `.hud-chrome-prefs`, because it is a property of sharing
+ * a row rather than of any one control.
+ *
+ * It is the readout that made that rule necessary, which is why it is worth
+ * saying here. `100%` is four characters and `System` is six, both chosen to
+ * fit; this one holds an endonym, and an endonym is not a word this repository
+ * gets to pick the length of. `Automatic (English)` is nineteen characters
+ * today and the next locale offered decides its own, so a rule that depended
+ * on the text being short would be a rule that depended on nobody publishing
+ * Portuguese.
+ */
+.language-control__value {
   text-align: center;
   color: var(--text-heading);
 }

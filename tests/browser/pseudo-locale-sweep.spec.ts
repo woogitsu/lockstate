@@ -516,12 +516,19 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
    *   ruling that opened this change is explicit that the title stays exactly
    *   as it is -- `Lockstate.io` is the brand name, not player-facing prose,
    *   and routing it through the catalogue was never asked for.
-   * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). There is no
-   *   runtime locale switch (`installPseudoLocale`'s comment above states why
-   *   the sweep has to rewrite the served module to reach `en-XA` at all), so
-   *   this attribute is always the literal document language and never a
-   *   string a translator would see -- it names no catalogue entry to be
-   *   missing from.
+   * - `<html lang>` (`kind: 'document'`, `where: '<html lang>'`). It is a BCP
+   *   47 tag rather than prose: it names no catalogue entry, so there is no
+   *   entry for it to be missing from, and no translator ever sees it.
+   *
+   *   **The reason given here used to be "there is no runtime locale switch",
+   *   and that half is out of date since #663 while the exemption is not.**
+   *   `src/main.ts` now writes this attribute from the locale that actually
+   *   resolved, so under this sweep it reads `en-XA` rather than `en` --
+   *   which is a fact about the page and still not a string a translator would
+   *   see. (There is still no *in-place* switch: a language change reloads,
+   *   see `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`,
+   *   and `installPseudoLocale`'s comment above is still why the sweep has to
+   *   rewrite the served module to reach `en-XA` at all.)
    *
    * Every other finding the sweep collects is either bracketed -- reached
    * through the catalogue, `Localizer.format` having produced it -- or it is
