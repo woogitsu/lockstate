@@ -16,7 +16,39 @@
 
 ## Status
 
-**Proposed, 2026-09-13. Not self-approved.** The scope this document works
+**Accepted in full by the owner on 2026-09-14**, from a clickable option
+labelled *"Przyjmij w całości, budujemy pierwszy plaster"* ("Accept it in full,
+we build the first slice"). **The `Proposed` line below is kept rather than
+replaced**, per `docs/AGENT_WORKFLOW.md` §4, because what this document proposed
+before it was answered is what a later reader needs in order to judge the
+answer.
+
+**The provenance is the weaker kind and is disclosed as such**, exactly as the
+2026-09-08, 2026-09-09 and 2026-09-10 entries in `AGENTS.md` disclose their own:
+the label of an option this session wrote and the owner chose, not a sentence
+they typed. The scope — per-group schedules rather than one global day — was
+ruled the same way on 2026-09-13 and is recorded below.
+
+**What the acceptance covers:** `classificationGroupId` as the axis, the
+V5→V6 save section, the `EditRegimeBlock` command with the refusals this
+document names, no new `PROJECTION_IDS` member, and the first slice as scoped
+here. Implementation is tracked in
+[#1167](https://github.com/woogitsu/lockstate/issues/1167).
+
+**What the acceptance does NOT settle, and this document said so before it was
+accepted:** the tick cost is **argued rather than measured**. The argument is
+that the first slice keeps exactly the two groups that exist today, so the
+per-group lookup is unchanged — but no benchmark was run, and this document
+names `regime.production.schedule-lookup` as the scenario that would produce a
+number. **The owner was offered a choice that made measuring it a precondition
+and chose to build first**, so the measurement is owed during implementation
+rather than before it, and an implementing agent that finds the cost material is
+reporting a finding rather than contradicting a ruling.
+
+---
+
+**Proposed, 2026-09-13. Not self-approved.** *(The state of this document before
+the acceptance above.)* The scope this document works
 inside was settled by the owner, not by this document: the owner ruled, from a
 clickable option this session wrote, that the Day-plan section must genuinely
 edit the regime and that the model is per-group schedules rather than one
