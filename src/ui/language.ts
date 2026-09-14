@@ -85,9 +85,12 @@ export interface LanguageControl {
  * three-option group cost the rail when it was tried there: a click in the
  * middle of a 375x812 viewport reached the HUD instead of the world, 26
  * controls on the Build tab were covered at 1280x720 (#88), and the rail
- * scrolled at 200 %. That budget has not grown; this control is the *third*
- * occupant of the same 44px row, so it has less width to spend than the theme
- * did, not more.
+ * scrolled at 200 %. That budget has not grown, and this control spends more
+ * of it than the theme does rather than less -- it is the third occupant of
+ * `.hud-chrome-prefs`, which is why that block wraps. The measurements that
+ * decided its two shapes are in `src/styles.css` beside the rules; the short
+ * version is that 264px holds two of these controls and 359px holds three, so
+ * the *wide* rail is the tight one.
  *
  * **What it costs, stated rather than glossed, because it costs more here than
  * it does for the theme.** Two of the three values are behind a press at any

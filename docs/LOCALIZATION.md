@@ -124,10 +124,12 @@ audits fails, and so does a catalogue audited and never registered.
 
 ### How a player chooses, and what "has not chosen" means
 
-The picker is one cycling button in the HUD's chrome row
-(`src/ui/language.ts`), beside the interface scale and the theme. Its
-preference is `'auto' | 'en' | 'pl'`, stored under its own key
-`lockstate.settings.language` (`src/input/language-preference.ts`,
+The picker is one cycling button in the HUD's chrome block
+(`src/ui/language.ts`), beside the interface scale and the theme — on a line of
+its own where the rail is a fixed 264px column, and sharing their line where
+the rail is the whole screen. Both halves are measured and `src/styles.css`
+carries the numbers. Its preference is `'auto' | 'en' | 'pl'`, stored under its
+own key `lockstate.settings.language` (`src/input/language-preference.ts`,
 `src/input/storage.ts`).
 
 **`'auto'` is a value, not an absence**, and that is the whole of what the
