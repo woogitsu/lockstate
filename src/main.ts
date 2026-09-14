@@ -101,7 +101,12 @@ import {
   minimumSizeRequirement,
   objectRequirements,
 } from './simulation/rooms/requirements';
-import { MAX_PURCHASE_QUANTITY, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, staffDailyWageMinorUnits } from './simulation/economy';
+import {
+  MAX_PURCHASE_QUANTITY,
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  placementCostMinorUnits,
+  staffDailyWageMinorUnits,
+} from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
 import { judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
 import { HostRefusalError } from './ui/host-refusal';
@@ -895,6 +900,7 @@ function buildCatalogue(): HudBuildViewModel {
     const labelKey = buildableLabelKey(definition);
     if (labelKey === undefined) continue;
     const material = purchasableMaterialFor(definition.materialsRequired);
+    const placementCost = placementCostMinorUnits(definition.materialsRequired);
     buildables.push({
       definitionId: definition.id,
       labelKey,
@@ -924,6 +930,14 @@ function buildCatalogue(): HudBuildViewModel {
       // property at all -- which is what makes the panel hide its buy control
       // rather than offer one that could only be refused.
       ...(material === undefined ? {} : { material }),
+      // What one placement costs, priced by the simulation over *every*
+      // requirement rather than by the panel over the first purchasable one
+      // (issue #1160, constitution article 4). Spread for the same
+      // `exactOptionalPropertyTypes` reason as `material` above, and absent for
+      // the different reason `HudBuildableViewModel.placementCostMinorUnits`
+      // gives: a requirement nothing sells leaves the placement with no total,
+      // and a partial sum would be a price that is not one.
+      ...(placementCost === undefined ? {} : { placementCostMinorUnits: placementCost }),
     });
   }
 

@@ -1115,16 +1115,33 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   };
 
   for (const buildable of model.buildables) {
-    // The row's price, computed once at mount rather than repainted: content
-    // supplies one price per unit and it never moves
-    // (`src/content/procurement-catalog.ts`), and `model.buildables` is itself
-    // supplied once at mount and not per snapshot -- see `HudBuildViewModel`.
-    // `undefined` for a buildable made of something nothing sells, which
-    // `buildCatalogueRowLabel` reads as "no price to state" rather than a bug.
+    /*
+     * The row's price, **formatted here and computed nowhere here** (issue
+     * #1160, constitution article 4).
+     *
+     * This read
+     * `buildable.material.unitPriceMinorUnits * buildable.material.quantityPerPlacement`
+     * until 2026-09-14, which is the interface recomputing a finance figure --
+     * and recomputing it over the first *purchasable* requirement rather than
+     * over all of them, so a buildable naming two materials would have been
+     * priced at part of its cost. `placementCostMinorUnits` in
+     * `src/simulation/economy/placement-cost.ts` is the simulation's own
+     * arithmetic, the composition root runs it, and what arrives here is a
+     * number to format. `HudLocalizer.formatNumber` stays the panel's job: ADR
+     * 0011 puts number formatting on this side of the boundary and the figure
+     * on the other.
+     *
+     * Formatted once at mount rather than repainted, unchanged: content
+     * supplies one price per unit and it never moves
+     * (`src/content/procurement-catalog.ts`), and `model.buildables` is itself
+     * supplied once at mount and not per snapshot -- see `HudBuildViewModel`.
+     * `undefined` for a buildable the simulation cannot price, which
+     * `buildCatalogueRowLabel` reads as "no price to state" rather than a bug.
+     */
     const total =
-      buildable.material === undefined
+      buildable.placementCostMinorUnits === undefined
         ? undefined
-        : localizer.formatNumber(buildable.material.unitPriceMinorUnits * buildable.material.quantityPerPlacement);
+        : localizer.formatNumber(buildable.placementCostMinorUnits);
     const row = createListRow({
       icon: 'build',
       label: buildCatalogueRowLabel(t, buildable, total),
