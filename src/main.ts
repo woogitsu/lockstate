@@ -1,13 +1,22 @@
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
+  loadLanguageSettings,
   loadLayoutSettings,
   loadThemeSettings,
   resolveBrowserKeyValueStore,
+  saveLanguageSettings,
   saveLayoutSettings,
   saveThemeSettings,
   saveAccessibilitySettings,
 } from './input';
+import {
+  type LanguagePreference,
+  type OfferedLocale,
+  LANGUAGE_PREFERENCE_VERSION,
+  OFFERED_LOCALES,
+  languagePreferenceRequest,
+} from './input/language-preference';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/local/indexeddb-store';
 import { PrisonSaveRepository, type SaveResult } from './persistence/local/repository';
 import { LifecycleSaveHandler } from './persistence/session/lifecycle';
@@ -118,6 +127,7 @@ import {
 } from './services/localization/chunk-catalog-loader';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
+import { createLanguageControl } from './ui/language';
 import { APP_SHELL_MESSAGE_KEY } from './ui/app-shell-messages';
 import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';
 import { createTelemetryPipeline } from './services/telemetry/pipeline';
@@ -475,12 +485,48 @@ const CATALOG_CHUNKS: Readonly<Record<string, CatalogChunkImporter>> = {
  * page comes up in complete English and the reason goes to the console beside
  * every other boot-time degradation this file reports that way.
  */
+/**
+ * The store the language preference is read from, and the preference itself
+ * (#663).
+ *
+ * **Read here, above the localizer, because this is the only place a language
+ * can be chosen.** Every mounted surface is handed the one `Localizer` built
+ * on the next few lines, and `Localizer`'s own contract is that catalogs are
+ * loaded before it is constructed -- so the preference has to be in hand
+ * before the boot locale is resolved, exactly as the theme preference has to
+ * be in hand before the first paint.
+ *
+ * `resolveBrowserKeyValueStore()` is called again below for the accessibility,
+ * theme and layout records rather than this handle being threaded down. That
+ * is the arrangement already in the file (`:2256` says so of the layout
+ * store): the call never throws, a second one is free, and a module-scope
+ * handle threaded into `mountInterface` would be a shared mutable this file
+ * does not otherwise have.
+ */
+const languageStore = resolveBrowserKeyValueStore();
+const languagePreference = loadLanguageSettings(languageStore).preference;
+
+/**
+ * The preference list to negotiate from: the browser's own when the player has
+ * expressed no preference, and a list of exactly one when they have.
+ *
+ * **The list of one is the whole point of storing `'auto'` as a real value.**
+ * A player who chose English keeps English when they later add Polish to their
+ * browser's language list, because `selectSupportedLocale` is only ever shown
+ * `['en']`; a player who chose nothing follows the browser on every load. A
+ * stored tag alone could not tell those two apart -- `en` would look identical
+ * whether the player picked it or their browser did.
+ *
+ * `navigator.languages` is the ordered preference list; `navigator.language`
+ * is the single fallback for a browser that does not publish the list.
+ */
 const startupLocale = await resolveStartupLocale(
   bundledLocalizer,
   createChunkCatalogLoader(CATALOG_CHUNKS),
-  // `navigator.languages` is the ordered preference list; `navigator.language`
-  // is the single fallback for a browser that does not publish the list.
-  navigator.languages.length > 0 ? navigator.languages : [navigator.language],
+  languagePreferenceRequest(
+    languagePreference,
+    navigator.languages.length > 0 ? navigator.languages : [navigator.language],
+  ),
   {
     onFailure: (failure) =>
       console.warn(
@@ -490,6 +536,38 @@ const startupLocale = await resolveStartupLocale(
   },
 );
 const localizer = startupLocale.localizer;
+
+/**
+ * Which **offered** locale the page ended up in, which is not the same
+ * question as `localizer.locale`.
+ *
+ * `Localizer.locale` is whatever tag was resolved, and that can be a tag the
+ * language control has no name for: `en-XA` when
+ * `tests/browser/pseudo-locale-sweep.spec.ts` patches the bundled localizer,
+ * or a region subtag if a future catalogue is published under one. The control
+ * renders an endonym, so it needs the offered locale -- and the fallback here
+ * is `en` for the reason ADR 0011 gives for every other fallback in this path:
+ * the bundled catalogue is the complete one, so naming it is never a lie about
+ * what the player can read.
+ */
+const resolvedOfferedLocale: OfferedLocale =
+  (OFFERED_LOCALES as readonly string[]).includes(startupLocale.locale)
+    ? (startupLocale.locale as OfferedLocale)
+    : 'en';
+
+/**
+ * The document's own language, which until now was whatever `index.html`
+ * declared and therefore always `en`.
+ *
+ * It is what a screen reader picks a voice and a pronunciation dictionary
+ * from, and what a browser offers to translate from; a Polish page announced
+ * as English is read aloud in an English accent. `startupLocale.locale` rather
+ * than `resolvedOfferedLocale`, because this attribute takes the real tag --
+ * the pseudo-locale included, which is a fact about the page rather than a
+ * string a translator would ever see. `tests/browser/pseudo-locale-sweep.spec.ts`
+ * exempts `<html lang>` for that reason and its exemption still holds.
+ */
+document.documentElement.lang = startupLocale.locale;
 
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
@@ -3523,6 +3601,71 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   });
   themeControl.setPreference(themeController.preference);
   chromeRow.append(themeControl.element);
+
+  /*
+   * The language, wired end to end (#663).
+   *
+   * **The third occupant of this one 44px row, and it had to be**: the two
+   * comments above record that `app-shell.spec.ts` refused a second row in
+   * this slot twice, and nothing has given the aside the 52px since. A third
+   * control side by side costs no height at all and costs each of the three a
+   * third of the rail's width, which their legends already ellipsis into --
+   * `.hud-chrome-prefs > *` carries the `min-width: 0` that lets them.
+   *
+   * **A press reloads the page, and that is the decision rather than a
+   * shortcut.** `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`
+   * carries the reasoning and the count behind it; the short version is that
+   * every mounted surface in this interface holds the one `Localizer` built at
+   * boot, and `Localizer`'s own contract is that catalogs are loaded before it
+   * is constructed. There is no path that hands a new one to the sixteen
+   * modules that captured the old one, and a partial one would leave half the
+   * interface in the previous language -- worse than either whole answer.
+   *
+   * Three things happen in this order, and each is load-bearing:
+   *
+   *   1. **Persist, and read whether the write landed.** Every other control
+   *      here treats a refused write as "not remembered" and switches anyway.
+   *      This one cannot: the reload is what applies the change, so a refused
+   *      write would reload straight back into the language the player just
+   *      asked to leave -- a control that appears to do nothing. It declines
+   *      to reload instead, and `setPreference` is never called, so the
+   *      readout keeps naming the language actually on screen.
+   *   2. **Save the prison and await it.** A reload fires `pagehide`, and
+   *      `LifecycleSaveHandler` answers that with a save it explicitly does
+   *      *not* await -- "a lifecycle handler cannot hold the page open for an
+   *      async IndexedDB transaction, so the write may simply not complete".
+   *      That is the right design for a tab closing and the wrong one for a
+   *      navigation this code is itself about to cause, because here there is
+   *      somewhere to await. Without it a player who changed language between
+   *      two 30-second autosaves could lose the interval.
+   *   3. **Reload.** After the save has settled, whatever it reported: a
+   *      failure has already left the previous generation intact
+   *      (`PrisonSaveRepository.save`) and the next boot's recovery path
+   *      handles it, which is the same position every other save in this file
+   *      takes.
+   */
+  const languageControl = createLanguageControl({
+    localizer,
+    preference: languagePreference,
+    resolved: resolvedOfferedLocale,
+    onSelect: (preference: LanguagePreference) => {
+      const stored = saveLanguageSettings(languageStore, {
+        version: LANGUAGE_PREFERENCE_VERSION,
+        preference,
+      });
+      if (!stored) {
+        console.warn(
+          'The interface language could not be stored, so the page was not reloaded; it would have come back in the same language.',
+        );
+        return;
+      }
+      void (async () => {
+        await saveBeforeLanguageChange?.();
+        globalThis.location.reload();
+      })();
+    },
+  });
+  chromeRow.append(languageControl.element);
   hud.asideSlot.append(chromeRow);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
@@ -3581,6 +3724,23 @@ function generateMasterSeed(): number {
  * constructed for a later session has to reach the HUD's standing notice
  * (issues #82, #149).
  */
+/**
+ * Saves the prison before the page is deliberately reloaded, or `undefined`
+ * when there is nothing to save (#663).
+ *
+ * A mutable module binding rather than a value threaded through
+ * `mountInterface`, because of the order this file already runs in:
+ * `mountInterface` mounts the language control, and `bootPersistence` --
+ * which is the only thing that ever holds a `SessionController` -- is called
+ * *after* it, and only when a simulation worker started and IndexedDB opened.
+ * So at the moment the control is built there is no controller to give it, and
+ * for a browser with no worker or no storage there never will be. `undefined`
+ * is that state, and the optional call at the press site is the whole of
+ * handling it: a page with no persistence reloads immediately, which is
+ * correct, because nothing was at risk.
+ */
+let saveBeforeLanguageChange: (() => Promise<void>) | undefined;
+
 async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle): Promise<void> {
   let controller: SessionController;
   let panel: SavePanel;
@@ -3655,6 +3815,18 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
    * built at module scope, before this function has a controller to give it.
    */
   commandSender?.onCommandAccepted(() => controller.markDirty());
+
+  /*
+   * And the awaited save a deliberate reload gets (#663), which the
+   * fire-and-forget lifecycle save below cannot provide.
+   *
+   * `saveNow` reports failure as a *value* rather than throwing, and answers
+   * "No active session" the same way, so this never rejects and the reload
+   * that awaits it is never blocked by a prison that does not exist yet.
+   */
+  saveBeforeLanguageChange = async () => {
+    await controller.saveNow();
+  };
 
   // Best-effort only -- see LifecycleSaveHandler's docs on why correctness
   // never depends on these events firing.

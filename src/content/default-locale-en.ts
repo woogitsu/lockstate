@@ -3635,6 +3635,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'display.theme.dark': 'Dark',
   'display.theme.cycle': 'Change the interface theme',
 
+  // The language control beside those two (`src/ui/language.ts`, #663). Same
+  // `display.` namespace and the same reason: it changes a device preference.
+  //
+  // **`display.language.english` and `display.language.polish` are endonyms --
+  // each language named in itself -- and they carry the SAME text in every
+  // catalogue.** A picker that names languages in the current interface
+  // language is unusable to the one player who needs it: somebody who cannot
+  // read English would be handed a list of English words and asked to find
+  // their own language in it. `Polski` is `Polski` on an English page, which
+  // is the whole point.
+  // `tests/foundation/second-locale-contract.test.ts` compares these two
+  // values across every audited catalogue, so a translator who renders
+  // `display.language.polish` as `Polish` here fails a test rather than
+  // shipping a picker a Polish speaker cannot use.
+  //
+  // "Automatic" is a claim, and it is kept true by
+  // `languagePreferenceRequest`: while this option is the selected one the
+  // page resolves its locale from `navigator.languages` on every load, so a
+  // browser whose language list changes moves the interface with it. It names
+  // the language it resolved to in `{language}` rather than standing alone,
+  // because "Automatic" by itself does not tell a player what they are
+  // currently reading -- and because assembling that from two fragments in
+  // code is what this file's own authoring rules forbid.
+  'display.language.region': 'Language',
+  'display.language.automatic': 'Automatic ({language})',
+  'display.language.english': 'English',
+  'display.language.polish': 'Polski',
+  // "and reloads the game" rather than "and changes the language": the press
+  // does reload the page, and a tooltip that did not say so would be the
+  // interface hiding a consequence the player is about to meet. The reload is
+  // what makes the change whole -- see
+  // `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md` -- and
+  // `src/main.ts` saves the prison and awaits that save before it happens, so
+  // the sentence promises nothing the code does not do.
+  'display.language.cycle': 'Change the interface language and reload the game',
+
   // The accessible name of `<main id="app">` -- the whole application, not one
   // region of it, which is why the namespace is `app.` and not `hud.` or
   // `brand.`. It used to be `aria-label="Lockstate game application"` baked

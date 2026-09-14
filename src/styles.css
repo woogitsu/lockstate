@@ -352,11 +352,17 @@ canvas {
   }
 }
 
-/* Inside the row, each control is a half that may shrink: `min-width: 0` is
+/* Inside the row, each control is a third that may shrink: `min-width: 0` is
    what lets the legend's own `text-overflow: ellipsis` actually engage, since
-   a flex item's automatic minimum size is otherwise its content. */
+   a flex item's automatic minimum size is otherwise its content.
+
+   It was a half until the language control joined the row (#663). Nothing
+   about the rule changed -- `flex: 1 1 0` divides whatever is there -- but the
+   share each control gets did, which is why the readouts below are allowed to
+   ellipsis too rather than only the legends. */
 .hud-chrome-prefs > .display-scale,
-.hud-chrome-prefs > .theme-control {
+.hud-chrome-prefs > .theme-control,
+.hud-chrome-prefs > .language-control {
   width: auto;
   flex: 1 1 0;
   min-width: 0;
@@ -366,14 +372,16 @@ canvas {
   border-radius: 0;
 }
 
-/* One hairline between the two, which is how everything else in this
-   interface separates neighbours. */
-.hud-chrome-prefs > .theme-control {
+/* One hairline between neighbours, which is how everything else in this
+   interface separates them. */
+.hud-chrome-prefs > .theme-control,
+.hud-chrome-prefs > .language-control {
   border-left: var(--hairline) solid var(--border-hairline);
 }
 
 .display-scale,
-.theme-control {
+.theme-control,
+.language-control {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -393,7 +401,8 @@ canvas {
    the rail stops being a fixed-width column, so its contents stop being one. */
 @media (max-width: 720px) {
   .display-scale,
-  .theme-control {
+  .theme-control,
+  .language-control {
     width: 100%;
   }
 }
@@ -402,7 +411,8 @@ canvas {
    wrapping: this is a legend, and a legend that wraps makes the row two tap
    targets tall for no gain. */
 .display-scale__legend,
-.theme-control__legend {
+.theme-control__legend,
+.language-control__legend {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -411,7 +421,8 @@ canvas {
 }
 
 .display-scale__cycle,
-.theme-control__cycle {
+.theme-control__cycle,
+.language-control__cycle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -430,13 +441,15 @@ canvas {
 }
 
 .display-scale__cycle:hover,
-.theme-control__cycle:hover {
+.theme-control__cycle:hover,
+.language-control__cycle:hover {
   background: var(--surface-active);
   color: var(--text-heading);
 }
 
 .display-scale__cycle:focus-visible,
-.theme-control__cycle:focus-visible {
+.theme-control__cycle:focus-visible,
+.language-control__cycle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
@@ -464,4 +477,37 @@ canvas {
 .theme-control__value {
   text-align: center;
   color: var(--text-heading);
+}
+
+/*
+ * The language control's readout (#663). It shares the theme readout's rules
+ * and adds the one the third control in the row made necessary: it may
+ * ellipsis.
+ *
+ * The other two readouts never need to. `100%` is four characters and `System`
+ * is six, both chosen to fit; this one holds an endonym, and an endonym is not
+ * a word this repository gets to pick the length of -- `Automatic (English)`
+ * is nineteen characters today, and the next locale offered decides its own.
+ * A readout that cannot shrink would push the row wider than the rail, and the
+ * rail is the fixed budget everything above records not having spare. The
+ * `min-width: 0` here is what lets the truncation engage against the
+ * `min-width: var(--tap-target)` the shared `.…__cycle` rule sets, and the
+ * button itself keeps that 44px floor -- so what shrinks is the text, never
+ * the target.
+ */
+.language-control__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--text-heading);
+}
+
+/* The button may give up width for the same reason its readout may; the
+   `min-width: var(--tap-target)` above is a floor and this is what lets a
+   flex parent take it down to that floor rather than to its content. */
+.hud-chrome-prefs > .language-control > .language-control__cycle {
+  min-width: var(--tap-target);
+  flex: 0 1 auto;
 }
