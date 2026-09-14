@@ -296,6 +296,11 @@ test.describe('the HUD layout shell', () => {
     await open(page, DESKTOP);
 
     for (const region of ['navigation', 'inspector', 'metrics'] as const) {
+      // The metric strip's own fold control lives in the Layout menu rather
+      // than on the strip, because the strip has no room for a second tap
+      // target -- `layout-shell.ts` carries the 36-combination measurement
+      // that put it there. Opening the menu is how a player reaches it.
+      if (region === 'metrics') await page.locator('.hud-layout__button').click();
       const arrow = page.locator(`.hud-layout__arrow[data-layout-region="${region}"]`);
       // The keyboard starts inside the region, which is the case constitution
       // article 16 is actually about: "Ukryty panel nie przechwytuje
@@ -372,10 +377,10 @@ test.describe('the HUD layout shell', () => {
     // The strip's own clock, before.
     await expect(page.locator('.hud-strip__clock')).toBeVisible();
 
+    await page.locator('.hud-layout__button').click();
     await page.locator('.hud-layout__arrow[data-layout-region="metrics"]').click();
     await expect(page.locator('.hud-strip__clock')).toBeHidden();
 
-    await page.locator('.hud-layout__button').click();
     const clock = page.locator('.hud-layout__clock');
     await expect(clock).toBeVisible();
     // The same three readouts the strip carries, from the same view model on
@@ -392,7 +397,9 @@ test.describe('the HUD layout shell', () => {
 
     await page.locator('.hud-layout__separator--inspector').focus();
     await page.keyboard.press('End');
+    await page.locator('.hud-layout__button').click();
     await page.locator('.hud-layout__arrow[data-layout-region="metrics"]').click();
+    await page.locator('.hud-layout__button').click();
     expect(await storedLayout(page)).toEqual({
       version: 1,
       collapsed: ['metrics'],

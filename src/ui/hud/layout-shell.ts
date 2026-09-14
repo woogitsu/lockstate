@@ -225,8 +225,43 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     metrics: options.metrics,
   };
 
+  /**
+   * The Layout menu's own drawer, built before the arrows because one of them
+   * lives in it (see `metricsRow` below).
+   */
+  const menuBody = element('div', { className: 'hud-layout__body' });
+  menuBody.hidden = true;
+  /** Where the metric strip's fold control sits, since the strip has no room for it. */
+  const metricsRow = element('div', { className: 'hud-layout__row hud-layout__row--fold' });
+
   // ---- the three collapse arrows -----------------------------------
   const toggles = {} as Record<LayoutRegion, IconButton>;
+  /**
+   * Where each arrow is mounted, and the third entry is the one that is not
+   * obvious.
+   *
+   * The navigation's and the inspector's go on their own regions, as siblings
+   * of the content they hide -- constitution article 16 by construction. **The
+   * metric strip's goes inside the Layout menu instead, because the strip is
+   * the one region with no pixels to give.** The strip is a wrapping flex whose
+   * rows are already full, so a second control in it needs a reserved gutter,
+   * and that gutter is `2 x --tap-target` -- 182px of a 720px window at 175 %.
+   * Measured across 36 viewport x interface-scale combinations at a 200 %
+   * browser page zoom: two controls in the strip cost one combination that
+   * passes without them (1440x900 at 175 %), one control costs none.
+   *
+   * The strip's handle is therefore the Layout button, which is visible at
+   * every layout including "map only" and never folds. That still satisfies
+   * article 16 -- *"Panel przywraca widoczny uchwyt"* -- and it is a weaker
+   * reading of the delivery's *"Strzałki zwijają ... górny pasek metryk"* than
+   * an arrow on the strip itself, which is why it is written out here rather
+   * than done quietly.
+   */
+  const toggleHosts: Readonly<Record<LayoutRegion, HTMLElement>> = {
+    navigation: options.navigation.container,
+    inspector: options.inspector.container,
+    metrics: metricsRow,
+  };
   for (const region of ['navigation', 'inspector', 'metrics'] as const) {
     const toggle = createIconButton({
       icon: 'chevron',
@@ -247,7 +282,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     // costs the region's flexible children less: appended last in the rail it
     // sat under `.hud__side`'s `margin-top: auto` and took its 44px straight
     // out of the Build panel.
-    regions[region].container.prepend(toggle.element);
+    toggleHosts[region].prepend(toggle.element);
   }
 
   /**
@@ -430,9 +465,8 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     ],
   });
 
-  const menuBody = element('div', {
-    className: 'hud-layout__body',
-    children: [
+  menuBody.append(
+    ...[
       // The visible legend lives **here**, not beside the button.
       // `display-scale.ts` puts its own next to its control and records why --
       // a bare glyph is ambiguous in a game that has an interface scale and a
@@ -447,11 +481,11 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       clockRow,
       navigationSlider.root,
       inspectorSlider.root,
+      metricsRow,
       mapOnly,
       reset,
     ],
-  });
-  menuBody.hidden = true;
+  );
 
   const menuButton = createIconButton({
     icon: 'overview',

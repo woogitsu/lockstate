@@ -4807,7 +4807,7 @@
  */
 .hud-strip {
   position: relative;
-  padding-right: calc(2 * var(--tap-target) + 4 * var(--space-1));
+  padding-right: calc(var(--tap-target) + 2 * var(--space-1));
 }
 
 /* ---- the Layout menu --------------------------------------------- */
@@ -4883,6 +4883,36 @@
 }
 
 .hud-layout__row[hidden] { display: none; }
+
+/*
+ * The metric strip's fold control, which lives in this drawer rather than on
+ * the strip -- see `layout-shell.ts` for the 36-combination measurement that
+ * put it here.
+ *
+ * Its sentence is visible here, where there is room for it. Everywhere else in
+ * this HUD an icon button's name is `screenReaderText`, hidden because the
+ * glyph is the affordance and the strip has no width for words; in a menu the
+ * words *are* the affordance, and showing the control's own accessible name is
+ * what keeps the visible label and the announced one the same string.
+ */
+.hud-layout__row--fold > .hud-layout__arrow {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0 var(--space-2);
+}
+
+.hud-layout__row--fold > .hud-layout__arrow > .ui-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  text-align: left;
+}
 
 .hud-layout__slider-label {
   font-family: var(--font-ui);
@@ -5214,6 +5244,35 @@
   .hud__side {
     position: relative;
     max-height: var(--hud-inspector-height);
+  }
+
+  /*
+   * The aside's own content paints **above** the sheet's handle, and this line
+   * exists only for a window where the rail is already too short for what it
+   * holds.
+   *
+   * At a 720x450 CSS viewport -- a 1440x900 window at a 200 % browser page
+   * zoom -- with the interface scale at 175 %, the strip is 179px and the tab
+   * bar is 130, so the rail gets 153px for a 79px chrome row plus two panels.
+   * `.hud__aside` is 38px around 79px of content and the overflow lands on the
+   * sheet below it. That is the 200 %-zoom debt this stage inherited (#1159's
+   * own issue thread records 23 of 36 combinations failing identically on
+   * `origin/main`) and it is not this change's to fix.
+   *
+   * What *is* this change's is not making it worse. Without this rule the
+   * sheet's separator -- painted later, and `pointer-events: auto` -- won the
+   * hit test at the interface-scale button's centre, so the combination went
+   * from failing on containment to failing on reachability as well. With it the
+   * paint order is exactly what it was before this stage existed. Where the
+   * rail is tall enough for its content, which is every combination at 100 %,
+   * nothing overlaps and this rule does nothing at all.
+   */
+  .hud__aside {
+    position: relative;
+    /* 2, not 1: the separator itself carries `z-index: 1`, and two positioned
+       siblings at the same index are decided by document order -- which the
+       sheet wins, because it comes after the aside. */
+    z-index: 2;
   }
 
   .hud[data-layout-inspector='collapsed'] .hud__side { max-height: none; }
