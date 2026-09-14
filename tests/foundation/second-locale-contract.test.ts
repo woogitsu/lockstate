@@ -7,6 +7,7 @@ import type { MessageCatalog, MessageEntry } from '../../src/services/localizati
 import { buildMessageCatalog } from '../../src/services/localization/catalog';
 import { defaultMessageCatalogEn } from '../../src/services/localization/default-catalog';
 import { PSEUDO_LOCALE } from '../../src/services/localization/locale';
+import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 import { buildPseudoLocaleCatalog } from '../../src/services/localization/pseudo';
 
 /**
@@ -42,15 +43,23 @@ const SRC_ROOT = join(__dirname, '../../src');
 /**
  * Every non-default catalogue this repository can build.
  *
- * One today. `tests/fixtures/localization/*.json` are deliberately excluded:
- * they are four-key fixtures for `tests/unit/localization-chunk-delivery.test.ts`
+ * Two. `tests/fixtures/localization/*.json` are deliberately excluded: they
+ * are four-key fixtures for `tests/unit/localization-chunk-delivery.test.ts`
  * written against a four-key reference, so auditing them against the real
- * catalogue would report 588 keys of nothing. When #661's `pl` catalogue and
- * #662's chunk importer meet, that catalogue registers here and the ratchet
- * below gains its row.
+ * catalogue would report 588 keys of nothing.
+ *
+ * **`pl` arrived on 2026-09-14 (#661), and it arrived without #662.** The
+ * paragraph this replaces said the catalogue would register here "when #661's
+ * `pl` catalogue and #662's chunk importer meet", and it was wrong about the
+ * order rather than about the destination: the audit needs a `MessageCatalog`
+ * and nothing else, so a catalogue no loader can reach yet is exactly as
+ * auditable as one a player can select. Waiting for the delivery half would
+ * have meant authoring 669 Polish strings with no gate over them, which is the
+ * opposite of what this file is for.
  */
 const NON_DEFAULT_CATALOGS: Readonly<Record<string, () => MessageCatalog>> = {
   [PSEUDO_LOCALE]: () => buildPseudoLocaleCatalog(defaultMessageCatalogEn),
+  pl: () => messageCatalogPl,
 };
 
 /**
@@ -63,6 +72,21 @@ const NON_DEFAULT_CATALOGS: Readonly<Record<string, () => MessageCatalog>> = {
  */
 const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
   [PSEUDO_LOCALE]: 588,
+  /*
+   * `pl` translates every key the bundled English catalogue holds -- 669 of
+   * 669, measured on 2026-09-14 at `189a97a3` -- so its floor is the whole
+   * catalogue and this row cannot be satisfied by losing a key.
+   *
+   * **It is deliberately not a completeness requirement, and the difference
+   * matters here more than anywhere else in this file.** #664's rule is that
+   * no gate may be passable only by having a complete translation; this row
+   * ratchets what was *measured after the fact*, which is the opposite
+   * direction. A key added to the English catalogue tomorrow does not fail
+   * this -- `pl` simply falls back for it, exactly as the audit's docblock
+   * says a partial locale should -- and the floor stays where the last
+   * deliberate measurement put it.
+   */
+  pl: 669,
 };
 
 describe('every non-default catalogue is well-formed, without being required to be complete (#664)', () => {
