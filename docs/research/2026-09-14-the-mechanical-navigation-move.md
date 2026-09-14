@@ -430,7 +430,61 @@ them touches an id another one depends on.
 
 ---
 
-## 7. Open questions for the owner — not resolved here
+## 7. Open questions for the owner — three of them ruled on 2026-09-14
+
+**The owner answered questions 1, 2 and 4 on 2026-09-14, after this document was
+written and while the pull request carrying it was open.** The questions are
+kept below exactly as they were asked, because the arguments on both sides are
+the reason each ruling means something; the rulings are recorded here, ahead of
+them, so a reader cannot take a question for an open one.
+
+| Question | Ruling | Against the argument this document gave? |
+|---|---|---|
+| 1 — Intake: Zarządzaj or Przegląd? | **Zarządzaj** | No — it follows the delivery's own table |
+| 2 — Materials and deliveries: Buduj or Zarządzaj? | **Buduj** | No — no source settled it either way |
+| 4 — What seeds Przegląd? | **A new Overview-native readout; `src/ui/save-panel.ts` stays in the rail** | No |
+
+**Provenance is the weaker kind, and this document should say so in the same
+breath it records the rulings.** Each is the label of a clickable option a
+session wrote and the owner chose, not a sentence the owner typed — the
+distinction `AGENTS.md`'s 2026-09-08, -09 and -10 entries draw of themselves,
+and the one ADR 0112's decision 3 does not need because it quotes words the
+owner typed. The option labels, verbatim, in the Polish they were put in:
+
+> 1. *"Zarządzaj (zgodnie z dostawą)"* — "Manage (as the delivery says)"
+> 2. *"Buduj"*
+> 4. *"Nowy odczyt w Przeglądzie, panel zapisu zostaje w szynie"* — "A new
+>    readout in Overview, the save panel stays in the rail"
+
+**What ruling 1 costs, and it was put to the owner before they chose.** Moving
+Intake out leaves Przegląd with no panel at all, because Intake is the only
+thing that tab shows today (§1's own table). Ruling 4 is what answers for
+that, and the two therefore land together or Przegląd ships empty — which is a
+thing constitution article 5 has an opinion about, since an empty section is a
+screen that looks like state and is not.
+
+**What ruling 4 decides and what it does not.** It decides that Przegląd gets
+its own finance-and-save readout calling the same persistence functions, and
+that `src/ui/save-panel.ts` is **not** moved bodily into the tab system — it
+stays mounted in the rail aside slot (`src/main.ts:3418`), reachable from every
+section, which §1 item 4 records as a property rather than an accident. It does
+**not** decide what that readout contains field by field; that is ordinary work
+under the standing mandate, and every number it shows is still subject to
+`AGENTS.md`'s fourth reservation — the wording is ours, the truth is not.
+
+**Question 3 was never open** — §4.1 settles it by DOM containment and this
+document said so when it listed it.
+
+**Still to do, and named here so it is not lost:** these three rulings belong in
+`docs/IDENTITY_V5_ROLLOUT.md` beside the stages they change, and Przegląd's
+readout needs an issue of its own. Neither is done in this document, which is a
+measurement pass; both are held until the stage 3 shell branch merges, because
+`src/ui/hud/` is being rewritten while this is written.
+
+---
+
+### The questions as they were asked
+
 
 1. **Intake: Zarządzaj or Przegląd?** The delivery's nav table names Zarządzaj
    (§1, §4.2). `intake-panel.ts`'s own docblock and `docs/VISUAL_IDENTITY.md`'s
