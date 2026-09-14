@@ -591,16 +591,18 @@
    * ## What each step is for
    *
    *   - `--type-body` (15px) -- running text and HUD values. The ruled body
-   *     size, and stage 2's destination for `--text-size-body` and
-   *     `--text-size-value`.
-   *   - `--type-secondary` (13px) -- the denser step. Today's body size, and
-   *     the step a surface keeps when 15px does not fit it. Keeping it is an
-   *     allowed outcome and is inside the ruling -- the option label carrying
-   *     the ruling read *"np."* ("e.g.") -- **provided the surface records
-   *     why**, in a comment beside the override. What is not allowed is the
-   *     direction: no surface goes above 16/14/12 or below today's 13/11.
+   *     size, and what `--text-size-body` and `--text-size-value` select.
+   *   - `--type-secondary` (13px) -- the denser step. What the interface was
+   *     set in before stage 2, and the step a surface keeps when 15px does
+   *     not fit it. Keeping it is an allowed outcome and is inside the ruling
+   *     -- the option label carrying the ruling read *"np."* ("e.g.") --
+   *     **provided the surface records why**, in a comment beside the
+   *     override, and provided it joins the closed list the layer-1b section
+   *     below holds and `ui-design-tokens.test.ts` pins. What is not allowed
+   *     is the direction: no step goes above the delivery's 16/14/12 or below
+   *     the 13/11 the interface already had.
    *   - `--type-label` (11px) -- eyebrows, tab labels, units. Already the
-   *     ruled size, so stage 2 does not move it.
+   *     ruled size, so stage 2 did not move it.
    */
   --type-display: calc(31px * var(--ui-scale));
   --type-title: calc(23px * var(--ui-scale));
