@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
+  loadThemeSettings,
   resolveBrowserKeyValueStore,
+  saveThemeSettings,
   saveAccessibilitySettings,
 } from './input';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/local/indexeddb-store';
@@ -22,6 +24,7 @@ import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-fee
 import { WorldScene } from './rendering/scene/world-scene';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
+import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -3309,7 +3312,81 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * panels nothing at all, because `.hud__aside` takes its height from the
    * rail rather than from its contents (`hud.css`).
    */
-  hud.asideSlot.append(displayScale.element);
+  /*
+   * Both chrome controls in **one row**, side by side, and the reason is
+   * measured rather than aesthetic (#1157).
+   *
+   * `app-shell.spec.ts` refused a second row in this slot twice -- first with
+   * a three-option choice group, then with a one-button row of the same shape
+   * as the scale control's. The aside is a fixed budget the Build panel, the
+   * Rooms panel and the save panel are already sharing, and 52px of it is not
+   * spare: the second row put the HUD under the centre of a 375x812 viewport
+   * ("a click in the middle of the screen reaches the world"), covered **26**
+   * controls on the Build tab at 1280x720 (#88), scrolled the rail 57px at
+   * 375x812 and 200 % (#545), and pushed bare world onto the Rooms panel's
+   * arrival at 375x812 (112px against a 64px bound).
+   *
+   * Side by side costs **no** height at all -- one 44px row holds two 44px
+   * buttons -- and costs each legend some width, which is why
+   * `.display-scale__legend` was already written to ellipsis rather than wrap.
+   * Neither control knows it is in a row: the wrapper takes the box (border,
+   * background, rail width) and the two give theirs up inside it, in
+   * `src/styles.css`. That keeps `display-scale.ts` untouched by a change that
+   * is about where a control sits, which is the HUD's business and not its.
+   */
+  const chromeRow = document.createElement('div');
+  chromeRow.className = 'hud-chrome-prefs';
+  chromeRow.append(displayScale.element);
+
+  /*
+   * The theme, wired end to end (#1157, ADR 0112 decision 2).
+   *
+   * The same three moves as the interface scale above, and on the same
+   * `settingsStore`: read the preference, apply what it resolves to, build a
+   * controlled control that reports a choice and changes nothing itself.
+   *
+   * **`createThemeController` applies a theme before this line runs**, in its
+   * own constructor, so the page is already at the player's theme rather than
+   * flipping to it once the control exists. It is also the only thing in the
+   * tree that reads `prefers-color-scheme`; `tokens.css` has no media query,
+   * because a stylesheet that also decided would be a second decider.
+   *
+   * **Its own storage key, not a field of the accessibility record** --
+   * constitution article 13: a theme is a preference, it is not part of the
+   * save, and clearing it must not clear the interface scale beside it.
+   *
+   * `document.documentElement` is the element `:root` selects, read here in
+   * the composition root for the same reason the scale reads it here.
+   */
+  const themeControl = createThemeControl({
+    localizer,
+    preference: 'system',
+    onSelect: (preference) => {
+      themeController.select(preference);
+    },
+  });
+  const themeController = createThemeController({
+    root: document.documentElement,
+    // Read here and persisted here, not inside the control: the boundary gate
+    // `tests/unit/ui-orchestration-boundaries.test.ts` records, of the
+    // interface-scale control, that a UI module importing `src/input/storage`
+    // is "the erosion to catch". An earlier draft of `src/ui/theme.ts` did it
+    // and that gate found it.
+    preference: loadThemeSettings(settingsStore).preference,
+    persist: (preference) => {
+      saveThemeSettings(settingsStore, { version: 1, preference });
+    },
+    system: resolveSystemThemeQuery(),
+    // The device switching at sunset moves a `'system'` player's theme without
+    // anything being pressed, and the control has to follow that rather than
+    // keep showing the option it last saw pressed.
+    onChange: (_theme, preference) => {
+      themeControl.setPreference(preference);
+    },
+  });
+  themeControl.setPreference(themeController.preference);
+  chromeRow.append(themeControl.element);
+  hud.asideSlot.append(chromeRow);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;

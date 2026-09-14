@@ -29,6 +29,7 @@ export const ICON_IDS = [
   'check',
   'brand',
   'ui-scale',
+  'theme',
   'dismiss',
   'zoom-in',
   'zoom-out',
@@ -72,6 +73,19 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   // the glyph a player already reads as "text size" everywhere else. Strokes
   // only, like every other entry -- two strokes per letter, the stem pair and
   // the crossbar, so it stays legible at 16px.
+  // The theme (#1157): a circle with one half struck through, the glyph a
+  // player already reads as "contrast" or "appearance". Strokes only, like
+  // every other entry -- the outline plus three chords across one half, which
+  // reads as a filled half at 16px without needing a fill this icon set does
+  // not use. Not a sun and not a moon: the control offers three values and one
+  // of them is "follow the device", which neither of those glyphs can mean.
+  theme: [
+    'M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z',
+    'M12 4.25v15.5',
+    'M12 7.5h5.9',
+    'M12 12h7.7',
+    'M12 16.5h5.9',
+  ],
   'ui-scale': [
     'M3.25 18.75 8 5.25l4.75 13.5',
     'M4.9 14.25h6.2',

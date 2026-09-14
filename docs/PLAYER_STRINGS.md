@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 459 authored sentences
+## The 464 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -486,5 +486,10 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:3333` |
 | `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:3349` |
 | `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:3350` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3360` |
+| `display.theme.region` | Theme | `src/content/default-locale-en.ts:3366` |
+| `display.theme.system` | System | `src/content/default-locale-en.ts:3367` |
+| `display.theme.light` | Light | `src/content/default-locale-en.ts:3368` |
+| `display.theme.dark` | Dark | `src/content/default-locale-en.ts:3369` |
+| `display.theme.cycle` | Change the interface theme | `src/content/default-locale-en.ts:3370` |
+| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:3380` |
 
