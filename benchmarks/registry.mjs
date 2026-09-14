@@ -17,6 +17,13 @@ import {
   navigationProductionSingleRequestBudgetScenario,
   navigationProductionYardCrossingScenario,
 } from './scenarios/navigation-production.mjs';
+import {
+  regimeScheduleLookupEightGroupsScenario,
+  regimeScheduleLookupFourGroupsScenario,
+  regimeScheduleLookupIdleSessionScenario,
+  regimeScheduleLookupSixteenGroupsScenario,
+  regimeScheduleLookupTwoGroupsScenario,
+} from './scenarios/regime-schedule-lookup.mjs';
 
 export const benchmarkScenarios = Object.freeze([
   foundationSmokeScenario,
@@ -32,6 +39,11 @@ export const benchmarkScenarios = Object.freeze([
   navigationProductionSingleRequestBudgetScenario,
   navigationProductionYardCrossingScenario,
   actorRenderPublicationScenario,
+  regimeScheduleLookupTwoGroupsScenario,
+  regimeScheduleLookupFourGroupsScenario,
+  regimeScheduleLookupEightGroupsScenario,
+  regimeScheduleLookupSixteenGroupsScenario,
+  regimeScheduleLookupIdleSessionScenario,
 ]);
 
 export function findBenchmarkScenario(id) {
