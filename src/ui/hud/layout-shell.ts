@@ -19,7 +19,13 @@ import {
   type SeparatorResizeReason,
   createResizeSeparator,
 } from '../primitives/resize-separator';
-import { type HudLayoutGeometry, type LayoutViewport, resolveHudLayout, sizeFieldFor } from './hud-layout';
+import {
+  type HudLayoutGeometry,
+  type LayoutViewport,
+  layoutCustomProperties,
+  resolveHudLayout,
+  sizeFieldFor,
+} from './hud-layout';
 import { HUD_MESSAGE_KEY } from './messages';
 import { CLOCK_UNKNOWN_TEXT, dayProgressPercent, displayDay } from './projection';
 import type { HudClockViewModel, HudLocalizer } from './view-model';
@@ -608,9 +614,16 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       inspectorSeparator = createInspectorSeparator(geometry);
     }
 
-    root.style.setProperty('--hud-navigation-width', `${geometry.navigationExtent}px`);
-    root.style.setProperty('--hud-inspector-width', `${geometry.phone ? 0 : geometry.inspectorExtent}px`);
-    root.style.setProperty('--hud-inspector-height', `${geometry.inspector.size}px`);
+    /*
+     * Each of the three from `layoutCustomProperties`, which resolves it for
+     * the tier that *reads* it rather than the tier the window is in. The
+     * frame between CSS crossing 720px and this function hearing about it is
+     * what #529 failed in; that module's header carries the measurement.
+     */
+    const lengths = layoutCustomProperties(geometry, settings, viewport);
+    root.style.setProperty('--hud-navigation-width', `${lengths.navigationWidth}px`);
+    root.style.setProperty('--hud-inspector-width', `${lengths.inspectorWidth}px`);
+    root.style.setProperty('--hud-inspector-height', `${lengths.inspectorHeight}px`);
     root.dataset['layoutTier'] = geometry.phone ? 'phone' : 'desktop';
     root.dataset['layoutNavigationPlacement'] = geometry.navigationPlacement;
     root.dataset['layoutMapOnly'] = isMapOnly(settings) ? 'true' : 'false';

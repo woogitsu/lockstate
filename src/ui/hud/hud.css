@@ -5289,7 +5289,23 @@
    * panel's 264px and `app-shell.spec.ts` reported "the rail's panels are not
    * all one width", which is the invariant that token was created to hold.
    */
-  .hud { --hud-rail-panel-width: var(--hud-inspector-width); }
+  .hud { --hud-rail-panel-width: max(var(--hud-inspector-width), calc(260px * var(--ui-scale))); }
+
+  /*
+   * The `max()` above is a **fail-safe and never a limit**: 260 is
+   * `INSPECTOR_WIDTH_RANGE.min`, so a settled frame is already at or above it
+   * and this changes nothing a player can see. It is here because the value
+   * arrives from JavaScript, and #529 caught the one frame where it arrived
+   * wrong -- a `0` left behind by the phone tier, which made every panel in
+   * the rail 2px wide and wrapped its text one character per line. The root
+   * fix is in `hud-layout.ts`'s `layoutCustomProperties`; this is the floor
+   * that stops the same class of mistake reaching a player next time.
+   *
+   * Lifted for a **collapsed** inspector, where 0 is the honest width and the
+   * panels it would size are `hidden` anyway -- a floor there would widen a
+   * rail the player has just folded away.
+   */
+  .hud[data-layout-inspector='collapsed'] { --hud-rail-panel-width: var(--hud-inspector-width); }
 
 
   /*

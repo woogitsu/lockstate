@@ -14,6 +14,7 @@ import {
 } from '../../src/input/layout-preference';
 import {
   DEFAULT_INSPECTOR_WIDTH_PX,
+  DEFAULT_SHEET_HEIGHT_PX,
   DEFAULT_NAVIGATION_WIDTH_PX,
   INSPECTOR_WIDTH_RANGE,
   MAP_WIDTH_RESERVE_PX,
@@ -23,6 +24,7 @@ import {
   SHEET_MIN_HEIGHT_PX,
   SHEET_VIEWPORT_RESERVE_PX,
   inspectorRange,
+  layoutCustomProperties,
   isPhoneLayout,
   NAVIGATION_RAIL_PADDING_PX,
   NAVIGATION_RAIL_SLACK_PX,
@@ -310,5 +312,73 @@ describe('resolving a whole frame', () => {
   it('gives a phone no navigation width at all, folded or not', () => {
     expect(resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, PHONE).navigationExtent).toBe(0);
     expect(resolveHudLayout(withRegionCollapsed(DEFAULT_LAYOUT_SETTINGS, 'navigation', true), PHONE).navigationExtent).toBe(0);
+  });
+});
+
+describe('the three custom properties the stylesheet reads (#529)', () => {
+  /*
+   * The tier is decided twice -- by `@media (max-width: 720px)` and by this
+   * module -- and the two do not land together: CSS switches the instant the
+   * window crosses, this module is told by a `resize` event. Every assertion
+   * here is about the frame in between, which is where #529 failed.
+   */
+
+  it('carries a legal desktop inspector width while the window is still a phone', () => {
+    const geometry = resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, PHONE);
+    const lengths = layoutCustomProperties(geometry, DEFAULT_LAYOUT_SETTINGS, PHONE);
+    /*
+     * This was `0` and that is the whole defect: the desktop rules read it the
+     * moment the window crossed 720px, so `--hud-rail-panel-width` became 0 and
+     * every panel in the rail was 2px wide. Measured on the assembled page at
+     * 1024x768: the Rooms panel's status block at y = 1287 against a fold at
+     * y = 755, where a settled frame puts it at y = 747.
+     */
+    expect(lengths.inspectorWidth).toBe(DEFAULT_INSPECTOR_WIDTH_PX);
+    expect(lengths.inspectorWidth).toBeGreaterThanOrEqual(INSPECTOR_WIDTH_RANGE.min);
+    // The height is the tier the window is actually in, so it is the resolved one.
+    expect(lengths.inspectorHeight).toBe(geometry.inspector.size);
+  });
+
+  it('carries the player’s own stored width across the tier, not merely a default', () => {
+    const settings = withLayoutSize(DEFAULT_LAYOUT_SETTINGS, 'inspectorWidth', 420);
+    expect(layoutCustomProperties(resolveHudLayout(settings, PHONE), settings, PHONE).inspectorWidth).toBe(420);
+  });
+
+  it('scales an off-tier width with the interface, because the value it stands in for is painted', () => {
+    const phoneAt150 = { width: 375, height: 812, uiScale: 1.5 };
+    const lengths = layoutCustomProperties(
+      resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, phoneAt150),
+      DEFAULT_LAYOUT_SETTINGS,
+      phoneAt150,
+    );
+    expect(lengths.inspectorWidth).toBe(DEFAULT_INSPECTOR_WIDTH_PX * 1.5);
+  });
+
+  it('still reports nothing for a region the player has folded away', () => {
+    const folded = withRegionCollapsed(DEFAULT_LAYOUT_SETTINGS, 'inspector', true);
+    expect(layoutCustomProperties(resolveHudLayout(folded, PHONE), folded, PHONE).inspectorWidth).toBe(0);
+    const nav = withRegionCollapsed(DEFAULT_LAYOUT_SETTINGS, 'navigation', true);
+    expect(layoutCustomProperties(resolveHudLayout(nav, PHONE), nav, PHONE).navigationWidth).toBe(0);
+  });
+
+  it('carries a legal phone sheet height while the window is a desktop', () => {
+    const geometry = resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, DESKTOP);
+    const lengths = layoutCustomProperties(geometry, DEFAULT_LAYOUT_SETTINGS, DESKTOP);
+    // It used to be the inspector's *width*, which was legal by luck.
+    expect(lengths.inspectorHeight).toBe(DEFAULT_SHEET_HEIGHT_PX);
+    expect(lengths.inspectorHeight).toBeGreaterThanOrEqual(SHEET_MIN_HEIGHT_PX);
+    expect(lengths.inspectorWidth).toBe(geometry.inspectorExtent);
+  });
+
+  it('agrees with the defaults tokens.css ships, so a first frame before any script is the same layout', () => {
+    const tokens = readFileSync(new URL('../../src/ui/tokens.css', import.meta.url), 'utf8');
+    const declared = (name: string): number => {
+      const match = new RegExp(`--hud-${name}:\\s*(\\d+)px`).exec(tokens);
+      expect(match, `tokens.css declares no default for --hud-${name}`).not.toBeNull();
+      return Number(match![1]);
+    };
+    expect(declared('inspector-height')).toBe(DEFAULT_SHEET_HEIGHT_PX);
+    expect(declared('inspector-width')).toBe(DEFAULT_INSPECTOR_WIDTH_PX);
+    expect(declared('navigation-width')).toBe(DEFAULT_NAVIGATION_WIDTH_PX);
   });
 });
