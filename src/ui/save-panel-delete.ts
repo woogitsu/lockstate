@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../content/localization';
+import type { RestoreOutcome } from '../persistence/local/repository';
 import type { MessageParameters } from '../services/localization/format';
 import { SAVE_PANEL_MESSAGE_KEY } from './save-panel-messages';
 
@@ -201,4 +202,67 @@ export function describeDeleteConfirmation(
     messageKey: SAVE_PANEL_MESSAGE_KEY.deleteConfirm,
     messageParameters: { name: arming.named, age },
   };
+}
+
+/**
+ * What a deleted prison's row says while its undo window is open (ADR 0114).
+ *
+ * `{name}` is the display name the tombstone kept a copy of, or the prison id
+ * where there never was one -- the same fallback the live row uses, and for the
+ * same reason: both are data the player recognises and neither is translatable.
+ *
+ * **No remaining time is computed here, and that is the design rather than an
+ * omission.** `SavePanel.refresh()` runs at mount and after every action and
+ * never on a timer, so any duration painted into this row would be correct only
+ * until the player stopped pressing things. ADR 0114 §3 settles what a display
+ * may claim: the gate on an undo is the repository's own clock reading at the
+ * press, never what a row last said, so a row that promises nothing about time
+ * cannot promise it wrongly. What the row does assert -- that this prison can
+ * still be brought back -- is true by construction, because
+ * `listTombstones()` swept every copy whose window had closed before returning
+ * the ones it did.
+ */
+export function describeDeletedPrison(named: string): SaveMessage {
+  return { messageKey: SAVE_PANEL_MESSAGE_KEY.tombstoneItem, messageParameters: { name: named } };
+}
+
+/**
+ * The four outcomes of pressing "Bring it back", as message keys.
+ *
+ * Shaped as a total switch over `RestoreFromTombstoneResult`'s arms rather than
+ * as an `ok ? a : b`, so a fifth outcome added to the repository fails `tsc`
+ * here instead of silently falling through to whichever sentence was written
+ * last. That is `describeSaveResult`'s discipline one module over, and
+ * `retentionVerdictFor` in `repository.ts` states the same rule for the same
+ * reason.
+ *
+ * `named` is only spent on the success arm. The three refusals deliberately do
+ * not name the prison: two of them are true precisely because the thing the
+ * name refers to is gone, and a sentence that names it while saying it is not
+ * there reads as though something is still recoverable.
+ *
+ * `RestoreOutcome` is imported from the repository rather than restated here,
+ * so the union has exactly one definition and this switch is what fails when it
+ * grows. It is a type, erased at compile time -- this module still runs no
+ * persistence code, which is what its entry in
+ * `tests/unit/ui-orchestration-boundaries.test.ts` records.
+ */
+export function describeRestoreOutcome(outcome: RestoreOutcome, named: string): SaveMessage {
+  switch (outcome) {
+    case 'restored':
+      return {
+        messageKey: SAVE_PANEL_MESSAGE_KEY.statusTombstoneRestored,
+        messageParameters: { name: named },
+      };
+    case 'window-closed':
+      return { messageKey: SAVE_PANEL_MESSAGE_KEY.statusTombstoneWindowClosed };
+    case 'slot-taken':
+      return { messageKey: SAVE_PANEL_MESSAGE_KEY.statusTombstoneSlotTaken };
+    case 'not-found':
+      return { messageKey: SAVE_PANEL_MESSAGE_KEY.statusTombstoneGone };
+    default: {
+      const unhandled: never = outcome;
+      throw new Error(`Unhandled restore outcome "${String(unhandled)}".`);
+    }
+  }
 }

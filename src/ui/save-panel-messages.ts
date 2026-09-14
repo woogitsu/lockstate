@@ -156,6 +156,41 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   deleteAgeMinutes: 'save.delete.age.minutes',
   deleteAgeHours: 'save.delete.age.hours',
   deleteAgeDays: 'save.delete.age.days',
+
+  /**
+   * The undo window's row and its two controls (ADR 0114).
+   *
+   * Two controls, both named after their outcome, for
+   * `actionDeleteConfirm`/`actionDeleteCancel`'s reason one screenful up: a
+   * control read out of context by a screen reader has to carry its own
+   * meaning, and neither of these is a "yes" or a "no" to anything.
+   *
+   * `tombstoneForget` is the owner's ruling of 2026-09-14 and is the reason
+   * this feature is allowed to hold bytes at all --
+   * `PrisonSaveRepository.forgetTombstone` carries the argument beside the code
+   * that does it.
+   */
+  tombstoneItem: 'save.tombstone.item',
+  actionTombstoneRestore: 'save.action.tombstone-restore',
+  actionTombstoneForget: 'save.action.tombstone-forget',
+
+  /**
+   * One sentence per arm of `RestoreFromTombstoneResult`, plus the one
+   * `forgetTombstone` produces.
+   *
+   * Not collapsed into a single "could not bring it back", on issue #19's
+   * argument: a closed window, a slot somebody else took and a copy that is
+   * simply not there call for three different things to be understood, and the
+   * repository already distinguishes all three as data.
+   */
+  statusTombstoneRestored: 'save.status.tombstone-restored',
+  statusTombstoneWindowClosed: 'save.status.tombstone-window-closed',
+  statusTombstoneSlotTaken: 'save.status.tombstone-slot-taken',
+  statusTombstoneGone: 'save.status.tombstone-gone',
+  statusTombstoneForgotten: 'save.status.tombstone-forgotten',
+
+  failureRestore: 'save.failure.restore',
+  failureForget: 'save.failure.forget',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;
 
 export type SavePanelMessageKey = (typeof SAVE_PANEL_MESSAGE_KEY)[keyof typeof SAVE_PANEL_MESSAGE_KEY];

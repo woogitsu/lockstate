@@ -1272,6 +1272,22 @@ export interface LockstateUiHarness {
    */
   confirmDeleteDirect(prisonId: string): string;
   deletedPrisons(): readonly string[];
+  /** Every prison whose held copy the panel has asked to free (ADR 0114). */
+  forgottenPrisons(): readonly string[];
+  /**
+   * Makes the stub's next restore report this outcome.
+   *
+   * The only route to the three refusals from a browser: a window that closes
+   * on a wall clock cannot be waited out in a test, and the point of ADR 0114's
+   * design is that the refusal is decided by the layer below the panel anyway.
+   */
+  setRestoreOutcome(outcome: 'restored' | 'window-closed' | 'slot-taken' | 'not-found'): void;
+  /** Rows on the page for deleted prisons -- read from the DOM. */
+  deletedPrisonRowCount(): number;
+  /** Copies the stub still holds, which is what a freed copy has to change and a row cannot show. */
+  heldCopyCount(): number;
+  /** Clicks a control on one deleted prison's own row, identified by the row rather than by label. */
+  clickDeletedPrisonButton(prisonId: string, label: string): boolean;
   /** The delete confirmation's question as rendered, or `''` when none is on the page. */
   deleteConfirmationText(): string;
   /** What the keyboard is standing on, by label; `''` for `<body>` (article 16's failure state). */

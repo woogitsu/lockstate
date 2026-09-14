@@ -1,4 +1,4 @@
-import type { SaveImportResult, SaveResult } from '../../src/persistence/local/repository';
+import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveInventory, SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import {
@@ -154,7 +154,21 @@ class StubSessions implements SavePanelSessions {
    * right up until the moment this array is read.
    */
   public readonly deletedPrisons: string[] = [];
+  /** Every prison whose copy the panel has asked to free, in order (ADR 0114). */
+  public readonly forgottenPrisons: string[] = [];
   private readonly prisons: PrisonSlotMetadata[] = [];
+  /**
+   * The stub's `tombstones` store (ADR 0114).
+   *
+   * A real move rather than a list of names: `deletePrison` takes the slot out
+   * of `prisons` and puts it here, `restoreDeletedPrison` puts it back, and
+   * both lists are read by the panel through the same port the real controller
+   * satisfies. A stub that only recorded the call would leave a panel that
+   * drew no row at all looking identical to one that drew the row correctly.
+   */
+  private readonly deleted: { readonly slot: PrisonSlotMetadata; readonly deletedAt: number; expiresAt: number }[] = [];
+  /** What the stub's next restore will report, so all four arms are reachable from a spec. */
+  private restoreOutcome: RestoreOutcome | undefined;
   private pendingCreate: Pending | undefined;
   private session: ActiveSession | undefined;
   private importOutcome: ImportOutcomeName = 'ok';
@@ -220,7 +234,65 @@ class StubSessions implements SavePanelSessions {
   public async deletePrison(prisonId: string): Promise<void> {
     this.deletedPrisons.push(prisonId);
     const index = this.prisons.findIndex((prison) => prison.prisonId === prisonId);
-    if (index >= 0) this.prisons.splice(index, 1);
+    if (index < 0) return;
+    const [slot] = this.prisons.splice(index, 1);
+    if (slot === undefined) return;
+    const deletedAt = Date.now();
+    this.deleted.push({ slot, deletedAt, expiresAt: deletedAt + 24 * 60 * 60 * 1000 });
+  }
+
+  /** One read for both halves, exactly as the real controller does it. */
+  public async listSaves(): Promise<SaveInventory> {
+    return { prisons: await this.listPrisons(), deleted: await this.listDeletedPrisons() };
+  }
+
+  public async listDeletedPrisons(): Promise<readonly DeletedPrison[]> {
+    // The sweep, mirrored: the real repository deletes an expired copy in the
+    // transaction that reads it, so a stub that returned expired rows would
+    // let a spec assert a row the application can never draw.
+    const now = Date.now();
+    for (let index = this.deleted.length - 1; index >= 0; index -= 1) {
+      if (now >= (this.deleted[index]?.expiresAt ?? 0)) this.deleted.splice(index, 1);
+    }
+    return this.deleted.map((entry) => ({
+      prisonId: entry.slot.prisonId,
+      ...(entry.slot.displayName === undefined ? {} : { displayName: entry.slot.displayName }),
+      deletedAt: entry.deletedAt,
+      expiresAt: entry.expiresAt,
+    }));
+  }
+
+  public async restoreDeletedPrison(prisonId: string): Promise<RestoreOutcome> {
+    const forced = this.restoreOutcome;
+    this.restoreOutcome = undefined;
+    const index = this.deleted.findIndex((entry) => entry.slot.prisonId === prisonId);
+    if (forced !== undefined && forced !== 'restored') {
+      // Every refusal arm of the real method also destroys or declines to touch
+      // the copy; `'window-closed'` is the one that deletes it, which is what
+      // makes its sentence true.
+      if (forced === 'window-closed' && index >= 0) this.deleted.splice(index, 1);
+      return forced;
+    }
+    if (index < 0) return 'not-found';
+    const [entry] = this.deleted.splice(index, 1);
+    if (entry !== undefined) this.prisons.push(entry.slot);
+    return 'restored';
+  }
+
+  public async forgetDeletedPrison(prisonId: string): Promise<void> {
+    this.forgottenPrisons.push(prisonId);
+    const index = this.deleted.findIndex((entry) => entry.slot.prisonId === prisonId);
+    if (index >= 0) this.deleted.splice(index, 1);
+  }
+
+  /** Makes the next restore report this outcome, so a spec can reach all four. */
+  public setRestoreOutcome(outcome: RestoreOutcome): void {
+    this.restoreOutcome = outcome;
+  }
+
+  /** How many deleted prisons are still restorable, read without the DOM. */
+  public deletedCount(): number {
+    return this.deleted.length;
   }
 
   /**
@@ -1044,6 +1116,34 @@ window.lockstateUiHarness = {
 
   deletedPrisons(): readonly string[] {
     return [...(sessions?.deletedPrisons ?? [])];
+  },
+
+  forgottenPrisons(): readonly string[] {
+    return [...(sessions?.forgottenPrisons ?? [])];
+  },
+
+  setRestoreOutcome(outcome: RestoreOutcome): void {
+    sessions?.setRestoreOutcome(outcome);
+  },
+
+  /** Rows on the page for deleted prisons -- the DOM, not the stub's bookkeeping. */
+  deletedPrisonRowCount(): number {
+    return document.querySelectorAll('[data-deleted-prison]').length;
+  },
+
+  /** Copies the stub still holds, which is the half the DOM cannot show. */
+  heldCopyCount(): number {
+    return sessions?.deletedCount() ?? -1;
+  },
+
+  /** Clicks a control on one deleted prison's own row, by the row rather than by label. */
+  clickDeletedPrisonButton(prisonId: string, label: string): boolean {
+    const row = document.querySelector<HTMLElement>(`[data-deleted-prison="${CSS.escape(prisonId)}"]`);
+    if (row === null) return false;
+    const button = [...row.querySelectorAll('button')].find((candidate) => candidate.textContent === label);
+    if (button === undefined) return false;
+    button.click();
+    return true;
   },
 
   /** The text of the delete confirmation now on the page, or `''` if there is none. */

@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../content/localization';
 import { readableGenerationIds } from '../persistence/local/generation-policy';
-import type { SaveImportResult, SaveResult } from '../persistence/local/repository';
+import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveInventory, SaveResult } from '../persistence/local/repository';
 import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
 import type { ActiveSession, SessionLoadOutcome } from '../persistence/session/session-controller';
@@ -18,6 +18,8 @@ import { ambientFocusOwner, handOffFocus, keyboardIsUnclaimed } from './primitiv
 import {
   type DeleteArming,
   describeDeleteConfirmation,
+  describeDeletedPrison,
+  describeRestoreOutcome,
   describeSaveAge,
   pressDeleteConfirmation,
   retainDeleteArming,
@@ -149,7 +151,7 @@ export interface SaveStatus extends SaveMessage {
 }
 
 /** The panel's actions, named so a failure can say which one failed. */
-export type SavePanelActionId = 'create' | 'save' | 'load' | 'delete' | 'export' | 'import';
+export type SavePanelActionId = 'create' | 'save' | 'load' | 'delete' | 'export' | 'import' | 'restore' | 'forget';
 
 export function describeSaveResult(result: SaveResult): SaveStatus {
   if (result.ok) {
@@ -377,6 +379,8 @@ const ACTION_FAILURE_KEYS: Readonly<Record<SavePanelActionId, LocalizationKey>> 
   delete: SAVE_PANEL_MESSAGE_KEY.failureDelete,
   export: SAVE_PANEL_MESSAGE_KEY.failureExport,
   import: SAVE_PANEL_MESSAGE_KEY.failureImport,
+  restore: SAVE_PANEL_MESSAGE_KEY.failureRestore,
+  forget: SAVE_PANEL_MESSAGE_KEY.failureForget,
 };
 
 /**
@@ -418,12 +422,35 @@ export function describeActionFailure(failure: AsyncActionFailure, localizer: Sa
  * change.
  */
 export interface SavePanelSessions {
-  listPrisons(): Promise<readonly PrisonSlotMetadata[]>;
+  /**
+   * Everything the list shows, from one read.
+   *
+   * One call rather than a prisons call and a tombstones call, for the two
+   * reasons `PrisonSaveRepository.listSaves` states: a second transaction on
+   * every repaint was measured as a real cost in the browser reachability
+   * sweep, and two reads are two snapshots that a deletion landing between them
+   * can fall through entirely.
+   */
+  listSaves(): Promise<SaveInventory>;
   getActiveSession(): ActiveSession | undefined;
   createPrison(prisonId: string, displayName?: string): Promise<SaveResult>;
   saveNow(): Promise<SaveResult>;
   loadPrison(prisonId: string): Promise<SessionLoadOutcome>;
   deletePrison(prisonId: string): Promise<void>;
+  /**
+   * The undo window's three calls (ADR 0114).
+   *
+   * On this port rather than reached for directly, exactly as `deletePrison`
+   * is: the panel renders outcomes the persistence layer reports and calls
+   * nothing under `src/persistence/` itself, which is what the
+   * `tests/unit/ui-orchestration-boundaries.test.ts` manifest records for this
+   * file. `listDeletedPrisons` is also the sweep -- it deletes every copy whose
+   * window has closed as it reads -- so the panel's existing `refresh()` is
+   * what enforces expiry, with no timer anywhere.
+   */
+  listDeletedPrisons(): Promise<readonly DeletedPrison[]>;
+  restoreDeletedPrison(prisonId: string): Promise<RestoreOutcome>;
+  forgetDeletedPrison(prisonId: string): Promise<void>;
   exportActive(): Promise<SaveEnvelope | undefined>;
   importInto(prisonId: string, raw: unknown): Promise<SaveImportResult>;
 }
@@ -503,6 +530,25 @@ export function newPrisonId(): string {
  */
 export function orderPrisonsForDisplay(prisons: readonly PrisonSlotMetadata[]): readonly PrisonSlotMetadata[] {
   return [...prisons].sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/**
+ * The order the deleted prisons are rendered in: **most recently deleted
+ * first** (ADR 0114).
+ *
+ * `orderPrisonsForDisplay`'s shape and its reasons, on a different field. A
+ * separate exported function rather than an inline `sort` because `refresh`
+ * writes to a real `document` and is therefore unreachable from `pnpm test`
+ * (`environment: 'node'`), which is how #445 shipped a list sorted backwards
+ * with the whole suite green. The input is copied before sorting, because the
+ * caller hands back a `readonly` view of a list it may keep.
+ *
+ * `deletedAt` rather than `expiresAt`: the two order identically while one
+ * window length is in force, and this one keeps ordering by the thing the
+ * player did if a per-deletion window ever exists.
+ */
+export function orderDeletedPrisonsForDisplay(deleted: readonly DeletedPrison[]): readonly DeletedPrison[] {
+  return [...deleted].sort((a, b) => b.deletedAt - a.deletedAt);
 }
 
 /**
@@ -708,8 +754,12 @@ export class SavePanel {
     const token = ++this.refreshToken;
 
     let prisons: readonly PrisonSlotMetadata[];
+    let deleted: readonly DeletedPrison[];
     try {
-      prisons = await this.controller.listPrisons();
+      // One read for both halves, and it is also the sweep: the call deletes
+      // every copy whose undo window has closed as it reads (ADR 0114 §3), so
+      // this repaint is what enforces the window with no timer anywhere.
+      ({ prisons, deleted } = await this.controller.listSaves());
     } catch (error) {
       if (token !== this.refreshToken) return;
       // Two different causes reach here: local storage being unusable at all
@@ -743,7 +793,10 @@ export class SavePanel {
     this.armedDeletion = retainDeleteArming(this.armedDeletion, prisons.map((prison) => prison.prisonId));
     const activeId = this.controller.getActiveSession()?.prisonId;
 
-    if (prisons.length === 0) {
+    // "No prisons yet" is false while a deleted one is still standing there to
+    // be brought back, so the empty row is drawn only when the list is empty of
+    // both kinds.
+    if (prisons.length === 0 && deleted.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'save-panel__empty';
       empty.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listEmpty);
@@ -808,6 +861,58 @@ export class SavePanel {
     }
 
     this.renderDeleteConfirmation();
+
+    // Beneath the live prisons, in one pass, after the confirmation has been
+    // placed: these rows are about prisons that are gone, and putting them
+    // above the ones the player still has would sort the list by recency of
+    // *loss* rather than by what they can play.
+    for (const gone of orderDeletedPrisonsForDisplay(deleted)) {
+      this.listElement.append(this.deletedPrisonRow(gone));
+    }
+  }
+
+  /**
+   * One deleted prison's row: what it was, and the two things that can be done
+   * about it (ADR 0114).
+   *
+   * The name is the copy's own -- the tombstone kept the slot record verbatim,
+   * so this is the name the row had before the deletion rather than one
+   * reconstructed afterwards.
+   *
+   * Both controls join `rowBusy` for the reason every other per-row control
+   * does: they are discarded and rebuilt on every `refresh`, and a control
+   * rebuilt during a busy period must come back disabled rather than live. The
+   * `focusKey`s carry the keyboard across that rebuild, and a prison that was
+   * brought back or freed has no replacement row -- which is a control that is
+   * really gone rather than one that moved, so nothing is focused and the
+   * keyboard stays where the browser left it.
+   */
+  private deletedPrisonRow(gone: DeletedPrison): HTMLElement {
+    const item = document.createElement('li');
+    item.className = 'save-panel__item';
+    item.dataset.deletedPrison = gone.prisonId;
+
+    const label = document.createElement('span');
+    label.className = 'save-panel__item-label';
+    const sentence = describeDeletedPrison(gone.displayName ?? gone.prisonId);
+    label.textContent = this.text(sentence.messageKey, sentence.messageParameters);
+    item.append(label);
+
+    item.append(
+      this.button(
+        this.rowBusy,
+        SAVE_PANEL_MESSAGE_KEY.actionTombstoneRestore,
+        () => this.requestRestore(gone.prisonId, gone.displayName ?? gone.prisonId),
+        `restore:${gone.prisonId}`,
+      ),
+      this.button(
+        this.rowBusy,
+        SAVE_PANEL_MESSAGE_KEY.actionTombstoneForget,
+        () => this.requestForget(gone.prisonId),
+        `forget:${gone.prisonId}`,
+      ),
+    );
+    return item;
   }
 
   /**
@@ -1063,6 +1168,58 @@ export class SavePanel {
     if (armed === undefined) return;
     const row = this.listElement.querySelector<HTMLElement>(`[data-prison="${CSS.escape(armed.prisonId)}"]`);
     handOffFocus(row?.querySelector<HTMLButtonElement>('button:last-of-type') ?? undefined);
+  }
+
+  /**
+   * Brings a deleted prison back (ADR 0114).
+   *
+   * **The press is not the gate and this method does not pretend to be one.**
+   * It asks the repository, which re-reads the stored `expiresAt` against its
+   * own clock inside the transaction that would do the writing. So a row left
+   * on screen while the player went to make tea cannot let a late press
+   * through, and the sentence the player then reads is chosen from what
+   * actually happened rather than from what the row believed.
+   *
+   * `named` is captured from the row the player pressed rather than re-read,
+   * which is `requestDelete`'s discipline one method up: the success sentence
+   * names the prison, and by the time it is said the copy that held the name
+   * has been spent.
+   */
+  public requestRestore(prisonId: string, named: string): AsyncActionOutcome {
+    return this.start('restore', async () => {
+      const outcome = await this.controller.restoreDeletedPrison(prisonId);
+      this.setStatus({
+        // A refusal is not a failure of the action -- nothing went wrong, the
+        // window closed -- so it carries `'idle'` rather than `'error'`, the
+        // same distinction `statusDeleteKept` draws for a deletion the player
+        // backed out of.
+        kind: outcome === 'restored' ? 'saved' : 'idle',
+        ...describeRestoreOutcome(outcome, named),
+      });
+      this.setDetail(undefined);
+      await this.refresh();
+    });
+  }
+
+  /**
+   * Throws the held copy away now, without waiting for the window to close
+   * (ADR 0114, the owner's ruling of 2026-09-14).
+   *
+   * **No confirmation, and that is deliberate rather than an oversight.** The
+   * gesture this panel already guards is deleting a prison the player still
+   * has, and it guards it because one press used to destroy it with nothing in
+   * between. This press acts on a prison the player has *already* confirmed the
+   * deletion of, one dialog ago; asking a second time would make the undo
+   * window a thing to be escaped rather than a thing to be spent, and the
+   * player who presses this is the one who wants their bytes back now.
+   */
+  public requestForget(prisonId: string): AsyncActionOutcome {
+    return this.start('forget', async () => {
+      await this.controller.forgetDeletedPrison(prisonId);
+      this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusTombstoneForgotten });
+      this.setDetail(undefined);
+      await this.refresh();
+    });
   }
 
   /**

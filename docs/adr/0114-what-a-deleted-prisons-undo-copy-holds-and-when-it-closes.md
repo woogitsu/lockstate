@@ -19,7 +19,49 @@
 
 ## Status
 
-**Proposed, 2026-09-14. Not self-approved.** The owner ruled on 2026-09-14,
+**Accepted by the owner on 2026-09-14, and the one question this document
+refused to answer for itself was answered with it.** The `Proposed` block below
+is kept rather than replaced, per `docs/AGENT_WORKFLOW.md` §4's rule that a
+correction marks both directions: what this document asked before it was
+answered is what a later reader needs in order to judge the answer.
+
+**What the acceptance covers as written:** §§1–3, 5 and 7 — the `tombstones`
+object store, `DATABASE_VERSION` 1 → 2, `delete()` becoming a move inside the
+transaction it already opens, lazy read-time expiry with no scheduler, the fresh
+`now() >= expiresAt` check at the press rather than a displayed countdown, and
+the rewrite of `save.delete.confirm`'s middle clause in the same commit that
+ships the restore path.
+
+**And it closes §6, which this document explicitly declined to close.** §6 named
+the quota interaction as *"a UX and content trade-off this document does not
+have the standing to make unilaterally"*: an undo window holds bytes, and a
+player who deletes a prison **because the game told them to, to free space**
+would not free that space until `expiresAt`. Of the three shapes §6 put up — a
+shorter window near quota, skipping the tombstone outright, or warning before
+confirming — **none was chosen. The ruling is a fourth: the player gets a
+visible control in the saves panel that frees a held copy immediately.** So the
+trade-off is settled in the direction of keeping the undo promise whole and
+handing the player a deliberate way out of it, and slice 1 (§7) must **ship**
+that control rather than merely, as §7's last paragraph says, not claim to have
+solved the problem.
+
+**The provenance is the weakest this repository has recorded, and saying so is
+the point of recording it at all.** `AGENTS.md`'s 2026-09-08, -09 and -10
+entries disclose that they quote the label of a clickable option rather than a
+sentence the owner typed; ADR 0112 discloses the same of four of its five
+rulings. This acceptance is a step weaker again: it reached the implementing
+agent **relayed through a written brief** — a paraphrase, and the standing
+demonstration of what a paraphrase costs in this repository is the preamble of
+`CLAUDE.md`, which has miscounted its own corrections five times. It is written
+down because the alternative is an accepted decision that no document says was
+accepted. **A later reader who needs the owner's actual words for the "free it
+now" ruling should read this block as a pointer to go and ask for them, not as
+the quotation.**
+
+---
+
+**Proposed, 2026-09-14. Not self-approved.** *(The state of this document before
+the acceptance above.)* The owner ruled on 2026-09-14,
 from a clickable option this session wrote and the owner chose:
 
 > **Ruled 2026-09-14:** *"ADR na opcję C, potem budujemy"* ("An ADR for
@@ -35,31 +77,63 @@ window, what a player is told, and the smallest first slice — is this
 document's proposal and the owner's to accept or reject.** No code under
 `src/` has changed for this document, and none is touched by it.
 
-**Built on, not redone:** the research record titled *"What an undo window
-for a deleted prison would cost"* (issue #1142), filed under
-`docs/research/` on branch `agent/1142-delete-confirmation` (PR #1173) — cited
-by title and branch rather than by a path this checkout can resolve, since
-that branch has not merged into `main` and the file is not present here; the
-same reason ADR 0113 cites issue #1156's inventory by number rather than by
-path. It priced four options — defer the deletion (A), hold the copy in memory (B), hold it in
+**Built on, not redone:** the research record
+[*"What an undo window for a deleted prison would cost"*](../research/2026-09-13-what-an-undo-window-for-a-deleted-prison-costs.md)
+(issue #1142). It priced four options — defer the deletion (A), hold the copy in memory (B), hold it in
 IndexedDB (C), or export it to a file instead (D) — and recommended that C
 not be built without an ADR first, because it is a persistent-format change.
 Its load-bearing claims were re-opened rather than inherited; where this
 document's own reading differs from the research's, the difference is named.
 
-**One premise of the research does not hold on `main` yet, and it matters for
-what "the clause that must change" means below.** The research says *"the
-confirmation shipped on `agent/1142-delete-confirmation`"* — true of that
-branch, not of `main`. Checked directly: `origin/main` is at `a6565239`;
-`agent/1142-delete-confirmation`'s tip (`08e65d4f`) merges `main` into itself
-but has not been merged back, and `origin/main`'s
-`src/content/default-locale-en.ts` has no `save.delete.confirm` key at all —
-only `'save.action.delete': 'Delete'` (`:3131` on this tree) with no
-confirmation step in between. So today, on `main`, `PrisonSaveRepository
-.delete` is reachable by one press with no question asked, exactly as the
-research's §1 describes the mechanism, but the sentence the research's §6
-turns on has not shipped to any player yet. Section 5 below reads this as a
-sequencing fact rather than papering over it.
+## Corrected 2026-09-14, after PR #1173 merged
+
+**This document was written against `origin/main` at `a6565239` (v0.0.600) and
+said, in eight places, that PR #1173 had not merged. It merged the same day, and
+every one of those eight sentences is now false.** They are corrected in place
+below and listed here so the correction is countable rather than buried, per
+`docs/AGENT_WORKFLOW.md` §4 — a paraphrase of a document is not the document,
+and a claim that something is *absent* is the sentence form that rots first.
+
+**What was re-measured, not assumed.** `origin/main` is at `19ffb1f5`
+(v0.0.606). `a29699ff` is the merge of PR #1173 (*"Merge pull request #1173 from
+woogitsu/agent/1142-delete-confirmation"*, 2026-09-14 08:50:00 +0200), and it
+carries fourteen files. Read out of `origin/main` directly rather than out of
+the merge's diff:
+
+- `src/ui/save-panel-delete.ts` exists (`git ls-tree origin/main -- src/ui/`),
+  with `pressDeleteConfirmation` at `:91`, `retainDeleteArming` at `:108`,
+  `describeSaveAge` at `:161` and `describeDeleteConfirmation` at `:196`.
+- `save.delete.confirm` exists at `src/content/default-locale-en.ts:3260`, and
+  `save-panel-messages.ts:154` binds it.
+- `'save.action.delete': 'Delete'` has moved from `:3131` to `:3153` — so even
+  the coordinate this document cited for the key that *was* there has drifted,
+  which is the other half of §4's warning.
+- The research record is on `main` at
+  `docs/research/2026-09-13-what-an-undo-window-for-a-deleted-prison-costs.md`,
+  under a filename this document could not have guessed — it cited the record by
+  **title**, and the title and the filename differ ("would cost" against
+  "costs"). Citing by title was right for an unmerged file and is why the
+  correction is a path rather than a search.
+
+**The eight, and what each now reads:** (1) the "Built on, not redone" citation
+above, now a path; (2) the deleted "One premise of the research does not hold on
+`main` yet" paragraph, which this section replaces; (3) §3's parenthetical
+placing the arming module on an unmerged branch; (4) §5's citation of
+`save.delete.confirm`; (5) §5's *"Once PR #1173 merges"*; (6) §7's *"the
+unmerged branch's `src/ui/` deletion-confirmation module"*; (7) the References
+entry for the research record; (8) the References entry for issue #1142. A ninth
+copy of the same claim lives outside this file, in `docs/adr/README.md`'s row for
+this ADR, and is corrected there.
+
+**The premise this replaces, and why it is worth naming rather than deleting.**
+This section used to open by correcting the *research*: the research said *"the
+confirmation shipped on `agent/1142-delete-confirmation`"* and this document
+answered that this was true of that branch and not of `main`. **The research was
+describing a branch and was right about it; this document was describing `main`
+and was right about it for about eleven hours.** The research's sentence is the
+one that aged well, because it named the tree it was true of. That is the
+lesson, and it is the reason the corrections below name `origin/main` at a
+commit rather than saying "today".
 
 ## Claim tiers used below
 
@@ -304,9 +378,9 @@ countdown last displayed.** `restoreFromTombstone(prisonId)` reads the
 stored `expiresAt` and compares it against `now()` at the moment it runs,
 refusing (and deleting the tombstone as it refuses) if the window has
 closed — mirroring `pressDeleteConfirmation`'s own discipline
-(the arming module in `src/ui/`, on the unmerged
-`agent/1142-delete-confirmation` branch) of re-checking the
-subject rather than trusting what an earlier read established. A UI
+(`src/ui/save-panel-delete.ts:91`; **this read "on the unmerged
+`agent/1142-delete-confirmation` branch" until PR #1173 merged**) of re-checking
+the subject rather than trusting what an earlier read established. A UI
 countdown, if one is built, is a display convenience layered on top; it is
 never the source of truth for whether a press succeeds, so a countdown a few
 seconds stale can never let a late press through or refuse an early one.
@@ -341,19 +415,21 @@ would make each state's sentence true:
 
 ## 5. The clause that must change, and in which commit
 
-`save.delete.confirm` (`src/content/default-locale-en.ts`, on
-`agent/1142-delete-confirmation` at `08e65d4f`, not yet on `main`):
+`save.delete.confirm` (`src/content/default-locale-en.ts:3260`, on `main` since
+PR #1173 merged as `a29699ff`; **this read "on `agent/1142-delete-confirmation`
+at `08e65d4f`, not yet on `main`"** when it was written eleven hours earlier):
 
 > `'Delete {name}? Every saved copy of this prison goes, and this cannot be
 > undone. Its saves last changed {age}.'`
 
 **The middle clause — "this cannot be undone" — is the one this ADR makes
 false, and it does not become false until the restore path this document
-proposes actually ships.** Today, on `main`, it is true (there is no
-confirmation dialog at all yet, so the sentence does not even exist as a
-player-facing string). Once PR #1173 merges, it becomes true of that tree
-for as long as no undo mechanism exists — which is exactly what that key's
-own code comment already says: *"There is no undo mechanism for a deletion
+proposes actually ships.** **This paragraph read "Today, on `main`, it is true
+(there is no confirmation dialog at all yet, so the sentence does not even exist
+as a player-facing string). Once PR #1173 merges, it becomes true of that
+tree..." — and the merge it was waiting for happened the same day.** The
+sentence is on `main` now and is true there for exactly as long as no undo
+mechanism exists, which is what that key's own code comment already says: *"There is no undo mechanism for a deletion
 anywhere in `src/`, and the ADR that would decide where a held copy lives
 has not been written. The day an undo window ships, this clause is the one
 that becomes false and has to be rewritten in the same change."* This
@@ -427,9 +503,15 @@ default of 3 is a policy default `PrisonSaveRepositoryOptions` exposes rather
 than a number this kind of document invents); the confirmation string's
 middle clause rewritten in the same commit (§5); and the panel wiring for an
 Undo affordance following the arming module's existing extraction
-discipline (the unmerged branch's `src/ui/` deletion-confirmation module —
-pure functions the `node`-environment test suite can watch,
-`SavePanel` holding only the DOM wiring).
+discipline (`src/ui/save-panel-delete.ts`, on `main` since PR #1173 — **this
+read "the unmerged branch's `src/ui/` deletion-confirmation module"** — pure
+functions the `node`-environment test suite can watch, `SavePanel` holding only
+the DOM wiring).
+
+**And, per the acceptance recorded in the Status block above, slice 1 also ships
+the control that frees a held copy immediately** — the owner's answer to §6's
+open question, which this document left for "whoever picks up implementation"
+and which was in fact settled before implementation started.
 
 **What slice 1 must not claim:** a live countdown display (§3 — informational
 only, never the gate); any interaction with cloud sync, since `#20` is not
@@ -495,11 +577,11 @@ rather than toward flagging it as open.
 
 ## References
 
-- *"What an undo window for a deleted prison would cost"* (issue #1142) — filed under `docs/research/` on branch `agent/1142-delete-confirmation` (PR #1173), not yet on `main`; cited by title rather than by path for that reason. The pricing this document builds on, re-verified rather than repeated
+- [*"What an undo window for a deleted prison would cost"*](../research/2026-09-13-what-an-undo-window-for-a-deleted-prison-costs.md) (issue #1142) — the pricing this document builds on, re-verified rather than repeated. **This entry read "filed under `docs/research/` on branch `agent/1142-delete-confirmation` (PR #1173), not yet on `main`; cited by title rather than by path for that reason"**; PR #1173 merged as `a29699ff` the same day, and the filename it landed under is not the one its title would suggest
 - `AGENTS.md` architectural boundary 7 — "every persistent format must have a version and migration strategy before release," the rule this document exists to satisfy for the IndexedDB schema
 - [ADR 0038](./0038-what-makes-a-save-compatible.md) — the compatibility rule ("absence is a fact about the save's age... a value the build cannot interpret is a fact about the blob and is refused") whose reasoning §2 extends one layer below the envelope
 - [ADR 0109](./0109-what-a-stale-local-save-is-refused-for.md) — the compare-and-swap this document's `restoreFromTombstone` does not disturb, since a restore writes a fresh slot rather than contending with a live one
 - `docs/PERSISTENCE.md` — "Adding an optional field without a version bump," the `SafetyCoverageSystem` census precedent §3 reuses for lazy expiry, and the "Storage backend... out of scope" line §2 distinguishes from this document's scope
-- Issue #1142 — the deletion defect the confirmation (unmerged, `agent/1142-delete-confirmation`) closes on its own, and the undo window this document prices the mechanism for
+- Issue #1142 — the deletion defect the confirmation closes on its own (merged as `a29699ff`; **this entry read "unmerged, `agent/1142-delete-confirmation`"**), and the undo window this document prices the mechanism for
 - Issue #102 — the 3.7 MB save measurement §6 cites
 - Issue #18 — the storage-backend scoping `docs/PERSISTENCE.md`'s "Size hook" section answers to

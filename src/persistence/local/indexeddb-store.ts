@@ -1,9 +1,28 @@
 import type { LocalSaveStore, LocalSaveTransaction } from './store';
 
 const DATABASE_NAME = 'lockstate-saves';
-const DATABASE_VERSION = 1;
+/**
+ * The IndexedDB schema's own version, and **it is not `SAVE_SCHEMA_VERSION`.**
+ *
+ * Two persisted formats, one level apart, each with its own number and its own
+ * migration mechanism. `SAVE_SCHEMA_VERSION` (`src/persistence/save-schema.ts`)
+ * versions the shape of one save *envelope* and migrates with the step
+ * functions in that module. This versions the set of object stores this
+ * database holds, and migrates in `onupgradeneeded` below. A change to either
+ * leaves the other alone; conflating them is the mistake ADR 0114 spends a
+ * section heading on.
+ *
+ * **1 → 2, for the `tombstones` store (ADR 0114).** The upgrade is
+ * forward-only and pure: it creates an empty object store and reads, rewrites
+ * and deletes nothing. No record that exists today has to be reshaped, because
+ * nothing could have written a tombstone yet -- the same "absence is
+ * unambiguous" argument `docs/PERSISTENCE.md` makes for `masterSeed`, applied
+ * one layer below where that document states it.
+ */
+const DATABASE_VERSION = 2;
 const METADATA_STORE = 'prisons';
 const GENERATIONS_STORE = 'generations';
+const TOMBSTONES_STORE = 'tombstones';
 
 function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -28,6 +47,13 @@ export function openLockstateDatabase(indexedDbFactory: IDBFactory = indexedDB):
       if (!db.objectStoreNames.contains(GENERATIONS_STORE)) {
         db.createObjectStore(GENERATIONS_STORE); // out-of-line key: `${prisonId}:${generationId}`
       }
+      // Guarded exactly like the two above, which is the idiom rather than a
+      // flourish: `onupgradeneeded` runs for every version step a connection
+      // crosses, so a player arriving from v1 and a player arriving from
+      // nothing both run this line, and neither must fail on the other's state.
+      if (!db.objectStoreNames.contains(TOMBSTONES_STORE)) {
+        db.createObjectStore(TOMBSTONES_STORE, { keyPath: 'prisonId' });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error('Failed to open the local save database.'));
@@ -49,7 +75,7 @@ export class IndexedDbLocalSaveStore implements LocalSaveStore {
   public constructor(private readonly db: IDBDatabase) {}
 
   public async runTransaction<T>(mode: 'readonly' | 'readwrite', work: (tx: LocalSaveTransaction) => Promise<T>): Promise<T> {
-    const idbTransaction = this.db.transaction([METADATA_STORE, GENERATIONS_STORE], mode);
+    const idbTransaction = this.db.transaction([METADATA_STORE, GENERATIONS_STORE, TOMBSTONES_STORE], mode);
 
     // Attached synchronously, before any request is issued, so a
     // transaction that completes or aborts while `work` is still running
@@ -62,6 +88,10 @@ export class IndexedDbLocalSaveStore implements LocalSaveStore {
 
     const metadataStore = idbTransaction.objectStore(METADATA_STORE);
     const generationsStore = idbTransaction.objectStore(GENERATIONS_STORE);
+    // In the same transaction as the other two, which is the whole design:
+    // `delete()` writes here and deletes there, and either both land or
+    // neither does.
+    const tombstonesStore = idbTransaction.objectStore(TOMBSTONES_STORE);
 
     const tx: LocalSaveTransaction = {
       getMetadata: (prisonId) => promisifyRequest(metadataStore.get(prisonId)),
@@ -78,6 +108,16 @@ export class IndexedDbLocalSaveStore implements LocalSaveStore {
       },
       deleteGeneration: async (prisonId, generationId) => {
         await promisifyRequest(generationsStore.delete(generationKey(prisonId, generationId)));
+      },
+      getTombstone: (prisonId) => promisifyRequest(tombstonesStore.get(prisonId)),
+      listTombstones: () => promisifyRequest(tombstonesStore.getAll()),
+      putTombstone: async (tombstone) => {
+        // In-line key: the store's `keyPath` is `prisonId`, so the record is
+        // its own key and `put` takes no second argument.
+        await promisifyRequest(tombstonesStore.put(tombstone));
+      },
+      deleteTombstone: async (prisonId) => {
+        await promisifyRequest(tombstonesStore.delete(prisonId));
       },
     };
 
