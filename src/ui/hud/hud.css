@@ -345,6 +345,9 @@
    * interface scale instead of being right at 100 % and wrong at 175 %.
    */
   --hud-zoom-block: calc(var(--tap-target) + 2 * var(--hairline) + var(--space-2));
+  /* Scaffolding for stage 2, removed when the default flips -- see the note
+     on `.hud-strip`. */
+  font-size: var(--text-size-body);
 }
 
 /* Both `min-height: 0`s are the shrink the block above depends on: a flex
@@ -3027,6 +3030,10 @@
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
+  /* Scaffolding for stage 2, removed when the default flips -- see the note
+     on `.hud-strip`. The tab labels themselves are `--text-size-label` and do
+     not move; this is only what the bar inherits. */
+  font-size: var(--text-size-body);
 }
 
 .hud__tabs { max-width: 100%; box-sizing: border-box; }

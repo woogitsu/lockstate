@@ -834,6 +834,67 @@
   --text-size-value: var(--type-secondary);
 }
 
+/*
+ * SURFACE 3 -- the HUD's remaining chrome (#1158).
+ *
+ * What is left of the HUD once the strip and the rail have moved: the tab
+ * bar, the map corner (minimap frame and zoom island), and the three notice
+ * rows between the strip and the middle -- `.hud__unavailable` (#220),
+ * `.hud__refusal` (#207) and `.hud__event`. They are one surface here
+ * because they are what remains rather than because they are alike, and that
+ * is stated rather than dressed up.
+ *
+ * The three notice rows need no anchor: each already declares
+ * `font-size: var(--text-size-body)` in `hud.css`, because each is a
+ * standalone band of prose. The tab bar and the corner do need one, for the
+ * reason recorded on `.hud-strip`.
+ *
+ * The tab bar's own labels are `--text-size-label` and do not move at all:
+ * 11px is already the size the owner ruled for labels, which is why stage 2
+ * touches no tab text. What moves here is only what the bar and the corner
+ * inherit.
+ *
+ * Measured after the move, 36 combinations: unchanged from surface 2 on
+ * every quantity the harness reports -- no element outside the viewport, no
+ * control covered, the tab bar still reachable at 200 % on 900x600, and the
+ * minimap frame still under the strip.
+ */
+.hud__corner,
+.hud-tabs__inner,
+.hud__unavailable,
+.hud__refusal,
+.hud__event {
+  --text-size-body: var(--type-body);
+  --text-size-value: var(--type-body);
+}
+
+/*
+ * THE ALERTS LIST KEEPS THE DENSER STEP, AND THIS IS WHY (#1158).
+ *
+ * The second of stage 2's two keeps, and it is inside the corner rather than
+ * the rail -- the alerts section is a child of the minimap panel
+ * (`hud.ts`, `minimapPanel.body.append(minimapSurface, alertsSection.element)`),
+ * which is why it came through surface 2 untouched and failed on surface 3.
+ *
+ * `ui-alerts-column.spec.ts` (#739) pins the longest alert sentence -- 109
+ * characters, behind the *narrowest* severity badge, which is the worst case
+ * the column can produce -- to at most **4 line boxes at every viewport**. At
+ * 15px it wraps to **5 at 1280x720**. Four is not a round number somebody
+ * liked: #739 chose it as the height at which a column of alerts stays
+ * readable, and `hud.css`'s own arithmetic block above `.hud-alerts__list`
+ * records what the dismiss control costs the sentence beside it.
+ *
+ * A fifth line is not an overflow, so nothing is hidden and no floor is
+ * lowered by leaving it -- which is exactly why it has to be a deliberate
+ * keep rather than an accepted regression. What would earn this list the
+ * larger step is a shorter worst-case sentence or a wider column, both of
+ * which are stage 3 or stage 6 work.
+ */
+.hud-alerts__list {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
 /* ------------------------------------------------------------------ */
 /* Layer 2: semantic aliases -- the only names components may use      */
 /*                                                                     */
