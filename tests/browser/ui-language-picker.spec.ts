@@ -112,37 +112,57 @@ test.describe('a browser that asks for English, with nothing chosen', () => {
   test('sits in the rail without overflowing it, as a real tap target', async ({ page }) => {
     await openApp(page);
     /*
-     * The constraint that decided where this control lives, asserted rather
-     * than remembered. It was built as a third occupant of `.hud-chrome-prefs`
-     * first, and the rail refused it: 264px over three controls is 87-88px
-     * each, the button's own `min-width: var(--tap-target)` is 44 of that, and
-     * `flex: none` on the buttons meant they overflowed their control's box
-     * instead of shrinking. This is the shape of that failure, checked on the
-     * arrangement that shipped -- a control whose contents leave its own box
-     * is silent until a reachability sweep finds a covered button.
+     * The constraint that decided where this control lives, asserted at both
+     * ends rather than remembered, because the tight viewport here is the
+     * WIDE one. `src/styles.css` carries the measurements; this is the shape
+     * of the two failures they came from -- a button that overflows its own
+     * control (which `app-shell.spec.ts`'s #88 sweep reports as covered) and a
+     * second line that pushes the save panel under the centre of a phone
+     * screen (which its centre-click test reports as the HUD swallowing a
+     * click meant for the world).
      */
-    const geometry = await page.evaluate(() => {
-      const control = document.querySelector('.language-control');
-      const rail = document.querySelector('.hud__aside');
-      if (control === null || rail === null) return null;
-      return {
-        overflows: control.scrollWidth > control.clientWidth + 1,
-        insideRail:
-          control.getBoundingClientRect().right <= rail.getBoundingClientRect().right + 0.5 &&
-          control.getBoundingClientRect().left >= rail.getBoundingClientRect().left - 0.5,
-        // The chrome pair beside it keeps its own single row.
-        chromeRowCount: document.querySelector('.hud-chrome-prefs')?.children.length,
-      };
-    });
-    expect(geometry, 'the language control is not on the page').not.toBeNull();
-    expect(geometry!.overflows, 'the language control is wider than its own box').toBe(false);
-    expect(geometry!.insideRail, 'the language control hangs outside the rail').toBe(true);
-    expect(geometry!.chromeRowCount, 'the chrome row is not the pair it was').toBe(2);
+    const geometry = async (): Promise<Record<string, unknown> | null> =>
+      page.evaluate(() => {
+        const row = document.querySelector('.hud-chrome-prefs');
+        const rail = document.querySelector('.hud__aside');
+        if (row === null || rail === null) return null;
+        const children = [...row.children] as HTMLElement[];
+        return {
+          // No control may spill out of its own box: a button outside its
+          // parent is one the reachability sweep finds covered.
+          spilling: children.filter((child) => child.scrollWidth > child.clientWidth + 1).map((child) => child.className),
+          insideRail:
+            row.getBoundingClientRect().right <= rail.getBoundingClientRect().right + 0.5 &&
+            row.getBoundingClientRect().left >= rail.getBoundingClientRect().left - 0.5,
+          lines: new Set(children.map((child) => Math.round(child.getBoundingClientRect().top))).size,
+          count: children.length,
+        };
+      });
 
-    const target = await page.locator(CYCLE).boundingBox();
-    expect(target, 'the language button has no box').not.toBeNull();
-    expect(target!.height).toBeGreaterThanOrEqual(44);
-    expect(target!.width).toBeGreaterThanOrEqual(44);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    const wide = await geometry();
+    expect(wide, 'the chrome block is not on the page').not.toBeNull();
+    expect(wide!.count).toBe(3);
+    expect(wide!.spilling, 'a chrome control is wider than its own box').toEqual([]);
+    expect(wide!.insideRail, 'the chrome block hangs outside the rail').toBe(true);
+    // Two lines where the rail is a fixed 264px column: three do not fit.
+    expect(wide!.lines, 'three controls share one line at the rail width, which 264px cannot hold').toBe(2);
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    const narrow = await geometry();
+    expect(narrow!.spilling, 'a chrome control is wider than its own box on a phone').toEqual([]);
+    expect(narrow!.insideRail, 'the chrome block hangs outside the rail on a phone').toBe(true);
+    // And one line where the rail is the whole screen, because a second line
+    // is 17px more than a 375x812 rail has.
+    expect(narrow!.lines, 'the chrome block took a second line on a phone').toBe(1);
+
+    for (const [width, height] of [[1280, 720], [375, 812]] as const) {
+      await page.setViewportSize({ width, height });
+      const target = await page.locator(CYCLE).boundingBox();
+      expect(target, `the language button has no box at ${width}x${height}`).not.toBeNull();
+      expect(target!.height, `${width}x${height}`).toBeGreaterThanOrEqual(44);
+      expect(target!.width, `${width}x${height}`).toBeGreaterThanOrEqual(44);
+    }
   });
 });
 
