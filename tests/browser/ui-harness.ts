@@ -1208,7 +1208,19 @@ window.lockstateUiHarness = {
   },
 
   hudProbe(): HudProbe {
-    const values = [...document.querySelectorAll<HTMLElement>('.hud-strip .ui-value')];
+    /*
+     * The strip's own readouts, which is what "every number" means here.
+     *
+     * `:not(.hud-layout__body *)` excludes the Layout menu's drawer (#1159).
+     * The drawer hangs from the strip and holds a clock readout of its own --
+     * it is there because folding the strip's readouts takes the strip's clock
+     * with them -- but it is `hidden` until a player opens it, so
+     * `expectLaidOut` below would report it as a number that is not on screen.
+     * Its three values are monospace for the same reason every other value is
+     * (they carry `ui-value`), and `tests/browser/hud-layout-shell.spec.ts`
+     * asserts that where it can also assert the menu is open.
+     */
+    const values = [...document.querySelectorAll<HTMLElement>('.hud-strip .ui-value:not(.hud-layout__body *)')];
     const nonMonospace = values.filter((node) => {
       const style = window.getComputedStyle(node);
       // The rule is "every number uses a monospace face with tabular

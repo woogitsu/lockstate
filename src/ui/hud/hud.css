@@ -4842,6 +4842,28 @@
 }
 
 /*
+ * ...and the metrics row takes that gutter straight back, because the slot is
+ * never on the metrics row.
+ *
+ * The reservation exists so the slot does not sit on whatever the strip's
+ * **first** row ends with. Wherever the metrics have a row of their own --
+ * every viewport the browser suite visits, since the query above lost its
+ * height condition -- that row is `order: 1` and is laid out *below* the slot,
+ * so the 40px is reserved against nothing and paid for by the readout.
+ *
+ * Measured at 1280x800 by `ui-strip-badged-width.spec.ts`: an ordinary
+ * prison's nine badged chips are **1248.8px** and the row is 1256px without
+ * the gutter and 1216px with it, so the strip dropped a chip in the state a
+ * player spends the game in. A negative margin is what lets a `flex-basis:
+ * 100%` row extend back across padding its own siblings need, and it is
+ * exactly `--space-3 - (--tap-target + 2 x --space-1)` -- the gutter less the
+ * padding the strip had before it.
+ */
+.hud-strip__metrics {
+  margin-right: calc(var(--space-3) - var(--tap-target) - 2 * var(--space-1));
+}
+
+/*
  * ...except on a phone, where the gutter costs more than it buys.
  *
  * At 375x812 the strip is three rows and reserving 52px of a 375px window
@@ -4858,6 +4880,8 @@
  */
 @media (max-width: 720px) {
   .hud-strip { padding-right: var(--space-2); }
+  /* Nothing to reclaim: the gutter here is the padding the strip already had. */
+  .hud-strip__metrics { margin-right: 0; }
 }
 
 /* ---- the Layout menu --------------------------------------------- */

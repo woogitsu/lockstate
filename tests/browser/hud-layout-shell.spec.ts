@@ -390,6 +390,24 @@ test.describe('the HUD layout shell', () => {
     await expect(clock.locator('.hud-layout__clock-day')).toHaveCount(1);
     await expect(clock.locator('.hud-layout__clock-progress')).toHaveCount(1);
     await expect(clock.locator('.hud-layout__clock-speed')).toHaveText(/PAUSED|×/);
+    /*
+     * And they are monospace with tabular figures, like every other number in
+     * this interface.
+     *
+     * `ui-shell.spec.ts` makes that claim over `.hud-strip .ui-value` and
+     * excludes this drawer, because its own assertion is that every such value
+     * is **laid out** and a closed menu's is not. So the claim is made here
+     * instead, in the one state where both halves are true at once.
+     */
+    const face = await clock.locator('.hud-layout__clock-day').evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        monospace: style.fontFamily.includes('monospace'),
+        tabular:
+          style.fontVariantNumeric.includes('tabular-nums') || style.fontFeatureSettings.includes('tnum'),
+      };
+    });
+    expect(face).toEqual({ monospace: true, tabular: true });
     // And the strip's own readout is still the only thing answering to the
     // strip's own selector, which is what three existing specs in
     // `app-shell.spec.ts` depend on.
