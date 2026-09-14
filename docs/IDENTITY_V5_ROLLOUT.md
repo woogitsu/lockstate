@@ -344,7 +344,7 @@ stage is checked against that arrangement rather than against today's HUD:
 | `build` | `build` — Build | the Build panel, materials and deliveries included |
 | `rooms` | `zones` — Zones | the Rooms panel |
 | `security` | `manage` — Manage | the Staff panel **and** the Intake panel |
-| `regime` | `day-plan` — Day plan | the Regime panel |
+| `regime` | `day-plan` — Schedule | the Regime panel |
 
 **Three rulings of 2026-09-14 decided the contents**, each the label of a
 clickable option the owner chose rather than a sentence they typed — the weaker
