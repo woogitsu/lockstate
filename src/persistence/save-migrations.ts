@@ -2,8 +2,8 @@ import { computeSaveChecksum } from './checksum';
 import { encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from './entity-codec';
 import type { JsonValue } from '../shared/json';
 import { NEED_IDS, NEED_MAX_SCALED, NEED_SCALE } from '../simulation/prisoners/needs';
-import { GENERAL_POPULATION_REGIME, HIGH_RISK_REGIME, type RegimeSchedule } from '../simulation/prisoners/regime';
-import type { EncodedRegimeSchedule } from '../simulation/prisoners/regime-registry';
+import { DEFAULT_REGIME_SCHEDULES } from '../simulation/prisoners/regime';
+import { RegimeScheduleRegistry, type EncodedRegimeSchedule } from '../simulation/prisoners/regime-registry';
 import type {
   SaveEnvelopeV1,
   SaveEnvelopeV2,
@@ -374,7 +374,7 @@ export function migrateSaveEnvelopeV4ToV5(input: SaveEnvelopeV4): SaveEnvelopeV5
  * §2).
  *
  * **Nothing here is guessed, and that is a fact rather than an argument.**
- * `DEFAULT_REGIME_SCHEDULES` (`regime.ts`) has only ever been these two
+ * `DEFAULT_REGIME_SCHEDULES` (`regime.ts`) has only ever been the two authored
  * constants; `PrisonerOperationsRuntime` and `projectStatusStrip` are the two
  * consumers, both default to it, and no production call site has ever passed
  * anything else (`grep -rn "regimeSchedules" src/simulation/runtime/new-session.ts
@@ -387,6 +387,16 @@ export function migrateSaveEnvelopeV4ToV5(input: SaveEnvelopeV4): SaveEnvelopeV5
  * question "which group owns the existing schedule" has no answer to give: each
  * group already owned its own, under the id it already carries.
  *
+ * **Routed through `RegimeScheduleRegistry` rather than encoded here**, which
+ * is `upgradeEntityLiveness`' discipline at the top of this file applied to a
+ * second section: a migrated save and a freshly captured one then converge on
+ * one encoding rather than two that could drift. It is load-bearing and not
+ * tidiness -- the registry puts each block's `allowedCategories` into
+ * `ACTION_CATEGORIES` order, and `GENERAL_POPULATION_REGIME`'s block at tick
+ * 2,100 is authored `['recreation', 'free-association', 'hygiene']`, so
+ * encoding the constant directly would write bytes a live capture of the same
+ * schedule never produces.
+ *
  * Read off the constants rather than re-typed, so a later edit to either
  * authored schedule moves this migration's output with it. That is the correct
  * coupling and not an accident: what this function claims is "whatever the
@@ -395,15 +405,7 @@ export function migrateSaveEnvelopeV4ToV5(input: SaveEnvelopeV4): SaveEnvelopeV5
  * changes.
  */
 function defaultRegimeSchedulesForMigration(): readonly EncodedRegimeSchedule[] {
-  const encode = (schedule: RegimeSchedule): EncodedRegimeSchedule => ({
-    classificationGroupId: schedule.classificationGroupId,
-    blocks: schedule.blocks.map((block) => ({
-      startTickOfDay: block.startTickOfDay,
-      endTickOfDay: block.endTickOfDay,
-      allowedCategories: [...block.allowedCategories],
-    })),
-  });
-  return [encode(GENERAL_POPULATION_REGIME), encode(HIGH_RISK_REGIME)];
+  return new RegimeScheduleRegistry(DEFAULT_REGIME_SCHEDULES).getSnapshot();
 }
 
 /**

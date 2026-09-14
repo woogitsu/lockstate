@@ -80,6 +80,11 @@ const sourceRoot = pathToFileURL(path.join(repositoryRoot, 'src', path.sep)).hre
  */
 
 /**
+ * @typedef {Pick<typeof import('../src/simulation/prisoners/regime'), 'findRegimeSchedule' | 'DEFAULT_REGIME_SCHEDULES' | 'DAY_LENGTH_TICKS' | 'ACTION_CATEGORIES'>
+ *   & Pick<typeof import('../src/simulation/prisoners/regime-registry'), 'RegimeScheduleRegistry'>} RegimeModules
+ */
+
+/**
  * @typedef {Pick<typeof import('../src/simulation/rng/xoshiro128starstar'), 'Xoshiro128StarStar'>
  *   & Pick<typeof import('../src/simulation/rng/seed'), 'deriveXoshiroState'>
  *   & Pick<typeof import('../src/simulation/rng/streams'), 'NamedRngStreams'>} SimulationRngModules
@@ -104,6 +109,7 @@ let optionsPromise;
 let rngPromise;
 let actorPublicationPromise;
 let runtimePromise;
+let regimePromise;
 
 export function assertTypeScriptTransformEnabled() {
   if (process.features.typescript === 'transform') return;
@@ -253,6 +259,45 @@ export async function loadSimulationRuntimeModules() {
     });
   })();
   return runtimePromise;
+}
+
+/**
+ * The regime lookup and the registry that holds what it searches
+ * ([ADR 0113](../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §5).
+ *
+ * `findRegimeSchedule` is the function `ActionSystem` calls per idle prisoner
+ * per reconsideration cycle, and ADR 0113 argued its cost rather than
+ * measuring it. `regime.production.schedule-lookup` is what measures it, and
+ * it loads the real function through here for the reason every scenario in
+ * `navigation-production.mjs` does: a re-implemented `.find()` would report a
+ * number true of any implementation, including one this game does not have.
+ *
+ * `RegimeScheduleRegistry` is loaded beside it because the array the lookup
+ * searches is the registry's, in the registry's canonical order -- a scenario
+ * that built its own array would be measuring a different data structure than
+ * the one a session runs.
+ *
+ * @returns {Promise<Readonly<RegimeModules>>}
+ */
+export async function loadRegimeModules() {
+  assertTypeScriptTransformEnabled();
+  registerTypeScriptResolution();
+
+  regimePromise ??= (async () => {
+    const [regime, registry] = await Promise.all([
+      importSimulation('prisoners/regime.ts'),
+      importSimulation('prisoners/regime-registry.ts'),
+    ]);
+    return Object.freeze({
+      findRegimeSchedule: regime.findRegimeSchedule,
+      DEFAULT_REGIME_SCHEDULES: regime.DEFAULT_REGIME_SCHEDULES,
+      DAY_LENGTH_TICKS: regime.DAY_LENGTH_TICKS,
+      ACTION_CATEGORIES: regime.ACTION_CATEGORIES,
+      RegimeScheduleRegistry: registry.RegimeScheduleRegistry,
+    });
+  })();
+  return regimePromise;
 }
 
 /**
