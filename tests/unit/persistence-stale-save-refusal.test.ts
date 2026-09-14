@@ -242,7 +242,7 @@ describe('ADR 0109: a stale local save is refused rather than silently applied',
    */
   it('gives two overlapping manual saves two different revisions, and leaves no hole', async () => {
     const store = new MemoryLocalSaveStore();
-    const { repository, holdNextSave } = repositoryWithHoldableSave(store);
+    const repository = new PrisonSaveRepository(store);
     const host = new InProcessSessionHost();
     const reported: SaveResult[] = [];
     const controller = controllerOver(repository, host, reported);
@@ -250,36 +250,39 @@ describe('ADR 0109: a stale local save is refused rather than silently applied',
     expectOk(await controller.createPrison('prison-1'), 'the creation of prison-1');
 
     /*
-     * The two saves are held apart **at the transaction boundary**, and that
-     * is a fidelity requirement rather than convenience.
+     * **The two saves genuinely overlap, and until #1143 they could not.**
      *
-     * `MemoryLocalSaveStore` does not serialise overlapping `readwrite`
-     * transactions -- it snapshots the stores on entry and publishes on exit,
-     * so two transactions that interleave at their internal awaits both read
-     * the pre-write state and the later one wins. **Measured while writing
-     * this test**: without the hold below, both saves read `currentRevision:
-     * 1`, both allocated 2, and the assertion came back `[2, 2]`. Real
-     * IndexedDB does not behave that way -- `readwrite` transactions with
-     * overlapping scope are serialised, which is exactly the property
-     * `writeGeneration`'s comparison relies on.
+     * This test used to hold the first save open at the transaction boundary
+     * with `repositoryWithHoldableSave`, and said in a comment that the hold
+     * was a fidelity requirement: `MemoryLocalSaveStore` staged and published
+     * like IndexedDB but did not serialise like it, so two transactions that
+     * interleaved at their internal awaits both read `currentRevision: 1`,
+     * both allocated 2, and this assertion came back `[2, 2]`. The hold
+     * modelled what the browser guarantees instead of what the double did.
      *
-     * So the hold models what the browser guarantees: the second save is
-     * allowed to commit in full before the first's transaction opens, and the
-     * first then meets a slot that has moved. Testing "what if the store let
-     * them interleave" would be testing the double rather than the code.
+     * #1143 gave the double the missing guarantee -- overlapping transactions
+     * queue, as they do in a browser, because the real store opens every
+     * transaction over all three object stores and IndexedDB orders
+     * overlapping scopes. **So the hold is removed rather than kept**: with it
+     * the test proved that a save meeting a slot that had already moved is
+     * refused and retried, which is true but is one step short of the
+     * property ADR 0109 actually decided. Without it the two saves are issued
+     * concurrently and the store is what separates them, so what is proved
+     * here is the compare-and-swap itself -- a read and a write that no other
+     * writer can get between. Keeping a hold that is no longer load-bearing
+     * would leave a comment asserting a defect that has been fixed, which is
+     * worse than no comment.
+     *
+     * `tests/unit/persistence-memory-store-serialisation.test.ts` pins the
+     * store-level property this now rests on, so a regression there fails
+     * where it happened rather than only here.
      */
-    const held = holdNextSave();
     const first = controller.saveNow();
-    await held.reached;
+    const second = controller.saveNow();
+    const [firstResult, secondResult] = await Promise.all([first, second]);
 
-    // Starts and commits while the first is still short of its transaction --
-    // the shape of an autosave firing while a manual save is in flight.
-    const secondResult = await controller.saveNow();
-    held.release();
-    const firstResult = await first;
-
-    expectOk(firstResult, 'the first save, which met a slot that had moved');
-    expectOk(secondResult, 'the second save');
+    expectOk(firstResult, 'the first save');
+    expectOk(secondResult, 'the second save, one of which met a slot that had moved');
 
     // Two saves, two revisions, consecutive. Not `2, 2`.
     expect([firstResult.revision, secondResult.revision].sort((a, b) => a - b)).toEqual([2, 3]);
