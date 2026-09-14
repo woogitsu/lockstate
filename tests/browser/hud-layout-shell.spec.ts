@@ -529,4 +529,67 @@ test.describe('the HUD layout shell', () => {
     expect(geometry.rail.right).toBe(geometry.width);
     expect(geometry.rail.left - geometry.tabs.right).toBeGreaterThanOrEqual(MAP_WIDTH_RESERVE_PX);
   });
+  /*
+   * #529, and the reason it is in this file rather than in `app-shell.spec.ts`
+   * where CI found it.
+   *
+   * The tier is decided twice -- by `@media (max-width: 720px)` and by
+   * `hud-layout.ts` -- and only one of them is told about a viewport change
+   * immediately. `refresh()` wrote `--hud-inspector-width: 0px` on a phone, on
+   * the argument that no phone rule reads it; the *desktop* rules read it the
+   * moment the window crossed 720px and before the `resize` listener had run,
+   * so `.hud__rail` was `2 * --space-3` wide and every panel in it was 2px.
+   *
+   * CI reported it as the Rooms panel's status block ending at y=1270 in a
+   * panel clipped at y=686 (#529's fold assertion, doing exactly its job), and
+   * it never reproduced in isolation because the retained trace is taken after
+   * the listener has caught up. These two assertions are deterministic: the
+   * first reads the variable while the phone still owns the window, the second
+   * measures a frame where the variable is missing altogether.
+   */
+  test('never leaves a width behind that the other tier would read as nothing (#529)', async ({ page }) => {
+    await open(page, PHONE);
+    await expect(page.locator('.hud[data-layout-tier="phone"]')).toHaveCount(1);
+
+    const width = await page.evaluate(
+      () => getComputedStyle(document.querySelector('.hud')!).getPropertyValue('--hud-inspector-width').trim(),
+    );
+    // 264px: the width the desktop rules will read, carried across the tier
+    // that does not use it. It was `0px`, which is where #529 lived.
+    expect(width, 'the phone tier left the desktop rail a width of nothing').toBe('264px');
+
+    const height = await page.evaluate(
+      () => getComputedStyle(document.querySelector('.hud')!).getPropertyValue('--hud-inspector-height').trim(),
+    );
+    expect(Number.parseFloat(height), 'the sheet ceiling is not a legal height').toBeGreaterThanOrEqual(180);
+  });
+
+  test('paints no rail narrower than the delivery’s own floor, even with the variable gone (#529)', async ({
+    page,
+  }) => {
+    await open(page, TABLET);
+    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+
+    const panelWidth = async (): Promise<number> =>
+      page.evaluate(() => Math.round(document.querySelector('.hud-rooms')!.getBoundingClientRect().width));
+
+    const settled = await panelWidth();
+    expect(settled, 'the settled rail is not the width this repository has always drawn').toBe(264);
+
+    /*
+     * The frame the stylesheet has to survive on its own: the custom property
+     * removed entirely, which is the strongest form of "JavaScript has not
+     * written it yet". `tokens.css`'s default answers first; the `max()` in
+     * `hud.css` is what answers if even that is wrong one day.
+     */
+    await page.evaluate(() => {
+      (document.querySelector('.hud') as HTMLElement).style.removeProperty('--hud-inspector-width');
+    });
+    expect(
+      await panelWidth(),
+      'a frame without the variable paints a rail below the delivery’s 260px floor',
+    ).toBeGreaterThanOrEqual(260);
+  });
+
 });

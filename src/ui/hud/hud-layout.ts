@@ -341,3 +341,99 @@ export function resolveHudLayout(
     inspectorExtent: inspectorCollapsed ? 0 : inspectorSize,
   };
 }
+
+/**
+ * The default phone sheet ceiling, which is `tokens.css`'s own
+ * `--hud-inspector-height` default: 66 % of an 812 px viewport, the delivery's
+ * limit applied to the tallest phone the browser specs visit.
+ *
+ * It is duplicated here rather than read out of the stylesheet because this
+ * module may not touch the DOM, and `tests/unit/hud-layout.test.ts` asserts the
+ * two agree -- the same arrangement `DEFAULT_INSPECTOR_WIDTH_PX` already has
+ * with `--hud-rail-panel-width`.
+ */
+export const DEFAULT_SHEET_HEIGHT_PX = 536;
+
+/**
+ * The three lengths the stylesheet reads, each resolved for **the tier that
+ * reads it** rather than for the tier the window is in right now.
+ *
+ * ## Why this exists, and the failure that bought it
+ *
+ * The tier is decided twice and the two decisions do not land together. CSS
+ * switches at `@media (max-width: 720px)` the instant the window crosses it;
+ * this module's values reach CSS through custom properties that JavaScript
+ * writes, and JavaScript is only told about the crossing by a `resize` event.
+ * Between the two there is a frame in which the stylesheet is already reading
+ * the desktop rules and the variables still hold whatever the phone left
+ * behind.
+ *
+ * `refresh()` used to write `--hud-inspector-width: 0px` on a phone, on the
+ * reasonable-looking argument that no phone rule reads it. In that one frame
+ * the desktop rules did read it: `.hud__rail` became `2 * --space-3` wide and
+ * `--hud-rail-panel-width` became `0`, so every panel in the rail was **2 px
+ * wide** and its text wrapped one character per line. Measured on the assembled
+ * page at 1024x768 (`tests/browser/hud-layout-shell.spec.ts`, *"no frame paints
+ * a rail narrower than the delivery's own floor"*): the Rooms panel's status
+ * block ended at **y = 1287** against a fold at y = 755, where a settled frame
+ * puts it at y = 747. CI caught it as #529 -- *"the Rooms panel's last block is
+ * below its fold with room.canteen selected at 1024x768: it ends at y=1270 in a
+ * panel clipped at y=686"* -- on a run whose retained trace shows the variables
+ * already corrected by the time the snapshot was taken, which is why it
+ * reproduced only under a full suite and never in isolation.
+ *
+ * So: **every one of the three always carries a value that is legal for its own
+ * tier.** An off-tier value is the player's stored preference in painted
+ * pixels, clamped to the ruled range alone -- the map reserve needs a width
+ * this module does not have while the window is still the other tier, and a
+ * width that is merely 4 px stale is a different kind of thing from a width of
+ * zero.
+ */
+export interface HudLayoutCustomProperties {
+  readonly navigationWidth: number;
+  readonly inspectorWidth: number;
+  readonly inspectorHeight: number;
+}
+
+export function layoutCustomProperties(
+  geometry: HudLayoutGeometry,
+  settings: LayoutSettings,
+  viewport: LayoutViewport,
+): HudLayoutCustomProperties {
+  const scale = Number.isFinite(viewport.uiScale) && viewport.uiScale > 0 ? viewport.uiScale : 1;
+  const storedOr = (field: LayoutSizeField, fallback: number): number => settings[field] ?? fallback;
+
+  if (geometry.phone) {
+    // Off-tier: the widths the desktop rules will read the moment the window
+    // crosses 720 px, which may be before this module hears about it.
+    const navCollapsed = isRegionCollapsed(settings, 'navigation');
+    const inspectorCollapsed = isRegionCollapsed(settings, 'inspector');
+    return {
+      navigationWidth: navCollapsed
+        ? 0
+        : clampSeparatorSize(storedOr('navigationWidth', DEFAULT_NAVIGATION_WIDTH_PX) * scale, {
+            min: NAVIGATION_WIDTH_RANGE.min * scale,
+            max: NAVIGATION_WIDTH_RANGE.max * scale,
+          }),
+      inspectorWidth: inspectorCollapsed
+        ? 0
+        : clampSeparatorSize(storedOr('inspectorWidth', DEFAULT_INSPECTOR_WIDTH_PX) * scale, {
+            min: INSPECTOR_WIDTH_RANGE.min * scale,
+            max: INSPECTOR_WIDTH_RANGE.max * scale,
+          }),
+      inspectorHeight: geometry.inspector.size,
+    };
+  }
+
+  return {
+    navigationWidth: geometry.navigationExtent,
+    inspectorWidth: geometry.inspectorExtent,
+    // Off-tier: the ceiling the phone rules will read. It was the inspector's
+    // **width** here until #529, which was legal by luck rather than by
+    // meaning.
+    inspectorHeight: clampSeparatorSize(storedOr('sheetHeight', DEFAULT_SHEET_HEIGHT_PX) * scale, {
+      min: SHEET_MIN_HEIGHT_PX * scale,
+      max: Number.POSITIVE_INFINITY,
+    }),
+  };
+}
