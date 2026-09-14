@@ -217,15 +217,27 @@ an impression.
    the token file says so; `tests/unit/ui-design-tokens.test.ts` pins the
    arithmetic of all six.
 
-   **"Not a token edit" was right, and two surfaces prove it.** The Build
-   panel and the alerts list are measured as not having the room and keep
-   13 px, each with the assertion that says so beside it — three floors at
-   1280×720 for the Build panel (#926, #920, `ui-build-queue`), and #739's
-   four-line-box cap for the alerts list. Both are inside ADR 0112's ruling
-   rather than exceptions to it: the label carrying it read *"np."* ("e.g."),
-   and 13 is a step on the ramp the owner named. The list of keeps is closed
-   executably, because *adding* one breaks no floor and would otherwise erode
-   the ruled scale silently.
+   **"Not a token edit" was right, and four surfaces prove it.** These keep
+   13 px, each with the assertion that says so beside it in `tokens.css`:
+
+   | Surface | What went red at 15 px |
+   |---|---|
+   | Build panel | `.hud-build__arm` 56 px against a 44 px tap target (#926); the panel arriving with 6 px more content than box (#920); a queue cancel 2 px below the fold |
+   | Alerts list | #739's worst-case sentence wrapping to 5 line boxes against a cap of 4, at 1280×720 |
+   | Rooms panel | its own body 15 px shorter than its content at 900×600 (#331) |
+   | Events band | #985's 32 px grid row measuring 35 px — **a recording rather than a floor**, and the one keep that rests on not editing a pinned number rather than on a real overflow |
+
+   All four are inside ADR 0112's ruling rather than exceptions to it: the
+   label carrying it read *"np."* ("e.g."), and 13 is a step on the ramp the
+   owner named. The list of keeps is closed executably, because *adding* one
+   breaks no floor and would otherwise erode the ruled scale silently.
+
+   **One recorded measurement did move**, because it is downstream of the type
+   scale by construction rather than a property of the thing it names:
+   `app-shell.spec.ts`'s `ARRIVAL_PANEL_HEIGHT_PX` at 1280×720 and 375×812,
+   by the 1.7 px the status strip's own growth hands the rail. Its docblock
+   already required that a change to it arrive with the measurement that
+   caused it, and #545 and #634 each moved it that way before.
 3. **The interactive hue is a single desaturated steel blue**
    (`--sky-600: #4a7fa5`, `src/ui/tokens.css:186-188`), where the direction has
    a teal action colour and a mint brand colour with different jobs.

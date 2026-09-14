@@ -180,7 +180,7 @@ way against the delivery's increments before they were written down. `:root`
 selects 15 px for body and value. **Labels never moved**: 11 px was already the
 ruled size, so the "three steps" this section opens with was two.
 
-**Two surfaces did not have the room, and keep 13 px with their reasons in
+**Four surfaces did not have the room, and keep 13 px with their reasons in
 `tokens.css`:**
 
 - **The Build panel.** Three pinned floors went red at 15 px, all at 1280×720 —
@@ -194,6 +194,27 @@ ruled size, so the "three steps" this section opens with was two.
   boxes at every viewport; at 15 px it wraps to five at 1280×720. It surfaced
   a stage later than expected because the alerts section is a child of the
   minimap panel in the map corner, not of the rail.
+- **The Rooms panel.** Its own body measured 15 px shorter than its content at
+  900×600 (#331). Found only by the whole browser suite — the panel-by-panel
+  spec runs had missed it, which is the argument for running the suite whole
+  before calling a stage like this done.
+- **The events band.** #985 pins its grid row at exactly 32 px while it
+  speaks; at 15 px it is 35 px. **This is a recording rather than a floor**:
+  nothing overflows, nothing is unreachable, and the invariant #985 is about —
+  that the band borrows a definite row and gives it back — holds at 35 as well
+  as at 32. Changing the 32 would be re-recording a measurement rather than
+  weakening an assertion, and it was still not done: an agent deciding for
+  itself which pinned numbers are "only recordings" is how that line stops
+  meaning anything. The keep is the conservative answer and the argument for
+  re-recording is written down beside it.
+
+**One recorded measurement did move**, and the distinction is the whole of why:
+`ARRIVAL_PANEL_HEIGHT_PX` (1280×720 397.3 → 395.6, 375×812 441 → 439.3) is
+downstream of the *status strip's* height, not a property of the Rooms panel it
+names — the panel is pinned at 13 px and every moved pixel is the strip's.
+Keeping those numbers would mean reverting the strip, i.e. not doing the stage.
+Its own docblock requires a change to arrive with the measurement that caused
+it, which #545 and #634 each did before, and this one does.
 
 **One thing this section did not predict and a later stage owes.** At a 200 %
 browser page zoom the HUD already fails its own containment invariants on
