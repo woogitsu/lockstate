@@ -448,7 +448,7 @@ for (const viewport of [
         'the confirmation is outside the panel fold, so the second press is asked for and never read',
       ).toBe(true);
       expect(await intents(page), 'the first press dismissed somebody instead of asking').toEqual([
-        '{"kind":"select-tab","tab":"security"}',
+        '{"kind":"select-tab","tab":"manage"}',
       ]);
 
       // The second press on the same control is the one that spends.
@@ -456,7 +456,7 @@ for (const viewport of [
         document.querySelector<HTMLElement>('.hud-staff__roster-row[data-staff="8"]')?.querySelector('button')?.click();
       });
       expect(await intents(page), 'the confirmed press did not reach the host, or reached it for somebody else').toEqual(
-        ['{"kind":"select-tab","tab":"security"}', '{"kind":"dismiss-staff","staffId":8}'],
+        ['{"kind":"select-tab","tab":"manage"}', '{"kind":"dismiss-staff","staffId":8}'],
       );
     });
   });
