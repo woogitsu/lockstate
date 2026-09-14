@@ -102,6 +102,7 @@ canvas {
 }
 
 .save-panel__button {
+  pointer-events: none; /* TEMPORARY MUTATION, reverted immediately */
   min-height: var(--tap-target);
   padding: 0 var(--space-3);
   color: var(--text-body);
