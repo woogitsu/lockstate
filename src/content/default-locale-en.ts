@@ -499,8 +499,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *
    * - `hud.layout.title` names the group and is the visible legend on the menu
    *   button, in the same arrangement `hud.zoom.title` and `INTERFACE SCALE`
-   *   use. "Layout" rather than "View": nothing here moves the camera, and
-   *   this game already has a camera zoom two controls away that does.
+   *   use.
+   *
+   *   **It read "Layout" until #663 and the paragraph that argued for it is
+   *   kept below, because it is still right about what it rejected.** It said:
+   *   *"'Layout' rather than 'View': nothing here moves the camera, and this
+   *   game already has a camera zoom two controls away that does."* Both
+   *   clauses hold, and "View" is still the wrong name for this drawer.
+   *
+   *   What changed is what the drawer holds. It never held only layout -- the
+   *   clock has been in it since #1159, put there because folding the metric
+   *   strip must not cost a player the ability to read the time -- and #663
+   *   added the language picker, which the rail measured as having no room
+   *   for. A drawer holding a clock, a language and three region controls is
+   *   a settings drawer, and calling it "Layout" would leave a player who
+   *   cannot read English hunting for their own language under a word that
+   *   does not cover it. The owner's own delivery names this surface
+   *   *Ustawienia* (`docs/design/2026-09-13-identity-v5/DOKUMENTACJA/projekt.md:195`).
    * - `hud.layout.menu` is the button's `title`, and says what pressing it
    *   does -- it opens a menu -- rather than naming the menu a second time.
    * - The two width sliders and the one height slider are named for the thing
@@ -513,8 +528,12 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *   would be a sentence the layout contradicts.
    * - `hud.layout.reset` -- "Reset layout" and not "Reset settings": it clears
    *   `lockstate.settings.layout` and nothing else, so the player's interface
-   *   scale, theme and keyboard remap survive it. That is constitution article
-   *   13's "niezależny reset" and it is the whole reason the key is separate.
+   *   scale, theme, language and keyboard remap survive it. That is
+   *   constitution article 13's "niezależny reset" and it is the whole reason
+   *   the key is separate. **It matters more now that the drawer above it is
+   *   called Settings**: a control labelled "Reset settings" inside a drawer
+   *   holding a language would be read as clearing that too, which it does
+   *   not do.
    * - `hud.layout.map-only` names a mode rather than promising an empty
    *   screen: it folds all three regions at once, and constitution article 16
    *   requires each folded region to leave a handle behind, so three small
@@ -535,8 +554,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *   drag, and a player reaching it with a keyboard would be told to do the
    *   one thing they cannot.
    */
-  'hud.layout.title': 'Layout',
-  'hud.layout.menu': 'Open the layout menu',
+  'hud.layout.title': 'Settings',
+  'hud.layout.menu': 'Open the settings menu',
   'hud.layout.navigation-width': 'Navigation width',
   'hud.layout.inspector-width': 'Panel width',
   'hud.layout.inspector-height': 'Panel height',

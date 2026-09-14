@@ -26,10 +26,12 @@ import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
  *    right order.** Vitest runs in `environment: 'node'`, where there is no
  *    `navigator` at all; a Polish browser whose player chose English is only
  *    real here.
- * 4. **That the control fits the rail.** The aside is a measured budget, and
- *    where this control sits was settled by measuring in Chromium rather than
- *    by inheriting what `src/ui/theme.ts` records about it -- that refusal
- *    predates #1159's layout shell. Only a browser lays out a flex box.
+ * 4. **That the control fits where it was put.** The rail is a measured
+ *    budget and it refused this control in both of the shapes it leaves open;
+ *    the settings drawer, which floats over the world, costs it nothing. That
+ *    was settled by measuring in Chromium rather than by inheriting what
+ *    `src/ui/theme.ts` records about the rail -- that refusal predates #1159's
+ *    layout shell -- and only a browser lays out a flex box.
  */
 
 const APP_URL = '/index.html';
@@ -55,7 +57,16 @@ async function openApp(page: Page): Promise<void> {
   await page.waitForSelector('#game-root canvas');
   await page.waitForSelector('.hud');
   await page.waitForSelector('.save-panel');
-  await page.waitForSelector(CYCLE);
+  // The control is in the settings drawer, which starts shut -- so it is in
+  // the DOM and not laid out. `state: 'attached'` is the wait that means "the
+  // interface is built", which is what every other line here is waiting for.
+  await page.waitForSelector(CYCLE, { state: 'attached' });
+}
+
+/** Opens the settings drawer the control lives in, and leaves it open. */
+async function openSettings(page: Page): Promise<void> {
+  await page.locator('.hud-layout__button').click();
+  await expect(page.locator(CYCLE)).toBeVisible();
 }
 
 /**
@@ -109,59 +120,69 @@ test.describe('a browser that asks for English, with nothing chosen', () => {
     await expect(page.locator(CYCLE)).toHaveAttribute('title', text(EN, 'display.language.cycle'));
   });
 
-  test('sits in the rail without overflowing it, as a real tap target', async ({ page }) => {
+  test('is in the settings drawer, at every viewport, as a real tap target', async ({ page }) => {
     await openApp(page);
     /*
-     * The constraint that decided where this control lives, asserted at both
-     * ends rather than remembered, because the tight viewport here is the
-     * WIDE one. `src/styles.css` carries the measurements; this is the shape
-     * of the two failures they came from -- a button that overflows its own
-     * control (which `app-shell.spec.ts`'s #88 sweep reports as covered) and a
-     * second line that pushes the save panel under the centre of a phone
-     * screen (which its centre-click test reports as the HUD swallowing a
-     * click meant for the world).
+     * Where this control lives, and it is not where it was first built.
+     * `.hud-chrome-prefs` in the rail was tried in both shapes the rail
+     * leaves open and refused both, in Chromium, by `app-shell.spec.ts`:
+     *
+     *   - as a third column, 264px over three controls is 87-88px each with a
+     *     44px `min-width: var(--tap-target)` floor, so the readouts
+     *     overflowed their own control and #88 reported the theme button
+     *     covered at 1280x720;
+     *   - as a second line, 54px more than the aside has -- at 375x812 the
+     *     save panel's bottom edge went to 423 with the centre at 406 and a
+     *     centre click reached the HUD, and at 900x600 on the Build tab it
+     *     covered 26 controls.
+     *
+     * The drawer floats over the world, so it costs the rail nothing at any
+     * viewport. That is the property asserted here, at the two viewports the
+     * rail refused.
      */
-    const geometry = async (): Promise<Record<string, unknown> | null> =>
-      page.evaluate(() => {
-        const row = document.querySelector('.hud-chrome-prefs');
-        const rail = document.querySelector('.hud__aside');
-        if (row === null || rail === null) return null;
-        const children = [...row.children] as HTMLElement[];
+    for (const [width, height] of [[1280, 720], [900, 600], [375, 812]] as const) {
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(150);
+
+      // Shut, the control is not laid out at all and costs nothing.
+      expect(
+        await page.locator(CYCLE).isVisible(),
+        `the settings drawer is open before it was pressed at ${width}x${height}`,
+      ).toBe(false);
+
+      await page.locator('.hud-layout__button').click();
+      await expect(page.locator(CYCLE)).toBeVisible();
+
+      const geometry = await page.evaluate(() => {
+        const control = document.querySelector('.language-control');
+        const body = document.querySelector('.hud-layout__body');
+        if (control === null || body === null) return null;
         return {
-          // No control may spill out of its own box: a button outside its
-          // parent is one the reachability sweep finds covered.
-          spilling: children.filter((child) => child.scrollWidth > child.clientWidth + 1).map((child) => child.className),
-          insideRail:
-            row.getBoundingClientRect().right <= rail.getBoundingClientRect().right + 0.5 &&
-            row.getBoundingClientRect().left >= rail.getBoundingClientRect().left - 0.5,
-          lines: new Set(children.map((child) => Math.round(child.getBoundingClientRect().top))).size,
-          count: children.length,
+          spills: control.scrollWidth > control.clientWidth + 1,
+          insideDrawer:
+            control.getBoundingClientRect().right <= body.getBoundingClientRect().right + 0.5 &&
+            control.getBoundingClientRect().left >= body.getBoundingClientRect().left - 0.5,
+          // The drawer itself has to be on screen, or the control is reachable
+          // only in the DOM.
+          onScreen:
+            body.getBoundingClientRect().top >= -0.5 &&
+            body.getBoundingClientRect().bottom <= window.innerHeight + 0.5,
+          // And the rail's own chrome row is the pair it always was.
+          chromeRowCount: document.querySelector('.hud-chrome-prefs')?.children.length,
         };
       });
+      expect(geometry, `nothing to measure at ${width}x${height}`).not.toBeNull();
+      expect(geometry!.spills, `the language control spills its box at ${width}x${height}`).toBe(false);
+      expect(geometry!.insideDrawer, `the language control leaves the drawer at ${width}x${height}`).toBe(true);
+      expect(geometry!.onScreen, `the settings drawer is off screen at ${width}x${height}`).toBe(true);
+      expect(geometry!.chromeRowCount, `the rail's chrome row changed at ${width}x${height}`).toBe(2);
 
-    await page.setViewportSize({ width: 1280, height: 720 });
-    const wide = await geometry();
-    expect(wide, 'the chrome block is not on the page').not.toBeNull();
-    expect(wide!.count).toBe(3);
-    expect(wide!.spilling, 'a chrome control is wider than its own box').toEqual([]);
-    expect(wide!.insideRail, 'the chrome block hangs outside the rail').toBe(true);
-    // Two lines where the rail is a fixed 264px column: three do not fit.
-    expect(wide!.lines, 'three controls share one line at the rail width, which 264px cannot hold').toBe(2);
-
-    await page.setViewportSize({ width: 375, height: 812 });
-    const narrow = await geometry();
-    expect(narrow!.spilling, 'a chrome control is wider than its own box on a phone').toEqual([]);
-    expect(narrow!.insideRail, 'the chrome block hangs outside the rail on a phone').toBe(true);
-    // And one line where the rail is the whole screen, because a second line
-    // is 17px more than a 375x812 rail has.
-    expect(narrow!.lines, 'the chrome block took a second line on a phone').toBe(1);
-
-    for (const [width, height] of [[1280, 720], [375, 812]] as const) {
-      await page.setViewportSize({ width, height });
       const target = await page.locator(CYCLE).boundingBox();
       expect(target, `the language button has no box at ${width}x${height}`).not.toBeNull();
       expect(target!.height, `${width}x${height}`).toBeGreaterThanOrEqual(44);
       expect(target!.width, `${width}x${height}`).toBeGreaterThanOrEqual(44);
+
+      await page.locator('.hud-layout__button').click();
     }
   });
 });
@@ -181,10 +202,13 @@ test.describe('pressing the control', () => {
     const before = await visibleStrings(page);
     expect(before.length, 'the sweep found almost nothing, so it is proving nothing').toBeGreaterThan(20);
 
-    // Automatic -> English -> Polski: two presses, each reloading.
+    // Automatic -> English -> Polski: two presses, each reloading. The drawer
+    // is shut again by every reload, which is the honest shape of the flow: a
+    // player opens settings, presses once, and the page comes back.
     for (let press = 0; press < 2; press += 1) {
+      await openSettings(page);
       await page.locator(CYCLE).click();
-      await page.waitForSelector(CYCLE);
+      await page.waitForSelector(CYCLE, { state: 'attached' });
       await page.waitForSelector('.save-panel');
     }
     await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'pl');
@@ -247,15 +271,21 @@ test.describe('pressing the control', () => {
      * *several* surfaces rather than one. Each key below is rendered by a
      * different module, and each is mounted separately -- the navigation by
      * `hud.ts`, the save panel by `SavePanel` (which held a localizer of its
-     * own until #208 closed that seam), and the two halves of the chrome row
-     * by `theme.ts` and `language.ts`. This is #663's *"asserts that every
+     * own until #208 closed that seam), the chrome row by `theme.ts` and the
+     * metric strip by `status-strip.ts`. This is #663's *"asserts that every
      * visible string changed -- not that one panel did"*, made specific.
+     *
+     * The language control's own strings are deliberately **not** in this
+     * list. It lives in the settings drawer, which a reload leaves shut, so
+     * `visibleStrings` never sees it -- an entry here would pass by being
+     * absent rather than by having changed, which is the shape of assertion
+     * this file exists to avoid. The drawer is opened and read below instead.
      */
     const reachedEverySurface = [
       'hud.tab.build',
       'save.action.create',
       'display.theme.region',
-      'display.language.region',
+      'hud.status.prisoners',
     ] as const;
     const stillEnglish = reachedEverySurface.filter((key) => after.has(text(EN, key)));
     expect(
@@ -265,6 +295,17 @@ test.describe('pressing the control', () => {
     for (const key of reachedEverySurface) {
       expect(text(PL, key), `${key} is untranslated, so it proves nothing here`).not.toBe(text(EN, key));
     }
+
+    // And the fifth surface, which has to be opened to be read: the drawer the
+    // control itself sits in, including the control.
+    await openSettings(page);
+    await expect(page.locator(CYCLE)).toHaveText(text(PL, 'display.language.polish'));
+    await expect(page.locator('.hud-layout__legend')).toHaveText(text(EN, 'hud.layout.title'));
+    // `hud.layout.title` is one of the fifteen keys Polish has no entry for,
+    // so it is still English -- asserted rather than glossed, because a reader
+    // who sees English in a Polish drawer should find this line rather than
+    // file a bug.
+    expect(PL['hud.layout.title'], 'hud.layout.title has been translated: move it into the sweep above').toBeUndefined();
   });
 
   test('keeps the prison it was showing, and a save lands before the reload', async ({ page }) => {
@@ -275,6 +316,7 @@ test.describe('pressing the control', () => {
     const generation = (label: string): number => Number(/\((\d+) gen\)/.exec(label)?.[1] ?? Number.NaN);
     expect(Number.isNaN(generation(before)), `the save row does not read as expected: ${before}`).toBe(false);
 
+    await openSettings(page);
     await page.locator(CYCLE).click();
     await page.waitForSelector('.save-panel__item-label');
     await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'en');
@@ -343,9 +385,10 @@ test.describe('a browser that asks for Polish', () => {
     await openApp(page);
     const readings: string[] = [];
     for (let press = 0; press < 3; press += 1) {
+      await openSettings(page);
       readings.push(await page.locator(CYCLE).innerText());
       await page.locator(CYCLE).click();
-      await page.waitForSelector(CYCLE);
+      await page.waitForSelector(CYCLE, { state: 'attached' });
       await page.waitForSelector('.save-panel');
     }
     // Every language is named in itself, so the entry a player is looking for

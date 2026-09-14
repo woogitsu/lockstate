@@ -3605,16 +3605,33 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   /*
    * The language, wired end to end (#663).
    *
-   * **The third control in the chrome block, on its own line where the rail is
-   * a fixed column and beside the other two where it is the whole screen.**
-   * Both halves are measured and `src/styles.css` carries the numbers beside
-   * the rules; neither was inherited, which matters because the comments above
-   * record #1157 refusing a second row and #1157 predates #1159's layout
-   * shell. Read together: 264px cannot hold three of these controls, a second
-   * line is 17px more than a 375x812 rail has, and a 359px phone row holds
-   * three comfortably -- so the tight viewport here is the WIDE one, which is
-   * the opposite of the usual direction and is why both ends had to be
-   * measured.
+   * **In the settings menu, not in the rail, and the rail was tried twice
+   * first.** The comments above record `app-shell.spec.ts` refusing a second
+   * row in this slot in #1157; that is a measurement of the rail as it was
+   * before #1159's layout shell, so it was re-run rather than inherited, in
+   * both of the shapes it leaves open. Both were refused, in Chromium, on this
+   * tree:
+   *
+   *   - **A third control in `.hud-chrome-prefs`.** 264px over three controls
+   *     is 87-88px each and 44 of that is the button's own
+   *     `min-width: var(--tap-target)` floor, so the readouts overflowed their
+   *     control's box -- the theme's spanning x=1137..1209 inside a control
+   *     ending at 1179 -- and #88's sweep reported the theme button covered on
+   *     the overview tab at 1280x720.
+   *   - **A line of its own under them.** That is 54px, and at 375x812 it put
+   *     the save panel's bottom edge at 423 with the viewport's centre at 406:
+   *     *a click in the middle of the screen reaches the world, not the HUD*
+   *     failed with the centre landing on `.save-panel`. At 900x600 on the
+   *     Build tab it covered **26 controls**, the save panel's `New prison`
+   *     and `Save now` among them, hit by the language control itself.
+   *
+   * So the rail has no room, and the settings menu does: it is a drawer that
+   * floats over the world, it is reachable on every tab and at every viewport,
+   * and a control a player uses once belongs behind a press. `hud.layout.title`
+   * moved from *Layout* to *Settings* with it, because a language picker filed
+   * under "layout" is one a player cannot find -- the drawer already held the
+   * clock, which is not layout either, and the owner's own delivery calls this
+   * surface *Ustawienia*.
    *
    * **A press reloads the page, and that is the decision rather than a
    * shortcut.** `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`
@@ -3669,8 +3686,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       })();
     },
   });
-  chromeRow.append(languageControl.element);
   hud.asideSlot.append(chromeRow);
+  hud.preferencesSlot.append(languageControl.element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;

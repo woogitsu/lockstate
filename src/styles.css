@@ -335,13 +335,6 @@ canvas {
  */
 .hud-chrome-prefs {
   display: flex;
-  /*
-   * Wraps, so the third control (#663) takes a line of its own at the rail's
-   * fixed width and shares the first line where the rail is the whole screen.
-   * `.hud-chrome-prefs > .language-control` below carries the two halves and
-   * the measurements that chose them.
-   */
-  flex-wrap: wrap;
   align-items: stretch;
   flex: none;
   width: var(--hud-rail-panel-width);
@@ -361,10 +354,19 @@ canvas {
 
 /* Inside the row, each control is a half that may shrink: `min-width: 0` is
    what lets the legend's own `text-overflow: ellipsis` actually engage, since
-   a flex item's automatic minimum size is otherwise its content. */
+   a flex item's automatic minimum size is otherwise its content.
+
+   A HALF, and a third control does not fit. Measured in Chromium at 1280x720
+   with the language picker (#663) added here: 264px over three gives 87-88px
+   each, 44 of which is each button's `min-width: var(--tap-target)` floor, and
+   the readouts overflowed their own control -- the theme's spanning
+   x=1137..1209 inside a control ending at 1179 -- which `app-shell.spec.ts`'s
+   #88 sweep reported as the theme button being covered. There was nothing to
+   give up: the legends are already 0px wide with two. The picker is in the
+   settings menu instead; `src/main.ts` carries the second measurement, of the
+   second row that was tried after this one. */
 .hud-chrome-prefs > .display-scale,
-.hud-chrome-prefs > .theme-control,
-.hud-chrome-prefs > .language-control {
+.hud-chrome-prefs > .theme-control {
   width: auto;
   flex: 1 1 0;
   min-width: 0;
@@ -374,70 +376,29 @@ canvas {
   border-radius: 0;
 }
 
-/* One hairline between neighbours, which is how everything else in this
-   interface separates them. */
+/* One hairline between the two, which is how everything else in this
+   interface separates neighbours. */
 .hud-chrome-prefs > .theme-control {
   border-left: var(--hairline) solid var(--border-hairline);
 }
 
 /*
- * The language control takes a LINE of its own here, and shares one below
- * 720px. Both halves are measured rather than chosen, and the pair is the
- * only arrangement that survives every viewport `app-shell.spec.ts` sweeps.
- *
- * **Why not a third column at the rail's own width.** `--hud-rail-panel-width`
- * is 264px, so three `flex: 1 1 0` controls get 87-88px each, and 44 of that
- * is the button's `min-width: var(--tap-target)` floor. Measured in Chromium
- * at 1280x720: the theme readout spanned x=1137..1209 inside a control ending
- * at 1179 -- it overflowed rather than shrank -- and `app-shell.spec.ts`'s
- * reachability sweep reported the theme button as covered on the overview tab
- * (#88). There was nothing to give up: the legends were already 0px wide with
- * only two controls in the row.
- *
- * **Why not a line of its own everywhere.** A second line costs the rail 54px
- * (44 of tap target, two hairlines, one `--space-2` gap), and at 375x812 that
- * is 17px more than the rail has: the save panel's bottom edge moved from 369
- * to 423 with the viewport's centre at 406, so a click in the middle of a
- * phone screen reached the save panel instead of the world. That is the same
- * refusal `src/ui/theme.ts` records from #1157, re-measured on #1159's rail
- * rather than inherited from the rail it describes.
- *
- * **Why the phone can afford the column the desktop cannot.** Below 720px the
- * rail is not a fixed column -- `.hud-chrome-prefs` is `width: 100%` -- so at
- * 375px the row is 359px wide and three controls get 119px each against a
- * 92px minimum. The wide layout is the tight one here, which is the opposite
- * of the usual direction and the reason this had to be measured at both ends.
- */
-.hud-chrome-prefs > .language-control {
-  flex-basis: 100%;
-  border-top: var(--hairline) solid var(--border-hairline);
-}
-
-@media (max-width: 720px) {
-  .hud-chrome-prefs > .language-control {
-    flex-basis: 0;
-    border-top: 0;
-    border-left: var(--hairline) solid var(--border-hairline);
-  }
-}
-
-/*
  * No readout in this row may overflow its own control, at any width.
  *
- * The buttons are `flex: none` in their standalone form, which is right when
- * a control owns the whole rail and is what let them spill out of a shared
- * one. `min-width: var(--tap-target)` is a floor and stays one, so what gives
- * way under pressure is the text and never the target -- a truncated
- * `Automatic (Eng…` is a readable control, and a button lying outside its own
- * box is one the player cannot press.
+ * The buttons are `flex: none` in their standalone form, which is right when a
+ * control owns the whole rail and is what let them spill out of a shared one
+ * when a third arrived. `min-width: var(--tap-target)` is a floor and stays
+ * one, so what gives way under pressure is the text and never the target -- a
+ * truncated readout is a readable control, and a button lying outside its own
+ * box is one the player cannot press. Kept although the third control moved
+ * out: the defect it fixes is a property of a shared row, and this row is one.
  */
 .hud-chrome-prefs > * > button {
   flex: 0 1 auto;
 }
 
 .hud-chrome-prefs .display-scale__value,
-.hud-chrome-prefs .theme-control__value,
-.hud-chrome-prefs .language-control__value {
+.hud-chrome-prefs .theme-control__value {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -466,10 +427,27 @@ canvas {
    the rail stops being a fixed-width column, so its contents stop being one. */
 @media (max-width: 720px) {
   .display-scale,
-  .theme-control,
-  .language-control {
+  .theme-control {
     width: 100%;
   }
+}
+
+/*
+ * The language control lives in the settings menu (#663), which is a drawer of
+ * its own width rather than a rail panel -- so it takes the width it is given
+ * instead of `--hud-rail-panel-width`, and carries no box of its own: the
+ * drawer is already a surface, and a second border inside it would read as a
+ * panel within a panel. `hud.css` owns `.hud-layout__preferences`, which is
+ * the box it sits in.
+ */
+.language-control {
+  width: auto;
+  align-self: stretch;
+  margin-bottom: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
 }
 
 /* Takes the row and pushes the button to the end, and truncates rather than

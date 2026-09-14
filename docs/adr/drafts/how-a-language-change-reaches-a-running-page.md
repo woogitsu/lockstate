@@ -4,8 +4,14 @@
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
 > being renumbered without argument, along with every citation of it added by
 > the same branch — `src/ui/language.ts`, `src/main.ts`,
-> `src/input/storage.ts`, `docs/LOCALIZATION.md` and `docs/INPUT.md`, each of
-> which names this file by path rather than by number for exactly that reason.
+> `src/input/storage.ts`, `src/content/default-locale-en.ts`,
+> `docs/LOCALIZATION.md`, `docs/INPUT.md`, `docs/IDENTITY_V5_ROLLOUT.md`,
+> `tests/browser/ui-language-picker.spec.ts` and
+> `tests/browser/pseudo-locale-sweep.spec.ts`, each of which names this file by
+> path rather than by number for exactly that reason.
+> `grep -rn "how-a-language-change-reaches-a-running-page" src/ docs/ tests/` is
+> the list, so a tenth citation added later cannot be missed by reading this
+> sentence.
 
 ## Status
 
@@ -182,6 +188,27 @@ This is the tree before #663 and it is not an answer to the issue. It is
 recorded because it names the value `'auto'` preserves: the browser's list
 stays the source for a player who has expressed no preference, and only for
 them.
+
+## Where the control ended up, which this does not decide and does constrain
+
+Placement is the HUD's business rather than this decision's. One consequence
+belongs here because it follows from *this* decision: a reload-applied change
+needs **one control and no re-render machinery**, which is why a single cycling
+button is the whole of the user interface this issue adds.
+
+Where it went was measured, not chosen, and the rail refused both shapes it
+leaves open:
+
+| Shape | What refused it |
+| --- | --- |
+| A third control in `.hud-chrome-prefs` | 264px over three is 87–88px each against a 44px `min-width: var(--tap-target)` floor, so the readouts overflowed their own control (the theme's spanning x=1137..1209 inside a control ending at 1179) and `app-shell.spec.ts`'s #88 sweep reported the theme button covered at 1280×720. |
+| A line of its own beneath them | 54px the aside does not have. At 375×812 the save panel's bottom edge went 369 → 423 with the viewport's centre at 406 and a centre click reached the HUD; at 900×600 on the Build tab it covered **26** controls, `New prison` and `Save now` among them. |
+
+So it is in the settings drawer, which floats over the world and costs the rail
+nothing at any viewport — and which was renamed from *Layout* to *Settings*,
+because a drawer that already held the clock and now holds a language is not a
+layout menu, and a player who cannot read English will not look for their own
+language under a word that does not cover it.
 
 ## What this does not decide
 

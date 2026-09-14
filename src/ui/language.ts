@@ -81,16 +81,20 @@ export interface LanguageControl {
  * shape as the theme control beside it.
  *
  * **A cycling button rather than a `createChoiceGroup`, and the reason is the
- * one already measured in this slot.** `src/ui/theme.ts` records what a
+ * one already measured next door.** `src/ui/theme.ts` records what a
  * three-option group cost the rail when it was tried there: a click in the
  * middle of a 375x812 viewport reached the HUD instead of the world, 26
  * controls on the Build tab were covered at 1280x720 (#88), and the rail
- * scrolled at 200 %. That budget has not grown, and this control spends more
- * of it than the theme does rather than less -- it is the third occupant of
- * `.hud-chrome-prefs`, which is why that block wraps. The measurements that
- * decided its two shapes are in `src/styles.css` beside the rules; the short
- * version is that 264px holds two of these controls and 359px holds three, so
- * the *wide* rail is the tight one.
+ * scrolled at 200 %. This control does not sit in the rail at all -- the rail
+ * refused it twice and `src/main.ts` carries both measurements -- but it sits
+ * in a drawer that a player opens, and a group of three options is three
+ * things to lay out where one button is one.
+ *
+ * **What a cycling button costs is a different thing in a drawer than it is on
+ * a rail, and it is worth being exact.** On a rail the cost is that two of the
+ * three values are hidden behind a press. In a drawer the control is *already*
+ * behind a press, so a player who has opened it is one press from the next
+ * value and two from any value. That is the trade this takes.
  *
  * **What it costs, stated rather than glossed, because it costs more here than
  * it does for the theme.** Two of the three values are behind a press at any
