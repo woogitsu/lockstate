@@ -243,6 +243,28 @@ rather than assumed:
   Polish `few`/`many` split — before a Polish catalog could resolve them
   correctly. This is genuinely outstanding work, not a restatement of
   something already built.
+
+  > **Two of those sentences are now false and one has grown, and the row is
+  > kept as it stood** (`docs/AGENT_WORKFLOW.md` §4). **A `pl` catalogue does
+  > exist** — `src/content/locale-pl.ts` and
+  > `src/services/localization/pl-catalog.ts`, 669 of 669 keys, #661,
+  > 2026-09-14 — and the flat `{count}` list pins **27**, not 24; that tally is
+  > exactly the sentence §4 warns rots on the next addition rather than on the
+  > next edit here, and it has rotted twice in this paragraph already (21 → 22
+  > → 24 → 27).
+  >
+  > **What is still true is the half that matters, and it is more interesting
+  > than the half that broke.** The Polish catalogue authors **no** plural
+  > forms for those 27 keys and did not need to, because a `pl` catalogue
+  > *cannot* fix them from its side and would not be rendered if it could:
+  > `buildLocalizationCatalog` takes `Record<LocalizationKey, string>` so a
+  > content catalogue holds no plural entry in any locale, `Localizer.format`
+  > reads `entry.value.other` for a plural entry, and `HudLocalizer` exposes
+  > `format` and not `formatPlural`. Every counted message in `pl` is written
+  > to be correct at every count instead — which is why *1 osoba / 2 osoby /
+  > 5 osób* is satisfied by reshaping rather than by forms, and why this row's
+  > conclusion ("genuinely outstanding work") was right about the work and
+  > wrong about what the work would turn out to be.
 - **Locale-formatted numbers and dates.** Already `Intl.NumberFormat` /
   `Intl.DateTimeFormat`, under "Formatting" above. Not new.
 
