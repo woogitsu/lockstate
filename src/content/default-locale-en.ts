@@ -970,6 +970,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * says why -- the shape every refusal in this block follows.
    */
   'hud.alert.refusal.dismiss.unknown-staff': 'Nobody was dismissed — that staff member is not on the roster.',
+  /*
+   * The two `edit-regime-block.*` sentences
+   * ([ADR 0113](../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+   * §3), on the same shape as `dismiss.unknown-staff` above: what did not
+   * happen, then why.
+   *
+   * **Both are true of the code that produces them**, which is the half of
+   * `AGENTS.md`'s fourth reservation the 2026-09-04 release did not touch.
+   * `RegimeScheduleRegistry.editBlock` returns `{ kind: 'refused' }` from a
+   * `findIndex` miss **before** it builds any replacement schedule and before
+   * it assigns `this.schedules`, so "nothing changed" is the state of the
+   * registry rather than a reassurance: no block moved, no category list was
+   * rewritten, and the next `hud/status-strip` read reports exactly the day it
+   * reported before the press.
+   *
+   * "Timetable" rather than "regime" or "schedule" because it is the word a
+   * player can act on without knowing the simulation's vocabulary, and neither
+   * sentence names a tick: the coordinate the command carries is a tick of the
+   * day, which is not a number any surface shows.
+   */
+  'hud.alert.refusal.edit-regime-block.unknown-block': 'Nothing was changed — that part of the day is not a block on this timetable.',
+  'hud.alert.refusal.edit-regime-block.unknown-group': 'Nothing was changed — this prison has no timetable for that group.',
   'hud.alert.refusal.release-guard.not-held': 'Nothing was released — that guard is already off duty.',
   'hud.alert.refusal.release-guard.unknown-guard': 'Nothing was released — that guard is not on the roster.',
   // `zone.out-of-bounds` and `zone.unowned-land` describe the same condition
