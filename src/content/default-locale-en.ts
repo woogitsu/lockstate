@@ -424,6 +424,69 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.tab.rooms': 'Rooms',
 
   /*
+   * The Layout menu and the three collapse arrows (#1159, stage 3).
+   *
+   * Fifteen strings, and the reservation they are written under is
+   * `AGENTS.md`'s fourth: the owner released the CHOICE of words on
+   * 2026-09-04 and did not release the requirement that each sentence be true
+   * of the code that renders it. So each is recorded here against what was
+   * opened to establish it.
+   *
+   * - `hud.layout.title` names the group and is the visible legend on the menu
+   *   button, in the same arrangement `hud.zoom.title` and `INTERFACE SCALE`
+   *   use. "Layout" rather than "View": nothing here moves the camera, and
+   *   this game already has a camera zoom two controls away that does.
+   * - `hud.layout.menu` is the button's `title`, and says what pressing it
+   *   does -- it opens a menu -- rather than naming the menu a second time.
+   * - The two width sliders and the one height slider are named for the thing
+   *   they move, and each is `<input type="range">` with `min`/`max` taken
+   *   from the same `SeparatorRange` the drag and the arrow keys are clamped
+   *   to (`src/ui/hud/hud-layout.ts`), so "width" is literally the property
+   *   being set and the three cannot disagree about their limits.
+   *   `hud.layout.inspector-height` exists because on a phone the same region
+   *   is a bottom sheet and the drag is vertical; naming it "width" there
+   *   would be a sentence the layout contradicts.
+   * - `hud.layout.reset` -- "Reset layout" and not "Reset settings": it clears
+   *   `lockstate.settings.layout` and nothing else, so the player's interface
+   *   scale, theme and keyboard remap survive it. That is constitution article
+   *   13's "niezależny reset" and it is the whole reason the key is separate.
+   * - `hud.layout.map-only` names a mode rather than promising an empty
+   *   screen: it folds all three regions at once, and constitution article 16
+   *   requires each folded region to leave a handle behind, so three small
+   *   controls remain. The alternative wording -- "Hide all panels" -- was
+   *   rejected because it says the same thing less clearly and is no more
+   *   literally true.
+   * - The three hide/show pairs each name **what disappears**, verified
+   *   against `applyLayout` in `src/ui/hud/layout-shell.ts`:
+   *   `hidden` goes on `.hud-tabs__inner` (the five tab buttons), on
+   *   `.hud__rail`'s panel column (the aside slot and the five tab panels),
+   *   and on the strip's metrics row, clock and transport group. So
+   *   "the counters and the clock" is the metric strip's content listed rather
+   *   than the strip named -- the strip element itself stays, because it is
+   *   what carries the arrow that brings the content back.
+   * - The two separator labels are the full sentence a screen reader
+   *   announces beside `aria-valuenow`. "Resize" and not "Drag": the control
+   *   answers arrows, Shift+arrows, Home, End and a double-click as well as a
+   *   drag, and a player reaching it with a keyboard would be told to do the
+   *   one thing they cannot.
+   */
+  'hud.layout.title': 'Layout',
+  'hud.layout.menu': 'Open the layout menu',
+  'hud.layout.navigation-width': 'Navigation width',
+  'hud.layout.inspector-width': 'Panel width',
+  'hud.layout.inspector-height': 'Panel height',
+  'hud.layout.reset': 'Reset layout',
+  'hud.layout.map-only': 'Map only',
+  'hud.layout.hide-navigation': 'Hide the sections',
+  'hud.layout.show-navigation': 'Show the sections',
+  'hud.layout.hide-inspector': 'Hide the panels',
+  'hud.layout.show-inspector': 'Show the panels',
+  'hud.layout.hide-metrics': 'Hide the counters and the clock',
+  'hud.layout.show-metrics': 'Show the counters and the clock',
+  'hud.layout.resize-navigation': 'Resize the sections',
+  'hud.layout.resize-inspector': 'Resize the panels',
+
+  /*
    * The camera zoom, said out loud at last (issue #1023).
    *
    * `WorldScene` has zoomed on the wheel, on a pinch and on `+`/`-` since it

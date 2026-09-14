@@ -42,9 +42,9 @@ import {
  * observable through a browser.
  */
 
-const DESKTOP = { width: 1280, height: 720 };
-const PHONE = { width: 375, height: 812 };
-const TABLET = { width: 1024, height: 768 };
+const DESKTOP = { width: 1280, height: 720, uiScale: 1 };
+const PHONE = { width: 375, height: 812, uiScale: 1 };
+const TABLET = { width: 1024, height: 768, uiScale: 1 };
 
 describe('the layout preference record', () => {
   it('defaults to nothing collapsed and no size chosen', () => {
@@ -139,8 +139,8 @@ describe('the device tier', () => {
     // than restated, so the two cannot drift.
     const css = readFileSync(new URL('../../src/ui/hud/hud.css', import.meta.url), 'utf8');
     expect(css).toContain(`@media (max-width: ${PHONE_MAX_WIDTH_PX}px)`);
-    expect(isPhoneLayout({ width: PHONE_MAX_WIDTH_PX, height: 800 })).toBe(true);
-    expect(isPhoneLayout({ width: PHONE_MAX_WIDTH_PX + 1, height: 800 })).toBe(false);
+    expect(isPhoneLayout({ width: PHONE_MAX_WIDTH_PX, height: 800, uiScale: 1 })).toBe(true);
+    expect(isPhoneLayout({ width: PHONE_MAX_WIDTH_PX + 1, height: 800, uiScale: 1 })).toBe(false);
   });
 });
 
@@ -154,7 +154,7 @@ describe('the ruled limits', () => {
   it('gives the inspector 260 to 600 where the window is wide enough for both', () => {
     expect(INSPECTOR_WIDTH_RANGE).toEqual({ min: 260, max: 600 });
     // 1920 - 180 navigation - 320 map reserve = 1420, well past the ruled 600.
-    expect(inspectorRange({ width: 1920, height: 1080 }, 180)).toEqual({ min: 260, max: 600 });
+    expect(inspectorRange({ width: 1920, height: 1080, uiScale: 1 }, 180)).toEqual({ min: 260, max: 600 });
   });
 
   it('takes the map’s reserve out of the inspector’s maximum, not out of the map', () => {
@@ -170,13 +170,13 @@ describe('the ruled limits', () => {
 
   it('reports an inverted range rather than a crushed panel when the window cannot hold both', () => {
     // 800 - 180 - 320 = 300 is still legal; 721 - 180 - 320 = 221 is not.
-    expect(inspectorRange({ width: 800, height: 720 }, 180).max).toBe(300);
-    const squeezed = inspectorRange({ width: 721, height: 720 }, 180);
+    expect(inspectorRange({ width: 800, height: 720, uiScale: 1 }, 180).max).toBe(300);
+    const squeezed = inspectorRange({ width: 721, height: 720, uiScale: 1 }, 180);
     expect(squeezed.max).toBeLessThan(squeezed.min);
     // And the primitive's documented resolution of that is the minimum: 260px
     // of legible panel, with the layout above free to decide what to do about
     // a window that cannot hold everything.
-    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, { width: 721, height: 720 }, 180)).toBe(260);
+    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, { width: 721, height: 720, uiScale: 1 }, 180)).toBe(260);
   });
 
   it('gives a phone a height from 180px to the smaller of 66% and the 210px reserve', () => {
@@ -186,7 +186,7 @@ describe('the ruled limits', () => {
     // 812: 66% is 535.92, the reserve leaves 602. The fraction binds.
     expect(inspectorRange(PHONE, 0)).toEqual({ min: 180, max: 812 * 0.66 });
     // 500: 66% is 330, the reserve leaves 290. The reserve binds.
-    expect(inspectorRange({ width: 375, height: 500 }, 0)).toEqual({ min: 180, max: 290 });
+    expect(inspectorRange({ width: 375, height: 500, uiScale: 1 }, 0)).toEqual({ min: 180, max: 290 });
   });
 });
 
@@ -223,14 +223,14 @@ describe('what a region is before a player has ever sized it', () => {
 
   it('opens a phone sheet as tall as the tier allows, which is not a number it could store', () => {
     expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, PHONE, 0)).toBe(Math.round(812 * 0.66));
-    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, { width: 375, height: 640 }, 0)).toBe(
+    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, { width: 375, height: 640, uiScale: 1 }, 0)).toBe(
       Math.round(640 * 0.66),
     );
   });
 
   it('clamps a stored size into the range the viewport allows without forgetting it', () => {
     const wide = withLayoutSize(DEFAULT_LAYOUT_SETTINGS, 'inspectorWidth', 580);
-    expect(resolveLayoutSize('inspector', wide, { width: 1920, height: 1080 }, 180)).toBe(580);
+    expect(resolveLayoutSize('inspector', wide, { width: 1920, height: 1080, uiScale: 1 }, 180)).toBe(580);
     // The same preference on a tablet, where 1024 - 180 - 320 = 524 binds.
     expect(resolveLayoutSize('inspector', wide, TABLET, 180)).toBe(524);
     // And it is still 580 in the record, so the desktop gets it back.

@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
+  loadLayoutSettings,
   loadThemeSettings,
   resolveBrowserKeyValueStore,
+  saveLayoutSettings,
   saveThemeSettings,
   saveAccessibilitySettings,
 } from './input';
@@ -2136,8 +2138,33 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     }
   });
 
+  /*
+   * The HUD layout, read before the shell is built (#1159).
+   *
+   * Before rather than after, so the first paint is already at the player's
+   * layout rather than snapping to it a frame later -- the same sequencing the
+   * interface scale's block below states and for the same reason. Its own
+   * store call rather than a shared variable, because the store below is
+   * declared inside the chrome block and moving it would reorder a file
+   * `tests/foundation/composition-root-contract.test.ts` pins by text; a
+   * second call is free, and `resolveBrowserKeyValueStore` never throws.
+   *
+   * The layout is **not** part of any save. `lockstate.settings.layout` is its
+   * own key beside `lockstate.settings.theme` and
+   * `lockstate.settings.accessibility` (constitution article 13), and nothing
+   * here touches `SAVE_SCHEMA_VERSION`.
+   */
+  const layoutStore = resolveBrowserKeyValueStore();
+
   hud = mountHud(app, {
     localizer,
+    layout: loadLayoutSettings(layoutStore),
+    // Persisted first and painted second, exactly as the interface scale is:
+    // `saveLayoutSettings` swallows a refusal by design, so the write cannot
+    // fail the sequence, and the HUD has already applied what it is reporting.
+    onLayoutChange: (settings) => {
+      saveLayoutSettings(layoutStore, settings);
+    },
     viewModel,
     // Passed at mount rather than applied afterwards, because this failure is
     // known before the HUD exists: with no worker there is no snapshot coming
@@ -3279,6 +3306,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const settingsStore = resolveBrowserKeyValueStore();
   let accessibility = loadAccessibilitySettings(settingsStore);
   applyAccessibilitySettings(document.documentElement, accessibility);
+  // The HUD mounted above this line, at whatever `--ui-scale` the document
+  // carried then -- which is the token's default, because this is the line that
+  // installs the player's. Its layout limits are all multiplied by it, so it is
+  // re-resolved once here as well as on every later change (#1159).
+  hud?.refreshLayout();
   const displayScale = createDisplayScaleControl({
     localizer,
     scale: accessibility.uiScale,
@@ -3287,6 +3319,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       saveAccessibilitySettings(settingsStore, accessibility);
       applyAccessibilitySettings(document.documentElement, accessibility);
       displayScale.setScale(uiScale);
+      // And the HUD's layout limits with it (#1159). `--ui-scale` multiplies
+      // every panel limit, and writing a custom property onto the root element
+      // fires no event and resizes nothing -- so the shell cannot hear this and
+      // is told. Without it a rail sized at 100 % keeps its 100 % pixels at
+      // 200 %, which measured as a 264px rail around two 130px controls.
+      hud?.refreshLayout();
     },
   });
   /*

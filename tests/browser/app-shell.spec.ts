@@ -2745,6 +2745,30 @@ const NEVER_LAID_OUT_BELOW_720 = [
    */
   'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__out "Zoom out"',
   'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__in "Zoom in"',
+  /*
+   * AND THE NAVIGATION'S WIDTH CONTROLS, ADDED 2026-09-14 (#1159), WHICH ARE A
+   * BETTER ENTRY THAN ANY OF THE FIVE ABOVE AND SHOULD BE READ AS ONE.
+   *
+   * The five above record a surface a phone cannot reach at all. These two
+   * record a surface a phone **does not have**: below 720px the five sections
+   * are a bottom bar, which is the delivery's own layout for the tier --
+   * *"Telefon ma dolną nawigację i panel"* -- and a bar has no width to drag.
+   * `sizeFieldFor('navigation', phone)` answers `undefined` for exactly that
+   * reason and `tests/unit/hud-layout.test.ts` pins it, so the separator and
+   * the slider are `hidden` rather than merely unreachable.
+   *
+   * The accounting assertion at the foot of the sweep is still what keeps this
+   * honest in the other direction: if a phone ever grows a width drag these
+   * two stop being exempt and this list fails until somebody says so.
+   *
+   * The inspector's own separator and slider are **not** here, and that is the
+   * check that makes these two mean something: a phone resizes the bottom sheet
+   * by height, so both of those are laid out at 375x812 and are hit-tested like
+   * any other control.
+   */
+  'hud > hud__tabs > button.ui-icon-button ui-icon-button--quiet hud-layout__arrow "Hide the sections"',
+  'hud > hud__tabs > div.ui-separator hud-layout__separator hud-layout__separator--navigation "Resize the sections"',
+  'hud > hud-strip > hud-strip__layout > hud-layout > hud-layout__body > hud-layout__row > input.hud-layout__slider #1',
 ] as const;
 
 /*
@@ -3536,6 +3560,49 @@ test.describe('the assembled application', () => {
           `controls covered by something else on the ${tab} tab at ${width}x${height}`,
         ).toEqual([]);
       }
+
+      /*
+       * The Layout menu, opened (#1159).
+       *
+       * A state of its own rather than a row in the exemption list below,
+       * because the four controls inside it -- two sliders, "Map only" and
+       * "Reset layout" -- are genuinely reachable at every viewport and simply
+       * live behind a press, exactly as the Build panel's coordinates section
+       * does. Exempting them would say the opposite: that a phone cannot reach
+       * them, which `hud.css` makes true of the minimap and is not true of
+       * these.
+       *
+       * It is opened and shut again inside this block, so every later state in
+       * this sweep measures the same page it measured before the menu existed.
+       * The menu floats over the world (`.hud-layout__body` is
+       * `position: absolute`), so an open one would cover whatever is under it
+       * and the covering checks further down would be about the menu rather
+       * than about the panel they name.
+       */
+      await page.locator('.hud-layout__button').click();
+      const withLayoutMenu = await controlReachability(page);
+      inventory = withLayoutMenu.controls;
+      for (const index of withLayoutMenu.measured) everMeasured.add(index);
+      /*
+       * Only the menu's **own** controls are required to be reachable here,
+       * and that narrowing is the honest one rather than a convenience.
+       *
+       * `.hud-layout__body` floats over the world by design -- it is the one
+       * surface in this HUD that is meant to, and `docs/VISUAL_IDENTITY.md`
+       * says so -- so an open menu covers the top of the rail underneath it,
+       * exactly as any menu covers what it opens over. Asserting that nothing
+       * on the page is covered while a menu is open would be asserting that
+       * the menu is not a menu. What must hold is that **the menu itself is
+       * usable when open**, which is what this says, and that **nothing is
+       * covered when it is shut**, which every other state in this sweep
+       * already says.
+       */
+      expect(
+        withLayoutMenu.unreachable.filter((entry) => entry.control.includes('hud-layout__body')),
+        `the Layout menu's own controls are unreachable while it is open at ${width}x${height}`,
+      ).toEqual([]);
+      await page.locator('.hud-layout__button').click();
+      await expect(page.locator('.hud-layout__body')).toBeHidden();
 
       // Saving is not a Build-tab activity, and the Build tab is where the
       // player spends their time. Named separately so a regression says so.

@@ -269,6 +269,40 @@ export const HUD_MESSAGE_KEY = {
   tabRooms: 'hud.tab.rooms',
 
   /**
+   * The Layout menu and the three collapse arrows beside it (#1159, stage 3
+   * of the 2026-09-13 identity rollout).
+   *
+   * Every one of these sentences is a claim about what a control does, and
+   * each was written from the code that does it rather than from the
+   * direction's own wording -- `AGENTS.md`'s fourth reservation released the
+   * CHOICE of words on 2026-09-04 and did not release the requirement that the
+   * sentence be true. The default locale carries the verification beside each
+   * string; read that file rather than this one for why each is worded the way
+   * it is.
+   *
+   * The two toggle pairs are **two keys each, not one key plus a state**,
+   * because a button whose accessible name is "Navigation" and whose meaning
+   * is carried only by `aria-expanded` reads as a heading to half the screen
+   * readers that meet it. The same arrangement `createCollapsibleSection`
+   * already uses for its own fold header.
+   */
+  layoutRegion: 'hud.layout.title',
+  layoutMenu: 'hud.layout.menu',
+  layoutNavigationWidth: 'hud.layout.navigation-width',
+  layoutInspectorWidth: 'hud.layout.inspector-width',
+  layoutInspectorHeight: 'hud.layout.inspector-height',
+  layoutReset: 'hud.layout.reset',
+  layoutMapOnly: 'hud.layout.map-only',
+  layoutHideNavigation: 'hud.layout.hide-navigation',
+  layoutShowNavigation: 'hud.layout.show-navigation',
+  layoutHideInspector: 'hud.layout.hide-inspector',
+  layoutShowInspector: 'hud.layout.show-inspector',
+  layoutHideMetrics: 'hud.layout.hide-metrics',
+  layoutShowMetrics: 'hud.layout.show-metrics',
+  layoutResizeNavigation: 'hud.layout.resize-navigation',
+  layoutResizeInspector: 'hud.layout.resize-inspector',
+
+  /**
    * The camera zoom control in the bottom-left corner (issue #1023).
    *
    * The capability was finished, deliberate and documented -- `ZOOM_BOUNDS`
