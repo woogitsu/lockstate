@@ -19,6 +19,7 @@ import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
+import { alertRows } from '../helpers/alert-rows';
 import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
 
 /**
@@ -261,13 +262,13 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     // sentence (ADR 0011) -- with the bundled locale resolving that key to
     // real text rather than to its own dotted self, which is the failure a
     // `Record` value can ship as.
-    const alerts = hudAlertsFromWorkerMessage(publication(runtime));
+    const alerts = alertRows(hudAlertsFromWorkerMessage(publication(runtime)));
     expect(alerts).toEqual([
       { id: 'refusal-1', labelKey: 'hud.alert.refusal.hire.insufficient-funds', severity: 'warning' },
     ]);
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-    const sentence = localizer.format(alerts![0]!.labelKey);
-    expect(sentence).not.toBe(alerts![0]!.labelKey);
+    const sentence = localizer.format(alerts[0]!.labelKey);
+    expect(sentence).not.toBe(alerts[0]!.labelKey);
     expect(sentence.trim().length).toBeGreaterThan(0);
     // Not the purchase sentence. The two refusals share a condition and must
     // not share a message, or a player who pressed Hire is sent to the Build

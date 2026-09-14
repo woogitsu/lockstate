@@ -45,12 +45,15 @@ import type { HudLocalizer, HudOverviewViewModel } from './view-model';
  *
  * That is `UNKNOWN_HUD_CLOCK`'s treatment rather than the alerts list's, and
  * the choice is the whole reason this panel was specified before it was
- * written. `'hud.alerts.empty'` renders from the same empty literal that
- * stands in before the first worker snapshot (#1184), so *"No active alerts"*
- * is what a page with no simulation behind it says about a prison it has never
- * heard of. A balance is worse: `EMPTY_HUD_VIEW_MODEL.counts` carries a
- * confident `treasuryMinorUnits: 0`, so a readout keyed on it would tell a
- * player their prison was broke before the worker had spoken.
+ * written. `'hud.alerts.empty'` used to render from the same empty literal
+ * that stands in before the first worker snapshot (#1184), so *"No active
+ * alerts"* was what a page with no simulation behind it said about a prison it
+ * had never heard of; **that issue is closed and the alerts list took this
+ * panel's shape and this panel's sentence.** A balance is worse and is still
+ * unfixed: `EMPTY_HUD_VIEW_MODEL.counts` carries a confident
+ * `treasuryMinorUnits: 0`, so the status strip's own chip tells a player their
+ * prison is broke before the worker has spoken (#1191). This panel does not,
+ * which is the whole reason it reads its own field.
  */
 
 export interface OverviewPanelOptions {

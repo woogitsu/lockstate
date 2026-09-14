@@ -318,7 +318,7 @@ const FAULT_ROW_PREFIX = 'fault-';
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,
   previous: readonly HudAlertViewModel[] = [],
-): readonly HudAlertViewModel[] | undefined {
+): readonly HudAlertViewModel[] | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
@@ -370,11 +370,20 @@ export function hudAlertsFromWorkerMessage(
 
     // The session is over. A refusal by a simulation that no longer exists is
     // not something the player can act on, and neither is a fault raised by a
-    // worker that has stopped, so the list empties -- the same thing the
-    // counts do with `EMPTY_HUD_VIEW_MODEL.counts` and the clock does with
-    // `UNKNOWN_HUD_CLOCK`.
+    // worker that has stopped, so the list comes off.
+    //
+    // **`'none'` rather than `[]` as of issue #1184, and the difference is the
+    // whole fix.** An empty array is what a prison *reporting nothing wrong*
+    // sends, and returning it here made the two indistinguishable: the HUD
+    // painted `'hud.alerts.empty'` -- "No active alerts" -- over a session
+    // that had ended, the same sentence it paints for a running prison with a
+    // clean log. This is now the tri-state `hudRefusalFromWorkerMessage`
+    // below has always had, and for the identical reason: `undefined` is a
+    // message that said nothing about alerts and the field must be left alone,
+    // `'none'` is a message that says there is no longer anything to report,
+    // and `src/main.ts` deletes the field for it.
     case 'simulation/stopped':
-      return [];
+      return 'none';
 
     default:
       return undefined;

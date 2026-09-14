@@ -667,6 +667,41 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.minimap.navigable': 'No map is drawn here yet — press to jump the camera there',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
+  /*
+   * **The sentinel, authored under the 2026-09-04 release and recorded here on
+   * that release's own condition -- quoted verbatim beside the code that proves
+   * it true (issue #1184).**
+   *
+   * *"No prison is reporting."* is painted in exactly one state, and it is a
+   * state of this page rather than of any prison: `HudViewModel.alerts`
+   * (`src/ui/hud/view-model.ts`) is **absent**. Two routes reach it and the
+   * sentence is true on both.
+   *
+   * - **No publication has arrived.** `src/main.ts` initialises the view model
+   *   to `EMPTY_HUD_VIEW_MODEL`, which carries no `alerts` key at all, and
+   *   `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) answers
+   *   `undefined` for every message that says nothing about alerts -- which
+   *   leaves the field absent. Nothing is reporting because nothing has spoken.
+   * - **The session has stopped.** That translator answers `'none'` for
+   *   `simulation/stopped` and `src/main.ts` deletes the key for it. The prison
+   *   that was reporting has gone, and a fault raised by a worker that no
+   *   longer exists is not something a player can act on -- the same reasoning
+   *   that already emptied this list on that message.
+   *
+   * *Reporting* is present-tense about a **channel**, not a claim about
+   * incidents: this log is fed by publications from a live session, and when
+   * none is publishing there is nothing to be silent or loud about. *"No active
+   * alerts"* above is the claim about incidents, and it is now unreachable in
+   * both of the states above -- which is the whole of #1184.
+   *
+   * **The same sentence as `hud.overview.none`, deliberately.** That panel
+   * states the identical fact about the identical moment, the two can be on
+   * screen together, and naming consistency is worth more here than a second
+   * phrasing for one state. It is a separate key rather than a shared one
+   * because the two surfaces are separately translatable and the `hud.alerts.*`
+   * namespace belongs to this list.
+   */
+  'hud.alerts.unknown': 'No prison is reporting.',
 
   /*
    * How many times the prison has said the same thing, and when it last said

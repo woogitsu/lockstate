@@ -196,6 +196,21 @@ test.describe("#1054: `.hud__corner`'s blank chrome is transparent to the pointe
     await page.setViewportSize({ width: 1440, height: 900 });
     await installTee(page);
     await openApp(page);
+    /*
+     * **A prison has to be reporting before there is a list to press**, as of
+     * issue #1184. `HudViewModel.alerts` is absent until the first
+     * `simulation/status-counts` publication -- the state the section now
+     * spells *"No prison is reporting."* rather than *"No active alerts"* --
+     * and `hud.ts` takes `.hud-alerts__list` off screen for it, so on the boot
+     * page this measurement was reading a zero-sized box.
+     *
+     * Starting a session is the honest fix rather than a widening: this test's
+     * subject is a **scroll container with rows in it**, which only exists once
+     * something is reporting. The two lines below are the same pair the
+     * `openApp` above is paired with in the test one block up.
+     */
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
     const listBox = await page.evaluate(() => {
       const el = document.querySelector('.hud-alerts__list');

@@ -128,7 +128,10 @@ function refreshesTheReadouts(message: WorkerToMainMessage): boolean {
   const alerts = hudAlertsFromWorkerMessage(message, []);
   const zoning = hudZoningFromWorkerMessage(message);
   const refusal = hudRefusalFromWorkerMessage(message);
-  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? []);
+  // `'none'` is `simulation/stopped`'s answer since #1184 -- the log comes off
+  // the view model rather than being emptied -- and this translator says nothing
+  // about that message, so the list it is handed is one no row is added to.
+  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts === 'none' ? [] : (alerts ?? []));
   const event = hudEventNoticeFromWorkerMessage(message);
   const nextAlerts = eventAlerts ?? alerts;
   return !(
@@ -147,7 +150,10 @@ function refreshesWithoutTheClock(message: WorkerToMainMessage): boolean {
   const alerts = hudAlertsFromWorkerMessage(message, []);
   const zoning = hudZoningFromWorkerMessage(message);
   const refusal = hudRefusalFromWorkerMessage(message);
-  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts ?? []);
+  // `'none'` is `simulation/stopped`'s answer since #1184 -- the log comes off
+  // the view model rather than being emptied -- and this translator says nothing
+  // about that message, so the list it is handed is one no row is added to.
+  const eventAlerts = hudEventAlertsFromWorkerMessage(message, alerts === 'none' ? [] : (alerts ?? []));
   const event = hudEventNoticeFromWorkerMessage(message);
   const nextAlerts = eventAlerts ?? alerts;
   return !(

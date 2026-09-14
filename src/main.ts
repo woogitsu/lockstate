@@ -2081,11 +2081,21 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * `EMPTY_HUD_VIEW_MODEL.counts` for a stopped session and the view model
      * holds those same zeros before the first publication, so a readout keyed
      * on it would state a balance of `0` for a prison that has never spoken --
-     * the defect #1184 records for `'hud.alerts.empty'`. Absent here means no
-     * prison is reporting, and the panel says so in words.
+     * the defect #1184 recorded for `'hud.alerts.empty'`, now closed by giving
+     * the alerts log this same shape (below). Absent here means no prison is
+     * reporting, and the panel says so in words.
      */
     const overview = hudOverviewFromWorkerMessage(message);
-    const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);
+    /*
+     * The alerts log, on the same three-state contract as `overview` above and
+     * `zoning` and `refusal` below, as of issue #1184: a list, `'none'` for a
+     * session that has ended, and `undefined` for a message that said nothing
+     * about it. `viewModel.alerts` is absent before any prison has reported, so
+     * the list this one is *updating* is `[]` -- which is not the same value as
+     * the field, and that is the point: an empty list is what a prison with a
+     * clean log publishes, and absence is that no prison has published.
+     */
+    const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts ?? []);
     const zoning = hudZoningFromWorkerMessage(message);
     // The same refusal, read a second time for the surface that is actually
     // on screen. The list above is the log; this is the notice, and it goes
@@ -2104,10 +2114,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * list rebuilt from the stale field. `hudEventAlertsFromWorkerMessage`
      * answers `undefined` for every message but `simulation/event`, so on all
      * other messages this is exactly `alerts`.
+     *
+     * `'none'` collapses to `[]` here and nowhere else: it is only ever the
+     * answer to `simulation/stopped`, which this translator says nothing about,
+     * so the `[]` is a list no row is ever added to. The field itself is
+     * deleted below rather than set to it (#1184).
      */
     const eventAlerts = hudEventAlertsFromWorkerMessage(
       message,
-      alerts ?? viewModel.alerts,
+      alerts === 'none' ? [] : (alerts ?? viewModel.alerts ?? []),
       // How long an in-game day is, so a row can say **when** it happened (the
       // owner's decision 2 of 2026-09-01 on ADR 0084). Read from this
       // message's own clock where it carried one, and from the view model
@@ -2152,7 +2167,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // to remove the key rather than write `undefined`), and a readout is a
       // prison that has reported.
       ...(overview === undefined ? {} : overview === 'none' ? {} : { overview }),
-      ...(nextAlerts === undefined ? {} : { alerts: nextAlerts }),
+      // Three states, exactly as `overview` above (#1184): `undefined` leaves
+      // the log alone, `'none'` takes it off -- the deletion is below, for the
+      // `exactOptionalPropertyTypes` reason `zoning` states -- and a list is a
+      // prison reporting, however little it has to say.
+      ...(nextAlerts === undefined ? {} : nextAlerts === 'none' ? {} : { alerts: nextAlerts }),
       // Three states, not two, which is why the translator returns `'none'`
       // rather than `undefined` for "no room has been designated": `undefined`
       // means this message said nothing about zoning and the field must be left
@@ -2177,6 +2196,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     if (overview === 'none' && viewModel.overview !== undefined) {
       const { overview: _stopped, ...withoutOverview } = viewModel;
       viewModel = withoutOverview;
+    }
+    if (nextAlerts === 'none' && viewModel.alerts !== undefined) {
+      const { alerts: _ended, ...withoutAlerts } = viewModel;
+      viewModel = withoutAlerts;
     }
     if (zoning === 'none' && viewModel.zoning !== undefined) {
       const { zoning: _cleared, ...withoutZoning } = viewModel;
@@ -2770,9 +2793,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * `hud.refusal.*` for a gesture that did exactly what the player asked.
          */
         case 'dismiss-alert': {
-          const dismissal = alertRowDismissal(viewModel.alerts, intent.rowId);
+          // `?? []` is unreachable rather than defensive, and is spelled out
+          // rather than asserted away: a dismissal names a row the player
+          // pressed, and there are no rows to press while `alerts` is absent
+          // (#1184). An empty list resolves no row, so the guard below returns.
+          const rows = viewModel.alerts ?? [];
+          const dismissal = alertRowDismissal(rows, intent.rowId);
           if (dismissal === undefined) return;
-          viewModel = { ...viewModel, alerts: hudAlertsWithoutRow(viewModel.alerts, intent.rowId) };
+          viewModel = { ...viewModel, alerts: hudAlertsWithoutRow(rows, intent.rowId) };
           hud?.update(viewModel);
           commands?.submit({ type: 'DismissAlert', ...dismissal });
           return;
