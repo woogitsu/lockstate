@@ -1027,10 +1027,53 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  * So this is a budget being spent rather than a defect being paid off, which
  * is the other of the two cases the paragraph at the top of this block names,
  * and it comes with the measurement that caused it as that paragraph requires.
+ *
+ * **`1280x720` moved 395.6 -> 447.5 and `900x600` 338.1 -> 390 in #1159, and
+ * `375x812` did not move at all. Every one of those 51.9px is the tab bar's,
+ * and this is the first entry here where the panel is *given* height rather
+ * than lending it.**
+ *
+ * Stage 3 of the identity rollout moves the five sections from the bottom row
+ * to a left column at tablet and desktop widths -- the delivery's own layout
+ * for those tiers, *"tablet/desktop mają mapę między bokami"*. `.hud__tabs`
+ * stops being `grid-area: tabs` and becomes a second occupant of `middle`
+ * beside `.hud__corner` and `.hud__rail`, so the `tabs` row is `auto` around
+ * nothing and costs 0 instead of 69.2px. The middle row gains all of it and
+ * the rail passes it down by the same `min-height: 25%` route every entry
+ * above describes.
+ *
+ * The chain, measured on this page and this prison in one worktree, the base
+ * commit `5e1a96de` against the branch:
+ *
+ *     viewport    strip            rail             aside            this panel
+ *     1280x720    80.7 -> 80.7     570.1 -> 639.3   142.5 -> 159.8   395.6 -> 447.5
+ *     900x600     48.0 -> 80.7     482.8 -> 519.3   120.7 -> 129.8   338.1 -> 365.5
+ *     375x812    103.7 -> 103.7    639.1 -> 639.1   159.8 -> 159.8   439.3 -> 439.3
+ *
+ * **375x812 sits it out because a phone keeps its bottom bar**, which is the
+ * delivery's layout for that tier and `navigationPlacement`'s answer for it --
+ * so the `tabs` row is still 69.2px there and nothing upstream moved.
+ *
+ * **900x600 gains less than the other desktop width, because it spends some of
+ * it, and that is the interesting row.** Its strip takes a second line here for
+ * the first time: `hud.css`'s metrics-row query carried `(min-height: 701px)`
+ * under a comment saying a short viewport could not pay for the 30.5px a
+ * second row costs, and with 69.2px of tab bar handed back it can. That buys
+ * what #634 is about -- the Layout menu's 52px gutter had left the metrics
+ * 83.7px of a single-row strip, too narrow for one chip, and a row of their own
+ * gives them the strip's full width. Net at that viewport: 36.5px more rail
+ * than before this stage and every chip that fits on screen.
+ *
+ * The phone row is also a correction this branch made to itself and is worth
+ * the sentence. It first measured 103.7 -> 124.2, because the same gutter
+ * rewrapped the phone strip's three rows -- 20.5px out of the rail and 15.3px
+ * off this panel. The gutter is dropped below 720px, where the strip's first
+ * row ends at x = 233 and the slot's 52px start at 323, so it overlays empty
+ * strip instead of taking a reservation nobody needed.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
-  '1280x720': 395.6,
-  '900x600': 338.1,
+  '1280x720': 447.5,
+  '900x600': 365.5,
   '375x812': 439.3,
 };
 
@@ -2745,6 +2788,30 @@ const NEVER_LAID_OUT_BELOW_720 = [
    */
   'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__out "Zoom out"',
   'hud > hud__corner > hud-zoom > button.ui-icon-button ui-icon-button--bordered hud-zoom__in "Zoom in"',
+  /*
+   * AND THE NAVIGATION'S WIDTH CONTROLS, ADDED 2026-09-14 (#1159), WHICH ARE A
+   * BETTER ENTRY THAN ANY OF THE FIVE ABOVE AND SHOULD BE READ AS ONE.
+   *
+   * The five above record a surface a phone cannot reach at all. These two
+   * record a surface a phone **does not have**: below 720px the five sections
+   * are a bottom bar, which is the delivery's own layout for the tier --
+   * *"Telefon ma dolną nawigację i panel"* -- and a bar has no width to drag.
+   * `sizeFieldFor('navigation', phone)` answers `undefined` for exactly that
+   * reason and `tests/unit/hud-layout.test.ts` pins it, so the separator and
+   * the slider are `hidden` rather than merely unreachable.
+   *
+   * The accounting assertion at the foot of the sweep is still what keeps this
+   * honest in the other direction: if a phone ever grows a width drag these
+   * two stop being exempt and this list fails until somebody says so.
+   *
+   * The inspector's own separator and slider are **not** here, and that is the
+   * check that makes these two mean something: a phone resizes the bottom sheet
+   * by height, so both of those are laid out at 375x812 and are hit-tested like
+   * any other control.
+   */
+  'hud > hud__tabs > button.ui-icon-button ui-icon-button--quiet hud-layout__arrow "Hide the sections"',
+  'hud > hud__tabs > div.ui-separator hud-layout__separator hud-layout__separator--navigation "Resize the sections"',
+  'hud > hud-strip > hud-strip__layout > hud-layout > hud-layout__body > hud-layout__row > input.hud-layout__slider #1',
 ] as const;
 
 /*
@@ -3536,6 +3603,49 @@ test.describe('the assembled application', () => {
           `controls covered by something else on the ${tab} tab at ${width}x${height}`,
         ).toEqual([]);
       }
+
+      /*
+       * The Layout menu, opened (#1159).
+       *
+       * A state of its own rather than a row in the exemption list below,
+       * because the four controls inside it -- two sliders, "Map only" and
+       * "Reset layout" -- are genuinely reachable at every viewport and simply
+       * live behind a press, exactly as the Build panel's coordinates section
+       * does. Exempting them would say the opposite: that a phone cannot reach
+       * them, which `hud.css` makes true of the minimap and is not true of
+       * these.
+       *
+       * It is opened and shut again inside this block, so every later state in
+       * this sweep measures the same page it measured before the menu existed.
+       * The menu floats over the world (`.hud-layout__body` is
+       * `position: absolute`), so an open one would cover whatever is under it
+       * and the covering checks further down would be about the menu rather
+       * than about the panel they name.
+       */
+      await page.locator('.hud-layout__button').click();
+      const withLayoutMenu = await controlReachability(page);
+      inventory = withLayoutMenu.controls;
+      for (const index of withLayoutMenu.measured) everMeasured.add(index);
+      /*
+       * Only the menu's **own** controls are required to be reachable here,
+       * and that narrowing is the honest one rather than a convenience.
+       *
+       * `.hud-layout__body` floats over the world by design -- it is the one
+       * surface in this HUD that is meant to, and `docs/VISUAL_IDENTITY.md`
+       * says so -- so an open menu covers the top of the rail underneath it,
+       * exactly as any menu covers what it opens over. Asserting that nothing
+       * on the page is covered while a menu is open would be asserting that
+       * the menu is not a menu. What must hold is that **the menu itself is
+       * usable when open**, which is what this says, and that **nothing is
+       * covered when it is shut**, which every other state in this sweep
+       * already says.
+       */
+      expect(
+        withLayoutMenu.unreachable.filter((entry) => entry.control.includes('hud-layout__body')),
+        `the Layout menu's own controls are unreachable while it is open at ${width}x${height}`,
+      ).toEqual([]);
+      await page.locator('.hud-layout__button').click();
+      await expect(page.locator('.hud-layout__body')).toBeHidden();
 
       // Saving is not a Build-tab activity, and the Build tab is where the
       // player spends their time. Named separately so a regression says so.
@@ -5367,16 +5477,44 @@ test.describe('the assembled application', () => {
     // meaningless numbers and every comparison below would hold.
     expect(before?.panelHeight ?? 0).toBeGreaterThan(150);
     expect(before?.lastText).toBe(localeText('hud.build.coordinates'));
-    // The two figures this panel's whole design rests on, at the viewport they
-    // were measured at. Written out because they are what a reader has to be able
-    // to check the argument against: 291.2px of content in a 291.2px box, and
-    // 7.8px between the last section and the fold.
-    expect(before?.bodyHeight).toBe(291.2);
-    expect(before?.foldSlack).toBe(7.8);
+    /*
+     * The figures this panel's whole design rests on, at the viewport they were
+     * measured at -- written out because they are what a reader has to be able
+     * to check the argument against.
+     *
+     * **All three moved in #1159, and the same 51.8px moved all of them.** The
+     * five sections left the bottom row for a left column at this width (stage
+     * 3 of the identity rollout, the delivery's layout for tablet and desktop),
+     * so the `tabs` grid row is `auto` around nothing and the middle row gains
+     * its 69.2px; `ARRIVAL_PANEL_HEIGHT_PX`'s own block carries the chain from
+     * the strip down. What that does here:
+     *
+     *     body height   291.2 -> 318.5
+     *     fold slack      7.8 ->   7.5
+     *     catalogue      88.0 -> 115.3   (and it leaves its floor)
+     *     catalogue rows  924 ->   924   (unchanged: the registry did not move)
+     *
+     * The rail gains 69.2px here and the strip spends 32.7 of it on a metrics
+     * row of its own (see `hud.css`, and `ARRIVAL_PANEL_HEIGHT_PX` above for
+     * the chain), so what reaches this panel is 27.3px rather than the whole
+     * 69.2.
+     *
+     * **The catalogue line is the one that changed in kind rather than in
+     * degree, and the comment it replaces said so.** It read *"the catalogue is
+     * on its two-row floor over twenty-one rows of content, which is the number
+     * ADR 0031's open question 4 is about"*: at 900x600 the panel used to be
+     * squeezed hard enough that the list sat exactly on
+     * `--hud-build-catalogue-floor`. With 51.8px more rail it does not -- 139.8
+     * is the list's own share of a panel that fits, not a floor. ADR 0031's
+     * open question 4 is about one row of twenty-one being visible and is
+     * **less** pressing at this viewport than it was, not settled: the floor is
+     * still what holds at the viewports that press, and nothing here changes
+     * what happens when the panel is squeezed again.
+     */
+    expect(before?.bodyHeight).toBe(318.5);
+    expect(before?.foldSlack).toBe(7.5);
     expect(before?.panelOverflow).toBe(0);
-    // And the catalogue is on its two-row floor over twenty-one rows of content,
-    // which is the number ADR 0031's open question 4 is about.
-    expect(before?.listHeight).toBe(88);
+    expect(before?.listHeight).toBe(115.3);
     expect(before?.listContent).toBe(924);
 
     const buy = page.locator('.hud-build__buy-submit');
@@ -5515,17 +5653,44 @@ test.describe('the assembled application', () => {
 
       /*
        * And what it costs the panel, stated rather than asserted away. The
-       * catalogue is the panel's only donor and this block is still not allowed
-       * to take from it: the list keeps the same box and the same content it had
-       * with nothing bought, and the numeric fallback is still the last section a
-       * player can see. What absorbs the block is the panel's own scroll, which
-       * is what `overflow-y: auto` on `.ui-panel.hud-build` is for and what the
-       * expanded numeric fallback already produces.
+       * catalogue is the panel's only donor, the list keeps every row it had
+       * with nothing bought, and the numeric fallback is still the last section
+       * a player can see. What absorbs the block is the panel's own scroll,
+       * which is what `overflow-y: auto` on `.ui-panel.hud-build` is for and
+       * what the expanded numeric fallback already produces.
+       *
+       * **The first claim used to be an identity and is a floor now, and the
+       * sentence it replaces is kept because what it rested on is the
+       * interesting part.** It read *"this block is still not allowed to take
+       * from it: the list keeps the same box ... it had with nothing bought"*,
+       * and it was asserted as `toBe(baseline.listHeight)` -- which held
+       * because at 900x600 the panel was squeezed hard enough that the list was
+       * **already on its floor in the arrival state**. That is the "harmless by
+       * coincidence" this file keeps flagging elsewhere, met here in its own
+       * assertion: the identity was true of the geometry rather than of the
+       * rule, and #1159's 51.8px of extra rail (see `before`'s own block above)
+       * ended the coincidence. The arrival catalogue is 139.8px now; with five
+       * deliveries outstanding it is 88px.
+       *
+       * 88px is `--hud-build-catalogue-floor`, which `tokens.css` defines as
+       * `2 * var(--tap-target)` -- two rows, because "one row plus a scrollbar
+       * is not a list you can choose from". So this is pinned as the exact
+       * number the floor resolves to rather than as a `>=`, and the rule it
+       * guards is unchanged and is the one #174 is about: the block may take
+       * the catalogue's slack and may not take its floor.
        */
       await page.setViewportSize({ width, height });
       const baseline = width === 900 && height === 600 ? before : null;
       if (baseline !== null) {
-        expect(withPending?.listHeight, 'the catalogue donated height at 900x600').toBe(baseline.listHeight);
+        // `2 * --tap-target` at this scale. Written as the number rather than
+        // derived, for the reason every other figure in this file is: a
+        // `calc()` that agreed with the stylesheet by construction would prove
+        // nothing about what the browser laid out.
+        expect(withPending?.listHeight, 'the catalogue went below its own two-row floor at 900x600').toBe(88);
+        expect(
+          baseline.listHeight,
+          'the arrival catalogue is on its floor again, so the assertion above no longer distinguishes anything',
+        ).toBeGreaterThan(88);
         expect(withPending?.listContent, 'the catalogue lost rows at 900x600').toBe(baseline.listContent);
         expect(withPending?.panelHeight, 'the panel changed height at 900x600').toBe(baseline.panelHeight);
         expect(

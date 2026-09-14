@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
 import {
@@ -28,6 +29,7 @@ import {
   hudShellReducer,
   isPanelCollapsed,
 } from './hud-state';
+import { type HudLayoutShell, createHudLayoutShell } from './layout-shell';
 import { HUD_MESSAGE_KEY } from './messages';
 import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone } from './projection';
 import { createStaffPanel, type StaffPanel } from './staff-panel';
@@ -748,6 +750,23 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  /**
+   * The player's stored layout: which regions are folded and how wide or tall
+   * the two resizable ones are (#1159).
+   *
+   * Passed in rather than read here, exactly as the interface scale and the
+   * theme are: the composition root owns `lockstate.settings.layout`, because
+   * choosing the environment is its job and because a HUD that reached for
+   * `localStorage` itself is issue #199's blank page. Omitted, the shell opens
+   * at the layout this repository has always drawn.
+   */
+  readonly layout?: LayoutSettings;
+  /**
+   * Reports a **settled** layout for the host to persist -- a fold, a keyboard
+   * or slider resize, a reset, or the end of a pointer drag. Never a frame of
+   * one: see `HudLayoutShellOptions.onChange`.
+   */
+  readonly onLayoutChange?: (layout: LayoutSettings) => void;
   /** First paint. Defaults to an empty prison so the shell renders before any snapshot arrives. */
   readonly viewModel?: HudViewModel;
   readonly initialState?: HudShellState;
@@ -1029,6 +1048,25 @@ export interface HudHandle {
    */
   clearPrisonerSelection(): void;
   getState(): HudShellState;
+  /** The layout the shell currently holds, which is what a host persists (#1159). */
+  getLayout(): LayoutSettings;
+  /**
+   * Re-resolves the layout against the viewport and the interface scale.
+   *
+   * The shell watches the window's own `resize` and needs no help with it.
+   * What it cannot hear is `--ui-scale` changing: the composition root writes
+   * that custom property onto `document.documentElement`, which fires no event
+   * and resizes nothing -- and every panel limit is multiplied by it
+   * (`src/ui/hud/hud-layout.ts`). So the one caller that changes the scale
+   * says so, on the line that changes it.
+   */
+  refreshLayout(): void;
+  /**
+   * Applies a layout programmatically -- a preference restored after mount, or
+   * a test. Repaints; does **not** report back through `onLayoutChange`, so a
+   * host writing a value it just read cannot loop.
+   */
+  setLayout(settings: LayoutSettings): void;
   /** Applies a shell action programmatically -- restoring a saved UI state, or a test. */
   dispatch(action: HudShellAction): void;
   destroy(): void;
@@ -2312,11 +2350,37 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     }),
   );
 
+  const tabsInner = element('div', { className: 'hud-tabs__inner', children: tabs.map((tab) => tab.element) });
   const tabBar = element('nav', {
     className: 'hud__tabs',
     attributes: { 'aria-label': t(HUD_MESSAGE_KEY.tabsRegion) },
-    children: [element('div', { className: 'hud-tabs__inner', children: tabs.map((tab) => tab.element) })],
+    children: [tabsInner],
   });
+
+  /**
+   * The layout shell: three collapse arrows, two separators and the Layout
+   * menu (#1159, stage 3).
+   *
+   * Built here, after every region it manages exists and before the `.hud`
+   * root, because it appends its controls **into** those regions: the
+   * navigation's arrow and separator into the tab bar's own container, the
+   * inspector's into the rail's, and the metric strip's into the slot
+   * `StatusStrip` keeps outside everything that folds. That is constitution
+   * article 16 enforced by construction rather than by a rule somebody has to
+   * remember -- an arrow cannot be inside what it hides if it is a sibling of
+   * it.
+   *
+   * The root it writes geometry onto is the `.hud` element, so the shell
+   * itself is constructed a few lines below that -- this object only names the
+   * three regions, beside the code that built them, where a reader can check
+   * that each `content` really is a child of its own `container` and not of
+   * something else.
+   */
+  const layoutRegions = {
+    navigation: { container: tabBar, content: [tabsInner] },
+    inspector: { container: rail, content: [aside, side] },
+    metrics: { container: strip.layoutSlot, content: strip.foldable },
+  };
 
   const hud = element('div', {
     className: 'hud',
@@ -2325,6 +2389,32 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // refusal line about the last press, then the world's furniture.
     children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
   });
+
+  /**
+   * `onChange` reports upward and nothing more: the HUD never writes to
+   * storage, so a host that passes no handler gets a layout that works for the
+   * page load and is not remembered -- which is exactly what a browser with
+   * site data blocked gets anyway (`src/input/storage.ts`).
+   *
+   * The layout controls are deliberately **not** added to `busy`. They issue
+   * no command: folding a panel changes no simulation state, which is the
+   * distinction `dispatchShell` already draws for the tab bar, and a player
+   * must be able to fold a panel away while a build order is in flight.
+   */
+  const layout: HudLayoutShell = createHudLayoutShell({
+    localizer,
+    root: hud,
+    settings: options.layout ?? DEFAULT_LAYOUT_SETTINGS,
+    strip: strip.element,
+    inspectorSheet: side,
+    navigation: layoutRegions.navigation,
+    inspector: layoutRegions.inspector,
+    metrics: layoutRegions.metrics,
+    onChange: (next) => {
+      options.onLayoutChange?.(next);
+    },
+  });
+  strip.layoutSlot.append(layout.menu);
 
   // Only the controls that issue a *command* are disabled while one is in
   // flight. One busy signal for the three of them, so they can never
@@ -2525,6 +2615,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const update = (next: HudViewModel): void => {
     viewModel = next;
     strip.update(next);
+    // The Layout menu's own clock readout (#1159). It exists because folding
+    // the metric strip takes the strip's clock with it, and constitution
+    // article 10 makes the pace the player's -- a layout preference may not
+    // cost them the ability to read the time. Fed from the same view model on
+    // the same tick, so the two can never disagree.
+    layout.setClock(next.clock);
     paintAlerts();
     // The enclosure readout is session state, so it arrives here rather than at
     // mount. Passed straight through: the panel decides what to render and this
@@ -2626,11 +2722,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     setUnavailable,
     clearPrisonerSelection: () => regimePanel.clearPrisonerSelection(),
     getState: () => state,
+    getLayout: () => layout.getSettings(),
+    refreshLayout: () => {
+      layout.refresh();
+    },
+    setLayout: (settings: LayoutSettings) => {
+      layout.setSettings(settings);
+    },
     dispatch: (action: HudShellAction) => {
       applyState(hudShellReducer(state, action));
     },
     destroy: () => {
       gate.dispose();
+      // Tearing the layout down is also what ends a drag that was still live:
+      // `ResizeSeparator.destroy` reports `'abandoned'` and removes the
+      // document-level listeners a live drag installs.
+      layout.destroy();
       // The floor's timer outlives the element it paints unless it is cleared:
       // a HUD torn down inside the 600 ms would otherwise wake up and write to
       // a detached band.

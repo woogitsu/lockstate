@@ -6,6 +6,11 @@ import {
 } from './accessibility';
 import { DEFAULT_KEYBOARD_BINDINGS } from './bindings';
 import {
+  type LayoutSettings,
+  DEFAULT_LAYOUT_SETTINGS,
+  decodeLayoutSettings,
+} from './layout-preference';
+import {
   type ThemeSettings,
   DEFAULT_THEME_SETTINGS,
   decodeThemeSettings,
@@ -45,6 +50,19 @@ const ACCESSIBILITY_SETTINGS_STORAGE_KEY = 'lockstate.settings.accessibility';
  * have made one `removeItem` clear a player's interface scale as well.
  */
 const THEME_SETTINGS_STORAGE_KEY = 'lockstate.settings.theme';
+
+/**
+ * The HUD layout's **own** key, for the reason the theme has one (#1159).
+ *
+ * Constitution article 13 asks for *"oddzielne klucze pamięci i niezależny
+ * reset"* -- separate memory keys and an independent reset -- and the Layout
+ * menu ships a Reset control, so this is the difference between a player
+ * putting their panels back and a player losing their keyboard remap with
+ * them. It is also why the layout is not a field of the save payload: nothing
+ * here is prison state, and `SAVE_SCHEMA_VERSION` does not move for a panel
+ * width.
+ */
+const LAYOUT_SETTINGS_STORAGE_KEY = 'lockstate.settings.layout';
 
 /**
  * Reads and parses one entry, treating **any** failure as "no entry".
@@ -182,4 +200,22 @@ export function loadThemeSettings(store: KeyValueStore): ThemeSettings {
 /** Returns whether the write landed, so a caller that wants to say so can. */
 export function saveThemeSettings(store: KeyValueStore, settings: ThemeSettings): boolean {
   return writeJson(store, THEME_SETTINGS_STORAGE_KEY, settings);
+}
+
+/**
+ * The layout preference, through the same guarded read as every other setting.
+ *
+ * Nothing new is defended here and that is the point: a store that throws on
+ * access is answered by `resolveBrowserKeyValueStore`'s in-memory `Map`, and a
+ * corrupt value by `readJson`'s `undefined`. A browser with site data blocked
+ * still collapses panels and drags separators for the rest of the page load
+ * and simply does not remember them.
+ */
+export function loadLayoutSettings(store: KeyValueStore): LayoutSettings {
+  return decodeLayoutSettings(readJson(store, LAYOUT_SETTINGS_STORAGE_KEY)) ?? DEFAULT_LAYOUT_SETTINGS;
+}
+
+/** Returns whether the write landed, so a caller that wants to say so can. */
+export function saveLayoutSettings(store: KeyValueStore, settings: LayoutSettings): boolean {
+  return writeJson(store, LAYOUT_SETTINGS_STORAGE_KEY, settings);
 }

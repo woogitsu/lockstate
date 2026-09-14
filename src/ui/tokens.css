@@ -269,6 +269,39 @@
   inherits: true;
   initial-value: 264px;
 }
+
+/*
+ * The three lengths the HUD's layout shell writes onto `.hud` at runtime
+ * (#1159, stage 3): the left navigation's width, the right inspector's width
+ * and -- on a phone, where the same region is a bottom sheet -- its height.
+ *
+ * Declared here with the values this repository drew **before** the shell
+ * existed, which is the property worth having: a page whose script has not run
+ * yet, or a harness that mounts the HUD without the shell, lays out exactly as
+ * it did rather than collapsing to zero. They are the only tokens in this file
+ * that are not multiplied by `--ui-scale`, and `src/ui/hud/hud-layout.ts`
+ * carries the two reasons -- they are announced through `aria-valuemin` /
+ * `aria-valuemax` in the unit the player drags in, and what they protect (a
+ * band of phone screen, room for a world a finger can aim at) does not grow
+ * because somebody asked for larger text.
+ */
+@property --hud-navigation-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 180px;
+}
+
+@property --hud-inspector-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 264px;
+}
+
+@property --hud-inspector-height {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 536px;
+}
 :root {
   /* ---------------------------------------------------------------- */
   /* Layer 1: raw ramps -- every literal in the file, both themes      */
@@ -674,6 +707,15 @@
      `src/styles.css`, the Build panel in `src/ui/hud/hud.css` -- so a literal
      in each is two numbers that nothing keeps equal. */
   --hud-rail-panel-width: calc(264px * var(--ui-scale));
+  /* The layout shell's three lengths. See the `@property` block above for why
+     they carry no `--ui-scale` and why their defaults are the pre-stage-3
+     geometry. `--hud-inspector-height` is a ceiling on a phone sheet and its
+     default is the tallest an 812px viewport allows -- 66 % of it, the
+     delivery's own limit -- so a sheet nobody has resized is not capped by a
+     number this file invented. */
+  --hud-navigation-width: 180px;
+  --hud-inspector-width: 264px;
+  --hud-inspector-height: 536px;
   /* The floor under the Build panel's catalogue: the shortest the list of
      buildables may be squeezed to before the panel goes back to scrolling as
      a whole (issue #143). Two rows, because one row plus a scrollbar is not a

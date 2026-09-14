@@ -414,10 +414,20 @@ test.describe('HUD shell', () => {
     // variant, which is why this assertion lives here and not in a unit test.
     expect(probe.valueCount).toBeGreaterThan(5);
     expect(probe.nonMonospaceValues).toEqual([]);
-    // `getComputedStyle` answers for a `display: none` element too, so the
-    // count above and the filter behind it would both survive a strip that
-    // was never laid out. "Every number" means every number on screen.
-    await expectLaidOut(page, '.hud-strip .ui-value', 'the strip values');
+    /*
+     * `getComputedStyle` answers for a `display: none` element too, so the
+     * count above and the filter behind it would both survive a strip that was
+     * never laid out. "Every number" means every number on screen.
+     *
+     * `:not(.hud-layout__body *)` excludes the Layout menu's drawer (#1159),
+     * matching the selector `hudProbe` counts over -- the drawer hangs from the
+     * strip and carries a clock readout, and it is `hidden` until a player
+     * opens it, so it is not a number on screen until then. That claim is not
+     * dropped: `tests/browser/hud-layout-shell.spec.ts` asserts the drawer's
+     * own readouts are monospace with tabular figures, in the one state where
+     * they are also laid out.
+     */
+    await expectLaidOut(page, '.hud-strip .ui-value:not(.hud-layout__body *)', 'the strip values');
   });
 
   test('tabs respond, moving both the selection and the reported intent', async ({ page }) => {

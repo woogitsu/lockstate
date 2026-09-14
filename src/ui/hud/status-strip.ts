@@ -71,6 +71,27 @@ export interface StatusStrip {
    * had refused something.
    */
   controlFor(kind: TransportIntentKind): HTMLButtonElement;
+  /**
+   * A box at the right end of the strip for the HUD's own layout controls
+   * (#1159): the Layout menu and the metric strip's collapse arrow.
+   *
+   * It is **outside** `foldable` on purpose. Constitution article 16 -- *"Panel
+   * przywraca widoczny uchwyt"* -- means the control that folds the strip's
+   * readouts cannot be one of the things it folds, so the strip is built as a
+   * row of readouts that disappear beside a slot that does not.
+   */
+  readonly layoutSlot: HTMLElement;
+  /**
+   * Everything the metric strip's collapse arrow hides: the counters, the
+   * clock and the transport buttons.
+   *
+   * Named as a list rather than by hiding the strip element, because hiding
+   * the strip would hide the arrow with it and leave no way back -- and
+   * because the brand slot is the host's build identity, which
+   * `app-shell.spec.ts` requires in the top-left corner where a bug report
+   * reads it from.
+   */
+  readonly foldable: readonly HTMLElement[];
   update(viewModel: HudViewModel): void;
 }
 
@@ -205,10 +226,12 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   // counters rather than after them.
   const brandSlot = element('div', { className: 'hud-strip__brand' });
 
+  const layoutSlot = element('div', { className: 'hud-strip__layout' });
+
   const root = element('div', {
     className: 'hud-strip',
     attributes: { role: 'region', 'aria-label': t(HUD_MESSAGE_KEY.statusRegion) },
-    children: [brandSlot, metricsRow, clockGroup, transportGroup],
+    children: [brandSlot, metricsRow, clockGroup, transportGroup, layoutSlot],
   });
 
   const update = (viewModel: HudViewModel): void => {
@@ -349,6 +372,8 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     brandSlot,
     controls: [transport.pause.element, transport.play.element, transport['fast-forward'].element],
     controlFor: (kind: TransportIntentKind): HTMLButtonElement => transport[kind].element,
+    layoutSlot,
+    foldable: [metricsRow, clockGroup, transportGroup],
     update,
   };
 }
