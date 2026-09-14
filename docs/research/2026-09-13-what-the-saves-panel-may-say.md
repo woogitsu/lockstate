@@ -10,6 +10,72 @@ the delivery. Every claim below was opened, not inferred; `file:line` cites
 code, quotes cite prose. Checked against the tree at `08ea9dd7` (v0.0.597) in
 worktree `/workspace/saves-truth`.
 
+> **2026-09-14 correction — re-verified before landing, one claim is now
+> stale and the rest re-checked hold.** This document was written and cut
+> the same day as, but before, `5d36d740` — *"feat(save-panel): ask before a
+> prison is destroyed (#1142)"* — merged. §5's `#1142` finding, quoted below,
+> is the claim that broke:
+>
+> > **Verified true, at both layers checked.** ... One layer up,
+> > `SavePanel.requestDelete(prisonId)` (`src/ui/save-panel.ts:797-804`)
+> > calls `this.controller.deletePrison(prisonId)` and, on return,
+> > unconditionally sets `save.status.deleted`. Nothing between the row's
+> > Delete control and the write asks a second question.
+>
+> **That is no longer true of `SavePanel`.** `requestDelete` now only arms a
+> confirmation — `public requestDelete(arming: DeleteArming): void { this.armedDeletion = arming; this.renderDeleteConfirmation(); ... }`
+> (`src/ui/save-panel.ts:1003-1010`) — and issues no storage call at all; the
+> destructive press moved to a new method, `confirmDelete(prisonId)`
+> (`src/ui/save-panel.ts:1029-1050`), reached only through
+> `pressDeleteConfirmation` (`src/ui/save-panel-delete.ts`, out of scope for
+> this pass to touch or re-open) refusing every `prisonId` that does not match
+> the one armed. The method's own docblock now quotes the pre-#1142 shape
+> verbatim as history: *"One press of a row's Delete control and the prison
+> was gone ... nothing in between that could have been read, hesitated over
+> or refused. That is the whole of issue #1142."* So the panel layer this
+> document found unconditional is now gated by a confirmation row
+> (`renderDeleteConfirmation`, `src/ui/save-panel.ts:814-864`) with its own
+> Confirm/Cancel controls and focus handling.
+>
+> **What is unchanged, and still true exactly as written below.**
+> `PrisonSaveRepository.delete(prisonId)` (`src/persistence/local/repository.ts:467-476`)
+> is still unconditional at the repository layer — deleting every retained
+> generation and the slot metadata in one transaction with no confirmation
+> argument — which is precisely the shape `confirmDelete` now calls into
+> *after* the panel-level gate passes. So the repository-layer half of §5's
+> `#1142` paragraph is correct as measured; only the "nothing between the
+> row's Delete control and the write asks a second question" clause is false
+> of the tree today. §6 item 3 — "Add a confirmation step in front of delete
+> ... before wiring delete into the new panel" — is therefore **done** at the
+> `SavePanel` layer already; a saves panel in "Zarządzaj" that reuses
+> `SavePanel`'s existing controls inherits the confirmation for free and does
+> not need to build one.
+>
+> **§4's `#1143` finding (`MemoryLocalSaveStore` does not serialise
+> overlapping `readwrite` transactions) was re-checked against
+> `src/persistence/local/memory-store.ts` on the current tree and is
+> unchanged, line-for-line: `runTransaction` still spans `:15-69`, still
+> snapshots into fresh `Map`s at call time and still replaces the store
+> wholesale on commit.** Not re-reproduced by script in this pass — this pass
+> is documentation-only and the file is one of the two other agents' named
+> surfaces this session was told to stay out of — but the code shape the
+> original reproduction relied on has not moved.
+>
+> **§§1–4's remaining `file:line` citations were spot-checked, not
+> exhaustively re-walked**, because `src/content/default-locale-en.ts` and
+> `src/ui/save-panel.ts` have both grown since 2026-09-13 (new confirmation
+> strings, new methods) and most line numbers below have drifted upward as a
+> result — e.g. `save.list.item` is `default-locale-en.ts:3161` today, not
+> `:3134`; `save.status.deleted` is `:3202`, not `:3175`. The *keys* named
+> throughout (`save.list.item`, `save.list.empty`, `save.status.saved`,
+> `save.status.deleted`, `save.status.no-readable-generation`,
+> `save.failure.load`, `save.status.changed-elsewhere`, and the two
+> `save.status.quota-exceeded` / `save.status.transaction-aborted` pair) all
+> still exist with the same wording, checked by name rather than by line.
+> §§2–3's account-module and cloud-unreachability claims were re-checked and
+> hold unchanged: `grep -rn "createClient\|VITE_SUPABASE" src/` still returns
+> nothing, and no `'account.` or `'cloud.` locale key exists yet.
+
 ## 1. The sentence inventory, first — it decides what gets built
 
 | Panel state | Can a true sentence be written today? | What makes it true |
