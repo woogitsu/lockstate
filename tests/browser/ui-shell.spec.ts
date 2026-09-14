@@ -1472,6 +1472,56 @@ test.describe('HUD shell', () => {
       await expect(page.locator('.hud-alerts__list [data-alert="empty"]')).toBeVisible();
     });
 
+    /**
+     * **"No alerts" and "no data" are two states and now say two things**
+     * (issue #1184, `konstytucja.md` article 5's third named anti-pattern).
+     *
+     * Until this landed the section painted *"No active alerts"* from the same
+     * `alerts: []` the view model held before any worker snapshot had arrived,
+     * so a page with no simulation behind it made a confident claim about a
+     * prison it had never heard of -- while the sibling `clock` field in that
+     * very object carried `UNKNOWN_HUD_CLOCK` precisely so it could not.
+     *
+     * Both halves are asserted against each other rather than one alone,
+     * exactly as the Overview section's own sentinel test does, because the
+     * cheap way to pass the first assertion is to stop saying "no active
+     * alerts" at all -- and a prison genuinely reporting nothing wrong must
+     * still say so. The sentences are quoted verbatim: a swap that left both
+     * states rendering the same words would satisfy every structural
+     * assertion.
+     */
+    test('says no prison is reporting before one has, and says the prison is clear once one does (#1184)', async ({
+      page,
+    }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ empty: true }));
+
+      const sentinel = page.locator('.hud-alerts__none');
+      const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+      // A box, not an attribute: a stylesheet whose guard has been lost paints
+      // the sentence at full height with `hidden` still set, and a spec reading
+      // the attribute would agree with it.
+      await expect(sentinel).toBeVisible();
+      await expect(sentinel).toHaveText('No prison is reporting.');
+      // Not merely hidden -- the row is not built at all, because the list it
+      // belongs to is not on screen.
+      await expect(emptyRow).toHaveCount(0);
+      await expect(page.locator('.hud-alerts__list')).toBeHidden();
+
+      // A prison that has reported, and has nothing wrong to report. This is
+      // the state `hud.alerts.empty` was always true of, and it keeps it.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts([]));
+      await expect(sentinel).toBeHidden();
+      await expect(emptyRow).toBeVisible();
+      await expect(emptyRow).toHaveText('No active alerts');
+
+      // And a prison with something to say puts it in the list, with neither
+      // sentence standing beside it.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['a']));
+      await expect(sentinel).toBeHidden();
+      await expect(emptyRow).toHaveCount(0);
+      expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['a']);
+    });
+
     test('the rows are on screen once the section is open, not merely in the DOM', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'a', 'b']));
@@ -1840,10 +1890,12 @@ test.describe('HUD shell', () => {
      * was specified before it was written for: **empty must not be able to mean
      * two things.**
      *
-     * `'hud.alerts.empty'` is the live counter-example (#1184): it renders from
-     * the same empty literal that stands in before the first worker snapshot,
-     * so *"No active alerts"* is what a page with no simulation behind it says
-     * about a prison it has never heard of. A balance is worse, because
+     * `'hud.alerts.empty'` was the live counter-example (#1184): it rendered
+     * from the same empty literal that stood in before the first worker
+     * snapshot, so *"No active alerts"* was what a page with no simulation
+     * behind it said about a prison it had never heard of. That issue is
+     * closed -- the alerts list took this panel's shape and this panel's
+     * sentence, and the block above asserts it. A balance is worse, because
      * `EMPTY_HUD_VIEW_MODEL.counts` carries a confident `treasuryMinorUnits: 0`
      * -- a readout keyed on it would tell a player their prison was broke
      * before the worker had spoken. So the two states are asserted against each

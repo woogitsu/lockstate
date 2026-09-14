@@ -1703,7 +1703,32 @@ export interface HudEventNoticeViewModel extends HudLabelParametersViewModel {
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;
-  readonly alerts: readonly HudAlertViewModel[];
+  /**
+   * The alerts log, or **absent because no prison is reporting** (issue #1184).
+   *
+   * Three states rather than two, and the third is the whole of that issue.
+   * This field used to be required and `EMPTY_HUD_VIEW_MODEL` carried the
+   * literal `[]`, so *"No active alerts"* -- `'hud.alerts.empty'` -- was what a
+   * page with no simulation behind it said about a prison it had never heard
+   * of, and what it went on saying after `simulation/stopped` emptied the list.
+   * That is `konstytucja.md` article 5's third named anti-pattern standing in
+   * the tree: *"'Brak incydentów' i 'brak danych' to różne stany"* ("'no
+   * incidents' and 'no data' are different states").
+   *
+   * The sibling `clock` field had a fix for exactly this state already --
+   * `UNKNOWN_HUD_CLOCK`, *"there is no simulation clock to report"* -- and
+   * `overview` above has the better version of it, which is the one taken
+   * here: **absence by construction, rather than a sentinel value inside the
+   * list.** An empty array cannot be mistaken for "nobody has spoken" if
+   * "nobody has spoken" is not an array. So `src/main.ts` sets this only from a
+   * message that carries alerts and deletes it on `simulation/stopped`,
+   * `hudAlertsFromWorkerMessage` answers `'none'` for that message exactly as
+   * `hudRefusalFromWorkerMessage` does, and the HUD paints
+   * `'hud.alerts.unknown'` for absence while keeping `'hud.alerts.empty'` for
+   * the state it was always true of: **a prison that is reporting, and
+   * reporting nothing wrong.**
+   */
+  readonly alerts?: readonly HudAlertViewModel[];
   /** Absent until this session has had something to say. See the interface. */
   readonly event?: HudEventNoticeViewModel;
   /** Absent until this session has designated a room. Not zeroed -- see the interface. */
@@ -1744,9 +1769,11 @@ export interface HudViewModel {
    * `hudCountsFromWorkerMessage` returns for `simulation/stopped`, so a readout
    * keyed on it would state a balance of zero for a prison that has never
    * spoken. That is exactly the defect #1184 found in `'hud.alerts.empty'`,
-   * rendered from the same empty literal that stands in before the first worker
-   * snapshot, beside a `clock` field that was deliberately given
-   * `UNKNOWN_HUD_CLOCK` for that state.
+   * which rendered from the same empty literal that stands in before the first
+   * worker snapshot, beside a `clock` field that was deliberately given
+   * `UNKNOWN_HUD_CLOCK` for that state. **That issue is closed and `alerts`
+   * below took this field's shape**; `counts` is still the confident row of
+   * zeros, which is #1191.
    *
    * So this readout gets the `clock`'s treatment rather than the alerts list's,
    * and gets it by construction: the host sets it only from a
@@ -2162,6 +2189,22 @@ export interface HudLocalizer {
  * confident readout of a clock that is not running is the exact failure the
  * transport controls used to have: something on screen that looks like
  * state and is not.
+ *
+ * **`alerts` is absent here as of issue #1184, and used to be `[]`.** That
+ * literal was the same failure one field over: the alerts list painted *"No
+ * active alerts"* from it, so the screen that had heard from nobody and the
+ * prison with nothing wrong said the same sentence. There is no key to read
+ * now, and `HudViewModel.alerts` carries the reasoning.
+ *
+ * **`counts` is still a confident row of zeros and is the remaining instance
+ * of the same shape** (issue #1191). It is not fixed here because it is not
+ * one field: the status strip states nine of these numbers and
+ * `hudCountsFromWorkerMessage` answers this same object for
+ * `simulation/stopped`, so *"0 prisoners, 0 rooms, funds 0"* is what a page
+ * with no simulation behind it says about a prison it has never heard of.
+ * `overview` exists precisely because that could not be read off `counts`. The
+ * strip's own clock reads `--` in that state, so the two halves of one strip
+ * disagree today.
  */
 export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
   counts: {
@@ -2184,6 +2227,5 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     stateIncomeAccruedTodayMinorUnits: 0,
   },
   clock: UNKNOWN_HUD_CLOCK,
-  alerts: [],
 };
 

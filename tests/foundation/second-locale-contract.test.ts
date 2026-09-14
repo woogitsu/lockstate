@@ -73,9 +73,16 @@ const NON_DEFAULT_CATALOGS: Readonly<Record<string, () => MessageCatalog>> = {
 const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
   [PSEUDO_LOCALE]: 588,
   /*
-   * `pl` translates every key the bundled English catalogue holds -- 669 of
-   * 669, measured on 2026-09-14 at `189a97a3` -- so its floor is the whole
-   * catalogue and this row cannot be satisfied by losing a key.
+   * `pl` translates every key the bundled English catalogue holds -- 670 of
+   * 670, re-measured on 2026-09-14 after issue #1184 authored
+   * `hud.alerts.unknown` and its Polish counterpart together, and 669 of 669
+   * at `189a97a3` before that -- so its floor is the whole catalogue and this
+   * row cannot be satisfied by losing a key.
+   *
+   * **Raised deliberately, which is the only direction this row moves.** The
+   * English catalogue gaining a key does not fail this test -- `pl` would fall
+   * back for it, exactly as the paragraph below says -- so the ratchet is
+   * turned by hand, after a measurement, by whoever translated the key.
    *
    * **It is deliberately not a completeness requirement, and the difference
    * matters here more than anywhere else in this file.** #664's rule is that
@@ -86,7 +93,7 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
    * says a partial locale should -- and the floor stays where the last
    * deliberate measurement put it.
    */
-  pl: 669,
+  pl: 670,
 };
 
 describe('every non-default catalogue is well-formed, without being required to be complete (#664)', () => {
