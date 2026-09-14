@@ -1033,6 +1033,157 @@ const plMessages: Readonly<Record<string, string>> = {
   // Reshaped: "jest pełna/pełny/pełne" would have to agree with the room
   // name's own gender, which changes per room.
   'hud.rooms.at-capacity-room': '{room} ({x}, {y}) — brak wolnych miejsc',
+
+  // =====================================================================
+  // Save panel -- `save.*`. Its own namespace and its own module, and the one
+  // family where `{detail}` is deliberately untranslated English coming out of
+  // `src/persistence/**`. Every Polish frame around it puts that fragment
+  // after a colon rather than inside a clause, so an English noun phrase never
+  // has to agree with a Polish verb.
+  // =====================================================================
+  'save.panel.region': 'Zapisy więzień',
+  'save.panel.title': 'Więzienia',
+  'save.action.create': 'Nowe więzienie',
+  'save.action.save': 'Zapisz teraz',
+  'save.action.export': 'Eksportuj',
+  'save.action.import': 'Importuj',
+  'save.action.load': 'Wczytaj',
+  'save.action.delete': 'Usuń',
+  'save.action.delete-cancel': 'Zachowaj',
+  'save.action.delete-confirm': 'Usuń trwale',
+  'save.action.tombstone-restore': 'Przywróć',
+  'save.action.tombstone-forget': 'Zwolnij miejsce teraz',
+  'save.list.empty': 'Nie ma jeszcze żadnych więzień.',
+  // The abbreviation dodges declension in Polish exactly as it dodges the
+  // plural in English: *gen.* is the same before 1, 2 and 5.
+  'save.list.item': '{name} ({count} gen.)',
+  // Reshaped: "{name} — usunięto" rather than "{name} usunięte", because
+  // `{name}` is a prison name the player typed and nothing knows its gender.
+  'save.tombstone.item': '{name} — usunięto. Nadal można je przywrócić.',
+  'save.delete.confirm':
+    'Usunąć {name}? Każda zapisana kopia tego więzienia zniknie z twojej listy. Przez jeden dzień można je przywrócić z tego panelu, a potem przepada na dobre. Zapisy zmieniano ostatnio {age}.',
+  // Abbreviated unit symbols, which do not inflect for number in Polish any
+  // more than they do in English: *1 min temu*, *3 min temu*, *22 min temu*.
+  // Spelling the units out is what would create the debt, which is why they
+  // are not spelled out -- the same reasoning `describeSaveAge` records on the
+  // English side.
+  'save.delete.age.minutes': '{count} min temu',
+  'save.delete.age.hours': '{count} godz. temu',
+  'save.delete.age.days': '{count} dni temu',
+  'save.delete.age.moments': 'przed chwilą',
+  'save.status.idle': 'Tylko zapisy lokalne — sieć niepotrzebna.',
+  'save.status.saved': 'Zapisano (generacja {generation}).',
+  'save.status.saving': 'Zapisywanie…',
+  'save.status.loading': 'Wczytywanie…',
+  'save.status.loaded': 'Wczytano.',
+  'save.status.creating': 'Tworzenie więzienia…',
+  'save.status.create-failed': 'Nie udało się utworzyć więzienia: {detail}',
+  'save.status.no-active-prison': 'Brak aktywnego więzienia — najpierw utwórz albo wczytaj jakieś.',
+  'save.status.not-found': 'To więzienie już nie istnieje.',
+  'save.status.changed-elsewhere': 'Nie udało się zapisać: to więzienie zmieniono gdzie indziej.',
+  'save.status.quota-exceeded':
+    'Pamięć jest pełna. Usuń stare więzienie albo wyeksportuj i skasuj zapisy, żeby zwolnić miejsce. Poprzedni zapis jest nienaruszony.',
+  'save.status.transaction-aborted':
+    'Przeglądarka przerwała zapisywanie. Poprzedni zapis jest nienaruszony — spróbuj zapisać jeszcze raz.',
+  'save.status.save-failed': 'Zapis nie powiódł się: {detail}',
+  'save.status.list-unreadable':
+    'Nie udało się odczytać lokalnej listy więzień (może to być tryb prywatny albo nieczytelny wpis zapisu): {detail}',
+  'save.status.no-readable-generation':
+    'Dla tego więzienia nie została żadna czytelna generacja zapisu. Każda zachowana kopia nie przeszła walidacji.',
+  'save.status.recovered': 'Najnowszy zapis był nieczytelny — odzyskano wcześniejszą, zweryfikowaną generację.',
+  'save.status.deleted': 'Więzienie usunięte. Przez jeden dzień można je przywrócić z listy poniżej.',
+  'save.status.delete-kept': 'Nic nie usunięto.',
+  // Reshaped: "{name} wrócił / wróciła / wróciło" would have to agree with a
+  // prison name the player typed.
+  'save.status.tombstone-restored': '{name} — z powrotem, dokładnie tak jak było.',
+  'save.status.tombstone-forgotten': 'Przepadło na dobre. Nic z tego więzienia już się nie zachowuje.',
+  'save.status.tombstone-gone': 'Tego więzienia nie ma już do przywrócenia.',
+  'save.status.tombstone-window-closed': 'Za późno — tego więzienia nie da się już przywrócić.',
+  'save.status.tombstone-slot-taken':
+    'To więzienie nie może wrócić — jego miejsce zajmuje teraz inne więzienie, które nadal tu jest.',
+  'save.status.nothing-to-export': 'Nie ma czego wyeksportować — brak poprawnego aktywnego zapisu.',
+  'save.status.exported': 'Wyeksportowano bieżący zapis.',
+  'save.status.importing': 'Odczytywanie pliku zapisu…',
+  'save.status.imported': 'Zaimportowano plik zapisu do tego więzienia (generacja {generation}).',
+  'save.status.imported-migrated':
+    'Zaimportowano zapis ze starszej wersji Lockstate i uaktualniono go (generacja {generation}).',
+  'save.status.import-not-a-save': 'Ten plik nie jest zapisem Lockstate — wybierz plik wyeksportowany z tej gry.',
+  'save.status.import-unsupported-version':
+    'Ten zapis powstał w nowszej wersji Lockstate niż ta. Uaktualnij grę i zaimportuj go jeszcze raz.',
+  'save.status.import-corrupt':
+    'Ten zapis nie zgadza się z własną sumą kontrolną — został uszkodzony albo zmieniony po eksporcie, więc go nie zaimportowano.',
+  'save.status.import-invalid': 'Nie udało się odczytać tego pliku zapisu: {detail}',
+  'save.failure.create': 'Tworzenie więzienia nie powiodło się: {detail}',
+  'save.failure.save': 'Zapisywanie nie powiodło się: {detail}',
+  'save.failure.load': 'Wczytywanie nie powiodło się: {detail}',
+  'save.failure.delete': 'Usuwanie nie powiodło się: {detail}',
+  'save.failure.restore': 'Przywracanie więzienia nie powiodło się: {detail}',
+  'save.failure.forget': 'Zwolnienie miejsca nie powiodło się: {detail}',
+  'save.failure.export': 'Eksportowanie nie powiodło się: {detail}',
+  'save.failure.import': 'Importowanie nie powiodło się: {detail}',
+  'save.failure.unknown': 'Operacja nie powiodła się: {detail}',
+  // Reshaped, and it is the subtlest one here. The thirteen `save.scope.*`
+  // items are spliced into *both* halves of this sentence, joined with ", ".
+  // In Polish the two frames demand two different cases of the same list --
+  // *Przywrócono* takes the accusative, *nie przenosi* the genitive -- and no
+  // reshape of the *items* can fix that. Both frames therefore become labels,
+  // so both lists stay nominative, and the items below are bare lower-case
+  // noun phrases.
+  'save.detail.restored-scope': 'Przywrócone: {restored}. Nieprzeniesione przez tę wersję zapisu: {notCarried}.',
+  'save.scope.kernel': 'takt jądra i kolejka poleceń',
+  'save.scope.rng-streams': 'stany strumieni RNG',
+  'save.scope.world': 'teren świata i własność gruntu',
+  'save.scope.construction': 'zlecenia budowy oraz cofanie i ponawianie',
+  'save.scope.entity-liveness': 'żywotność identyfikatorów bytów',
+  // A save-manifest label, so *osadzeni* under the owner's ruling.
+  'save.scope.prisoners': 'osadzeni, potrzeby, czynności i przydziały cel',
+  'save.scope.operations': 'zadania, pojemniki i sieci instalacji',
+  'save.scope.security': 'drzwi, sektory ochrony, strażnicy i patrole',
+  'save.scope.contraband': 'kontrabanda, informacje i przeszukania',
+  'save.scope.incidents': 'incydenty, gangi i tunele',
+  'save.scope.names': 'imiona i nazwiska osadzonych oraz personelu',
+  'save.scope.room-caches': 'pamięci podręczne pomieszczeń i topologii (przeliczane ze świata)',
+  'save.scope.navigation-caches':
+    'pamięci podręczne nawigacji i trwające żądania tras (wysyłane ponownie w następnym takcie)',
+
+  // =====================================================================
+  // Semantic input actions -- `input.action.*`. No keybinding or help surface
+  // reads these yet.
+  // =====================================================================
+  'input.action.camera.up': 'Przesuń kamerę w górę',
+  'input.action.camera.down': 'Przesuń kamerę w dół',
+  'input.action.camera.left': 'Przesuń kamerę w lewo',
+  'input.action.camera.right': 'Przesuń kamerę w prawo',
+  'input.action.camera.zoom.in': 'Przybliż',
+  'input.action.camera.zoom.out': 'Oddal',
+  'input.action.selection.primary': 'Wybierz',
+  'input.action.build.confirm': 'Potwierdź postawienie',
+  'input.action.build.cancel': 'Anuluj',
+  'input.action.edit.undo': 'Cofnij',
+  'input.action.edit.redo': 'Ponów',
+
+  // =====================================================================
+  // Brand badge, display controls and the application's own accessible name.
+  // =====================================================================
+  'brand.region': 'Kompilacja Lockstate',
+  // Not translated: a wordmark is a name.
+  'brand.wordmark': 'LockState.io',
+  // Left in English. *PREALFA* exists and looks odd; *WERSJA WSTĘPNA* is
+  // accurate and long. It is a build-stage token on a badge beside an
+  // untranslated wordmark, which argues for leaving it.
+  'brand.stage': 'PRE-ALPHA',
+  'brand.build': 'v{version} · {commit}',
+  'brand.description': 'Lockstate, kompilacja {stage}, wersja {version}, commit {commit}.',
+  'display.scale.region': 'Skala interfejsu',
+  'display.scale.cycle': 'Zmień skalę interfejsu',
+  // The three option labels agree with *motyw* (masculine), which is the noun
+  // `display.theme.region` puts on screen beside them.
+  'display.theme.region': 'Motyw',
+  'display.theme.system': 'Systemowy',
+  'display.theme.light': 'Jasny',
+  'display.theme.dark': 'Ciemny',
+  'display.theme.cycle': 'Zmień motyw interfejsu',
+  'app.shell.label': 'Aplikacja gry Lockstate',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);
