@@ -327,6 +327,12 @@ export type RestoreFromTombstoneResult =
   | { readonly ok: true; readonly metadata: PrisonSlotMetadata }
   | { readonly ok: false; readonly reason: RestoreRefusalReason };
 
+/** What the saves panel shows: the prisons a player has, and the ones they can still get back. */
+export interface SaveInventory {
+  readonly prisons: readonly PrisonSlotMetadata[];
+  readonly deleted: readonly DeletedPrison[];
+}
+
 export interface PrisonSaveRepositoryOptions {
   /** Current generation plus this many previous safe copies. Default 3 (current + 2 previous, matching the issue's minimum). */
   readonly keepGenerations?: number;
@@ -351,6 +357,44 @@ function readSlot(record: unknown, prisonId?: string): PrisonSlotMetadata | unde
 /** Every write of a slot record, validated on the way in for the same reason. */
 async function writeSlot(tx: LocalSaveTransaction, metadata: PrisonSlotMetadata): Promise<void> {
   await tx.putMetadata(encodePrisonSlotMetadata(metadata));
+}
+
+/**
+ * Reads every tombstone, deleting the ones that can no longer serve an undo.
+ *
+ * A free function rather than a method because two callers need it *inside a
+ * transaction they already hold* -- `listTombstones` and `listSaves` -- and the
+ * whole point of the second is that it costs one transaction rather than two.
+ *
+ * Two kinds are swept. A copy past its `expiresAt` is gone by definition. A
+ * record this build cannot validate is swept for the three reasons
+ * `tombstone-schema.ts` gives: it indexes nothing the player still has, it
+ * expires by construction, and a copy that cannot be read is a copy that can
+ * never be restored -- so holding it only costs the player bytes. A record
+ * whose own key is unreadable is left alone rather than guessed at, because a
+ * guessed key deletes some other prison's copy.
+ */
+async function sweepTombstones(tx: LocalSaveTransaction, now: number): Promise<readonly DeletedPrison[]> {
+  const restorable: DeletedPrison[] = [];
+  for (const record of await tx.listTombstones()) {
+    const tombstone = decodeTombstoneRecord(record);
+    if (tombstone === undefined) {
+      const key = tombstoneKeyOf(record);
+      if (key !== undefined) await tx.deleteTombstone(key);
+      continue;
+    }
+    if (now >= tombstone.expiresAt) {
+      await tx.deleteTombstone(tombstone.prisonId);
+      continue;
+    }
+    restorable.push({
+      prisonId: tombstone.prisonId,
+      ...(tombstone.metadata.displayName === undefined ? {} : { displayName: tombstone.metadata.displayName }),
+      deletedAt: tombstone.deletedAt,
+      expiresAt: tombstone.expiresAt,
+    });
+  }
+  return restorable;
 }
 
 /**
@@ -658,32 +702,44 @@ export class PrisonSaveRepository {
    * serve the one purpose it exists for if this build cannot read it.
    */
   public async listTombstones(): Promise<readonly DeletedPrison[]> {
+    return this.store.runTransaction('readwrite', (tx) => sweepTombstones(tx, this.now()));
+  }
+
+  /**
+   * Both halves of what the saves panel shows, from **one** transaction.
+   *
+   * ## Why this exists rather than the panel calling two methods
+   *
+   * It did call two, and that was measured as a cost rather than argued as
+   * one. `SavePanel.refresh()` runs after every action in the panel, and the
+   * browser reachability sweep (`app-shell.spec.ts`, #88) presses every control
+   * on every tab at every viewport -- which is the one test in this repository
+   * that multiplies a per-refresh cost by enough to see it. On `origin/main`
+   * that test finished in **2.9 minutes against a 3.0-minute cap**; with a
+   * second transaction added to every refresh it stopped finishing at all. One
+   * transaction puts the cost back where it was.
+   *
+   * ## And it is the more correct shape anyway
+   *
+   * Two reads are two snapshots. Between them a prison can be deleted, and the
+   * panel would then draw a list holding it in **neither** half -- present in
+   * neither `prisons` (the delete committed after the first read) nor
+   * `deleted` (the tombstone was written before the second). One transaction
+   * cannot see that state, so the list the player reads is always a list that
+   * actually existed.
+   *
+   * `readwrite`, because the sweep is what enforces the undo window and a
+   * read-only list would leave every caller responsible for an expiry it
+   * cannot enforce.
+   */
+  public async listSaves(): Promise<SaveInventory> {
     return this.store.runTransaction('readwrite', async (tx) => {
-      const now = this.now();
-      const restorable: DeletedPrison[] = [];
-      for (const record of await tx.listTombstones()) {
-        const tombstone = decodeTombstoneRecord(record);
-        if (tombstone === undefined) {
-          // A record the store enumerated and this build cannot read. Deleted
-          // by the key the store filed it under, if that key is readable at
-          // all; a record with no usable key is left alone rather than guessed
-          // at, because a guessed key deletes some other prison's copy.
-          const key = tombstoneKeyOf(record);
-          if (key !== undefined) await tx.deleteTombstone(key);
-          continue;
-        }
-        if (now >= tombstone.expiresAt) {
-          await tx.deleteTombstone(tombstone.prisonId);
-          continue;
-        }
-        restorable.push({
-          prisonId: tombstone.prisonId,
-          ...(tombstone.metadata.displayName === undefined ? {} : { displayName: tombstone.metadata.displayName }),
-          deletedAt: tombstone.deletedAt,
-          expiresAt: tombstone.expiresAt,
-        });
-      }
-      return restorable;
+      const stored = await tx.listMetadata();
+      // `list()`'s rule, unchanged and deliberately not softened here: one
+      // unreadable record refuses the whole list rather than being skipped.
+      const prisons = stored.map((record) => requirePrisonSlotMetadata(record));
+      const deleted = await sweepTombstones(tx, this.now());
+      return { prisons, deleted };
     });
   }
 

@@ -1,4 +1,4 @@
-import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveResult } from '../../src/persistence/local/repository';
+import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveInventory, SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import {
@@ -239,6 +239,11 @@ class StubSessions implements SavePanelSessions {
     if (slot === undefined) return;
     const deletedAt = Date.now();
     this.deleted.push({ slot, deletedAt, expiresAt: deletedAt + 24 * 60 * 60 * 1000 });
+  }
+
+  /** One read for both halves, exactly as the real controller does it. */
+  public async listSaves(): Promise<SaveInventory> {
+    return { prisons: await this.listPrisons(), deleted: await this.listDeletedPrisons() };
   }
 
   public async listDeletedPrisons(): Promise<readonly DeletedPrison[]> {

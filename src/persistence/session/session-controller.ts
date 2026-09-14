@@ -7,6 +7,7 @@ import type {
   PrisonSaveRepository,
   RestoreOutcome,
   SaveImportResult,
+  SaveInventory,
   SaveResult,
 } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
@@ -380,6 +381,20 @@ export class SessionController {
    */
   public async listDeletedPrisons(): Promise<readonly DeletedPrison[]> {
     return this.repository.listTombstones();
+  }
+
+  /**
+   * Both halves of the saves list in one transaction, which is what the panel
+   * actually calls.
+   *
+   * `listPrisons` and `listDeletedPrisons` remain for callers that want one
+   * half -- the browser harness and this class's own tests -- but a repaint
+   * asks once. `PrisonSaveRepository.listSaves` carries both reasons: the
+   * measured per-refresh cost, and the fact that two reads are two snapshots a
+   * deletion can fall between.
+   */
+  public async listSaves(): Promise<SaveInventory> {
+    return this.repository.listSaves();
   }
 
   /**
