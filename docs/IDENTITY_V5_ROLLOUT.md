@@ -169,6 +169,65 @@ be that some density stays below the target with the reason written down.
 
 ---
 
+### Landed 2026-09-14 (#1158), and the weakest claim above was the right one
+
+The paragraphs above are left exactly as they stood: they are the plan, and
+what a plan predicted is worth keeping beside what happened.
+
+**The ramp is 31 / 23 / 19 / 15 / 13 / 11** — the delivery's own scale less the
+1 px the owner's three numbers determine, with the upper steps checked a second
+way against the delivery's increments before they were written down. `:root`
+selects 15 px for body and value. **Labels never moved**: 11 px was already the
+ruled size, so the "three steps" this section opens with was two.
+
+**Four surfaces did not have the room, and keep 13 px with their reasons in
+`tokens.css`:**
+
+- **The Build panel.** Three pinned floors went red at 15 px, all at 1280×720 —
+  `.hud-build__arm` at 56 px against a 44 px tap target (#926), the panel
+  arriving with 6 px more content than box (#920), and a queue cancel 2 px
+  below the fold with an emptied row no longer keeping its box. Pinning only
+  `.hud-build__actions` was tried first and cleared the first two, which is how
+  the arm button was identified as the source of the extra 12 px; it left all
+  three queue failures red.
+- **The alerts list.** #739 caps the worst-case alert sentence at four line
+  boxes at every viewport; at 15 px it wraps to five at 1280×720. It surfaced
+  a stage later than expected because the alerts section is a child of the
+  minimap panel in the map corner, not of the rail.
+- **The Rooms panel.** Its own body measured 15 px shorter than its content at
+  900×600 (#331). Found only by the whole browser suite — the panel-by-panel
+  spec runs had missed it, which is the argument for running the suite whole
+  before calling a stage like this done.
+- **The events band.** #985 pins its grid row at exactly 32 px while it
+  speaks; at 15 px it is 35 px. **This is a recording rather than a floor**:
+  nothing overflows, nothing is unreachable, and the invariant #985 is about —
+  that the band borrows a definite row and gives it back — holds at 35 as well
+  as at 32. Changing the 32 would be re-recording a measurement rather than
+  weakening an assertion, and it was still not done: an agent deciding for
+  itself which pinned numbers are "only recordings" is how that line stops
+  meaning anything. The keep is the conservative answer and the argument for
+  re-recording is written down beside it.
+
+**One recorded measurement did move**, and the distinction is the whole of why:
+`ARRIVAL_PANEL_HEIGHT_PX` (1280×720 397.3 → 395.6, 375×812 441 → 439.3) is
+downstream of the *status strip's* height, not a property of the Rooms panel it
+names — the panel is pinned at 13 px and every moved pixel is the strip's.
+Keeping those numbers would mean reverting the strip, i.e. not doing the stage.
+Its own docblock requires a change to arrive with the measurement that caused
+it, which #545 and #634 each did before, and this one does.
+
+**One thing this section did not predict and a later stage owes.** At a 200 %
+browser page zoom the HUD already fails its own containment invariants on
+`origin/main` — two covered tabs at 195×422 and 188×406 at the default
+interface scale, and a scrolling rail plus spilled strip rows from 125 % up.
+Measured before and after: **the failing set is identical**, so stage 2
+introduces none of it, and the magnitudes move a little (strip spill
+32.0 → 34.7 px at 200 %). Constitution article 8's 200 % clause is therefore
+**not** met today and was not met before this stage either. That is a layout
+defect and belongs to stage 3.
+
+---
+
 ## Stage 3 — The HUD shell: collapse, resize, layout memory
 
 What exists: `alerts` and `minimap` collapse through `collapsedPanels`

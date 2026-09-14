@@ -117,7 +117,7 @@
  * 125 %. Every consumer -- a stylesheet, a test, a future one nobody has
  * written -- gets a length back from something declared to be a length.
  *
- * All seventeen scaled tokens are registered and not only the one a test
+ * All twenty-three scaled tokens are registered and not only the one a test
  * happened to read, because "a token is a value you can read" should be true
  * of the whole layer or of none of it; the next reader picks a different token.
  *
@@ -178,6 +178,42 @@
   syntax: '<length>';
   inherits: true;
   initial-value: 6px;
+}
+
+@property --type-display {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 31px;
+}
+
+@property --type-title {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 23px;
+}
+
+@property --type-section {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 19px;
+}
+
+@property --type-body {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 15px;
+}
+
+@property --type-secondary {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 13px;
+}
+
+@property --type-label {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 11px;
 }
 
 @property --text-size-value {
@@ -520,9 +556,78 @@
     ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas,
     'Liberation Mono', monospace;
 
-  --text-size-value: calc(13px * var(--ui-scale));
-  --text-size-body: calc(13px * var(--ui-scale));
-  --text-size-label: calc(11px * var(--ui-scale));
+  /*
+   * THE TYPE RAMP (#1158, stage 2 of `docs/IDENTITY_V5_ROLLOUT.md`).
+   *
+   * Six steps, and they are a ramp rather than three sizes because the
+   * delivery's own scale is a ramp and the upper three have nowhere else to
+   * be recorded. **Nothing consumes `--type-display`, `--type-title` or
+   * `--type-section` yet** -- stage 2's subject is body and label text -- and
+   * that is stated here rather than left for a reader to discover, because an
+   * unused token is a claim nobody is checking. `ui-design-tokens.test.ts`
+   * checks the arithmetic of all six so the ramp cannot rot while it waits.
+   *
+   * ## Where the numbers come from, since two derivations had to agree
+   *
+   * The delivery (`docs/design/2026-09-13-identity-v5/`,
+   * `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`) asks for **32 / 24 / 20 / 16 / 14 /
+   * 12** with 16px body. The owner ruled on 2026-09-13 for a smaller step --
+   * *"Tak, ale mniejszy krok -- np. 15/13/11"* -- and amended constitution
+   * article 8 to 15px rather than recording an exception to it (ADR 0112,
+   * decision 4). Only the bottom three steps were named, so the upper three
+   * had to be derived, and the derivation is not free:
+   *
+   *   - **As an offset.** 16->15, 14->13, 12->11 is -1px, and it fits all
+   *     three of the owner's numbers exactly. A *ratio* does not: 15/16 of 14
+   *     is 13.125 and 15/16 of 12 is 11.25, neither of which is what they
+   *     chose. So the transformation their own three numbers determine is the
+   *     offset. Applied to the whole ramp: 31 / 23 / 19 / 15 / 13 / 11.
+   *   - **As the delivery's own increments.** Its ramp steps by +2, +2, +4,
+   *     +4, +8 going up. Laid over 11 / 13 / 15 that gives 19, 23, 31.
+   *
+   * Both give the same six numbers, which is the only reason the odd-looking
+   * 31 and 19 are here rather than a rounder 30 and 20.
+   *
+   * ## What each step is for
+   *
+   *   - `--type-body` (15px) -- running text and HUD values. The ruled body
+   *     size, and what `--text-size-body` and `--text-size-value` select.
+   *   - `--type-secondary` (13px) -- the denser step. What the interface was
+   *     set in before stage 2, and the step a surface keeps when 15px does
+   *     not fit it. Keeping it is an allowed outcome and is inside the ruling
+   *     -- the option label carrying the ruling read *"np."* ("e.g.") --
+   *     **provided the surface records why**, in a comment beside the
+   *     override, and provided it joins the closed list the layer-1b section
+   *     below holds and `ui-design-tokens.test.ts` pins. What is not allowed
+   *     is the direction: no step goes above the delivery's 16/14/12 or below
+   *     the 13/11 the interface already had.
+   *   - `--type-label` (11px) -- eyebrows, tab labels, units. Already the
+   *     ruled size, so stage 2 did not move it.
+   */
+  --type-display: calc(31px * var(--ui-scale));
+  --type-title: calc(23px * var(--ui-scale));
+  --type-section: calc(19px * var(--ui-scale));
+  --type-body: calc(15px * var(--ui-scale));
+  --type-secondary: calc(13px * var(--ui-scale));
+  --type-label: calc(11px * var(--ui-scale));
+
+  /*
+   * The applied sizes. These are what a component names; the ramp above is
+   * what they are chosen from, and a component may not reach past them to a
+   * `--type-*` step any more than it may reach past a semantic colour alias
+   * to a raw ramp rung.
+   *
+   * **These three declarations are the lever.** Stage 2 finished by flipping
+   * body and value from `--type-secondary` to `--type-body` here and deleting
+   * every scaffold it had used to move one surface at a time
+   * (`docs/IDENTITY_V5_ROLLOUT.md` Stage 2, step 3), so backing the type scale
+   * out is one line rather than a hunt: put `--type-secondary` back on these
+   * two and the whole interface returns to 13px, except the two surfaces
+   * below that are pinned there on purpose.
+   */
+  --text-size-value: var(--type-body);
+  --text-size-body: var(--type-body);
+  --text-size-label: var(--type-label);
   --label-tracking: 0.14em;
   /* The line-height every label-sized run of type is set in. A token rather
      than a literal because a layout has to be able to *sum* a line of it:
@@ -621,6 +726,153 @@
      and deliberately not an alias of it -- the two panels have different floors
      to sum, so a change to one must not silently move the other. */
   --hud-rooms-gutter: var(--space-2);}
+
+/* ------------------------------------------------------------------ */
+/* Layer 1b: the four surfaces that keep the denser step               */
+/*                                                                     */
+/* Stage 2 moved the interface to 15px one surface at a time -- the     */
+/* status strip, the rail, the HUD's remaining chrome, and the one      */
+/* thing outside the HUD -- and the scaffolding that made each move     */
+/* separately visible went out with the flip above. What is left here   */
+/* is the honest residue: four surfaces measured as not having the      */
+/* room, each keeping `--type-secondary` with the assertion that says   */
+/* so. Two were found by the panel specs, one only by the whole browser */
+/* suite, and the fourth rests on a recording rather than a floor and   */
+/* says so in its own block.                                           */
+/*                                                                     */
+/* All four are INSIDE ADR 0112's ruling rather than exceptions to it.  */
+/* The                                                                 */
+/* option label carrying it read *"np. 15/13/11"* -- "e.g." -- and 13   */
+/* is a step on the ramp the owner named. What the ruling does not      */
+/* leave open is the direction, and none of these moves it: 13px is     */
+/* what all four surfaces already had.                                 */
+/*                                                                     */
+/* Three of them also declare `font-size` on their own root in          */
+/* `hud.css`. That is not decoration: nothing inside those surfaces     */
+/* sets a `font-size`, so without an anchor to spend the scoped token   */
+/* they would simply inherit the 15px `styles.css` puts on `body` and   */
+/* the pin would be silently inert. `.hud__event` needs no anchor --    */
+/* it already declares its own size, being a band of prose.            */
+/* Measured -- with the token alone, only                              */
+/* `.hud-clock__day` moved when the strip was scoped, because it is the */
+/* one element in that strip declaring a size of its own.               */
+/* ------------------------------------------------------------------ */
+
+/*
+ * THE BUILD PANEL KEEPS 13px (#1158).
+ *
+ * Three pinned assertions went red at 15px, all at 1280x720, and every one
+ * is a floor this repository chose deliberately. Recorded with their numbers
+ * so a later reader can retry the move rather than take this on trust:
+ *
+ *   1. `ui-build-arm-label-fit.spec.ts` (#926): `.hud-build__arm` measured
+ *      **56px against a 44px tap target**. Its label already wraps to two
+ *      lines and that wrap is free only while two lines fit the target; at
+ *      15px they do not, the button grows, `align-items: stretch` grows the
+ *      row, and every control below it moves.
+ *   2. `ui-build-order-note.spec.ts` (#920): the panel **arrives with 6px
+ *      more content than box**, against a pinned 0.
+ *   3. `ui-build-queue.spec.ts`: `order-02`'s cancel **2px below the panel's
+ *      fold** (640 against a visible bottom of 638), and an emptied row stops
+ *      keeping its box -- a cancel drifting 645 -> 643 and 598 -> 579 between
+ *      two states of one run.
+ *
+ * **Pinning only `.hud-build__actions` was tried first and is not enough**,
+ * and both configurations were run rather than reasoned about: it clears (1)
+ * and (2) -- so the arm button really is where the extra 12px comes from --
+ * and leaves all three of (3) red, because the queue rows are their own
+ * content.
+ *
+ * The alternative was relaxing one of those three floors, which `AGENTS.md`
+ * forbids. What would earn this panel the larger step is smaller content -- a
+ * shorter arm label, or a queue row that does not spend a whole line on a
+ * cancel -- which is layout and language work, stage 3 or stage 6, not a
+ * token edit.
+ */
+.hud-build {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
+/*
+ * THE ALERTS LIST KEEPS 13px (#1158).
+ *
+ * `ui-alerts-column.spec.ts` (#739) pins the longest alert sentence -- 109
+ * characters behind the *narrowest* severity badge, which is the worst case
+ * the column can produce -- to at most **4 line boxes at every viewport**. At
+ * 15px it wraps to **5 at 1280x720**. Four is not a number somebody liked:
+ * #739 chose it as the height at which a column of alerts stays readable, and
+ * the arithmetic block above `.hud-alerts__list` in `hud.css` records what the
+ * dismiss control costs the sentence beside it.
+ *
+ * A fifth line is not an overflow -- nothing is hidden and no floor is lowered
+ * by leaving it -- which is exactly why it has to be a deliberate keep rather
+ * than an accepted regression.
+ *
+ * **Where it was hiding is worth as much as the number.** The alerts section
+ * is a child of the minimap panel in the map corner, not of the rail
+ * (`hud.ts`: `minimapPanel.body.append(minimapSurface, alertsSection.element)`),
+ * so it came through the rail's move untouched and every alerts spec passed
+ * then. A DOM tree and a mental model of "the panels" are not the same
+ * partition, and this is the one place in stage 2 where they came apart.
+ */
+.hud-alerts__list {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
+/*
+ * THE ROOMS PANEL KEEPS 13px (#1158).
+ *
+ * The third keep, and the only one the targeted spec runs missed: it was
+ * found by the whole suite rather than by the panel specs, which is why the
+ * whole suite is what a stage like this has to be checked against.
+ *
+ * Two assertions in `app-shell.spec.ts` went red at 15px, and they are not
+ * the same kind of thing:
+ *
+ *   1. **A real overflow.** *"the Rooms panel says what a zoned room is
+ *      missing (#331)"* reports `.hud-rooms > .ui-panel__body is 15px
+ *      shorter than its own content` at 900x600 -- a box holding more than it
+ *      has room for, which is the failure this stage exists not to cause.
+ *   2. **A recording.** *"the Rooms panel yields the world it is drawn on"*
+ *      pins the panel's arrival height per viewport, and 1280x720 moved
+ *      397.3 -> 395.6. The panel got *shorter*, because at 15px one more of
+ *      its rows fits on one line -- which is a reminder that "bigger type" is
+ *      not "bigger everything".
+ *
+ * (1) is sufficient on its own, so the keep does not rest on (2).
+ */
+.hud-rooms {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
+/*
+ * THE EVENTS BAND KEEPS 13px (#1158) -- AND THIS ONE RESTS ON A RECORDING
+ * RATHER THAN A FLOOR, WHICH IS SAID OUT LOUD BECAUSE IT IS THE WEAKEST OF
+ * THE FOUR KEEPS.
+ *
+ * `ui-shell.spec.ts` (#985) asserts the band's grid row is exactly **32px**
+ * while it speaks and 0 when it stops, and that the 32 comes out of the
+ * middle row rather than from anywhere else. At 15px the band is **35px**.
+ * Nothing overflows and nothing is unreachable: the band is simply three
+ * pixels taller, and the invariant #985 is about -- that the band borrows a
+ * definite row and gives it back -- holds at 35 exactly as it holds at 32.
+ *
+ * **So the honest description is that changing that 32 to a 35 would be
+ * re-recording a measurement, not weakening an assertion -- and it is still
+ * not done here.** `AGENTS.md` and this stage's brief both put editing a
+ * pinned number to match new code on the wrong side of the line, and an agent
+ * deciding for itself which pinned numbers are "only recordings" is how that
+ * line stops meaning anything. The band keeps 13px; re-recording the 32 is a
+ * decision for whoever reviews this, with this paragraph as the argument for
+ * it.
+ */
+.hud__event {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
 
 /* ------------------------------------------------------------------ */
 /* Layer 2: semantic aliases -- the only names components may use      */

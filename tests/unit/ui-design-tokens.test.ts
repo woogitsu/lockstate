@@ -614,6 +614,141 @@ describe.each(THEMES)("badge tone contrast in the %s theme (issue #788, the owne
   });
 });
 
+/**
+ * The type ramp (#1158, stage 2 of `docs/IDENTITY_V5_ROLLOUT.md`).
+ *
+ * The ramp is six steps and only three of them have a consumer today, so
+ * nothing in the running application would notice if the other three drifted.
+ * That is exactly the shape of claim this repository has been burned by: a
+ * number written down once, paraphrased later, and never checked against
+ * anything. These assertions are the check.
+ *
+ * They pin the *arithmetic* rather than repeating the six literals as an
+ * opinion: the owner named 15 / 13 / 11 against the delivery's 16 / 14 / 12,
+ * and both readings of what that does to the upper steps -- a -1px offset,
+ * and the delivery's own +2/+2/+4/+4/+8 increments -- are asserted to give
+ * the same answer. If a later editor changes one step, the derivation that
+ * justified it fails here rather than passing quietly.
+ */
+describe('the type ramp', () => {
+  /** The delivery's own scale, `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`, smallest first. */
+  const DELIVERY_RAMP = [12, 14, 16, 20, 24, 32] as const;
+  /** The ramp's step names, smallest first, as `tokens.css` declares them. */
+  const RAMP = ['--type-label', '--type-secondary', '--type-body', '--type-section', '--type-title', '--type-display'] as const;
+
+  /** `calc(<n>px * var(--ui-scale))` -> n. Throws rather than returning NaN. */
+  function scaledPixels(name: string): number {
+    const value = resolveToken(name, tokens);
+    const match = /^calc\((\d+(?:\.\d+)?)px \* var\(--ui-scale\)\)$/.exec(value);
+    if (match === null) {
+      throw new Error(`${name} is \`${value}\`, which is not a pixel length multiplied by --ui-scale`);
+    }
+    return Number(match[1]);
+  }
+
+  it('declares six steps, every one of them multiplied by --ui-scale', () => {
+    // The multiplication is the half a literal would silently drop, and a
+    // type step that stopped scaling is precisely the #545 defect class.
+    for (const name of RAMP) expect(scaledPixels(name), name).toBeGreaterThan(0);
+  });
+
+  it("is the delivery's ramp shifted by the owner's -1px, on every step", () => {
+    // ADR 0112 decision 4: *"Tak, ale mniejszy krok -- np. 15/13/11"*.
+    expect(RAMP.map(scaledPixels)).toEqual(DELIVERY_RAMP.map((step) => step - 1));
+  });
+
+  it("keeps the delivery's own increments, which is the second derivation of the same six numbers", () => {
+    const increments = (steps: readonly number[]): readonly number[] =>
+      steps.slice(1).map((step, index) => step - steps[index]!);
+    expect(increments(RAMP.map(scaledPixels))).toEqual(increments(DELIVERY_RAMP));
+  });
+
+  it('carries the three sizes the owner ruled on, by the names that spend them', () => {
+    expect(scaledPixels('--type-body'), 'body, article 8 as amended').toBe(15);
+    expect(scaledPixels('--type-secondary'), 'the denser step a surface may keep').toBe(13);
+    expect(scaledPixels('--type-label'), 'labels').toBe(11);
+  });
+
+  it('never goes above the delivery or below what the interface had, on any step', () => {
+    // The one thing ADR 0112 says is *not* open is the direction.
+    for (const [index, name] of RAMP.entries()) {
+      expect(scaledPixels(name), `${name} is larger than the delivery asked for`).toBeLessThanOrEqual(DELIVERY_RAMP[index]!);
+    }
+    expect(scaledPixels('--type-body'), 'body is below what the interface already had').toBeGreaterThanOrEqual(13);
+    expect(scaledPixels('--type-label'), 'labels are below what the interface already had').toBeGreaterThanOrEqual(11);
+  });
+
+  it('applies the ramp through the three names a component is allowed to use', () => {
+    // A component names `--text-size-*`; the ramp is what those are chosen
+    // from. Asserting the indirection is what stops a step being inlined as a
+    // literal at the point of use, which would leave the ramp decorative.
+    for (const applied of ['--text-size-value', '--text-size-body', '--text-size-label']) {
+      const declared = tokens.get(applied);
+      expect(declared, `${applied} is not declared`).toBeDefined();
+      expect(declared!, `${applied} does not select a ramp step`).toMatch(/^var\(--type-[a-z]+\)$/);
+    }
+  });
+
+  it.each(componentStylesheets)('%s sizes type from a token rather than a literal', (path) => {
+    const source = stylesheetRules(path);
+    for (const match of source.matchAll(/font-size\s*:\s*([^;}]+)[;}]/g)) {
+      expect(match[1]!.trim(), 'a literal font-size outside tokens.css').toMatch(/^var\(--text-size-[a-z]+\)$/);
+    }
+  });
+
+  /**
+   * The two surfaces stage 2 measured as not having the room, pinned as a set
+   * rather than as two facts.
+   *
+   * A *set* because both failure directions matter and only one of them is
+   * obvious. Dropping a keep is caught by the browser suite -- that is what
+   * put each of them here. **Adding one is not**: a later editor who finds a
+   * panel awkward at 15px can pin it to `--type-secondary` and every gate in
+   * this repository stays green, because a denser panel breaks no floor. That
+   * is exactly the drift ADR 0112's ruling is not open to, so the list is
+   * closed here and a new entry has to arrive with its reason in the diff.
+   */
+  it('keeps the denser step on exactly four surfaces, and nowhere else', () => {
+    const kept = [...tokensSource.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter((block) => /--text-size-(?:body|value):\s*var\(--type-secondary\)/.test(block[2]!))
+      .map((block) => block[1]!.trim().replace(/\s+/g, ' '));
+    expect(kept).toEqual(['.hud-build', '.hud-alerts__list', '.hud-rooms', '.hud__event']);
+  });
+
+  it('gives each kept surface a font-size to spend the pin on', () => {
+    /*
+     * The pin is inert without this and fails nothing while it is inert:
+     * nothing inside either surface declares a `font-size`, so the subtree
+     * would inherit the 15px `styles.css` puts on `body` and the scoped token
+     * would never be read. Measured during stage 2 -- with the token alone on
+     * `.hud-strip`, only `.hud-clock__day` moved, because it is the one
+     * element in that strip with a size of its own.
+     */
+    const hud = stylesheetRules(join(UI_ROOT, 'hud/hud.css'));
+    // By exact selector, not by substring: `.hud__corner .hud-alerts__list`
+    // is a different rule in this file and matching it instead would have
+    // read a `pointer-events` block as the list's own.
+    const ruleFor = (selector: string): string | undefined =>
+      [...hud.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find(
+        (block) => block[1]!.trim().replace(/\s+/g, ' ') === selector,
+      )?.[2];
+    // `.hud__event` is not in this list and does not need to be: it declares
+    // its own `font-size` already, being a standalone band of prose.
+    for (const selector of ['.ui-panel.hud-build', '.hud-alerts__list', '.ui-panel.hud-rooms']) {
+      const rule = ruleFor(selector);
+      expect(rule, `${selector}'s own rule`).toBeDefined();
+      expect(rule!, `${selector} does not spend --text-size-body`).toMatch(/font-size:\s*var\(--text-size-body\)/);
+    }
+  });
+
+  it.each(componentStylesheets)('%s does not reach past --text-size-* to a raw ramp step', (path) => {
+    // The same rule the colour layer has, for the same reason: a surface that
+    // named `--type-body` directly would not follow when the applied token is
+    // repointed, and repointing it is how stage 2 moves a surface at all.
+    expect(stylesheetRules(path)).not.toMatch(/var\(--type-/);
+  });
+});
+
 describe('components reference only the semantic layer', () => {
   const ALLOWED_COLOR_KEYWORDS = new Set(['transparent', 'currentColor', 'inherit', 'initial', 'unset', 'none']);
 

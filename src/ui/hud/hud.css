@@ -564,6 +564,11 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Spends the denser step `tokens.css` pins for this list (#1158, #739).
+     Load-bearing rather than tidy: nothing inside the list declares a
+     `font-size`, so without this the rows would inherit the 15px `body`
+     carries and the pin beside it would be inert. */
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -1217,6 +1222,12 @@
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
+  /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
+     bearing rather than tidy: nothing inside the panel declares a
+     `font-size`, so without this the arm label and the queue rows would
+     inherit the 15px `body` carries and the pin beside it would be inert --
+     which is measurably three red assertions at 1280x720. */
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -3407,6 +3418,12 @@
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
+  /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
+     bearing rather than tidy: nothing inside the panel declares a
+     `font-size`, so without this its rows would inherit the 15px `body`
+     carries and the pin beside it would be inert -- which is measurably a
+     panel body 15px shorter than its own content at 900x600. */
+  font-size: var(--text-size-body);
 }
 
 /*
