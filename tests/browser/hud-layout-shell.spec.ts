@@ -387,9 +387,13 @@ test.describe('the HUD layout shell', () => {
     // the same tick -- a day number (or the honest `--` before any session has
     // reported one), a day-progress percentage, and the speed or the word a
     // stopped clock is written with (#639).
-    await expect(clock.locator('.hud-clock__day')).toHaveCount(1);
-    await expect(clock.locator('.hud-clock__day-progress')).toHaveCount(1);
-    await expect(clock.locator('.hud-clock__speed')).toHaveText(/PAUSED|×/);
+    await expect(clock.locator('.hud-layout__clock-day')).toHaveCount(1);
+    await expect(clock.locator('.hud-layout__clock-progress')).toHaveCount(1);
+    await expect(clock.locator('.hud-layout__clock-speed')).toHaveText(/PAUSED|×/);
+    // And the strip's own readout is still the only thing answering to the
+    // strip's own selector, which is what three existing specs in
+    // `app-shell.spec.ts` depend on.
+    await expect(page.locator('.hud-clock__day')).toHaveCount(1);
   });
 
   test('reset clears the layout key and nothing else', async ({ page }) => {

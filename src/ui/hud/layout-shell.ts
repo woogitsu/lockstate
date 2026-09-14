@@ -485,9 +485,21 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
    * agreement about `disabled` while one is in flight. Unfolding the strip is
    * one press away and brings them back.
    */
-  const clockDay = valueText(CLOCK_UNKNOWN_TEXT, 'hud-clock__day');
-  const clockProgress = valueText(CLOCK_UNKNOWN_TEXT, 'hud-clock__day-progress');
-  const clockSpeed = valueText('', 'hud-clock__speed');
+  /*
+   * Classes of its **own**, not the strip's.
+   *
+   * Reusing `.hud-clock__day` and its two siblings was the obvious way to
+   * inherit the strip's tabular figures and its paused greying, and it broke
+   * three existing specs the moment it shipped: `page.locator('.hud-clock__day')`
+   * in `app-shell.spec.ts` resolved to two elements and Playwright's strict
+   * mode refused it. A second element answering a selector that named exactly
+   * one thing is the same class of defect as a second source of truth, one
+   * layer down -- so the styling is shared through a rule in `hud.css` that
+   * names both, and the selector stays unambiguous.
+   */
+  const clockDay = valueText(CLOCK_UNKNOWN_TEXT, 'hud-layout__clock-day');
+  const clockProgress = valueText(CLOCK_UNKNOWN_TEXT, 'hud-layout__clock-progress');
+  const clockSpeed = valueText('', 'hud-layout__clock-speed');
   const clockRow = element('div', {
     className: 'hud-layout__clock',
     children: [

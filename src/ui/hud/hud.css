@@ -4807,7 +4807,40 @@
  */
 .hud-strip {
   position: relative;
+  /*
+   * Above the rail, so the Layout menu's drawer can hang over it.
+   *
+   * The drawer is `position: absolute` under the strip, and on a phone the
+   * rail starts immediately below -- full width, with `.hud__aside` raised to
+   * `z-index: 2` for the reason that rule gives. Without this the save panel's
+   * buttons won the hit test through the open menu, and `app-shell.spec.ts`
+   * reported all four of the menu's controls unreachable at 375x812.
+   * The strip is the topmost band of the HUD at every tier, so "the strip
+   * paints over the rail" is the arrangement on screen as well as in the
+   * stacking order.
+   */
+  z-index: 4;
   padding-right: calc(var(--tap-target) + 2 * var(--space-1));
+}
+
+/*
+ * ...except on a phone, where the gutter costs more than it buys.
+ *
+ * At 375x812 the strip is three rows and reserving 52px of a 375px window
+ * rewraps them: measured 103.7px -> 124.2px, and the 20.5px comes out of the
+ * rail and lands on whichever panel is showing (the Rooms panel's arrival
+ * height 439.3 -> 424). Without the reservation the slot sits over the right
+ * end of the strip's first row, which at this width is **empty**: the brand
+ * badge is 225px of a 359px row and ends at x = 233, and the slot's 52px
+ * starts at 323.
+ *
+ * What it overlays at larger interface scales is that badge's text, not a
+ * control -- there is no button in the strip's first row here -- so the cost
+ * is a truncated build id at a scale where the strip is already three rows,
+ * against 20px of every panel at the default one.
+ */
+@media (max-width: 720px) {
+  .hud-strip { padding-right: var(--space-2); }
 }
 
 /* ---- the Layout menu --------------------------------------------- */
@@ -4936,9 +4969,17 @@
   border-bottom: var(--hairline) solid var(--border-hairline);
 }
 
-.hud-layout__clock[data-clock-mode='paused'] .hud-clock__day,
-.hud-layout__clock[data-clock-mode='paused'] .hud-clock__day-progress,
-.hud-layout__clock[data-clock-mode='paused'] .hud-clock__speed {
+/* The strip's own type for the three readouts, and its own greying for a
+   stopped clock (#639's second channel). Named rather than inherited by class
+   reuse: two elements answering `.hud-clock__day` broke three specs on a
+   selector that names one thing. */
+.hud-layout__clock-day { font-size: var(--text-size-value); color: var(--text-heading); }
+.hud-layout__clock-progress { color: var(--text-subtle); margin-left: var(--space-2); }
+.hud-layout__clock-speed { color: var(--text-subtle); margin-left: auto; }
+
+.hud-layout__clock[data-clock-mode='paused'] .hud-layout__clock-day,
+.hud-layout__clock[data-clock-mode='paused'] .hud-layout__clock-progress,
+.hud-layout__clock[data-clock-mode='paused'] .hud-layout__clock-speed {
   color: var(--text-subtle);
 }
 
@@ -4964,7 +5005,14 @@
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 2;
+  /* 3, above `.hud__aside`'s 2 at the phone tier (see that rule for why the
+     aside is raised at all). Equal indices are decided by document order,
+     which the aside wins, and `app-shell.spec.ts` reported this arrow covered
+     by `.display-scale` at 375x812. A 44px square at the rail's top-left
+     corner sits over the interface-scale control's icon and legend and over
+     neither of that row's two buttons, which is why this corner is the one it
+     can have. */
+  z-index: 3;
 }
 
 /* ---- tablet and desktop: the navigation is a left rail ------------ */
