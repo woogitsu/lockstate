@@ -3262,7 +3262,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
     'No readable save generation remains for this prison. Every retained copy failed validation.',
   'save.status.recovered': 'The most recent save was unreadable — recovered an earlier verified generation.',
   'save.status.loaded': 'Loaded.',
-  'save.status.deleted': 'Prison deleted.',
+  // Deletion is a move now, not a destruction (ADR 0114), and this sentence
+  // used to read 'Prison deleted.' full stop. The row the player is being
+  // pointed at is drawn by the same `refresh()` this status is set beside, so
+  // "below" is true by the time they read it.
+  'save.status.deleted': 'Prison deleted. You can bring it back from the list below for one day.',
   // Backing out of the confirmation. It says only what happened, because
   // nothing else did: `pressDeleteConfirmation` never reached `'deletes'`, so
   // `SessionController.deletePrison` was never called.
@@ -3292,6 +3296,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.failure.delete': 'Deleting failed: {detail}',
   'save.failure.export': 'Exporting failed: {detail}',
   'save.failure.import': 'Importing failed: {detail}',
+  'save.failure.restore': 'Bringing the prison back failed: {detail}',
+  'save.failure.forget': 'Freeing the space failed: {detail}',
   'save.failure.unknown': 'The action failed: {detail}',
 
   // `{restored}` and `{notCarried}` are the `save.scope.*` lines below,
@@ -3310,18 +3316,36 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // anywhere: the cloud tier is unreachable from the production import graph
   // (`tests/foundation/trusted-tier-reachability-contract.test.ts`).
   //
-  // "this cannot be undone" -- true of this tree as it stands. There is no
-  // undo mechanism for a deletion anywhere in `src/`, and the ADR that would
-  // decide where a held copy lives has not been written. The day an undo
-  // window ships, this clause is the one that becomes false and has to be
-  // rewritten in the same change.
+  // **"this cannot be undone" was the middle clause until ADR 0114 shipped,
+  // and the comment that stood here predicted its own replacement in these
+  // words: "The day an undo window ships, this clause is the one that becomes
+  // false and has to be rewritten in the same change." That day is
+  // 2026-09-14 and this is that change.**
+  //
+  // Each clause of the replacement, against the code that has to keep it:
+  //
+  // - "goes from your list" -- `PrisonSaveRepository.delete` removes the slot
+  //   record and every generation it references from the `prisons` and
+  //   `generations` object stores, so `list()` stops returning it and the row
+  //   leaves the panel. That half is exactly what it always was.
+  // - "You can bring it back from this panel for one day" -- the same
+  //   transaction writes one `TombstoneRecord` holding the slot verbatim and
+  //   every generation it named, and `restoreFromTombstone` writes all of it
+  //   back while `now() < expiresAt`. `DEFAULT_UNDO_WINDOW_MS` is 24 h, and
+  //   `tests/unit/persistence-local-repository.test.ts` pins that constant to
+  //   this sentence so the two cannot drift apart silently. "From this panel"
+  //   is the Bring-it-back control `SavePanel` renders on the deleted prison's
+  //   own row.
+  // - "after that it is gone for good" -- `restoreFromTombstone` re-reads the
+  //   clock at the press and refuses a closed window, deleting the copy as it
+  //   refuses, so nothing survives the sentence.
   //
   // "Its saves last changed {age}" -- `PrisonSlotMetadata.updatedAt`, which
   // is not the same fact as "last saved"; `describeSaveAge` in
   // `src/ui/save-panel-delete.ts` names the six writers of that field and why
   // the weaker word is the true one.
   'save.delete.confirm':
-    'Delete {name}? Every saved copy of this prison goes, and this cannot be undone. Its saves last changed {age}.',
+    'Delete {name}? Every saved copy of this prison goes from your list. You can bring it back from this panel for one day, and after that it is gone for good. Its saves last changed {age}.',
   // `{age}`'s four forms. Abbreviated units, because
   // `src/content/default-locale-en.ts` cannot carry plural forms at all and an
   // abbreviated unit symbol does not inflect for number.
@@ -3329,6 +3353,62 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.delete.age.minutes': '{count} min ago',
   'save.delete.age.hours': '{count} h ago',
   'save.delete.age.days': '{count} d ago',
+
+  // ---------------------------------------------------------------------
+  // The undo window (ADR 0114, accepted 2026-09-14).
+  //
+  // A deleted prison keeps one restorable copy for `DEFAULT_UNDO_WINDOW_MS`
+  // (`src/persistence/local/repository.ts`), held in the `tombstones` object
+  // store the same transaction wrote it into. These are the sentences that
+  // window can produce, and each one is true of a specific arm of
+  // `RestoreFromTombstoneResult` rather than of a hope about it.
+  // ---------------------------------------------------------------------
+
+  // The row itself. `{name}` is the deleted prison's own `displayName` or its
+  // id, carried in the tombstone's copy of the slot record -- player-authored
+  // data or a stable identifier, never translatable, exactly as
+  // `save.list.item`'s `{name}` is.
+  //
+  // No remaining time in the row, deliberately. `refresh()` runs on actions and
+  // not on a clock, so a countdown painted here would be wrong the moment the
+  // player stopped pressing things -- and ADR 0114 §3 is explicit that a
+  // display is never the gate. The row says what is true for as long as it is
+  // drawn: this copy is still offerable, because `listTombstones()` swept the
+  // ones that are not before returning it.
+  'save.tombstone.item': '{name} — deleted. You can still bring it back.',
+  'save.action.tombstone-restore': 'Bring it back',
+  // The owner's ruling of 2026-09-14, which is the half of this feature that
+  // costs the player nothing to ignore and everything to lack. An undo window
+  // holds bytes, and `save.status.quota-exceeded` below already tells a player
+  // that deleting a prison is how bytes are freed; without this control that
+  // advice would have quietly become a day slower to follow.
+  'save.action.tombstone-forget': 'Free its space now',
+
+  // `restoreFromTombstone`'s four outcomes, one sentence each, on issue #19's
+  // rule that distinct recoverable states must not collapse into one line.
+  //
+  // "exactly as it was" is the strong claim and it is the one the design was
+  // built to license: the restore writes back the stored slot record and every
+  // stored generation unchanged -- same `createdAt`, same `updatedAt`, same
+  // `currentRevision`, same generation ladder -- rather than rebuilding the
+  // prison through `create()` and `importSave`, which would restamp the
+  // creation date and rebuild the ladder one eviction at a time.
+  'save.status.tombstone-restored': '{name} is back, exactly as it was.',
+  // Said only where `restoreFromTombstone` returned `'window-closed'`, which
+  // is also the arm that deletes the copy as it refuses -- so the sentence is
+  // true the instant it is read rather than true of a record still on disk.
+  'save.status.tombstone-window-closed': 'Too late — that prison can no longer be brought back.',
+  // `'slot-taken'`: a prison was created under the same id while the window was
+  // open. The restore refuses rather than writing over it, which is what makes
+  // this sentence's "still here" clause true.
+  'save.status.tombstone-slot-taken': 'That prison cannot come back — another prison now holds its place, and is still here.',
+  // `'not-found'`: nothing to bring back, because another tab freed it, or the
+  // window closed and a sweep took it between the paint and the press.
+  'save.status.tombstone-gone': 'That prison is no longer here to bring back.',
+  // `forgetTombstone` returned. The copy is deleted; what the browser then does
+  // with the bytes is the browser's, which is why this says the copy is gone
+  // rather than promising a number of megabytes back.
+  'save.status.tombstone-forgotten': 'Gone for good. Nothing of that prison is kept now.',
 
   // The thirteen lines a restore report is built from. `CURRENT_SAVE_RESTORED_SCOPE`
   // (`src/simulation/runtime/restore-session.ts`) held these as English prose

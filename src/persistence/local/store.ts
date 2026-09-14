@@ -60,6 +60,52 @@ export interface PrisonSlotMetadata {
   readonly currentRevision?: number;
 }
 
+/**
+ * One deleted prison's restorable copy, held for the length of the undo window
+ * (ADR 0114).
+ *
+ * **It is a move, not a backup.** `PrisonSaveRepository.delete` reads the slot
+ * and every generation it references, writes exactly one of these, and deletes
+ * the originals -- all inside the single `readwrite` transaction it already
+ * opened. The ADR rejects a second database on exactly that point: IndexedDB
+ * cannot commit two databases as one unit, so a copy living anywhere else would
+ * need a second transaction and could leave either a prison and a spurious copy
+ * or, worse, no prison and no copy.
+ *
+ * `generations[].value` is `unknown` for the same reason `getGeneration` returns
+ * `unknown`: what storage hands back is whatever is on disk, and
+ * `PrisonSaveRepository` is the layer that validates. Moving it here and back is
+ * a copy of bytes, never a re-encode -- so a generation that was already
+ * unreadable before the deletion comes back exactly as unreadable, and this
+ * record invents no integrity guarantee and removes none.
+ */
+export interface TombstoneGeneration {
+  readonly generationId: string;
+  /** Exactly what `getGeneration` returned, unvalidated here. */
+  readonly value: unknown;
+}
+
+export interface TombstoneRecord {
+  readonly prisonId: string;
+  /**
+   * The deleted slot's own record, verbatim.
+   *
+   * Every field of it, not just `currentGenerationId`: a restore that is whole
+   * means the prison comes back with the same `createdAt`, the same
+   * `updatedAt`, the same `currentRevision` and the same generation ladder --
+   * including the extra ids a provisional import (#438) or a quarantine (#432)
+   * had put in the retention window, which a partial restore would silently
+   * discard.
+   */
+  readonly metadata: PrisonSlotMetadata;
+  /** One entry per id in `metadata.generationIds` that storage actually held. */
+  readonly generations: readonly TombstoneGeneration[];
+  /** The repository's clock at the moment `delete()` ran. */
+  readonly deletedAt: number;
+  /** `deletedAt` plus the undo window. The only gate on a restore; never a displayed countdown. */
+  readonly expiresAt: number;
+}
+
 export interface LocalSaveTransaction {
   /**
    * Raw stored records, exactly like `getGeneration` below: what a store
@@ -78,6 +124,19 @@ export interface LocalSaveTransaction {
   getGeneration(prisonId: string, generationId: string): Promise<unknown | undefined>;
   putGeneration(prisonId: string, generationId: string, value: unknown): Promise<void>;
   deleteGeneration(prisonId: string, generationId: string): Promise<void>;
+  /**
+   * The undo window's four methods (ADR 0114), shaped exactly like the metadata
+   * pair above and typed `unknown` on the way out for the same reason.
+   *
+   * They are on the *transaction* rather than on the store because the whole
+   * point of the design is that writing a tombstone and deleting the prison it
+   * copies happen in one unit. A store-level `saveTombstone()` would be a second
+   * transaction, which is the shape the ADR rejects.
+   */
+  getTombstone(prisonId: string): Promise<unknown | undefined>;
+  listTombstones(): Promise<readonly unknown[]>;
+  putTombstone(tombstone: TombstoneRecord): Promise<void>;
+  deleteTombstone(prisonId: string): Promise<void>;
 }
 
 export interface LocalSaveStore {
