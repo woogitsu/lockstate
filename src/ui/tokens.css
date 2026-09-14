@@ -117,7 +117,7 @@
  * 125 %. Every consumer -- a stylesheet, a test, a future one nobody has
  * written -- gets a length back from something declared to be a length.
  *
- * All seventeen scaled tokens are registered and not only the one a test
+ * All twenty-three scaled tokens are registered and not only the one a test
  * happened to read, because "a token is a value you can read" should be true
  * of the whole layer or of none of it; the next reader picks a different token.
  *
@@ -178,6 +178,42 @@
   syntax: '<length>';
   inherits: true;
   initial-value: 6px;
+}
+
+@property --type-display {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 31px;
+}
+
+@property --type-title {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 23px;
+}
+
+@property --type-section {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 19px;
+}
+
+@property --type-body {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 15px;
+}
+
+@property --type-secondary {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 13px;
+}
+
+@property --type-label {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 11px;
 }
 
 @property --text-size-value {
@@ -520,9 +556,73 @@
     ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas,
     'Liberation Mono', monospace;
 
-  --text-size-value: calc(13px * var(--ui-scale));
-  --text-size-body: calc(13px * var(--ui-scale));
-  --text-size-label: calc(11px * var(--ui-scale));
+  /*
+   * THE TYPE RAMP (#1158, stage 2 of `docs/IDENTITY_V5_ROLLOUT.md`).
+   *
+   * Six steps, and they are a ramp rather than three sizes because the
+   * delivery's own scale is a ramp and the upper three have nowhere else to
+   * be recorded. **Nothing consumes `--type-display`, `--type-title` or
+   * `--type-section` yet** -- stage 2's subject is body and label text -- and
+   * that is stated here rather than left for a reader to discover, because an
+   * unused token is a claim nobody is checking. `ui-design-tokens.test.ts`
+   * checks the arithmetic of all six so the ramp cannot rot while it waits.
+   *
+   * ## Where the numbers come from, since two derivations had to agree
+   *
+   * The delivery (`docs/design/2026-09-13-identity-v5/`,
+   * `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`) asks for **32 / 24 / 20 / 16 / 14 /
+   * 12** with 16px body. The owner ruled on 2026-09-13 for a smaller step --
+   * *"Tak, ale mniejszy krok -- np. 15/13/11"* -- and amended constitution
+   * article 8 to 15px rather than recording an exception to it (ADR 0112,
+   * decision 4). Only the bottom three steps were named, so the upper three
+   * had to be derived, and the derivation is not free:
+   *
+   *   - **As an offset.** 16->15, 14->13, 12->11 is -1px, and it fits all
+   *     three of the owner's numbers exactly. A *ratio* does not: 15/16 of 14
+   *     is 13.125 and 15/16 of 12 is 11.25, neither of which is what they
+   *     chose. So the transformation their own three numbers determine is the
+   *     offset. Applied to the whole ramp: 31 / 23 / 19 / 15 / 13 / 11.
+   *   - **As the delivery's own increments.** Its ramp steps by +2, +2, +4,
+   *     +4, +8 going up. Laid over 11 / 13 / 15 that gives 19, 23, 31.
+   *
+   * Both give the same six numbers, which is the only reason the odd-looking
+   * 31 and 19 are here rather than a rounder 30 and 20.
+   *
+   * ## What each step is for
+   *
+   *   - `--type-body` (15px) -- running text and HUD values. The ruled body
+   *     size, and stage 2's destination for `--text-size-body` and
+   *     `--text-size-value`.
+   *   - `--type-secondary` (13px) -- the denser step. Today's body size, and
+   *     the step a surface keeps when 15px does not fit it. Keeping it is an
+   *     allowed outcome and is inside the ruling -- the option label carrying
+   *     the ruling read *"np."* ("e.g.") -- **provided the surface records
+   *     why**, in a comment beside the override. What is not allowed is the
+   *     direction: no surface goes above 16/14/12 or below today's 13/11.
+   *   - `--type-label` (11px) -- eyebrows, tab labels, units. Already the
+   *     ruled size, so stage 2 does not move it.
+   */
+  --type-display: calc(31px * var(--ui-scale));
+  --type-title: calc(23px * var(--ui-scale));
+  --type-section: calc(19px * var(--ui-scale));
+  --type-body: calc(15px * var(--ui-scale));
+  --type-secondary: calc(13px * var(--ui-scale));
+  --type-label: calc(11px * var(--ui-scale));
+
+  /*
+   * The applied sizes. These are what a component names; the ramp above is
+   * what they are chosen from, and a component may not reach past them to a
+   * `--type-*` step any more than it may reach past a semantic colour alias
+   * to a raw ramp rung.
+   *
+   * **Body and value still select the denser step**, which is the whole point
+   * of this commit: the ramp lands with no visual change, and the default is
+   * flipped last and on its own so a revert is one line
+   * (`docs/IDENTITY_V5_ROLLOUT.md` Stage 2, step 3).
+   */
+  --text-size-value: var(--type-secondary);
+  --text-size-body: var(--type-secondary);
+  --text-size-label: var(--type-label);
   --label-tracking: 0.14em;
   /* The line-height every label-sized run of type is set in. A token rather
      than a literal because a layout has to be able to *sum* a line of it:
