@@ -5060,7 +5060,16 @@
     align-self: stretch;
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    /*
+     * `flex-start` and not `stretch`: the column's cross axis is the vertical
+     * one, so stretching made `.hud-tabs__inner` as tall as the whole rail --
+     * 93..888 of a 900px window -- with its background, its border and its
+     * pointer events over the minimap corner below it. `flex: 0 1 auto` on the
+     * bar cannot undo that, because `flex` governs the main axis and this is
+     * the cross one. Measured at 1440x900: both zoom buttons hit-tested to a
+     * `.ui-tab`.
+     */
+    align-items: flex-start;
     gap: var(--space-1);
     position: relative;
     box-sizing: border-box;
@@ -5093,7 +5102,17 @@
    * already opted into pointer events, so a wheel and a touch drag reach it.
    */
   .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner {
-    flex: 1 1 auto;
+    /*
+     * `0 1 auto`, so the bar is as tall as its five tabs and no taller.
+     *
+     * It was `1 1 auto` and the box then filled the whole column -- 93..888 of
+     * a 900px window -- while the tabs sat at the top of it. The box carries
+     * `background: var(--surface-raised)` and is opted into pointer events, so
+     * it covered the minimap corner's controls wherever the corner was not
+     * shifted out of the way: `app-shell.spec.ts` reported it at 1440x900.
+     */
+    flex: 0 1 auto;
+    max-height: 100%;
     min-height: 0;
     overflow-y: auto;
     min-width: 0;
@@ -5162,7 +5181,42 @@
 
   /* The minimap corner shares the middle row with the navigation and would sit
      under it. It moves right by exactly what the rail is taking. */
-  .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: calc(var(--hud-navigation-width) + var(--space-3)); }
+  /*
+   * The minimap corner shares the middle row with the navigation column, and
+   * whether it has to move depends on whether the two fit above each other.
+   *
+   * The column is `justify-content: flex-start` above, so the tabs sit at the
+   * **top** of the rail and the corner is bottom-aligned by its own rule. At
+   * 1280x800 that is 274px of tabs and 396px of corner in a 719px middle row:
+   * they clear each other and the corner keeps the left edge it has always
+   * had. Below that they do not, and the corner moves right by exactly what
+   * the column is taking.
+   *
+   * **781px is the arithmetic rather than a round number**: 274 + 396 is 670px
+   * of furniture, the strip is 80.7px, and 670 + 80.7 + one `--space-3` of air
+   * rounds to 761 -- so every viewport at least 781px tall clears it with room
+   * to spare at the default interface scale. Above that scale both terms grow
+   * and the query cannot ask about `--ui-scale`, so the *shift* is what a
+   * taller column falls back to: `navigationPlacement` has already sent the
+   * navigation to the bottom bar by the time the column would be tall enough
+   * to matter at these heights.
+   *
+   * **Why it is worth a media query rather than shifting always.** The corner
+   * moving 192px right moves the band of bare world the browser suite's own
+   * drag aim scans, and `app-shell.spec.ts`'s #331 reported it: the probe drag
+   * and the real drag for the same room landed three tiles apart, because the
+   * alerts list grows between them and a corner at x = 192 puts that growth
+   * where the scan was looking. Keeping the corner where it was at the
+   * viewport that test uses is the honest fix; moving it at the viewports that
+   * need it is the honest cost.
+   */
+  .hud[data-layout-navigation-placement='rail'] .hud__corner {
+    margin-left: calc(var(--hud-navigation-width) + var(--space-3));
+  }
+
+  @media (min-height: 781px) {
+    .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
+  }
 
   .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }
 
