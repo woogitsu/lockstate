@@ -352,17 +352,21 @@ canvas {
   }
 }
 
-/* Inside the row, each control is a third that may shrink: `min-width: 0` is
+/* Inside the row, each control is a half that may shrink: `min-width: 0` is
    what lets the legend's own `text-overflow: ellipsis` actually engage, since
    a flex item's automatic minimum size is otherwise its content.
 
-   It was a half until the language control joined the row (#663). Nothing
-   about the rule changed -- `flex: 1 1 0` divides whatever is there -- but the
-   share each control gets did, which is why the readouts below are allowed to
-   ellipsis too rather than only the legends. */
+   A HALF, and the language control (#663) is deliberately not a third of it.
+   Measured in Chromium at 1280x720 with all three in this row: the rail is
+   264px, so each control got 87-88px, and 44px of that is the button's own
+   `min-width: var(--tap-target)` floor. The buttons are `flex: none`, so
+   instead of shrinking they OVERFLOWED their own control's box -- the theme
+   control's readout spans 1137..1209 inside a control that ends at 1179 --
+   and `app-shell.spec.ts`'s reachability sweep (#88) then reported the theme
+   button as covered on the overview tab. The legends were already 0px wide
+   with two controls, so there was nothing left to give up. */
 .hud-chrome-prefs > .display-scale,
-.hud-chrome-prefs > .theme-control,
-.hud-chrome-prefs > .language-control {
+.hud-chrome-prefs > .theme-control {
   width: auto;
   flex: 1 1 0;
   min-width: 0;
@@ -372,10 +376,9 @@ canvas {
   border-radius: 0;
 }
 
-/* One hairline between neighbours, which is how everything else in this
-   interface separates them. */
-.hud-chrome-prefs > .theme-control,
-.hud-chrome-prefs > .language-control {
+/* One hairline between the two, which is how everything else in this
+   interface separates neighbours. */
+.hud-chrome-prefs > .theme-control {
   border-left: var(--hairline) solid var(--border-hairline);
 }
 
@@ -505,9 +508,11 @@ canvas {
 }
 
 /* The button may give up width for the same reason its readout may; the
-   `min-width: var(--tap-target)` above is a floor and this is what lets a
-   flex parent take it down to that floor rather than to its content. */
-.hud-chrome-prefs > .language-control > .language-control__cycle {
-  min-width: var(--tap-target);
+   `min-width: var(--tap-target)` above is a floor and this is what lets it
+   shrink to that floor rather than to its content. It matters on the one
+   rail width where `Automatic (English)` is wider than the box: the readout
+   truncates and the tap target does not. */
+.language-control > .language-control__cycle {
   flex: 0 1 auto;
 }
+

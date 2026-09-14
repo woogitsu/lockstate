@@ -26,10 +26,10 @@ import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
  *    right order.** Vitest runs in `environment: 'node'`, where there is no
  *    `navigator` at all; a Polish browser whose player chose English is only
  *    real here.
- * 4. **That three controls fit the row they are in.** The aside is a measured
- *    budget -- `src/ui/theme.ts` records what a second *row* in it cost -- and
- *    this control is the third occupant of the first row. Only a browser lays
- *    out a flex box.
+ * 4. **That the control fits the rail.** The aside is a measured budget, and
+ *    where this control sits was settled by measuring in Chromium rather than
+ *    by inheriting what `src/ui/theme.ts` records about it -- that refusal
+ *    predates #1159's layout shell. Only a browser lays out a flex box.
  */
 
 const APP_URL = '/index.html';
@@ -109,28 +109,35 @@ test.describe('a browser that asks for English, with nothing chosen', () => {
     await expect(page.locator(CYCLE)).toHaveAttribute('title', text(EN, 'display.language.cycle'));
   });
 
-  test('is one row of three controls, all of them real tap targets', async ({ page }) => {
+  test('sits in the rail without overflowing it, as a real tap target', async ({ page }) => {
     await openApp(page);
-    // The measured constraint `src/ui/theme.ts` records: the aside cannot
-    // afford a second row, so a third preference has to share the first. One
-    // row means one height; three controls mean three boxes at the same top.
-    const boxes = await page.evaluate(() => {
-      const row = document.querySelector('.hud-chrome-prefs');
-      if (row === null) return null;
-      const children = [...row.children].map((child) => child.getBoundingClientRect());
+    /*
+     * The constraint that decided where this control lives, asserted rather
+     * than remembered. It was built as a third occupant of `.hud-chrome-prefs`
+     * first, and the rail refused it: 264px over three controls is 87-88px
+     * each, the button's own `min-width: var(--tap-target)` is 44 of that, and
+     * `flex: none` on the buttons meant they overflowed their control's box
+     * instead of shrinking. This is the shape of that failure, checked on the
+     * arrangement that shipped -- a control whose contents leave its own box
+     * is silent until a reachability sweep finds a covered button.
+     */
+    const geometry = await page.evaluate(() => {
+      const control = document.querySelector('.language-control');
+      const rail = document.querySelector('.hud__aside');
+      if (control === null || rail === null) return null;
       return {
-        rowHeight: row.getBoundingClientRect().height,
-        tops: children.map((box) => Math.round(box.top)),
-        count: children.length,
-        // A row that overflows its own box is the failure mode a third control
-        // introduces, and it is silent: the contents simply leave the rail.
-        overflows: row.scrollWidth > row.clientWidth + 1,
+        overflows: control.scrollWidth > control.clientWidth + 1,
+        insideRail:
+          control.getBoundingClientRect().right <= rail.getBoundingClientRect().right + 0.5 &&
+          control.getBoundingClientRect().left >= rail.getBoundingClientRect().left - 0.5,
+        // The chrome pair beside it keeps its own single row.
+        chromeRowCount: document.querySelector('.hud-chrome-prefs')?.children.length,
       };
     });
-    expect(boxes, 'the chrome row is not on the page').not.toBeNull();
-    expect(boxes!.count).toBe(3);
-    expect(new Set(boxes!.tops).size, 'the chrome controls are on more than one row').toBe(1);
-    expect(boxes!.overflows, 'the chrome row is wider than the rail it sits in').toBe(false);
+    expect(geometry, 'the language control is not on the page').not.toBeNull();
+    expect(geometry!.overflows, 'the language control is wider than its own box').toBe(false);
+    expect(geometry!.insideRail, 'the language control hangs outside the rail').toBe(true);
+    expect(geometry!.chromeRowCount, 'the chrome row is not the pair it was').toBe(2);
 
     const target = await page.locator(CYCLE).boundingBox();
     expect(target, 'the language button has no box').not.toBeNull();

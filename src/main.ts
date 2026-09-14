@@ -3605,12 +3605,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   /*
    * The language, wired end to end (#663).
    *
-   * **The third occupant of this one 44px row, and it had to be**: the two
-   * comments above record that `app-shell.spec.ts` refused a second row in
-   * this slot twice, and nothing has given the aside the 52px since. A third
-   * control side by side costs no height at all and costs each of the three a
-   * third of the rail's width, which their legends already ellipsis into --
-   * `.hud-chrome-prefs > *` carries the `min-width: 0` that lets them.
+   * **Its own row under the chrome pair, and the two comments above are why
+   * that had to be re-measured rather than assumed either way.** They record
+   * `app-shell.spec.ts` refusing a second row in this slot twice, in #1157,
+   * which argued for making this the row's third occupant. That was built and
+   * measured in Chromium at 1280x720, and the rail refused it: 264px over
+   * three controls is 87-88px each, 44px of which is the button's own
+   * `min-width: var(--tap-target)` floor, and since the buttons are
+   * `flex: none` they overflowed their own control's box rather than
+   * shrinking -- the theme readout spanning 1137..1209 inside a control ending
+   * at 1179. #88's reachability sweep then reported the theme button as
+   * covered on the overview tab. The legends were already 0px wide with two
+   * controls, so there was nothing left to take.
+   *
+   * So the second row was re-measured instead of inherited, which is the right
+   * order: #1157's refusal predates #1159's layout shell, and the rail it
+   * describes is not the rail that exists. What `app-shell.spec.ts` says about
+   * this arrangement is in the pull request, measured rather than argued.
    *
    * **A press reloads the page, and that is the decision rather than a
    * shortcut.** `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`
@@ -3665,8 +3676,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       })();
     },
   });
-  chromeRow.append(languageControl.element);
-  hud.asideSlot.append(chromeRow);
+  hud.asideSlot.append(chromeRow, languageControl.element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;
