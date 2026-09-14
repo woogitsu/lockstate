@@ -362,7 +362,24 @@ export const HUD_MESSAGE_KEY = {
    */
   minimapNavigable: 'hud.minimap.navigable',
   alertsTitle: 'hud.alerts.title',
+  /**
+   * The two things an alerts list with no rows can mean, which until issue
+   * #1184 were one string.
+   *
+   * - `alertsEmpty` -- *"No active alerts"* -- is a claim about a **prison**,
+   *   and it is now only ever painted for one: `HudViewModel.alerts` is a
+   *   list, so a session has published and has nothing wrong to report.
+   * - `alertsUnknown` is a claim about the **screen**, painted exactly when
+   *   that field is absent -- before any publication has arrived, and after
+   *   `simulation/stopped` takes it off. That is `overviewNone`'s job one
+   *   panel over, and it borrows that panel's sentence rather than inventing a
+   *   second one for the same state, for the naming-consistency reason
+   *   `overviewNone`'s own comment gives: two words for one state on one
+   *   screen is a vocabulary split, and this state is reachable on both
+   *   surfaces at the same moment.
+   */
   alertsEmpty: 'hud.alerts.empty',
+  alertsUnknown: 'hud.alerts.unknown',
   /**
    * What a row of the alerts log adds to its sentence: how many times, and when
    * (the owner's decisions 1 and 2 of 2026-09-01 on ADR 0084).
@@ -1028,8 +1045,9 @@ export const HUD_MESSAGE_KEY = {
    *   `HudViewModel.overview` is absent -- before any
    *   `simulation/status-counts` publication, and after `simulation/stopped`
    *   -- and it is a sentence rather than a zero, because a zero is a claim
-   *   about a prison's money and there is no prison. #1184 is the live
-   *   instance of the opposite choice.
+   *   about a prison's money and there is no prison. #1184 was the live
+   *   instance of the opposite choice; `alertsUnknown` above is that issue
+   *   closed, and it took this sentinel's shape and its sentence.
    * - `overviewWages` names a *rate*, which is why the period is in the label
    *   rather than in the value: `dailyWageBillMinorUnits` is what one in-game
    *   day of the current roster costs, and a bare number under "Wages" would

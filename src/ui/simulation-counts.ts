@@ -248,7 +248,12 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
  * prison. It is wrong here: this readout's absence is a *sentence* the panel
  * renders, so "no prison is reporting" and "a prison reporting zero" have to
  * arrive as different values or the panel cannot tell them apart -- the defect
- * #1184 records for `'hud.alerts.empty'`.
+ * #1184 recorded for `'hud.alerts.empty'`, and closed by giving that field this
+ * same shape.
+ *
+ * **The clause above about the strip is the half that has not been settled**,
+ * and it is #1191: the chips read a confident `0` in both states while the
+ * clock beside them reads `--`.
  *
  * Nothing is derived: the three fields are copied one for one out of the
  * payload, for the reason the module header gives.

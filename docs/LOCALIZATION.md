@@ -274,20 +274,35 @@ here rather than restated from memory:
   distinguish a handled incident from one that expired unhandled and hurt
   everyone in it — the distinction issue #914 forced.
 
-**The third of the three is not clean, and this file said so wrongly until
-now.** `'hud.alerts.empty'` ("No active alerts",
-`src/content/default-locale-en.ts:541`) renders from the same `alerts: []`
-literal that `EMPTY_HUD_VIEW_MODEL` (`src/ui/hud/view-model.ts:2094`) carries
-**before the first worker snapshot arrives** — the render path
-(`src/ui/hud/hud.ts:2509-2517`) tests only `viewModel.alerts.length === 0` and
-has no branch for "no snapshot yet". The sibling `clock` field in that same
-empty view model was deliberately given a sentinel for exactly this state
-(`clock: UNKNOWN_HUD_CLOCK`, `:2097`); `alerts` was not. Filed as
-[#1184](https://github.com/woogitsu/lockstate/issues/1184). So two of the
-three named anti-patterns are held today, and the third has a live, filed
-instance — a new string that reintroduces any of the three shapes, "no
-incidents" included, is the failure mode to watch for, and this one already
-has.
+**The third of the three was not clean when this section was written, and the
+paragraph that said so is kept below rather than deleted, because the shape it
+describes is the one to watch for.** `'hud.alerts.empty'` ("No active alerts")
+rendered from the same `alerts: []` literal that `EMPTY_HUD_VIEW_MODEL` carried
+**before the first worker snapshot arrived** — the render path tested only
+`viewModel.alerts.length === 0` and had no branch for "no snapshot yet" — while
+the sibling `clock` field in that same empty view model had been deliberately
+given a sentinel for exactly this state (`clock: UNKNOWN_HUD_CLOCK`). Filed as
+[#1184](https://github.com/woogitsu/lockstate/issues/1184).
+
+**#1184 is closed.** `HudViewModel.alerts` is now optional and absence is the
+state: `src/main.ts` sets it only from a message that carries alerts and deletes
+it on `simulation/stopped`, `hudAlertsFromWorkerMessage`
+(`src/ui/simulation-alerts.ts`) answers `'none'` for that message, and the HUD
+paints `'hud.alerts.unknown'` — *"No prison is reporting."* — for absence while
+`'hud.alerts.empty'` keeps the state it was always true of, a prison that is
+reporting and has nothing wrong to report. Both sentences are asserted against
+each other in `tests/browser/ui-shell.spec.ts`.
+
+**The shape outlived the key, which is the part worth carrying forward.** A
+survey done while closing #1184 found it once more, in the status strip:
+`EMPTY_HUD_VIEW_MODEL.counts` is a confident row of zeros in the same two
+states, so a page that has heard from nobody states *Prisoners 0, Funds 0* —
+beside a clock that reads `--` in that same paint. Filed as
+[#1191](https://github.com/woogitsu/lockstate/issues/1191). So all three named
+anti-patterns are held in words today, one of them has an open instance in
+figures, and a new string that reintroduces any of the three shapes — "no
+incidents" included — is the failure mode to watch for, because this one
+already did.
 
 ### The mechanical requirements, checked against what exists
 
