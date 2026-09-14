@@ -493,7 +493,7 @@ function reportControls(label: string, controls: readonly ControlBox[]): void {
   }
 }
 
-const TABS = ['overview', 'build', 'rooms', 'security', 'regime'] as const;
+const TABS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
 
 /* ================================================================== */
 /* act 1 — arriving on a tablet                                        */
@@ -1000,7 +1000,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tapControl(page, '.hud__tabs [data-tab="rooms"]');
+    await tapControl(page, '.hud__tabs [data-tab="zones"]');
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await tapControl(page, '.hud-rooms > .ui-panel__header > .ui-panel__toggle');
     }
@@ -1038,7 +1038,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   log(`after building: rooms=${String(built?.rooms)} accommodationCapacity=${String(built?.accommodationCapacity)}`);
 
   // Hire, by finger.
-  await tapControl(page, '.hud__tabs [data-tab="security"]');
+  await tapControl(page, '.hud__tabs [data-tab="manage"]');
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await tapRowScrollingIfNeeded(page, '.hud-staff__list [data-staff-role="staff-role.guard"]', label);
   await tapControl(page, '.hud-staff__hire');
@@ -1480,7 +1480,7 @@ test('act 8: can a finger scroll the Build catalogue', async ({ page }) => {
 
     // 6. The same question for the Rooms catalogue, which is the other list a
     //    player has to get a specific row out of.
-    await tapControl(page, '.hud__tabs [data-tab="rooms"]');
+    await tapControl(page, '.hud__tabs [data-tab="zones"]');
     await page.waitForTimeout(400);
     const roomsGeometry = await page.evaluate(() => {
       const list = document.querySelector<HTMLElement>('.hud-rooms__list');

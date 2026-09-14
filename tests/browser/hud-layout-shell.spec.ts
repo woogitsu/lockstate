@@ -568,7 +568,7 @@ test.describe('the HUD layout shell', () => {
     page,
   }) => {
     await open(page, TABLET);
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
     const panelWidth = async (): Promise<number> =>

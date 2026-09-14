@@ -283,7 +283,7 @@ export async function currentClock(page: Page): Promise<unknown> {
  * addressed by its id here for the same reason a test addresses a room row by
  * `data-room`.
  */
-export function tab(page: Page, id: 'overview' | 'build' | 'rooms' | 'security' | 'regime') {
+export function tab(page: Page, id: 'overview' | 'build' | 'zones' | 'manage' | 'day-plan') {
   return page.locator(`.hud__tabs [data-tab="${id}"]`);
 }
 
@@ -756,7 +756,7 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     // The same class of read #1017 is about, one panel along: `data-collapsed`
     // is only meaningful once the tab switch has actually swapped the panels,
     // and a stale `"false"` here skips the toggle and leaves every locator
@@ -834,7 +834,7 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
   const built = await latestCounts(page);
   log(`at tick ${built?.tick}: rooms=${built?.rooms} roomCapacity=${built?.roomCapacity} accommodationCapacity=${built?.accommodationCapacity}`);
   log(`queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   log(`rooms panel: ${await panelText(page, '.hud-rooms')}`);
 
   // Admit, from the Overview tab's Intake panel.
@@ -857,7 +857,7 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
   log(`status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
   if (options.guards > 0) {
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     // `staff-role.guard`, not `staff.guard`: the catalogue ids are
     // `staff-role.*` (`src/content/staff-role-catalog.ts:148`). The row is
     // clicked only if it is there -- the panel already selects Guard on

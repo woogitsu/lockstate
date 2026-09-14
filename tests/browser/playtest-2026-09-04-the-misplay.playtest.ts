@@ -411,7 +411,7 @@ test.describe('the misplay', () => {
     console.log(`[${L}] 2d intake panel: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
 
     // --- 2e. Hire, twice ---
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
     const hire = page.locator('.hud-staff__hire');
@@ -426,7 +426,7 @@ test.describe('the misplay', () => {
     console.log(`[${L}] 2e staff panel: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
 
     // --- 2f. Designate, twice, on the same rectangle ---
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const roomsPanel = page.locator('.hud-rooms');
     if ((await roomsPanel.getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
@@ -472,7 +472,7 @@ test.describe('the misplay', () => {
     const L = 'act3';
     const origin = await newPrison(page, L);
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const roomsPanel = page.locator('.hud-rooms');
     if ((await roomsPanel.getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
@@ -480,7 +480,7 @@ test.describe('the misplay', () => {
     console.log(`[${L}] rooms panel on arrival: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
     const designate = async (roomId: string, ax: number, ay: number, bx: number, by: number, what: string) => {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       /*
        * A rectangle left pending swaps the action row over to
        * `Designate`/`Discard` and *hides* the arm control
@@ -586,7 +586,7 @@ test.describe('the misplay', () => {
     const beforeSuccess = await say(page);
 
     // 3f. The route back: is a Remove control on the panel without hunting?
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     console.log(`[${L}] 3f controls visible on the Rooms tab: ${JSON.stringify(await controls(page))}`);
 
     // Furniture first, so the removal has something to strand.
@@ -621,7 +621,7 @@ test.describe('the misplay', () => {
     }
 
     const beforeRemove = await latestCounts(page);
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     await page.locator('.hud-rooms__remove').click();
     console.log(`[${L}] 3f band immediately before the removal: ${JSON.stringify(beforeSuccess)}`);
     const removeArmed = await page.locator('.hud-rooms__remove').innerText();
@@ -766,7 +766,7 @@ test.describe('the misplay', () => {
     await newPrison(page, L);
 
     // --- the guard nobody wanted ---
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
     const hire = page.locator('.hud-staff__hire');
@@ -873,7 +873,7 @@ test.describe('the misplay', () => {
 
     let rooms = 0;
     for (let attempt = 0; attempt < 10 && rooms === 0; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
         await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       }
@@ -903,7 +903,7 @@ test.describe('the misplay', () => {
 
     // The sweep: is there a route back from an admission anywhere on the page?
     const WORDS = /release|discharg|free|expel|transfer|deport|evict|let go|send away|remove prisoner|un-?admit/i;
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(250);
       const all = await controls(page);
@@ -954,7 +954,7 @@ test.describe('the misplay, part two', () => {
     // A yard, because it is the only room type that needs no wall built first
     // (`src/content/room-catalog.ts`: `{ type: 'outdoors' }` rather than
     // `{ type: 'enclosed' }`), and a bed inside it.
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -1022,7 +1022,7 @@ test.describe('the misplay, part two', () => {
     );
     await openQueue(page);
     console.log(`[${L}] 6b queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     console.log(`[${L}] 6b rooms panel now: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
     // Take those back, so 6c starts from a clean queue.

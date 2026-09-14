@@ -262,11 +262,20 @@ export const HUD_MESSAGE_KEY = {
   transportFastForward: 'hud.transport.fast-forward',
 
   tabsRegion: 'hud.tabs.title',
+  /*
+   * The five section names, moved to the 2026-09-13 delivery's own five on
+   * 2026-09-14 (ADR 0112 decision 3): Przeglad / Buduj / Strefy / Zarzadzaj /
+   * Plan dnia. `tabSecurity`, `tabRegime` and `tabRooms` were the three that
+   * went, along with the keys behind them -- a key is renamed rather than
+   * repointed so that a catalogue which still carries `hud.tab.rooms` fails
+   * `tests/foundation/second-locale-contract.test.ts`'s `unknown-key` audit
+   * instead of shipping a section name nothing renders.
+   */
   tabOverview: 'hud.tab.overview',
   tabBuild: 'hud.tab.build',
-  tabSecurity: 'hud.tab.security',
-  tabRegime: 'hud.tab.regime',
-  tabRooms: 'hud.tab.rooms',
+  tabZones: 'hud.tab.zones',
+  tabManage: 'hud.tab.manage',
+  tabDayPlan: 'hud.tab.day-plan',
 
   /**
    * The Layout menu and the three collapse arrows beside it (#1159, stage 3

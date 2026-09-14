@@ -171,7 +171,7 @@ test.describe('a press whose tick report arrived late (#942)', () => {
     await expect(page.locator('.hud-clock__speed'), 'the worker never took the speed, so this is not a x4 run').toHaveText('×4');
 
     // ---- the control ---------------------------------------------------
-    await page.locator('.ui-tab[data-tab="security"]').click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
     await expect(page.locator('.hud-staff')).toBeVisible();
     await expect(
       page.locator('.hud-staff__list [data-selected="true"]'),

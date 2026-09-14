@@ -1637,7 +1637,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshStaffRoster = (): void => {
-    if (staffRosterReader === undefined || activeTab !== 'security') return;
+    if (staffRosterReader === undefined || activeTab !== 'manage') return;
     void staffRosterReader
       .read()
       .then((next) => {
@@ -1651,7 +1651,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshHeldGuards = (): void => {
-    if (heldGuardsReader === undefined || activeTab !== 'security') return;
+    if (heldGuardsReader === undefined || activeTab !== 'manage') return;
     void heldGuardsReader
       .read()
       .then((next) => {
@@ -1685,7 +1685,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshStaffCoverage = (): void => {
-    if (staffCoverageReader === undefined || activeTab !== 'security') return;
+    if (staffCoverageReader === undefined || activeTab !== 'manage') return;
     void staffCoverageReader
       .read()
       .then((next) => {
@@ -1721,7 +1721,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshRegime = (): void => {
-    if (regimeReader === undefined || activeTab !== 'regime') return;
+    if (regimeReader === undefined || activeTab !== 'day-plan') return;
     void regimeReader
       .read()
       .then((next) => {
@@ -1755,7 +1755,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshPrisonerRoster = (): void => {
-    if (prisonerRosterReader === undefined || activeTab !== 'regime') return;
+    if (prisonerRosterReader === undefined || activeTab !== 'day-plan') return;
     void prisonerRosterReader
       .read()
       .then((next) => {
@@ -1801,7 +1801,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    */
   const refreshPrisonerDetail = (): void => {
     const prisonerId = selectedPrisonerId;
-    if (prisonerDetailReader === undefined || activeTab !== 'regime' || prisonerId === undefined) return;
+    if (prisonerDetailReader === undefined || activeTab !== 'day-plan' || prisonerId === undefined) return;
     void prisonerDetailReader
       .read(prisonerId)
       .then((read) => {
@@ -1858,7 +1858,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
    *
    * This read `if (roomNeedsReader === undefined || activeTab !== 'rooms')
-   * return;`, and `roomNeedsReader`'s header above still carries the argument
+   * return;` (the tab's id when that was written; it is `zones` since
+   * 2026-09-14), and `roomNeedsReader`'s header above still carries the argument
    * for it in full -- *"a room list is `O(instances)` to build and nobody is
    * reading it from the Build tab, which is the whole argument for the channel
    * being a pull"*. That argument is kept rather than deleted because it is
@@ -2311,7 +2312,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           else applyPendingDeliveries(undefined);
           // And which guards are held, on the tab the Staff panel lives on, on
           // exactly the same terms (ADR 0034).
-          if (activeTab === 'security') refreshHeldGuards();
+          if (activeTab === 'manage') refreshHeldGuards();
           else applyHeldGuards(undefined);
           // And who is on the payroll, on the same tab and the same terms
           // (#533). Arriving asks at once for the coverage block's reason turned
@@ -2319,7 +2320,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // money must not have to wait up to ~300ms in a browser (255ms is
           // the harness figure; see roomNeedsReader's header, #765) to see the
           // control that stops it.
-          if (activeTab === 'security') refreshStaffRoster();
+          if (activeTab === 'manage') refreshStaffRoster();
           else applyStaffRoster(undefined);
           // And how many guards the prison asks for against how many it has, on
           // the same tab and the same terms (ADR 0048). Arriving asks at once:
@@ -2327,7 +2328,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // (255ms is the harness figure; see roomNeedsReader's header, #765)
           // would mean a player who opened this tab *because* they suspected
           // they were short sees an empty block first.
-          if (activeTab === 'security') refreshStaffCoverage();
+          if (activeTab === 'manage') refreshStaffCoverage();
           else applyStaffCoverage(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
@@ -2344,9 +2345,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // this tab is the one a player opens to look at somebody in
           // particular and an empty panel is indistinguishable from a prison
           // holding nobody.
-          if (activeTab === 'regime') refreshRegime();
+          if (activeTab === 'day-plan') refreshRegime();
           else applyRegime(undefined);
-          if (activeTab === 'regime') refreshPrisonerRoster();
+          if (activeTab === 'day-plan') refreshPrisonerRoster();
           else applyPrisonerRoster(undefined);
           // And the third readout on that tab, on the same terms with one
           // difference: it asks only if the player has selected somebody, so
@@ -2356,7 +2357,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // panel's selected buildable survives a tab change too -- so coming
           // back resumes the same question rather than making the player press
           // the row again (issue #895).
-          if (activeTab === 'regime') refreshPrisonerDetail();
+          if (activeTab === 'day-plan') refreshPrisonerDetail();
           else applyPrisonerDetail(undefined);
           return;
         }

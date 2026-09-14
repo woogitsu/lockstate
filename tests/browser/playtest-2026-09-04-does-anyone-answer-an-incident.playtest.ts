@@ -179,7 +179,7 @@ async function readScreen(page: Page): Promise<ScreenSample> {
 
 /** The Security tab's held-guard block and roster, expanded, as a player scrolling them sees. */
 async function readStaffPanel(page: Page): Promise<{ held: string; roster: string }> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const rosterHeader = page.locator('.hud-staff__roster .ui-section__header');
   if ((await rosterHeader.count()) > 0 && (await rosterHeader.getAttribute('aria-expanded')) !== 'true') {
     await rosterHeader.click();
@@ -307,7 +307,7 @@ async function tallyEdges(page: Page, label: string, view: IncidentsView | null)
 }
 
 async function hireGuards(page: Page, count: number): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < count; index += 1) {
@@ -484,7 +484,7 @@ test('act 3: release every responder mid-response and watch the ending', async (
   // Press every Release control the held block offers, repeatedly, until the
   // block reports nothing held. The clock is paused throughout.
   for (let sweep = 0; sweep < 12; sweep += 1) {
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const controls = page.locator('.hud-staff__held .hud-staff__held-row button');
     const count = await controls.count();
     let pressed = 0;

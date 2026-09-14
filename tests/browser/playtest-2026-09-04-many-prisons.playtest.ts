@@ -357,7 +357,7 @@ test('act 3 — does the prison you come back to come back whole', async ({ page
   // A real prison: money spent, walls up, a room zoned, prisoners admitted,
   // guards hired. `buildAndPopulate` presses New prison itself.
   await buildAndPopulate(page, { beds: 3, admits: 4, guards: 2, label: 'act3' });
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(1000);
   await transport(page, 0).click();
   await page.waitForTimeout(600);
@@ -385,7 +385,7 @@ test('act 3 — does the prison you come back to come back whole', async ({ page
   console.log(`[act3] STATE prison A on the way back :: ${after}`);
   console.log(`[act3] HUD prison A strip on the way back :: ${await line(page, '.hud-strip')}`);
   console.log(`[act3] HUD which tab is showing after the switch back = ${await page.locator('.hud').getAttribute('data-active-tab')}`);
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(1200);
   console.log(`[act3] HUD prison A regime panel on the way back :: ${await line(page, '.hud-regime')}`);
   console.log(`[act3] HUD prison A save panel on the way back :: ${JSON.stringify(await savePanel(page))}`);

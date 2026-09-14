@@ -292,7 +292,7 @@ async function stopBuildingAndLookAway(page: Page): Promise<void> {
     await arm.click();
     console.log(`disarmed the build tool (its label read ${JSON.stringify(label)})`);
   }
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   const roomsArm = page.locator('.hud-rooms__arm');
   if ((await roomsArm.count()) > 0) {
     const roomsLabel = (await roomsArm.innerText()).trim();
@@ -435,7 +435,7 @@ test(`can you name the room — ${LABEL} palette`, async ({ page }) => {
    * §7). How many attempts each room takes is itself a measurement.
    */
   const zoned: string[] = [];
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
     await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
   }
@@ -445,7 +445,7 @@ test(`can you name the room — ${LABEL} palette`, async ({ page }) => {
   for (const room of ROOMS) {
     let accepted = false;
     for (let attempt = 1; attempt <= 10 && !accepted; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       await page.locator(`.hud-rooms__list [data-room="${room.roomId}"]`).click();
       if ((await page.locator('.hud-rooms__coordinates').getAttribute('data-collapsed')) === 'true') {
         await page.locator('.hud-rooms__coordinates > .ui-section__header').click();
@@ -607,7 +607,7 @@ test(`can you name the room — ${LABEL} palette`, async ({ page }) => {
    * `zoningTint`. What the panel *does* with it is the question, and it is read
    * here off the live DOM rather than off the file.
    */
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
   if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
   await page.waitForTimeout(300);

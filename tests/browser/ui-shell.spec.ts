@@ -438,10 +438,10 @@ test.describe('HUD shell', () => {
     expect(await page.locator('.ui-tab[data-tab="build"]').getAttribute('aria-current')).toBe('true');
     expect(await page.locator('.ui-tab[data-tab="overview"]').getAttribute('aria-current')).toBeNull();
 
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
     expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toEqual([
       JSON.stringify({ kind: 'select-tab', tab: 'build' }),
-      JSON.stringify({ kind: 'select-tab', tab: 'security' }),
+      JSON.stringify({ kind: 'select-tab', tab: 'manage' }),
     ]);
   });
 
@@ -1743,17 +1743,17 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
       expect(await rail()).toEqual({ intake: false, build: true, rooms: false, staff: false, regime: false });
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
       expect(await rail()).toEqual({ intake: false, build: false, rooms: true, staff: false, regime: false });
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: true, regime: false });
 
       // And the fifth tab is the Regime panel's, alone. This assertion used to
       // read "And none is laid out on the one tab that still owns no panel",
       // and pinned that emptiness deliberately; issue #451 spent it, so what is
       // pinned now is that spending it bought exactly one panel.
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
       expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: false, regime: true });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
@@ -2027,7 +2027,7 @@ test.describe('HUD shell', () => {
       // this row's whole text and would falsely pass if it still were.
       expect(probe.texts).toContain('Brick wall · 80 per segment');
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
     });
 
@@ -2326,7 +2326,7 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).removing).toBe(true);
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
         JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick', removing: false }),
       );
@@ -2389,7 +2389,7 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).armed).toBe(true);
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
       // The disarm rides out with the tab change itself, so the host never
       // sees a window where the panel is hidden and the pointer is still ours.
@@ -2939,7 +2939,7 @@ test.describe('HUD shell', () => {
       // mount and must not be laid out here.
       expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible).toBe(false);
 
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       const probe = await page.evaluate(() => window.lockstateUiHarness.staffProbe());
 
       expect(probe.visible).toBe(true);
@@ -2964,7 +2964,7 @@ test.describe('HUD shell', () => {
 
     test('hiring dispatches one gated intent, and a refusal is reported on the button', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect(await page.evaluate(() => window.lockstateUiHarness.clickHireStaff())).toBe(true);
 
       // One stable id and nothing else. The HUD does not know a `HireStaff`
@@ -3030,7 +3030,7 @@ test.describe('HUD shell', () => {
 
       test('paints what the host reports, which is the pass-through no headless test can reach', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
         await page.evaluate(() =>
           window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
@@ -3057,7 +3057,7 @@ test.describe('HUD shell', () => {
 
       test('draws nothing at all before the first reply, rather than a green badge', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
         // The distinction the probe was built for: "no answer yet" and "the
         // prison is covered" are different states, and a block that read
@@ -3074,7 +3074,7 @@ test.describe('HUD shell', () => {
 
       test('says the word beside the colour, so the state does not depend on seeing it', async ({ page }) => {
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
         await page.evaluate(() =>
           window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
         );
@@ -3117,7 +3117,7 @@ test.describe('HUD shell', () => {
         for (const [width, height] of COVERAGE_VIEWPORTS) {
           await page.setViewportSize({ width, height });
           await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-          await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
 
           await page.evaluate(() =>
             window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
@@ -3177,7 +3177,7 @@ test.describe('HUD shell', () => {
         for (const [width, height] of COVERAGE_VIEWPORTS) {
           await page.setViewportSize({ width, height });
           await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-          await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
           await page.evaluate(() =>
             window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
           );
@@ -3227,7 +3227,7 @@ test.describe('HUD shell', () => {
 
   test('the HUD leaks no unhandled rejection while being driven', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
     await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     await page.waitForTimeout(200);
@@ -3265,7 +3265,7 @@ test.describe('the Rooms panel', () => {
   // harness; this only mounts and opens the tab.
   test.beforeEach(async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
   });
 
   /**
@@ -5187,7 +5187,7 @@ test.describe('the Rooms panel', () => {
     for (const [width, height] of ROOMS_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
 
       const probe = await page.evaluate(() => window.lockstateUiHarness.roomsLayoutProbe());
       const panel = probe.panel;
@@ -5555,7 +5555,7 @@ test.describe('the Regime panel (issue #451)', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
   });
 
   test('arrives with a box and two empty blocks, because nothing has asked yet', async ({ page }) => {
@@ -5927,7 +5927,7 @@ test.describe('the Regime panel (issue #451)', () => {
     for (const [width, height] of REGIME_VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
       await page.evaluate(
         ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
         [TIMETABLE, ROSTER] as const,
@@ -6435,7 +6435,7 @@ test.describe('the Regime panel (issue #451)', () => {
       for (const [width, height] of REGIME_VIEWPORTS) {
         await page.setViewportSize({ width, height });
         await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-        await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
         await page.evaluate(
           ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
           [TIMETABLE, ROSTER] as const,

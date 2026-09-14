@@ -204,7 +204,7 @@ function ringRuns(origin: { originX: number; originY: number }): readonly {
 async function enclosureVerdict(page: Page, origin: { originX: number; originY: number }): Promise<string> {
   const CLICK = { timeout: 15_000 } as const;
   try {
-    await tab(page, 'rooms').click(CLICK);
+    await tab(page, 'zones').click(CLICK);
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click(CLICK);
     const discard = page.locator('.hud-rooms__cancel');
@@ -471,7 +471,7 @@ test.describe('is there a way back', () => {
     logScreen(label, 'wall up', wallUp);
 
     // Now a panel action, which is what the player is about to regret.
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
     note(`[${label}] hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -505,7 +505,7 @@ test.describe('is there a way back', () => {
     note(`[${label}] queue after re-drag: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
 
     // And the actual way back from a hire, if there is one.
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const dismissables = await page.evaluate(() =>
       Array.from(document.querySelectorAll('button, [role="button"]'))
         .map((node) => ({
@@ -742,7 +742,7 @@ test.describe('is there a way back', () => {
 
     // The sweep. Every tab, every control, every text node.
     const words = /sell|sold|refund|return|reclaim|buy ?back|liquidate|scrap|salvage|resell|dispose/i;
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(400);
       const found = await page.evaluate(

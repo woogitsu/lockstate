@@ -205,7 +205,7 @@ async function bringIntoView(page: Page, selector: string): Promise<void> {
 }
 
 async function hireGuards(page: Page, count: number): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < count; index += 1) {
@@ -628,7 +628,7 @@ test.describe('the held-guard rows fire at who they named', () => {
     // snapshot replaces and a completed wall does not mark dirty.
     let zoned = false;
     for (let attempt = 0; attempt < 14 && !zoned; attempt += 1) {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

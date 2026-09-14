@@ -445,7 +445,7 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
 
   for (const rect of roomRects) {
     let presses = 0;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     presses += 1;
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     log(`${rect.name}: Rooms panel data-collapsed on arrival = ${collapsed}`);
@@ -506,7 +506,7 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
   const furnished = await latestCounts(page);
   log(`furnished at tick ${furnished?.tick}: rooms=${furnished?.rooms} roomCapacity=${furnished?.roomCapacity} accommodationCapacity=${furnished?.accommodationCapacity} treasury=${furnished?.treasuryMinorUnits}`);
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   log(`staff panel, collapsed=${await page.locator('.hud-staff').getAttribute('data-collapsed')}`);
   log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
   log(`staff panel text: ${JSON.stringify((await panelText(page, '.hud-staff')).split('\n'))}`);
@@ -629,7 +629,7 @@ test('act 2: four rooms in a row, none overlapping, all inside the bare world (#
   for (const cell of cells) {
     const started = Date.now();
     let presses = 0;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     presses += 1;
     const collapsedOnArrival = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsedOnArrival === 'true') {
@@ -699,7 +699,7 @@ test('act 2: four rooms in a row, none overlapping, all inside the bare world (#
 
   const zoned = await latestCounts(page);
   log(`four designations later: rooms=${zoned?.rooms} roomCapacity=${zoned?.roomCapacity} treasury=${zoned?.treasuryMinorUnits}`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   log(`rooms panel at the end: ${JSON.stringify((await panelText(page, '.hud-rooms')).split('\n'))}`);
 });
 
@@ -754,7 +754,7 @@ test('act 3: a deliberately neglected prison — the escape sentence and a weapo
      * so it is the one place a weapon could show up indirectly.
      */
     if ((counts?.tick ?? 0) > 20_000) {
-      await tab(page, 'regime').click();
+      await tab(page, 'day-plan').click();
       await page.waitForTimeout(800);
       log(`  regime roster: ${JSON.stringify((await panelText(page, '.hud-regime')).split('\n').slice(0, 24))}`);
       await tab(page, 'overview').click();
@@ -841,10 +841,10 @@ test('act 4: which screen points reach the world and which reach the HUD (1440x9
   await tab(page, 'build').click();
   await page.waitForTimeout(500);
   await sweep('Build tab showing');
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(500);
   await sweep('Rooms tab showing');
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
   await page.locator('.hud-rooms__arm').click();
   await page.waitForTimeout(500);
@@ -871,7 +871,7 @@ test('act 5: pressing a tab before the first New prison (#685)', async ({ page }
    * and admit somebody -- because "the message is right now" and "the prison
    * works now" are two claims and only the second is worth having.
    */
-  for (const id of ['build', 'rooms', 'security'] as const) {
+  for (const id of ['build', 'zones', 'manage'] as const) {
     await tab(page, id).click();
     await page.waitForTimeout(400);
     log(`pressed the ${id} tab before any prison exists: refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))} unavailable=${JSON.stringify(await panelText(page, '.hud__unavailable'))}`);

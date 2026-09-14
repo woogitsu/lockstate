@@ -223,7 +223,7 @@ test('act 1: the FUNDS badge against the shop, walked down the deliveries rung',
   await read('after the second brick press');
 
   // And the hire half, which shares the deliveries rung.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   log(act, `the hire control reads ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -470,7 +470,7 @@ test('act 5: payroll walks a prison past every rung the player was refused at, a
    * deliveries rung, and then the clock run across day boundaries with no
    * prisoners in the prison, so nothing pays anything in.
    */
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   log(act, `the hire control reads ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);

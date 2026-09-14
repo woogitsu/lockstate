@@ -324,7 +324,7 @@ async function buildGrownPrison(
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -404,7 +404,7 @@ async function buildGrownPrison(
   log(`intake panel: ${(await panelText(page, '.hud-intake')).replace(/\n/g, ' / ')}`);
 
   if (options.guards > 0) {
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
     log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -526,7 +526,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act1] FINAL folds hiding content: ${JSON.stringify(await hiddenByFolds(page))}`);
     console.log(`[act1] FINAL refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
 
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(400);
       console.log(`[act1] FINAL ${id} tab, whole HUD:\n${await screen(page)}`);
@@ -567,7 +567,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     const smallTick = await currentTick(page);
     console.log(`[act2] ONE RESIDENT at tick ${smallTick}: ${JSON.stringify(await latestCounts(page))}`);
     const smallScreens: Record<string, string> = {};
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(350);
       smallScreens[id] = await screen(page);
@@ -584,7 +584,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     await runToTickOrBudget(page, (await currentTick(page)) + DAY_LENGTH_TICKS, 90_000);
     const bigTick = await currentTick(page);
     console.log(`[act2] TWENTY-FOUR RESIDENTS at tick ${bigTick}: ${JSON.stringify(await latestCounts(page))}`);
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(350);
       const big = await screen(page);
@@ -634,7 +634,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act3] FINAL alerts: ${end.alerts}`);
     console.log(`[act3] FINAL lists: ${JSON.stringify(await listSizes(page))}`);
     console.log(`[act3] FINAL folds: ${JSON.stringify(await hiddenByFolds(page))}`);
-    for (const id of ['overview', 'regime', 'security', 'rooms'] as const) {
+    for (const id of ['overview', 'day-plan', 'manage', 'zones'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(350);
       console.log(`[act3] FINAL ${id} tab:\n${await screen(page)}`);
@@ -661,7 +661,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
   test('act 5 — twenty presses of Hire Guard, one press at a time', async ({ page }) => {
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
     console.log(`[act5] hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
@@ -801,7 +801,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act4] AT THE START OF THE RUN tick=${start.tick} day=${start.day} | ${start.strip}`);
     console.log(`[act4] counts: ${JSON.stringify(start.counts)}`);
     console.log(`[act4] lists: ${JSON.stringify(await listSizes(page))}`);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(300);
     console.log(`[act4] regime tab at the start of the run:\n${await screen(page)}`);
     await tab(page, 'overview').click();
@@ -825,7 +825,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act4] FINAL lists: ${JSON.stringify(await listSizes(page))}`);
     console.log(`[act4] FINAL folds: ${JSON.stringify(await hiddenByFolds(page))}`);
     console.log(`[act4] FINAL refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
-    for (const id of ['overview', 'regime', 'security'] as const) {
+    for (const id of ['overview', 'day-plan', 'manage'] as const) {
       await tab(page, id).click();
       await page.waitForTimeout(350);
       console.log(`[act4] FINAL ${id} tab:\n${await screen(page)}`);

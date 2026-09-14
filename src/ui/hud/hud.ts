@@ -88,9 +88,14 @@ export interface HudTabDefinition {
 export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'overview', icon: 'overview', labelKey: HUD_MESSAGE_KEY.tabOverview },
   { id: 'build', icon: 'build', labelKey: HUD_MESSAGE_KEY.tabBuild },
-  { id: 'rooms', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabRooms },
-  { id: 'security', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabSecurity },
-  { id: 'regime', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabRegime },
+  // The icons keep their own ids. `IconId` is a drawing's name, not a
+  // section's: the shape the `zones` tab shows is still the floor-plan glyph
+  // `rooms` names in `src/ui/primitives/icon.ts`, and renaming a path set to
+  // follow a navigation change would be a second, unrelated diff over every
+  // other consumer of the same glyph.
+  { id: 'zones', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabZones },
+  { id: 'manage', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabManage },
+  { id: 'day-plan', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabDayPlan },
 ];
 
 /**
@@ -2451,8 +2456,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
     buildPanel.setVisible(state.activeTab === 'build');
-    roomsPanel.setVisible(state.activeTab === 'rooms');
-    staffPanel.setVisible(state.activeTab === 'security');
+    roomsPanel.setVisible(state.activeTab === 'zones');
+    staffPanel.setVisible(state.activeTab === 'manage');
     // The fourth occupant of `.hud__side`, and the reason the five can share
     // one box: the conditions are mutually exclusive, so exactly one panel is
     // ever laid out there and none pays for the others' height.
@@ -2460,7 +2465,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // The fifth, on the tab that had none (issue #451). With this line every
     // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
     // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
-    regimePanel.setVisible(state.activeTab === 'regime');
+    regimePanel.setVisible(state.activeTab === 'day-plan');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);

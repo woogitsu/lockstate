@@ -513,7 +513,7 @@ test('act 1 — is the bed the right way up', async ({ page }) => {
     `INDEPENDENT VERIFICATION of what was placed: accommodationCapacity=${built?.accommodationCapacity}` +
       ` (a bed is the only 'sleep-surface' object a cell here can hold), roomCapacity=${built?.roomCapacity}`,
   );
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(300);
   console.log(`rooms panel: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
   await tab(page, 'overview').click();

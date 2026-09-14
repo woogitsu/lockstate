@@ -76,7 +76,7 @@ test('recon: what the panels offer on arrival', async ({ page }) => {
   await shot(page, 'recon-arrival');
   await screen(page, 'arrival');
 
-  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+  for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
     await tab(page, id).click();
     await page.waitForTimeout(300);
     console.log(`\n----- TAB ${id} -----\n${await panelText(page, '.hud__panels')}`);
@@ -92,7 +92,7 @@ test('recon: what the panels offer on arrival', async ({ page }) => {
   console.log(`\n----- BUILD CATALOGUE (${catalogue.length}) -----`);
   for (const line of catalogue) console.log(`  ${line}`);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   const rooms = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('.hud-rooms__list [data-room]')].map(
       (n) => `${n.getAttribute('data-room')} :: ${(n.innerText ?? '').replace(/\s+/g, ' ').trim()}`,
@@ -159,7 +159,7 @@ async function zoneCell(page: Page, origin: { originX: number; originY: number }
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -236,7 +236,7 @@ test('act 1: the naive build, watched from the Overview tab', async ({ page }) =
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(250);
   }
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < 2; index += 1) {
@@ -282,7 +282,7 @@ test('act 1: the naive build, watched from the Overview tab', async ({ page }) =
   for (const [key, tick] of seen) console.log(`  tick ${tick}: ${key}`);
 
   console.log(`\n===== ONLY NOW does the player go looking. What was behind each tab: =====`);
-  for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+  for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
     await tab(page, id).click();
     await page.waitForTimeout(400);
     const body = await page.evaluate(() => {
@@ -359,7 +359,7 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
   await waitForQueueEmpty(page);
   await page.waitForTimeout(1500);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   console.log(`\n### FURNISHED. Rooms panel now ###`);
   rooms = await roomsPanel(page);
   console.log(`rooms panel:\n${rooms.text}`);
@@ -371,7 +371,7 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(250);
   }
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < 2; index += 1) {
@@ -379,7 +379,7 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
     await page.waitForTimeout(300);
   }
   await fastForwardToMax(page);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   console.log(`\n### 4 PRISONERS ADMITTED, clock at 4x. Rooms panel ###`);
   rooms = await roomsPanel(page);
   console.log(`rooms panel:\n${rooms.text}`);
@@ -404,7 +404,7 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
   const awayText = await roomsPanel(page);
   console.log(`  [survival] with the Overview tab open, the Rooms panel is: ${JSON.stringify(awayText.text.slice(0, 60))}`);
   console.log(`  [survival] ambient while away: ${JSON.stringify(await ambient(page))}`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(400);
   await survives('after Overview -> Rooms');
 
@@ -439,7 +439,7 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
     await page.waitForTimeout(4000);
   }
   console.log(`  after reload+load: counts = ${JSON.stringify(await latestCounts(page))}`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(600);
   await survives('after a save, a page reload and a load');
   await shot(page, 'act2-after-reload');
@@ -475,11 +475,11 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
   console.log(`\n### long run ended at tick ${tEnd}, day ${(tEnd / 2400).toFixed(1)} ###`);
   console.log(`rooms panel at the end:\n${(await roomsPanel(page)).text}`);
   console.log(`regime panel at the end:`);
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(400);
   console.log(await panelText(page, '.hud-regime'));
   await shot(page, 'act2-end-regime');
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(400);
   await shot(page, 'act2-end-rooms');
   await shotOf(page, '.hud-rooms', 'act2-end-rooms-element');
@@ -518,7 +518,7 @@ async function buildDoorlessPrison(page: Page): Promise<{ originX: number; origi
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(250);
   }
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let index = 0; index < 2; index += 1) {
@@ -539,7 +539,7 @@ test('act 3: build the door, and see whether the game confirms it', async ({ pag
   await fastForwardToMax(page);
   await page.waitForTimeout(20_000);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   console.log(`\n### BEFORE THE DOOR (tick ${await currentTick(page)}) ###`);
   console.log((await roomsPanel(page)).text);
   console.log(`needs: ${JSON.stringify((await roomsPanel(page)).needs)}`);
@@ -579,7 +579,7 @@ test('act 3: build the door, and see whether the game confirms it', async ({ pag
   await page.waitForTimeout(4000);
   console.log(`\n### AFTER THE DOOR IS UP (tick ${await currentTick(page)}) ###`);
   console.log(`ambient: ${JSON.stringify(await ambient(page))}`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(500);
   const after = await roomsPanel(page);
   console.log(after.text);
@@ -607,11 +607,11 @@ test('act 3: build the door, and see whether the game confirms it', async ({ pag
   console.log(`\n### 90s later (tick ${await currentTick(page)}) ###`);
   console.log(`counts: ${JSON.stringify(await latestCounts(page))}`);
   console.log(`rooms panel:\n${(await roomsPanel(page)).text}`);
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(400);
   console.log(`regime panel:\n${await panelText(page, '.hud-regime')}`);
   await shot(page, 'act3-end-regime');
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await shot(page, 'act3-end-rooms');
   await shotOf(page, '.hud-rooms', 'act3-end-rooms-element');
   await shotOf(page, '.hud-strip', 'act3-end-strip');
@@ -639,7 +639,7 @@ test('act 4a: a door that leads into a sealed pocket', async ({ page }) => {
   console.log(`door press: ${JSON.stringify(await press(page, doorX, southY))}`);
   await waitForQueueEmpty(page);
   await page.waitForTimeout(3000);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   console.log(`\n### door in, before the pocket ###`);
   console.log(`needs: ${JSON.stringify((await roomsPanel(page)).needs)}`);
   console.log(`counts: ${JSON.stringify(await latestCounts(page))}`);
@@ -661,7 +661,7 @@ test('act 4a: a door that leads into a sealed pocket', async ({ page }) => {
   await page.waitForTimeout(6000);
 
   console.log(`\n### THE POCKET IS SEALED. The cell has a door onto a dead end. ###`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(500);
   const r = await roomsPanel(page);
   console.log(r.text);
@@ -688,10 +688,10 @@ test('act 4a: a door that leads into a sealed pocket', async ({ page }) => {
   }
   console.log(`after 100s: needs = ${JSON.stringify((await roomsPanel(page)).needs)}`);
   console.log(`counts: ${JSON.stringify(await latestCounts(page))}`);
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(400);
   console.log(`regime:\n${await panelText(page, '.hud-regime')}`);
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await shot(page, 'act4a-end');
 });
 
@@ -774,7 +774,7 @@ test('act 4b: a sealed storage room, and a room taken back at once', async ({ pa
   let attempts = 0;
   for (;;) {
     attempts += 1;
-    await tab(page, 'rooms').click({ timeout: 30_000 });
+    await tab(page, 'zones').click({ timeout: 30_000 });
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click({ timeout: 30_000 });
     await page.locator('.hud-rooms__list [data-room="room.storage-room"]').click({ timeout: 30_000 });

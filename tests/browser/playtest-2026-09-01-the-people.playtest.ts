@@ -229,7 +229,7 @@ export async function buildResilientCell(
   let zoned = false;
   let attempts = 0;
   for (; attempts < 12 && !zoned; attempts += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -273,7 +273,7 @@ async function admitAndHire(page: Page, admits: number, guards: number, label: s
   log(`intake panel after ${admits} admissions: ${await panelText(page, '.hud-intake')}`);
 
   if (guards > 0) {
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
     for (let i = 0; i < guards; i += 1) {
@@ -391,7 +391,7 @@ test('act 1: what a risk-tier badge says, and what it never explains', async ({ 
   await page.locator('.hud-strip__transport button').nth(0).click();
   log(act, `settled at tick ${await currentTick(page)}`);
 
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(300);
 
   const roster = await readRoster(page);
@@ -480,7 +480,7 @@ test('act 2: coverage states, a held guard says why it is held, and a contraband
   log(act, `after furnishing: rooms=${built?.rooms} accommodationCapacity=${built?.accommodationCapacity}`);
 
   // ---- coverage before any guard --------------------------------------
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   log(act, `coverage with 0 guards hired: ${JSON.stringify(await readCoverage(page))}`);
 
   // ---- admit twelve, hire three (two posted, one spare to search) ------
@@ -492,7 +492,7 @@ test('act 2: coverage states, a held guard says why it is held, and a contraband
   await page.waitForTimeout(1_500);
   log(act, `intake panel after 12 admissions: ${await panelText(page, '.hud-intake')}`);
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   log(act, `coverage right after 12 admissions, 0 guards: ${JSON.stringify(await readCoverage(page))}`);
@@ -577,7 +577,7 @@ test('act 3: hiring while broke, on a fresh unfurnished prison, read off the rea
       `${INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS} (treasury.ts)`,
   );
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   const hireLabel = (await page.locator('.hud-staff__hire').innerText()).trim();
@@ -616,7 +616,7 @@ test('act 3: hiring while broke, on a fresh unfurnished prison, read off the rea
   log(act, `balance before the hire attempt: ${preHire?.treasuryMinorUnits} (roomCapacity=${preHire?.roomCapacity})`);
   log(act, `funds chip/badge before the hire attempt: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   await page.locator('.hud-staff__hire').click();
   await page.waitForTimeout(500);

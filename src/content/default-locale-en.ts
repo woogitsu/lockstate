@@ -413,15 +413,57 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.transport.fast-forward': 'Fast forward',
 
   'hud.tabs.title': 'Prison sections',
+  /*
+   * The five section names, moved on 2026-09-14 to the ones the 2026-09-13
+   * identity delivery names -- Przeglad / Buduj / Strefy / Zarzadzaj / Plan
+   * dnia -- on the owner's ruling recorded as ADR 0112 decision 3. The
+   * delivery's names are Polish; the shipped catalogue is English, and the
+   * CHOICE of English words is ours under `AGENTS.md`'s fourth reservation as
+   * released on 2026-09-04. The requirement that each be TRUE of what its
+   * section contains is not ours, so each is recorded here against the code
+   * that fills the section:
+   *
+   * - `Overview` -- `src/ui/hud/intake-panel.ts` today, which is what this
+   *   section has held since #261 and is the one name in this list that is
+   *   **not yet true of its contents**: the owner ruled on 2026-09-14 that
+   *   intake moves to Manage and that Overview gets a readout of its own, and
+   *   those two land in the commit after this one, together, so that the
+   *   section is never empty in between (issue #1183).
+   * - `Build` -- `src/ui/hud/build-panel.ts`: the catalogue, the materials
+   *   purchase and sell blocks, the build queue and the deliveries. The owner
+   *   ruled on 2026-09-14 that materials and deliveries stay here.
+   * - `Zones` -- `src/ui/hud/rooms-panel.ts`, whose two commands are
+   *   `ZoneRoom` and `UnzoneRoom`: the section's controls literally zone and
+   *   unzone an area, which is why the plural noun is true of it and not
+   *   merely a translation of *Strefy*.
+   * - `Manage` -- `src/ui/hud/staff-panel.ts`: hiring, releasing a guard from
+   *   a post, and dismissal. Every control in the section acts on a person,
+   *   and the admission control joins them in the commit after this one.
+   * - `Day plan` -- `src/ui/hud/regime-panel.ts`, which paints each
+   *   classification group's blocks for the day in progress. **It also still
+   *   carries the prisoner roster and the prisoner inspector**, which the
+   *   delivery's own table puts under Zarzadzaj; splitting that panel in two
+   *   is a real code change rather than a mount move
+   *   (`docs/research/2026-09-14-the-mechanical-navigation-move.md` SS6 step
+   *   4) and is not done here. Named so that a reader does not take this
+   *   sentence's absence for the split having happened.
+   *
+   * Widths, because ADR 0022's measurement is what limits a label here. It
+   * measured the tab bar at 375x812 spanning x = 1.8 .. 373.2 with a fifth tab
+   * injected -- 1.8px of margin per side -- so a nine-character label such as
+   * "Logistics" would put the bar at x = -9.5 and fail
+   * `tests/browser/ui-shell.spec.ts`'s `tabs.x >= 0` / `tabs.right <= 375`
+   * pair. In characters the set does not grow: the longest was 8
+   * (`Overview`, `Security`) and the longest is 8 (`Overview`, `Day plan`),
+   * with `Rooms` -> `Zones` exactly equal at 5 and `Regime` -> `Day plan`
+   * the one that grows, by two characters, against `Security`'s eight
+   * leaving the bar at the same time.
+   */
   'hud.tab.overview': 'Overview',
   'hud.tab.build': 'Build',
-  'hud.tab.security': 'Security',
-  'hud.tab.regime': 'Regime',
-  // Six characters. ADR 0022 measured the tab bar at 375x812 spanning
-  // x = 1.8 .. 373.2 with a fifth tab injected -- 1.8px of margin per side --
-  // so a nine-character label such as "Logistics" would put the bar at
-  // x = -9.5 and fail the assertions in `tests/browser/ui-shell.spec.ts`.
-  'hud.tab.rooms': 'Rooms',
+  'hud.tab.zones': 'Zones',
+  'hud.tab.manage': 'Manage',
+  'hud.tab.day-plan': 'Day plan',
 
   /*
    * The Layout menu and the three collapse arrows (#1159, stage 3).

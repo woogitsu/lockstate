@@ -293,7 +293,7 @@ async function readConfirmation(page: Page, expected: string): Promise<Confirmat
 
 async function openSecurityTab(page: Page): Promise<void> {
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 }
 
 const publish = (page: Page, next: HudViewModel): Promise<void> =>

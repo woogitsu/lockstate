@@ -80,7 +80,7 @@ test('fresh, unfurnished prison: warning, then danger, then critical, with the s
   // sets up the daily wage bill that will drain the treasury past the
   // deliveries rung once the clock runs, which a Buy press cannot do (a
   // press is refused at the rung; a payday is not).
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   for (let i = 0; i < 10; i += 1) {

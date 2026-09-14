@@ -355,14 +355,14 @@ async function readScreen(page: Page): Promise<ScreenReading> {
   await tab(page, 'build').click();
   await page.waitForTimeout(400);
   const build = await line(page, '.hud-build');
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(400);
   const rooms = await line(page, '.hud-rooms');
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await page.waitForTimeout(600);
   const security = await line(page, '.hud-staff');
   const held = await heldRowsHud(page);
-  await tab(page, 'regime').click();
+  await tab(page, 'day-plan').click();
   await page.waitForTimeout(400);
   const regime = await line(page, '.hud-regime');
   await tab(page, 'overview').click();
@@ -621,7 +621,7 @@ test('act 2: save during a live response, reload, load, and watch the guards', a
   await page.waitForTimeout(300);
   console.log(`[act2] clock before the watch: ${JSON.stringify(await currentClock(page))}`);
 
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await page.waitForTimeout(500);
 
   // Catch a response in flight, pause on the spot, and only then save.
@@ -714,7 +714,7 @@ test('act 2: save during a live response, reload, load, and watch the guards', a
   for (const sample of samples) console.log(`[act2]   ${sample}`);
 
   // What the player actually sees, on the tab that renders this projection.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   await page.waitForTimeout(1200);
   console.log(`[act2] HUD security in the window :: ${await line(page, '.hud-staff')}`);
   console.log('[act2] HUD held block in the window:');

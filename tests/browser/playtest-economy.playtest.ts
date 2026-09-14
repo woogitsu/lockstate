@@ -249,7 +249,7 @@ test.describe('playtest: taking it back', () => {
     log(`before removal: ${JSON.stringify(await latestCounts(page))}`);
 
     // ---- take the room back out, by dragging across it -----------------
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     log(`remove control label: ${JSON.stringify((await page.locator('.hud-rooms__remove').innerText()).trim())}`);

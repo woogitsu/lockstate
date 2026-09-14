@@ -531,22 +531,43 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.zoom.out': 'Oddal',
 
   'hud.tabs.title': 'Sekcje więzienia',
+  /*
+   * The five section names, moved on 2026-09-14 to the 2026-09-13 delivery's
+   * own five (ADR 0112 decision 3). Here the delivery IS the Polish, so these
+   * five are quoted from its navigation table
+   * (`docs/design/2026-09-13-identity-v5/DOKUMENTACJA/projekt.md:66-72`)
+   * rather than translated from the English: Przegląd / Buduj / Strefy /
+   * Zarządzaj / Plan dnia.
+   *
+   * `hud.tab.build` moves from *Budowa* (a noun) to the delivery's *Buduj* (an
+   * imperative), which is the same six characters and the same section.
+   *
+   * **The measurement this catalogue recorded as owed is now settled, in the
+   * direction it hoped for, and the paragraph that owed it is kept below.**
+   * It argued that *Pomieszczenia* was the honest word for a panel of rooms
+   * even at thirteen characters, and that *Strefy* was a width-driven choice
+   * it would rather be overruled on. The overruling did not come from a width
+   * budget: the section itself is now Strefy, in the owner's delivery, so the
+   * six-character word is the honest one and the thirteen-character one would
+   * now be naming the panel inside the section rather than the section. The
+   * inherited ADR 0022 figures it was owed against -- 2.2px of clipping on
+   * *Overview*, 10.3px of overlap on *Security* -- describe a label that no
+   * longer exists, and no Polish section name is now longer than nine
+   * characters (*Zarządzaj*, *Plan dnia*).
+   *
+   * > Thirteen characters, and the honest word. The 2026-08-30 corpus proposed
+   * > the six-character *Strefy* to fit ADR 0022's measured tab bar, and named
+   * > that as the choice it would rather be overruled on;
+   * > `docs/research/2026-08-30-which-word-for-a-prisoner.md` §5 then
+   * > re-measured and found the browser assertion does not fire -- a
+   * > thirteen-character label stays inside the bar and instead clips and
+   * > overlaps its neighbours.
+   */
   'hud.tab.overview': 'Przegląd',
-  'hud.tab.build': 'Budowa',
-  'hud.tab.security': 'Ochrona',
-  // *Rozkład* is a real shortening of *Rozkład dnia*, which is what the panel
-  // shows; it is not a word picked to fit a width budget.
-  'hud.tab.regime': 'Rozkład',
-  // Thirteen characters, and the honest word. The 2026-08-30 corpus proposed
-  // the six-character *Strefy* to fit ADR 0022's measured tab bar, and named
-  // that as the choice it would rather be overruled on;
-  // `docs/research/2026-08-30-which-word-for-a-prisoner.md` §5 then re-measured
-  // and found the browser assertion does not fire -- a thirteen-character label
-  // stays inside the bar and instead clips and overlaps its neighbours. That
-  // measurement is inherited rather than re-taken here (re-taking it needs the
-  // catalogue wired into a page, which is #662), and it is an owed item rather
-  // than a reason to write a word this panel does not mean.
-  'hud.tab.rooms': 'Pomieszczenia',
+  'hud.tab.build': 'Buduj',
+  'hud.tab.zones': 'Strefy',
+  'hud.tab.manage': 'Zarządzaj',
+  'hud.tab.day-plan': 'Plan dnia',
 
   'hud.minimap.title': 'Minimapa',
   'hud.minimap.placeholder': 'Nie ma tu jeszcze mapy — naciśnięcie może przesunąć kamerę',

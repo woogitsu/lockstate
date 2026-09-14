@@ -489,7 +489,7 @@ test.describe('the Build panel queue', () => {
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
     expect((await probeQueue(page)).sectionLaidOut).toBe(true);
 
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
     expect((await probeQueue(page)).sectionLaidOut).toBe(false);
 
     // Coming back shows nothing until the host answers again, which is the
@@ -539,7 +539,7 @@ test.describe('the Build panel queue', () => {
 
     // Away and back, which is `applyBuildQueue(undefined)` and then a fresh
     // answer -- the sweep's tab walk, in two lines.
-    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
     await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
 

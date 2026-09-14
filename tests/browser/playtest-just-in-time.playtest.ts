@@ -404,7 +404,7 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
     attempts += 1;
     let note = '(the panel was never read)';
     try {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
         await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       }
@@ -456,7 +456,7 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   const furnitureSamples = await watchQueue(page, act2, 'furniture', 180_000);
   log(act2, `furniture queue settled at ${JSON.stringify(furnitureSamples[furnitureSamples.length - 1])}`);
   await observe(page, act2, 'bed and toilet queue settled');
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   log(act2, `rooms panel: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
   // Admit. One press, then a second, so the second's outcome is on the record.
@@ -471,7 +471,7 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   log(act2, `intake panel: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
 
   // Hire a guard.
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   log(act2, `hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);

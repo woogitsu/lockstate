@@ -64,7 +64,7 @@ import {
 const PHONE = { width: 375, height: 812 } as const;
 const DESKTOP = { width: 1440, height: 900 } as const;
 
-const TABS = ['overview', 'build', 'rooms', 'security', 'regime'] as const;
+const TABS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
 type TabId = (typeof TABS)[number];
 
 interface Clip {

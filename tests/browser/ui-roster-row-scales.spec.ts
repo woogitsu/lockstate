@@ -221,7 +221,7 @@ interface RowScales {
 
 async function openRegime(page: Page): Promise<void> {
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'))).toBe(true);
   await page.evaluate(
     ([regime, roster]) => window.lockstateUiHarness.reportRegime(regime, roster),
     [TIMETABLE, ROSTER] as const,

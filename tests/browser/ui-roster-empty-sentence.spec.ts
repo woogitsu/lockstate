@@ -97,7 +97,7 @@ test.describe('the empty prisoner roster on the page a player loads', () => {
 
     // Nothing is built, nobody is admitted, and no clock is started: this is
     // the arrival state of the tab for every new player.
-    await page.locator('.ui-tab[data-tab="regime"]').click();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
 
     const roster = page.locator('.hud-regime__roster');
     await expect(roster, 'the Regime tab drew no roster block at all').toBeVisible();

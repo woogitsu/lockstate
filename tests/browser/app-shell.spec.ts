@@ -2691,7 +2691,7 @@ const INTERACTIVE_SELECTOR =
  * **And none of that could have reached the assertions anyway**, which is the
  * half the old sentence got wrong rather than merely imprecise. The Staff panel
  * shares `.hud__side` with the Build panel by *swapping* with it -- `hud.ts`
- * calls `staffPanel.setVisible(activeTab === 'security')`, which sets `hidden`,
+ * calls `staffPanel.setVisible(activeTab === 'manage')`, which sets `hidden`,
  * and `primitives.css` gives `.ui-panel[hidden]` `display: none`. Every
  * arrival-state measurement in this loop is taken on the **build** tab, where
  * `.hud-staff` has no box at all; measured from the security tab, the same is
@@ -4255,7 +4255,7 @@ test.describe('the assembled application', () => {
        * happen in at every viewport this loop visits. The band it uncovers is
        * measured in "the Rooms panel yields the world it is drawn on" below.
        */
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
 
       /*
        * The Rooms panel's typed route (#411, ADR 0038), expanded for exactly
@@ -4361,7 +4361,7 @@ test.describe('the assembled application', () => {
        * guard. That is exactly the state issue #533 was measured in, and it is
        * why hiring here does not shorten the constant below.
        */
-      await page.locator('.ui-tab[data-tab="security"]').click();
+      await page.locator('.ui-tab[data-tab="manage"]').click();
       const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
       await expect(staffMetric, `the prison already has staff at ${width}x${height}`).toHaveText('0');
       // Enabled on arrival, because `createStaffPanel` preselects
@@ -5954,7 +5954,7 @@ test.describe('the assembled application', () => {
       [375, 812],
     ] as const) {
       await page.setViewportSize({ width, height });
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
 
       const geometry = await page.evaluate(() => {
@@ -6098,7 +6098,7 @@ test.describe('the assembled application', () => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
     const roomIds = await page
@@ -6273,7 +6273,7 @@ test.describe('the assembled application', () => {
       await expect
         .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
         .toBe(width);
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
 
       // Vacuity guard, before a single pixel is trusted: the page really is
@@ -6428,7 +6428,7 @@ test.describe('the assembled application', () => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
     // Vacuity guard, before a single pixel is trusted: this is the shipped
@@ -6507,7 +6507,7 @@ test.describe('the assembled application', () => {
     ] as const) {
       await page.setViewportSize({ width, height });
       await page.locator('.ui-tab[data-tab="build"]').click();
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
       const empty = await needsProbe();
       expect(empty.present, `the readout block is not in the DOM at all at ${width}x${height}`).toBe(true);
@@ -6563,7 +6563,7 @@ test.describe('the assembled application', () => {
      * measured against a strip one row tall and #658 makes the strip two.
      */
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
     const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
@@ -6607,7 +6607,7 @@ test.describe('the assembled application', () => {
     });
 
     // ---- two cells zoned, and nothing standing in either -------------
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
     expect(
@@ -6739,7 +6739,7 @@ test.describe('the assembled application', () => {
       // off, so what is measured is a fresh pull into an unfolded panel --
       // which is also the state a player is in when they come back to look.
       await page.locator('.ui-tab[data-tab="build"]').click();
-      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await page.locator('.ui-tab[data-tab="zones"]').click();
       await expect(page.locator('.hud-rooms')).toBeVisible();
       await expect(page.locator('.hud-rooms__needs')).toBeVisible();
 
@@ -7092,7 +7092,7 @@ test.describe('the assembled application', () => {
     // transport's *Pause*, and the tab bar is the last child of `.hud`
     // (`src/ui/hud/hud.ts:2228`), so forwards is 24 presses and backwards is 4.
     // `shiftTabTo` carries the table and the argument.
-    await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
@@ -7364,7 +7364,7 @@ test.describe('the assembled application', () => {
     // Backwards, for the reason the test above gives at the same point: the
     // wall helper leaves the keyboard on *Pause* and the tab bar is the last
     // child of `.hud`, so this is 4 presses instead of 24.
-    await shiftTabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await shiftTabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
     await chooseRoomTypeFromTheKeyboard(page, 'room.cell', { backwards: true });
@@ -7656,7 +7656,7 @@ test.describe('the assembled application', () => {
     /*
      * ---- Designate, the one that is not the busy group's to give back ----
      */
-    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
     await chooseRoomTypeFromTheKeyboard(page, 'room.cell');
@@ -7706,7 +7706,7 @@ test.describe('the assembled application', () => {
     );
 
     // ---- Hire ------------------------------------------------------------
-    await tabTo(page, 'the Security tab', { selector: '.ui-tab[data-tab="security"]' });
+    await tabTo(page, 'the Security tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-staff')).toBeVisible();
     await tabTo(page, 'a staff role row', { selector: '.hud-staff__list [data-staff-role]' });
@@ -11061,7 +11061,7 @@ test.describe('the assembled application', () => {
     const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
     await wallRectanglesFromTheKeyboard(page, [cell]);
 
-    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__coordinates > .ui-section__header').click();
     await expect(page.locator('.hud-rooms__coordinates')).toHaveAttribute('data-collapsed', 'false');
@@ -11128,7 +11128,7 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(4)}`);
 
     // ---- and the four rows the Regime panel draws ----------------------
-    await page.locator('.ui-tab[data-tab="regime"]').click();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
     const roster = page.locator('.hud-regime__roster');
     await expect(roster).toBeVisible();
 
@@ -11155,7 +11155,7 @@ test.describe('the assembled application', () => {
      */
     const rereadRoster = async (): Promise<void> => {
       await page.locator('.ui-tab[data-tab="overview"]').click();
-      await page.locator('.ui-tab[data-tab="regime"]').click();
+      await page.locator('.ui-tab[data-tab="day-plan"]').click();
     };
 
     // The whole population reached the projection's `total`, so the four rows

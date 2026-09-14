@@ -95,7 +95,7 @@ async function run(page: Page, label: string, seal: boolean): Promise<{ shot: st
   const origin = await buildCellWithDoor(page, label);
   if (seal) await boxInTheDoorway(page, origin);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   await page.waitForTimeout(500);
   const roomsPanel = await panelText(page, '.hud-rooms');
   console.log(`[${label}] rooms panel:\n${roomsPanel}`);

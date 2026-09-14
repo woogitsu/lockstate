@@ -311,7 +311,7 @@ test('act 1 — what the world looks like at each step of building one thing', a
   // Zone it as a cell.
   let zoned = false;
   for (let attempt = 1; attempt <= 8 && !zoned; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }

@@ -158,7 +158,7 @@ test.describe('probe 886', () => {
 
     /** Zone the 4x4 and report what the panel and the band said. */
     const zone = async (label: string, bx: number, by: number): Promise<void> => {
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

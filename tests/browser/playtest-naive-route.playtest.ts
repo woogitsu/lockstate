@@ -154,7 +154,7 @@ test.describe('playtest: the naive route', () => {
     const origin = await calibrate(page);
     log(`calibration: tile (0,0) top-left = (${origin.originX}, ${origin.originY})`);
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     report(log, 'ACT 1a — Rooms tab, nothing selected yet', await hudDump(page));
 
     const roomsCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
@@ -269,7 +269,7 @@ test.describe('playtest: the naive route', () => {
     let zoned = false;
     for (; attempts < 12; ) {
       attempts += 1;
-      await tab(page, 'rooms').click();
+      await tab(page, 'zones').click();
       const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
       if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
       await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -447,7 +447,7 @@ test.describe('playtest: the naive quantity', () => {
     );
 
     // And what the player gets for trying to use the half-built perimeter.
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
@@ -475,7 +475,7 @@ test.describe('playtest: the naive quantity', () => {
     }
     log(`RECOVERY: the queue drained at tick ${drainedAt}`);
 
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     const stillCollapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (stillCollapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();

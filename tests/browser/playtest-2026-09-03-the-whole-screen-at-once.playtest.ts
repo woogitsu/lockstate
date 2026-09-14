@@ -49,7 +49,7 @@ import {
  */
 
 const DESKTOP = { width: 1440, height: 900 } as const;
-const TABS = ['overview', 'build', 'rooms', 'security', 'regime'] as const;
+const TABS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
 
 const log = (line: string): void => {
   console.log(`[screen] ${line}`);
@@ -530,7 +530,7 @@ test.describe('the whole screen at once', () => {
     await page.waitForTimeout(400);
     log(`   funds chip before the order: ${await fundsOnScreen(page)}`);
     await buy(page, 'wall-brick', 600);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(400);
     const beforeSpend = await readCurrentView(page);
     log(`   funds chip on returning to Regime: ${await fundsOnScreen(page)}`);
@@ -594,7 +594,7 @@ test.describe('the whole screen at once', () => {
     await snapshot('paused, after buying 3 beds');
 
     log('===== ACT 4 / number two: COVERAGE, against a hire =====');
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     log(`   staff panel before: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
     await fastForwardToMax(page);
     await page.waitForTimeout(4000);
@@ -608,7 +608,7 @@ test.describe('the whole screen at once', () => {
     await page.waitForTimeout(15_000);
     await pauseClock(page);
     await snapshot('paused, 12 prisoners on 1 guard');
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     log(`   staff panel with 12 on 1 guard: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
     const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
     if ((await guardRow.count()) > 0) await guardRow.first().click();
@@ -620,7 +620,7 @@ test.describe('the whole screen at once', () => {
     await page.waitForTimeout(15_000);
     await pauseClock(page);
     await snapshot('paused, after hiring 4 more guards');
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     log(`   staff panel after the hires: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
 
     log('===== ACT 4 / number three: EARNED TODAY, across a day boundary =====');
@@ -861,7 +861,7 @@ test.describe('the whole screen at once', () => {
     log('===== ACT 7 / six prisoners, nobody hired =====');
     // The Security tab has to be the open one for the panel to be laid out, so
     // both readouts are on screen together for a player as well as for a probe.
-    await tab(page, 'security').click();
+    await tab(page, 'manage').click();
     await page.waitForTimeout(500);
     await fastForwardToMax(page);
     await sample('6 prisoners, 0 guards', 20);
@@ -985,7 +985,7 @@ test.describe('the whole screen at once', () => {
     await buildAndPopulate(page, { beds: 6, admits: 8, guards: 1, label: 'act9' });
     await fastForwardToMax(page);
     await page.waitForTimeout(45_000);
-    await tab(page, 'regime').click();
+    await tab(page, 'day-plan').click();
     await page.waitForTimeout(1000);
 
     log('===== ACT 9 / the Regime tab roster, cell by cell =====');

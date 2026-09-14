@@ -119,7 +119,7 @@ test('re-measure #576: how long after the queue empties does the note stop sayin
   const queueEmptyAt = Date.now();
   console.log(`Build panel says the queue is empty, ${queueEmptyMs}ms into the wait`);
 
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   const roomRow = page.locator('.hud-rooms__list [data-room="room.cell"]');
   await roomRow.click();
 

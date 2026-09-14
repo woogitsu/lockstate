@@ -429,7 +429,11 @@ describe('message keys live in one registry', () => {
     ]) {
       expect(walked, `${rung} is never rendered by the coverage chip in this walk`).toContain(rung);
     }
-    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
+    // The delivery's own five, in its own order (ADR 0112 decision 3). Paired
+    // with `tests/unit/ui-hud-shell-state.test.ts`'s `HUD_TAB_IDS` assertion:
+    // `HUD_TAB_IDS` and `HUD_TABS` are two declarations of the same list, and
+    // these two assertions are what stop one of them drifting from the other.
+    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan']);
     for (const tab of HUD_TABS) expect(registry.has(tab.labelKey), tab.labelKey).toBe(true);
   });
 });

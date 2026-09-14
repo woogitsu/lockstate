@@ -629,7 +629,7 @@ async function buildTheFiftyBedPrison(page: Page, label: string): Promise<{ orig
   // Retried, because the Rooms panel's enclosure verdict is read off a world
   // view a snapshot replaces and a completed wall does not mark it dirty.
   for (let attempt = 1; ; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -675,7 +675,7 @@ async function buildTheFiftyBedPrison(page: Page, label: string): Promise<{ orig
     `[${label}] furnished: rooms=${String(furnished?.rooms)} roomCapacity=${String(furnished?.roomCapacity)}` +
       ` accommodationCapacity=${String(furnished?.accommodationCapacity)} funds=${String(furnished?.treasuryMinorUnits)}`,
   );
-  await tab(page, 'rooms').click();
+  await tab(page, 'zones').click();
   note(`[${label}] rooms panel after furnishing: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
   return origin;
 }
@@ -736,7 +736,7 @@ async function panEastForAYard(page: Page, label: string): Promise<{ origin: { o
 /** Zones `yard` as `room.yard` and reports exactly what the game said back. */
 async function zoneTheYard(page: Page, label: string, origin: { originX: number; originY: number }, yard: Rect): Promise<boolean> {
   for (let attempt = 1; attempt <= 6; attempt += 1) {
-    await tab(page, 'rooms').click();
+    await tab(page, 'zones').click();
     if ((await page.locator('.hud-rooms').getAttribute('data-collapsed')) === 'true') {
       await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
     }
@@ -808,7 +808,7 @@ async function admit(page: Page, label: string, wanted: number): Promise<number>
 }
 
 async function hire(page: Page, label: string, wanted: number): Promise<void> {
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   const guardRow = page.locator('.hud-staff__list [data-staff-role="staff-role.guard"]');
   if ((await guardRow.count()) > 0) await guardRow.first().click();
   const control = page.locator('.hud-staff__hire');
@@ -877,7 +877,7 @@ async function playTheFiftyBedPrison(page: Page, label: string, days: number, wi
   await runAndWatch(page, label, admittedAt + TICKS_PER_DAY * days, startedAt, 420_000);
   logScreen(label, 'FINAL', await readScreen(page, startedAt));
   await reportNeeds(page, label, 'FINAL');
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   note(`[${label}] staff panel at the end: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   printCurve(label, await countsSeries(page));
   await printEvents(page, label);
@@ -935,7 +935,7 @@ async function playToTheBreakEven(page: Page, label: string, firstStage: number,
   await runAndWatch(page, label, from + TICKS_PER_DAY * daysPerStage, startedAt, 220_000);
   logScreen(label, 'STAGE-2 END', await readScreen(page, startedAt));
   await reportNeeds(page, label, 'STAGE-2');
-  await tab(page, 'security').click();
+  await tab(page, 'manage').click();
   note(`[${label}] staff panel at the end: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
   printCurve(label, await countsSeries(page));
   await printEvents(page, label);

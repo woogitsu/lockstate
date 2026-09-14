@@ -260,7 +260,7 @@ async function read(page: Page): Promise<WageReading> {
 
 async function openSecurityTab(page: Page): Promise<void> {
   await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('security'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'))).toBe(true);
 }
 
 const publish = (page: Page, next: HudViewModel): Promise<void> =>

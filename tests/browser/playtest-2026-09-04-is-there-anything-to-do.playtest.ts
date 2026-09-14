@@ -381,7 +381,7 @@ async function designate(
    */
   const before = Number((await latestRawCounts(page))?.counts['rooms'] ?? 0);
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    await tab(page, 'rooms').click({ timeout: 15_000 });
+    await tab(page, 'zones').click({ timeout: 15_000 });
     const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
     if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click({ timeout: 15_000 });
     await page.locator(`.hud-rooms__list [data-room="${roomId}"]`).click({ timeout: 15_000 });
@@ -405,7 +405,7 @@ async function designate(
 
 /** The Regime tab's roster and the needs of whoever is selected. */
 async function needsReadout(page: Page, label: string): Promise<string> {
-  await tab(page, 'regime').click({ timeout: 15_000 });
+  await tab(page, 'day-plan').click({ timeout: 15_000 });
   const rows = page.locator('.hud-regime__roster-row');
   const count = await rows.count();
   if (count === 0) return `${label}: no roster rows`;
@@ -489,7 +489,7 @@ test.describe('is there anything to do', () => {
     console.log(`[act1] control lines that differ after three days: ${changed.length === 0 ? '(none)' : JSON.stringify(changed)}`);
 
     console.log(`[act1] ${await needsReadout(page, 'needs after three days')}`);
-    for (const id of ['overview', 'build', 'rooms', 'security', 'regime'] as const) {
+    for (const id of ['overview', 'build', 'zones', 'manage', 'day-plan'] as const) {
       await tab(page, id).click({ timeout: 15_000 });
       await page.waitForTimeout(300);
       console.log(`[act1] tab "${id}" says (UPPER BOUND):\n${await screen(page)}`);
@@ -550,7 +550,7 @@ test.describe('is there anything to do', () => {
     await page.waitForTimeout(3000);
     const packedCounts = await latestRawCounts(page);
     console.log(`[act2] ONE CELL with twelve beds: ${JSON.stringify(packedCounts)}`);
-    await tab(page, 'rooms').click({ timeout: 15_000 });
+    await tab(page, 'zones').click({ timeout: 15_000 });
     console.log(`[act2] the Rooms tab with twelve beds in one 6x6 cell (UPPER BOUND):\n${await screen(page)}`);
 
     // Admit eight more, one press at a time, reading the refusal band each time.
@@ -573,7 +573,7 @@ test.describe('is there anything to do', () => {
     // (`src/simulation/security/sector-staffing.ts:147`), so twelve occupants
     // need two and the prison is one short. This is the only pressure growth
     // is known to generate; the measurement is whether the screen says so.
-    await tab(page, 'security').click({ timeout: 15_000 });
+    await tab(page, 'manage').click({ timeout: 15_000 });
     console.log(`[act2] Security tab at twelve prisoners, ONE guard (UPPER BOUND):\n${await screen(page)}`);
     await tab(page, 'overview').click({ timeout: 15_000 });
     console.log(`[act2] Overview at twelve prisoners, ONE guard (UPPER BOUND):\n${await screen(page)}`);
@@ -636,7 +636,7 @@ test.describe('is there anything to do', () => {
     const twoRooms = await latestRawCounts(page);
     console.log(`[act2] TWO ROOMS: ${JSON.stringify(twoRooms)}`);
     if (after !== undefined && twoRooms !== undefined) console.log(`[act2] DELTA one room -> two rooms\n${deltaVector(after, twoRooms)}`);
-    await tab(page, 'rooms').click({ timeout: 15_000 });
+    await tab(page, 'zones').click({ timeout: 15_000 });
     console.log(`[act2] the Rooms tab with two cells (UPPER BOUND):\n${await screen(page)}`);
     await tab(page, 'overview').click({ timeout: 15_000 });
     console.log(`[act2] the Overview with two cells (UPPER BOUND):\n${await screen(page)}`);
@@ -663,7 +663,7 @@ test.describe('is there anything to do', () => {
     await tab(page, 'overview').click({ timeout: 15_000 });
     console.log(`[act3] the screen while two needs decay (UPPER BOUND):\n${await screen(page)}`);
     console.log(`[act3] Rooms tab -- does anything name the missing room? (UPPER BOUND)`);
-    await tab(page, 'rooms').click({ timeout: 15_000 });
+    await tab(page, 'zones').click({ timeout: 15_000 });
     console.log(`[act3] ${await screen(page)}`);
 
     // Now build the shower room: 3x3 enclosed, two shower heads
@@ -717,7 +717,7 @@ test.describe('is there anything to do', () => {
     }
     await waitForQueueEmpty(page);
     await page.waitForTimeout(2000);
-    await tab(page, 'rooms').click({ timeout: 15_000 });
+    await tab(page, 'zones').click({ timeout: 15_000 });
     console.log(`[act3] the Rooms tab once the shower heads are in (UPPER BOUND):\n${await screen(page)}`);
 
     const withShower = await latestRawCounts(page);
@@ -1013,7 +1013,7 @@ test.describe('is there anything to do', () => {
     await page.waitForTimeout(3000);
     const furnished = await latestRawCounts(page);
     console.log(`[act5] both rooms furnished: ${JSON.stringify(furnished)}`);
-    await tab(page, 'rooms').click({ timeout: 15_000 });
+    await tab(page, 'zones').click({ timeout: 15_000 });
     console.log(`[act5] the Rooms tab with a doored cell and a doored shower room (UPPER BOUND):\n${await screen(page)}`);
 
     // Four prisoners and a guard, then let it run.
@@ -1022,7 +1022,7 @@ test.describe('is there anything to do', () => {
       await page.locator('.hud-intake__admit').click({ timeout: 20_000 });
       await page.waitForTimeout(250);
     }
-    await tab(page, 'security').click({ timeout: 15_000 });
+    await tab(page, 'manage').click({ timeout: 15_000 });
     await page.locator('.hud-staff__hire').click({ timeout: 20_000 });
     await page.waitForTimeout(2000);
     const populated = await latestRawCounts(page);
