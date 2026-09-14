@@ -223,8 +223,6 @@ const UNREACHABLE_MODULES: Readonly<Record<string, string>> = {
     'The telemetry subsystem\'s own barrel, unreachable for exactly the reason `src/services/index.ts` is and *not* because the tree is parked -- the tree was wired (see `WIRED_TREES`) and `src/main.ts` reaches it by the direct specifiers `./services/telemetry/pipeline` and `./services/telemetry/pump`, which is what every other consumer in `src/` does too. One test file writes the barrel specifier (`tests/unit/services-telemetry.test.ts`), so it is exercised; nothing in the production graph does, so it contributes no code. Deleting it would be a change to how tests import, not a removal of dead capability.',
   'src/persistence/size.ts':
     '`estimateSaveEnvelopeByteSize` — the size hook #18 and `docs/BENCHMARKING.md` call for. Three test files call it; nothing in `src/` does, because no storage backend has had to decide whether compression is worth it yet. It is one exported function, so this is a tail rather than a tier.',
-  'src/services/localization/pl-catalog.ts':
-    'The Polish catalogue, assembled the way `default-catalog.ts` assembles the English one (#661, 2026-09-14). It is awaiting a producer in the precise sense ADR 0044 means: `createChunkCatalogLoader` takes a map of `() => import(...)` thunks and nothing registers a `pl` thunk yet, because registering one is #662 and the language picker that would select it is #663. **The condition that discharges this entry is exactly that** -- the first `pl` entry in a chunk loader, at which point this gate fails in its reverse direction and the entry is deleted in the same change. It is here rather than under `tests/` because the sixteen service-layer Polish strings it carries are shipped content that belongs beside their English counterparts, and because #662 would otherwise have to move them into `src/` and re-review them. `tests/foundation/second-locale-contract.test.ts` audits it against the English reference on every run, so it is not unexercised.',
   'src/persistence/local/memory-store.ts':
     'The in-memory `LocalSaveStore`, used by nine test files to exercise repository policy without a real or polyfilled IndexedDB. Its own header says "Not exported for production use", so being outside the production graph is the module working as designed.',
 };
@@ -294,6 +292,28 @@ describe('the walk this gate rules on reaches a real graph', () => {
       'src/persistence/save-schema.ts',
       'src/services/localization/localizer.ts',
       'src/services/localization/default-catalog.ts',
+      /*
+       * The Polish catalogue, and it is here because this gate's reverse
+       * direction fired on the commit that wired it (#662, 2026-09-14) --
+       * exactly as it did for `src/services/telemetry/`.
+       *
+       * `UNREACHABLE_MODULES` carried `src/services/localization/pl-catalog.ts`
+       * from 2026-09-14 with a discharge condition written into its own reason:
+       * *"the first `pl` entry in a chunk loader, at which point this gate
+       * fails in its reverse direction and the entry is deleted in the same
+       * change"*. `src/main.ts`'s `CATALOG_CHUNKS` is that entry --
+       * `pl: () => import('./services/localization/pl-catalog')` -- and a
+       * dynamic `import()` is a value import the walk follows
+       * (`tests/helpers/module-boundaries.ts`, `DYNAMIC_IMPORT`), so the module
+       * is in the production graph. Asserting it here rather than merely
+       * deleting the row is what makes the discharge a gate: un-registering the
+       * thunk fails this line instead of quietly restoring the parked state.
+       */
+      'src/services/localization/pl-catalog.ts',
+      // The chunk's own content half. It is outside `SCANNED_ROOTS`, so nothing
+      // above would notice it leaving the graph; the catalogue is only
+      // *delivered* if both halves arrive.
+      'src/content/locale-pl.ts',
       // The tree that left PARKED_TREES. Asserting it reachable is what makes
       // `WIRED_TREES` a gate: un-wiring telemetry fails here rather than
       // quietly restoring the state three inventories kept re-measuring.
