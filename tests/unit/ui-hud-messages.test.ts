@@ -62,6 +62,7 @@ const HUD_MODULE_NAMES = [
   'build-panel.ts',
   'dismiss-arming.ts',
   'event-band-dwell.ts',
+  'hud-layout.ts',
   'hud-state.ts',
   'hud.ts',
   'index.ts',
