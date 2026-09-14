@@ -31,7 +31,6 @@
   text-transform: uppercase;
   color: var(--text-muted);
   line-height: var(--label-line-height);
-  white-space: nowrap;
 }
 
 /* `hidden` must actually hide.
@@ -433,6 +432,26 @@
   cursor: pointer;
 }
 
+/*
+ * A section name is one line, in every locale (#1192).
+ *
+ * This element set no `white-space` until then, so a name with a space in it
+ * broke at the space when the tab was squeezed to its `min-width`: in Polish,
+ * *Plan dnia* at 375x812 laid out in two line boxes, 26.38px against every
+ * other label's 13.19, and the second line came off the rail. The default
+ * locale could not see it -- the English name for that section is the
+ * one-word *Schedule*, chosen for this reason
+ * (`docs/VISUAL_IDENTITY.md` item 5) -- so the wrap spec in
+ * `tests/browser/ui-shell.spec.ts` passed while the page it describes wrapped.
+ *
+ * `nowrap` alone is not the whole fix and was measured failing: the five
+ * buttons are already flex-shrunk below their own `min-width` at that
+ * viewport, so the unwrapped labels **overlap by 2.50px**. `hud.css`'s phone
+ * block buys the width back with `--label-tracking-tight`, and that token's
+ * docblock carries the measurement. The rail placement has had this
+ * declaration (with an ellipsis) since the layout stage; this is the bar
+ * placement catching up.
+ */
 .ui-tab__label {
   font-family: var(--font-ui);
   font-size: var(--text-size-label);
@@ -440,6 +459,7 @@
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
   line-height: var(--label-line-height);
+  white-space: nowrap;
 }
 
 .ui-tab:hover { color: var(--text-body); background: var(--surface-overlay); }

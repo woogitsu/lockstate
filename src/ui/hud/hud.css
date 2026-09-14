@@ -4760,6 +4760,41 @@
      here. */
 
   .ui-tab { min-width: calc(64px * var(--ui-scale)); padding: var(--space-2); }
+
+  /*
+   * The section names, tracked tighter so five of them fit one phone bar on
+   * one line each (#1192).
+   *
+   * `.ui-tab__label` is `white-space: nowrap` everywhere as of that issue --
+   * a section name is one line -- and on a phone that alone is not enough:
+   * measured at 375x812 in `pl-PL`, the unwrapped Polish labels sum to
+   * **323.70px** in a 351px inner bar and `Zarządzaj/Plan dnia` **overlap by
+   * 2.50px**. Padding cannot pay for it either: 27.3px left over for ten
+   * horizontal paddings is under 3px a side, i.e. tabs touching.
+   *
+   * At `--label-tracking-tight` the same five sum to **291.14px** and the
+   * tightest pair sits 5.11px apart -- the gap `Strefy/Zarządzaj` has today
+   * (5.14px) -- so no pair is tighter than the bar already was and nothing
+   * wraps. What it buys back is **13.19px of rail** (625.94 -> 639.13 at
+   * 375x812) and a bar 82.38px -> 69.19px, which is the cost the wrap was
+   * charging the panel below it.
+   *
+   * **It is measured to the edges of the range this block covers**, because a
+   * media query is a claim about all of it: at 390px the tightest gap is
+   * 10.05px and from 414px up the bar stops growing at 387.16px and the gap
+   * settles at 17px. Below 375 it runs out -- **at a 320px viewport the labels
+   * overlap by 4.08px even tracked this tight**, which no tracking fixes
+   * (0 tracking is still 266.72px of label in a 296px bar once the buttons'
+   * padding is paid). 375x812 is this repository's narrowest measured
+   * viewport, in 24 specs; a 320px gate would need the scrolling bar #1192
+   * priced, not a smaller number here.
+   *
+   * At the enlarged interface scales the bar wraps into rows rather than
+   * squeezing, and this helps there too rather than costing: at 150 % the bar
+   * goes from three rows to two (265.39px -> 183.59px) and the rail gains
+   * 81.80px; at 175 % and 200 % nothing moves.
+   */
+  .hud__tabs .ui-tab__label { letter-spacing: var(--label-tracking-tight); }
 }
 
 /* ------------------------------------------------------------------ */
