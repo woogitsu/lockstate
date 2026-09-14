@@ -6,6 +6,7 @@ import { type SimulationCommand, unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
+  EDIT_REGIME_BLOCK_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
@@ -18,6 +19,7 @@ import {
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
   dismissStaffSupersessionKey,
+  editRegimeBlockSupersessionKey,
   hireSupersessionKey,
   placeObjectSupersessionKey,
   purchaseCancelSupersessionKey,
@@ -1095,6 +1097,50 @@ export function createSessionCommandHandler(
        * the prison's history and has no tick of its own.
        */
       events.dismiss(simCommand.fromSequence, simCommand.throughSequence);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'EditRegimeBlock') {
+      /*
+       * The twelfth route, and the first that edits the prison's *rules*
+       * rather than its contents
+       * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+       * §3, on the owner's ruling of 2026-09-13).
+       *
+       * **No pre-check on the main thread**, for `CancelBuildOrder`'s,
+       * `ReleaseGuardAssignment`'s and `DismissStaff`'s reason: which groups
+       * the session has and where their block boundaries fall reach the main
+       * thread through `hud/status-strip`, which is published on a cadence, so
+       * this thread's copy may be one edit stale. This line is the only route
+       * a refused edit reaches the player by.
+       *
+       * **Both arms are the whole point, and the `else` is not boilerplate.**
+       * `RegimeScheduleRegistry.editBlock` refuses rather than snapping to the
+       * nearest block or inserting a boundary at the named tick; either of
+       * those would move a block the player did not name and report success,
+       * which is the failure `AGENTS.md` article 5 names. The lookup is
+       * exhaustive over `EditRegimeBlockRefusalReason`, so a third reason fails
+       * to compile until it has a wire id and a message key.
+       *
+       * **The tick is not passed to the edit and is passed to the refusal.**
+       * A timetable is not a thing that happens at a tick -- it is what the
+       * clock is read against, and every future tick reads the edited one --
+       * so nothing is stamped. A refusal is stamped, because `RefusalLog`
+       * records when the player was told.
+       */
+      const outcome = runtimePrisoners.regimes.editBlock(
+        simCommand.classificationGroupId,
+        simCommand.startTickOfDay,
+        simCommand.allowedCategories,
+      );
+      const regimeKey = editRegimeBlockSupersessionKey(simCommand.classificationGroupId, simCommand.startTickOfDay);
+      if (outcome.kind === 'refused') {
+        refusals.record(EDIT_REGIME_BLOCK_REFUSAL_REASONS[outcome.reason], context.tick, regimeKey);
+      } else {
+        // Issue #492: this group and this block. An edit that landed elsewhere
+        // in the day must not silence a standing refusal about this boundary.
+        refusals.supersede(regimeKey);
+      }
       return;
     }
 

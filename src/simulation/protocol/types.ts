@@ -1359,6 +1359,8 @@ export const REFUSAL_REASONS = [
   'cancel-purchase.not-pending',
   'construction.materials-unfunded',
   'dismiss.unknown-staff',
+  'edit-regime-block.unknown-block',
+  'edit-regime-block.unknown-group',
   'hire.insufficient-funds',
   'hire.no-duty-for-role',
   'hire.roster-full',

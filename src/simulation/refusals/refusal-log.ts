@@ -4,6 +4,7 @@ import type { CancelBuildOrderRefusalReason, RemoveWallRefusalReason } from '../
 import type { PurchaseCancelRefusalReason, PurchaseRefusalReason, SellStockRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
+import type { EditRegimeBlockRefusalReason } from '../prisoners/regime-registry';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
 import type { GuardReleaseRefusalReason } from '../security/guard-release';
@@ -462,6 +463,30 @@ export const DISMISS_STAFF_REFUSAL_REASONS: Readonly<Record<StaffDismissRefusalR
 };
 
 /**
+ * `EditRegimeBlockRefusalReason`, mapped onto the wire's
+ * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §3). Exhaustive for the same reason as every table above.
+ *
+ * Namespaced `edit-regime-block.*` rather than folded into anything: no other
+ * command in the protocol names a classification group or a tick of the day,
+ * so there is nothing for these two to be confused with -- and that is an
+ * argument for a namespace rather than against one, on the reasoning
+ * `DISMISS_STAFF_REFUSAL_REASONS` records. A table over a two-member union is
+ * what makes a third refusal impossible to add without deciding what it says.
+ *
+ * Both are reachable only from a command composed against a stale reading of
+ * the schedule -- the group ids and the block boundaries the panel names come
+ * from `hud/status-strip`, which is published on a cadence. Neither can be
+ * provoked by a player pressing a control that is currently correct, which is
+ * exactly why neither may be silently absorbed: a press that quietly edited a
+ * *different* block would be the article 5 failure, not an inconvenience.
+ */
+export const EDIT_REGIME_BLOCK_REFUSAL_REASONS: Readonly<Record<EditRegimeBlockRefusalReason, RefusalReason>> = {
+  'unknown-block': 'edit-regime-block.unknown-block',
+  'unknown-group': 'edit-regime-block.unknown-group',
+};
+
+/**
  * `ZoneRoomRefusalReason`, mapped onto the wire's. Exhaustive for the same
  * reason as above.
  *
@@ -729,6 +754,22 @@ export function removeWallSupersessionKey(x: number, y: number, edge: string): s
  */
 export function cancelBuildOrderSupersessionKey(orderId: string): string {
   return `cancel-build-order:${orderId}`;
+}
+
+/**
+ * `edit-regime-block.*`'s key: the group and the block boundary together,
+ * which is the pair `EditRegimeBlock` names.
+ *
+ * Both halves, on issue #492's rule and on `zoneRefusalSupersessionKey`'s
+ * reading of it -- a successful edit of `high-risk`'s morning must not silence
+ * a standing `unknown-block` about `general-population`'s, and an edit of a
+ * different block within the same group must not either. The two refusals
+ * share one key shape because they are two answers about one coordinate: an
+ * `unknown-group` withdrawn by a later success at that coordinate is withdrawn
+ * correctly, since the group named in it is the group that just answered.
+ */
+export function editRegimeBlockSupersessionKey(classificationGroupId: string, startTickOfDay: number): string {
+  return `edit-regime-block:${classificationGroupId}:${startTickOfDay}`;
 }
 
 /** `release-guard.*`'s key: the guard id, which is the one thing `ReleaseGuardAssignment` names. */

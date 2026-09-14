@@ -40,7 +40,8 @@ import {
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
-import { combineRegimeOverrides, DEFAULT_REGIME_SCHEDULES, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { combineRegimeOverrides, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { RegimeScheduleRegistry } from './regime-registry';
 import { residentsWithoutExistingPlace, RoomInstanceRegistry } from './room-instance-registry';
 import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
@@ -317,6 +318,21 @@ export class PrisonerOperationsRuntime {
    * (`src/simulation/worker/render-actors-keyframe.ts`); nothing outside this
    * runtime writes it.
    */
+  /**
+   * The session's timetables, and the only thing `EditRegimeBlock` writes
+   * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)).
+   *
+   * Public for the reason `roomInstances` is: three things outside this class
+   * need it and none of them should own it -- `session-commands.ts` performs
+   * the edit, `captureSessionSystems`/`restoreSessionSystems` carry it across a
+   * save, and `statusStripSource` hands it to the projection so the panel
+   * reports the edited day rather than the build-time constant.
+   *
+   * Seeded from `options.regimeSchedules` exactly as the array this field
+   * replaces was, so a runtime constructed without that option still starts on
+   * `DEFAULT_REGIME_SCHEDULES` and nothing about a fixture changes.
+   */
+  public readonly regimes: RegimeScheduleRegistry;
   public readonly locomotion = new LocomotionStore();
   private readonly locomotionSystem: LocomotionSystem;
   public readonly coldState = new PrisonerColdState();
@@ -437,6 +453,7 @@ export class PrisonerOperationsRuntime {
       // decides, and it is pure in the entity id, so the two writes agree.
       options.gangAssigner,
     );
+    this.regimes = new RegimeScheduleRegistry(options.regimeSchedules);
     this.classificationEarlyWarningSystem = new ClassificationEarlyWarningSystem(this.entityStore, this.query, this.records, options.disciplinaryEvidence);
     this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
     this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);
@@ -452,7 +469,7 @@ export class PrisonerOperationsRuntime {
       this.roomInstances,
       options.navigation,
       this.locomotion,
-      options.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES,
+      () => this.regimes.all(),
       options.routeContextResolver,
       // The caller's override (a live riot, ADR 0057) tried first, and this
       // runtime's own solitary-sanction override underneath it -- see
