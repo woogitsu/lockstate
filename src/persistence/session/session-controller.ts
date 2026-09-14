@@ -2,7 +2,13 @@ import { restoredScopeFor, type RestoredScope, type SessionSnapshotBundle } from
 import type { SnapshotRefusalReason } from '../../simulation/runtime/restore-refusal';
 import { AutosaveScheduler } from '../local/autosave';
 import { classifyStoreError } from '../local/errors';
-import type { PrisonSaveRepository, SaveImportResult, SaveResult } from '../local/repository';
+import type {
+  DeletedPrison,
+  PrisonSaveRepository,
+  RestoreOutcome,
+  SaveImportResult,
+  SaveResult,
+} from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
 import { createSaveEnvelope, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
 import { SnapshotRestoreFaultError, SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
@@ -347,6 +353,65 @@ export class SessionController {
 
   public async listPrisons(): Promise<readonly PrisonSlotMetadata[]> {
     return this.repository.list();
+  }
+
+  /**
+   * Every prison the player deleted and can still bring back, and the sweep
+   * that closes the ones they cannot (ADR 0114).
+   *
+   * **Reading this list is what enforces the undo window**, because there is no
+   * scheduler anywhere in this application to enforce it on a clock: the
+   * repository deletes every copy past its `expiresAt` in the same transaction
+   * that reads them. So `SavePanel.refresh()`, which runs at mount and after
+   * every action, is the sweep -- and that is a property of the call rather
+   * than of the caller, which is why it survives a panel that is rewritten or
+   * replaced.
+   *
+   * **ADR 0114 §3 also proposed a second sweep at this class's construction,
+   * and it is deliberately not here.** Its stated reason was that a copy should
+   * not linger an entire extra session "merely because the player never opened
+   * the save panel" -- and on this tree the player cannot fail to. `src/main.ts`
+   * mounts `SavePanel` unconditionally and awaits `panel.refresh()` at startup
+   * (the call after the panel's construction), so the sweep already runs once
+   * per session before anything is pressed. A constructor sweep would be a
+   * second transaction firing microseconds from the first, with no state
+   * between them that could differ. It goes in the day the panel becomes
+   * optional, and not before.
+   */
+  public async listDeletedPrisons(): Promise<readonly DeletedPrison[]> {
+    return this.repository.listTombstones();
+  }
+
+  /**
+   * Brings a deleted prison back, and says which of the four things happened.
+   *
+   * **No session is started and none is closed.** A restore puts the prison's
+   * records back where they were; making it the live session is `loadPrison`'s
+   * job, and doing both here would hide a failed restore behind a successful
+   * load exactly as `importInto` refuses to (see its own comment). The prison
+   * reappears in the list and the player loads it if they want it.
+   *
+   * The result is flattened from `RestoreFromTombstoneResult` to its four
+   * outcome names because that is all a caller can act on: the success arm's
+   * `metadata` is already on the next `listPrisons()`, and handing a slot
+   * record to the interface layer would give it a second copy of a record the
+   * list is the source of truth for.
+   */
+  public async restoreDeletedPrison(prisonId: string): Promise<RestoreOutcome> {
+    const result = await this.repository.restoreFromTombstone(prisonId);
+    return result.ok ? 'restored' : result.reason;
+  }
+
+  /**
+   * Throws a held copy away now (ADR 0114, the owner's ruling of 2026-09-14).
+   *
+   * Unlike `deletePrison`, this takes no hold against a concurrent autosave and
+   * closes no session, because there is nothing to contend with: the prison it
+   * names has no slot record, no generations and no session -- only the copy
+   * being freed.
+   */
+  public async forgetDeletedPrison(prisonId: string): Promise<void> {
+    await this.repository.forgetTombstone(prisonId);
   }
 
   /**

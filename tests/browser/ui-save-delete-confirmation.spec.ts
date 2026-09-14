@@ -64,11 +64,19 @@ const HARNESS_URL = '/tests/browser/ui-harness.html';
  * `AGENTS.md`'s fourth reservation makes this file responsible for.
  */
 const CONFIRMATION =
-  'Delete Ironmoor? Every saved copy of this prison goes, and this cannot be undone. Its saves last changed 3 h ago.';
+  'Delete Ironmoor? Every saved copy of this prison goes from your list. You can bring it back from this panel for one day, and after that it is gone for good. Its saves last changed 3 h ago.';
 const CONFIRM_LABEL = 'Delete permanently';
 const CANCEL_LABEL = 'Keep';
 const KEPT_STATUS = 'Nothing was deleted.';
-const DELETED_STATUS = 'Prison deleted.';
+const DELETED_STATUS = 'Prison deleted. You can bring it back from the list below for one day.';
+
+/** The undo window's own strings (ADR 0114), typed out for `CONFIRMATION`'s reason. */
+const DELETED_ROW = 'Ironmoor — deleted. You can still bring it back.';
+const RESTORE_LABEL = 'Bring it back';
+const FORGET_LABEL = 'Free its space now';
+const RESTORED_STATUS = 'Ironmoor is back, exactly as it was.';
+const WINDOW_CLOSED_STATUS = 'Too late — that prison can no longer be brought back.';
+const FORGOTTEN_STATUS = 'Gone for good. Nothing of that prison is kept now.';
 
 /** A fixed clock and a prison three hours older than it. */
 const NOW_MS = 1_757_000_000_000;
@@ -243,5 +251,192 @@ test.describe('a prison is not destroyed by one press (#1142)', () => {
     // destroy something with the same press.
     expect(reading.confirmations).toBe(1);
     expect(reading.armed).toBe('prison-keep');
+  });
+});
+
+/**
+ * **The undo window** (ADR 0114, accepted by the owner 2026-09-14).
+ *
+ * The confirmation above stopped one press from destroying a prison. This is
+ * the half that makes the confirmation's own sentence true: the deletion is a
+ * move into a `tombstones` object store in the same transaction, and the prison
+ * can be brought back for a day.
+ *
+ * ## What only a browser can answer here
+ *
+ * `tests/unit/persistence-local-repository.test.ts` proves the window -- what
+ * is kept, when it is swept, that a late press is refused by the repository's
+ * own clock reading and destroys the copy as it refuses -- and
+ * `tests/unit/ui-save-panel-delete.test.ts` proves every sentence against the
+ * shipped catalogue. What neither can reach is `SavePanel.refresh`, which
+ * writes to a real `document`: that a deleted prison gets a **row**, that the
+ * row carries **two** controls, that pressing one puts the prison back on the
+ * list and pressing the other does not.
+ *
+ * ## Why the second control is asserted as hard as the first
+ *
+ * It is the owner's ruling, and it is what pays for the window existing at
+ * all. `save.status.quota-exceeded` tells a player that deleting a prison is
+ * how storage is freed; an undo window that held the bytes for a day with no
+ * way out would make that advice a day slower to follow, for exactly the player
+ * who needs it most. A "Free its space now" button that rendered but did not
+ * reach the controller would leave the screen looking identical --
+ * `heldCopyCount()` is the reading that separates them.
+ */
+test.describe('a deleted prison can be brought back, or let go of now (ADR 0114)', () => {
+  test('a deleted prison leaves the list and gets a row of its own', async ({ page }) => {
+    await mountTwoPrisons(page);
+    await rowDelete(page, 'prison-1142').click();
+    await page.getByRole('button', { name: CONFIRM_LABEL }).click();
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    const reading = await page.evaluate(() => ({
+      status: window.lockstateUiHarness.savePanelStatus(),
+      liveRows: window.lockstateUiHarness.prisonRowCount(),
+      deletedRows: window.lockstateUiHarness.deletedPrisonRowCount(),
+      held: window.lockstateUiHarness.heldCopyCount(),
+      laidOut: window.lockstateUiHarness.laidOut('[data-deleted-prison]'),
+    }));
+
+    // Gone from the prisons the player can load...
+    expect(reading.liveRows).toBe(1);
+    // ...and standing where they can reach it, laid out rather than merely in
+    // the DOM (#218 section 6.6).
+    expect(reading.deletedRows).toBe(1);
+    expect(reading.held).toBe(1);
+    expect(reading.laidOut).toBe(true);
+    expect(reading.status).toBe(DELETED_STATUS);
+
+    const row = page.locator('[data-deleted-prison="prison-1142"]');
+    await expect(row.locator('.save-panel__item-label')).toHaveText(DELETED_ROW);
+    await expect(row.locator('.save-panel__button')).toHaveText([RESTORE_LABEL, FORGET_LABEL]);
+  });
+
+  test('bringing it back puts the prison on the list again', async ({ page }) => {
+    await mountTwoPrisons(page);
+    await rowDelete(page, 'prison-1142').click();
+    await page.getByRole('button', { name: CONFIRM_LABEL }).click();
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.clickDeletedPrisonButton('prison-1142', 'Bring it back')),
+    ).toBe(true);
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    const reading = await page.evaluate(() => ({
+      status: window.lockstateUiHarness.savePanelStatus(),
+      liveRows: window.lockstateUiHarness.prisonRowCount(),
+      deletedRows: window.lockstateUiHarness.deletedPrisonRowCount(),
+      held: window.lockstateUiHarness.heldCopyCount(),
+      // The prison is back under its own name, which is the claim the sentence
+      // makes: this reads the live row rather than the status line.
+      liveLabels: [...document.querySelectorAll('[data-prison] .save-panel__item-label')].map(
+        (node) => node.textContent ?? '',
+      ),
+    }));
+
+    expect(reading.status).toBe(RESTORED_STATUS);
+    expect(reading.liveRows).toBe(2);
+    // The copy is spent rather than left behind to be restored a second time.
+    expect(reading.deletedRows).toBe(0);
+    expect(reading.held).toBe(0);
+    expect(reading.liveLabels).toContain('Ironmoor (1 gen)');
+  });
+
+  test('a press after the window has closed is refused, and says so', async ({ page }) => {
+    await mountTwoPrisons(page);
+    await rowDelete(page, 'prison-1142').click();
+    await page.getByRole('button', { name: CONFIRM_LABEL }).click();
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    // The row is still on screen -- nothing repaints on a clock, which is ADR
+    // 0114 §3's whole point. The refusal comes from the layer below the panel,
+    // so this is the state a player who left the tab open all day actually has.
+    await page.evaluate(() => {
+      window.lockstateUiHarness.setRestoreOutcome('window-closed');
+    });
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.clickDeletedPrisonButton('prison-1142', 'Bring it back')),
+    ).toBe(true);
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    const reading = await page.evaluate(() => ({
+      status: window.lockstateUiHarness.savePanelStatus(),
+      liveRows: window.lockstateUiHarness.prisonRowCount(),
+      deletedRows: window.lockstateUiHarness.deletedPrisonRowCount(),
+      held: window.lockstateUiHarness.heldCopyCount(),
+    }));
+
+    expect(reading.status).toBe(WINDOW_CLOSED_STATUS);
+    // The prison did not come back, and the row that offered it is gone --
+    // "can no longer be brought back" is true of the page as well as of disk.
+    expect(reading.liveRows).toBe(1);
+    expect(reading.deletedRows).toBe(0);
+    expect(reading.held).toBe(0);
+  });
+
+  test('freeing the space now takes the copy without bringing the prison back', async ({ page }) => {
+    await mountTwoPrisons(page);
+    await rowDelete(page, 'prison-1142').click();
+    await page.getByRole('button', { name: CONFIRM_LABEL }).click();
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+    expect(await page.evaluate(() => window.lockstateUiHarness.heldCopyCount())).toBe(1);
+
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.clickDeletedPrisonButton('prison-1142', 'Free its space now')),
+    ).toBe(true);
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    const reading = await page.evaluate(() => ({
+      status: window.lockstateUiHarness.savePanelStatus(),
+      forgotten: window.lockstateUiHarness.forgottenPrisons(),
+      liveRows: window.lockstateUiHarness.prisonRowCount(),
+      deletedRows: window.lockstateUiHarness.deletedPrisonRowCount(),
+      held: window.lockstateUiHarness.heldCopyCount(),
+    }));
+
+    expect(reading.status).toBe(FORGOTTEN_STATUS);
+    // The reading a rendered-only button cannot produce: the controller was
+    // actually asked, and the copy is actually gone.
+    expect(reading.forgotten).toEqual(['prison-1142']);
+    expect(reading.held).toBe(0);
+    expect(reading.deletedRows).toBe(0);
+    // And the prison did not come back by the wrong door.
+    expect(reading.liveRows).toBe(1);
+  });
+
+  test('the panel does not say there are no prisons while a deleted one can still come back', async ({ page }) => {
+    await page.goto(HARNESS_URL);
+    await page.evaluate((nowMs) => {
+      window.lockstateUiHarness.mountSavePanel({ nowMs });
+      window.lockstateUiHarness.seedPrison('prison-1142', 'Ironmoor', nowMs - 60_000);
+    }, NOW_MS);
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.refreshSavePanel();
+    });
+    await rowDelete(page, 'prison-1142').click();
+    await page.getByRole('button', { name: CONFIRM_LABEL }).click();
+    await page.evaluate(async () => {
+      await window.lockstateUiHarness.settleSavePanel();
+    });
+
+    // `save.list.empty` is 'No prisons yet.', which would be false with a
+    // restorable prison standing in the same list.
+    await expect(page.locator('.save-panel__empty')).toHaveCount(0);
+    await expect(page.locator('[data-deleted-prison="prison-1142"]')).toHaveCount(1);
   });
 });

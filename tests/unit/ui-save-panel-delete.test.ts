@@ -4,6 +4,8 @@ import { Localizer, defaultMessageCatalogEn } from '../../src/services/localizat
 import {
   type DeleteArming,
   describeDeleteConfirmation,
+  describeDeletedPrison,
+  describeRestoreOutcome,
   describeSaveAge,
   pressDeleteConfirmation,
   retainDeleteArming,
@@ -117,7 +119,7 @@ describe('the sentence the player is asked to answer', () => {
   it('names the prison and the age, resolved through the real bundled catalogue', () => {
     const message = describeDeleteConfirmation(arming('prison-1', 'Ironmoor'), '12 min ago');
     expect(localizer.format(message.messageKey, message.messageParameters)).toBe(
-      'Delete Ironmoor? Every saved copy of this prison goes, and this cannot be undone. Its saves last changed 12 min ago.',
+      'Delete Ironmoor? Every saved copy of this prison goes from your list. You can bring it back from this panel for one day, and after that it is gone for good. Its saves last changed 12 min ago.',
     );
   });
 
@@ -126,5 +128,54 @@ describe('the sentence the player is asked to answer', () => {
     // the question stands is still the prison they were asked about.
     const message = describeDeleteConfirmation(arming('prison-1', 'Old Name'), 'less than a minute ago');
     expect(localizer.format(message.messageKey, message.messageParameters)).toContain('Delete Old Name?');
+  });
+});
+
+/**
+ * The undo window's sentences (ADR 0114), resolved through the real bundled
+ * catalogue rather than through a stub.
+ *
+ * A stub localizer would prove that the right *key* was chosen and nothing
+ * about what a player reads; these assertions are the shipped English, so an
+ * edit to the catalogue that makes a sentence false about the code fails here
+ * and not in a playtest. That is the record `AGENTS.md`'s fourth reservation
+ * asks for, in the one place `pnpm test` can hold it.
+ */
+describe('what a deleted prison is offered as, and what an undo press comes back with', () => {
+  it('names the prison on its own row and promises nothing about time', () => {
+    const message = describeDeletedPrison('Ironmoor');
+    expect(message.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.tombstoneItem);
+    expect(localizer.format(message.messageKey, message.messageParameters)).toBe(
+      'Ironmoor — deleted. You can still bring it back.',
+    );
+  });
+
+  it('falls back to the prison id where there was never a name, exactly as the live row does', () => {
+    const message = describeDeletedPrison('prison-1');
+    expect(localizer.format(message.messageKey, message.messageParameters)).toBe(
+      'prison-1 — deleted. You can still bring it back.',
+    );
+  });
+
+  it('says the prison came back exactly as it was, and names it', () => {
+    const message = describeRestoreOutcome('restored', 'Ironmoor');
+    expect(localizer.format(message.messageKey, message.messageParameters)).toBe('Ironmoor is back, exactly as it was.');
+  });
+
+  it('gives each refusal its own sentence rather than one "could not"', () => {
+    const sentences = (['window-closed', 'slot-taken', 'not-found'] as const).map((outcome) => {
+      const message = describeRestoreOutcome(outcome, 'Ironmoor');
+      return localizer.format(message.messageKey, message.messageParameters);
+    });
+    expect(sentences).toEqual([
+      'Too late — that prison can no longer be brought back.',
+      'That prison cannot come back — another prison now holds its place, and is still here.',
+      'That prison is no longer here to bring back.',
+    ]);
+    // Three distinct states, three distinct sentences (#19's rule), and none of
+    // them names the prison: two are true precisely because the thing the name
+    // refers to is gone.
+    expect(new Set(sentences).size).toBe(3);
+    for (const sentence of sentences) expect(sentence).not.toContain('Ironmoor');
   });
 });

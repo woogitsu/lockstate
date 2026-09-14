@@ -17,7 +17,14 @@ import {
 } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
 import { decodePrisonSlotMetadata, encodePrisonSlotMetadata, requirePrisonSlotMetadata } from './slot-metadata-schema';
-import type { LocalSaveStore, LocalSaveTransaction, PendingSyncState, PrisonSlotMetadata } from './store';
+import { decodeTombstoneRecord, encodeTombstoneRecord, tombstoneKeyOf } from './tombstone-schema';
+import type {
+  LocalSaveStore,
+  LocalSaveTransaction,
+  PendingSyncState,
+  PrisonSlotMetadata,
+  TombstoneGeneration,
+} from './store';
 
 /**
  * What a compare-and-swap refusal found, so the caller can act on the fact
@@ -261,11 +268,72 @@ export interface CreatePrisonInput {
   readonly displayName?: string;
 }
 
+/**
+ * How long a deleted prison can be brought back (ADR 0114).
+ *
+ * **One day, and the number is load-bearing on a sentence.**
+ * `save.delete.confirm` tells the player, before they confirm, that they can
+ * bring the prison back "for one day" -- so this constant and that string are
+ * one claim written twice, and
+ * `tests/unit/persistence-local-repository.test.ts` pins them to each other.
+ * Changing it without changing the sentence ships a promise the code does not
+ * keep, which is `AGENTS.md`'s fourth reservation.
+ *
+ * A default on `PrisonSaveRepositoryOptions` rather than a literal inside
+ * `delete()`, for `keepGenerations`' reason: a policy number belongs where a
+ * caller can see it and a test can move it.
+ */
+export const DEFAULT_UNDO_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * One prison the player deleted and can still bring back.
+ *
+ * A summary rather than the `TombstoneRecord` itself, deliberately: the record
+ * holds every save payload the prison had, and handing those to a panel that
+ * wants a name and a deadline would put megabytes through the interface layer
+ * on every repaint. `restoreFromTombstone` reads the payloads where they live.
+ */
+export interface DeletedPrison {
+  readonly prisonId: string;
+  readonly displayName?: string;
+  readonly deletedAt: number;
+  /** When the undo closes. Informational for a display; never the gate -- see `restoreFromTombstone`. */
+  readonly expiresAt: number;
+}
+
+/**
+ * What an undo press actually did.
+ *
+ * Three refusals rather than one `false`, on issue #19's argument that distinct
+ * recoverable states must not collapse into one sentence: they call for
+ * different things to be said. `'window-closed'` is the only one that also
+ * destroys something, and it destroys the copy it just refused -- so the
+ * sentence "this prison can no longer be brought back" is true the instant it
+ * is said rather than true of a record still sitting on disk.
+ */
+export type RestoreRefusalReason = 'not-found' | 'window-closed' | 'slot-taken';
+
+/**
+ * The four things a press of "Bring it back" can have done, flattened.
+ *
+ * Named here rather than in the interface layer so that one definition
+ * serves the repository, `SessionController` and the panel's sentence mapping:
+ * a fifth outcome then fails `tsc` at the switch that chooses the sentence,
+ * rather than falling through to whichever sentence happens to be last.
+ */
+export type RestoreOutcome = 'restored' | RestoreRefusalReason;
+
+export type RestoreFromTombstoneResult =
+  | { readonly ok: true; readonly metadata: PrisonSlotMetadata }
+  | { readonly ok: false; readonly reason: RestoreRefusalReason };
+
 export interface PrisonSaveRepositoryOptions {
   /** Current generation plus this many previous safe copies. Default 3 (current + 2 previous, matching the issue's minimum). */
   readonly keepGenerations?: number;
   readonly now?: () => number;
   readonly generateGenerationId?: () => string;
+  /** How long a deleted prison stays restorable. Default `DEFAULT_UNDO_WINDOW_MS`. */
+  readonly undoWindowMs?: number;
 }
 
 /**
@@ -420,6 +488,7 @@ export class PrisonSaveRepository {
   private readonly keepGenerations: number;
   private readonly now: () => number;
   private readonly generateGenerationId: () => string;
+  private readonly undoWindowMs: number;
 
   public constructor(
     private readonly store: LocalSaveStore,
@@ -428,6 +497,7 @@ export class PrisonSaveRepository {
     this.keepGenerations = options.keepGenerations ?? 3;
     this.now = options.now ?? Date.now;
     this.generateGenerationId = options.generateGenerationId ?? defaultGenerationId;
+    this.undoWindowMs = options.undoWindowMs ?? DEFAULT_UNDO_WINDOW_MS;
   }
 
   public async list(): Promise<readonly PrisonSlotMetadata[]> {
@@ -464,14 +534,255 @@ export class PrisonSaveRepository {
     });
   }
 
+  /**
+   * Deletes a prison, and keeps one restorable copy of it until the undo window
+   * closes (ADR 0114).
+   *
+   * ## What changed, and what deliberately did not
+   *
+   * **This used to be a destruction and is now a move.** The body read, in
+   * full:
+   *
+   * ```ts
+   * const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
+   * if (metadata === undefined) return;
+   * for (const generationId of metadata.generationIds) {
+   *   await tx.deleteGeneration(prisonId, generationId);
+   * }
+   * await tx.deleteMetadata(prisonId);
+   * ```
+   *
+   * Everything it did, it still does: the slot and every generation it
+   * references leave the `prisons` and `generations` stores, `list()` stops
+   * returning the prison, and a deletion of a prison that is not there is still
+   * a no-op that writes nothing. The signature, the return type and the
+   * observable contract of `list()` are untouched, which is why
+   * `tests/unit/persistence-local-repository.test.ts`'s two existing deletion
+   * tests pass unmodified.
+   *
+   * ## Why it is the same transaction and not a second one
+   *
+   * This is the property the whole design rests on, and ADR 0114 rejected a
+   * separate database on exactly it: a real IndexedDB transaction cannot span
+   * two databases, so a copy held anywhere else would need a second transaction
+   * with no way to commit both as one unit. A crash between them either leaves
+   * the prison *and* a spurious copy, or -- the defect this feature exists to
+   * prevent -- deletes the prison with the copy still unwritten. One
+   * transaction has neither failure mode: the tombstone and the deletions
+   * commit together or nothing happens at all.
+   *
+   * The **order inside it** is `writeGeneration`'s order for `writeGeneration`'s
+   * reason: what is being kept is staged before anything is thrown away.
+   *
+   * ## What the copy holds
+   *
+   * The slot record verbatim and every generation `generationIds` actually
+   * names, not merely `currentGenerationId`. The retention window may hold more
+   * than `keepGenerations` -- one extra for an unproven import (#438) and one
+   * again for a generation quarantined as unreadable by this build (#432) -- so
+   * the copy reads the ids the slot really carries rather than a number assumed
+   * in advance, and a restore gives the player back the same ladder they could
+   * have recovered down before they deleted it.
+   *
+   * A generation id that `generationIds` names and storage does not hold is
+   * skipped rather than stored as `undefined`. That is not a defect being
+   * papered over: `loadCurrent`'s recovery walk already treats a missing
+   * generation as one to step past, so a prison with a gap restores to exactly
+   * the prison it was.
+   */
   public async delete(prisonId: string): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;
+
+      const generations: TombstoneGeneration[] = [];
+      for (const generationId of metadata.generationIds) {
+        const value = await tx.getGeneration(prisonId, generationId);
+        if (value !== undefined) generations.push({ generationId, value });
+      }
+
+      const deletedAt = this.now();
+      // Staged before a single delete below, so a transaction that does not
+      // commit leaves the prison exactly where it was.
+      await tx.putTombstone(
+        encodeTombstoneRecord({
+          prisonId,
+          metadata: encodePrisonSlotMetadata(metadata),
+          generations,
+          deletedAt,
+          expiresAt: deletedAt + this.undoWindowMs,
+        }),
+      );
+
       for (const generationId of metadata.generationIds) {
         await tx.deleteGeneration(prisonId, generationId);
       }
       await tx.deleteMetadata(prisonId);
+    });
+  }
+
+  /**
+   * Every prison that can still be brought back, sweeping as it reads (ADR
+   * 0114).
+   *
+   * ## Why the expiry is enforced here rather than by a timer
+   *
+   * **There is no scheduler in this application, and this is designed around
+   * that rather than adding one.** No `setInterval` exists in `main.ts`,
+   * `save-panel.ts`, `session-controller.ts` or this file that could drive an
+   * expiry; the save panel's `refresh()` runs at mount and after every action,
+   * and nothing runs on a clock. So the fact "is this copy still good" is
+   * recomputed from a stored timestamp wherever it is read, exactly as
+   * `docs/PERSISTENCE.md`'s `SafetyCoverageSystem` census is recomputed rather
+   * than carried.
+   *
+   * A `setTimeout`-based window would be strictly worse, not merely different:
+   * it dies with the tab, so a player who closes the game mid-window loses both
+   * the undo *and* the sweep, leaving bytes nothing would ever free. The cost
+   * of doing it this way, named rather than hidden, is that **a copy can
+   * physically outlive its window by as long as the player goes between
+   * sessions** -- it is swept at the first read past `expiresAt`, and if that
+   * read is a month late, so is the sweep. It is never *offered* late, which is
+   * the half that reaches the player.
+   *
+   * ## Why it is a `readwrite` transaction for what reads like a query
+   *
+   * Because sweeping is the enforcement. Returning expired copies and letting a
+   * caller filter them would make every caller responsible for the window, and
+   * the one that forgot would show a player an undo that `restoreFromTombstone`
+   * then refuses.
+   *
+   * A record that fails validation is swept in the same pass and for a reason
+   * `tombstone-schema.ts` gives at length: unlike a slot record, a tombstone
+   * indexes nothing the player still has, expires by construction, and cannot
+   * serve the one purpose it exists for if this build cannot read it.
+   */
+  public async listTombstones(): Promise<readonly DeletedPrison[]> {
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const now = this.now();
+      const restorable: DeletedPrison[] = [];
+      for (const record of await tx.listTombstones()) {
+        const tombstone = decodeTombstoneRecord(record);
+        if (tombstone === undefined) {
+          // A record the store enumerated and this build cannot read. Deleted
+          // by the key the store filed it under, if that key is readable at
+          // all; a record with no usable key is left alone rather than guessed
+          // at, because a guessed key deletes some other prison's copy.
+          const key = tombstoneKeyOf(record);
+          if (key !== undefined) await tx.deleteTombstone(key);
+          continue;
+        }
+        if (now >= tombstone.expiresAt) {
+          await tx.deleteTombstone(tombstone.prisonId);
+          continue;
+        }
+        restorable.push({
+          prisonId: tombstone.prisonId,
+          ...(tombstone.metadata.displayName === undefined ? {} : { displayName: tombstone.metadata.displayName }),
+          deletedAt: tombstone.deletedAt,
+          expiresAt: tombstone.expiresAt,
+        });
+      }
+      return restorable;
+    });
+  }
+
+  /**
+   * Brings a deleted prison back, whole (ADR 0114).
+   *
+   * ## The gate is this call's own clock reading, never a display
+   *
+   * `now() >= expiresAt` is evaluated here, inside the transaction that would
+   * do the writing, against the `expiresAt` that is actually stored. Whatever a
+   * panel last painted is a display convenience and is not consulted, which is
+   * `pressDeleteConfirmation`'s discipline one layer up
+   * (`src/ui/save-panel-delete.ts`) applied to a deadline instead of a subject:
+   * a countdown a few seconds stale can therefore never let a late press
+   * through, and never refuse an early one.
+   *
+   * A refusal for a closed window **deletes the copy as it refuses**. Without
+   * that, "this prison can no longer be brought back" would be a sentence made
+   * false by the record still sitting there.
+   *
+   * ## Why the restore bypasses `create()` and `importSave()`
+   *
+   * Because neither can give the prison back unchanged, which is the whole
+   * claim the player is told. `create()` stamps `createdAt` from the clock, and
+   * `importSave` writes one generation into a slot through `writeGeneration`,
+   * which allocates a fresh revision and applies retention -- so rebuilding a
+   * prison through them would hand back a prison with a new creation date and a
+   * generation ladder rebuilt one eviction at a time. This writes the stored
+   * slot record and every stored generation back exactly as they were:
+   * same `createdAt`, same `updatedAt`, same `currentRevision`, same ladder.
+   *
+   * Nothing is re-encoded on the way back either. A generation re-enters the
+   * system where every freshly-read generation does -- through
+   * `decodeSaveEnvelope`, on `loadCurrent`'s recovery walk -- so a generation
+   * that was unreadable before the deletion is exactly as unreadable after the
+   * restore, and this method invents no integrity guarantee and removes none.
+   *
+   * `'slot-taken'` is the case where the player created a new prison under the
+   * same id while the window was open. Refusing is the only honest answer:
+   * writing the copy over it would destroy a live prison to undo a dead one,
+   * and merging them is not a thing a restore can mean.
+   */
+  public async restoreFromTombstone(prisonId: string): Promise<RestoreFromTombstoneResult> {
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const raw = await tx.getTombstone(prisonId);
+      const tombstone = decodeTombstoneRecord(raw);
+      if (tombstone === undefined) {
+        // Absent, or present and unreadable. The second is swept here for the
+        // same reason `listTombstones` sweeps it, and `raw === undefined`
+        // makes the delete a no-op rather than a special case.
+        if (raw !== undefined) await tx.deleteTombstone(prisonId);
+        return { ok: false, reason: 'not-found' };
+      }
+
+      if (this.now() >= tombstone.expiresAt) {
+        await tx.deleteTombstone(prisonId);
+        return { ok: false, reason: 'window-closed' };
+      }
+
+      // Throws `CorruptSlotMetadataError` on an unreadable live slot, which is
+      // the right answer: this cannot know whether that record is a prison the
+      // player still wants, so it writes nothing over it.
+      if (readSlot(await tx.getMetadata(prisonId), prisonId) !== undefined) {
+        return { ok: false, reason: 'slot-taken' };
+      }
+
+      for (const generation of tombstone.generations) {
+        await tx.putGeneration(prisonId, generation.generationId, generation.value);
+      }
+      // Last of the writes, for `writeGeneration`'s reason: the record that
+      // makes the prison visible is staged after the payloads it points at.
+      await writeSlot(tx, tombstone.metadata);
+      await tx.deleteTombstone(prisonId);
+      return { ok: true, metadata: tombstone.metadata };
+    });
+  }
+
+  /**
+   * Throws away a deleted prison's copy now, without waiting for the window
+   * (ADR 0114, the owner's ruling of 2026-09-14).
+   *
+   * **This exists because an undo window holds bytes, and the product already
+   * tells a player that deleting a prison is how you get bytes back.**
+   * `save.status.quota-exceeded` says, verbatim on this tree, *"Storage is
+   * full. Delete an old prison or export and remove saves to free space. Your
+   * previous save is intact."* A player who follows that advice under the
+   * design in ADR 0114 §§1-3 would not actually free the space until the window
+   * closed -- the player who most needs the bytes served worst by the feature.
+   * §6 named the trade-off and refused to settle it; the owner settled it by
+   * adding this rather than by shortening the window or skipping the copy near
+   * quota, so the undo promise stays whole and the player is given a deliberate
+   * way out of it.
+   *
+   * Deleting a tombstone that is not there is a no-op, exactly as deleting a
+   * prison that is not there is.
+   */
+  public async forgetTombstone(prisonId: string): Promise<void> {
+    await this.store.runTransaction('readwrite', async (tx) => {
+      await tx.deleteTombstone(prisonId);
     });
   }
 

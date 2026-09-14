@@ -196,6 +196,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
   },
   {
     file: 'src/ui/save-panel-delete.ts',
+    tree: 'persistence',
+    kind: 'type-only',
+    reason:
+      "Type-only: `RestoreOutcome` from `src/persistence/local/repository`, the four names an undo press can come back with (ADR 0114). It is here for `save-panel.ts`'s `SaveResult` reason -- this module maps a persistence outcome to a sentence, and the union is declared once, in the layer that produces it, so that `describeRestoreOutcome`'s exhaustive switch is what fails `tsc` the day a fifth outcome exists rather than a sentence silently going unwritten. Restating the four names here instead would put a second definition of a persistence contract in a view, which is the contamination `save-panel.ts`'s own `value` entry argues against at length. Erased, so this module still runs no persistence code and constructs no repository; a `value` import appearing here -- `PrisonSaveRepository` itself, or anything that could build one -- would mean the pure decision module had started reaching storage, and that is the change this entry exists to catch.",
+  },
+  {
+    file: 'src/ui/save-panel-delete.ts',
     tree: 'services',
     kind: 'type-only',
     reason:

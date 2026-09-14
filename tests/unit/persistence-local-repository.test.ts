@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PrisonSaveRepository } from '../../src/persistence/local/repository';
+import { DEFAULT_UNDO_WINDOW_MS, PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { Kernel } from '../../src/simulation/kernel/kernel';
@@ -1008,5 +1008,195 @@ describe('PrisonSaveRepository: generation ids across realms (#582 FINAL-022)', 
     // id that carries the mark -- so quarantine means "was quarantined" and
     // nothing else. Changing the id format must not quietly cost that.
     for (const id of await mintInFreshRealm(3)) expect(id.includes('!')).toBe(false);
+  });
+});
+
+/**
+ * The undo window (ADR 0114).
+ *
+ * Driven through `MemoryLocalSaveStore`, which is where the repository's policy
+ * is provable at all: `vitest.config.ts` runs `environment: 'node'`, so the
+ * real adapter needs `tests/integration/persistence-local-indexeddb.test.ts`
+ * and its `fake-indexeddb`, and that file carries the migration and one
+ * real-transaction round trip. Everything about *when* a copy is kept, offered,
+ * swept or refused is here.
+ *
+ * **These tests do not depend on #1143 being fixed, and that is a decision
+ * rather than an oversight.** `MemoryLocalSaveStore` does not serialise
+ * overlapping `readwrite` transactions -- each call snapshots the store when it
+ * starts and republishes the whole map when it finishes, so the last to finish
+ * wins in full. Every method under test here opens exactly one transaction and
+ * every test awaits one call before issuing the next, which is the discipline
+ * the fake is faithful under and the discipline every existing test in this
+ * file already keeps. The undo window adds no concurrent writer: `delete()`
+ * writes the tombstone inside the transaction it already had rather than in a
+ * second one, which is the ADR's central point and is also what keeps this
+ * fake honest about it.
+ */
+describe('PrisonSaveRepository: the undo window (ADR 0114)', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  function clock(start: number): { now: () => number; set: (value: number) => void } {
+    let value = start;
+    return { now: () => value, set: (next) => (value = next) };
+  }
+
+  it('moves the prison into a tombstone instead of destroying it', async () => {
+    const time = clock(1_000);
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), {
+      now: time.now,
+      generateGenerationId: idSequence('gen'),
+    });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', displayName: 'Cell Block A' });
+    await repo.save('prison-1', buildEnvelope(1));
+
+    await repo.delete('prison-1');
+
+    expect(await repo.list()).toEqual([]);
+    expect(await repo.listTombstones()).toEqual([
+      { prisonId: 'prison-1', displayName: 'Cell Block A', deletedAt: 1_000, expiresAt: 1_000 + DAY },
+    ]);
+  });
+
+  it('restores the slot record unchanged, including the timestamps create() would restamp', async () => {
+    const time = clock(1_000);
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), {
+      now: time.now,
+      generateGenerationId: idSequence('gen'),
+    });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', displayName: 'Cell Block A' });
+    await repo.save('prison-1', buildEnvelope(1));
+    const [before] = await repo.list();
+    const loadedBefore = await repo.loadCurrent('prison-1');
+
+    time.set(50_000);
+    await repo.delete('prison-1');
+    time.set(60_000);
+
+    expect(await repo.restoreFromTombstone('prison-1')).toEqual({ ok: true, metadata: before });
+    // Not "a prison with the same name": the same record. A restore built on
+    // `create()` + `importSave` would differ here in `createdAt`,
+    // `currentRevision` and the generation ladder.
+    expect(await repo.list()).toEqual([before]);
+    expect(await repo.loadCurrent('prison-1')).toEqual(loadedBefore);
+    // The copy is spent, not left behind to be restored twice.
+    expect(await repo.listTombstones()).toEqual([]);
+  });
+
+  it('carries the whole retained ladder, not only the current generation', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1));
+    await repo.save('prison-1', buildEnvelope(2));
+    await repo.save('prison-1', buildEnvelope(3));
+    const [before] = await repo.list();
+    expect(before?.generationIds).toEqual(['gen-1', 'gen-2', 'gen-3']);
+
+    await repo.delete('prison-1');
+    expect(await repo.restoreFromTombstone('prison-1')).toEqual({ ok: true, metadata: before });
+
+    // Every rung is back, byte for byte, so the prison can still recover down
+    // the ladder the way any live prison can -- which is what "whole" means in
+    // the ADR. Read through the store rather than the repository, because
+    // `loadCurrent` would only ever prove the newest one.
+    const rungs = await store.runTransaction('readonly', async (tx) => [
+      await tx.getGeneration('prison-1', 'gen-1'),
+      await tx.getGeneration('prison-1', 'gen-2'),
+      await tx.getGeneration('prison-1', 'gen-3'),
+    ]);
+    expect(rungs).toEqual([buildEnvelope(1), buildEnvelope(2), buildEnvelope(3)]);
+  });
+
+  it('sweeps a copy whose window has closed, at the first read past it', async () => {
+    const time = clock(1_000);
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: time.now });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.delete('prison-1');
+    expect(await repo.listTombstones()).toHaveLength(1);
+
+    // One millisecond inside the window still offers it...
+    time.set(1_000 + DAY - 1);
+    expect(await repo.listTombstones()).toHaveLength(1);
+    // ...and the boundary itself does not.
+    time.set(1_000 + DAY);
+    expect(await repo.listTombstones()).toEqual([]);
+  });
+
+  it('refuses a late press on its own clock reading and destroys the copy as it refuses', async () => {
+    const time = clock(1_000);
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: time.now });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.delete('prison-1');
+
+    // Nothing has swept it: the panel never re-read, so a stale display would
+    // still be offering the undo. The gate is this call, not that display.
+    time.set(1_000 + DAY + 1);
+    expect(await repo.restoreFromTombstone('prison-1')).toEqual({ ok: false, reason: 'window-closed' });
+    expect(await repo.list()).toEqual([]);
+    // "This prison can no longer be brought back" is true the instant it is
+    // said, rather than true of a record still sitting on disk.
+    expect(await repo.listTombstones()).toEqual([]);
+  });
+
+  it('refuses rather than overwriting a prison recreated under the same id', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', displayName: 'The first one' });
+    await repo.delete('prison-1');
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0', displayName: 'The second one' });
+
+    expect(await repo.restoreFromTombstone('prison-1')).toEqual({ ok: false, reason: 'slot-taken' });
+    // The live prison is untouched, and the copy is still there to be freed.
+    expect(await repo.list()).toMatchObject([{ displayName: 'The second one' }]);
+    expect(await repo.listTombstones()).toHaveLength(1);
+  });
+
+  it('reports not-found for a prison nothing ever deleted', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    expect(await repo.restoreFromTombstone('never-existed')).toEqual({ ok: false, reason: 'not-found' });
+  });
+
+  it('frees a held copy on demand, which is the owner ruling the window is paid for with', async () => {
+    const time = clock(1_000);
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: time.now });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.delete('prison-1');
+    expect(await repo.listTombstones()).toHaveLength(1);
+
+    await repo.forgetTombstone('prison-1');
+
+    // Gone now rather than in a day, with the clock untouched.
+    expect(await repo.listTombstones()).toEqual([]);
+    expect(await repo.restoreFromTombstone('prison-1')).toEqual({ ok: false, reason: 'not-found' });
+  });
+
+  it('forgetting a copy that is not there is a no-op', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    await expect(repo.forgetTombstone('never-existed')).resolves.toBeUndefined();
+  });
+
+  it('sweeps a stored copy this build cannot read rather than holding it for ever', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store);
+    await store.runTransaction('readwrite', async (tx) => {
+      await tx.putTombstone({ prisonId: 'prison-1', notATombstone: true } as never);
+    });
+
+    expect(await repo.listTombstones()).toEqual([]);
+    // Swept, not merely hidden: a copy no build can offer must not keep costing
+    // the player bytes, which is the whole reason `forgetTombstone` exists.
+    const remaining = await store.runTransaction('readonly', (tx) => tx.listTombstones());
+    expect(remaining).toEqual([]);
+  });
+
+  it('the window and the sentence that promises it are one claim, written twice', async () => {
+    // `save.delete.confirm` tells the player, before they confirm, that they
+    // can bring the prison back "for one day". If this constant moves, that
+    // sentence becomes a promise the code does not keep -- `AGENTS.md`'s fourth
+    // reservation -- and this is the assertion that says so on the commit that
+    // moves it rather than on the day a player notices.
+    expect(DEFAULT_UNDO_WINDOW_MS).toBe(24 * 60 * 60 * 1000);
+    const { defaultLocaleEnCatalog } = await import('../../src/content/default-locale-en');
+    expect(defaultLocaleEnCatalog.get('save.delete.confirm')).toContain('for one day');
   });
 });
