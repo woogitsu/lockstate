@@ -723,6 +723,50 @@
   --hud-rooms-gutter: var(--space-2);}
 
 /* ------------------------------------------------------------------ */
+/* Layer 1b: per-surface density, while stage 2 moves one at a time    */
+/*                                                                     */
+/* THIS SECTION IS TEMPORARY AND SAYS SO. `docs/IDENTITY_V5_ROLLOUT.md` */
+/* Stage 2 step 2 is "move one surface at a time, re-measuring overflow */
+/* after each"; step 3 is "flip the default last, in its own commit, so */
+/* a revert is one line". Each block below is one surface that has been */
+/* moved and measured. When the root default flips, every block here    */
+/* that merely repeats the new default is deleted in the same commit,   */
+/* and only a surface that KEEPS the denser step survives -- with its   */
+/* reason, which is the honest outcome ADR 0112 leaves open.            */
+/*                                                                     */
+/* It lives in `tokens.css` and not beside each surface's own rules      */
+/* because a ramp step is layer-1 vocabulary: `hud.css` and             */
+/* `styles.css` name `--text-size-*` and never a `--type-*`, exactly as */
+/* they name a semantic colour alias and never a raw rung. That rule is */
+/* asserted in `ui-design-tokens.test.ts` and it is what keeps the six  */
+/* numbers, and every deviation from them, readable in one file.        */
+/* ------------------------------------------------------------------ */
+
+/*
+ * SURFACE 1 -- the status strip (#1158).
+ *
+ * The densest row in the interface and the one that binds first: it wraps to
+ * two rows at 900px and to three at 375px, and `app-shell.spec.ts`'s
+ * *"every interface scale step keeps the HUD inside the viewport it is drawn
+ * in (#545)"* measures its rows against its own box at every step. Moved
+ * first for that reason -- if 15px does not fit anywhere, it does not fit
+ * here.
+ *
+ * Measured after the move, at 390x844 / 1024x768 / 1440x900 / 900x600 /
+ * 375x812 and at all six scale steps: no element laid outside the viewport,
+ * no control covered, no row outside the strip's box, and the rail still
+ * does not scroll. The strip's height at 100 %: **unchanged at 48.0px on
+ * 900x600**, where `--hud-strip-height`'s floor is still above the content;
+ * **78.5 -> 80.7px** at 1024x768 and 1440x900; **101.5 -> 103.7px** at
+ * 390x844 and 375x812, where it already wraps to three rows. That growth is
+ * a `min-height` box following its content, which is what #545 made it for.
+ */
+.hud-strip {
+  --text-size-body: var(--type-body);
+  --text-size-value: var(--type-body);
+}
+
+/* ------------------------------------------------------------------ */
 /* Layer 2: semantic aliases -- the only names components may use      */
 /*                                                                     */
 /* The two blocks below declare the SAME alias names and nothing else. */

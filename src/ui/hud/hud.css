@@ -164,6 +164,23 @@
   min-width: 0;
   background: var(--surface-raised);
   border-bottom: var(--hairline) solid var(--border);
+  /*
+   * SCAFFOLDING FOR STAGE 2, AND IT IS REMOVED WHEN THE DEFAULT FLIPS
+   * (#1158, `docs/IDENTITY_V5_ROLLOUT.md` Stage 2).
+   *
+   * Almost nothing in this strip declares a `font-size` of its own -- the
+   * clock's day number is the only one -- so the text in it is whatever
+   * `styles.css` set on `body`, inherited as a computed length. Scoping
+   * `--text-size-body` to this surface alone therefore moves nothing without
+   * something here to spend it, which is what this line is. Measured before
+   * it was added: with only the scoped token, `.hud-clock__day` went to 15px
+   * and every other run of text in the strip stayed at 13px.
+   *
+   * After the root default flips this is a no-op -- `body` supplies the same
+   * value by inheritance -- so it goes out with the scoped block in
+   * `tokens.css` that it exists to make visible.
+   */
+  font-size: var(--text-size-body);
 }
 
 /*
