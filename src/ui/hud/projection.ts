@@ -32,8 +32,15 @@ import type {
  * Not a message key, and not an ADR 0011 exception: it is punctuation, the
  * same in every locale, and it says *nothing is known* rather than naming a
  * condition. The condition is named by the alerts region.
+ *
+ * **This used to be called `CLOCK_UNKNOWN_TEXT`, and that name no longer
+ * exists anywhere in the tree** (issue #1191). The docblock above was already
+ * general when the name was not: the metric chips paint this now too, for the
+ * state the clock has always painted it for -- which is the whole of that
+ * issue, since the two halves of one strip used to disagree about whether
+ * anything was known.
  */
-export const CLOCK_UNKNOWN_TEXT = '--';
+export const UNKNOWN_READOUT_TEXT = '--';
 
 /**
  * The 1-based in-game day, or `undefined` when no session has reported one.
@@ -212,7 +219,22 @@ export interface HudMetricDescriptor {
   readonly id: HudMetricId;
   readonly icon: IconId;
   readonly labelKey: LocalizationKey;
-  readonly value: number;
+  /**
+   * The number this chip states, or `undefined` because **no prison has
+   * reported one** (issue #1191).
+   *
+   * `undefined` is a real state and not a defensive default, in exactly the
+   * sense `displayDay` above already says it for the clock: before the first
+   * `simulation/status-counts` publication, and after `simulation/stopped`,
+   * there is nothing to count, and `0` there is a claim about a prison rather
+   * than the absence of one. `status-strip.ts` paints `UNKNOWN_READOUT_TEXT`
+   * for it -- the `--` the clock in the same strip has always painted.
+   *
+   * Every chip's value is absent together or present together, because they
+   * come off one publication; the field is per-descriptor because that is
+   * where the strip reads it.
+   */
+  readonly value: number | undefined;
   /** Present only for a bounded metric; drives the segmented bar. */
   readonly capacity: number | undefined;
   readonly tone: BadgeTone | undefined;
@@ -764,11 +786,20 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
  * rather than defaulted for `roomsNotReadyBadge`'s reason: "nobody asked" and
  * "every room is ready" are different facts and only the second is a statement
  * about the prison, so neither may be spelled `0`.
+ *
+ * **`counts` is optional as of issue #1191, and absent means no prison has
+ * reported.** Every descriptor then carries `value: undefined` and no badge,
+ * tone, capacity or description, and the strip paints `UNKNOWN_READOUT_TEXT`
+ * in each chip -- the `--` its clock has always painted in the same state.
+ * Which chips exist, in what order, with which icon and label, is unchanged by
+ * absence: that is the same list either way, and the paragraph on
+ * `UNREPORTED_CHIP_ENUMERATION` below says how it stays one list.
  */
 export function projectStatusMetrics(
-  counts: HudCountsViewModel,
+  counts?: HudCountsViewModel,
   roomNeeds?: HudRoomNeedsViewModel,
 ): readonly HudMetricDescriptor[] {
+  if (counts === undefined) return UNREPORTED_STATUS_METRICS;
   const hasIncidents = counts.activeIncidents > 0;
   const capacity = counts.prisonerCapacity > 0 ? counts.prisonerCapacity : undefined;
 
@@ -1264,3 +1295,57 @@ export function refusalMessageKey(actionId: string, reason?: HostRefusalReason):
       return undefined;
   }
 }
+
+/**
+ * A row of zeros that never reaches a screen, used to enumerate the chips.
+ *
+ * It exists so that "which chips the strip has" has exactly one definition
+ * (issue #1191). The alternative -- a second table of ids, icons and label
+ * keys for the unreported state -- is the drift this file refuses everywhere
+ * else: a tenth chip added to `projectStatusMetrics` and not to that table
+ * would simply vanish from the strip until a prison reported, and no type
+ * would notice.
+ *
+ * **Every number it produces is discarded** by the mapping below, which keeps
+ * `id`, `icon` and `labelKey` and blanks the rest.
+ * `tests/unit/ui-hud-projection.test.ts` pins that: no descriptor of
+ * `projectStatusMetrics()` carries a value, a badge, a tone, a capacity or a
+ * description, and the ids match the reported list one for one.
+ */
+const UNREPORTED_CHIP_ENUMERATION: HudCountsViewModel = {
+  prisoners: 0,
+  prisonerCapacity: 0,
+  occupiedPlaces: 0,
+  staff: 0,
+  staffUnassigned: 0,
+  rooms: 0,
+  prisonersCovered: 0,
+  prisonersUnderstaffed: 0,
+  prisonersUnguarded: 0,
+  prisonersHighRisk: 0,
+  activeIncidents: 0,
+  contrabandFound: 0,
+  treasuryMinorUnits: 0,
+  stateIncomeAccruedTodayMinorUnits: 0,
+};
+
+/**
+ * What the strip is told to show when no prison has reported (issue #1191):
+ * the same chips in the same order, each with nothing in it.
+ *
+ * Computed once at module load, from the enumeration above, and frozen by
+ * being a `const` of `readonly` descriptors -- the strip walks it on first
+ * paint and on every message that carries no counts.
+ */
+const UNREPORTED_STATUS_METRICS: readonly HudMetricDescriptor[] = projectStatusMetrics(
+  UNREPORTED_CHIP_ENUMERATION,
+).map((descriptor) => ({
+  id: descriptor.id,
+  icon: descriptor.icon,
+  labelKey: descriptor.labelKey,
+  value: undefined,
+  capacity: undefined,
+  tone: undefined,
+  badge: undefined,
+  description: undefined,
+}));

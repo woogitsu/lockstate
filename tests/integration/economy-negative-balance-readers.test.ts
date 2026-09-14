@@ -10,7 +10,7 @@ import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
-import { EMPTY_HUD_VIEW_MODEL } from '../../src/ui/hud/view-model';
+import { ZEROED_COUNTS } from '../helpers/hud-counts';
 import { SimulationEventLog } from '../../src/simulation/events';
 import { expectOk } from '../helpers/expect-ok';
 
@@ -195,7 +195,11 @@ describe('the status channel carries a negative balance instead of refusing the 
 
 describe('the HUD side needs nothing new to say a prison is under water', () => {
   it('carries the negative through the metric descriptors with no tone and no badge', () => {
-    const metrics = projectStatusMetrics({ ...EMPTY_HUD_VIEW_MODEL.counts, treasuryMinorUnits: -4_000 });
+    // A prison that *has* reported, every other figure at a published zero:
+    // `EMPTY_HUD_VIEW_MODEL` carries no counts at all since issue #1191, and
+    // borrowing its row to stand for a reported one is the confusion that
+    // issue closed.
+    const metrics = projectStatusMetrics({ ...ZEROED_COUNTS, treasuryMinorUnits: -4_000 });
     const funds = metrics.find((metric) => metric.id === 'funds');
 
     expect(funds?.value).toBe(-4_000);

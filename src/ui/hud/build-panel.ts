@@ -985,10 +985,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * held here between publications so a quantity change alone can repaint
    * the buy button without waiting for the next one.
    *
-   * Zeroed and unfurnished until the first `setTreasury` call, which is the
-   * same "nothing published yet" reading `EMPTY_HUD_VIEW_MODEL.counts` gives
-   * every other figure on this HUD -- and, since the buy row cannot be open
-   * before a session exists to populate it, this default is never rendered.
+   * Zeroed and unfurnished until the first `setTreasury` call -- and since the
+   * buy row cannot be open before a session exists to populate it, this default
+   * is never rendered.
+   *
+   * **`EMPTY_HUD_VIEW_MODEL.counts` used to be the reading cited for that
+   * default, and it no longer exists** (issue #1191): a HUD that has heard from
+   * nobody carries no counts at all, and `hud.ts` withholds this setter rather
+   * than passing a fabricated `0` balance through it. The default below is this
+   * panel's own, which is what it always effectively was.
    */
   let treasuryMinorUnits = 0;
   let treasuryRoomCapacity: number | undefined;

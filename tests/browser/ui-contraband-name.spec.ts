@@ -10,7 +10,7 @@ import {
 } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import type { HudAlertViewModel, HudCountsViewModel, HudEventNoticeViewModel, HudViewModel } from '../../src/ui/hud';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { reportedCounts } from '../helpers/hud-counts';
 import { hudEventAlertsFromWorkerMessage, hudEventNoticeFromWorkerMessage } from '../../src/ui/simulation-events';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 import { type Page, expect, test } from './network-changed-fixture';
@@ -163,8 +163,10 @@ function countsFor(seed: number): {
     payload: { tick: runtime.kernel.tick, schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION, counts: projected },
   }) as WorkerToMainMessage;
 
-  const counts = hudCountsFromWorkerMessage(message);
-  if (counts === undefined) throw new Error('the production translator said nothing about a counts publication');
+  // Through the shared narrowing helper since #1191 made the translator's
+  // answer three-state: a row, `'none'` for a stopped session, `undefined` for
+  // a message that said nothing.
+  const counts = reportedCounts(message);
   return {
     counts,
     categories: [...new Set(runtime.confiscations.all().map((event) => event.categoryId))].sort(),

@@ -242,6 +242,86 @@ function roomNeeds(overrides: Partial<HudRoomNeedsViewModel> = {}): HudRoomNeeds
   return { unfinishedRooms: 0, totalRooms: 0, totalNeeds: 0, needs: [], atCapacity: [], ...overrides };
 }
 
+describe('status strip: a prison nobody has reported (issue #1191)', () => {
+  /*
+   * The third state the strip lacked. Before this, `projectStatusMetrics` took
+   * a required row and `EMPTY_HUD_VIEW_MODEL` supplied a row of zeros for two
+   * situations that are not a prison at all -- before the first
+   * `simulation/status-counts` publication, and after `simulation/stopped` --
+   * so the chips stated *Prisoners 0, Rooms 0, Funds 0* beside a clock reading
+   * `--` in the same paint.
+   *
+   * The clock's half of that strip has always had this state, and
+   * `displayDay`'s docblock has always argued it in the same words: *"before a
+   * session exists the simulation has no clock, and 'day 1' would be a claim
+   * about a prison that is not running"*. These cases are the metrics' half.
+   */
+  it('projects the same chips, in the same order, when no counts are given', () => {
+    // The list is one list: a tenth chip added to the reported projection must
+    // appear in the unreported one without anybody maintaining a second table,
+    // which is why `UNREPORTED_STATUS_METRICS` is built by mapping the reported
+    // projection rather than by hand.
+    expect(projectStatusMetrics().map((metric) => metric.id)).toEqual(
+      projectStatusMetrics(counts()).map((metric) => metric.id),
+    );
+  });
+
+  it('puts nothing in any of them -- no value, tone, badge, capacity or description', () => {
+    // Every channel a chip can state something through, at once. A value of
+    // `0` here is the defect the issue is about; a badge or a bar is the same
+    // defect wearing a different control, because both are statements about a
+    // prison that has not spoken.
+    for (const metric of projectStatusMetrics()) {
+      expect(metric.value, `${metric.id} states a number nobody published`).toBeUndefined();
+      expect(metric.tone, `${metric.id} is toned for a condition nobody published`).toBeUndefined();
+      expect(metric.badge, `${metric.id} carries a badge nobody published`).toBeUndefined();
+      expect(metric.capacity, `${metric.id} carries a capacity nobody published`).toBeUndefined();
+      expect(metric.description, `${metric.id} explains a number it does not have`).toBeUndefined();
+    }
+  });
+
+  it('keeps every chip identifiable while it is empty', () => {
+    // The chips still have to be *chips*: an icon and a label, so the row a
+    // player is looking at is recognisably the status strip with nothing in it
+    // rather than a row of stray dashes. This is what makes `--` readable as
+    // "prisoners: unknown".
+    for (const metric of projectStatusMetrics()) {
+      expect(metric.icon, `${metric.id} lost its icon`).toBeTruthy();
+      expect(metric.labelKey, `${metric.id} lost its label`).toBeTruthy();
+    }
+  });
+
+  it('ignores a room-needs readout when no prison has reported', () => {
+    // `roomNeeds` is pulled per tab rather than published on the counts
+    // stream, so it can in principle be present while the counts are absent.
+    // A badge drawn from it then would be a statement about a prison whose own
+    // figures are unknown -- the defect, reached by the other door.
+    const rooms = projectStatusMetrics(undefined, roomNeeds({ unfinishedRooms: 2 })).find(
+      (metric) => metric.id === 'rooms',
+    );
+
+    expect(rooms?.badge, 'a badge about rooms nobody has counted').toBeUndefined();
+  });
+
+  it('states a reported zero as zero, so an empty prison is not an unknown one', () => {
+    /*
+     * The other half of the shape, and the reason absence had to be a
+     * different value rather than a smaller number: a prison that genuinely
+     * holds nobody publishes zeros, and those zeros are a fact about it. They
+     * are painted with no hedge.
+     *
+     * A fix that made "0" mean "unknown" would have closed #1191 by deleting a
+     * true sentence, which is the failure `konstytucja.md` article 5's third
+     * anti-pattern names from the other side.
+     */
+    const reported = projectStatusMetrics(counts());
+
+    expect(reported.find((metric) => metric.id === 'prisoners')?.value).toBe(0);
+    expect(reported.find((metric) => metric.id === 'rooms')?.value).toBe(0);
+    expect(reported.find((metric) => metric.id === 'funds')?.value).toBe(0);
+  });
+});
+
 describe('status strip: tone and badges', () => {
   it('says on the rooms chip how many rooms are not ready, on every tab (#1006 finding 1)', () => {
     /*

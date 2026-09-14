@@ -543,6 +543,48 @@ test.describe('HUD shell', () => {
     await expectLaidOut(page, '.hud-clock__day-progress', 'the clock day progress');
   });
 
+  test('states no metric at all until a prison reports, and states a reported zero (issue #1191)', async ({
+    page,
+  }) => {
+    /*
+     * The other half of the strip the test below pins.
+     *
+     * `EMPTY_HUD_VIEW_MODEL` is what the real app paints before a session
+     * exists, and what a browser that cannot start the worker keeps painting.
+     * Until #1191 it carried a complete row of zeros, so this same paint said
+     * *Prisoners 0, Rooms 0, Funds 0* -- confident figures about a prison it
+     * had never heard of -- **beside the `--` clock the test below asserts, in
+     * the same paint**. One strip, two answers to "is anything known".
+     *
+     * Asserted here rather than only in the unit test because the projection
+     * saying "no value" and the chip painting `--` are two claims: the strip
+     * formats the number itself, and a `localizer.formatNumber(undefined)`
+     * reading `NaN` would satisfy the projection test and fail a player.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ empty: true }));
+    const silent = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
+
+    // All nine, so nothing is fixed chip by chip: the row is the unit here.
+    expect(silent.metricValues).toEqual(['--', '--', '--', '--', '--', '--', '--', '--', '--']);
+    // The same `--` the clock two elements over has always painted, which is
+    // the point of the fix rather than a coincidence of formatting.
+    expect(silent.clockDay).toBe('--');
+    // Visible, for the reason the clock's own test gives: an unknown a player
+    // cannot see says nothing at all.
+    await expectLaidOut(page, '.ui-stat .ui-stat__value', 'the strip metric values');
+
+    /*
+     * And the state this must not have cost: a prison that has reported.
+     * `BASE_VIEW_MODEL` publishes `prisonersHighRisk: 0` and
+     * `activeIncidents: 0`, and those two `0`s are facts about a prison rather
+     * than the absence of one, so they stay numbers.
+     */
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    const reported = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
+
+    expect(reported.metricValues).toEqual(['142', '0', '27', '100', '61', '0', '4', '24,920', '10,667']);
+  });
+
   test('shows the clock as unknown until a session reports one', async ({ page }) => {
     // `EMPTY_HUD_VIEW_MODEL` is what the real app paints before a session
     // exists, and what a browser that cannot start the worker keeps painting.
@@ -1895,11 +1937,13 @@ test.describe('HUD shell', () => {
      * snapshot, so *"No active alerts"* was what a page with no simulation
      * behind it said about a prison it had never heard of. That issue is
      * closed -- the alerts list took this panel's shape and this panel's
-     * sentence, and the block above asserts it. A balance is worse, because
-     * `EMPTY_HUD_VIEW_MODEL.counts` carries a confident `treasuryMinorUnits: 0`
-     * -- a readout keyed on it would tell a player their prison was broke
-     * before the worker had spoken. So the two states are asserted against each
-     * other here rather than one of them being checked alone.
+     * sentence, and the block above asserts it. A balance is worse, and
+     * `EMPTY_HUD_VIEW_MODEL.counts` used to carry a confident
+     * `treasuryMinorUnits: 0` -- a readout keyed on it told a player their
+     * prison was broke before the worker had spoken, which is what the status
+     * strip itself did until #1191 took the whole row off. So the two states
+     * are asserted against each other here rather than one of them being
+     * checked alone.
      */
     test('states published figures for a prison that has reported, and says so when none has', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());

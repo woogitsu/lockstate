@@ -80,8 +80,9 @@ export function hudZoningFromWorkerMessage(
 
     // The session is over. A statement about the last room designated by a
     // simulation that no longer exists is not something the player can act on,
-    // so the readout empties -- the same thing the counts do with
-    // `EMPTY_HUD_VIEW_MODEL.counts` and the clock does with `UNKNOWN_HUD_CLOCK`.
+    // so the readout empties -- the same `'none'` the counts channel answers
+    // since issue #1191 (it used to answer a row of zeros), and the same thing
+    // the clock does with `UNKNOWN_HUD_CLOCK`.
     case 'simulation/stopped':
       return 'none';
 

@@ -1628,9 +1628,9 @@ export interface HudStaffViewModel {
  * host-side refusal alone and stealing the line back from it.
  *
  * Absent means the session has refused nothing -- or has ended, which empties
- * it for the reason `EMPTY_HUD_VIEW_MODEL.counts` zeroes the counts: a
- * refusal by a simulation that no longer exists is not something the player
- * can act on.
+ * it for the reason the counts channel comes off on a stop (#1191): a refusal
+ * by a simulation that no longer exists is not something the player can act
+ * on.
  */
 export interface HudRefusalNoticeViewModel {
   readonly sequence: number;
@@ -1701,7 +1701,42 @@ export interface HudEventNoticeViewModel extends HudLabelParametersViewModel {
 }
 
 export interface HudViewModel {
-  readonly counts: HudCountsViewModel;
+  /**
+   * The status strip's nine numbers, or **absent because no prison is
+   * reporting** (issue #1191).
+   *
+   * Three states rather than two, and the third is the whole of that issue.
+   * This field used to be required and `EMPTY_HUD_VIEW_MODEL` carried a
+   * complete row of zeros, which stood in twice: before the first worker
+   * snapshot, and after `simulation/stopped`, for which
+   * `hudCountsFromWorkerMessage` answered that same object. So *"Prisoners 0,
+   * Rooms 0, Funds 0"* was what a page with no simulation behind it said about
+   * a prison it had never heard of -- **beside a clock reading `--` in the same
+   * paint**, because `clock` has had `UNKNOWN_HUD_CLOCK` for that state all
+   * along. Two halves of one strip disagreeing about whether anything is known
+   * is `konstytucja.md` article 5's third named anti-pattern
+   * (*"'Brak incydentów' i 'brak danych' to różne stany"*) standing in the one
+   * place a player reads first.
+   *
+   * **Absence rather than a sentinel row**, which is `alerts`' shape (#1184)
+   * and `overview`'s (#1183) rather than the clock's: a row of zeros cannot be
+   * mistaken for "nobody has spoken" if "nobody has spoken" is not a row. A
+   * sentinel inside `HudCountsViewModel` would have had to be nine sentinels,
+   * one per number, each of which some reader could still add up. The optional
+   * field makes the compiler ask every reader what it does when nothing has
+   * been reported, and the answers are recorded where they are given:
+   * `projectStatusMetrics` returns descriptors with no `value`, the strip
+   * paints `--` in each of them, `hud.ts` withholds the treasury from the buy
+   * and hire buttons, and `src/main.ts`'s press pre-flights stand down rather
+   * than judge a press against a balance nobody published.
+   *
+   * **A prison genuinely reporting zeros still says so**: a
+   * `simulation/status-counts` publication whose figures are all `0` sets this
+   * field, and the strip states those zeros with no hedge. That is the
+   * distinction the whole shape exists to keep -- a reported `0` is a fact
+   * about a prison, and the absent field is the absence of a prison.
+   */
+  readonly counts?: HudCountsViewModel;
   readonly clock: HudClockViewModel;
   /**
    * The alerts log, or **absent because no prison is reporting** (issue #1184).
@@ -2196,36 +2231,21 @@ export interface HudLocalizer {
  * prison with nothing wrong said the same sentence. There is no key to read
  * now, and `HudViewModel.alerts` carries the reasoning.
  *
- * **`counts` is still a confident row of zeros and is the remaining instance
- * of the same shape** (issue #1191). It is not fixed here because it is not
- * one field: the status strip states nine of these numbers and
- * `hudCountsFromWorkerMessage` answers this same object for
- * `simulation/stopped`, so *"0 prisoners, 0 rooms, funds 0"* is what a page
- * with no simulation behind it says about a prison it has never heard of.
- * `overview` exists precisely because that could not be read off `counts`. The
- * strip's own clock reads `--` in that state, so the two halves of one strip
- * disagree today.
+ * **`counts` is absent here as of issue #1191, and used to be a complete row
+ * of zeros.** That row was the same failure in the place a player reads first:
+ * the status strip painted *"Prisoners 0, Rooms 0, Funds 0"* from it, beside a
+ * clock reading `--` in the same paint, so one strip said both *nothing is
+ * known* and *the prison is empty and broke*. There is no row to read now, and
+ * `HudViewModel.counts` carries the reasoning -- including why this is absence
+ * rather than the clock's sentinel, and why a prison genuinely reporting zeros
+ * still states them.
+ *
+ * **What is left here is one field and a sentinel**, which is the shape this
+ * constant should keep: every channel whose emptiness is a *sentence* is
+ * absent, and `clock` is a value because a clock is one reading rather than a
+ * list, with `UNKNOWN_HUD_CLOCK`'s own docblock giving that argument.
  */
 export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
-  counts: {
-    prisoners: 0,
-    prisonerCapacity: 0,
-    occupiedPlaces: 0,
-    staff: 0,
-    staffUnassigned: 0,
-    rooms: 0,
-    prisonersCovered: 0,
-    prisonersUnderstaffed: 0,
-    prisonersUnguarded: 0,
-    prisonersHighRisk: 0,
-    activeIncidents: 0,
-    // No key at all -- an empty prison has nothing to name (issue #506
-    // finding 2), and this field's own doc comment says why `undefined` is
-    // never assigned to it explicitly.
-    contrabandFound: 0,
-    treasuryMinorUnits: 0,
-    stateIncomeAccruedTodayMinorUnits: 0,
-  },
   clock: UNKNOWN_HUD_CLOCK,
 };
 

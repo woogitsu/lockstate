@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
-import { EMPTY_HUD_VIEW_MODEL } from '../../src/ui/hud/view-model';
+import { ZEROED_COUNTS, reportedCounts } from '../helpers/hud-counts';
 import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
 
 /**
@@ -216,11 +216,9 @@ describe('the HUD counts are read from the worker', () => {
      * projection over the room types the session's `AccommodationPolicy`
      * names. The HUD reads it and derives nothing.
      */
-    const counts = hudCountsFromWorkerMessage(
-      statusCounts({ ...COUNTS, roomCapacity: 500, accommodationCapacity: 44 }),
-    );
+    const counts = reportedCounts(statusCounts({ ...COUNTS, roomCapacity: 500, accommodationCapacity: 44 }));
 
-    expect(counts?.prisonerCapacity).toBe(44);
+    expect(counts.prisonerCapacity).toBe(44);
   });
 
   it('reports zero counts as zero, so an empty prison is not mistaken for an unknown one', () => {
@@ -245,19 +243,20 @@ describe('the HUD counts are read from the worker', () => {
     };
 
     /*
-     * **Not `EMPTY_HUD_VIEW_MODEL.counts` on its own**, since issue #639
+     * **Not `ZEROED_COUNTS` on its own**, since issue #639
      * ruling 2, and the difference is the point rather than an accommodation.
      *
      * `dailyWageBillMinorUnits` is optional on `HudCountsViewModel`, and its
      * two states are different facts: **absent** is "no session has said
-     * anything", which is what `EMPTY_HUD_VIEW_MODEL` holds and what a first
-     * paint and a stopped session get; **`0`** is a running prison that has
+     * anything", which is what a first paint and a stopped session get -- and
+     * as of #1191 they get it by carrying no `counts` at all; **`0`** is a
+     * running prison that has
      * published a payroll of nothing. The Staff panel draws those differently
      * -- a header badge stating `0` against no badge at all -- so a translator
      * that dropped the published zero to match the empty model would erase the
      * distinction at the one moment it is observable.
      *
-     * Spelled out here rather than folded into `EMPTY_HUD_VIEW_MODEL`, so that
+     * Spelled out here rather than folded into `ZEROED_COUNTS` above, so that
      * moving the field into that constant fails this case instead of passing
      * silently.
      *
@@ -272,7 +271,7 @@ describe('the HUD counts are read from the worker', () => {
      * absent case.
      */
     expect(hudCountsFromWorkerMessage(statusCounts(empty))).toEqual({
-      ...EMPTY_HUD_VIEW_MODEL.counts,
+      ...ZEROED_COUNTS,
       dailyWageBillMinorUnits: 0,
       treasuryOverdraftFloorMinorUnits: 0,
       // A third field of the same shape, added by ADR 0017's "starter rung"
@@ -283,10 +282,18 @@ describe('the HUD counts are read from the worker', () => {
     });
   });
 
-  it('forgets the counts when the session stops', () => {
-    // What is on screen would otherwise be the last reading from a
-    // simulation that no longer exists -- the same thing the clock does with
-    // `UNKNOWN_HUD_CLOCK`.
+  it('takes the counts off the view model when the session stops', () => {
+    /*
+     * What is on screen would otherwise be the last reading from a simulation
+     * that no longer exists.
+     *
+     * **`'none'`, not a row of zeros** (issue #1191). This used to answer
+     * `EMPTY_HUD_VIEW_MODEL.counts`, so a stopped session stated *Prisoners 0,
+     * Rooms 0, Funds 0* about a prison that no longer existed, beside a clock
+     * reading `--`. `'none'` is the same three-state contract the overview,
+     * alerts, zoning and refusal channels use: `src/main.ts` deletes the field
+     * for it, and the strip paints `--` in every chip.
+     */
     const stopped: WorkerToMainMessage = {
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: 'stopped-1',
@@ -295,7 +302,7 @@ describe('the HUD counts are read from the worker', () => {
       payload: { tick: 5_000, reason: 'shutdown-requested' },
     };
 
-    expect(hudCountsFromWorkerMessage(stopped)).toEqual(EMPTY_HUD_VIEW_MODEL.counts);
+    expect(hudCountsFromWorkerMessage(stopped)).toBe('none');
   });
 
   it('says nothing about the counts for a message that is not about the counts', () => {
