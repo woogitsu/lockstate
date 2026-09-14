@@ -1047,24 +1047,33 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  *
  *     viewport    strip            rail             aside            this panel
  *     1280x720    80.7 -> 80.7     570.1 -> 639.3   142.5 -> 159.8   395.6 -> 447.5
- *     900x600     48.0 -> 48.0     482.8 -> 552.0   120.7 -> 138.0   338.1 -> 390.0
+ *     900x600     48.0 -> 80.7     482.8 -> 519.3   120.7 -> 129.8   338.1 -> 365.5
  *     375x812    103.7 -> 103.7    639.1 -> 639.1   159.8 -> 159.8   439.3 -> 439.3
  *
  * **375x812 sits it out because a phone keeps its bottom bar**, which is the
  * delivery's layout for that tier and `navigationPlacement`'s answer for it --
  * so the `tabs` row is still 69.2px there and nothing upstream moved.
  *
- * That last row is also a correction this branch made to itself and is worth
- * the sentence. The phone strip first measured 103.7 -> 124.2, because the
- * status strip reserves a right-hand gutter for the Layout menu and 52px of a
- * 375px window rewrapped its three rows -- 20.5px out of the rail and 15.3px
- * off this panel. The gutter is now dropped below 720px, where the strip's
- * first row ends at x = 233 and the slot's 52px start at 323, so it overlays
- * empty strip instead of taking a reservation nobody needed.
+ * **900x600 gains less than the other desktop width, because it spends some of
+ * it, and that is the interesting row.** Its strip takes a second line here for
+ * the first time: `hud.css`'s metrics-row query carried `(min-height: 701px)`
+ * under a comment saying a short viewport could not pay for the 30.5px a
+ * second row costs, and with 69.2px of tab bar handed back it can. That buys
+ * what #634 is about -- the Layout menu's 52px gutter had left the metrics
+ * 83.7px of a single-row strip, too narrow for one chip, and a row of their own
+ * gives them the strip's full width. Net at that viewport: 36.5px more rail
+ * than before this stage and every chip that fits on screen.
+ *
+ * The phone row is also a correction this branch made to itself and is worth
+ * the sentence. It first measured 103.7 -> 124.2, because the same gutter
+ * rewrapped the phone strip's three rows -- 20.5px out of the rail and 15.3px
+ * off this panel. The gutter is dropped below 720px, where the strip's first
+ * row ends at x = 233 and the slot's 52px start at 323, so it overlays empty
+ * strip instead of taking a reservation nobody needed.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
   '1280x720': 447.5,
-  '900x600': 390,
+  '900x600': 365.5,
   '375x812': 439.3,
 };
 
@@ -5480,10 +5489,15 @@ test.describe('the assembled application', () => {
      * its 69.2px; `ARRIVAL_PANEL_HEIGHT_PX`'s own block carries the chain from
      * the strip down. What that does here:
      *
-     *     body height   291.2 -> 343.0   (+51.8, the rail's share of the 69.2)
-     *     fold slack      7.8 ->   8.0
-     *     catalogue      88.0 -> 139.8   (+51.8 -- and it leaves its floor)
+     *     body height   291.2 -> 318.5
+     *     fold slack      7.8 ->   7.5
+     *     catalogue      88.0 -> 115.3   (and it leaves its floor)
      *     catalogue rows  924 ->   924   (unchanged: the registry did not move)
+     *
+     * The rail gains 69.2px here and the strip spends 32.7 of it on a metrics
+     * row of its own (see `hud.css`, and `ARRIVAL_PANEL_HEIGHT_PX` above for
+     * the chain), so what reaches this panel is 27.3px rather than the whole
+     * 69.2.
      *
      * **The catalogue line is the one that changed in kind rather than in
      * degree, and the comment it replaces said so.** It read *"the catalogue is
@@ -5497,10 +5511,10 @@ test.describe('the assembled application', () => {
      * still what holds at the viewports that press, and nothing here changes
      * what happens when the panel is squeezed again.
      */
-    expect(before?.bodyHeight).toBe(343);
-    expect(before?.foldSlack).toBe(8);
+    expect(before?.bodyHeight).toBe(318.5);
+    expect(before?.foldSlack).toBe(7.5);
     expect(before?.panelOverflow).toBe(0);
-    expect(before?.listHeight).toBe(139.8);
+    expect(before?.listHeight).toBe(115.3);
     expect(before?.listContent).toBe(924);
 
     const buy = page.locator('.hud-build__buy-submit');

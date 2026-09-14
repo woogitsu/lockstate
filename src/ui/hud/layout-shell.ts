@@ -494,8 +494,8 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
    * in `app-shell.spec.ts` resolved to two elements and Playwright's strict
    * mode refused it. A second element answering a selector that named exactly
    * one thing is the same class of defect as a second source of truth, one
-   * layer down -- so the styling is shared through a rule in `hud.css` that
-   * names both, and the selector stays unambiguous.
+   * layer down -- so these carry `hud-layout__clock-*` names with rules of
+   * their own in `hud.css`, and the strip's three selectors stay unambiguous.
    */
   const clockDay = valueText(CLOCK_UNKNOWN_TEXT, 'hud-layout__clock-day');
   const clockProgress = valueText(CLOCK_UNKNOWN_TEXT, 'hud-layout__clock-progress');

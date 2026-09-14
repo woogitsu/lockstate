@@ -4455,7 +4455,31 @@
  * does instead of choosing is state the deficit and keep the two rows that *are*
  * whole pinned: an ordinary prison at 1280, and every badge at once at 1920.
  */
-@media (max-width: 720px), (max-width: 2559px) and (min-height: 701px) {
+/*
+ * **THE HEIGHT CONDITION CAME OFF THIS QUERY IN #1159, AND THE SENTENCE IT
+ * REFUTES IS TWO PARAGRAPHS DOWN RATHER THAN DELETED.**
+ *
+ * It read `(max-width: 2559px) and (min-height: 701px)`, and the block below
+ * still explains why: a second strip row costs the middle row 30.5px, and
+ * `ARRIVAL_PANEL_HEIGHT_PX`'s own note records 900x600 sitting the change out
+ * "because the rule carries `min-height: 701px` -- see `hud.css` for why a
+ * short viewport cannot pay for the second row".
+ *
+ * **It can pay for it now, and this stage is what pays.** Moving the five
+ * sections into a left column leaves the `tabs` grid row `auto` around nothing,
+ * so the middle row gains 69.2px at every width above 720px. Measured at
+ * 900x600 across this one change: the strip goes 48 -> 78.5px and the rail
+ * 552 -> 521.5px, which is still 38.7px more rail than the 482.8px it had
+ * before this stage began.
+ *
+ * What it buys is the thing #634 is about. The Layout menu's button needs a
+ * 52px gutter at the right-hand end of the strip (see `.hud-strip__layout`),
+ * and at 900x600 the strip is one row whose only flexible member is the
+ * metrics: they went 123.7px to 83.7px and `app-shell.spec.ts` reported **not
+ * one status chip on screen**, where 123.7 shows one. With a row of their own
+ * they have the strip's full width and show every chip that fits.
+ */
+@media (max-width: 720px), (max-width: 2559px) {
   /*
    * The metrics take a row whole and scroll sideways within it.
    *
@@ -4672,9 +4696,10 @@
  * visual half that module deliberately left to the integration.
  *
  * A hit area wider than the hairline it draws: `--tap-target` is 44px and a
- * 4px line is not a touch target, so the element is `--space-3` wide with the
- * rule drawn down its middle by a gradient. Constitution article 7 -- touch is
- * first-class -- is the reason that is not a 1px line with a hover state.
+ * 1px line is not a touch target, so the element is `--space-3` wide and the
+ * rule is drawn down its middle by a `::before` that is `--hairline` thick.
+ * Constitution article 7 -- touch is first-class -- is the reason that is not a
+ * 1px element with a hover state.
  */
 .hud-layout__separator {
   flex: 0 0 auto;
@@ -4749,35 +4774,28 @@
 .hud-layout__arrow[data-layout-region='metrics'][data-collapsed='true'] > .ui-icon { transform: none; }
 
 /*
- * The strip's layout slot: **a row**, and that is a measurement rather than a
- * preference.
+ * The strip's layout slot: one control, in the strip's own top-right corner,
+ * with a gutter reserved for it.
  *
- * As a block container its two controls stacked, so the slot was 99.8x88 at
- * 1280x720 and the strip's own first row -- already 44px for the transport
- * buttons -- became 88px. The strip went 80.7px to 124.7px, the rail lost the
- * same 44px, and `app-shell.spec.ts` reported the Build panel's body spilling
- * 268px against a 235px bound (#174's assertion). Side by side the pair is
- * 44px tall, which the transport row already was, and the strip is what it
- * was. The same arithmetic `src/main.ts` records for `.hud-chrome-prefs` one
- * panel over: two 44px buttons in one 44px row cost no height at all.
- */
-/*
- * The three the metric strip's arrow folds, each opting into `[hidden]`
- * explicitly.
+ * **Both arrangements were measured, and each fails somewhere the other does
+ * not.** In flow the slot joins an existing strip row where there is room and
+ * takes a row of its own where there is not: at 375x812 that is a whole extra
+ * 48px of strip (103.7 -> 151.7), straight out of the rail. Absolutely
+ * positioned it needs a reserved gutter or it sits on whatever the last row
+ * ends with -- at 900x600 the transport buttons run to x = 888 and the slot
+ * starts at 852 -- and that gutter comes out of `.hud-strip__metrics`, the
+ * strip's only flexible member, because `.hud-strip__brand` is `flex: none` by
+ * a decision recorded at that rule.
  *
- * `hidden` is a UA `display: none`, and an author `display: flex` on the same
- * element beats it -- which all three of these carry. Written out rather than
- * fixed with `!important`, and named one by one rather than as
- * `.hud-strip > [hidden]`, so that the list of what the arrow hides is a thing
- * a reader can check against the string it is labelled with ("Hide the
- * counters and the clock").
+ * Reserved wins, because the block below pays the metrics back: at the one
+ * viewport where a 52px gutter left them too narrow for a single chip, they
+ * now have a row of their own. In flow there is no equivalent -- an extra
+ * strip row is height, and height is the rail's.
+ *
+ * It is **one** 44px control, which is why either arrangement is affordable at
+ * all: the metric strip's fold moved into the Layout menu (see
+ * `layout-shell.ts`) rather than sitting here beside the button.
  */
-.hud-strip__metrics[hidden],
-.hud-strip__clock[hidden],
-.hud-strip__transport[hidden] {
-  display: none;
-}
-
 .hud-strip__layout {
   position: absolute;
   top: 0;
@@ -4789,36 +4807,36 @@
 }
 
 /*
- * And the strip keeps a gutter for it, which is what makes the corner free
- * rather than merely occupied.
+ * The three the metric strip's fold control hides, each opting into `[hidden]`
+ * explicitly.
  *
- * In flow the slot wrapped onto a row of its own wherever the strip's existing
- * rows were full: at 900x600 and 200 % that was an extra 88px of strip, taken
- * straight out of the middle row -- the rail fell from 190.8px to 102.8px and
- * `.hud__aside`'s interface-scale control laid itself outside the rail's own
- * `overflow: hidden`, which `app-shell.spec.ts` reported as covered by a panel
- * header. Reserved as padding instead, the slot costs the strip's readouts a
- * fixed 96px of width -- the metrics row already scrolls sideways -- and costs
- * the rail nothing at any scale.
+ * `hidden` is a UA `display: none`, and an author `display: flex` on the same
+ * element beats it -- which all three of these carry. Written out rather than
+ * fixed with `!important`, and named one by one rather than as
+ * `.hud-strip > [hidden]`, so that the list of what the control hides is a
+ * thing a reader can check against the string it is labelled with ("Hide the
+ * counters and the clock").
+ */
+.hud-strip__metrics[hidden],
+.hud-strip__clock[hidden],
+.hud-strip__transport[hidden] {
+  display: none;
+}
+
+/*
+ * The gutter the slot above sits in, and the stacking order that lets the
+ * Layout menu's drawer hang across the rail.
  *
- * Written after every `@media` block that sets `padding` on `.hud-strip`, so
- * it wins on order rather than on specificity; those are shorthands and would
- * otherwise put the right padding back.
+ * `z-index: 4` because the drawer is `position: absolute` under the strip and
+ * on a phone the rail starts immediately below it -- full width, with
+ * `.hud__aside` raised to `z-index: 2` for the reason that rule gives. Without
+ * it the save panel's buttons won the hit test through the open menu and
+ * `app-shell.spec.ts` reported all four of the menu's controls unreachable at
+ * 375x812. The strip is the topmost band of the HUD at every tier, so this is
+ * the arrangement on screen as well as in the stacking order.
  */
 .hud-strip {
   position: relative;
-  /*
-   * Above the rail, so the Layout menu's drawer can hang over it.
-   *
-   * The drawer is `position: absolute` under the strip, and on a phone the
-   * rail starts immediately below -- full width, with `.hud__aside` raised to
-   * `z-index: 2` for the reason that rule gives. Without this the save panel's
-   * buttons won the hit test through the open menu, and `app-shell.spec.ts`
-   * reported all four of the menu's controls unreachable at 375x812.
-   * The strip is the topmost band of the HUD at every tier, so "the strip
-   * paints over the rail" is the arrangement on screen as well as in the
-   * stacking order.
-   */
   z-index: 4;
   padding-right: calc(var(--tap-target) + 2 * var(--space-1));
 }
@@ -4828,15 +4846,14 @@
  *
  * At 375x812 the strip is three rows and reserving 52px of a 375px window
  * rewraps them: measured 103.7px -> 124.2px, and the 20.5px comes out of the
- * rail and lands on whichever panel is showing (the Rooms panel's arrival
- * height 439.3 -> 424). Without the reservation the slot sits over the right
- * end of the strip's first row, which at this width is **empty**: the brand
- * badge is 225px of a 359px row and ends at x = 233, and the slot's 52px
- * starts at 323.
+ * rail and lands on whichever panel is showing. Without the reservation the
+ * slot sits over the right end of the strip's first row, which at this width
+ * is **empty**: the brand badge is 225px of a 359px row and ends at x = 233,
+ * and the slot's 52px start at 323.
  *
  * What it overlays at larger interface scales is that badge's text, not a
- * control -- there is no button in the strip's first row here -- so the cost
- * is a truncated build id at a scale where the strip is already three rows,
+ * control -- there is no button in the strip's first row here -- so the cost is
+ * a truncated build id at a scale where the strip is already three rows,
  * against 20px of every panel at the default one.
  */
 @media (max-width: 720px) {
@@ -5243,24 +5260,6 @@
    */
   .hud__tabs > .hud-layout__arrow { display: none; }
 
-  /*
-   * The height drag. `max-height` rather than `height`, because a rail shorter
-   * than its own content is the only case this limit is for: the panels
-   * already size themselves to their content and the rail already gives the
-   * aside slot whatever is left. What the player is choosing is a **ceiling**,
-   * which is what the delivery describes -- "wysokość od 180 px do
-   * ograniczenia zależnego od ekranu".
-   */
-  /*
-   * `align-self: end` beside the ceiling, and the pair is the whole of it.
-   *
-   * `.hud__rail` is `align-self: stretch` above, so a rail with a max-height
-   * shorter than the middle row sits at the **top** of it -- which put the
-   * save panel's prison list over the centre pixel at 375x812 and failed *"a
-   * click in the middle of the screen reaches the world"* with an `LI`. The
-   * sheet belongs at the foot of the screen, which is where the delivery puts
-   * it and where the tab bar already is.
-   */
   /*
    * The rail keeps the whole middle row, exactly as it did before this stage,
    * and the **sheet** is what the height drag sizes.
