@@ -1,4 +1,9 @@
-import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, rungFloorMinorUnits, sellBackUnitPriceMinorUnits } from '../simulation/economy';
+import {
+  TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
+  purchaseChargeMinorUnits,
+  rungFloorMinorUnits,
+  sellBackUnitPriceMinorUnits,
+} from '../simulation/economy';
 
 /**
  * **Whether the host should refuse a charge before it sends the command, and
@@ -398,4 +403,30 @@ export function pressAffordabilityVerdict(
  */
 export function sellBackPreviewMinorUnits(unitPriceMinorUnits: number, quantity: number): number {
   return sellBackUnitPriceMinorUnits(unitPriceMinorUnits) * quantity;
+}
+
+/**
+ * **What buying `quantity` units at `unitPriceMinorUnits` each would charge**
+ * -- the Buy control's own preview, composed by calling the same function
+ * `ProcurementSystem.purchase` sets `paidMinorUnits` from, so the label a
+ * player reads and the money the press actually takes can never disagree.
+ *
+ * The buy half of the pair, and it is here for the reason its sell twin above
+ * gives: `src/ui/hud/` may not import `src/simulation/**` (`AGENTS.md`
+ * boundary 1, pinned by `tests/unit/ui-hud-messages.test.ts`), and this module
+ * already may.
+ *
+ * **It replaces a multiplication the panel did itself** (issue #1160,
+ * constitution article 4). `paintBuyTotal` in `src/ui/hud/build-panel.ts` read
+ * `material.unitPriceMinorUnits * quantity`, which is the same rule written
+ * twice, on two sides of the worker boundary, with nothing keeping them in
+ * step. No figure moves: the rule is linear today and this is what makes it
+ * one definition when it stops being.
+ *
+ * No verdict and no floor, exactly as the sell twin has none -- whether the
+ * prison can *afford* this charge is `pressAffordabilityVerdict`'s question and
+ * the Buy control already asks it separately.
+ */
+export function purchasePreviewMinorUnits(unitPriceMinorUnits: number, quantity: number): number {
+  return purchaseChargeMinorUnits(unitPriceMinorUnits, quantity);
 }

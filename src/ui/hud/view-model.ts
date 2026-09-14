@@ -716,6 +716,29 @@ export interface HudBuildableViewModel {
   readonly categoryLabelKey: LocalizationKey;
   /** Absent when nothing this buildable is made of can be bought. */
   readonly material?: HudBuildMaterialViewModel;
+  /**
+   * What one placement of this buildable costs at catalogue price, in the same
+   * minor units `HudCountsViewModel.treasuryMinorUnits` is counted in.
+   *
+   * **The panel renders this and multiplies nothing** (issue #1160's first exit
+   * criterion, constitution article 4). It used to compute the row's price as
+   * `material.unitPriceMinorUnits * material.quantityPerPlacement`, which is
+   * the interface recomputing finances, and over the *first purchasable*
+   * requirement rather than all of them. `placementCostMinorUnits` in
+   * `src/simulation/economy/placement-cost.ts` is where that arithmetic now
+   * lives, beside `ProcurementSystem.purchase`'s own, and the composition root
+   * calls it.
+   *
+   * **Absent is a real answer and is not the same as `material` being absent.**
+   * It means at least one of this buildable's requirements names a material
+   * nothing sells, so the placement has no total to state -- a partial sum
+   * would be a number that reads like a price and is not one. A buildable with
+   * no purchasable material at all has no `material` *and* no cost here, which
+   * is the state the panel already rendered as "no price to state"; the two
+   * fields coincide for every row in today's registry and are separate
+   * questions.
+   */
+  readonly placementCostMinorUnits?: number;
 }
 
 /**

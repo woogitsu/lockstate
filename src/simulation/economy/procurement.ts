@@ -189,6 +189,33 @@ export function sellBackUnitPriceMinorUnits(unitPriceMinorUnits: number): number
 }
 
 /**
+ * What buying `quantity` units at `unitPriceMinorUnits` each charges the
+ * treasury -- the one formula `purchase` sets `paidMinorUnits` from, pulled out
+ * so the Build panel's Buy control can preview the same figure without a
+ * `ProcurementSystem` instance to ask.
+ *
+ * **The buy twin of `sellBackUnitPriceMinorUnits` above, and it exists for the
+ * reason that one states rather than for symmetry.** Until 2026-09-14 the sell
+ * side had the "derive it from the same code path" property and the buy side
+ * did not: `src/ui/hud/build-panel.ts`'s `paintBuyTotal` composed
+ * `material.unitPriceMinorUnits * quantity` itself, so the label a player read
+ * and the charge `purchase` actually made were two spellings of one rule with
+ * nothing keeping them in step. Constitution article 4 and issue #1160 name
+ * that as the interface recomputing finances; the placement cost was the other
+ * instance of it in the same panel, and `placement-cost.ts` is where that one
+ * went.
+ *
+ * Linear, with no ratio and no rounding, which is what makes it look too small
+ * to be worth a function. That is precisely the argument the sell helper
+ * refuses on its own behalf: what the function buys is that there is one
+ * definition to change when the rule stops being linear -- a bulk discount, a
+ * price that moves with delivery time -- rather than two that have to be found.
+ */
+export function purchaseChargeMinorUnits(unitPriceMinorUnits: number, quantity: number): number {
+  return unitPriceMinorUnits * quantity;
+}
+
+/**
  * Why a sell-back credited nothing.
  *
  * Named as a union for the same reason `PurchaseRefusalReason` is: a fifth
@@ -355,7 +382,7 @@ export class ProcurementSystem implements SystemRegistration {
     const material = procurableMaterial(itemId);
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
-    const paidMinorUnits = material.unitPriceMinorUnits * quantity;
+    const paidMinorUnits = purchaseChargeMinorUnits(material.unitPriceMinorUnits, quantity);
     if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
       return { ok: false, reason: 'insufficient-funds' };
     }
