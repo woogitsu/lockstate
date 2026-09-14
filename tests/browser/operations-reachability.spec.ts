@@ -61,16 +61,34 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  *
  * ## What was watched going red
  *
- * Four mutations of production code, each reverted by hand before the next and
- * the file checked with `git diff --stat` before re-running. Baseline:
- * `12 passed`.
+ * Four mutations of production code, each restored from a copy taken before it
+ * and the restore checked with `sha256sum` before the next ran. Baseline on
+ * `e221e927`: **14 passed (25.5s)**.
  *
  * | mutation | result |
  * | --- | --- |
- * | `.ui-panel.hud-intake { flex: 0 0 auto }` -> `flex: 0 1 auto` in `hud.css` | **2 failed** -- "the Intake panel never has to scroll" at 900x600 and 375x812 |
- * | `.ui-panel.hud-staff`'s `overflow-y: auto` -> `hidden` | **3 failed** -- every viewport whose rail is shorter than the Staff panel's content |
- * | `intakePanel.setVisible(state.activeTab === 'manage')` -> `'overview'` in `hud.ts` | **6 failed** |
- * | `if (activeTab === 'manage') refreshIntakePipeline();` -> `'overview'` in `main.ts` | **0 failed** -- survivor, and reported rather than covered: this file drives the panel through the harness, which publishes to the panel directly and never goes through `src/main.ts`'s gate. `tests/unit/main-projection-gates.test.ts` is where that literal belongs. |
+ * | `.ui-panel.hud-intake`'s `flex: 0 0 auto` -> `flex: 0 1 auto` (`hud.css:2591`) | **4 failed, 10 passed** -- "pays for its own content" at all four viewports, the desktop one included, which is more than the two the 2026-09-14 measurement would predict: `0 1 auto` lets the column shrink this panel wherever `.hud__side` is under pressure at all, not only where the rail is short |
+ * | `.ui-panel.hud-staff`'s `overflow-y: auto` -> `hidden` (`hud.css:1590`) | **1 failed, 13 passed** -- "the Staff panel scrolls wherever the rail cannot afford it whole", and **only** that one. See the weakness below; this result is the reason that test exists separately |
+ * | `intakePanel.setVisible(state.activeTab === 'manage')` -> `'overview'` (`hud.ts:2511`) | **8 failed, 6 passed** -- every Manage case, both kinds |
+ * | `rosterSection.element.hidden = shown === undefined` -> `= true` (`staff-panel.ts:1562`) | **4 failed, 10 passed** -- the four control-list cases; three `Dismiss` controls and the payroll header go missing and the named list says which |
+ *
+ * **The weakness the second mutation exposed, stated rather than hidden:**
+ * `scrollIntoView` scrolls an `overflow: hidden` box just as willingly as an
+ * `overflow: auto` one -- programmatic scrolling is not the affordance a player
+ * has. So the per-control `reachable` reading alone would have certified a
+ * panel whose content no finger and no wheel could reach, and it did: thirteen
+ * specs stayed green under that mutation. The separate assertion on the
+ * panel's *computed* `overflow-y` is what closes it, and it is written as its
+ * own test rather than folded into the sweep for exactly that reason.
+ *
+ * **One thing this file deliberately does not cover.** `src/main.ts`'s
+ * `if (activeTab === 'manage') refreshIntakePipeline();` gate is not reachable
+ * from here: the UI harness publishes to the panels directly and never loads
+ * the composition root, so mutating that literal cannot turn this file red.
+ * It is a real gap and it belongs one layer down, not here -- and the compiler
+ * already catches the half of it that is a *renamed* id, because every one of
+ * those literals is compared against the `HudTabId` union
+ * (`docs/research/2026-09-14-the-mechanical-navigation-move.md` §5.2).
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
