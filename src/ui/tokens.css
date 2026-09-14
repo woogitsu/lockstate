@@ -1,24 +1,100 @@
 /*
  * Lockstate design tokens.
  *
- * Two layers, deliberately:
+ * Three layers, deliberately:
  *
- *   1. RAW RAMPS -- the only place a literal colour ever appears. Named for
- *      what the colour *is* (`--ink-700`), never for what it is used for.
+ *   1. RAW RAMPS -- the only place a literal colour ever appears, for either
+ *      theme. Named for what the colour *is* (`--ink-700`, `--paper-050`),
+ *      never for what it is used for.
  *   2. SEMANTIC ALIASES -- named for the *role* (`--surface-raised`,
  *      `--text-muted`, `--border-strong`). Every component references only
- *      these.
+ *      these. **This is the layer that carries the theme**: the light block
+ *      and the dark block declare the same alias names and point them at
+ *      different rungs of the same ramps.
+ *   3. NON-COLOUR TOKENS -- the spacing, type, icon and layout lengths, which
+ *      are one set for both themes and sit outside the theme blocks entirely.
  *
  * Components may not reference layer 1. That single rule is what makes a
- * re-skin a one-file change: swap the ramp values (or repoint the aliases at
- * a different ramp) and nothing under `src/ui/primitives/` or `src/ui/hud/`
- * needs to be touched. It is enforced executably by
+ * re-skin a one-file change, and it is what made adding a second theme a
+ * one-file change: nothing under `src/ui/primitives/` or `src/ui/hud/` names a
+ * colour or a theme. It is enforced executably by
  * `tests/unit/ui-design-tokens.test.ts`, which fails if any other stylesheet
  * in `src/ui/` contains a raw colour literal.
  *
- * The palette is cold and institutional -- concrete and steel. No gradients,
- * no glows, no shadows, no bevels: separation comes from a 1px hairline and a
- * background step, and from nothing else.
+ * ## Two themes, and why the ALIASES switch rather than the ramps (#1157)
+ *
+ * `docs/IDENTITY_V5_ROLLOUT.md` §"Stage 1" argues for the other arrangement --
+ * "move every *raw ramp* under a theme selector, leave every semantic alias
+ * pointing at role names" -- and it cannot be built that way without the ramp
+ * names becoming lies. The two themes do not merely hold different values for
+ * the same roles: they **invert which family feeds which role**. In the dark
+ * theme the surfaces are ink and the text is paper; in the light theme the
+ * surfaces are paper and the text is ink. A `--ink-900` holding `#f2f6f8`
+ * under a light-theme selector would be exactly the "literal named for its
+ * value" drift this file's own header rules out, and the rule that a ramp is
+ * named for what the colour *is* is the one that makes layer 1 readable at
+ * all.
+ *
+ * So the inversion is written where the inversion actually lives. Each ramp
+ * entry appears **once**, with an honest name; each theme block says what that
+ * theme means by `--surface-raised`. Three consequences, all of them checked:
+ *
+ *   - No literal is declared twice, which is stronger than what the file had
+ *     with one theme.
+ *   - Both theme blocks must declare the *same alias names*, or the theme that
+ *     omits one silently inherits the other's colour.
+ *     `tests/unit/ui-design-tokens.test.ts` asserts that parity, and computes
+ *     every contrast ratio below for **both** themes rather than for one.
+ *   - A ramp rung is free to serve two roles in two themes -- `--paper-100` is
+ *     the day hover wash and the night heading text -- which is a property of
+ *     the colour, not a coincidence to be tidied away.
+ *
+ * There is no second stylesheet and no override layer. The delivery's own
+ * audit flags its prototype's layered overrides as iteration history to be
+ * consolidated at integration, so importing that structure here would be
+ * adopting the one thing its author flagged.
+ *
+ * ## Selecting a theme
+ *
+ * The light palette is the default: it is what `:root` declares, so a page
+ * that runs no script at all renders the day theme (the owner's ruling of
+ * 2026-09-13, ADR 0112 decision 2). `:root[data-theme='dark']` selects the
+ * night palette, and `[data-theme='light']` is accepted beside the bare
+ * `:root` so that the attribute can always state the answer rather than
+ * sometimes stating it and sometimes meaning "unset".
+ *
+ * **The attribute is the only selector, and `prefers-color-scheme` appears
+ * nowhere below.** Following the system when the player has expressed no
+ * preference is `src/ui/theme.ts`'s job, through `matchMedia`, because the
+ * preference has three values (`system`, `light`, `dark`) and only one of them
+ * is a media query. A `@media (prefers-color-scheme: dark)` block here would
+ * have to repeat the entire night alias block to cover the unset case, which
+ * is the duplication this arrangement exists to avoid -- and it would then be
+ * a *second* place that decides which theme is showing, which is how a toggle
+ * and a system preference end up disagreeing.
+ *
+ * `color-scheme` is declared in each theme block so the browser's own widgets
+ * -- scrollbars, form controls, the canvas behind an overscroll -- match the
+ * theme the page is actually painting.
+ *
+ * ## Where the values come from
+ *
+ * Both palettes are the owner's 2026-09-13 identity delivery, tabulated in
+ * `docs/VISUAL_IDENTITY.md` §"The palettes". Every rung below is either one of
+ * those values or a **derived** one, and each derived rung says so where it is
+ * declared, with the measured reason it had to be derived. The delivery
+ * tabulates twelve day values and eleven night ones; a five-step elevation
+ * ladder, a four-step text ladder and seven status pairs need more than that.
+ *
+ * One value carries a recorded correction and must not be reverted: the day
+ * teal was darkened from `#007e80` to `#007477` after a contrast check --
+ * *"Turkus zostal przyciemniony z poczatkowego #007E80 po sprawdzeniu
+ * kontrastu. Nie wracac do pierwszej wartosci."*
+ *
+ * The palette is cold and institutional -- concrete and steel in the night
+ * theme, paper and ink in the day one. No gradients, no glows, no shadows, no
+ * bevels: separation comes from a 1px hairline and a background step, and from
+ * nothing else, in both themes.
  */
 
 /*
@@ -157,46 +233,132 @@
   inherits: true;
   initial-value: 264px;
 }
-
 :root {
   /* ---------------------------------------------------------------- */
-  /* Layer 1: raw ramps                                               */
+  /* Layer 1: raw ramps -- every literal in the file, both themes      */
   /* ---------------------------------------------------------------- */
 
-  /* Cold neutral ink. `--ink-800` is the existing application background. */
-  --ink-900: #0b0e12;
-  --ink-800: #101317;
-  --ink-700: #171c23;
-  --ink-600: #1f2630;
-  --ink-500: #2a323e;
+  /*
+   * Cold near-black. The night theme's surfaces, deepest first.
+   *
+   * Four of the five are the delivery's own night values -- header frame
+   * `#0b1d27`, background `#10232e`, panels `#132a36` and `#193440`. The
+   * fifth is derived: `primitives.css` paints a *pressed* state one step
+   * above its hover state (`.ui-row--interactive:active`,
+   * `.ui-action:hover`), so the ladder needs five rungs and the delivery
+   * tabulates four.
+   */
+  --ink-900: #0b1d27;
+  --ink-800: #10232e;
+  --ink-700: #132a36;
+  --ink-600: #193440;
+  /* Derived: `#193440` lightened by one rung of the same ramp, for the
+     pressed state. 3.89:1 under `--text-muted` and 8.95:1 under
+     `--text-body`, both measured from this file. */
+  --ink-500: #224250;
 
-  /* Cool off-white "paper" ramp, used for text and for hairlines. */
+  /*
+   * Navy ink. The day theme's text, strongest first -- all four are the
+   * delivery's own day values: frame/ink `#122c3a`, text `#183442`,
+   * secondary ink `#244454`, subtle text `#5c717d`.
+   *
+   * A separate family from `--ink-*` above because it is a separate hue: the
+   * night surfaces are a teal-leaning near-black and these are a blue navy,
+   * and they overlap in lightness, so folding them into one numbered ramp
+   * would order two hues by a number that means nothing.
+   */
+  --slate-900: #122c3a;
+  --slate-800: #183442;
+  --slate-700: #244454;
+  --slate-500: #5c717d;
+
+  /*
+   * Cool off-white paper. The day theme's surfaces at the light end and the
+   * night theme's text at the dark end -- one ramp, because that is what the
+   * colours are, and the two themes read it from opposite ends.
+   *
+   * `--paper-000` and `--paper-050` are the delivery's day surface and day
+   * background; `--paper-200` is its night text; `--paper-300` its day
+   * border; `--paper-400` its night subtle text. `--paper-100` is this
+   * file's existing off-white, kept because it is both the night heading
+   * (one rung brighter than the delivery's night text, which is the ladder
+   * the four text roles need) and the day hover wash. `--paper-150` and
+   * `--paper-500` are derived, for the day inset and the night muted rung
+   * the delivery does not tabulate.
+   */
+  --paper-000: #ffffff;
+  --paper-050: #f2f6f8;
   --paper-100: #eef2f6;
-  --paper-200: #dbe2e9;
-  --paper-400: #a8b1bc;
-  --paper-500: #7d8894;
+  /* Derived: the day inset well, one step under the hover wash. */
+  --paper-150: #e6edf1;
+  --paper-200: #e0edf2;
+  --paper-300: #dce5e9;
+  --paper-400: #adc2cd;
+  /* Derived: the night muted rung, on the hue of `--paper-400` rather than
+     the neutral grey this ramp used to end on. 5.41:1 on `--ink-700`. */
+  --paper-500: #86a0ad;
 
-  /* Hairlines are the paper hue at low alpha so they sit *in* the surface
-     rather than on top of it. Kept as raw ramp entries because they are
-     colours, not roles. */
+  /* Hairlines are the theme's own text hue at low alpha so they sit *in* the
+     surface rather than on top of it. Kept as raw ramp entries because they
+     are colours, not roles. Two families, because the two themes draw their
+     hairlines with different ink.
+     The day set has no `13` rung: the delivery tabulates an opaque day border
+     (`--paper-300`) and that is what `--border` points at, so a third
+     translucent rung would be a token nothing reaches. */
   --paper-alpha-07: rgba(238, 242, 246, 0.07);
   --paper-alpha-13: rgba(238, 242, 246, 0.13);
   --paper-alpha-22: rgba(238, 242, 246, 0.22);
+  --slate-alpha-07: rgba(18, 44, 58, 0.07);
+  --slate-alpha-22: rgba(18, 44, 58, 0.22);
 
-  /* Desaturated steel blue: the single interactive hue. */
-  --sky-300: #86b2cf;
-  --sky-600: #4a7fa5;
-  --sky-alpha-14: rgba(134, 178, 207, 0.14);
+  /*
+   * Teal through mint: the single interactive hue, in both themes.
+   *
+   * The delivery gives the day action teal `#007477`, the night accent
+   * `#8cdec9`, the night primary button `#89dfc7`, the two selections
+   * (`#dff5f0` day, `#22473f` night) and the night button's own text
+   * `#102c2d`. Two rungs are derived, both for the same measured reason:
+   * `primitives.css` paints a filled primary button at `--accent-deep` and
+   * lifts it to `--accent` on hover, so the two must be far enough apart to
+   * see. The delivery's night button `#89dfc7` and night accent `#8cdec9`
+   * are 1.4 % apart in relative luminance -- one rung, not two -- so the
+   * night resting fill is derived below and `#8cdec9` carries the hover,
+   * which is where the delivered pair land anyway.
+   */
+  --teal-950: #102c2d;
+  --teal-900: #22473f;
+  /* Derived: the day resting fill for a primary button, so its hover to
+     `--teal-600` is visible. 7.79:1 under white. */
+  --teal-700: #005c5f;
+  /* The day action colour. **Never back to `#007e80`** -- the delivery
+     records that darkening as a contrast correction. */
+  --teal-600: #007477;
+  /* Derived: the night resting fill, for the same reason as `--teal-700`.
+     5.51:1 under `--teal-950`. */
+  --teal-400: #4fae96;
+  --teal-300: #8cdec9;
+  --teal-050: #dff5f0;
 
   /* Status hues. Muted on purpose -- a warning must read as information,
-     not as an alarm light. */
+     not as an alarm light. Each hue carries the rungs both themes need:
+     a foreground for the day theme, a foreground for the night theme, and
+     whatever chip the delivery tabulates for either. */
+
+  /* Green. `--moss-300` is this file's existing night success, kept at its
+     measured value because the owner's ruling of 2026-09-02 (below) is
+     stated against it; `--moss-700` is derived for the day theme, dark
+     enough to clear 4.5:1 on white (7.59:1) and to stay 3:1 clear of the day
+     caution rung (4.70:1). */
+  --moss-700: #14603c;
   --moss-300: #86b596;
-  --moss-alpha-14: rgba(134, 181, 150, 0.14);
+  --moss-700-alpha-14: rgba(20, 96, 60, 0.14);
+  --moss-300-alpha-14: rgba(134, 181, 150, 0.14);
+
   /* A rung *below* `--amber-300` rather than past it: the same warm family at
      roughly two fifths of its saturation, for the state that has to read as
      quieter than the tone that already means "urgent" everywhere it appears --
      the owner's ruling of 2026-09-02 on issue #788, the risk roster's third
-     tone. It is the mirror image of `--crimson-300` below, which was added by
+     tone. It is the mirror image of `--crimson-*` below, which was added by
      the same shape of ruling in the other direction, and the reason both are
      raw ramp entries rather than alpha variants of amber is that a re-skin has
      to be able to move them independently.
@@ -244,68 +406,58 @@
      unused, which this file's own "uses only tokens that exist" contract
      (`tests/unit/ui-design-tokens.test.ts`) would not have caught either
      way -- that test guards a stylesheet reaching a token that is not
-     declared, not a token nothing reaches. */
+     declared, not a token nothing reaches.
+     **The three ratios above are the night theme's and they still hold
+     there** -- the two tokens either side of them moved to the delivery's
+     night values and were re-measured, not assumed: caution now sits at
+     3.98:1 from neutral (`--paper-400`, `#adc2cd`), 3.17:1 from success and
+     4.61:1 from warning (`--amber-200`, `#f0c77f`), and 5.08:1 on its own
+     chip. **The day theme cannot use either of these two rungs and the
+     reason is measured, not stylistic**: the delivery's day subtle text
+     (`--slate-700`, luminance 0.052) and day warning (`--amber-700`,
+     luminance 0.115) sit close enough together that clearing 3:1 from *both*
+     leaves a day caution foreground only two windows -- lighter than
+     luminance 0.445, or darker than 0.005, which is black. So the day rung
+     `--straw-200` is light, and it takes the delivery's own frame ink as its
+     chip, which is the same inversion the night rung made in the other
+     direction: in each theme the caution badge is the one solid chip,
+     because in each theme its foreground is pushed out of that theme's own
+     text range. */
   --straw-300: #645435;
+  --straw-200: #e3c98d;
   --straw-100: #dfd6c3;
-  --amber-300: #e8b463;
-  --amber-alpha-14: rgba(232, 180, 99, 0.14);
-  --clay-300: #d4785c;
-  --clay-alpha-14: rgba(212, 120, 92, 0.14);
-  /* A fifth status hue, past `--clay-300` on the same warm ramp: deeper and
-     more saturated, for the one state (issue #768's ruling of 2026-09-01) that
-     has to read as *further along* than `danger` rather than as a different
-     colour beside it -- the treasury floor, not merely the rung above it. */
-  --crimson-300: #b8455a;
-  --crimson-alpha-14: rgba(184, 69, 90, 0.14);
 
-  /* ---------------------------------------------------------------- */
-  /* Layer 2: semantic aliases -- the only names components may use    */
-  /* ---------------------------------------------------------------- */
+  /* Amber. `--amber-200` on `--amber-900` is the delivery's night warning
+     pair; `--amber-700` on `--amber-050` is its day warning pair. */
+  --amber-900: #443522;
+  --amber-700: #895300;
+  --amber-200: #f0c77f;
+  --amber-050: #fff1d7;
 
-  /* Surfaces, darkest (furthest back) to lightest (nearest). */
-  --surface-sunken: var(--ink-900);
-  --surface-base: var(--ink-800);
-  --surface-raised: var(--ink-700);
-  --surface-overlay: var(--ink-600);
-  --surface-active: var(--ink-500);
+  /* Clay/red. `--clay-200` on `--clay-900` is the delivery's night danger
+     pair; `--clay-600` on `--clay-050` is its day danger pair. */
+  --clay-900: #482b35;
+  --clay-600: #b63744;
+  --clay-200: #ffb3b9;
+  --clay-050: #ffebed;
 
-  --text-heading: var(--paper-100);
-  --text-body: var(--paper-200);
-  --text-subtle: var(--paper-400);
-  --text-muted: var(--paper-500);
-
-  --border-hairline: var(--paper-alpha-07);
-  --border: var(--paper-alpha-13);
-  --border-strong: var(--paper-alpha-22);
-
-  --accent: var(--sky-300);
-  --accent-deep: var(--sky-600);
-  --accent-soft: var(--sky-alpha-14);
-  --accent-contrast: var(--ink-900);
-
-  --status-success: var(--moss-300);
-  --status-caution: var(--straw-300);
-  --status-warning: var(--amber-300);
-  --status-danger: var(--clay-300);
-  --status-critical: var(--crimson-300);
-  --status-info: var(--sky-300);
-
-  /* Badge background/foreground pairs. Paired here so a badge can never be
-     assembled from a mismatched combination at a call site. */
-  --badge-neutral-bg: var(--paper-alpha-07);
-  --badge-neutral-fg: var(--text-subtle);
-  --badge-success-bg: var(--moss-alpha-14);
-  --badge-success-fg: var(--status-success);
-  --badge-caution-bg: var(--straw-100);
-  --badge-caution-fg: var(--status-caution);
-  --badge-warning-bg: var(--amber-alpha-14);
-  --badge-warning-fg: var(--status-warning);
-  --badge-danger-bg: var(--clay-alpha-14);
-  --badge-danger-fg: var(--status-danger);
-  --badge-critical-bg: var(--crimson-alpha-14);
-  --badge-critical-fg: var(--status-critical);
-  --badge-info-bg: var(--sky-alpha-14);
-  --badge-info-fg: var(--status-info);
+  /* A fifth status hue, past the clay ramp on the same warm family: deeper
+     and more saturated, for the one state (issue #768's ruling of
+     2026-09-01) that has to read as *further along* than `danger` rather
+     than as a different colour beside it -- the treasury floor, not merely
+     the rung above it. The delivery tabulates no critical tone in either
+     palette, so both rungs are derived, and each is derived *relative to its
+     theme's danger rung* rather than to a fixed hue: further along is a
+     statement about a pair, and the pair inverts. In the day theme danger is
+     dark on a pale chip, so critical is darker and more saturated
+     (`#8e1f2e`, 8.80:1 on white against danger's 5.80:1); in the night theme
+     danger is light on a dark chip, so critical is *more* saturated and a
+     shade deeper (`#ff7d8f`), which reads as hotter rather than as merely
+     another pink. */
+  --crimson-700: #8e1f2e;
+  --crimson-200: #ff7d8f;
+  --crimson-700-alpha-14: rgba(142, 31, 46, 0.14);
+  --crimson-200-alpha-14: rgba(255, 125, 143, 0.14);
 
   /* ---------------------------------------------------------------- */
   /* Non-colour tokens                                                 */
@@ -468,5 +620,136 @@
      are only correct while they agree. Equal to the Build panel's value today
      and deliberately not an alias of it -- the two panels have different floors
      to sum, so a change to one must not silently move the other. */
-  --hud-rooms-gutter: var(--space-2);
+  --hud-rooms-gutter: var(--space-2);}
+
+/* ------------------------------------------------------------------ */
+/* Layer 2: semantic aliases -- the only names components may use      */
+/*                                                                     */
+/* The two blocks below declare the SAME alias names and nothing else. */
+/* A name in one and not the other would leave that theme inheriting   */
+/* the other's colour, so the parity is asserted rather than reviewed   */
+/* (`tests/unit/ui-design-tokens.test.ts`).                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The DAY theme, and the default -- ADR 0112 decision 2, the owner's ruling
+ * of 2026-09-13: *"Tak, dwa motywy, jasny domyslny"* ("yes, two themes, the
+ * light one default").
+ *
+ * The bare `:root` is what makes it the default; the attribute selector
+ * beside it is what lets `src/ui/theme.ts` state the answer explicitly
+ * instead of expressing "light" as the absence of a value.
+ */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* Surfaces. In a light theme the *front* is the lightest and a hover or a
+     press moves toward the background rather than away from it, which is why
+     `--surface-overlay` and `--surface-active` sit below `--surface-raised`
+     here and above it in the night block. Two of the five are the delivery's
+     (surface `#ffffff`, background `#f2f6f8`); the ladder needs five. */
+  --surface-sunken: var(--paper-150);
+  --surface-base: var(--paper-050);
+  --surface-raised: var(--paper-000);
+  --surface-overlay: var(--paper-100);
+  --surface-active: var(--paper-200);
+
+  /* Text, strongest first -- all four are delivered day values. Measured on
+     `--surface-base`: 13.35, 12.01, 9.51 and 4.70:1. */
+  --text-heading: var(--slate-900);
+  --text-body: var(--slate-800);
+  --text-subtle: var(--slate-700);
+  --text-muted: var(--slate-500);
+
+  --border-hairline: var(--slate-alpha-07);
+  --border: var(--paper-300);
+  --border-strong: var(--slate-alpha-22);
+
+  --accent: var(--teal-600);
+  --accent-deep: var(--teal-700);
+  --accent-soft: var(--teal-050);
+  --accent-contrast: var(--paper-000);
+
+  --status-success: var(--moss-700);
+  --status-caution: var(--straw-200);
+  --status-warning: var(--amber-700);
+  --status-danger: var(--clay-600);
+  --status-critical: var(--crimson-700);
+  --status-info: var(--teal-600);
+
+  /* Badge background/foreground pairs. Paired here so a badge can never be
+     assembled from a mismatched combination at a call site. */
+  --badge-neutral-bg: var(--slate-alpha-07);
+  --badge-neutral-fg: var(--text-subtle);
+  --badge-success-bg: var(--moss-700-alpha-14);
+  --badge-success-fg: var(--status-success);
+  /* The day caution chip is the delivery's own frame ink, opaque, for the
+     reason measured on `--straw-300`: clearing 3:1 from both the day subtle
+     text and the day warning forces this foreground *lighter* than either,
+     so its own chip has to be dark. 8.99:1. */
+  --badge-caution-bg: var(--slate-900);
+  --badge-caution-fg: var(--status-caution);
+  --badge-warning-bg: var(--amber-050);
+  --badge-warning-fg: var(--status-warning);
+  --badge-danger-bg: var(--clay-050);
+  --badge-danger-fg: var(--status-danger);
+  --badge-critical-bg: var(--crimson-700-alpha-14);
+  --badge-critical-fg: var(--status-critical);
+  --badge-info-bg: var(--accent-soft);
+  --badge-info-fg: var(--status-info);
+}
+
+/*
+ * The NIGHT theme. Kept, not replaced: the same ruling that made the day
+ * palette the default kept this one, and constitution article 19 makes the
+ * two mean the same things -- the same status ladder, the same focus
+ * treatment, the same hierarchy. A theme is not a mood and it does not change
+ * the simulated time of day.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --surface-sunken: var(--ink-900);
+  --surface-base: var(--ink-800);
+  --surface-raised: var(--ink-700);
+  --surface-overlay: var(--ink-600);
+  --surface-active: var(--ink-500);
+
+  /* Measured on `--surface-base`: 14.34, 13.49, 8.74 and 5.87:1. */
+  --text-heading: var(--paper-100);
+  --text-body: var(--paper-200);
+  --text-subtle: var(--paper-400);
+  --text-muted: var(--paper-500);
+
+  --border-hairline: var(--paper-alpha-07);
+  --border: var(--paper-alpha-13);
+  --border-strong: var(--paper-alpha-22);
+
+  --accent: var(--teal-300);
+  --accent-deep: var(--teal-400);
+  --accent-soft: var(--teal-900);
+  --accent-contrast: var(--teal-950);
+
+  --status-success: var(--moss-300);
+  --status-caution: var(--straw-300);
+  --status-warning: var(--amber-200);
+  --status-danger: var(--clay-200);
+  --status-critical: var(--crimson-200);
+  --status-info: var(--teal-300);
+
+  --badge-neutral-bg: var(--paper-alpha-07);
+  --badge-neutral-fg: var(--text-subtle);
+  --badge-success-bg: var(--moss-300-alpha-14);
+  --badge-success-fg: var(--status-success);
+  --badge-caution-bg: var(--straw-100);
+  --badge-caution-fg: var(--status-caution);
+  --badge-warning-bg: var(--amber-900);
+  --badge-warning-fg: var(--status-warning);
+  --badge-danger-bg: var(--clay-900);
+  --badge-danger-fg: var(--status-danger);
+  --badge-critical-bg: var(--crimson-200-alpha-14);
+  --badge-critical-fg: var(--status-critical);
+  --badge-info-bg: var(--accent-soft);
+  --badge-info-fg: var(--status-info);
 }
