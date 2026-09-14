@@ -16,6 +16,7 @@ import { type IconButton, createIconButton } from '../primitives/icon-button';
 import {
   type ResizeSeparator,
   type SeparatorRange,
+  type SeparatorResizeReason,
   createResizeSeparator,
 } from '../primitives/resize-separator';
 import { type HudLayoutGeometry, type LayoutViewport, resolveHudLayout, sizeFieldFor } from './hud-layout';
@@ -42,8 +43,9 @@ import type { HudClockViewModel, HudLocalizer } from './view-model';
  * exists for the same reason: `vitest.config.ts` runs `environment: 'node'`
  * with no jsdom, so a rule written into a listener body here would be
  * unobservable from the unit suite and could not be watched going red. The
- * rules are therefore all one module down, and `tests/browser/app-shell.spec.ts`
- * proves that this wiring reaches them with real events.
+ * rules are therefore all one module down, and
+ * `tests/browser/hud-layout-shell.spec.ts` proves that this wiring reaches them
+ * with real events on the assembled page.
  *
  * ## Constitution article 16, which is the one this file is answerable for
  *
@@ -79,9 +81,16 @@ import type { HudClockViewModel, HudLocalizer } from './view-model';
  * against the stylesheet in `tests/unit/hud-layout.test.ts`.
  */
 
-/** The three surfaces a region is made of, as this module needs them. */
+/** The two surfaces a region is made of, as this module needs them. */
 export interface LayoutRegionElements {
-  /** Stays laid out whatever the fold does. It is what carries the handle. */
+  /**
+   * Stays laid out whatever the fold does.
+   *
+   * For the navigation and the inspector it is also where the arrow is mounted,
+   * so the arrow is a sibling of what it hides. The metric strip's arrow is
+   * mounted in the Layout menu instead -- see `toggleHosts` -- so for that
+   * region this is only the box that survives the fold.
+   */
   readonly container: HTMLElement;
   /** Hidden by the fold. Never contains the toggle. */
   readonly content: readonly HTMLElement[];
@@ -177,16 +186,25 @@ interface LayoutSlider {
   readonly label: HTMLElement;
 }
 
-function createLayoutSlider(id: string, onInput: (value: number) => void): LayoutSlider {
+function createLayoutSlider(
+  id: string,
+  onInput: (value: number) => void,
+  onSettled: () => void,
+): LayoutSlider {
   const input = element('input', {
     className: 'hud-layout__slider',
     attributes: { type: 'range', step: '1', id },
   });
   const label = element('label', { className: 'hud-layout__slider-label', attributes: { for: id } });
+  // `input` is every frame of a slider drag and `change` is the one the player
+  // meant, which is the same distinction a separator draws between its moves
+  // and its release. The panel follows the thumb; `localStorage` is written
+  // once.
   input.addEventListener('input', () => {
     const value = Number(input.value);
     if (Number.isFinite(value)) onInput(value);
   });
+  input.addEventListener('change', onSettled);
   return { root: element('div', { className: 'hud-layout__row', children: [label, input] }), input, label };
 }
 
@@ -216,8 +234,6 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   let settings = options.settings;
   const measureReserved = (): number => options.strip.getBoundingClientRect().height;
   let geometry: HudLayoutGeometry = resolveHudLayout(settings, measureViewport(), measureReserved());
-  /** True while a pointer drag is in flight, so its frames are not persisted. */
-  let dragging = false;
 
   const regions: Readonly<Record<LayoutRegion, LayoutRegionElements>> = {
     navigation: options.navigation,
@@ -319,14 +335,13 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     range: geometry.navigation.range,
     defaultSize: geometry.navigation.range.max,
     label: t(HUD_MESSAGE_KEY.layoutResizeNavigation),
-    onResize: (size) => {
-      resize('navigation', size);
+    onResize: (size, reason) => {
+      resize('navigation', size, settles(reason));
     },
     onCollapse: () => {
       collapse('navigation', true);
     },
     onGestureEnd: (end) => {
-      dragging = false;
       if (end === 'released') options.onChange(settings);
     },
   });
@@ -355,28 +370,20 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       range: next.inspector.range,
       defaultSize: next.phone ? next.inspector.range.max : DEFAULT_INSPECTOR_RESET_PX,
       label: t(HUD_MESSAGE_KEY.layoutResizeInspector),
-      onResize: (size) => {
-        resize('inspector', size);
+      onResize: (size, reason) => {
+        resize('inspector', size, settles(reason));
       },
       onCollapse: () => {
         collapse('inspector', true);
       },
       onGestureEnd: (end) => {
-        dragging = false;
         if (end === 'released') options.onChange(settings);
       },
     });
     separator.element.classList.add('hud-layout__separator', 'hud-layout__separator--inspector');
-    separator.element.addEventListener('pointerdown', () => {
-      dragging = true;
-    });
     (next.phone ? options.inspectorSheet : options.inspector.container).append(separator.element);
     return separator;
   }
-
-  navigationSeparator.element.addEventListener('pointerdown', () => {
-    dragging = true;
-  });
 
   /**
    * One resize, from whichever of the three controls asked for it.
@@ -386,7 +393,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
    * in-memory record advances on every frame so the panel follows the hand,
    * and `localStorage` is written once, when the hand lets go.
    */
-  function resize(region: LayoutRegion, size: number): void {
+  function resize(region: LayoutRegion, size: number, persist: boolean): void {
     const viewport = measureViewport();
     const field = sizeFieldFor(region, viewport);
     if (field === undefined) return;
@@ -397,16 +404,44 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     const scale = viewport.uiScale > 0 ? viewport.uiScale : 1;
     const next = withLayoutSize(settings, field, size / scale);
     if (next === settings) return;
-    apply(next, !dragging);
+    apply(next, persist);
   }
 
+  /**
+   * Whether a reported resize is one to write down.
+   *
+   * **Read off the reason the control gives rather than off a flag this module
+   * keeps**, and the flag is what this replaced: a `dragging` boolean set on
+   * `pointerdown` stayed true forever after a middle-button press, because that
+   * press is refused before a gesture starts and so no gesture ever ends to
+   * clear it -- and every later keyboard resize then silently stopped being
+   * persisted.
+   *
+   * `'pointer'` is a frame of a drag and `'cancel'` is a drag that was thrown
+   * away; neither is a decision. The drag's one decision arrives separately, as
+   * `onGestureEnd('released')`.
+   */
+  const settles = (reason: SeparatorResizeReason): boolean => reason === 'keyboard' || reason === 'reset';
+
   // ---- the Layout menu ---------------------------------------------
-  const navigationSlider = createLayoutSlider('hud-layout-navigation', (value) => {
-    resize('navigation', value);
-  });
-  const inspectorSlider = createLayoutSlider('hud-layout-inspector', (value) => {
-    resize('inspector', value);
-  });
+  const navigationSlider = createLayoutSlider(
+    'hud-layout-navigation',
+    (value) => {
+      resize('navigation', value, false);
+    },
+    () => {
+      options.onChange(settings);
+    },
+  );
+  const inspectorSlider = createLayoutSlider(
+    'hud-layout-inspector',
+    (value) => {
+      resize('inspector', value, false);
+    },
+    () => {
+      options.onChange(settings);
+    },
+  );
 
   const mapOnly = element('button', {
     className: 'ui-action hud-layout__map-only',

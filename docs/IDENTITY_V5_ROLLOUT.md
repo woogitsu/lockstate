@@ -262,6 +262,37 @@ a pointer-cancel case. `tests/browser/app-shell.spec.ts` is where the shell's
 existing specs live; note that it is the slow file (`docs/AGENT_WORKFLOW.md`
 records it sorting first and carrying the slow specs) and budget for that.
 
+### Landed 2026-09-14 (#1159)
+
+The paragraphs above are left exactly as they stood: they are the plan, and what
+a plan asked for is worth keeping beside what happened.
+
+Everything on the list is in, with two departures from it that are written out
+rather than absorbed:
+
+- **The metric strip's fold control is in the Layout menu, not on the strip.**
+  A second tap target in the strip needs a reserved gutter of `2 x --tap-target`,
+  which is 182 px of a 720 px window at 175 %, and that cost one
+  viewport x interface-scale combination at a 200 % page zoom that passes
+  without it. The Layout button is the strip's handle, which is what article 16
+  asks for; an arrow on the strip is what the delivery asks for, and this is the
+  narrower thing.
+- **A phone has no arrow on its navigation at all.** All three places one could
+  go on that tier cost something a gate already holds -- in the bar's row it
+  wraps the bar into a second row, floating above it covers the Build panel
+  because the rail is full-width there, and inside `.hud-tabs__inner` it is
+  inside what it hides. "Map only" folds and restores the sections there.
+
+**The stage's own gate, beyond the ones it inherited:**
+`tests/browser/hud-layout-shell.spec.ts`, 16 specs at three device widths,
+including the pointer-cancel case this section asks for and a
+cursor-leaves-the-window case beside it.
+
+**The 200 %-zoom debt stage 2 handed this stage is not cleared.** 23 of 36
+combinations fail, the same 23 as on the base commit, and `d7aab8d8` carries
+both sweeps, the two things this stage had added to that number and removed
+again, and what clearing it would actually take.
+
 ---
 
 ## Stage 4 — The build loop against the real simulation

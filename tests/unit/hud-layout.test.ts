@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { HUD_TAB_IDS } from '../../src/ui/hud/hud-state';
 import {
   DEFAULT_LAYOUT_SETTINGS,
   LAYOUT_REGIONS,
@@ -23,6 +24,10 @@ import {
   SHEET_VIEWPORT_RESERVE_PX,
   inspectorRange,
   isPhoneLayout,
+  NAVIGATION_RAIL_PADDING_PX,
+  NAVIGATION_RAIL_SLACK_PX,
+  NAVIGATION_TAB_HEIGHT_PX,
+  navigationPlacement,
   navigationRange,
   resolveHudLayout,
   resolveLayoutSize,
@@ -141,6 +146,41 @@ describe('the device tier', () => {
     expect(css).toContain(`@media (max-width: ${PHONE_MAX_WIDTH_PX}px)`);
     expect(isPhoneLayout({ width: PHONE_MAX_WIDTH_PX, height: 800, uiScale: 1 })).toBe(true);
     expect(isPhoneLayout({ width: PHONE_MAX_WIDTH_PX + 1, height: 800, uiScale: 1 })).toBe(false);
+  });
+});
+
+describe('where the five sections are laid out', () => {
+  // `HUD_TAB_IDS.length` rather than five, for the reason the production code
+  // reads it rather than counting: a sixth section must move this test's own
+  // arithmetic, not silently clip itself out of the rail.
+  const needed = (scale: number): number =>
+    (HUD_TAB_IDS.length * NAVIGATION_TAB_HEIGHT_PX + NAVIGATION_RAIL_PADDING_PX) * scale;
+
+  it('is a bottom bar on a phone at every scale, because that is the tier\u2019s layout', () => {
+    expect(navigationPlacement(PHONE, 0)).toBe('bar');
+    expect(navigationPlacement({ ...PHONE, uiScale: 0.75 }, 0)).toBe('bar');
+  });
+
+  it('is a left column wherever the tabs fit in what the strip leaves', () => {
+    const strip = 84;
+    const height = strip + NAVIGATION_RAIL_SLACK_PX + needed(1);
+    expect(navigationPlacement({ width: 1280, height, uiScale: 1 }, strip)).toBe('rail');
+    expect(navigationPlacement({ width: 1280, height: height - 1, uiScale: 1 }, strip)).toBe('bar');
+  });
+
+  it('hands the sections back to the bar when the interface scale takes the room', () => {
+    // 900x600 at 200 %: the strip alone is 176px, and five tabs are 588.
+    expect(navigationPlacement({ width: 900, height: 600, uiScale: 2 }, 176)).toBe('bar');
+    // The same window at 100 %, where they fit comfortably.
+    expect(navigationPlacement({ width: 900, height: 600, uiScale: 1 }, 84)).toBe('rail');
+  });
+
+  it('is what `resolveHudLayout` reports, and a bar takes no width from the map', () => {
+    const geometry = resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, { width: 900, height: 600, uiScale: 2 }, 176);
+    expect(geometry.navigationPlacement).toBe('bar');
+    expect(geometry.navigationExtent).toBe(0);
+    // ...which the inspector is then free to spend.
+    expect(geometry.inspector.range.max).toBe(900 - MAP_WIDTH_RESERVE_PX);
   });
 });
 

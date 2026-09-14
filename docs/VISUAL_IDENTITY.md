@@ -252,18 +252,50 @@ an impression.
    plan, and moving staff out of Security into Manage is described in the
    delivery itself as a UI-semantic proposal rather than a move of simulation
    modules.
-6. **Collapse exists; the rest of the layout system does not.** Two panels,
-   `alerts` and `minimap`, collapse through `collapsedPanels` in the HUD shell
-   state (`src/ui/hud/hud-state.ts:43`, `:82`), and that state is in-memory —
-   nothing writes it anywhere. There is no drag-resizable separator in `src/ui/`
-   (the only `aria-valuenow` is `src/ui/primitives/segmented-bar.ts:199`, a
-   progress bar), no layout menu, no reset, and no "map only" mode. The
-   direction makes all of those core, with layout preferences under their own
-   storage key — article 13's hard rule. The mechanism for that key already
-   exists and should be reused rather than rebuilt: `src/input/storage.ts` is a
-   `localStorage` wrapper written around the browsers that throw on access, and
-   `src/main.ts:431` already passes a key-value store into `WorldScene` for
-   exactly this class of preference (`:259` is the docblock that explains why).
+6. **The layout system landed on 2026-09-14 (#1159), and the measurement this
+   item used to carry is kept below rather than overwritten** — it is what the
+   stage was measured against, and a reader needs to see what moved.
+
+   > **Collapse exists; the rest of the layout system does not.** Two panels,
+   > `alerts` and `minimap`, collapse through `collapsedPanels` in the HUD shell
+   > state (`src/ui/hud/hud-state.ts:43`, `:82`), and that state is in-memory —
+   > nothing writes it anywhere. There is no drag-resizable separator in `src/ui/`
+   > (the only `aria-valuenow` is `src/ui/primitives/segmented-bar.ts:199`, a
+   > progress bar), no layout menu, no reset, and no "map only" mode. The
+   > direction makes all of those core, with layout preferences under their own
+   > storage key — article 13's hard rule. The mechanism for that key already
+   > exists and should be reused rather than rebuilt: `src/input/storage.ts` is a
+   > `localStorage` wrapper written around the browsers that throw on access, and
+   > `src/main.ts:431` already passes a key-value store into `WorldScene` for
+   > exactly this class of preference (`:259` is the docblock that explains why).
+
+   Today three regions fold — the five sections, the right rail and the status
+   strip's readouts — two of them drag-resize, and the Layout menu carries a
+   slider per resizable region, a reset, a "map only" toggle and a clock. The
+   mechanism was reused exactly as that paragraph asks: `src/input/storage.ts`
+   gained `loadLayoutSettings` / `saveLayoutSettings` over a key of its own,
+   `lockstate.settings.layout`, and the composition root reads it before the
+   HUD mounts and writes it on every settled change.
+
+   **Three things a later reader will want and would otherwise have to
+   re-derive.** The limits are the delivery's own and live in
+   `src/ui/hud/hud-layout.ts` with the passage they came from quoted beside
+   them; the one number that is **not** the delivery's is
+   `MAP_WIDTH_RESERVE_PX`, which it leaves unspecified. A **stored** size is a
+   design pixel and a **resolved** one is a painted pixel, so a width chosen at
+   100 % means the same panel at 150 % — the first attempt held every limit
+   unscaled and produced a 264 px rail around controls at twice their size. And
+   the navigation is a left column only where it fits: `navigationPlacement` is
+   a fit test rather than a breakpoint, because `--ui-scale` decides it and no
+   media query can ask about `--ui-scale`.
+
+   **What did not land, stated so it is not mistaken for done.** A phone cannot
+   fold the sections on their own — the Layout menu's "map only" is that tier's
+   route, and `app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720` carries the
+   arrow beside the minimap and the zoom pair. And the 200 %-page-zoom debt
+   this stage inherited is **unchanged**: 23 of 36 viewport × interface-scale
+   combinations fail, the same 23 as before the stage, and commit `d7aab8d8`
+   carries both sweeps and what clearing it would take.
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked
