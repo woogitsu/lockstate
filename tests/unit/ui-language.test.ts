@@ -74,7 +74,7 @@ describe('the language preference vocabulary', () => {
   });
 
   it('cycles through every preference and back, so one button can offer all three', () => {
-    const seen = [LANGUAGE_PREFERENCES[0]!];
+    const seen: (typeof LANGUAGE_PREFERENCES)[number][] = [LANGUAGE_PREFERENCES[0]!];
     for (let step = 0; step < LANGUAGE_PREFERENCES.length - 1; step += 1) {
       seen.push(nextLanguagePreference(seen[seen.length - 1]!));
     }

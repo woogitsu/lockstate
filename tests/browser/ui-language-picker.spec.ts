@@ -145,7 +145,10 @@ test.describe('pressing the control', () => {
     // Several panels laid out at once, which is the condition #663 names. The
     // Build tab carries the largest catalogue of labels in the interface and
     // the save panel is a separate mount with a localizer of its own history.
-    await page.getByRole('tab', { name: /build/i }).click();
+    // Selected by `data-tab` rather than by name, deliberately: this test
+    // changes the language the names are in, so a name-based locator would
+    // work on one side of the switch and not the other.
+    await page.locator('[data-tab="build"]').click();
     await page.waitForTimeout(100);
 
     const before = await visibleStrings(page);
@@ -159,57 +162,119 @@ test.describe('pressing the control', () => {
     }
     await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'pl');
     await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
-    await page.getByRole('tab', { name: /budow|zarz|przegl/i }).first().click();
+    await page.locator('[data-tab="build"]').click();
     await page.waitForTimeout(100);
 
     const after = new Set(await visibleStrings(page));
 
     /*
-     * The assertion, and the reason it is a subtraction rather than a
-     * comparison of two blobs. A string that survives the switch is either a
-     * word Polish shares with English (a wordmark, a version, a number) or it
-     * is a label that did not follow -- and only the second is a defect. So
-     * the survivors are listed and checked against what the *catalogues*
-     * themselves say is untranslated, rather than against a hand-written
-     * allowance that would grow whenever something failed to change.
+     * The assertion, and the rule it applies, which is narrower than "nothing
+     * survives" on purpose.
+     *
+     * A string that reads the same on both sides is one of four things: a
+     * word the two catalogues genuinely share (`LockState.io`, `PRE-ALPHA`), a
+     * number or an id, or **a key Polish has not translated yet**. Only the
+     * fourth possibility -- a key Polish *has* translated, still showing its
+     * English text -- is a failure of the switch, and it is the only one this
+     * asserts on.
+     *
+     * The alternative rule, "no English survives", would be a gate that can
+     * only pass by having a complete translation, which is the thing #664
+     * states in as many words that this repository does not build: *"Do not
+     * make a gate that can only pass by having a complete translation, and
+     * then complete the translation to make the gate pass."* ADR 0011 is
+     * equally explicit that a partial locale falling back per key is a valid
+     * shipping state.
+     *
+     * **Measured when this test was written, and left rather than fixed**:
+     * three strings survive for exactly that reason -- `Open the layout menu`,
+     * `Hide the sections`, `Hide the panels`. They are three of the fifteen
+     * `hud.layout.*` keys that #1159 added to the English catalogue after
+     * #661 authored the Polish one, and they are the three of the fifteen that
+     * are on screen at boot. Translating them here to make this test green
+     * would be the anti-pattern above; they belong to whoever carries the
+     * Polish catalogue forward.
+     *
+     * **What this rule cannot see, said rather than implied.** A message with
+     * a `{placeholder}` renders to something that is not its own template, so
+     * a translated *template* whose rendering survived would not be matched
+     * below. The rule therefore produces no false positives and is not
+     * exhaustive, which is why the per-panel assertions after it exist: those
+     * name specific strings from four separately-mounted surfaces and require
+     * each to have moved.
      */
-    const identicalInBothCatalogues = new Set(
+    const translatedDifferently = new Set(
       Object.keys(EN)
-        .filter((key) => typeof EN[key] === 'string' && EN[key] === PL[key])
+        .filter((key) => typeof EN[key] === 'string' && typeof PL[key] === 'string' && EN[key] !== PL[key])
         .map((key) => EN[key] as string),
     );
-    const survivors = before.filter((value) => after.has(value)).filter((value) => {
-      // Numbers, times, money and ids are not translations and are expected to
-      // survive; so is anything the two catalogues agree on word for word.
-      if (!/[A-Za-z]{2,}/.test(value)) return false;
-      if (identicalInBothCatalogues.has(value)) return false;
-      // A string that is one of those identical entries with a number
-      // interpolated into it (`v0.0.616 · abc1234`) survives for the same
-      // reason and is not a defect either.
-      return ![...identicalInBothCatalogues].some((shared) => shared.includes(value) || value.includes(shared));
-    });
+    const survivors = before.filter((value) => after.has(value) && translatedDifferently.has(value));
 
     expect(
       survivors,
-      'these strings stayed in English after the language changed: the switch reached part of the interface only',
+      'these strings stayed in English after the language changed, and Polish has a translation for each: the switch reached part of the interface only',
     ).toEqual([]);
+
+    /*
+     * And the half a subtraction cannot prove: that the change reached
+     * *several* surfaces rather than one. Each key below is rendered by a
+     * different module, and each is mounted separately -- the navigation by
+     * `hud.ts`, the save panel by `SavePanel` (which held a localizer of its
+     * own until #208 closed that seam), and the two halves of the chrome row
+     * by `theme.ts` and `language.ts`. This is #663's *"asserts that every
+     * visible string changed -- not that one panel did"*, made specific.
+     */
+    const reachedEverySurface = [
+      'hud.tab.build',
+      'save.action.create',
+      'display.theme.region',
+      'display.language.region',
+    ] as const;
+    const stillEnglish = reachedEverySurface.filter((key) => after.has(text(EN, key)));
+    expect(
+      stillEnglish,
+      'a separately-mounted surface kept its English label after the switch',
+    ).toEqual([]);
+    for (const key of reachedEverySurface) {
+      expect(text(PL, key), `${key} is untranslated, so it proves nothing here`).not.toBe(text(EN, key));
+    }
   });
 
-  test('keeps the prison it was showing, because the save is awaited before the reload', async ({ page }) => {
+  test('keeps the prison it was showing, and a save lands before the reload', async ({ page }) => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await page.waitForSelector('.save-panel__item-label');
     const before = await page.locator('.save-panel__item-label').first().innerText();
+    const generation = (label: string): number => Number(/\((\d+) gen\)/.exec(label)?.[1] ?? Number.NaN);
+    expect(Number.isNaN(generation(before)), `the save row does not read as expected: ${before}`).toBe(false);
 
     await page.locator(CYCLE).click();
     await page.waitForSelector('.save-panel__item-label');
-
-    // The reload is the application of the change; it must not also be a
-    // loss. `src/main.ts` awaits `SessionController.saveNow()` before it
-    // navigates, which `LifecycleSaveHandler`'s `pagehide` save explicitly
-    // does not.
-    await expect(page.locator('.save-panel__item-label').first()).toHaveText(before);
     await expect(page.locator(CYCLE)).toHaveAttribute('data-preference', 'en');
+    const after = await page.locator('.save-panel__item-label').first().innerText();
+
+    /*
+     * Two claims, and they are different sizes.
+     *
+     * **The prison survived the reload the change performs** -- same row,
+     * same name -- which is the one this decision has to be held to. A
+     * language change that lost a prison would be the worst answer of the
+     * three the ADR draft weighs.
+     *
+     * **And a generation was written on the way out**, which is the visible
+     * consequence of `src/main.ts` awaiting `SessionController.saveNow()`
+     * before it navigates. Stated as evidence rather than as proof: this
+     * asserts a save landed, not that the `pagehide` save alone would have
+     * failed to land on this machine. What makes the `await` worth having is
+     * that `LifecycleSaveHandler` says in its own docblock that it cannot
+     * hold the page open for the transaction, so on a slower machine the
+     * unawaited one is the write that may simply not complete.
+     */
+    expect(after.replace(/\s*\(\d+ gen\)$/, '')).toBe(before.replace(/\s*\(\d+ gen\)$/, ''));
+    expect(
+      generation(after),
+      'no generation was written before the page reloaded, so the awaited save did nothing',
+    ).toBeGreaterThan(generation(before));
   });
 });
 
