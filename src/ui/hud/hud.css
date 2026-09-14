@@ -572,6 +572,32 @@
 }
 
 /*
+ * THE TWO STATES OF AN ALERTS SECTION WITH NO ROWS (issue #1184).
+ *
+ * `display: flex` above beats the `hidden` attribute's own `display: none`, so
+ * the list needs this line to be able to come off at all -- the same pairing
+ * `.hud-overview__figures[hidden]` carries one panel down, and for the same
+ * reason: the sentinel sentence and the list it replaces must never be on
+ * screen together.
+ */
+.hud-alerts__list[hidden] { display: none; }
+
+/* The sentinel sentence itself. An eyebrow's default single-line uppercase
+   treatment would clip it, so it wraps and keeps its case -- copied from
+   `.hud-overview__none`, which paints the same sentence in the same state and
+   had the same problem. `padding` rather than none, because this box replaces a
+   list whose rows carry their own and a sentence flush against the fold header
+   reads as part of it. */
+.hud-alerts__none:not([hidden]) {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: var(--space-2);
+  font-size: var(--text-size-body);
+}
+
+/*
  * WHAT THE DISMISS CONTROL COSTS THE SENTENCE BESIDE IT (ADR 0084 decision 3,
  * the owner's ruling of 2026-09-01 that the control is its own element).
  *

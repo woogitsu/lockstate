@@ -6,6 +6,7 @@ import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
+import { alertRows } from '../helpers/alert-rows';
 import {
   INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS,
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
@@ -441,13 +442,13 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
     ).toBe(false);
     expect(runtime.refusals.last?.reason, 'construction, named on the wire').toBe('construction.materials-unfunded');
 
-    const alerts = hudAlertsFromWorkerMessage(publication(runtime));
+    const alerts = alertRows(hudAlertsFromWorkerMessage(publication(runtime)));
     expect(alerts).toEqual([
       { id: 'refusal-1', labelKey: 'hud.alert.refusal.construction.materials-unfunded', severity: 'warning' },
     ]);
 
     const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-    const stallSentence = localizer.format(alerts![0]!.labelKey);
+    const stallSentence = localizer.format(alerts[0]!.labelKey);
     expect(stallSentence, 'the key resolved to real text and not to its own dotted self').toBe(
       'The build queue is stalled — no more materials until the prison earns the money.',
     );
@@ -468,8 +469,8 @@ describe('ADR 0017 decision 8`s ladder, pressed in one run', () => {
      * two would be distinguishable only because one of them never fires.
      */
     expect(pressBuy(runtime, 'buy-at-minus-1300'), 'the press is refused too, at the same balance').toBe(false);
-    const pressAlerts = hudAlertsFromWorkerMessage(publication(runtime));
-    expect(localizer.format(pressAlerts![0]!.labelKey)).toBe(
+    const pressAlerts = alertRows(hudAlertsFromWorkerMessage(publication(runtime)));
+    expect(localizer.format(pressAlerts[0]!.labelKey)).toBe(
       'Nothing was bought — deliveries are refused until the prison earns the money.',
     );
   });

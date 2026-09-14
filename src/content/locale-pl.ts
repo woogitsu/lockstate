@@ -575,6 +575,9 @@ const plMessages: Readonly<Record<string, string>> = {
 
   'hud.alerts.title': 'Powiadomienia',
   'hud.alerts.empty': 'Brak aktywnych powiadomień',
+  // The sentinel (#1184). The same Polish sentence as `hud.overview.none`
+  // below, for the reason the English pair states: one state, one wording.
+  'hud.alerts.unknown': 'Żadne więzienie nie przesyła danych.',
   'hud.alert.dismiss': 'Usuń to powiadomienie',
   'hud.alert.time': 'Dzień {day}',
   // A formula: the `×` carries the counting, so there is no grammatical number

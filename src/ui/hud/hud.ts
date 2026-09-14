@@ -1816,7 +1816,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
   });
-  alertsSection.body.append(alertList);
+  /*
+   * The sentinel sentence for "no prison is reporting" (issue #1184), and it is
+   * a sibling of the list rather than a row in it -- `paintAlerts` states why,
+   * and `overview-panel.ts` made the same call for the same reason one panel
+   * over. Built here, painted there: `paintAlerts` runs on the first `update`
+   * and is the only thing that ever sets either element's `hidden`.
+   */
+  const alertsNone = eyebrowText(t(HUD_MESSAGE_KEY.alertsUnknown), 'hud-alerts__none');
+  alertsSection.body.append(alertList, alertsNone);
 
   const minimapPanel: Panel = createPanel({
     title: t(HUD_MESSAGE_KEY.minimapTitle),
@@ -2517,12 +2525,43 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   let emptyRow: ListRow | undefined;
 
   function paintAlerts(): void {
+    /*
+     * Three states, and the first of them is issue #1184 (see
+     * `HudViewModel.alerts`).
+     *
+     * `undefined` is **no prison reporting** -- before the first publication,
+     * and after `simulation/stopped` takes the field off -- and it gets the
+     * sentence, not a row. The sentence is a sibling of the list rather than a
+     * row in it for the reason `overview-panel.ts` gives for the same choice:
+     * a row here is an alert, drawn with an icon beside a severity badge, and
+     * "no prison is reporting" rendered as one would look like an alert that
+     * says everything is fine -- which is the failure this issue is about,
+     * reintroduced one level down. The list comes off with it, so the two can
+     * never be on screen together.
+     */
+    const rows = viewModel.alerts;
+    alertList.hidden = rows === undefined;
+    alertsNone.hidden = rows !== undefined;
+    if (rows === undefined) {
+      // The rows go with the list rather than being left hidden inside it: the
+      // next prison to report is a different session, and a row it never sent
+      // must not be able to reappear when one does.
+      for (const [id, row] of alertRows) {
+        row.element.remove();
+        alertRows.delete(id);
+      }
+      if (emptyRow !== undefined) {
+        emptyRow.element.remove();
+        emptyRow = undefined;
+      }
+      return;
+    }
     const seen = new Set<string>();
     // One resolution per paint rather than one per row: every dismissable row's
     // control is called the same thing, and the sentence does not depend on
     // which row it is on.
     const dismissLabel = hudAlertDismissLabel(t);
-    for (const [index, alert] of viewModel.alerts.entries()) {
+    for (const [index, alert] of rows.entries()) {
       seen.add(alert.id);
       // The sentence, and -- since the owner's decisions 1 and 2 of 2026-09-01
       // on ADR 0084 -- how many times it has been said and when the newest of
@@ -2642,7 +2681,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
     // An empty list must say it is empty. A blank rectangle is indistinguishable
     // from a broken one.
-    if (viewModel.alerts.length === 0 && emptyRow === undefined) {
+    if (rows.length === 0 && emptyRow === undefined) {
       // Wrapped for the same reason as the rows above, though today's
       // sentence fits on one line: the empty-list row is a row of this list,
       // and a locale whose "no active alerts" is longer should not be the
@@ -2650,7 +2689,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       emptyRow = createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.alertsEmpty), wrap: true });
       emptyRow.element.dataset['alert'] = 'empty';
       alertList.append(emptyRow.element);
-    } else if (viewModel.alerts.length > 0 && emptyRow !== undefined) {
+    } else if (rows.length > 0 && emptyRow !== undefined) {
       emptyRow.element.remove();
       emptyRow = undefined;
     }
