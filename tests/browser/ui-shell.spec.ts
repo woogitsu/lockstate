@@ -445,6 +445,58 @@ test.describe('HUD shell', () => {
     ]);
   });
 
+  /**
+   * **No section name wraps to a second line at the narrowest viewport**, and
+   * this exists because one did, on the day the sections were renamed.
+   *
+   * ADR 0022's own measurement is about *width* -- a nine-character label puts
+   * `.hud-tabs__inner` outside the 375px viewport -- and the section names
+   * were chosen against it: the longest went from 8 characters (`Overview`,
+   * `Security`) to 8 (`Overview`, `Day plan`), which passed every width
+   * assertion in this file. It cost height instead, because `.ui-tab__label`
+   * sets no `white-space` and a label with a **space in it** breaks at the
+   * space when the tab is squeezed to its `min-width`.
+   *
+   * Measured at 375x812 on 2026-09-14, with `Day plan` and then with the
+   * one-word `Schedule` that replaced it:
+   *
+   * | label | its label box | the tab bar |
+   * |---|---|---|
+   * | `Day plan` | 26.4px — two line boxes | 82.4px |
+   * | `Schedule` | 13.2px — one, like every other tab | 69.2px |
+   *
+   * Those 13.2px come off the rail, and they were enough to put a delivery
+   * row's Cancel outside the Build panel's visible box:
+   * `build-deliveries-outside-the-fold.spec.ts` went red on this branch at
+   * 375x812 and is green on `2e5cac4e`, which is how the wrap was found.
+   * Every other tab's label box is 13.2px here, so the assertion is that no
+   * label is taller than the shortest of them rather than a pinned pixel
+   * count.
+   */
+  test('no section name wraps to a second line at 375x812', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+    const labels = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.ui-tab')].map((tab) => ({
+        id: tab.dataset['tab'] ?? '',
+        text: (tab.textContent ?? '').trim(),
+        lineBoxes: (tab.querySelector('.ui-tab__label') as HTMLElement).getClientRects().length,
+        height: Math.round((tab.querySelector('.ui-tab__label') as HTMLElement).getBoundingClientRect().height * 10) / 10,
+      })),
+    );
+
+    // Not vacuous: five tabs, each with a label that was actually found.
+    expect(labels).toHaveLength(5);
+    const shortest = Math.min(...labels.map((label) => label.height));
+    expect(shortest, 'no tab label was laid out at all').toBeGreaterThan(0);
+    expect(
+      labels.filter((label) => label.height > shortest + 1),
+      'these section names wrap, and every line they wrap to comes off the rail',
+    ).toEqual([]);
+    expect(labels.every((label) => label.lineBoxes === 1)).toBe(true);
+  });
+
   test('transport controls report a clock intent without changing the clock themselves', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 

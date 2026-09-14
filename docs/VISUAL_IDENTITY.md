@@ -277,10 +277,16 @@ an impression.
    delivery puts them under Zarządzaj; and the eleven surfaces the direction
    does not place are still unplaced.
 
-   **What the move cost, measured:** the Manage tab is the first in this rail's
-   life to lay out two panels at once, and at 900x600 the Intake panel came out
-   42px shorter than its own content beside the Staff panel. `hud.css` carries
-   the remedy and the one that was tried first and did not work.
+   **What the move cost, measured, in two places:** the Manage tab is the first
+   in this rail's life to lay out two panels at once, and at 900x600 the Intake
+   panel came out 42px shorter than its own content beside the Staff panel —
+   `hud.css` carries the remedy and the one that was tried first and did not
+   work. And the English name for *Plan dnia* is **Schedule** rather than the
+   obvious *Day plan*, because at 375x812 a label with a space in it wraps: two
+   line boxes instead of one, a tab bar of 82.4px instead of 69.2px, and the
+   13.2px came off the rail and put a delivery row's Cancel outside the Build
+   panel's visible box. The direction's five titles bind; which English word
+   carries one of them is ours, and this one was chosen with a ruler.
 6. **The layout system landed on 2026-09-14 (#1159), and the measurement this
    item used to carry is kept below rather than overwritten** — it is what the
    stage was measured against, and a reader needs to see what moved.

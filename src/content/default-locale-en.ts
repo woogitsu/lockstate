@@ -439,7 +439,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * - `Manage` -- `src/ui/hud/staff-panel.ts`: hiring, releasing a guard from
    *   a post, and dismissal. Every control in the section acts on a person,
    *   and the admission control joins them in the commit after this one.
-   * - `Day plan` -- `src/ui/hud/regime-panel.ts`, which paints each
+   * - `Schedule` -- `src/ui/hud/regime-panel.ts`, which paints each
    *   classification group's blocks for the day in progress. **It also still
    *   carries the prisoner roster and the prisoner inspector**, which the
    *   delivery's own table puts under Zarzadzaj; splitting that panel in two
@@ -454,16 +454,39 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * "Logistics" would put the bar at x = -9.5 and fail
    * `tests/browser/ui-shell.spec.ts`'s `tabs.x >= 0` / `tabs.right <= 375`
    * pair. In characters the set does not grow: the longest was 8
-   * (`Overview`, `Security`) and the longest is 8 (`Overview`, `Day plan`),
-   * with `Rooms` -> `Zones` exactly equal at 5 and `Regime` -> `Day plan`
-   * the one that grows, by two characters, against `Security`'s eight
-   * leaving the bar at the same time.
+   * (`Overview`, `Security`) and the longest is 8 (`Overview`, `Schedule`),
+   * with `Rooms` -> `Zones` exactly equal at 5.
+   *
+   * **`Schedule` is one word because `Day plan` was two, and the two words
+   * cost 13.2px of rail.** The delivery's section is *Plan dnia* and the
+   * obvious English is `Day plan`, which is 8 characters and passes every
+   * width assertion ADR 0022's measurement is about. It fails on **height**,
+   * which no measurement here had ever taken: `.ui-tab__label` sets no
+   * `white-space`, so at 375x812, where five tabs are squeezed to their
+   * `min-width`, a label breaks at its space. Measured on 2026-09-14 --
+   * `Day plan`'s label box is 26.4px against every other tab's 13.2px and the
+   * tab bar is 82.4px instead of 69.2px -- and those 13.2px come off the rail:
+   * `tests/browser/build-deliveries-outside-the-fold.spec.ts` went red at
+   * 375x812 with a delivery row's Cancel outside the Build panel's visible
+   * box, and is green on `2e5cac4e`. A one-word label cannot break, and
+   * `ui-shell.spec.ts`'s "no section name wraps to a second line at 375x812"
+   * is the gate that keeps a two-word one from coming back unmeasured.
+   *
+   * `Schedule` rather than `Timetable`, which is the word this catalogue's own
+   * refusal sentences use for this panel's content
+   * (`hud.alert.refusal.edit-regime-block.*`, *"not a block on this
+   * timetable"*). Naming consistency is the tie-break the constitution puts
+   * *below* legibility, and `Timetable` is the nine characters ADR 0022
+   * measured as putting the bar off the left edge of a 375px viewport. The
+   * eight-character `Schedule` is what both constraints leave, and it is true
+   * of the panel: what the section shows is each classification group's blocks
+   * for the day in progress.
    */
   'hud.tab.overview': 'Overview',
   'hud.tab.build': 'Build',
   'hud.tab.zones': 'Zones',
   'hud.tab.manage': 'Manage',
-  'hud.tab.day-plan': 'Day plan',
+  'hud.tab.day-plan': 'Schedule',
 
   /*
    * The Layout menu and the three collapse arrows (#1159, stage 3).

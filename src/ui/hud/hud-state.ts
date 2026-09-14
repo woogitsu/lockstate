@@ -45,7 +45,7 @@
  * |---|---|---|
  * | `rooms` | `zones` | Strefy |
  * | `security` | `manage` | Zarządzaj |
- * | `regime` | `day-plan` | Plan dnia |
+ * | `regime` | `day-plan` | Plan dnia (`Schedule` in English -- see the locale) |
  *
  * `overview` and `build` keep their ids because the delivery keeps their
  * subjects (Przegląd, Buduj). The **order** is unchanged: the delivery lists
