@@ -184,6 +184,19 @@ const FLAT_MESSAGES_WITH_COUNT = [
   // the badge channel learns to count.
   'hud.status.rooms-not-ready',
   'save.list.item',
+  // The delete confirmation's age fragments (#1142): `{count} min ago`,
+  // `{count} h ago`, `{count} d ago`. Listed rather than authored with plural
+  // forms, and the reason is the unit rather than the debt: an **abbreviated**
+  // unit symbol does not inflect for number in English or in Polish ("1 min
+  // temu", "3 min temu", "22 min temu"), so these are in
+  // `hud.alert.occurrences`' class -- a formula whose counting is carried by
+  // something other than grammar -- and not in `save.list.item`'s. Spelling
+  // the units out is what would create the debt, which is why they are not
+  // spelled out. `describeSaveAge` in `src/ui/save-panel-delete.ts` records
+  // the same reasoning beside the code that selects between them.
+  'save.delete.age.days',
+  'save.delete.age.hours',
+  'save.delete.age.minutes',
 ] as const;
 
 describe('the English catalogue counts things with flat strings, and the debt may not grow (#664)', () => {
