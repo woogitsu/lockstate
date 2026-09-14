@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../content/localization';
 import { readableGenerationIds } from '../persistence/local/generation-policy';
-import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveResult } from '../persistence/local/repository';
+import type { DeletedPrison, RestoreOutcome, SaveImportResult, SaveInventory, SaveResult } from '../persistence/local/repository';
 import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
 import type { ActiveSession, SessionLoadOutcome } from '../persistence/session/session-controller';
@@ -422,7 +422,16 @@ export function describeActionFailure(failure: AsyncActionFailure, localizer: Sa
  * change.
  */
 export interface SavePanelSessions {
-  listPrisons(): Promise<readonly PrisonSlotMetadata[]>;
+  /**
+   * Everything the list shows, from one read.
+   *
+   * One call rather than a prisons call and a tombstones call, for the two
+   * reasons `PrisonSaveRepository.listSaves` states: a second transaction on
+   * every repaint was measured as a real cost in the browser reachability
+   * sweep, and two reads are two snapshots that a deletion landing between them
+   * can fall through entirely.
+   */
+  listSaves(): Promise<SaveInventory>;
   getActiveSession(): ActiveSession | undefined;
   createPrison(prisonId: string, displayName?: string): Promise<SaveResult>;
   saveNow(): Promise<SaveResult>;
@@ -747,14 +756,10 @@ export class SavePanel {
     let prisons: readonly PrisonSlotMetadata[];
     let deleted: readonly DeletedPrison[];
     try {
-      prisons = await this.controller.listPrisons();
-      // The sweep, and the only thing that enforces the undo window: this call
-      // deletes every copy whose window has closed as it reads (ADR 0114 §3).
-      // It is inside the same `try` for the reason the line above it is --
-      // storage that cannot be read is one sentence to the player, not two --
-      // and after the prison list rather than before, so a failure here cannot
-      // cost the player the sight of prisons they still have.
-      deleted = await this.controller.listDeletedPrisons();
+      // One read for both halves, and it is also the sweep: the call deletes
+      // every copy whose undo window has closed as it reads (ADR 0114 §3), so
+      // this repaint is what enforces the window with no timer anywhere.
+      ({ prisons, deleted } = await this.controller.listSaves());
     } catch (error) {
       if (token !== this.refreshToken) return;
       // Two different causes reach here: local storage being unusable at all

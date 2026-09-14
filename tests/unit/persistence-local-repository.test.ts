@@ -1200,3 +1200,50 @@ describe('PrisonSaveRepository: the undo window (ADR 0114)', () => {
     expect(defaultLocaleEnCatalog.get('save.delete.confirm')).toContain('for one day');
   });
 });
+
+/**
+ * `listSaves()` -- both halves of the panel's list, from one transaction.
+ *
+ * The reason it exists is measured rather than argued, and the measurement is
+ * in `PrisonSaveRepository.listSaves`' own docblock. What is asserted here is
+ * the half a test can hold: that it answers the same thing the two separate
+ * calls answer, and that it sweeps.
+ */
+describe('PrisonSaveRepository: listSaves (ADR 0114)', () => {
+  it('answers exactly what list() and listTombstones() answer separately', async () => {
+    const time = { value: 1_000 };
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: () => time.value });
+    await repo.create({ prisonId: 'prison-keep', gameVersion: 'lockstate-0.0.0', displayName: 'Westhollow' });
+    await repo.create({ prisonId: 'prison-gone', gameVersion: 'lockstate-0.0.0', displayName: 'Ironmoor' });
+    await repo.delete('prison-gone');
+
+    const inventory = await repo.listSaves();
+    expect(inventory.prisons).toEqual(await repo.list());
+    expect(inventory.deleted).toEqual([
+      { prisonId: 'prison-gone', displayName: 'Ironmoor', deletedAt: 1_000, expiresAt: 1_000 + DEFAULT_UNDO_WINDOW_MS },
+    ]);
+    expect(inventory.prisons).toHaveLength(1);
+  });
+
+  it('sweeps a closed window as it reads, exactly as listTombstones does', async () => {
+    const time = { value: 1_000 };
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: () => time.value });
+    await repo.create({ prisonId: 'prison-gone', gameVersion: 'lockstate-0.0.0' });
+    await repo.delete('prison-gone');
+    expect((await repo.listSaves()).deleted).toHaveLength(1);
+
+    time.value = 1_000 + DEFAULT_UNDO_WINDOW_MS;
+    expect((await repo.listSaves()).deleted).toEqual([]);
+    // Really deleted, not merely filtered out of the answer.
+    expect(await repo.listTombstones()).toEqual([]);
+  });
+
+  it('refuses the whole list on one unreadable slot record, exactly as list() does', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store);
+    await seedRawSlotRecord(store, { prisonId: 'prison-1', gameVersion: 42 });
+    // The availability trade-off `slot-metadata-schema.ts` argues for is not
+    // quietly softened by reading the two halves together.
+    await expect(repo.listSaves()).rejects.toThrow();
+  });
+});
