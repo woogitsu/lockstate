@@ -14,6 +14,14 @@ import {
   createBusyGroup,
   describeActionError,
 } from './primitives/async-action';
+import { ambientFocusOwner, handOffFocus, keyboardIsUnclaimed } from './primitives/focus-handoff';
+import {
+  type DeleteArming,
+  describeDeleteConfirmation,
+  describeSaveAge,
+  pressDeleteConfirmation,
+  retainDeleteArming,
+} from './save-panel-delete';
 import { SAVE_PANEL_MESSAGE_KEY } from './save-panel-messages';
 import { protocolFaultMessageKeyOf } from './simulation-alerts';
 
@@ -541,16 +549,61 @@ export class SavePanel {
 
   private readonly localizer: SavePanelLocalizer;
 
+  /**
+   * The deletion the player has asked about and not yet answered for (#1142).
+   *
+   * `undefined` is the resting state and the only state in which the panel
+   * renders no confirmation. Every rule about it -- which press may spend it,
+   * when it stops being about anybody -- is in `save-panel-delete.ts`, where
+   * `pnpm test` can reach it.
+   */
+  private armedDeletion: DeleteArming | undefined;
+
+  /** The confirmation's own `<li>`, or `undefined` when nothing is armed. */
+  private confirmationRow: HTMLElement | undefined;
+
+  /**
+   * Where the keyboard goes after a deletion actually happens.
+   *
+   * The controls it was standing on -- the row's Delete, then the
+   * confirmation's own pair -- are all gone by then, so constitution article
+   * 16 (*"Zamknięcie okna oddaje fokus dostępnemu wyzwalaczowi lub mapie"* --
+   * closing returns focus to an available trigger) has nothing to give it
+   * back to in the list. This is the panel's first always-present control, and
+   * it is captured rather than looked up so nothing has to query the document
+   * for it.
+   */
+  private readonly createButton: HTMLButtonElement;
+
+  /** Set by a completed deletion, spent once the gate has re-enabled the controls. */
+  private focusAfterDeletion = false;
+
+  private readonly now: () => number;
+
   public constructor(
     private readonly controller: SavePanelSessions,
     parent: HTMLElement,
     localizer: SavePanelLocalizer,
+    /**
+     * The clock the confirmation's age is measured against.
+     *
+     * Injected and defaulted rather than read from `Date` at the call site, so
+     * a browser spec can put a save at a known age without waiting for one --
+     * and defaulted so `src/main.ts`'s single construction is untouched, which
+     * `tests/foundation/composition-root-contract.test.ts` pins verbatim.
+     */
+    now: () => number = () => Date.now(),
   ) {
     this.localizer = localizer;
+    this.now = now;
     this.gate = new AsyncActionGate({
       onBusyChange: (busy) => {
         this.busy.setBusy(busy);
         this.rowBusy.setBusy(busy);
+        // After both groups, never before: the control this hands the keyboard
+        // to is one of the ones `setBusy` has just re-enabled, and a focus call
+        // on a still-`disabled` button does nothing at all.
+        if (!busy) this.settleFocusAfterDeletion();
       },
       // The backstop issue #65 was missing. A handler is expected to
       // classify its own failures; anything that escapes still reaches the
@@ -571,8 +624,9 @@ export class SavePanel {
 
     const actions = document.createElement('div');
     actions.className = 'save-panel__actions';
+    this.createButton = this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate());
     actions.append(
-      this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate()),
+      this.createButton,
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionSave, () => this.requestSaveNow()),
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionExport, () => this.requestExport()),
       // Beside Export, in the same always-visible row and behind no
@@ -679,6 +733,14 @@ export class SavePanel {
     // group, so it does not accumulate a reference to every button the panel
     // has ever rendered.
     this.rowBusy.clear();
+    // The confirmation's own controls were in that group too, and its element
+    // was in the list that has just been emptied. Both are rebuilt below if the
+    // arm survives; the field is cleared here so nothing holds a detached node.
+    this.confirmationRow = undefined;
+    // A question about a prison this list no longer holds is a question about
+    // nobody -- it was deleted here, in another tab, or its slot record stopped
+    // validating. `retainDeleteArming` is the one rule for all three.
+    this.armedDeletion = retainDeleteArming(this.armedDeletion, prisons.map((prison) => prison.prisonId));
     const activeId = this.controller.getActiveSession()?.prisonId;
 
     if (prisons.length === 0) {
@@ -692,6 +754,10 @@ export class SavePanel {
     for (const prison of orderPrisonsForDisplay(prisons)) {
       const item = document.createElement('li');
       item.className = 'save-panel__item';
+      // Which prison this row is for, so the confirmation can be inserted
+      // directly beneath the row that raised it without the panel having to
+      // remember an index into a list it rebuilds wholesale.
+      item.dataset.prison = prison.prisonId;
       if (prison.prisonId === activeId) item.dataset.active = 'true';
 
       const label = document.createElement('span');
@@ -726,12 +792,103 @@ export class SavePanel {
         this.button(
           this.rowBusy,
           SAVE_PANEL_MESSAGE_KEY.actionDelete,
-          () => this.requestDelete(prison.prisonId),
+          // The arming is built from the row that is being drawn, so what the
+          // confirmation names is what this row named -- `{name}` here is the
+          // same value `save.list.item` interpolated one element above.
+          () =>
+            this.requestDelete({
+              prisonId: prison.prisonId,
+              named: prison.displayName ?? prison.prisonId,
+              updatedAt: prison.updatedAt,
+            }),
           `delete:${prison.prisonId}`,
         ),
       );
       this.listElement.append(item);
     }
+
+    this.renderDeleteConfirmation();
+  }
+
+  /**
+   * Draws the confirmation beneath the row it belongs to, or takes it away.
+   *
+   * Called from `refresh` and from each of the three presses that change what
+   * is armed, so there is one place that turns `armedDeletion` into elements
+   * and no state the two paths could disagree about.
+   *
+   * It does **not** re-read the prison list. Arming is a question about a row
+   * the player is looking at, and re-reading storage to draw a question would
+   * make the confirmation appear a transaction later than the press that asked
+   * for it -- and would race the very `refresh` guard that exists to stop a
+   * slower earlier read repainting over a newer one.
+   */
+  private renderDeleteConfirmation(): void {
+    this.confirmationRow?.remove();
+    this.confirmationRow = undefined;
+
+    const armed = this.armedDeletion;
+    if (armed === undefined) return;
+
+    const row = this.listElement.querySelector<HTMLElement>(`[data-prison="${CSS.escape(armed.prisonId)}"]`);
+    if (row === null) return; // the row is not drawn, so there is nothing to ask about
+
+    const confirmation = document.createElement('li');
+    confirmation.className = 'save-panel__item';
+    confirmation.dataset.deleteConfirm = armed.prisonId;
+
+    const question = document.createElement('span');
+    // The list row's own label class, so the sentence inherits the styling a
+    // row's text already has. `src/styles.css` belongs to another change in
+    // flight and this one adds no rule to it.
+    question.className = 'save-panel__item-label';
+    question.id = `save-panel-delete-confirm-${armed.prisonId}`;
+    const age = this.resolveMessage(describeSaveAge(this.now() - armed.updatedAt));
+    const sentence = describeDeleteConfirmation(armed, age);
+    question.textContent = this.text(sentence.messageKey, sentence.messageParameters);
+    confirmation.append(question);
+
+    const confirm = this.button(
+      this.rowBusy,
+      SAVE_PANEL_MESSAGE_KEY.actionDeleteConfirm,
+      () => this.confirmDelete(armed.prisonId),
+    );
+    const cancel = this.button(
+      this.rowBusy,
+      SAVE_PANEL_MESSAGE_KEY.actionDeleteCancel,
+      () => this.cancelDelete(),
+    );
+    // The question is the description of both controls rather than a live
+    // region: a live region announces once, into whatever the player was
+    // doing, while a description is re-read every time either control is
+    // reached -- and the keyboard is put on one of them immediately below.
+    confirm.setAttribute('aria-describedby', question.id);
+    cancel.setAttribute('aria-describedby', question.id);
+    confirmation.append(confirm, cancel);
+
+    row.after(confirmation);
+    this.confirmationRow = confirmation;
+  }
+
+  /** Resolves a `SaveMessage` to text. The same last-moment resolution `text` does. */
+  private resolveMessage(message: SaveMessage): string {
+    return this.text(message.messageKey, message.messageParameters);
+  }
+
+  /**
+   * Hands the keyboard to the create button after a deletion has emptied the
+   * place it was standing.
+   *
+   * Guarded on `keyboardIsUnclaimed`, which is `focus-handoff.ts`'s rule and
+   * not an optimisation: a player who tabbed somewhere else while the delete
+   * was in flight put the keyboard where it now is, and moving it would be a
+   * worse defect than the one this is fixing.
+   */
+  private settleFocusAfterDeletion(): void {
+    if (!this.focusAfterDeletion) return;
+    this.focusAfterDeletion = false;
+    if (!keyboardIsUnclaimed(ambientFocusOwner())) return;
+    handOffFocus(this.createButton);
   }
 
   /*
@@ -794,13 +951,118 @@ export class SavePanel {
     });
   }
 
-  public requestDelete(prisonId: string): AsyncActionOutcome {
+  /**
+   * Asks the question. **It deletes nothing** (#1142).
+   *
+   * ## What this used to be
+   *
+   * ```ts
+   * public requestDelete(prisonId: string): AsyncActionOutcome {
+   *   return this.start('delete', async () => {
+   *     await this.controller.deletePrison(prisonId);
+   * ```
+   *
+   * One press of a row's Delete control and the prison was gone: every
+   * retained generation and the slot record, in one transaction
+   * (`PrisonSaveRepository.delete`, `src/persistence/local/repository.ts:467`),
+   * with nothing in between that could have been read, hesitated over or
+   * refused. That is the whole of issue #1142, and it is quoted here rather
+   * than described because the shape of the old code is the reason the new
+   * code is shaped the way it is: the deletion is unchanged and still
+   * unconditional, and what moved is where the intent is formed.
+   *
+   * ## Why the signature changed, rather than keeping `(prisonId: string)`
+   *
+   * Two reasons, and both are about not being able to lie.
+   *
+   * The **return type** went from `AsyncActionOutcome` to `void` because this
+   * press no longer starts an action. Returning `'started'` for a press that
+   * issues nothing would be a value a test could assert and be wrong about.
+   * `confirmDelete` returns the gate's decision, because that is the press
+   * that has one.
+   *
+   * The **parameter** is the whole arming rather than an id because the
+   * confirmation has to say what is about to be lost, and the row that was
+   * pressed is the only place that is known without a second read of storage.
+   * Capturing it here is also what stops the question drifting: the name and
+   * the timestamp are what the player was looking at when they pressed, and
+   * nothing re-reads them while the question stands
+   * (`src/ui/save-panel-delete.ts` carries the argument).
+   *
+   * ## Not gated, and that is deliberate
+   *
+   * `AsyncActionGate` exists to stop two overlapping *requests* reaching
+   * storage (issue #65). Arming touches no storage and awaits nothing, so
+   * running it through the gate would buy nothing and would cost something
+   * real: the gate disables every control for the duration, so an armed
+   * confirmation would appear with both of its own buttons disabled. The
+   * protection a player needs here is the one the gate already gives -- the
+   * row's Delete button is disabled while any action is in flight, so a press
+   * cannot arrive during one.
+   */
+  public requestDelete(arming: DeleteArming): void {
+    this.armedDeletion = arming;
+    this.renderDeleteConfirmation();
+    // Onto the control that changes nothing. A confirmation that opens with
+    // the keyboard on its destructive control is one stray Enter away from
+    // being no confirmation at all, and the player who needs the keyboard
+    // route is exactly the player who cannot see where it landed.
+    handOffFocus(this.confirmationRow?.querySelector<HTMLButtonElement>('button:last-of-type') ?? undefined);
+  }
+
+  /**
+   * Spends the arm: the one press in this panel that destroys a prison.
+   *
+   * `pressDeleteConfirmation` decides whether it may, and the answer is `no`
+   * for every state except "this exact prison is armed" -- nothing armed, or
+   * an arm naming a different prison. The refusal is returned rather than
+   * swallowed, in the shape every other request here uses, so a test asserts
+   * that the intent was *refused* rather than inferring it from a prison still
+   * being on the list.
+   *
+   * `'refused-unconfirmed'` is its own value beside `AsyncActionOutcome`'s
+   * three and is not folded into `'refused-busy'`: they are different facts
+   * about different states, and issue #19's argument against collapsing
+   * distinct refusals into one sentence applies to return values for the same
+   * reason it applies to strings.
+   */
+  public confirmDelete(prisonId: string): AsyncActionOutcome | 'refused-unconfirmed' {
+    const press = pressDeleteConfirmation(this.armedDeletion, prisonId);
+    if (press.kind === 'refuses') return 'refused-unconfirmed';
+
     return this.start('delete', async () => {
-      await this.controller.deletePrison(prisonId);
+      await this.controller.deletePrison(press.prisonId);
+      // Cleared before the repaint, so `refresh` draws a list with no question
+      // standing over it even in the window before `retainDeleteArming` would
+      // have reached the same answer from the rows.
+      this.armedDeletion = undefined;
       this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusDeleted });
       this.setDetail(undefined);
+      // Article 16 of the constitution: the controls the player was standing
+      // on have just ceased to exist, so the keyboard is handed to one that
+      // has not. Spent by `settleFocusAfterDeletion` once the gate lets go.
+      this.focusAfterDeletion = true;
       await this.refresh();
     });
+  }
+
+  /**
+   * Backs out. Nothing was deleted, and the status line says exactly that and
+   * nothing more.
+   *
+   * The keyboard goes back to the Delete control the question came from, which
+   * is `focus-handoff.ts`'s rule and constitution article 16's: the row is
+   * still on the page, so there is a real trigger to return to and no reason
+   * to drop the player at the top of the panel.
+   */
+  public cancelDelete(): void {
+    const armed = this.armedDeletion;
+    this.armedDeletion = undefined;
+    this.renderDeleteConfirmation();
+    this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusDeleteKept });
+    if (armed === undefined) return;
+    const row = this.listElement.querySelector<HTMLElement>(`[data-prison="${CSS.escape(armed.prisonId)}"]`);
+    handOffFocus(row?.querySelector<HTMLButtonElement>('button:last-of-type') ?? undefined);
   }
 
   /**
