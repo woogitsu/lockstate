@@ -110,7 +110,14 @@ sprawdzeniu kontrastu. Nie wracać do pierwszej wartości."*
 and the owner ruled on 2026-09-13 for a smaller step: 15 / 13 / 11.** The
 delivery's figure is kept in this sentence rather than overwritten, because the
 gap between what was asked for and what was chosen is the thing a later reader
-needs. The ramp is rebuilt around the ruling; the upper steps scale with it. Tabular figures for money and the clock. **The spacing and
+needs. The ramp is rebuilt around the ruling; the upper steps scale with it —
+**built on 2026-09-14 as 31 / 23 / 19 / 15 / 13 / 11** (#1158). The upper three
+are derived rather than given, and two derivations were required to agree
+before they were written down: the −1 px offset that fits all three of the
+owner's numbers exactly (a ratio does not — 15/16 of 14 is 13.125), and the
+delivery's own +2/+2/+4/+4/+8 increments laid over 11 / 13 / 15. Both give the
+same six numbers, which is why the odd-looking 31 and 19 stand rather than a
+rounder 30 and 20. Tabular figures for money and the clock. **The spacing and
 motion values below come from `DOKUMENTACJA/projekt.md`, not from
 `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`, which has no section for either** — worth
 saying because the contents table above calls that file the binding visual
@@ -193,11 +200,32 @@ an impression.
    the default and a night theme beside it, switchable and remembered. That is
    the single largest piece of work in the whole direction, and it is a token
    architecture question before it is a colour question.
-2. **The type scale is smaller than the target by three steps.**
-   `src/ui/tokens.css:371-373` sets body and value text to 13 px and labels to
-   11 px, each multiplied by `--ui-scale`; the delivery asks for 16 / 14 / 12.
-   Raising it is not a token edit — it changes how much fits in every panel at
-   every device tier.
+2. **The type scale was smaller than the target by three steps, and stage 2
+   closed the gap on 2026-09-14 (#1158).** The sentence this item used to
+   carry is kept below rather than overwritten, because the measurement is
+   what the rest of this list is for and a reader needs to see what moved:
+
+   > `src/ui/tokens.css:371-373` sets body and value text to 13 px and labels
+   > to 11 px, each multiplied by `--ui-scale`; the delivery asks for
+   > 16 / 14 / 12. Raising it is not a token edit — it changes how much fits
+   > in every panel at every device tier.
+
+   Today `tokens.css` declares the full ramp — **31 / 23 / 19 / 15 / 13 / 11**,
+   the delivery's own scale less the 1 px the owner's three numbers determine —
+   and `:root` selects **15 px** for body and value. Labels never moved: 11 px
+   was already the ruled size. The upper three steps have no consumer yet and
+   the token file says so; `tests/unit/ui-design-tokens.test.ts` pins the
+   arithmetic of all six.
+
+   **"Not a token edit" was right, and two surfaces prove it.** The Build
+   panel and the alerts list are measured as not having the room and keep
+   13 px, each with the assertion that says so beside it — three floors at
+   1280×720 for the Build panel (#926, #920, `ui-build-queue`), and #739's
+   four-line-box cap for the alerts list. Both are inside ADR 0112's ruling
+   rather than exceptions to it: the label carrying it read *"np."* ("e.g."),
+   and 13 is a step on the ramp the owner named. The list of keeps is closed
+   executably, because *adding* one breaks no floor and would otherwise erode
+   the ruled scale silently.
 3. **The interactive hue is a single desaturated steel blue**
    (`--sky-600: #4a7fa5`, `src/ui/tokens.css:186-188`), where the direction has
    a teal action colour and a mint brand colour with different jobs.

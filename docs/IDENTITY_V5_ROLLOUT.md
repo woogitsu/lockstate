@@ -169,6 +169,44 @@ be that some density stays below the target with the reason written down.
 
 ---
 
+### Landed 2026-09-14 (#1158), and the weakest claim above was the right one
+
+The paragraphs above are left exactly as they stood: they are the plan, and
+what a plan predicted is worth keeping beside what happened.
+
+**The ramp is 31 / 23 / 19 / 15 / 13 / 11** — the delivery's own scale less the
+1 px the owner's three numbers determine, with the upper steps checked a second
+way against the delivery's increments before they were written down. `:root`
+selects 15 px for body and value. **Labels never moved**: 11 px was already the
+ruled size, so the "three steps" this section opens with was two.
+
+**Two surfaces did not have the room, and keep 13 px with their reasons in
+`tokens.css`:**
+
+- **The Build panel.** Three pinned floors went red at 15 px, all at 1280×720 —
+  `.hud-build__arm` at 56 px against a 44 px tap target (#926), the panel
+  arriving with 6 px more content than box (#920), and a queue cancel 2 px
+  below the fold with an emptied row no longer keeping its box. Pinning only
+  `.hud-build__actions` was tried first and cleared the first two, which is how
+  the arm button was identified as the source of the extra 12 px; it left all
+  three queue failures red.
+- **The alerts list.** #739 caps the worst-case alert sentence at four line
+  boxes at every viewport; at 15 px it wraps to five at 1280×720. It surfaced
+  a stage later than expected because the alerts section is a child of the
+  minimap panel in the map corner, not of the rail.
+
+**One thing this section did not predict and a later stage owes.** At a 200 %
+browser page zoom the HUD already fails its own containment invariants on
+`origin/main` — two covered tabs at 195×422 and 188×406 at the default
+interface scale, and a scrolling rail plus spilled strip rows from 125 % up.
+Measured before and after: **the failing set is identical**, so stage 2
+introduces none of it, and the magnitudes move a little (strip spill
+32.0 → 34.7 px at 200 %). Constitution article 8's 200 % clause is therefore
+**not** met today and was not met before this stage either. That is a layout
+defect and belongs to stage 3.
+
+---
+
 ## Stage 3 — The HUD shell: collapse, resize, layout memory
 
 What exists: `alerts` and `minimap` collapse through `collapsedPanels`
