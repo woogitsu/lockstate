@@ -766,6 +766,74 @@
   --text-size-value: var(--type-body);
 }
 
+/*
+ * SURFACE 2 -- the rail (#1158).
+ *
+ * `.hud__rail` is the whole right column: the aside slot the save panel is
+ * mounted into, and the side slot the tool panels live in. It carries the
+ * most text and the least slack -- `hud.css` puts `calc()` floors under the
+ * Build and Rooms panels that sum lines of type -- so this is where "some
+ * panels may not have the room" was always going to show first.
+ *
+ * It showed. See the Build panel's own block below; everything else in the
+ * rail took 15px with nothing to report.
+ *
+ * Measured after the move, at 390x844 / 1024x768 / 1440x900 / 900x600 /
+ * 375x812 / 1280x720 and all six scale steps: nothing outside the viewport,
+ * nothing covered, and `.hud__rail` still not the scroll container at any of
+ * them -- which is the half of the #88 fix that has to survive every change
+ * to this column. The Build panel's own scroll height is identical to the
+ * baseline at all thirty-six, because the Build panel did not move.
+ */
+.hud__rail {
+  --text-size-body: var(--type-body);
+  --text-size-value: var(--type-body);
+}
+
+/*
+ * THE BUILD PANEL KEEPS THE DENSER STEP, AND THIS IS WHY (#1158).
+ *
+ * This is the honest outcome `docs/IDENTITY_V5_ROLLOUT.md` Stage 2 names in
+ * its own weakest-claim paragraph -- *"the honest outcome may be that some
+ * density stays below the target with the reason written down"* -- and it is
+ * inside ADR 0112's ruling rather than an exception to it: the option label
+ * carrying the ruling read *"np. 15/13/11"* ("e.g."), and 13 is a step on the
+ * ramp the owner named. What is not open is the direction, and this does not
+ * move it: 13px is what this panel already had.
+ *
+ * Three separate assertions went red at 15px, all at 1280x720, and every one
+ * of them is a floor this repository pinned deliberately. They are recorded
+ * with their numbers so a later reader can retry the move rather than take
+ * this paragraph's word for it:
+ *
+ *   1. `ui-build-arm-label-fit.spec.ts` (#926): `.hud-build__arm` measured
+ *      **56px against a 44px tap target**. The arm label already wraps to two
+ *      lines and that wrap is free only while two lines fit the target; at
+ *      15px they do not, the button grows, `align-items: stretch` grows the
+ *      row, and every control below it moves.
+ *   2. `ui-build-order-note.spec.ts` (#920): the panel **arrives with 6px
+ *      more content than box**, against a pinned 0.
+ *   3. `ui-build-queue.spec.ts`: `order-02`'s cancel sits **2px below the
+ *      panel's fold** (640 against a visible bottom of 638), and an emptied
+ *      row stops keeping its box -- a cancel drifting 645 -> 643 and 598 ->
+ *      579 between two states of the same run.
+ *
+ * **Pinning only `.hud-build__actions` was tried first and is not enough.**
+ * It clears (1) and (2) -- so the arm button really is where the extra 12px
+ * comes from -- and leaves all three of (3) red, because the queue rows are
+ * their own content. Measured, not reasoned: both configurations were run.
+ *
+ * The alternative to this block is relaxing one of those three assertions,
+ * and `AGENTS.md` forbids exactly that. What would earn the Build panel the
+ * larger step is making its content smaller -- a shorter arm label, or a
+ * queue row that does not spend a whole line on a cancel -- which is content
+ * and layout work, not a token edit, and belongs to stage 3 or stage 6.
+ */
+.hud-build {
+  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-secondary);
+}
+
 /* ------------------------------------------------------------------ */
 /* Layer 2: semantic aliases -- the only names components may use      */
 /*                                                                     */

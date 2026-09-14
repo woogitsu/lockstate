@@ -1111,6 +1111,11 @@
   min-height: 0;
   overflow: hidden;
   box-sizing: border-box;
+  /* Scaffolding for stage 2, removed when the default flips -- see the note
+     on `.hud-strip`'s copy of this line. The rail's panels inherit their body
+     type from `body` rather than declaring it, so the scoped token in
+     `tokens.css` needs something here to spend it. */
+  font-size: var(--text-size-body);
 }
 
 /*
