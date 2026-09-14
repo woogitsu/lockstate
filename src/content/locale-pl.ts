@@ -486,6 +486,553 @@ const plMessages: Readonly<Record<string, string>> = {
   'staff-department.security.name': 'Ochrona',
   'staff-department.medical.name': 'Służba zdrowia',
   'staff-department.operations.name': 'Operacje',
+
+  // =====================================================================
+  // The HUD shell: status strip, clock, tabs, minimap, alert band.
+  // =====================================================================
+  'hud.status.title': 'Stan więzienia',
+  // Label, so *Osadzeni* under the owner's ruling.
+  'hud.status.prisoners': 'Osadzeni',
+  // *bez* takes the genitive singular and never changes with the count, so
+  // this one counted message needs no reshape at all.
+  'hud.status.prisoners-without-bed': '{count} bez łóżka',
+  'hud.status.staff': 'Personel',
+  'hud.status.rooms': 'Pomieszczenia',
+  // Reshaped. "{count} niegotowych" is right for 5 and wrong for 2 (*2
+  // niegotowe*); the label-then-value form agrees with nothing.
+  'hud.status.rooms-not-ready': 'niegotowe: {count}',
+  'hud.status.incidents': 'Incydenty',
+  'hud.status.coverage': 'Obsada',
+  'hud.status.contraband': 'Kontrabanda',
+  'hud.status.funds': 'Środki',
+  'hud.status.funds-remaining': 'Zostało {remaining}',
+  'hud.status.funds-before-deliveries-stop':
+    'Do wstrzymania dostaw zostało {remaining} — poniżej tego progu nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają łóżko.',
+  'hud.status.funds-deliveries-stopped':
+    'Dostawy wstrzymane — nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają łóżko.',
+  'hud.status.funds-treasury-floor-exhausted':
+    'Skarbiec jest na dnie — nic nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają łóżko, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
+  'hud.status.earned-today': 'Zarobione dziś',
+  'hud.status.occupancy': 'Zajętość cel',
+  'hud.status.occupancy-value': '{value} z {capacity}',
+  'hud.status.incidents-clear': 'Spokój',
+  'hud.status.incidents-active': 'Aktywne',
+
+  'hud.clock.title': 'Sterowanie czasem',
+  'hud.clock.day-progress': 'Postęp dnia',
+  'hud.clock.day': 'Dzień',
+  'hud.clock.speed': 'Prędkość {speed}×',
+  'hud.clock.paused': 'PAUZA',
+  'hud.transport.pause': 'Pauza',
+  'hud.transport.play': 'Odtwarzaj z normalną prędkością',
+  'hud.transport.fast-forward': 'Przyspiesz',
+  'hud.zoom.title': 'Powiększenie',
+  'hud.zoom.in': 'Przybliż',
+  'hud.zoom.out': 'Oddal',
+
+  'hud.tabs.title': 'Sekcje więzienia',
+  'hud.tab.overview': 'Przegląd',
+  'hud.tab.build': 'Budowa',
+  'hud.tab.security': 'Ochrona',
+  // *Rozkład* is a real shortening of *Rozkład dnia*, which is what the panel
+  // shows; it is not a word picked to fit a width budget.
+  'hud.tab.regime': 'Rozkład',
+  // Thirteen characters, and the honest word. The 2026-08-30 corpus proposed
+  // the six-character *Strefy* to fit ADR 0022's measured tab bar, and named
+  // that as the choice it would rather be overruled on;
+  // `docs/research/2026-08-30-which-word-for-a-prisoner.md` §5 then re-measured
+  // and found the browser assertion does not fire -- a thirteen-character label
+  // stays inside the bar and instead clips and overlaps its neighbours. That
+  // measurement is inherited rather than re-taken here (re-taking it needs the
+  // catalogue wired into a page, which is #662), and it is an owed item rather
+  // than a reason to write a word this panel does not mean.
+  'hud.tab.rooms': 'Pomieszczenia',
+
+  'hud.minimap.title': 'Minimapa',
+  'hud.minimap.placeholder': 'Nie ma tu jeszcze mapy — naciśnięcie może przesunąć kamerę',
+  'hud.minimap.navigable': 'Nie ma tu jeszcze mapy — naciśnij, aby przenieść tam kamerę',
+
+  'hud.alerts.title': 'Powiadomienia',
+  'hud.alerts.empty': 'Brak aktywnych powiadomień',
+  'hud.alert.dismiss': 'Usuń to powiadomienie',
+  'hud.alert.time': 'Dzień {day}',
+  // A formula: the `×` carries the counting, so there is no grammatical number
+  // in any language.
+  'hud.alert.occurrences': '{count}×',
+  'hud.panel.collapse': 'Zwiń',
+  'hud.panel.expand': 'Rozwiń',
+  'hud.severity.info': 'Informacja',
+  'hud.severity.warning': 'Ostrzeżenie',
+  // *Alarm*, not *Krytyczne*: the other two are nouns.
+  'hud.severity.danger': 'Alarm',
+  'hud.unavailable.simulation':
+    'Symulacja niedostępna — ta przeglądarka nie zdołała jej uruchomić, więc nic nie może działać ani zostać zapisane',
+
+  // =====================================================================
+  // Refusals the simulation raised -- `hud.alert.refusal.*`.
+  //
+  // Every one opens with the impersonal `-no`/`-to` past: *nie przyjęto*, *nie
+  // zbudowano*, *nie postawiono*. That form has no subject and no gender,
+  // which is what lets this whole family be translated without reshaping a
+  // sentence, and it is the register a Polish institution writes refusals in.
+  // The em dash and the what-then-why order are kept.
+  // =====================================================================
+  'hud.alert.refusal.admit.no-accommodation':
+    'Nikogo nie przyjęto — nie ma jeszcze pomieszczenia, w którym można kogoś umieścić.',
+  'hud.alert.refusal.admit.population-full':
+    'Nikogo nie przyjęto — to więzienie przetrzymuje już tylu ludzi, ilu może.',
+  'hud.alert.refusal.build.duplicate-order': 'Zlecenie budowy nie doszło do skutku — takie zlecenie już istnieje.',
+  'hud.alert.refusal.build.out-of-bounds': 'Zlecenie budowy nie doszło do skutku — to pole leży poza mapą.',
+  'hud.alert.refusal.build.unbuildable': 'Zlecenie budowy nie doszło do skutku — na tym polu nie da się nic zbudować.',
+  'hud.alert.refusal.build.unbuildable-terrain': 'Zlecenie budowy nie doszło do skutku — na tym gruncie nie da się budować.',
+  'hud.alert.refusal.build.unknown-buildable':
+    'Zlecenie budowy nie doszło do skutku — to więzienie nie wie, jak coś takiego zbudować.',
+  'hud.alert.refusal.build.unowned-land': 'Zlecenie budowy nie doszło do skutku — ta ziemia nie należy do ciebie.',
+  'hud.alert.refusal.build.water-blocked': 'Zlecenie budowy nie doszło do skutku — na tym polu jest woda.',
+  'hud.alert.refusal.cancel-purchase.not-pending': 'Nic nie zwrócono — ta dostawa nie jest już w drodze.',
+  'hud.alert.refusal.cancel-build-order.stale-cancellation':
+    'Nic nie zwrócono — to zlecenie poszło dalej, zanim dotarła do niego anulacja. Naciśnij Anuluj jeszcze raz, aby zobaczyć, ile płaci teraz.',
+  'hud.alert.refusal.construction.materials-unfunded':
+    'Kolejka budowy stoi — żadnych nowych materiałów, dopóki więzienie nie zarobi.',
+  'hud.alert.refusal.hire.insufficient-funds':
+    'Nikogo nie zatrudniono — zatrudnianie jest wstrzymane, dopóki więzienie nie zarobi.',
+  'hud.alert.refusal.hire.no-duty-for-role':
+    'Nikogo nie zatrudniono — posterunek może objąć tylko ochrona, a dla tej roli to więzienie nie ma innej pracy.',
+  'hud.alert.refusal.hire.roster-full': 'Nikogo nie zatrudniono — to więzienie nie pomieści więcej personelu.',
+  'hud.alert.refusal.hire.unknown-role': 'Nikogo nie zatrudniono — to więzienie nie zna takiej roli.',
+  'hud.alert.refusal.place-object.duplicate-order': 'Nie postawiono obiektu — takie zlecenie już istnieje.',
+  'hud.alert.refusal.place-object.not-a-placeable-object':
+    'Nie postawiono obiektu — tego nie buduje się, stawiając na polu.',
+  'hud.alert.refusal.place-object.out-of-bounds': 'Nie postawiono obiektu — jego część znalazłaby się poza mapą.',
+  'hud.alert.refusal.place-object.outside-room': 'Nie postawiono obiektu — musi stać w wyznaczonym pomieszczeniu.',
+  'hud.alert.refusal.place-object.tile-occupied': 'Nie postawiono obiektu — coś już tam stoi.',
+  'hud.alert.refusal.place-object.unknown-buildable':
+    'Nie postawiono obiektu — to więzienie nie wie, jak coś takiego zbudować.',
+  'hud.alert.refusal.place-object.unowned-land': 'Nie postawiono obiektu — nie cała ta ziemia należy do ciebie.',
+  'hud.alert.refusal.remove-object.nothing-to-remove':
+    'Nic nie usunięto — na tym polu nie ma obiektu ani nic się tam nie buduje.',
+  'hud.alert.refusal.remove-wall.nothing-to-remove':
+    'Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.',
+  'hud.alert.refusal.purchase.duplicate-order': 'Nie zamówiono materiałów — takie zlecenie już istnieje.',
+  'hud.alert.refusal.purchase.insufficient-funds':
+    'Nic nie kupiono — dostawy są wstrzymane, dopóki więzienie nie zarobi.',
+  'hud.alert.refusal.purchase.invalid-quantity': 'Nie zamówiono materiałów — takiej ilości nie da się kupić.',
+  'hud.alert.refusal.purchase.unknown-material': 'Nie zamówiono materiałów — ten materiał nie jest na sprzedaż.',
+  'hud.alert.refusal.sell.insufficient-stock': 'Nic nie sprzedano — więzienie nie ma tyle w magazynie.',
+  'hud.alert.refusal.sell.invalid-quantity': 'Nic nie sprzedano — takiej ilości nie da się sprzedać.',
+  'hud.alert.refusal.sell.unknown-material': 'Nic nie sprzedano — na ten materiał nie ma kupca.',
+  // English uses "dismiss" for ending employment and "release" for taking a
+  // guard off a post; Polish has a separate verb for each, and *zwolnić*
+  // covers only the first. The guard control is *Odwołaj*, the payroll control
+  // *Zwolnij*, and every refusal follows its own control -- otherwise two
+  // buttons in one panel would both read *Zwolnij*.
+  'hud.alert.refusal.dismiss.unknown-staff': 'Nikogo nie zwolniono — tej osoby nie ma na liście personelu.',
+  'hud.alert.refusal.release-guard.not-held': 'Nikogo nie odwołano — ten strażnik jest już poza służbą.',
+  'hud.alert.refusal.release-guard.unknown-guard': 'Nikogo nie odwołano — tego strażnika nie ma na liście personelu.',
+  'hud.alert.refusal.edit-regime-block.unknown-block':
+    'Nic nie zmieniono — ta pora dnia nie jest blokiem w tym rozkładzie.',
+  'hud.alert.refusal.edit-regime-block.unknown-group': 'Nic nie zmieniono — to więzienie nie ma rozkładu dla tej grupy.',
+  'hud.alert.refusal.zone.duplicate-instance-id': 'Nie wyznaczono pomieszczenia — na tym polu zapisano już inne.',
+  'hud.alert.refusal.zone.invalid-area': 'Nie wyznaczono pomieszczenia — ten obszar nie jest poprawnym prostokątem.',
+  'hud.alert.refusal.zone.out-of-bounds': 'Nie wyznaczono pomieszczenia — część tego obszaru leży poza mapą.',
+  'hud.alert.refusal.zone.overlaps-existing-room':
+    'Nie wyznaczono pomieszczenia — nachodzi na pomieszczenie, które już tam jest.',
+  'hud.alert.refusal.zone.unknown-room-type':
+    'Nie wyznaczono pomieszczenia — to więzienie nie zna takiego typu pomieszczenia.',
+  'hud.alert.refusal.zone.unowned-land': 'Nie wyznaczono pomieszczenia — nie cała ta ziemia należy do ciebie.',
+  'hud.alert.refusal.zone.below-minimum-size':
+    'Nie wyznaczono pomieszczenia — ten obszar jest mniejszy, niż pozwala ten typ pomieszczenia.',
+  'hud.alert.refusal.zone.not-enclosed':
+    'Nie wyznaczono pomieszczenia — ten typ musi być zamknięty, a narysowany obszar jest otwarty z co najmniej jednej strony.',
+  'hud.alert.refusal.unzone.invalid-area': 'Nic nie usunięto — ten obszar nie jest poprawnym prostokątem.',
+  'hud.alert.refusal.unzone.nothing-to-remove': 'Nic nie usunięto — w tym obszarze nie ma pomieszczenia.',
+  'hud.alert.refusal.unzone.room-occupied': 'Nic nie usunięto — ktoś korzysta z tego pomieszczenia.',
+
+  // =====================================================================
+  // Protocol faults -- `hud.alert.fault.*`. The same impersonal device, and
+  // here it buys something extra: each sentence has to be true of both
+  // producers (the worker rejecting the interface and the interface rejecting
+  // the worker), and a form with no subject names neither.
+  // =====================================================================
+  'hud.alert.fault.invalid-message': 'Odrzucono wiadomość symulacji — ta gra nie rozumie takiej wiadomości.',
+  'hud.alert.fault.unsupported-protocol-version': 'Odrzucono wiadomość symulacji — napisano ją dla innej wersji gry.',
+  'hud.alert.fault.unknown-message-kind':
+    'Odrzucono wiadomość symulacji — ta wersja gry nie zna takiego rodzaju wiadomości.',
+  'hud.alert.fault.invalid-payload':
+    'Odrzucono wiadomość symulacji — jej zawartość nie była tym, co ta wiadomość musi nieść.',
+  'hud.alert.fault.not-initialized': 'Odmówiono żądania symulacji — żadne więzienie nie jest jeszcze wczytane.',
+  'hud.alert.fault.already-initialized': 'Odmówiono żądania symulacji — ta sesja ma już wczytane więzienie.',
+  'hud.alert.fault.duplicate-message': 'Odmówiono polecenia — zostało już wysłane.',
+  'hud.alert.fault.sequence-gap': 'Odmówiono polecenia — polecenie wysłane wcześniej nigdy nie dotarło.',
+  'hud.alert.fault.invalid-state': 'Odmówiono żądania symulacji — symulacja nie może teraz tego zrobić.',
+  'hud.alert.fault.snapshot-incompatible': 'Nie udało się wczytać zapisu — ta wersja gry nie rozumie jego formatu.',
+  'hud.alert.fault.shutting-down': 'Odmówiono żądania symulacji — sesja się zamyka.',
+  'hud.alert.fault.internal-error': 'Symulacja napotkała błąd wewnętrzny.',
+
+  // =====================================================================
+  // Narrated events -- `hud.alert.event.*`. This is the one family on the
+  // *więzień* side of the owner's ruling, because it is the game narrating
+  // rather than the institution labelling: `src/ui/simulation-events.ts` gives
+  // these rows their own `event-` prefix, beside the `refusal-` and `fault-`
+  // ones.
+  // =====================================================================
+  'hud.alert.event.construction.order-cancelled': 'Zlecenie anulowano — pieniądze, które kosztowało, wracają.',
+  'hud.alert.event.construction.order-cancelled-underway':
+    'Zlecenie anulowano. Co wydano po przekroczeniu punktu bez odwrotu, zostaje wydane.',
+  'hud.alert.event.construction.undone': 'Cofnięto ostatnią zmianę w kolejce budowy.',
+  'hud.alert.event.construction.redone': 'Ponowiono ostatnią zmianę w kolejce budowy.',
+  'hud.alert.event.construction.undone-spend-destroyed':
+    'Cofnięto ostatnią zmianę w kolejce budowy — co wydano po przekroczeniu punktu bez odwrotu, zostaje wydane.',
+  'hud.alert.event.construction.undo-refused-newer-action':
+    'Nic nie cofnięto — cofanie zabiera zmianę w kolejce budowy, a od ostatniej takiej zmiany wydarzyło się coś innego.',
+  'hud.alert.event.objects.removed-spend-destroyed': 'Obiekt usunięto — pieniądze, które kosztował, nie wracają.',
+  'hud.alert.event.economy.wages-unpaid': 'Wypłata nie doszła do skutku — personelowi należy się {total}.',
+  'hud.alert.event.economy.construction-refused':
+    'Budowa wstrzymana — skarbiec nie jest w stanie sfinansować teraz kolejki budowy.',
+  'hud.alert.event.economy.construction-restored': 'Skarbiec wrócił powyżej progu budowy.',
+  'hud.alert.event.economy.deliveries-refused': 'Dostawy wstrzymane — skarbiec nie pokryje teraz zakupu.',
+  'hud.alert.event.economy.deliveries-restored': 'Skarbiec wrócił powyżej progu dostaw.',
+  // Reshaped: `{total}` lands after a middle dot-free colon-like dash, and the
+  // object of the cancelling is moved in front of the impersonal verb.
+  'hud.alert.event.economy.delivery-cancelled': 'Dostawę anulowano — zwrot {total}.',
+  // Reshaped. "Znaleziono kontrabandę: {item}." puts `{item}` after a colon;
+  // "Znaleziono {item}" would need the accusative of the item's own name.
+  'hud.alert.event.contraband.discovered': 'Znaleziono kontrabandę: {item}.',
+  // Reshaped. "Zwolniono {count} więźniów" needs *więźnia* at 1 and
+  // *więźniów* above it, and "kara odbyta" agrees with *kara*, not with a
+  // count, so this is correct at every number.
+  'hud.alert.event.prisoners.discharged': 'Zwolniono: {count} — kara odbyta.',
+  // Reshaped, and this is the sharpest one in the catalogue. `{name}` cannot
+  // be the subject of a Polish past-tense verb (they inflect for gender and
+  // there is no gender model), and `{room}` arrives as the room catalogue's
+  // nominative while "moved to Cell" wants the genitive *do celi*. So `{name}`
+  // becomes a heading, the clause becomes the subjectless impersonal *nie
+  // było*, and `{room}` lands after a colon. Same two parameters, same facts,
+  // same order.
+  'hud.alert.event.prisoners.relocated': '{name} — nie było gdzie spać. Nowe miejsce: {room}.',
+  // Reshaped for the same reason as `relocated`, and by the same device.
+  'hud.alert.event.prisoners.housed': '{name} — nowe miejsce: {room}.',
+  // Reshaped. "Wybuchł bunt" is impersonal enough, but "{count} więźniów
+  // przestało słuchać" is wrong at 2-4 (*dwaj więźniowie przestali*) and the
+  // English's own escape hatch -- pick a range where one form is always right
+  // -- does not exist here, because `DEFAULT_MINIMUM_RIOT_PARTICIPANTS` is 2
+  // and 2 is exactly where the Polish rule flips. *Przestano* is the
+  // impersonal past: it keeps the whole claim and agrees with nothing.
+  'hud.alert.event.incidents.riot-opened': 'Wybuchł bunt — przestano słuchać poleceń. Liczba uczestników: {count}.',
+  // The one key in the catalogue that carries *więzień* under the owner's
+  // ruling: narration, and the noun is unavoidable because the sentence is
+  // about who is fighting.
+  'hud.alert.event.incidents.assault-opened': 'Doszło do bójki między dwoma więźniami.',
+  // Narration, so *więzień* -- and it works here where it would not in a past
+  // tense, because a Polish present-tense verb carries no gender.
+  'hud.alert.event.incidents.escape-attempt-opened': 'Więzień próbuje się stąd wydostać.',
+  // Reshaped: "{name} broke out" is a past-tense verb with a gendered subject.
+  // *Ucieczka się powiodła* agrees with *ucieczka*, not with the person.
+  'hud.alert.event.incidents.escape-succeeded': '{name} — ucieczka się powiodła. Żaden strażnik nie dotarł na czas.',
+  'hud.alert.event.incidents.gang-retaliation-opened': 'Dwa gangi wyrównują rachunki.',
+  'hud.alert.event.incidents.all-clear': 'Więzienie znowu jest pod kontrolą — żaden incydent nie jest już otwarty.',
+  'hud.alert.event.incidents.all-clear-after-lapse':
+    'Żaden incydent nie jest już otwarty — ale ostatniemu skończył się czas, zamiast zostać opanowanym, i ucierpieli wszyscy, którzy się w nim znaleźli.',
+  // Reshaped: "Cela wyznaczona" would have to agree with the room name's own
+  // gender, which changes per room (*Cela* feminine, *Magazyn* masculine,
+  // *Ambulatorium* neuter). The impersonal verb plus a colon agrees with
+  // nothing.
+  'hud.alert.event.rooms.zoned': 'Wyznaczono: {room}.',
+  'hud.alert.event.rooms.unzoned': 'Usunięto: {room}.',
+  'hud.alert.event.rooms.needs-cleared':
+    '{room} — nie brakuje już niczego, czego szuka panel Pomieszczenia. To nie znaczy, że ktokolwiek może tam wejść.',
+
+  // =====================================================================
+  // What a refused control says -- `hud.refusal.*`. The band under the status
+  // strip. Same device, and deliberately the same wording as the alert
+  // refusal where the fact is the same.
+  // =====================================================================
+  'hud.refusal.set-clock': 'Zegar się nie zmienił — żądanie odrzucono.',
+  'hud.refusal.place-build-order': 'Nie złożono zlecenia budowy — żądanie odrzucono.',
+  'hud.refusal.purchase-materials': 'Nic nie kupiono — zakup odrzucono i nie wydano pieniędzy.',
+  'hud.refusal.purchase-materials-past-floor': 'Nic nie kupiono — dostawy są wstrzymane, dopóki więzienie nie zarobi.',
+  'hud.refusal.sell-materials': 'Nic nie sprzedano — żądanie odrzucono i nic nie ubyło z magazynu.',
+  'hud.refusal.hire-staff': 'Nikogo nie zatrudniono — żądanie odrzucono i nie wydano pieniędzy.',
+  'hud.refusal.hire-staff-past-floor':
+    'Nikogo nie zatrudniono — zatrudnianie jest wstrzymane, dopóki więzienie nie zarobi.',
+  'hud.refusal.undo': 'Nic nie cofnięto — żądanie odrzucono.',
+  'hud.refusal.redo': 'Nic nie ponowiono — żądanie odrzucono.',
+  'hud.refusal.zone-room': 'Nie wyznaczono pomieszczenia — żądanie odrzucono.',
+  'hud.refusal.unzone-room': 'Nic nie usunięto — żądanie odrzucono.',
+  'hud.refusal.admit-prisoner': 'Nikogo nie przyjęto — żądanie odrzucono.',
+  'hud.refusal.admit-prisoner-no-room': 'Nikogo nie przyjęto — to więzienie nie ma gdzie nikogo umieścić.',
+  'hud.refusal.cancel-build-order': 'Zlecenie nadal czeka w kolejce — żądanie odrzucono.',
+  'hud.refusal.cancel-material-purchase': 'Nic nie zwrócono — żądanie odrzucono, a dostawa nadal jest w drodze.',
+  'hud.refusal.release-guard': 'Nikogo nie odwołano — żądanie odrzucono, a strażnik nadal ma przydział.',
+
+  // =====================================================================
+  // Build panel -- `hud.build.*`.
+  //
+  // The reshapes here are all one shape: an English verb-plus-object becomes a
+  // Polish label-plus-colon, so the parameter can stay in the nominative the
+  // call site actually passes.
+  // =====================================================================
+  'hud.build.title': 'Budowa',
+  'hud.build.catalogue': 'Co zbudować',
+  'hud.build.catalogue-empty': 'Nie ma nic do zbudowania',
+  'hud.build.catalogue-row-price': '{buildable} · {total}',
+  'hud.build.catalogue-row-price-segment': '{buildable} · {total} za segment',
+  'hud.build.selected': 'Wybrane',
+  'hud.build.placement': 'Gdzie',
+  // *pole*, not *kafelek*: a Polish strategy game calls a grid square a pole.
+  'hud.build.tile-x': 'Pole X',
+  'hud.build.tile-y': 'Pole Y',
+  // Reshaped. A Polish imperative takes the accusative (*Zmniejsz
+  // szerokość*), and `{field}` arrives as another catalogue key resolved to
+  // its nominative. With today's five field labels the bare form is
+  // accidentally right -- masculine inanimates and feminines in *-ość* have
+  // accusative = nominative -- which is exactly the problem: it is a grammar
+  // rule disguised as a naming convention, and it breaks silently the first
+  // time somebody labels a field *Liczba*. The colon licenses the nominative
+  // whatever the label is. (It is also why `hud.build.buy-quantity` is
+  // *Ilość* and not *Liczba*.)
+  'hud.build.step-down': 'Zmniejsz: {field}',
+  'hud.build.step-up': 'Zwiększ: {field}',
+  'hud.build.edge': 'Krawędź',
+  'hud.build.submit': 'Złóż zlecenie',
+  'hud.build.note': 'Zlecenie trafia do kolejki od razu, a budowa idzie, gdy zegar chodzi.',
+  'hud.build.arm': 'Stawiaj na mapie',
+  'hud.build.arm-hint':
+    'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.arm-hint-object':
+    'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.disarm': 'Przestań stawiać',
+  'hud.build.remove': 'Usuń',
+  'hud.build.remove-active': 'Przestań usuwać',
+  'hud.build.remove-hint':
+    'Naciśnij dowolne pole obiektu albo gotową ścianę, aby to zabrać. Obiekt jeszcze budowany zostaje anulowany i zwraca pieniądze — ale nic nie wraca, gdy ekipa już go zaczęła. Gotowy nie podlega zwrotowi.',
+  'hud.build.remove-submit': 'Usuń obiekt tutaj',
+  'hud.build.target-none': 'Wskaż miejsce na mapie',
+  // No reshape in these three: a middle dot and an `×` both leave a nominative
+  // alone, and numerals do not decline.
+  'hud.build.target-value': '{x}, {y} · {edge}',
+  'hud.build.target-run': '{count} × {edge} od {x}, {y}',
+  'hud.build.target-tile': '{x}, {y}',
+  'hud.build.coordinates': 'Wpisz współrzędne',
+  'hud.build.coordinates-hint': 'Droga przez klawiaturę. Wskazanie na mapie jest szybsze.',
+  'hud.build.buy': 'Kup',
+  'hud.build.sell': 'Sprzedaj',
+  'hud.build.buy-quantity': 'Ilość',
+  // #661 predicted a reshape here and there is none: the English uses `×`
+  // rather than a bare numeral, and *2 × Cegła* is ordinary Polish
+  // order-and-receipt notation that keeps the nominative. The `×` is
+  // load-bearing for this locale and is worth defending in any future copy
+  // change.
+  'hud.build.buy-submit': 'Kup {count} × {material} · {total}',
+  'hud.build.sell-submit': 'Sprzedaj {count} × {material} · {total}',
+  // "you need {amount} more" becomes "brakuje {amount}" -- the same fact from
+  // the money's side, which keeps the numeral out of a verb's way.
+  'hud.build.buy-shortfall': 'Za mało pieniędzy — brakuje {amount}.',
+  'hud.build.buy-hint': 'Przyjeżdża, gdy zegar chodzi, do zapasu, z którego czerpie budowa.',
+  'hud.build.queue': 'W kolejce',
+  // Reshaped. English puts the numeral first and a participle after it; a
+  // Polish participle agrees with what it describes, so *1 czekające* /
+  // *2 czekające* / *5 czekających*. Reversing the pair costs nothing.
+  'hud.build.queue-count': 'Czeka: {count} · W budowie: {started}',
+  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge} · zwrot {total}',
+  'hud.build.queue-shortfall': 'Czeka na {total}, aby odblokować następne zlecenie.',
+  'hud.build.queue-cancel': 'Anuluj',
+  'hud.build.queue-unnamed': 'Zlecenie bez nazwy',
+  // *i jeszcze {count}* agrees with nothing at any count, so the counted part
+  // needs no reshape; only the tail is rewritten.
+  'hud.build.queue-more': 'i jeszcze {count} za nimi — cofnięcie zabiera cały ciąg.',
+  'hud.build.deliveries': 'W drodze',
+  // Reshaped, same rule as `queue-count`.
+  'hud.build.deliveries-count': 'Kupione: {count} · Zwrot przy anulowaniu: {total}',
+  'hud.build.delivery': '{count} × {material} · zwrot {total}',
+  'hud.build.delivery-cancel': 'Anuluj',
+  'hud.build.delivery-unnamed': 'Materiał bez nazwy',
+  'hud.build.deliveries-more':
+    'i jeszcze {count} w drodze — te przyjadą pierwsze, a reszta pojawi się, gdy tamte dotrą.',
+  'hud.build.buildable.wall-brick': 'Ściana z cegły',
+  'hud.build.buildable.door-wooden': 'Drewniane drzwi',
+  'hud.build.category': 'Kategoria',
+  'hud.build.category-all': 'Wszystko',
+  'hud.build.category.structure': 'Ściany i drzwi',
+
+  // =====================================================================
+  // Intake panel -- `hud.intake.*`.
+  //
+  // Three reshapes, all for one reason: a Polish verb agrees in number with
+  // its numeral and the rule flips at five (*2 czekają*, *5 czeka*), so a
+  // count-parameterised sentence with a verb in it is wrong at some counts
+  // whatever you write. English has no equivalent, which is why the English
+  // catalogue never had to think about it.
+  // =====================================================================
+  'hud.intake.title': 'Przyjęcia',
+  // A control's label -- the operator acting on the institution -- so
+  // *osadzonego* under the owner's ruling.
+  'hud.intake.admit': 'Przyjmij osadzonego',
+  'hud.intake.hint':
+    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż któreś się zwolni.',
+  // Reshaped: the numeral moves out of the verb's way entirely.
+  'hud.intake.no-place': 'Bez łóżka do spania: {count}',
+  'hud.intake.pipeline': 'W przyjęciach',
+  'hud.intake.pipeline-count': '{waiting} z {total}',
+  // Reshaped: "at {stage}" is *na etapie* plus the locative (*na etapie
+  // klasyfikacji*), and `{stage}` arrives as the stage's nominative label.
+  'hud.intake.pipeline-stage': '{count} — etap: {stage}',
+  // Reshaped: *nie da się* is the Polish impersonal and agrees with nothing.
+  'hud.intake.pipeline-failed': 'Nie da się nigdzie umieścić: {count}',
+
+  // =====================================================================
+  // Staff panel -- `hud.security.*`.
+  // =====================================================================
+  'hud.security.staff': 'Personel',
+  'hud.security.roles': 'Kogo zatrudnić',
+  'hud.security.roles-empty': 'Nie ma jeszcze kogo zatrudnić.',
+  'hud.security.selected': 'Wybrane',
+  // Reshaped, same rule as `hud.build.step-down`: *Zatrudnij strażnika* is the
+  // correct Polish and `{role}` arrives as *Strażnik*. An animate masculine
+  // accusative is never equal to its nominative, so the bare form is wrong for
+  // every role this game has, not just for some.
+  'hud.security.hire': 'Zatrudnij: {role} · {total}',
+  // "a day in wages" is *dziennie*, an adverb -- which is the case #661 named
+  // and the catalogue did not yet have when it was filed.
+  'hud.security.hire-hint': 'Kosztuje teraz {total}, a wynagrodzenie wynosi {wage} dziennie, wliczając dziś.',
+  'hud.security.hire-shortfall': 'Za mało pieniędzy — brakuje {amount}.',
+  'hud.security.hire-unassigned': 'Nowy strażnik zaczyna bez przydziału.',
+  'hud.security.held': 'Na służbie',
+  // Reshaped, same rule as `hud.build.queue-count`.
+  'hud.security.held-summary': 'Na służbie: {held} · Bez przydziału: {unassigned}',
+  'hud.security.held-empty': 'Nikt nie ma teraz przydziału.',
+  'hud.security.held-row': '{name} · {claim}',
+  'hud.security.held-row-unnamed': 'Strażnik {id} · {claim}',
+  // *Odwołaj*, not *Zwolnij*, which is the Dismiss control further down the
+  // same panel. English gets away with "Release" and "Dismiss"; Polish has one
+  // verb for two of the three senses and has to split them by hand.
+  'hud.security.held-release': 'Odwołaj',
+  'hud.security.held-more': 'i jeszcze {count}',
+  'hud.security.held-hint': 'Odwołany strażnik nadal jest zatrudniony i wraca do puli.',
+  'hud.security.roster': 'Na liście płac',
+  'hud.security.roster-dismiss': 'Zwolnij',
+  // *osoba* (feminine) rather than a masculine noun, so the sentence is true
+  // of any staff member -- the same device the relocation event needs.
+  'hud.security.roster-dismiss-confirm': 'Zwolnić {name}? Wynagrodzenie przestaje być naliczane, a ta osoba nie wróci.',
+  'hud.security.roster-hint': 'Zwolniona osoba odchodzi z więzienia na dobre, a jej wynagrodzenie się kończy.',
+  'hud.security.roster-wage-bill': '{total} dziennie',
+  'hud.security.coverage': 'Obsada strażników',
+  'hud.security.coverage-summary': '{assigned} z {required}',
+  'hud.security.coverage-met': 'Obsadzone',
+  'hud.security.coverage-met-hint': 'Incydenty i przeszukania potrzebują wolnych strażników.',
+  'hud.security.coverage-short': 'Niedobór obsady',
+  // No reshape: an imperative plus a bare numeral agrees with nothing.
+  'hud.security.coverage-short-hint': 'Zatrudnij jeszcze {count}, aby obsadzić tę populację.',
+  'hud.security.coverage-unguarded': 'Bez obsady',
+  'hud.security.coverage-unguarded-hint': 'Nikt nie pełni służby. Zatrudnij {count}, aby obsadzić tę populację.',
+  'hud.security.coverage-unguarded-consequence':
+    'Nie ma tu posterunku, więc nikt w tym sektorze nie jest chroniony.',
+
+  // =====================================================================
+  // Regime panel -- `hud.regime.*`.
+  // =====================================================================
+  'hud.regime.title': 'Rozkład dnia',
+  'hud.regime.blocks': 'Dzisiejsze bloki',
+  // Reshaped. *pozwala na* takes the accusative, applied to a list joined at
+  // render time; a label plus a colon leaves the joined list nominative.
+  'hud.regime.block-allows': 'Dozwolone: {categories}',
+  'hud.regime.block-progress': 'Postęp bloku: {percent}%',
+  // Unchanged: Polish uses the same list separator as English.
+  'hud.regime.category-separator': ', ',
+  // Label, so *Osadzeni*.
+  'hud.regime.roster': 'Osadzeni',
+  'hud.regime.roster-count': '{shown} z {total}',
+  // Unchanged: Polish puts the given name first, as English does. ADR 0015
+  // makes the order a locale decision and this locale agrees with the default.
+  'hud.regime.roster-name': '{given} {family}',
+  // A record identifier standing in for a name, so *Osadzony*.
+  'hud.regime.roster-unnamed': 'Osadzony {id}',
+  // Reshaped, and this is the key that would have justified the case
+  // machinery #661 forbids -- and does not need it. Polish needs both a case
+  // *and* a preposition that depend on the destination: *do stołówki*, *na
+  // plac spacerowy*, *pod prysznic*. A system that knew every noun's
+  // declension would still have to know which preposition each takes. A colon
+  // needs neither.
+  'hud.regime.roster-heading': 'W drodze: {activity}',
+  'hud.regime.roster-more': 'i jeszcze {count}',
+  'hud.regime.roster-empty': 'Nie ma jeszcze osadzonych. Zbuduj celę z łóżkiem, aby kogoś przyjąć.',
+  'hud.regime.roster-emptied': 'To więzienie jest puste. Przyjmij kogoś, aby zacząć od nowa.',
+  'hud.regime.sentence-remaining': 'Pozostała kara (dni w grze): {days}',
+
+  // =====================================================================
+  // Rooms panel -- `hud.rooms.*`. The panel with the most reshapes, because it
+  // is the one that puts a room name, an object name and two numbers into
+  // sentences.
+  // =====================================================================
+  'hud.rooms.title': 'Pomieszczenia',
+  'hud.rooms.catalogue': 'Typ pomieszczenia i obszar',
+  'hud.rooms.catalogue-empty': 'Nie ma dostępnych typów pomieszczeń',
+  'hud.rooms.selected': 'Wybrane',
+  'hud.rooms.arm': 'Rysuj na mapie',
+  'hud.rooms.disarm': 'Przestań rysować',
+  'hud.rooms.arm-hint': 'Przeciągnij prostokąt przez pola, które ma zająć to pomieszczenie.',
+  'hud.rooms.remove': 'Usuń pomieszczenia',
+  'hud.rooms.remove-active': 'Przestań usuwać',
+  'hud.rooms.remove-hint': 'Przeciągnij przez dowolną część pomieszczenia, aby usunąć je w całości.',
+  'hud.rooms.area': 'Obszar',
+  'hud.rooms.area-none': 'Nic nie wybrano',
+  // Reshaped. After a product Polish wants the genitive plural -- *10 × 8 pól*
+  // -- which is right for everything except 1 × 1, where it must be *1 × 1
+  // pole*; and this key renders the player's live drag, which is 1 × 1 the
+  // instant they press. Moving the noun in front of the product takes it out
+  // of the agreement entirely.
+  'hud.rooms.area-value': 'Pola: {width} × {height}, w {x}, {y}',
+  // No reshape: numerals do not decline and no noun follows them.
+  'hud.rooms.confirm': 'Wyznacz {width} × {height}',
+  'hud.rooms.confirm-remove': 'Usuń {width} × {height}',
+  'hud.rooms.cancel': 'Odrzuć',
+  // Reshaped into a labelled form, so the whole block reads as one series.
+  // Here the genitive plural would in fact be safe -- no room type in
+  // `room-catalog.ts` has a minimum below 2 -- and the label form is chosen so
+  // a future 1 × 1 minimum cannot make it wrong silently.
+  'hud.rooms.minimum': 'Minimalny rozmiar: {width} × {height}',
+  'hud.rooms.minimum-none': 'Bez minimalnego rozmiaru',
+  // *Za małe* agrees with *pomieszczenie* (neuter), the noun this panel puts
+  // on screen.
+  'hud.rooms.too-small': 'Za małe — to pomieszczenie wymaga co najmniej {width} × {height} pól.',
+  'hud.rooms.enclosure': 'Zamknięcie',
+  'hud.rooms.enclosure-none': 'Jeszcze nieocenione',
+  'hud.rooms.enclosure-sealed': 'Otoczone ścianami — to nie jest sprawdzenie drzwi',
+  'hud.rooms.enclosure-open': 'Otwarte z co najmniej jednej strony',
+  'hud.rooms.requirement-enclosed': 'Musi być zamknięte',
+  'hud.rooms.requirement-outdoors': 'Musi być na zewnątrz',
+  'hud.rooms.requirement-none': 'Bez reguły zamknięcia',
+  'hud.rooms.requires-object': 'Wymaga {count} × {object}',
+  'hud.rooms.requires-none': 'Nie wymaga obiektów',
+  'hud.rooms.coordinates': 'Wpisz współrzędne',
+  'hud.rooms.coordinates-hint': 'Droga przez klawiaturę. Przeciąganie po mapie jest szybsze.',
+  'hud.rooms.coordinates-submit': 'Użyj tych pól',
+  'hud.rooms.tile-x': 'Pole X',
+  'hud.rooms.tile-y': 'Pole Y',
+  'hud.rooms.width': 'Szerokość',
+  'hud.rooms.height': 'Wysokość',
+  'hud.rooms.step-down': 'Zmniejsz: {field}',
+  'hud.rooms.step-up': 'Zwiększ: {field}',
+  'hud.rooms.needs': 'Niegotowe',
+  'hud.rooms.needs-count': '{unfinished} z {total}',
+  // Reshaped. "Celi w 4, 7 brakuje" needs the genitive of the room's own name,
+  // which arrives as a nominative label; a heading plus a colon does not.
+  'hud.rooms.needs-room': '{room} ({x}, {y}) — brakuje:',
+  'hud.rooms.needs-object': '{count} × {object}',
+  'hud.rooms.needs-object-uncounted': '{object}',
+  'hud.rooms.needs-item-more': 'i jeszcze {count}',
+  // Lower-case on purpose: substituted where an object name would stand,
+  // mid-line.
+  'hud.rooms.needs-object-unknown': 'coś, czego ta wersja gry nie potrafi nazwać',
+  // Two more items in the same list, and lower-case for the same reason.
+  'hud.rooms.needs-doorway': 'drzwi — nikt nie może wejść',
+  'hud.rooms.needs-unreachable': 'dojście — nic z zewnątrz nie dosięgnie jego drzwi',
+  'hud.rooms.at-capacity': 'Komplet',
+  'hud.rooms.at-capacity-count': '{full} z {total}',
+  'hud.rooms.at-capacity-places': 'miejsca zajęte: {inUse} z {capacity}',
+  // Reshaped: "jest pełna/pełny/pełne" would have to agree with the room
+  // name's own gender, which changes per room.
+  'hud.rooms.at-capacity-room': '{room} ({x}, {y}) — brak wolnych miejsc',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);
