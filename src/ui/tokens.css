@@ -615,13 +615,16 @@
    * `--type-*` step any more than it may reach past a semantic colour alias
    * to a raw ramp rung.
    *
-   * **Body and value still select the denser step**, which is the whole point
-   * of this commit: the ramp lands with no visual change, and the default is
-   * flipped last and on its own so a revert is one line
-   * (`docs/IDENTITY_V5_ROLLOUT.md` Stage 2, step 3).
+   * **These three declarations are the lever.** Stage 2 finished by flipping
+   * body and value from `--type-secondary` to `--type-body` here and deleting
+   * every scaffold it had used to move one surface at a time
+   * (`docs/IDENTITY_V5_ROLLOUT.md` Stage 2, step 3), so backing the type scale
+   * out is one line rather than a hunt: put `--type-secondary` back on these
+   * two and the whole interface returns to 13px, except the two surfaces
+   * below that are pinned there on purpose.
    */
-  --text-size-value: var(--type-secondary);
-  --text-size-body: var(--type-secondary);
+  --text-size-value: var(--type-body);
+  --text-size-body: var(--type-body);
   --text-size-label: var(--type-label);
   --label-tracking: 0.14em;
   /* The line-height every label-sized run of type is set in. A token rather
@@ -723,111 +726,60 @@
   --hud-rooms-gutter: var(--space-2);}
 
 /* ------------------------------------------------------------------ */
-/* Layer 1b: per-surface density, while stage 2 moves one at a time    */
+/* Layer 1b: the two surfaces that keep the denser step                */
 /*                                                                     */
-/* THIS SECTION IS TEMPORARY AND SAYS SO. `docs/IDENTITY_V5_ROLLOUT.md` */
-/* Stage 2 step 2 is "move one surface at a time, re-measuring overflow */
-/* after each"; step 3 is "flip the default last, in its own commit, so */
-/* a revert is one line". Each block below is one surface that has been */
-/* moved and measured. When the root default flips, every block here    */
-/* that merely repeats the new default is deleted in the same commit,   */
-/* and only a surface that KEEPS the denser step survives -- with its   */
-/* reason, which is the honest outcome ADR 0112 leaves open.            */
+/* Stage 2 moved the interface to 15px one surface at a time -- the     */
+/* status strip, the rail, the HUD's remaining chrome, and the one      */
+/* thing outside the HUD -- and the scaffolding that made each move     */
+/* separately visible went out with the flip above. What is left here   */
+/* is the honest residue: two surfaces measured as not having the room, */
+/* each keeping `--type-secondary` with the assertion that says so.     */
 /*                                                                     */
-/* It lives in `tokens.css` and not beside each surface's own rules      */
-/* because a ramp step is layer-1 vocabulary: `hud.css` and             */
-/* `styles.css` name `--text-size-*` and never a `--type-*`, exactly as */
-/* they name a semantic colour alias and never a raw rung. That rule is */
-/* asserted in `ui-design-tokens.test.ts` and it is what keeps the six  */
-/* numbers, and every deviation from them, readable in one file.        */
+/* Both are INSIDE ADR 0112's ruling rather than exceptions to it. The  */
+/* option label carrying it read *"np. 15/13/11"* -- "e.g." -- and 13   */
+/* is a step on the ramp the owner named. What the ruling does not      */
+/* leave open is the direction, and neither of these moves it: 13px is  */
+/* what both surfaces already had.                                     */
+/*                                                                     */
+/* Each also declares `font-size` on its own root in `hud.css`. That is */
+/* not decoration: nothing inside either surface sets a `font-size`, so */
+/* without an anchor to spend the scoped token both would simply        */
+/* inherit the 15px `styles.css` puts on `body` and the pin would be    */
+/* silently inert. Measured -- with the token alone, only               */
+/* `.hud-clock__day` moved when the strip was scoped, because it is the */
+/* one element in that strip declaring a size of its own.               */
 /* ------------------------------------------------------------------ */
 
 /*
- * SURFACE 1 -- the status strip (#1158).
+ * THE BUILD PANEL KEEPS 13px (#1158).
  *
- * The densest row in the interface and the one that binds first: it wraps to
- * two rows at 900px and to three at 375px, and `app-shell.spec.ts`'s
- * *"every interface scale step keeps the HUD inside the viewport it is drawn
- * in (#545)"* measures its rows against its own box at every step. Moved
- * first for that reason -- if 15px does not fit anywhere, it does not fit
- * here.
- *
- * Measured after the move, at 390x844 / 1024x768 / 1440x900 / 900x600 /
- * 375x812 and at all six scale steps: no element laid outside the viewport,
- * no control covered, no row outside the strip's box, and the rail still
- * does not scroll. The strip's height at 100 %: **unchanged at 48.0px on
- * 900x600**, where `--hud-strip-height`'s floor is still above the content;
- * **78.5 -> 80.7px** at 1024x768 and 1440x900; **101.5 -> 103.7px** at
- * 390x844 and 375x812, where it already wraps to three rows. That growth is
- * a `min-height` box following its content, which is what #545 made it for.
- */
-.hud-strip {
-  --text-size-body: var(--type-body);
-  --text-size-value: var(--type-body);
-}
-
-/*
- * SURFACE 2 -- the rail (#1158).
- *
- * `.hud__rail` is the whole right column: the aside slot the save panel is
- * mounted into, and the side slot the tool panels live in. It carries the
- * most text and the least slack -- `hud.css` puts `calc()` floors under the
- * Build and Rooms panels that sum lines of type -- so this is where "some
- * panels may not have the room" was always going to show first.
- *
- * It showed. See the Build panel's own block below; everything else in the
- * rail took 15px with nothing to report.
- *
- * Measured after the move, at 390x844 / 1024x768 / 1440x900 / 900x600 /
- * 375x812 / 1280x720 and all six scale steps: nothing outside the viewport,
- * nothing covered, and `.hud__rail` still not the scroll container at any of
- * them -- which is the half of the #88 fix that has to survive every change
- * to this column. The Build panel's own scroll height is identical to the
- * baseline at all thirty-six, because the Build panel did not move.
- */
-.hud__rail {
-  --text-size-body: var(--type-body);
-  --text-size-value: var(--type-body);
-}
-
-/*
- * THE BUILD PANEL KEEPS THE DENSER STEP, AND THIS IS WHY (#1158).
- *
- * This is the honest outcome `docs/IDENTITY_V5_ROLLOUT.md` Stage 2 names in
- * its own weakest-claim paragraph -- *"the honest outcome may be that some
- * density stays below the target with the reason written down"* -- and it is
- * inside ADR 0112's ruling rather than an exception to it: the option label
- * carrying the ruling read *"np. 15/13/11"* ("e.g."), and 13 is a step on the
- * ramp the owner named. What is not open is the direction, and this does not
- * move it: 13px is what this panel already had.
- *
- * Three separate assertions went red at 15px, all at 1280x720, and every one
- * of them is a floor this repository pinned deliberately. They are recorded
- * with their numbers so a later reader can retry the move rather than take
- * this paragraph's word for it:
+ * Three pinned assertions went red at 15px, all at 1280x720, and every one
+ * is a floor this repository chose deliberately. Recorded with their numbers
+ * so a later reader can retry the move rather than take this on trust:
  *
  *   1. `ui-build-arm-label-fit.spec.ts` (#926): `.hud-build__arm` measured
- *      **56px against a 44px tap target**. The arm label already wraps to two
+ *      **56px against a 44px tap target**. Its label already wraps to two
  *      lines and that wrap is free only while two lines fit the target; at
  *      15px they do not, the button grows, `align-items: stretch` grows the
  *      row, and every control below it moves.
  *   2. `ui-build-order-note.spec.ts` (#920): the panel **arrives with 6px
  *      more content than box**, against a pinned 0.
- *   3. `ui-build-queue.spec.ts`: `order-02`'s cancel sits **2px below the
- *      panel's fold** (640 against a visible bottom of 638), and an emptied
- *      row stops keeping its box -- a cancel drifting 645 -> 643 and 598 ->
- *      579 between two states of the same run.
+ *   3. `ui-build-queue.spec.ts`: `order-02`'s cancel **2px below the panel's
+ *      fold** (640 against a visible bottom of 638), and an emptied row stops
+ *      keeping its box -- a cancel drifting 645 -> 643 and 598 -> 579 between
+ *      two states of one run.
  *
- * **Pinning only `.hud-build__actions` was tried first and is not enough.**
- * It clears (1) and (2) -- so the arm button really is where the extra 12px
- * comes from -- and leaves all three of (3) red, because the queue rows are
- * their own content. Measured, not reasoned: both configurations were run.
+ * **Pinning only `.hud-build__actions` was tried first and is not enough**,
+ * and both configurations were run rather than reasoned about: it clears (1)
+ * and (2) -- so the arm button really is where the extra 12px comes from --
+ * and leaves all three of (3) red, because the queue rows are their own
+ * content.
  *
- * The alternative to this block is relaxing one of those three assertions,
- * and `AGENTS.md` forbids exactly that. What would earn the Build panel the
- * larger step is making its content smaller -- a shorter arm label, or a
- * queue row that does not spend a whole line on a cancel -- which is content
- * and layout work, not a token edit, and belongs to stage 3 or stage 6.
+ * The alternative was relaxing one of those three floors, which `AGENTS.md`
+ * forbids. What would earn this panel the larger step is smaller content -- a
+ * shorter arm label, or a queue row that does not spend a whole line on a
+ * cancel -- which is layout and language work, stage 3 or stage 6, not a
+ * token edit.
  */
 .hud-build {
   --text-size-body: var(--type-secondary);
@@ -835,60 +787,26 @@
 }
 
 /*
- * SURFACE 3 -- the HUD's remaining chrome (#1158).
- *
- * What is left of the HUD once the strip and the rail have moved: the tab
- * bar, the map corner (minimap frame and zoom island), and the three notice
- * rows between the strip and the middle -- `.hud__unavailable` (#220),
- * `.hud__refusal` (#207) and `.hud__event`. They are one surface here
- * because they are what remains rather than because they are alike, and that
- * is stated rather than dressed up.
- *
- * The three notice rows need no anchor: each already declares
- * `font-size: var(--text-size-body)` in `hud.css`, because each is a
- * standalone band of prose. The tab bar and the corner do need one, for the
- * reason recorded on `.hud-strip`.
- *
- * The tab bar's own labels are `--text-size-label` and do not move at all:
- * 11px is already the size the owner ruled for labels, which is why stage 2
- * touches no tab text. What moves here is only what the bar and the corner
- * inherit.
- *
- * Measured after the move, 36 combinations: unchanged from surface 2 on
- * every quantity the harness reports -- no element outside the viewport, no
- * control covered, the tab bar still reachable at 200 % on 900x600, and the
- * minimap frame still under the strip.
- */
-.hud__corner,
-.hud-tabs__inner,
-.hud__unavailable,
-.hud__refusal,
-.hud__event {
-  --text-size-body: var(--type-body);
-  --text-size-value: var(--type-body);
-}
-
-/*
- * THE ALERTS LIST KEEPS THE DENSER STEP, AND THIS IS WHY (#1158).
- *
- * The second of stage 2's two keeps, and it is inside the corner rather than
- * the rail -- the alerts section is a child of the minimap panel
- * (`hud.ts`, `minimapPanel.body.append(minimapSurface, alertsSection.element)`),
- * which is why it came through surface 2 untouched and failed on surface 3.
+ * THE ALERTS LIST KEEPS 13px (#1158).
  *
  * `ui-alerts-column.spec.ts` (#739) pins the longest alert sentence -- 109
- * characters, behind the *narrowest* severity badge, which is the worst case
+ * characters behind the *narrowest* severity badge, which is the worst case
  * the column can produce -- to at most **4 line boxes at every viewport**. At
- * 15px it wraps to **5 at 1280x720**. Four is not a round number somebody
- * liked: #739 chose it as the height at which a column of alerts stays
- * readable, and `hud.css`'s own arithmetic block above `.hud-alerts__list`
- * records what the dismiss control costs the sentence beside it.
+ * 15px it wraps to **5 at 1280x720**. Four is not a number somebody liked:
+ * #739 chose it as the height at which a column of alerts stays readable, and
+ * the arithmetic block above `.hud-alerts__list` in `hud.css` records what the
+ * dismiss control costs the sentence beside it.
  *
- * A fifth line is not an overflow, so nothing is hidden and no floor is
- * lowered by leaving it -- which is exactly why it has to be a deliberate
- * keep rather than an accepted regression. What would earn this list the
- * larger step is a shorter worst-case sentence or a wider column, both of
- * which are stage 3 or stage 6 work.
+ * A fifth line is not an overflow -- nothing is hidden and no floor is lowered
+ * by leaving it -- which is exactly why it has to be a deliberate keep rather
+ * than an accepted regression.
+ *
+ * **Where it was hiding is worth as much as the number.** The alerts section
+ * is a child of the minimap panel in the map corner, not of the rail
+ * (`hud.ts`: `minimapPanel.body.append(minimapSurface, alertsSection.element)`),
+ * so it came through the rail's move untouched and every alerts spec passed
+ * then. A DOM tree and a mental model of "the panels" are not the same
+ * partition, and this is the one place in stage 2 where they came apart.
  */
 .hud-alerts__list {
   --text-size-body: var(--type-secondary);

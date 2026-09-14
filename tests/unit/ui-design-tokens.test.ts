@@ -696,6 +696,49 @@ describe('the type ramp', () => {
     }
   });
 
+  /**
+   * The two surfaces stage 2 measured as not having the room, pinned as a set
+   * rather than as two facts.
+   *
+   * A *set* because both failure directions matter and only one of them is
+   * obvious. Dropping a keep is caught by the browser suite -- that is what
+   * put each of them here. **Adding one is not**: a later editor who finds a
+   * panel awkward at 15px can pin it to `--type-secondary` and every gate in
+   * this repository stays green, because a denser panel breaks no floor. That
+   * is exactly the drift ADR 0112's ruling is not open to, so the list is
+   * closed here and a new entry has to arrive with its reason in the diff.
+   */
+  it('keeps the denser step on exactly two surfaces, and nowhere else', () => {
+    const kept = [...tokensSource.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter((block) => /--text-size-(?:body|value):\s*var\(--type-secondary\)/.test(block[2]!))
+      .map((block) => block[1]!.trim().replace(/\s+/g, ' '));
+    expect(kept).toEqual(['.hud-build', '.hud-alerts__list']);
+  });
+
+  it('gives each kept surface a font-size to spend the pin on', () => {
+    /*
+     * The pin is inert without this and fails nothing while it is inert:
+     * nothing inside either surface declares a `font-size`, so the subtree
+     * would inherit the 15px `styles.css` puts on `body` and the scoped token
+     * would never be read. Measured during stage 2 -- with the token alone on
+     * `.hud-strip`, only `.hud-clock__day` moved, because it is the one
+     * element in that strip with a size of its own.
+     */
+    const hud = stylesheetRules(join(UI_ROOT, 'hud/hud.css'));
+    // By exact selector, not by substring: `.hud__corner .hud-alerts__list`
+    // is a different rule in this file and matching it instead would have
+    // read a `pointer-events` block as the list's own.
+    const ruleFor = (selector: string): string | undefined =>
+      [...hud.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find(
+        (block) => block[1]!.trim().replace(/\s+/g, ' ') === selector,
+      )?.[2];
+    for (const selector of ['.ui-panel.hud-build', '.hud-alerts__list']) {
+      const rule = ruleFor(selector);
+      expect(rule, `${selector}'s own rule`).toBeDefined();
+      expect(rule!, `${selector} does not spend --text-size-body`).toMatch(/font-size:\s*var\(--text-size-body\)/);
+    }
+  });
+
   it.each(componentStylesheets)('%s does not reach past --text-size-* to a raw ramp step', (path) => {
     // The same rule the colour layer has, for the same reason: a surface that
     // named `--type-body` directly would not follow when the applied token is

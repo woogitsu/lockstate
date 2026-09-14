@@ -164,23 +164,6 @@
   min-width: 0;
   background: var(--surface-raised);
   border-bottom: var(--hairline) solid var(--border);
-  /*
-   * SCAFFOLDING FOR STAGE 2, AND IT IS REMOVED WHEN THE DEFAULT FLIPS
-   * (#1158, `docs/IDENTITY_V5_ROLLOUT.md` Stage 2).
-   *
-   * Almost nothing in this strip declares a `font-size` of its own -- the
-   * clock's day number is the only one -- so the text in it is whatever
-   * `styles.css` set on `body`, inherited as a computed length. Scoping
-   * `--text-size-body` to this surface alone therefore moves nothing without
-   * something here to spend it, which is what this line is. Measured before
-   * it was added: with only the scoped token, `.hud-clock__day` went to 15px
-   * and every other run of text in the strip stayed at 13px.
-   *
-   * After the root default flips this is a no-op -- `body` supplies the same
-   * value by inheritance -- so it goes out with the scoped block in
-   * `tokens.css` that it exists to make visible.
-   */
-  font-size: var(--text-size-body);
 }
 
 /*
@@ -345,9 +328,6 @@
    * interface scale instead of being right at 100 % and wrong at 175 %.
    */
   --hud-zoom-block: calc(var(--tap-target) + 2 * var(--hairline) + var(--space-2));
-  /* Scaffolding for stage 2, removed when the default flips -- see the note
-     on `.hud-strip`. */
-  font-size: var(--text-size-body);
 }
 
 /* Both `min-height: 0`s are the shrink the block above depends on: a flex
@@ -584,6 +564,11 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Spends the denser step `tokens.css` pins for this list (#1158, #739).
+     Load-bearing rather than tidy: nothing inside the list declares a
+     `font-size`, so without this the rows would inherit the 15px `body`
+     carries and the pin beside it would be inert. */
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -1114,11 +1099,6 @@
   min-height: 0;
   overflow: hidden;
   box-sizing: border-box;
-  /* Scaffolding for stage 2, removed when the default flips -- see the note
-     on `.hud-strip`'s copy of this line. The rail's panels inherit their body
-     type from `body` rather than declaring it, so the scoped token in
-     `tokens.css` needs something here to spend it. */
-  font-size: var(--text-size-body);
 }
 
 /*
@@ -1242,6 +1222,12 @@
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
+  /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
+     bearing rather than tidy: nothing inside the panel declares a
+     `font-size`, so without this the arm label and the queue rows would
+     inherit the 15px `body` carries and the pin beside it would be inert --
+     which is measurably three red assertions at 1280x720. */
+  font-size: var(--text-size-body);
 }
 
 /*
@@ -3030,10 +3016,6 @@
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  /* Scaffolding for stage 2, removed when the default flips -- see the note
-     on `.hud-strip`. The tab labels themselves are `--text-size-label` and do
-     not move; this is only what the bar inherits. */
-  font-size: var(--text-size-body);
 }
 
 .hud__tabs { max-width: 100%; box-sizing: border-box; }
