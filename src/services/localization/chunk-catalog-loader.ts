@@ -1,11 +1,25 @@
 import { type LoadedCatalogResult, type MessageCatalogLoader, loadMessageCatalog } from './catalog';
-import { DEFAULT_LOCALE, normalizeLocaleTag } from './locale';
+import { DEFAULT_LOCALE, normalizeLocaleTag, selectSupportedLocale } from './locale';
 import { Localizer } from './localizer';
 
 /**
- * PROTOTYPE (#662). Nothing in `src/main.ts` uses this yet -- see
+ * The shipping delivery route (#662), wired 2026-09-14.
+ *
+ * **This header said "PROTOTYPE (#662). Nothing in `src/main.ts` uses this
+ * yet" for a fortnight, and that is no longer true.** `src/main.ts` builds the
+ * page's one localizer through `resolveStartupLocale` below, over a registry
+ * holding one thunk, `pl` -> `./pl-catalog`. What remained after the prototype
+ * landed is listed in
  * `docs/research/2026-08-30-how-a-second-catalogue-reaches-a-running-page.md`
- * §7 for what remains before it is the shipping path.
+ * §7; items 1-3 are discharged here and by #661, item 4 by
+ * `tests/browser/locale-delivery.spec.ts`, and item 5 by #664's
+ * `tests/foundation/second-locale-contract.test.ts`.
+ *
+ * **The `import()` itself is still not written in this layer and must not be.**
+ * The importer is an injected thunk and the registry lives in the composition
+ * root, because `tests/unit/services-layer-boundaries.test.ts` forbids I/O
+ * here and — since #664 — counts a dynamic `import()` as I/O. A registry moved
+ * into this directory fails that gate, which is the intended answer.
  *
  * The delivery route ADR 0011 asks for, implemented as the
  * `MessageCatalogLoader` port that has existed without an implementation
@@ -156,4 +170,42 @@ export async function switchLocale(
     locale: result.catalog.locale,
     changed: true,
   };
+}
+
+/**
+ * The locale a page starts in, and the catalogue for it, from the player's own
+ * preference list (`navigator.languages`).
+ *
+ * `Localizer`'s own docblock states the constraint this exists to satisfy:
+ * *"catalogs are loaded before a `Localizer` is constructed, so rendering never
+ * awaits a translation"*. So the composition root resolves the locale **before**
+ * it builds the localizer the HUD, the save panel and the world scene share,
+ * and no consumer of that instance ever has to re-render for the boot locale.
+ * Switching *after* boot is a different problem -- it needs a re-render path
+ * for panels already holding an instance -- and it is #663's, not this.
+ *
+ * ADR 0011's fallback rule is what makes the load worth doing rather than
+ * risky: the returned localizer keeps the bundled English catalogue underneath
+ * the loaded one, so a key the second locale lacks resolves per key rather than
+ * leaving a hole.
+ *
+ * **The early return when the answer is the bundled locale is load-bearing in
+ * two directions.** A player whose browser asks for a locale nothing is
+ * published for downloads no chunk at all -- that is the whole point of the
+ * split -- and the caller's instance is handed back *as it is*, rather than
+ * through `withLocale(defaultLocale)`. The second half matters to exactly one
+ * caller today: `tests/browser/pseudo-locale-sweep.spec.ts` patches the bundled
+ * localizer to `en-XA`, and re-tagging it `en` here would have silently undone
+ * the sweep on a Chromium that asks for English.
+ */
+export async function resolveStartupLocale(
+  bundled: Localizer,
+  loader: ChunkCatalogLoader,
+  preferences: readonly string[],
+  options: SwitchLocaleOptions = {},
+): Promise<LocaleSwitchOutcome> {
+  const defaultLocale = normalizeLocaleTag(options.defaultLocale ?? DEFAULT_LOCALE) ?? DEFAULT_LOCALE;
+  const selected = selectSupportedLocale(preferences, [defaultLocale, ...loader.locales], defaultLocale);
+  if (selected === defaultLocale) return { localizer: bundled, locale: bundled.locale, changed: false };
+  return switchLocale(bundled, loader, selected, options);
 }

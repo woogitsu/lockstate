@@ -69,8 +69,23 @@ async function installPseudoLocale(page: Page): Promise<void> {
     const source = await response.text();
 
     const importPattern = /import \{ defaultMessageCatalogEn \} from "([^"]*localization\/index\.ts)";/;
+    /*
+     * `bundledLocalizer`, not `localizer`, since #662 wired the catalogue
+     * delivery route: `src/main.ts` builds the bundled English localizer under
+     * that name and then resolves the page's own `localizer` from it through
+     * `resolveStartupLocale`, which is what lets a Polish browser boot Polish.
+     *
+     * **The patch still works on the same one construction, and the reason is
+     * worth stating because it is a property of production code rather than of
+     * this rewrite.** `resolveStartupLocale` returns the caller's instance
+     * *untouched* when the browser's preferences resolve to the bundled
+     * default, rather than re-tagging it with `withLocale('en')` -- so the
+     * `en-XA` localizer patched in below survives the resolution this sweep's
+     * Chromium triggers. Its docblock names this spec as the caller that
+     * depends on it.
+     */
     const constructorPattern =
-      /const localizer = new Localizer\(\{\s*locale: DEFAULT_LOCALE,\s*catalogs: \[defaultMessageCatalogEn\]\s*\}\);/;
+      /const bundledLocalizer = new Localizer\(\{\s*locale: DEFAULT_LOCALE,\s*catalogs: \[defaultMessageCatalogEn\]\s*\}\);/;
     const ingestPattern =
       /typeof __LOCKSTATE_TELEMETRY_INGEST_PATH__ === "string" \? __LOCKSTATE_TELEMETRY_INGEST_PATH__ : undefined/;
     const environmentPattern =
@@ -88,7 +103,7 @@ async function installPseudoLocale(page: Page): Promise<void> {
       .replace(importPattern, 'import { defaultMessageCatalogEn, PSEUDO_LOCALE, buildPseudoLocaleCatalog } from "$1";')
       .replace(
         constructorPattern,
-        'const localizer = new Localizer({ locale: PSEUDO_LOCALE, ' +
+        'const bundledLocalizer = new Localizer({ locale: PSEUDO_LOCALE, ' +
           'catalogs: [defaultMessageCatalogEn, buildPseudoLocaleCatalog(defaultMessageCatalogEn)] });',
       )
       .replace(ingestPattern, '"/api/telemetry"')

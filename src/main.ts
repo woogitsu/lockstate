@@ -111,6 +111,11 @@ import { procurableMaterial } from './content/procurement-catalog';
 import type { LocalizationKey } from './content/localization';
 import { DEFAULT_LOCALE } from './content/localization';
 import { defaultMessageCatalogEn } from './services/localization';
+import {
+  type CatalogChunkImporter,
+  createChunkCatalogLoader,
+  resolveStartupLocale,
+} from './services/localization/chunk-catalog-loader';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
 import { APP_SHELL_MESSAGE_KEY } from './ui/app-shell-messages';
@@ -417,7 +422,74 @@ function objectFootprintOf(definitionId: string): { readonly width: number; read
  * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
  * resolves, and before this line it would have painted the raw key.
  */
-const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+const bundledLocalizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
+/**
+ * Every locale published besides the bundled default, as a thunk each (#662,
+ * ADR 0011).
+ *
+ * **This registry is the one `import()` in the delivery route, and it is here
+ * rather than in `src/services/localization/` on purpose.** That layer performs
+ * no I/O, a dynamic `import()` is a network fetch in a browser, and
+ * `tests/unit/services-layer-boundaries.test.ts` has counted it as one since
+ * #664 -- so the port takes an injected thunk and the composition root writes
+ * the import. The same split `resolveBrowserKeyValueStore` above is an instance
+ * of.
+ *
+ * **A thunk, not a promise**, which is what makes the split a split:
+ * `createChunkCatalogLoader` never calls one until a locale is actually asked
+ * for, so a player who never reads Polish never downloads the 669 Polish
+ * strings. Measured on the production build of 2026-09-14: the main chunk
+ * moves 1,849,452 -> 1,850,436 raw bytes (481,322 -> 481,583 gzipped, +261) and
+ * the catalogue leaves in a chunk of its own that `dist/client/index.html`
+ * neither names nor preloads.
+ *
+ * `pl` resolves to the module holding the catalogue rather than to a `.json`
+ * file because the catalogue is authored as TypeScript beside its English
+ * counterpart (#661). `import()` of either code-splits identically; the chunk's
+ * `default` export is a plain object either way, and it goes through
+ * `decodeMessageCatalog` like any untrusted fetched body.
+ */
+const CATALOG_CHUNKS: Readonly<Record<string, CatalogChunkImporter>> = {
+  pl: () => import('./services/localization/pl-catalog'),
+};
+
+/**
+ * The page's one localizer, in the locale the player's own browser asks for.
+ *
+ * **Top-level `await`, and it is the cheap end of the trade.** `Localizer` is
+ * synchronous by contract -- "catalogs are loaded before a `Localizer` is
+ * constructed, so rendering never awaits a translation" -- and the HUD, the
+ * save panel and the world scene are all handed *this instance*. Resolving the
+ * locale here means none of them ever has to be re-rendered for the boot
+ * locale, which is the expensive machinery #663 needs for a live language
+ * change and which this issue deliberately does not build.
+ *
+ * For the overwhelming majority of players this awaits nothing at all:
+ * `resolveStartupLocale` returns the bundled localizer synchronously when no
+ * published locale matches the browser's preferences, so a player who reads
+ * English pays one microtask and no request.
+ *
+ * A failed load is silence rather than a crash, which is #662's third
+ * requirement: `switchLocale` hands back *this* localizer untouched, so the
+ * page comes up in complete English and the reason goes to the console beside
+ * every other boot-time degradation this file reports that way.
+ */
+const startupLocale = await resolveStartupLocale(
+  bundledLocalizer,
+  createChunkCatalogLoader(CATALOG_CHUNKS),
+  // `navigator.languages` is the ordered preference list; `navigator.language`
+  // is the single fallback for a browser that does not publish the list.
+  navigator.languages.length > 0 ? navigator.languages : [navigator.language],
+  {
+    onFailure: (failure) =>
+      console.warn(
+        `The "${failure.requestedLocale}" message catalogue could not be loaded; the interface stays in English.`,
+        failure.message,
+      ),
+  },
+);
+const localizer = startupLocale.localizer;
 
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
