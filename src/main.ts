@@ -64,7 +64,7 @@ import {
   hudEventAlertsFromWorkerMessage,
   hudEventNoticeFromWorkerMessage,
 } from './ui/simulation-events';
-import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
+import { hudCountsFromWorkerMessage, hudOverviewFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
@@ -1916,7 +1916,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   };
 
   const refreshIntakePipeline = (): void => {
-    if (intakePipelineReader === undefined || activeTab !== 'overview') return;
+    if (intakePipelineReader === undefined || activeTab !== 'manage') return;
     void intakePipelineReader
       .read()
       .then((next) => {
@@ -1998,6 +1998,21 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   client?.addListener((message) => {
     const clock = hudClockFromWorkerMessage(message, viewModel.clock);
     const counts = hudCountsFromWorkerMessage(message);
+    /*
+     * The Overview section's readout, off the same publication and on the same
+     * three-state contract `zoning`, `refusal` and `event` below use: a notice,
+     * `'none'` for a session that has ended, and `undefined` for a message that
+     * said nothing about it (issue #1183).
+     *
+     * It cannot be read off `counts` above, and the difference is the whole
+     * point of the field. `hudCountsFromWorkerMessage` answers
+     * `EMPTY_HUD_VIEW_MODEL.counts` for a stopped session and the view model
+     * holds those same zeros before the first publication, so a readout keyed
+     * on it would state a balance of `0` for a prison that has never spoken --
+     * the defect #1184 records for `'hud.alerts.empty'`. Absent here means no
+     * prison is reporting, and the panel says so in words.
+     */
+    const overview = hudOverviewFromWorkerMessage(message);
     const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);
     const zoning = hudZoningFromWorkerMessage(message);
     // The same refusal, read a second time for the surface that is actually
@@ -2048,6 +2063,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     if (
       clock === undefined &&
       counts === undefined &&
+      overview === undefined &&
       nextAlerts === undefined &&
       zoning === undefined &&
       refusal === undefined &&
@@ -2058,6 +2074,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
       ...(counts === undefined ? {} : { counts }),
+      // Three states, exactly as `zoning` below: `undefined` leaves the field
+      // alone, `'none'` clears it (the deletion is below, because
+      // `exactOptionalPropertyTypes` is on and clearing an optional field has
+      // to remove the key rather than write `undefined`), and a readout is a
+      // prison that has reported.
+      ...(overview === undefined ? {} : overview === 'none' ? {} : { overview }),
       ...(nextAlerts === undefined ? {} : { alerts: nextAlerts }),
       // Three states, not two, which is why the translator returns `'none'`
       // rather than `undefined` for "no room has been designated": `undefined`
@@ -2080,6 +2102,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // so clearing it deletes the key below rather than writing `undefined`.
       ...(event === undefined ? {} : event === 'none' ? {} : { event }),
     };
+    if (overview === 'none' && viewModel.overview !== undefined) {
+      const { overview: _stopped, ...withoutOverview } = viewModel;
+      viewModel = withoutOverview;
+    }
     if (zoning === 'none' && viewModel.zoning !== undefined) {
       const { zoning: _cleared, ...withoutZoning } = viewModel;
       viewModel = withoutZoning;
@@ -2336,7 +2362,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // the harness figure; see roomNeedsReader's header, #765), and
           // leaving takes the block off, because from here on nothing is
           // refreshing it.
-          if (activeTab === 'overview') refreshIntakePipeline();
+          if (activeTab === 'manage') refreshIntakePipeline();
           else applyIntakePipeline(undefined);
           // And the two readouts on the fifth tab, on the same terms as every
           // one above (issue #451). Arriving asks at once rather than waiting

@@ -2297,6 +2297,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // "a cell" and not "a room": every accommodation target
   // `DEFAULT_ACCOMMODATION_POLICY` names is one, and a canteen or a yard has
   // never made an admission possible.
+  /*
+   * The Overview section's readout (issue #1183, and the owner's ruling of
+   * 2026-09-14: *"Nowy odczyt w Przeglądzie, panel zapisu zostaje w szynie"* --
+   * a new readout in Overview, the save panel stays in the rail).
+   *
+   * Three sentences, each checked against the code that renders it:
+   *
+   * - `hud.overview.title` -- *Finances*. The panel states three money
+   *   figures and nothing else (`src/ui/hud/overview-panel.ts`), so the noun
+   *   is the panel's contents rather than a second copy of the section's own
+   *   name.
+   * - `hud.overview.none` -- rendered exactly when `HudViewModel.overview` is
+   *   absent, which `src/ui/simulation-counts.ts`'s
+   *   `hudOverviewFromWorkerMessage` makes true in precisely two states: no
+   *   `simulation/status-counts` publication has arrived yet, and the session
+   *   has stopped. In both, no prison is reporting, so the sentence is true in
+   *   both and it is a sentence rather than a figure -- a `0` there would be a
+   *   claim about money belonging to a prison that has not spoken. It states
+   *   the condition and promises nothing, because nothing the player can press
+   *   ends it: a session starting does.
+   * - `hud.overview.wages` -- *Wages a day*. The period belongs in the label
+   *   because the figure is a **rate**: `dailyWageBillMinorUnits` is what one
+   *   in-game day of the current roster will cost
+   *   (`src/simulation/economy/payroll.ts`), not money already paid. `a day`
+   *   is the wording `hud.security.roster-wage-bill` already uses for the same
+   *   figure, and the two are deliberately the same words.
+   *
+   * The other two rows carry no string of their own: they reuse
+   * `hud.status.funds` and `hud.status.earned-today`, the status strip's own
+   * labels for the very same two published figures. One number under two
+   * different words on one screen is the split naming consistency forbids.
+   */
+  'hud.overview.title': 'Finances',
+  'hud.overview.none': 'No prison is reporting.',
+  'hud.overview.wages': 'Wages a day',
+
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
   'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.',

@@ -1,6 +1,6 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
-import { EMPTY_HUD_VIEW_MODEL, type HudCountsViewModel } from './hud/view-model';
+import { EMPTY_HUD_VIEW_MODEL, type HudCountsViewModel, type HudOverviewViewModel } from './hud/view-model';
 
 /**
  * Turns what the worker said about its population into what the HUD paints.
@@ -223,6 +223,49 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
     // `UNKNOWN_HUD_CLOCK`.
     case 'simulation/stopped':
       return EMPTY_HUD_VIEW_MODEL.counts;
+
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * What the Overview section states, out of the same publication (issue #1183).
+ *
+ * Three states rather than two, which is the whole reason this is a function
+ * of its own rather than a field read off the counts above:
+ *
+ * - a `simulation/status-counts` publication answers with the readout;
+ * - `simulation/stopped` answers `'none'` -- a session that has ended, whose
+ *   figures must come off the screen rather than stand as the last thing a
+ *   prison that no longer exists was worth;
+ * - every other message answers `undefined`, meaning it said nothing about
+ *   this and the field must be left exactly as it was.
+ *
+ * `hudCountsFromWorkerMessage` above collapses the first two by answering
+ * `EMPTY_HUD_VIEW_MODEL.counts` for a stopped session, and that is right for
+ * the status strip, whose chips are always on screen and must read as an empty
+ * prison. It is wrong here: this readout's absence is a *sentence* the panel
+ * renders, so "no prison is reporting" and "a prison reporting zero" have to
+ * arrive as different values or the panel cannot tell them apart -- the defect
+ * #1184 records for `'hud.alerts.empty'`.
+ *
+ * Nothing is derived: the three fields are copied one for one out of the
+ * payload, for the reason the module header gives.
+ */
+export function hudOverviewFromWorkerMessage(message: WorkerToMainMessage): HudOverviewViewModel | 'none' | undefined {
+  switch (message.kind) {
+    case 'simulation/status-counts': {
+      const { counts } = message.payload;
+      return {
+        treasuryMinorUnits: counts.treasuryMinorUnits,
+        stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
+        dailyWageBillMinorUnits: counts.dailyWageBillMinorUnits,
+      };
+    }
+
+    case 'simulation/stopped':
+      return 'none';
 
     default:
       return undefined;

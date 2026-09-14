@@ -885,6 +885,15 @@ const plMessages: Readonly<Record<string, string>> = {
   // whatever you write. English has no equivalent, which is why the English
   // catalogue never had to think about it.
   // =====================================================================
+  // The Overview section's readout (issue #1183). *Finanse* is the delivery's
+  // own word for what this panel holds
+  // (`DOKUMENTACJA/projekt.md:66`: "Stan dnia, sprawy do sprawdzenia,
+  // finanse, zapis"). The sentinel names the state rather than the remedy, as
+  // the English does.
+  'hud.overview.title': 'Finanse',
+  'hud.overview.none': 'Żadne więzienie nie przesyła danych.',
+  'hud.overview.wages': 'Pensje dziennie',
+
   'hud.intake.title': 'Przyjęcia',
   // A control's label -- the operator acting on the institution -- so
   // *osadzonego* under the owner's ruling.

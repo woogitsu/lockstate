@@ -1008,6 +1008,37 @@ export const HUD_MESSAGE_KEY = {
    * `HudIntakePipelineViewModel.waitingWithoutPlace` for why that is not the
    * `accommodation-assignment` stage count.
    */
+  /**
+   * The Overview section's own readout (issue #1183).
+   *
+   * Three keys, and the middle one is the one that matters. The two figures
+   * the panel states beside it reuse the status strip's own labels --
+   * `funds` and `earnedToday` above -- deliberately rather than for economy:
+   * the same number under two different words in two places on one screen is
+   * the vocabulary split constitution article 12 (naming consistency) exists
+   * to prevent, and the staff panel's `securityHeldRow` records the same
+   * decision for the same reason.
+   *
+   * - `overviewTitle` names a panel of three money figures, so it is
+   *   *Finances* rather than a second copy of the section's own name. The
+   *   section is Overview and this is what it holds today; a panel titled
+   *   "Overview" inside a section titled "Overview" would name nothing.
+   * - `overviewNone` is the sentinel, and it is the reason this readout is
+   *   not simply fed from `counts`. It is rendered exactly when
+   *   `HudViewModel.overview` is absent -- before any
+   *   `simulation/status-counts` publication, and after `simulation/stopped`
+   *   -- and it is a sentence rather than a zero, because a zero is a claim
+   *   about a prison's money and there is no prison. #1184 is the live
+   *   instance of the opposite choice.
+   * - `overviewWages` names a *rate*, which is why the period is in the label
+   *   rather than in the value: `dailyWageBillMinorUnits` is what one in-game
+   *   day of the current roster costs, and a bare number under "Wages" would
+   *   read as money already spent.
+   */
+  overviewTitle: 'hud.overview.title',
+  overviewNone: 'hud.overview.none',
+  overviewWages: 'hud.overview.wages',
+
   intakeTitle: 'hud.intake.title',
   intakeAdmit: 'hud.intake.admit',
   intakeHint: 'hud.intake.hint',

@@ -40,6 +40,7 @@ import type {
   ImportOutcomeName,
   HudProbe,
   IntakeProbe,
+  OverviewProbe,
   BuildQueueProbe,
   BuildQueueRowProbe,
   HeldGuardRowProbe,
@@ -421,6 +422,27 @@ const BASE_VIEW_MODEL: HudViewModel = {
   // Day 3, a quarter of the way through a 2,400-tick day, paused.
   clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
   alerts: [],
+  /*
+   * The Overview section's readout (issue #1183), present here because this
+   * fixture is a prison that *has* reported -- which is the state the panel's
+   * figures are for.
+   *
+   * The first two repeat `counts` above deliberately rather than being
+   * different numbers: they are the same two published figures the status
+   * strip states, and a fixture that gave the panel a different balance from
+   * the chip would hide exactly the defect a reader of this screen would care
+   * about. `4_800` is a third distinct number, so a row wired to the wrong
+   * field is visible.
+   *
+   * `EMPTY_HUD_VIEW_MODEL` carries no `overview` at all, which is what
+   * `mountHudShell({ empty: true })` drives: no prison has reported, and the
+   * panel says so in words rather than in zeros.
+   */
+  overview: {
+    treasuryMinorUnits: 24_920,
+    stateIncomeAccruedTodayMinorUnits: 10_667,
+    dailyWageBillMinorUnits: 4_800,
+  },
 };
 
 /**
@@ -1844,6 +1866,29 @@ window.lockstateUiHarness = {
     if (button === null) return false;
     button.click();
     return true;
+  },
+
+  overviewProbe(): OverviewProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-overview');
+    const figures = panel?.querySelector<HTMLElement>('.hud-overview__figures') ?? null;
+    const none = panel?.querySelector<HTMLElement>('.hud-overview__none') ?? null;
+    const rows = [...(figures?.querySelectorAll<HTMLElement>('.hud-overview__row') ?? [])];
+    const values: Record<string, string> = {};
+    for (const row of rows) {
+      const id = row.dataset['figure'] ?? '';
+      values[id] = row.querySelector<HTMLElement>('.hud-overview__value')?.dataset['value'] ?? '';
+    }
+    return {
+      // `offsetParent` for the same reason `intakeProbe` below uses it: a
+      // control inside a `hidden` panel is reachable by a keyboard and
+      // invisible to a player, so "present" is not the claim worth making.
+      laidOut: panel !== null && panel.offsetParent !== null,
+      figures: values,
+      rowTexts: rows.map((row) => (row.textContent ?? '').trim()),
+      figuresLaidOut: figures !== null && figures.offsetParent !== null,
+      noneLaidOut: none !== null && none.offsetParent !== null,
+      noneText: none !== null && none.offsetParent !== null ? (none.textContent ?? '').trim() : '',
+    };
   },
 
   intakeProbe(): IntakeProbe {

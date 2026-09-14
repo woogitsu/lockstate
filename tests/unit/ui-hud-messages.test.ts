@@ -70,6 +70,7 @@ const HUD_MODULE_NAMES = [
   'label-parameters.ts',
   'layout-shell.ts',
   'messages.ts',
+  'overview-panel.ts',
   'pooled-row-binding.ts',
   'projection.ts',
   'regime-panel.ts',
@@ -276,6 +277,23 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * wording is the agent's to choose, the truth of it is not, and the two
      * keys ship only because that number is opened and checked, not assumed.
      */
+    /*
+     * **One more joins on 2026-09-14, and it is the narrowest kind of
+     * addition this list takes: a figure already on screen, stated in a second
+     * place, by a panel that lands in the same change.**
+     * `hud.overview.wages` is the Overview section's own label for
+     * `dailyWageBillMinorUnits` -- the identical figure
+     * `hud.security.roster-wage-bill` above already states on the Staff
+     * panel's collapsed `On the payroll` header, published by `PayrollSystem`
+     * since ADR 0042 step 3. The rule this list guards is that a label may not
+     * be authored before something renders the figure it names; here the
+     * figure was already rendered, and `src/ui/hud/overview-panel.ts` arrives
+     * with the key (issue #1183).
+     *
+     * The period is in the label -- *Wages a day* -- because the figure is a
+     * rate rather than money already paid, which is the same reading
+     * `hud.security.roster-wage-bill`'s `{total} a day` takes of it.
+     */
     const ALLOWED_MONEY_KEYS = new Set([
       'hud.status.funds',
       'hud.status.funds-remaining',
@@ -283,6 +301,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.status.funds-deliveries-stopped',
       'hud.status.funds-treasury-floor-exhausted',
       'hud.security.roster-wage-bill',
+      'hud.overview.wages',
       'hud.build.catalogue-row-price',
       'hud.build.catalogue-row-price-segment',
     ]);

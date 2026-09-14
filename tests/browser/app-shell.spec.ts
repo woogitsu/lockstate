@@ -7168,7 +7168,11 @@ test.describe('the assembled application', () => {
     // Both backwards, and these two were the most expensive hops in the test:
     // 33 presses forwards from the transport to the tab bar and 22 more from
     // the tab bar down to the Admit control, against 7 and 1 the other way.
-    await hopBack('the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    // The tab is Manage since 2026-09-14 (ADR 0112 decision 3): admissions
+    // moved to the section that holds the staff, so the walk that used to end
+    // on Overview ends one tab further along and the hop counts above are a
+    // record of the route as it was measured, not of this one.
+    await hopBack('the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
     await hopBack('the Admit control', { selector: '.hud-intake__admit' });
     await page.keyboard.press('Enter');
@@ -7742,7 +7746,13 @@ test.describe('the assembled application', () => {
     });
 
     // ---- Admit -----------------------------------------------------------
-    await tabTo(page, 'the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    // The same tab the Hire control above is on, since the owner's ruling of
+    // 2026-09-14 put admissions beside the staff. The tab press is kept rather
+    // than dropped: re-selecting the active tab is idempotent
+    // (`hudShellReducer`), and what this walk measures is the route a keyboard
+    // takes from the tab bar to a control, not how few presses the test can
+    // get away with.
+    await tabTo(page, 'the Manage tab', { selector: '.ui-tab[data-tab="manage"]' });
     await page.keyboard.press('Enter');
     const admit: FocusTarget = { selector: '.hud-intake__admit' };
     await tabTo(page, 'the Admit control', admit);
@@ -11093,7 +11103,9 @@ test.describe('the assembled application', () => {
      * puts eight prisoners outside the window instead of four.
      */
     const ADMISSIONS = 12;
-    await page.locator('.ui-tab[data-tab="overview"]').click();
+    // Manage since 2026-09-14: the Admit control moved to the section that
+    // holds the staff (ADR 0112 decision 3).
+    await page.locator('.ui-tab[data-tab="manage"]').click();
     for (let admission = 0; admission < ADMISSIONS; admission += 1) {
       await page.locator('.hud-intake__admit').click();
     }

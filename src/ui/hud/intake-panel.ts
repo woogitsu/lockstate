@@ -9,7 +9,29 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
 /**
  * The Intake panel: one control, which admits one prisoner (#261 step 4).
  *
- * ### Why it is a panel on the Overview tab and not a row in Build
+ * ### Where it is now, and why the section below says something else
+ *
+ * **It is on the Manage tab since 2026-09-14** (ADR 0112 decision 3, and the
+ * owner's ruling of that day). The delivery's own navigation table names
+ * *przyjęcia* -- admissions -- under Zarządzaj, beside staff and inmates, so
+ * the panel is placed by subject: every control on that section acts on a
+ * person.
+ *
+ * The section below is kept exactly as it was written, because it is the
+ * record of why this panel was on the Overview tab for the whole of its life
+ * until then, and the reason is the interesting part: it was **pixels, not
+ * subject**. Nothing in it has stopped being true about the Build panel's
+ * budget or about the tab bar; what stopped being true is its last paragraph's
+ * premise that the Overview tab shows nothing, which `overview-panel.ts` ended
+ * on the same day this panel left -- and the two had to land together, because
+ * moving this panel out of a section that held nothing else would have shipped
+ * a navigation entry that opens onto nothing (issue #1183).
+ *
+ * The panel is no longer the only thing laid out in `.hud__side` for its tab:
+ * the Staff panel is beside it on Manage. They stack in one flex column and
+ * cannot overlap.
+ *
+ * ### Why it was a panel on the Overview tab and not a row in Build
  *
  * The Build panel is measurably full, and the measurement is this
  * repository's own rather than a judgement made here.
@@ -31,7 +53,8 @@ import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer 
  * `HUD_TAB_IDS` holds five and there is no slot left to spend on a single
  * button.
  *
- * What is left costs nothing at all: **the Overview tab shows nothing.**
+ * What is left costs nothing at all: **the Overview tab shows nothing.** (True
+ * when this was written and not since 2026-09-14; see the section above.)
  * `hud.ts` binds one panel to `build`, one to `rooms` and, since ADR 0025, one
  * to `security`, so `overview` and `regime` are the two tabs bound to no panel
  * and on either of them `.hud__side` is an empty box. This panel takes that box

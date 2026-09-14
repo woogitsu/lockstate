@@ -87,6 +87,28 @@ export interface LayoutBox {
  * proven is that the browser gave this one a box -- not merely that the node
  * is in the document.
  */
+/**
+ * The Overview section's readout (issue #1183).
+ *
+ * `figures` and `noneText` are deliberately separate: the panel's whole
+ * contract is that "no prison is reporting" and "a prison reporting zero"
+ * cannot draw the same, so a probe that collapsed them into one nullable
+ * string could not tell the two apart either.
+ */
+export interface OverviewProbe {
+  readonly laidOut: boolean;
+  /** Each row's raw figure as the panel was handed it, keyed by `data-figure`. */
+  readonly figures: Readonly<Record<string, string>>;
+  /** Each row's rendered text, in paint order. */
+  readonly rowTexts: readonly string[];
+  /** Whether the three figures have a box at all. */
+  readonly figuresLaidOut: boolean;
+  /** Whether the sentinel sentence has a box at all. */
+  readonly noneLaidOut: boolean;
+  /** What the sentinel says, or `''` when it is not drawn. */
+  readonly noneText: string;
+}
+
 export interface IntakeProbe {
   readonly laidOut: boolean;
   readonly admitLaidOut: boolean;
@@ -1350,6 +1372,7 @@ export interface LockstateUiHarness {
    * panel and is shown on the Overview tab instead of it.
    */
   intakeProbe(): IntakeProbe;
+  overviewProbe(): OverviewProbe;
   /** Presses the admit button. A real click, so a disabled button genuinely does nothing. */
   clickAdmitPrisoner(): boolean;
 
