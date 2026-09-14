@@ -49,6 +49,7 @@ export {
   ProcurementSystem,
   SELL_BACK_RATIO_DENOMINATOR,
   SELL_BACK_RATIO_NUMERATOR,
+  purchaseChargeMinorUnits,
   sellBackUnitPriceMinorUnits,
   type PendingDelivery,
   type ProcurementSnapshot,

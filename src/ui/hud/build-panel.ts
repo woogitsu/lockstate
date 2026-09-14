@@ -1,7 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
-import { pressAffordabilityVerdict, sellBackPreviewMinorUnits } from '../affordability';
+import { pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
@@ -2066,7 +2066,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   function paintBuyTotal(): void {
     const material = selectedMaterial();
     if (material === undefined) return;
-    const total = material.unitPriceMinorUnits * quantity;
+    // The charge `ProcurementSystem.purchase` will make, called rather than
+    // recomposed here -- the same seam `paintSellTotal` above uses for the sell
+    // side, and for the reason `purchasePreviewMinorUnits` states: this line
+    // read `material.unitPriceMinorUnits * quantity` until 2026-09-14, which is
+    // the panel computing a price (issue #1160, constitution article 4).
+    const total = purchasePreviewMinorUnits(material.unitPriceMinorUnits, quantity);
     buySubmit.setLabel(
       t(HUD_MESSAGE_KEY.buildBuySubmit, {
         count: quantity,
