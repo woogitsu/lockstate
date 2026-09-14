@@ -28,6 +28,7 @@ import {
   PrisonerRecordComponent,
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
+import type { EncodedRegimeSchedule } from '../prisoners/regime-registry';
 import type { PlacedObject } from '../objects';
 import { recoverRoomBoundsFromZoningPlane } from '../rooms/bounds-recovery';
 import { applyDefaultSecuritySector } from '../security/default-sector';
@@ -312,6 +313,25 @@ export interface EncodedIncidents {
  */
 export interface EncodedSessionSystems {
   readonly prisoners: EncodedPrisoners;
+  /**
+   * Every classification group's timetable, as the session is actually running
+   * it ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+   * §2).
+   *
+   * **Required, and that is why `SAVE_SCHEMA_VERSION` went to 6** rather than
+   * this being the optional-field pattern `objects`, `alerts` and `economy`
+   * below are instances of. That pattern's stated condition is that absence is
+   * unambiguous, and here it is not: a V5 save records no schedule at all, and
+   * "absent means `DEFAULT_REGIME_SCHEDULES`" is a sentence that is true only
+   * until the first edited save is written by a build that would then be
+   * indistinguishable from an unedited one. `migrateSaveEnvelopeV5ToV6` is what
+   * resolves it, by writing the two schedules every V5 session provably ran.
+   *
+   * Canonical order is `RegimeScheduleRegistry`'s, not the session's write
+   * history -- see that class for why an insertion-ordered array would put the
+   * sequence of a player's edits into the save's checksum.
+   */
+  readonly regimeSchedules: readonly EncodedRegimeSchedule[];
   readonly operations: EncodedOperations;
   readonly navigation: EncodedNavigation;
   readonly security: EncodedSecurity;
@@ -616,6 +636,12 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
   const coldState = runtime.prisoners.coldState.getSnapshot();
 
   return pruneUndefined({
+    // Emitted unconditionally by a live capture: every session has exactly the
+    // timetables its `RegimeScheduleRegistry` holds, which is `DEFAULT_REGIME_SCHEDULES`
+    // until an `EditRegimeBlock` says otherwise. There is no "this save does
+    // not know" state for a required section, which is what separates it from
+    // `objects` and `alerts` below.
+    regimeSchedules: runtime.prisoners.regimes.getSnapshot(),
     prisoners: {
       components: encodePrisonerComponents(runtime.prisoners),
       coldState: {
@@ -782,6 +808,17 @@ export function restoreSessionSystems(
     }
   }
   runtime.securitySectors.loadSnapshot(systems.security.sectorControlStates);
+
+  // 1b. The timetables, before anything that could read one
+  //     ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+  //     §4). Ordering matters only in one direction and it is cheap to state:
+  //     `ActionSystem` reads a schedule per idle prisoner per reconsideration
+  //     cycle, and nothing in this function steps a system, so no read can
+  //     happen before the end of it -- but a future step that did would read
+  //     `DEFAULT_REGIME_SCHEDULES` rather than the save's if this line came
+  //     after it. `loadSnapshot` re-orders the rows into canonical order and
+  //     re-asserts each one gapless rather than trusting the file.
+  runtime.prisoners.regimes.loadSnapshot(systems.regimeSchedules);
 
   // 2. Definitions that other snapshots reference by id.
   //

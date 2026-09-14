@@ -370,7 +370,22 @@ export class ActionSystem implements SystemRegistration {
      * rather than in the statement that resolved the route.
      */
     private readonly locomotion: LocomotionStore,
-    private readonly regimeSchedules: readonly RegimeSchedule[],
+    /**
+     * The session's live timetables, read through an accessor rather than
+     * captured as an array
+     * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)).
+     *
+     * The paragraph below explains why this field had no setter, and its
+     * objection is the one ADR 0113 answers rather than waives: the array is
+     * now `RegimeScheduleRegistry`'s, it is written into the save's
+     * `simulation.regimeSchedules` section and restored from it, so an edited
+     * timetable no longer reverts on load. An accessor and not a registry
+     * reference because this system needs exactly one thing from it -- the
+     * schedules as of this tick -- and a fixture that has no registry can pass
+     * `() => DEFAULT_REGIME_SCHEDULES` and be in precisely the state it was in
+     * before this change.
+     */
+    private readonly regimeSchedules: () => readonly RegimeSchedule[],
     private readonly routeContextResolver: PrisonerRouteContextResolver = DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER,
     /**
      * What an incident is imposing on this prisoner's day in place of their
@@ -385,6 +400,17 @@ export class ActionSystem implements SystemRegistration {
      * it needs every close path to remember to write it back. Resolving at the
      * point of use has none of those properties, and the array a session was
      * constructed with is still the only timetable it holds.
+     *
+     * **Its last clause stopped being true on ADR 0113 and the paragraph is
+     * kept rather than rewritten, because its first three reasons are still
+     * the reasons an override is not a schedule edit.** The schedules are no
+     * longer "the array a session was constructed with": they are
+     * `RegimeScheduleRegistry`'s, they are in the save, and `EditRegimeBlock`
+     * writes them. What did *not* change is this resolver -- the second and
+     * third objections above (an override is per prisoner, not per group, and
+     * a written-down override needs every close path to unwrite it) are
+     * untouched by a schedule being persisted, so an open riot still replaces
+     * a day at the point of use and is still never written into a schedule.
      *
      * Defaults to naming no override, which is what a fixture with no incident
      * pipeline wants: `PrisonerOperationsRuntime` can be stood up alone, and
@@ -1303,7 +1329,7 @@ export class ActionSystem implements SystemRegistration {
    */
   private activeBlockCategories(entityId: number, index: number, tick: number): readonly ActionCategory[] {
     const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
-    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
+    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules(), classificationGroupId);
     return resolveActiveRegimeBlock(schedule, tick).allowedCategories;
   }
 
@@ -1350,7 +1376,7 @@ export class ActionSystem implements SystemRegistration {
     // is unchanged: the block is still resolved from a gapless schedule, the
     // candidates are still `DEFAULT_ACTIONS` filtered by the block, and the
     // walk is still ADR 0041's.
-    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
+    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules(), classificationGroupId);
     const block = resolveActiveRegimeBlock(schedule, tick);
     /*
      * **`action.carry` is filtered out entirely unless there is an errand to

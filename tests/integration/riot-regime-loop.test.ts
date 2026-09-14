@@ -523,8 +523,11 @@ describe('a riot survives a save, because nothing about it is stored', () => {
 
     // Stated as a pinned value, because "no schema bump" is the claim: nothing
     // in ADR 0057 added a persisted field, so this number is the one the tree
-    // already carried.
-    expect(SAVE_SCHEMA_VERSION).toBe(5);
+    // already carried -- 6 since ADR 0113, which persisted the *base* timetable
+    // a group runs. That is the schedule an open riot replaces at the point of
+    // use and never writes to, so ADR 0057's claim is untouched by it: no
+    // override is in this payload, which is what the assertions below check.
+    expect(SAVE_SCHEMA_VERSION).toBe(6);
 
     const bundle = captureSessionSnapshot(live);
     const restored = restoreSimulationRuntime(bundle, SEED).runtime;

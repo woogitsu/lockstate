@@ -184,6 +184,14 @@ function statusStripSource(runtime: SimulationRuntime, tick: number) {
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
     rooms: runtime.prisoners,
+    // The session's timetables rather than the module constant this source
+    // previously left `projectStatusStrip` to default to
+    // ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+    // §6). Without this line the panel would keep reporting
+    // `DEFAULT_REGIME_SCHEDULES` after an `EditRegimeBlock` had changed the day
+    // the prisoners actually run -- a projection stating something the
+    // simulation had stopped doing.
+    regimeSchedules: runtime.prisoners.regimes.all(),
     staff: runtime.securityGuards,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,

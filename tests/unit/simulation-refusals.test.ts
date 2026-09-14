@@ -8,6 +8,7 @@ import {
   CANCEL_BUILD_ORDER_REFUSAL_REASONS,
   CONSTRUCTION_FUNDING_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
+  EDIT_REGIME_BLOCK_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
@@ -111,7 +112,7 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the fifteen domains can produce', () => {
+describe('the wire vocabulary is exactly what the sixteen domains can produce', () => {
   it('maps every admission, build, construction funding, hiring, dismissal, placement, object removal, wall removal, sale, purchase, cancellation, guard release, build-order cancellation and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
@@ -119,6 +120,7 @@ describe('the wire vocabulary is exactly what the fifteen domains can produce', 
       ...Object.values(CANCEL_BUILD_ORDER_REFUSAL_REASONS),
       ...Object.values(CONSTRUCTION_FUNDING_REFUSAL_REASONS),
       ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
+      ...Object.values(EDIT_REGIME_BLOCK_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_CANCEL_REFUSAL_REASONS),
@@ -300,6 +302,7 @@ describe('the wire vocabulary is exactly what the fifteen domains can produce', 
       ...Object.values(CANCEL_BUILD_ORDER_REFUSAL_REASONS),
       ...Object.values(CONSTRUCTION_FUNDING_REFUSAL_REASONS),
       ...Object.values(DISMISS_STAFF_REFUSAL_REASONS),
+      ...Object.values(EDIT_REGIME_BLOCK_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_CANCEL_REFUSAL_REASONS),
@@ -406,6 +409,13 @@ describe('the wire vocabulary is exactly what the fifteen domains can produce', 
     // build order and `Cancel` on a purchase are two different controls over
     // two different records, and a player who lost the stale-cancellation
     // race must not read a sentence about a delivery.
+    // `edit-regime-block` is the sixteenth (ADR 0113 §3), and it is the first
+    // whose case for a namespace of its own is that nothing else could be
+    // confused with it: no other command names a classification group or a
+    // tick of the day. That is an argument for the namespace rather than
+    // against it -- the rule is that a refusal's wire id says which control
+    // was pressed, and a flat `unknown-group` would stop saying so the moment
+    // a second surface grew a group.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
@@ -414,6 +424,7 @@ describe('the wire vocabulary is exactly what the fifteen domains can produce', 
       'cancel-purchase',
       'construction',
       'dismiss',
+      'edit-regime-block',
       'hire',
       'place-object',
       'purchase',

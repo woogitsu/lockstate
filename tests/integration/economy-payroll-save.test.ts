@@ -361,7 +361,9 @@ describe('the historical chain still walks a save older than the field', () => {
     // for exactly that reason.
     const captured = capturedSystems(insolventSession());
     const { bundle } = captured;
-    const { objects: _objects, alerts: _alerts, ...simulation } = captured.simulation;
+    // `regimeSchedules` removed beside them for the same reason, since ADR
+    // 0113: it is V6's required section and no V4 build wrote one.
+    const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,
@@ -409,12 +411,15 @@ describe('the historical chain still walks a save older than the field', () => {
 });
 
 describe('the version this all rests on', () => {
-  it('is still 5, and a bump would need its own reason', () => {
+  it('is 6, and the bump that took it there is not payroll\'s', () => {
     // Pinned rather than deleted, for the reason
     // `economy-state-income-persistence.test.ts` gives about the same number:
     // what this guards is that a bump has a reason, not that the number never
     // moves. Payroll is not one -- it adds an optional field whose absence is
-    // unambiguous, which is the pattern five fields took before it.
-    expect(SAVE_SCHEMA_VERSION).toBe(5);
+    // unambiguous, which is the pattern five fields took before it. The reason
+    // for 6 is ADR 0113's `simulation.regimeSchedules`, which is required
+    // precisely because its absence is *not* unambiguous once a schedule can be
+    // edited -- the distinction this assertion exists to keep visible.
+    expect(SAVE_SCHEMA_VERSION).toBe(6);
   });
 });

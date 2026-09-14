@@ -3,6 +3,7 @@ import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
 import { MAX_PURCHASE_QUANTITY } from '../economy';
 import { MAX_PRIOR_INCIDENTS, MAX_SENTENCE_LENGTH_TICKS } from '../prisoners/components';
+import { ACTION_CATEGORIES, DAY_LENGTH_TICKS } from '../prisoners/regime';
 import { MAX_ZONE_DIMENSION_TILES } from '../rooms/zoning';
 import { identifierSchema, sequenceSchema, type VersionedPayload } from './types';
 
@@ -728,6 +729,52 @@ export const redoCommandSchema = z.object({
   type: z.literal('Redo'),
 }).strict();
 
+/**
+ * Rewrite what one block of one group's day allows
+ * ([ADR 0113](../../../docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md)
+ * §3).
+ *
+ * ## `startTickOfDay` identifies the block; it does not move it
+ *
+ * The tick a block already starts on, not an index into the schedule's array.
+ * An index is not stable across a save/load round trip in the way a boundary
+ * is -- `RegimeScheduleRegistry` reorders rows into a canonical order on
+ * restore -- and a boundary is the one coordinate the player and the
+ * simulation can agree on without agreeing on array order first.
+ *
+ * The command changes `allowedCategories` and nothing else. Moving a boundary
+ * would reopen `assertGaplessSchedule`'s proof over the whole schedule
+ * mid-edit, and ADR 0113 §3 defers that deliberately rather than leaving it
+ * out by accident.
+ *
+ * ## What the schema refuses, and what it deliberately leaves to a refusal
+ *
+ * `identifierSchema` and not `z.enum(CLASSIFICATION_GROUP_IDS)`, on
+ * `HireStaff.staffRoleId`'s reasoning: once ADR 0113 lands, which groups exist
+ * is a property of the **session's own** `regimeSchedules` array rather than
+ * of a build-time constant, so a group the session does not have is an
+ * existence miss (`edit-regime-block.unknown-group`) rather than a shape
+ * defect. The same split puts a tick naming no block's start at
+ * `edit-regime-block.unknown-block`.
+ *
+ * `.min(1)` on `allowedCategories` is the one business-shaped rule that *is*
+ * enforced here, because it is a shape defect rather than a state question: an
+ * empty array names nothing in `ACTION_CATEGORIES` at all, and it would
+ * produce the block ADR 0054 exists to rule out -- one an idle prisoner can
+ * never act in. Nothing about the session is needed to see that, so it is
+ * refused at decode time and `unpackCommand` returns `null`.
+ *
+ * `.max(DAY_LENGTH_TICKS - 1)` because a block that started on the last tick
+ * of the day is the last legal start; `DAY_LENGTH_TICKS` itself is the
+ * exclusive end of the day and no block begins there.
+ */
+export const editRegimeBlockSchema = z.object({
+  type: z.literal('EditRegimeBlock'),
+  classificationGroupId: identifierSchema,
+  startTickOfDay: z.number().int().min(0).max(DAY_LENGTH_TICKS - 1),
+  allowedCategories: z.array(z.enum(ACTION_CATEGORIES)).min(1),
+}).strict();
+
 export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
   cancelBuildOrderSchema,
@@ -744,6 +791,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   releaseGuardAssignmentSchema,
   dismissStaffSchema,
   dismissAlertSchema,
+  editRegimeBlockSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -843,6 +891,17 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'DismissAlert':
       return { type: command.type, fromSequence: command.fromSequence, throughSequence: command.throughSequence };
+
+    case 'EditRegimeBlock':
+      return {
+        type: command.type,
+        classificationGroupId: command.classificationGroupId,
+        startTickOfDay: command.startTickOfDay,
+        // Copied rather than passed through: `commandJson`'s result is the
+        // structured-clone payload, and handing the caller's own array across
+        // would let a later mutation of it change a command already submitted.
+        allowedCategories: [...command.allowedCategories],
+      };
 
     case 'Undo':
     case 'Redo':

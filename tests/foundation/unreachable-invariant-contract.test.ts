@@ -160,11 +160,25 @@ describe('every exported invariant enforcer is reachable from a path that runs',
     expect(namePool.crossModuleCallSites.map((site) => site.file)).toContain('src/simulation/identity/actor-identity.ts');
     expect(isWired(namePool)).toBe(true);
 
-    // `assertGaplessSchedule`'s only production call is in its own module --
-    // the module-load loop over `DEFAULT_REGIME_SCHEDULES` -- which is why an
-    // own-module call counts as wiring here.
+    // `assertGaplessSchedule` had its only production call in its own module
+    // until ADR 0113 -- the module-load loop over `DEFAULT_REGIME_SCHEDULES` --
+    // which is why an own-module call counts as wiring here, and that reason is
+    // kept because the rule it justifies has not changed.
+    //
+    // It now also has three cross-module calls, all in
+    // `RegimeScheduleRegistry`, which is what a schedule reaching this codebase
+    // from a *save* rather than from a module constant costs: the constructor
+    // checks a caller-supplied seed (which nothing checked before), the edit
+    // path re-checks the schedule it produced, and `loadSnapshot` checks every
+    // row a file supplied. The enforcer's own docblock already predicted this
+    // shape -- "A schedule built anywhere else has to be checked by whoever
+    // builds it; the check is exported for that."
     const regime = REPORT.enforcers.find((enforcer) => enforcer.name === 'assertGaplessSchedule')!;
-    expect(regime.crossModuleCallSites).toEqual([]);
+    expect(regime.crossModuleCallSites.map((site) => site.file)).toEqual([
+      'src/simulation/prisoners/regime-registry.ts',
+      'src/simulation/prisoners/regime-registry.ts',
+      'src/simulation/prisoners/regime-registry.ts',
+    ]);
     expect(regime.ownModuleCallSites.map((site) => site.file)).toEqual(['src/simulation/prisoners/regime.ts']);
     expect(regime.testCallSites.length).toBeGreaterThan(0);
     expect(isWired(regime)).toBe(true);

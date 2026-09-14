@@ -268,6 +268,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The three rungs of the guard-coverage ladder -- `covered`, `understaffed`, `unguarded` (issue #588). Exempt because these three ids already have authored player-facing words and a derived group would author a *second* set of them: `hud.security.coverage-met`, `hud.security.coverage-short` and `hud.security.coverage-unguarded` read "Covered", "Understaffed" and "Unguarded", and `describeStaffCoverage` has picked between them since ADR 0048 consequence 1. The id itself never crosses the worker boundary at all -- `SafetyCoverageSystem` publishes the census as three *counts* (`prisonersCovered`, `prisonersUnderstaffed`, `prisonersUnguarded`), so nothing downstream ever receives the string to look a label up by. That is the same argument `PENDING_BUILD_ORDER_STATES` above makes about not re-labelling ids a HUD key already covers, and `tests/unit/security-coverage-state.test.ts` is where the simulation ladder and the HUD badge keys are asserted to agree rung for rung.',
   },
   {
+    sourceFile: 'src/simulation/prisoners/regime-registry.ts',
+    declaration: 'EditRegimeBlockRefusalReason',
+    reason:
+      'Why `RegimeScheduleRegistry.editBlock` refused an `EditRegimeBlock` -- the session has no schedule for that classification group, or the tick names no block\'s start in the one it has ([ADR 0113](docs/adr/0113-how-a-regime-is-edited-and-whose-day-it-is.md) §3). Exempt for the identical reason as `GuardReleaseRefusalReason` immediately below and the four unions it names: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through `EDIT_REGIME_BLOCK_REFUSAL_REASONS`, an exhaustive `Record`, before anything is published, and what the player reads is one authored `hud.alert.refusal.edit-regime-block.*` sentence per reason rather than a two-word label this table could hold. A derived `edit-regime-block-refusal-reason.unknown-block.name` reading "Unknown Block" would be a second English phrase for a fact the sentence already carries, and there is no surface that could show it: a refusal appears on the alerts channel as a sentence, never as a badge.',
+  },
+  {
     sourceFile: 'src/simulation/security/guard-release.ts',
     declaration: 'GuardReleaseRefusalReason',
     reason:

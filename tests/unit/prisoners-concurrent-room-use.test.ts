@@ -180,7 +180,7 @@ function buildContentionFixture(options: {
     roomInstances,
     navigation,
     locomotion,
-    DEFAULT_REGIME_SCHEDULES,
+    () => DEFAULT_REGIME_SCHEDULES,
   );
 
   kernel.registerSystem(navigation);
