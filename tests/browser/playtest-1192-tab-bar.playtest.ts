@@ -187,4 +187,36 @@ test.describe('the Polish tab bar at 375x812', () => {
     });
     console.log(`[#1192 interface scale]\n${report.join('\n')}`);
   });
+
+  test('reads the Settings menu in Polish and measures whether it fits', async ({ page }) => {
+    /*
+     * The fifteen `hud.layout.*` keys, translated on 2026-09-14, on the one
+     * surface that renders them. A translation is a layout change as well as a
+     * content change, and Polish is longer than English about half the time.
+     */
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(APP_URL);
+    await page.waitForSelector('.hud');
+    await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
+
+    await page.evaluate(() => {
+      document.querySelector<HTMLButtonElement>('.hud-layout__button, .hud-layout button')?.click();
+    });
+    const menu = await page.evaluate(() => {
+      const round = (value: number): number => Math.round(value * 100) / 100;
+      const nodes = [...document.querySelectorAll<HTMLElement>('.hud-layout__body *')].filter(
+        (node) => node.children.length === 0 && (node.textContent ?? '').trim() !== '',
+      );
+      const panel = document.querySelector<HTMLElement>('.hud-layout__body');
+      const box = panel?.getBoundingClientRect();
+      return {
+        texts: nodes.map((node) => (node.textContent ?? '').trim()),
+        overflowX: panel === null ? 0 : round(panel.scrollWidth - panel.clientWidth),
+        overflowY: panel === null ? 0 : round(panel.scrollHeight - panel.clientHeight),
+        insideViewport: box === undefined ? false : box.left >= 0 && box.right <= window.innerWidth,
+        box: box === undefined ? null : { left: round(box.left), right: round(box.right), height: round(box.height) },
+      };
+    });
+    console.log(`[#1192 settings menu in pl] ${JSON.stringify(menu)}`);
+  });
 });
