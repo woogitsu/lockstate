@@ -3687,7 +3687,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     },
   });
   hud.asideSlot.append(chromeRow);
-  hud.preferencesSlot.append(languageControl.element);
+  void languageControl;
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;
