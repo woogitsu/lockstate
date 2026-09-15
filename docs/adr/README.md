@@ -658,6 +658,77 @@ the enumeration catches it, and it has to be run by whoever can actually see the
 open pull requests — when the author cannot, the number is provisional until
 someone else checks.
 
+## A global anchor pin in an ADR is advisory, and does not date what is below it
+
+**At least a dozen ADRs open by declaring that every anchor beneath them was
+read at one named commit** — ADR 0038's *"Every `file:line` below is pinned to
+`main` @ `54418b6` (v0.0.121)"*, ADR 0022's and ADR 0023's *"every `file:line`
+below resolves there unless the text says otherwise"*, ADR 0008's *"Read at
+`792bf94` (v0.0.121); every migration named below was opened on that tree"*,
+ADR 0103's *"Every anchor below was read at `491fcdce` (v0.0.541)"*. A reader
+meeting one of those sentences reasonably concludes that the numbers under it
+are history, that a drifted anchor there is not a defect, and that there is
+nothing to check.
+
+**That conclusion is false, and this section exists so that nobody reaches it
+again.** Pull request #1229 declined to sweep 688 citations on the strength of
+those declarations and reported the doubt against itself. The check it named
+and could not run — `git log -p` over a pinned ADR, asking whether any commit
+changed an anchor *under* its pin without moving the pin — was run on
+2026-09-15 over every ADR carrying such a declaration. **One such commit would
+make a pin advisory. There are at least seven, across six documents and three
+weeks, and two of them are commits whose entire subject is re-anchoring.**
+
+| ADR | its pin, verified present at the commit's parent | the commit | what happened below it |
+| --- | --- | --- | --- |
+| 0038 | *"Every `file:line` below is pinned to `main` @ `54418b6`"* | `374065b2`, `0c7b8455` (2026-08-27) | anchors re-aimed against **`83d9616`, a different and later tree** — and the ADR still says so today, two bullets carrying *"as of `83d9616`"* beneath a header pinning everything to `54418b6` |
+| 0020 | *"Read at `792bf94` … every `file:line` below was opened on that tree"* | `374065b2` (2026-08-27), `a7aa52ed` (2026-08-28) | same sweep, plus a feature commit moving an anchor in passing |
+| 0022 | *"every `file:line` below resolves there unless the text says otherwise"* | `fbf4709b` (2026-08-28), `907b4311` (2026-09-06) | `hud.ts:153` → `:154`, then eleven more anchors re-aimed nine days later |
+| 0023 | same sentence | `689f7d58` (2026-09-06) | `hud.css:786-789` → `:2770-2815`, and **the replacement text says so out loud**: *"re-anchored 2026-09-06 -- `:786-789` was already an unrelated rule, `[data-action-failed]`'s outline, before this window opened"* |
+| 0025 | same sentence | `f0c7fe9c` (2026-09-06) | `icon.ts:68` → `:79`, `hud.ts:270` → `:322` |
+| 0008 | *"every migration named below was opened on that tree"* | `002e1183` (2026-08-27) | the second shape, and the worse one: **new** anchors added below the pin, read against a much later tree and silently inheriting a date at which they were never read |
+
+In each row the pin sentence was read out of the commit's parent and out of the
+commit itself, unchanged in both, and every edit listed sits below the pin's own
+line. A candidate that did not survive that check is recorded rather than
+counted: `80b845cd` moves an anchor in ADR 0029 **above** its pin, which the pin
+never covered.
+
+**The corpus already contained the finding from the other side and nobody
+joined the two.** ADR 0005 re-checked three of ADR 0038's pinned anchors at
+`54418b6`, found all three exact, re-checked them sixty-nine commits later and
+found **two already drifted**, concluding *"naming the commit does not stop a
+citation rotting"*. That is the code moving under a pin, which is what a pin is
+for. This section is about the other direction — **the document moving under its
+own pin** — and together they say the whole thing: the pin neither freezes the
+code nor is honoured by the editors.
+
+### What follows, and what a writer should do instead
+
+- **A global pin does not make a stale anchor beneath it correct.** Do not
+  decline to check one because the header says it was read at a commit. Roughly
+  half of `docs/adr/`'s flagged anchors are under such a header and they are
+  **unswept, not dated**.
+- **It is worse than an unpinned document, not better**, which is the whole
+  reason this is written down: an unpinned stale anchor invites a reader to
+  check it, and a pinned one tells them not to.
+- **Date a sentence, not a document.** The forms this corpus has that do work
+  are the per-sentence ones: a **quotation** of the code, which carries its
+  subject with it and is gated by
+  `tests/foundation/adr-quotation-verbatim-contract.test.ts`; a **bare
+  basename** (`hud.ts:153`), which is this corpus's form for an anchor offered
+  as history and which
+  `tests/foundation/documentation-source-anchor-contract.test.ts` deliberately
+  declines to read; and a **named commit attached to the individual anchor**
+  (ADR 0038's own *"`kernel.ts:237-242` as of `83d9616`"*), which stays true
+  when the paragraph beside it is re-anchored.
+- **Nothing mechanical is proposed here and that is deliberate.** A test cannot
+  tell whether an anchor landed on the code its sentence means —
+  `documentation-source-anchor-contract.test.ts` says so in its own docblock —
+  so it cannot tell a pin that is honoured from one that is not either. What is
+  checkable is the pair that file already checks. The repair for a pin is
+  therefore a convention, stated here, and not a gate.
+
 ## An amendment to an accepted ADR: what form it takes, and when it needs a queue row
 
 **Decided 2026-08-27. This section is the rule, and like the rest of this file it
