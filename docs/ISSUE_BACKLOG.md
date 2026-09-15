@@ -25,6 +25,39 @@ its own status as "**Proposed, 2026-09-13. Not self-approved.**"
 (`docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md:19`), and not
 `docs/ARCHITECTURE.md`.
 
+> **The grounds clause in that paragraph stopped being true on the day it was
+> written, and the paragraph is kept as it stands rather than rewritten**
+> (`docs/AGENT_WORKFLOW.md` §4: mark both directions). ADR 0112's `## Status`
+> block now opens *"**Accepted by the owner on 2026-09-13, in five rulings, two
+> of which went against this document's recommendation.**"*, so the reason given
+> above for the level-5 placement — that the delivery is not an accepted ADR —
+> no longer holds of ADR 0112. The rulings landed in `a0ffd01b`, *"docs: record
+> the owner's five rulings on ADR 0112, two of them against the
+> recommendation"*, which edited this section in the same commit: the paragraph
+> below beginning **"The owner ruled on ADR 0112"** is that edit, and it is the
+> current reading of what may be built from these documents.
+>
+> **The line number moved with the status and is corrected here rather than in
+> place.** The `Proposed, 2026-09-13. Not self-approved.` line was not deleted —
+> that ADR keeps it, explicitly labelled as the state of the document before the
+> rulings — but it is no longer that file's status statement, and it is no
+> longer at the anchor quoted above. `:19` is now the opening line of the
+> acceptance; the older line reads
+> `docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md:65` today, and
+> the durable citation is the quoted sentence rather than either number.
+>
+> **What this correction does not settle, and is not an agent's to settle.** An
+> accepted ADR 0112 moves the ADR; it does not by itself decide which rung
+> `docs/VISUAL_IDENTITY.md` and `docs/IDENTITY_V5_ROLLOUT.md` occupy, since
+> neither is an ADR and neither is `docs/ARCHITECTURE.md`, and the list above
+> has no rung for "the repository's reading of an accepted ADR". The tension a
+> later reader should see rather than resolve: `AGENTS.md` names
+> `docs/VISUAL_IDENTITY.md` as one of the three documents to open instead of the
+> delivery, and `.agents/rules/lockstate.md` requires reading it before touching
+> `src/ui/`, which is a stronger obligation than level 5 describes. **Where
+> these two documents sit is the owner's to rule on, and is recorded here as
+> open rather than decided.**
+
 The delivery itself agrees with this placement rather than contradicting it.
 `docs/design/2026-09-13-identity-v5/DOKUMENTACJA/01-BRIEF-I-DECYZJE.md`'s own
 "Hierarchia źródeł" section ranks its sources as "Aktualny brief właściciela →
