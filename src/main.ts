@@ -9,6 +9,7 @@ import {
   saveLayoutSettings,
   saveThemeSettings,
   saveAccessibilitySettings,
+  subscribeToSettingsChanges,
 } from './input';
 import {
   type LanguagePreference,
@@ -3772,6 +3773,54 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       })();
     },
   });
+  /*
+   * A second tab of the same prison follows this one (#1199).
+   *
+   * `storage` is the browser's own cross-document notification and it does not
+   * fire in the document that performed the write, so each of these three is
+   * the *other* half of a preference change: the tab that pressed the control
+   * has already persisted and painted it above, and this is every other tab
+   * being told. Nothing here persists, which is what stops two tabs writing
+   * the same key back and forth.
+   *
+   * **Three of the four preference keys, and the fourth is a decision rather
+   * than an omission.** `lockstate.settings.language` has no handler: the one
+   * `Localizer` this page owns was constructed before anything mounted and
+   * nineteen modules under `src/ui/` captured it, so there is no path that
+   * hands a running interface a different one -- which is the same finding
+   * that makes the local control reload the page
+   * (`docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`), and a
+   * reload is not something to do to a tab the player is not looking at.
+   * `docs/adr/drafts/what-a-second-tab-follows.md` carries the reasoning.
+   *
+   * Each handler is the same apply-path the control beside it uses, minus the
+   * write:
+   *
+   *   - the theme through `adopt` rather than `select`, so the controller
+   *     settles and `onChange` moves the button, and nothing is stored;
+   *   - the interface scale through `applyAccessibilitySettings` and
+   *     `setScale`, with `refreshLayout()` after it for the reason the local
+   *     path has one -- `--ui-scale` multiplies every panel limit and writing
+   *     a custom property fires no event the shell could hear;
+   *   - the layout through `HudHandle.setLayout`, which is documented as the
+   *     path for "a preference restored after mount" and deliberately does
+   *     *not* report back through `onLayoutChange`.
+   */
+  subscribeToSettingsChanges(globalThis.window, {
+    onThemeChange: (settings) => {
+      themeController.adopt(settings.preference);
+    },
+    onAccessibilityChange: (settings) => {
+      accessibility = settings;
+      applyAccessibilitySettings(document.documentElement, accessibility);
+      displayScale.setScale(accessibility.uiScale);
+      hud?.refreshLayout();
+    },
+    onLayoutChange: (settings) => {
+      hud?.setLayout(settings);
+    },
+  });
+
   hud.asideSlot.append(chromeRow);
   hud.preferencesSlot.append(languageControl.element);
 

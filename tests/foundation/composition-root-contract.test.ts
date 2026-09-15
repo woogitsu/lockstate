@@ -197,6 +197,12 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       "Issue #959, and the other half of the same seam, pinned separately for the reason `editHistory`'s two halves are: they are two wirings in two calls and either can be deleted alone. `BuildTool.standDown` forwards the request and decides nothing -- `hud.ts`'s attachment stands **both** panels down unconditionally, because at most one of the two tools is ever armed and neither the tool nor the scene can know which -- so the composition root is the only place the request can be joined to the panels at all. `MountHudOptions.toolStandDown` is optional, so deleting this argument compiles and the HUD registers no sink; `BuildTool.standDown()` then drops the request and Escape goes back to being a key that cancels a drag and nothing else. `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own and `tests/unit/ui-hud-tool-arming.test.ts` calls `mountInterface` with a double, so both stay green either way. Measured on this branch: with this spread deleted, `tsc` is clean and `pnpm test` is fully green.",
   },
   {
+    what: 'a preference another tab wrote reaches this one',
+    source: 'subscribeToSettingsChanges(globalThis.window, {',
+    reason:
+      'Issue #1199. Nothing in `src/` bound the `storage` event, so a second Lockstate tab never followed the first: theme, interface scale and HUD layout were per-tab until a reload. `subscribeToSettingsChanges` is unit-tested against a fake target in `tests/unit/input-cross-tab-settings.test.ts` and every handler it calls is an apply-path with its own tests, so the seam can be entirely correct and joined to nothing -- which is the #82/#199/#146 shape this file exists for, and is exactly the state this tree was in before the fix. Deleting this one call restores the defect with `tsc` clean and the whole `node` suite green; only `tests/browser/ui-cross-tab-preferences.spec.ts`, in the browser job, would otherwise notice. The decision about which keys it carries (and that the language key is deliberately not one of them) is `docs/adr/drafts/what-a-second-tab-follows.md`.',
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:
