@@ -90,7 +90,9 @@ const SAVE_SCHEMA_PATH = resolve(REPOSITORY_ROOT, 'src/persistence/save-schema.t
  * fix that makes it compile then fails the assertion that names the schema.
  */
 function unionMembers<U extends string>() {
-  return function pin<const T extends readonly U[]>(members: T & ([U] extends [T[number]] ? unknown : never)): readonly string[] {
+  return function pin<const T extends readonly U[]>(
+    members: T & ([U] extends [T[number]] ? unknown : { readonly __UNION_MEMBER_MISSING_FROM_THIS_LIST__: Exclude<U, T[number]> }),
+  ): readonly string[] {
     return members;
   };
 }
