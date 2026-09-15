@@ -62,14 +62,17 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * ```
  * SAVE POINT: 1880 action.carry travelling job=assigned/dropoff depot=0 pantry=0
- * CONTINUOUS:        job completed at 1918, depot=4
+ * CONTINUOUS:        job completed at 1921, depot=4
  * RESTORED at load:  1880 action.carry idle   job=assigned/dropoff
  * RESTORED:          1881 action.use-toilet -- walks off holding four bricks
  *                    job still `assigned` at 2280, 400 ticks later
  *                    resumes 2961, completes 3061
+ *
+ * WITH THE FIX:      restored completes at 1941 -- one reconsideration cycle
+ *                    behind continuous play, inside decision 5's bound of 40.
  * ```
  *
- * **1,143 ticks against ADR 0093 decision 5's corrected bound of 40**, and the
+ * **1,140 ticks against ADR 0093 decision 5's corrected bound of 40**, and the
  * goods were in the carrier's hands for every one of them: `pantry` 0 and
  * `depot` 0 the whole way, because `withdrawReserved` had already run. The
  * issue's field report measured 380 on a save taken *inside* a work block,

@@ -809,7 +809,7 @@ here rather than in a commit message nobody keeps:**
    exactly, never statistically: a save taken mid-drop-off at tick 1,880, 80
    ticks past the work block that started the errand, finished the errand in
    continuous play and, restored from that same bundle, sent the carrier to the
-   lavatory holding four bricks and left the job `assigned` for **1,143 ticks**
+   lavatory holding four bricks and left the job `assigned` for **1,140 ticks**
    against note 3's bound of 40. The fix consults the carrier's own active job
    **before** the category gate and exempts a resuming carrier from the owner's
    need-threshold amendment of 2026-09-02, which binds the prisoner being
