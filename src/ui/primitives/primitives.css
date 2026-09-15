@@ -31,6 +31,17 @@
   text-transform: uppercase;
   color: var(--text-muted);
   line-height: var(--label-line-height);
+  /* One line unless a placement says otherwise, and several placements do say
+     otherwise in `hud.css` by overriding this declaration by name
+     (`.hud-rooms__note`, `.hud-build__note`). It was removed here in passing by
+     #1192 -- a commit about `.ui-tab__label`, which is a different class -- and
+     the removal cost 13.19px of strip height: `.ui-stat__label` is an eyebrow,
+     so a chip squeezed by a badge broke its label into two line boxes and the
+     status strip pushed the world's top edge down with it
+     (`ui-strip-badged-width.spec.ts:221`, measured 93.88px against 80.69px at
+     1280x800). Restored, with the dependency named so the next removal has to
+     answer for it. */
+  white-space: nowrap;
 }
 
 /* `hidden` must actually hide.
