@@ -601,7 +601,61 @@ evidence; it is not the same evidence.
 
 ## 15. What this pass found, and what was done with each
 
-<!-- FINDINGS -->
+**Nothing here was repaired inside the acceptance pass.** #1164's constraint is
+that a stage 8 agent is measuring, not fixing; each row says where the finding
+went instead.
+
+### 15.1 The 200 % harness had been deleted, and the number outlived it
+
+The repository's most-cited accessibility figure — "23 of 36" in two documents
+— rested on a spec `d7aab8d8` says in its own message it did not commit.
+**Done:** `tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`, the
+harness written again and committed, as a playtest so that no gate collects it
+and no assertion pins the failing set in place. §12 and §13 of that file's
+docblock say why each of those two choices is the way it is.
+
+### 15.2 A second Lockstate tab does not follow the first
+
+`03-INTERAKCJE-I-URZADZENIA.md:34` describes ordinary tabs picking up
+preference changes through the `storage` event. **Nothing in `src/` binds that
+event** — grepped for `addEventListener('storage'` and for the string across
+the tree. So theme, interface scale, layout and language changes are per-tab
+until each tab is reloaded.
+
+This is a divergence from the delivery, not a regression and not a broken
+promise: no player-visible sentence in this repository says otherwise, and the
+theme controller's own docblock (`src/ui/theme.ts:140-147`) is explicit that a
+refused write must still let the switch happen, which is a within-tab
+guarantee. **Done:** filed as an issue rather than fixed; §10 records it.
+
+### 15.3 `pnpm verify:assets` fails on a clean worktree of this branch, for an
+environment reason
+
+Recorded because the failure is loud and the cause is not: the Git LFS payloads
+under `public/assets/actors/` were pointers in this worktree, and the validator
+refuses to validate a pointer — correctly, in its own words, *"a pointer-only
+checkout cannot prove anything about the art"*. `git lfs checkout` materialised
+91 objects (94 MB) from the **local** object cache, with no network fetch, and
+the gate then passed. **Not a defect and not filed**; it is what CI's
+`git lfs pull --include=` step exists to prevent, and it is written down here so
+the next agent in a fresh worktree loses a minute rather than an hour.
+
+### 15.4 Two things this pass nearly reported that were not true
+
+Both were caught by opening the file rather than the one it was reached from,
+and both are recorded in §4 and §5 rather than deleted: reset-by-double-click
+and Home/End on the separator are **both implemented and both gated**. The draft
+had inferred their absence from `src/ui/hud/layout-shell.ts`, which composes the
+primitive that carries them.
+
+### 15.5 Playwright's reported line numbers are not this repository's
+
+A reader checking a `file:line` below against a gate log will find they
+disagree, by a few hundred lines in the large specs: the runner reports
+positions in the transformed source, so `app-shell.spec.ts`'s #88 sweep is
+`:4660` in the file and `:4301` in the log. **Every line number in this document
+is the file's**, read with `sed -n 'Np'` on `584f5ca1`. Recorded, not filed —
+it is a property of the toolchain, not a defect.
 
 ---
 
@@ -610,4 +664,54 @@ evidence; it is not the same evidence.
 The criterion, in the delivery's words, clause by clause, with a verdict on
 each. This is the list #1164 asks to be stated plainly.
 
-<!-- CRITERION-TABLE -->
+> Każda obecna akcja ma osiągalną drogę; żadna odmowa nie wygląda jak sukces;
+> zapis jest prawdziwy i odporny na istniejące scenariusze konfliktu; resize nie
+> wydaje komend światu; telefon daje dostęp do mapy; motywy zachowują kontrast i
+> fokus; docelowe testy oraz build przechodzą. **Pokaż wyniki testów, nie tylko
+> screenshot.**
+
+| Clause | Verdict | Where |
+|---|---|---|
+| *Każda obecna akcja ma osiągalną drogę* | **NOT SATISFIED** | §13 |
+| *żadna odmowa nie wygląda jak sukces* | Satisfied | §6 |
+| *zapis jest prawdziwy i odporny na istniejące scenariusze konfliktu* | Satisfied | §9 |
+| *resize nie wydaje komend światu* | Satisfied | §2 |
+| *telefon daje dostęp do mapy* | Satisfied | §13 |
+| *motywy zachowują kontrast i fokus* | Satisfied | §11, and below |
+| *docelowe testy oraz build przechodzą* | Satisfied locally, **unblessed by CI** | §14 |
+| *Pokaż wyniki testów, nie tylko screenshot* | Satisfied by this document | §14 |
+
+### The two that are not satisfied, in full, so neither can be skimmed past
+
+**1. "Every present action has a reachable route" is false at 375×812.**
+`DismissAlert` is one of the seventeen commands in
+`src/simulation/protocol/commands.ts`; its only issuing site is the alerts list
+row (`src/main.ts:2897`); the alerts list lives inside `.hud__corner`; and
+`.hud__corner` is `display: none` below 720 px (`src/ui/hud/hud.css:4704`).
+Measured, not read: `tests/browser/unplaced-surfaces.spec.ts:226` asserts the
+string `'desktop: flex / tablet: flex / phone: none'`.
+
+**This is an open owner question from stage 5 and stage 8 does not close it.**
+What stage 8 adds is that the delivery's acceptance criterion depends on the
+answer, at one of the three device tiers the delivery itself names in
+`03-INTERAKCJE-I-URZADZENIA.md:44`.
+
+**2. Article 8's third element is unmet, and it is adjacent to a clause that
+is satisfied.** *"Motywy zachowują kontrast i fokus"* asks for two things and
+this repository holds both — contrast **computed** rather than eyeballed, in
+both themes (`tests/unit/ui-design-tokens.test.ts:429`, `:452`, `:460`, `:493`,
+`:548`, `:581`) and a focus ring held at 3:1 against every surface (`:603`) on
+every interactive primitive (`:812`). Constitution article 8 as
+`docs/VISUAL_IDENTITY.md:161` records it asks for **three**: *"contrast measured
+rather than assumed, visible focus, 200 % text"*. The third fails (§12).
+
+So a reader who checks only the closing criterion will find the theme clause
+green and will not learn that the article behind it is two-thirds met. That is
+why this section separates them.
+
+### What the criterion does not reach, and this document does
+
+Three of the thirteen areas have no clause in the closing criterion at all —
+collapse, slider/reset and schedule — and one, Embed, names a surface this
+repository does not have. A pass that worked only the criterion would report
+nothing about any of them. §§3, 4, 8 and 10 are those rows.
