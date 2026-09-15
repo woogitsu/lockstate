@@ -12,6 +12,7 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
   TILE,
 } from './playtest-harness';
@@ -1769,6 +1770,12 @@ test('act M: the interaction budget for one usable cell', async ({ page }) => {
   note(`[M] INTERACTIONS: walls ${wallPresses}, zoning ${zonePresses - wallPresses}, furniture ${presses.total - zonePresses}, TOTAL ${presses.total}`);
   note(`[M] plus ${transportPresses} transport presses (start/stop the clock), so ${presses.total + transportPresses} presses of any kind`);
   note(`[M] money spent: 25000 -> ${done?.treasuryMinorUnits}`);
+  // The Rooms panel is on Zones and this act is on Build, so without the
+  // navigation this line has been printing `.hud-rooms: not laid out`
+  // rather than a panel. `panelText` says so instead of hanging, which is
+  // why it survived: a stale section is silent on a read and fatal on a
+  // press. Pre-dates the 2026-09-14 intake move; the map is `hud.ts:2505`.
+  await showPanel(page, 'zones', '.hud-rooms');
   note(`[M] the Rooms panel at the end:\n${await panelText(page, '.hud-rooms')}`);
   // The Manage tab, not Overview: the Intake panel moved there on 2026-09-14
   // (`d5137d5d`). Counted through `presses` rather than through `showPanel`

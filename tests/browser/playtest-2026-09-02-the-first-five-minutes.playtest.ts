@@ -614,6 +614,10 @@ test('act 7: the whole chain end to end, and what the nine status-strip chips ex
   await page.waitForTimeout(1500);
   const furnishedTick = await currentTick(page);
   log('act7', `furnished (bed + toilet) by tick ${furnishedTick}`);
+  // Zones, not Build: `.hud-rooms` is `hud.ts:2505`'s panel, and read from
+  // the Build tab this logged `not laid out` instead of the readiness line
+  // the act asks for. Silent since long before the intake move.
+  await showPanel(page, 'zones', '.hud-rooms');
   log('act7', `Rooms panel once fully furnished (should read ready): ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
   await showPanel(page, 'manage', '.hud-intake');
