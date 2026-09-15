@@ -2885,9 +2885,27 @@ interface ControlReachability {
  *   reaches it by scrolling. Scrolling it into view and re-measuring asks the
  *   real question — "once it is on screen, can it be pressed" — instead of
  *   flagging every list that is longer than its box.
+ *
+ *   **But only the scrolls a player has, which this did not check until
+ *   2026-09-15.** It called `control.scrollIntoView({ block: 'nearest' })`,
+ *   and `scrollIntoView` scrolls every scrollport on the way up, including
+ *   `overflow: hidden` ones — which are scrollable by script and by nothing
+ *   a player can do. So the gesture that made the measurement possible was
+ *   also a gesture the player cannot make, and a control clipped out of a
+ *   hidden box was certified as pressable. `revealTheWayAPlayerCan` below
+ *   walks the same chain and moves only the boxes whose own computed
+ *   `overflow` is `auto` or `scroll`.
  * - **A `null` hit is a failure, not a skip.** `elementFromPoint` returns
  *   `null` for a point outside the viewport, so a control pushed off the
  *   edge by an overflowing layout reports here rather than silently passing.
+ *
+ *   **That sentence was false for as long as the one above it was**, and in
+ *   the same way: `src/styles.css:6` makes the window itself an
+ *   `overflow: hidden` box, and `scrollIntoView` scrolled *it* too. A control
+ *   carried off the bottom of the viewport was scrolled back on before it was
+ *   hit-tested, so it answered its own element and passed. The reveal now
+ *   reads the viewport's propagated overflow like any other box, finds
+ *   `hidden`, and leaves the window where it is.
  * - **Zero-area elements are reported, not swallowed.** An inactive tab's
  *   panel and the corner the responsive rules drop are not laid out, so there
  *   is nothing to hit-test; but "skipped" has to be a fact the caller can
@@ -2937,6 +2955,85 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       return `${name} #${ordinal}`;
     });
 
+    /**
+     * Whether a box with this computed `overflow` on one axis is one a player
+     * can scroll on that axis. `hidden` and `clip` are not: the content is
+     * outside the box and no gesture brings it in. `visible` is not either --
+     * there is nothing to scroll, the content is painted outside the box
+     * already, and the first clipping ancestor above it decides whether the
+     * player ever sees it.
+     */
+    const playerScrollable = (overflow: string): boolean => overflow === 'auto' || overflow === 'scroll';
+
+    /**
+     * Bring `node` into view using only the scrolls a player has.
+     *
+     * This is `scrollIntoView({ block: 'nearest', inline: 'nearest' })` with
+     * one thing taken away: `scrollIntoView` scrolls **every** scrollport
+     * between the node and the viewport, `overflow: hidden` ones included,
+     * because the specification tells it to. A hidden box is programmatically
+     * scrollable and is not scrollable by a finger, a wheel or a key -- so a
+     * control clipped out of one is certified reachable by a gesture the
+     * player cannot make. This walks the same chain and moves only the boxes
+     * whose own `overflow` says the player could have moved them.
+     *
+     * Innermost outwards, re-reading the node's rect at each step, because
+     * scrolling an inner box is what puts the node where the outer box has to
+     * judge it.
+     */
+    const revealTheWayAPlayerCan = (node: Element): void => {
+      for (let ancestor = node.parentElement; ancestor !== null; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const border = ancestor.getBoundingClientRect();
+        // The *client* box, which is what `scrollTop` moves content through:
+        // the border box less its borders and any scrollbar gutter.
+        const top = border.top + ancestor.clientTop;
+        const left = border.left + ancestor.clientLeft;
+        const bottom = top + ancestor.clientHeight;
+        const right = left + ancestor.clientWidth;
+
+        if (playerScrollable(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+          const rect = node.getBoundingClientRect();
+          if (rect.bottom > bottom) ancestor.scrollTop += rect.bottom - bottom;
+          else if (rect.top < top) ancestor.scrollTop += rect.top - top;
+        }
+        if (playerScrollable(style.overflowX) && ancestor.scrollWidth > ancestor.clientWidth) {
+          const rect = node.getBoundingClientRect();
+          if (rect.right > right) ancestor.scrollLeft += rect.right - right;
+          else if (rect.left < left) ancestor.scrollLeft += rect.left - left;
+        }
+      }
+
+      // And the viewport itself, on the same rule. The root's `overflow`
+      // propagates to the viewport, and falls through to `body` only when the
+      // root is `visible`; `src/styles.css:6` sets both to `hidden`, so on
+      // this page the window is a box the player cannot scroll either and
+      // nothing below this line moves. It is written out rather than assumed,
+      // because the assumption is exactly the kind that rots when a stylesheet
+      // changes.
+      const root = document.documentElement;
+      const rootOverflowY = getComputedStyle(root).overflowY;
+      const rootOverflowX = getComputedStyle(root).overflowX;
+      const bodyStyle = document.body === null ? null : getComputedStyle(document.body);
+      const viewportOverflowY = rootOverflowY === 'visible' ? (bodyStyle?.overflowY ?? 'visible') : rootOverflowY;
+      const viewportOverflowX = rootOverflowX === 'visible' ? (bodyStyle?.overflowX ?? 'visible') : rootOverflowX;
+      // `visible` on the viewport is the ordinary scrolling page: it scrolls.
+      const viewportScrollsY = viewportOverflowY !== 'hidden' && viewportOverflowY !== 'clip';
+      const viewportScrollsX = viewportOverflowX !== 'hidden' && viewportOverflowX !== 'clip';
+      const rect = node.getBoundingClientRect();
+      let byX = 0;
+      let byY = 0;
+      if (viewportScrollsY) {
+        if (rect.bottom > window.innerHeight) byY = rect.bottom - window.innerHeight;
+        else if (rect.top < 0) byY = rect.top;
+      }
+      if (viewportScrollsX) {
+        if (rect.right > window.innerWidth) byX = rect.right - window.innerWidth;
+        else if (rect.left < 0) byX = rect.left;
+      }
+      if (byX !== 0 || byY !== 0) window.scrollBy(byX, byY);
+    };
+
     const measured: number[] = [];
     const unreachable: { control: string; hit: string }[] = [];
 
@@ -2945,7 +3042,7 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       if (initial.width === 0 || initial.height === 0) return;
       measured.push(index);
 
-      control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      revealTheWayAPlayerCan(control);
 
       // Re-read after the scroll: that is where the control now is.
       const rect = control.getBoundingClientRect();
