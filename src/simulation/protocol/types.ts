@@ -1103,6 +1103,53 @@ export const statusCountsSchema = z
      */
     treasuryOverdraftFloorMinorUnits: z.number().int().safe().max(0).optional(),
     /**
+     * **Whether this prison is "fresh, unfurnished"** -- ADR 0017's
+     * "Amendment, 2026-09-01: a starter rung for a fresh, unfurnished prison"
+     * §2, in that section's own words: *"Defined as
+     * `RoomInstanceRegistry.totalResidentCapacity === 0` -- the summed
+     * `residentCapacity` of every registered room instance, whatever its
+     * room-catalog id"*. The predicate `Treasury.floorFor` selects the starter
+     * deliveries/hiring rung on, published so the host judges a press against
+     * the floor the command handler will actually enforce.
+     *
+     * **It exists because the host had been re-deriving it and getting a
+     * different answer.** `src/ui/hud/projection.ts`, `build-panel.ts` and
+     * `staff-panel.ts` each computed `counts.roomCapacity === 0`, and
+     * `roomCapacity` is accumulated over `collectRoomInstances`, a fan-out
+     * over the *content* room registry's catalogue ids
+     * (`docs/HUD_PROJECTIONS.md` gap 15). It is therefore a **sub-sum** of
+     * `totalResidentCapacity` over non-negative terms, so
+     * `roomCapacity === 0` is implied by `totalResidentCapacity === 0` and
+     * does not imply it: the host called a prison fresh in strictly more cases
+     * than the simulation did, and used the shallower starter floor where the
+     * worker used the mature one. Measured on a restored session carrying one
+     * off-catalogue room instance with a bed in it: registry 1, published
+     * `roomCapacity` 0, and at a balance of -1,200 the FUNDS badge read
+     * `0 left` while the same 40-minor-unit press through
+     * `createSessionCommandHandler` was accepted and landed at -1,240.
+     * `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+     * is that prison, and is the gate.
+     *
+     * `roomCapacity` above is **not** withdrawn and is not this: it is the
+     * Rooms readout's total, a different true fact, and the two are no longer
+     * asked the same question.
+     *
+     * **Required rather than optional**, unlike
+     * `treasuryOverdraftFloorMinorUnits` above, and the difference is what
+     * absence would mean. An absent *floor* says "no facility is known", which
+     * is a real state a badge can render. An absent *predicate* has no honest
+     * reading: the host would have to guess a floor, and either guess is a
+     * wrong answer to a question the payload was supposed to have settled.
+     * `.strict()` then does the work the optional field forgoes -- a
+     * projection that stopped publishing it is rejected as `invalid-payload`
+     * rather than quietly falling back.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason spelled out on `treasuryMinorUnits` above: one constant covers
+     * every projection in `src/simulation/presentation/`.
+     */
+    isFreshUnfurnishedPrison: z.boolean(),
+    /**
      * What the in-game day in progress has earned so far, in the same minor
      * units (#29, ADR 0017 decision 3).
      *
