@@ -106,7 +106,7 @@ design. That gap is now closed except where noted:
 
   Two limits of that stand-in, because they are what a reader of this bullet
   needs next. **It does not cast.** It accepts `'prison-1'` as a prison id
-  (`tests/unit/persistence-cloud-supabase-client.test.ts:430`) where the real
+  (`tests/unit/persistence-cloud-supabase-client.test.ts:475`) where the real
   `prisons.id` is `uuid` and the database refuses it -- #338. That is one
   concrete instance of this bullet's own warning that a fake tests the fake,
   and it is named here so the caution reads as a live risk rather than a

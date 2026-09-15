@@ -325,7 +325,7 @@ here rather than restated from memory:
 
 - *"Nie mów „zapisano", zanim zapis zostanie potwierdzony."* — do not say
   "saved" before a write is confirmed. `save.status.saved`
-  (`src/content/default-locale-en.ts:3137`, "Saved (generation
+  (`src/content/default-locale-en.ts:3400`, "Saved (generation
   {generation})") already ships only after a confirmed write; see
   `docs/PERSISTENCE.md` for the save/load contract this rests on.
 - *"Nie mów „wolne miejsce", jeśli znana jest wyłącznie liczba łóżek."* — do
@@ -335,8 +335,8 @@ here rather than restated from memory:
   rather than what is fine".
 - *"„Brak incydentów" i „brak danych" to różne stany."* — "no incidents" and
   "no data" are different states. `hud.alert.event.incidents.all-clear`
-  (`src/content/default-locale-en.ts:1618`) and
-  `hud.alert.event.incidents.all-clear-after-lapse` (`:1669`) already
+  (`src/content/default-locale-en.ts:1840`) and
+  `hud.alert.event.incidents.all-clear-after-lapse` (`:1891`) already
   distinguish a handled incident from one that expired unhandled and hurt
   everyone in it — the distinction issue #914 forced.
 
