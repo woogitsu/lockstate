@@ -570,6 +570,51 @@ caused it; it is answered by guards hired *after* it starts, inside the
 600-tick `responseDeadlineTicks`. That is coherent play rather than a defect, but
 it is a consequence of a single sector and it changes when a second one exists.
 
+> **Two sentences in the paragraph above are false, and they are marked rather
+> than overwritten** (`docs/AGENT_WORKFLOW.md` §4) **because the false step is
+> the finding, not a typo.** Re-established 2026-09-15 on `2559eb14`.
+>
+> **First, the pool is named wrongly, and the wrong name is what makes the
+> rest read as plausible.** Neither system draws from `unassignedGuardIds()`
+> any more. Since ADR 0053 both draw from `claimableGuardIds` -- that pool
+> filtered to post-eligible roles -- `DeploymentSystem.assignUnassignedGuards`
+> at `src/simulation/security/deployment-system.ts` and
+> `IncidentResponseSystem` at `src/simulation/incidents/response-system.ts`,
+> each with a comment saying so in the same words. `unassignedGuardIds()` is
+> deliberately *not* narrowed (`src/simulation/security/post-eligibility.ts`:
+> *"A prison whose roster holds a nurse and no guard should read three staff,
+> one of them unassigned, and nobody available to guard"*), so the two counts
+> genuinely differ and the paragraph names the one neither system reads.
+>
+> **Second, *"exists exactly when"* is a biconditional and only one direction
+> of it holds.** A shortfall surviving a deployment pass does imply an empty
+> claimable pool -- `assignUnassignedGuards` fills posts until `shortage <= 0`
+> or the pool runs out. An empty pool does
+> **not** imply a shortfall, because `getCoverageReport` publishes
+> `shortage: Math.max(0, required - assigned)` and posting is what drives
+> `assigned` up: a prison that hires **exactly** its requirement reads
+> `shortage 0` and has **nothing left to claim**, both at once. Measured here,
+> seed `0x893`, twelve prisoners over one bed so the sector asks for two: two
+> hires publish `required: 2, assigned: 2, shortage: 0`, the Staff panel badges
+> the prison **`Covered`**, the claimable pool is **0**, and across sixteen
+> in-game days that prison **resolved 0 incidents, let 9 lapse, dispatched 0
+> responders and found 0 contraband, with `routeFailures: 0`** -- so nothing
+> failed to *reach* an incident; nothing was ever sent. Six hires at the same
+> seed resolve all ten and let none lapse. The ladder is on the unmerged branch
+> `measure/893-coverage-and-response-draw-from-one-pool`; read it as a draft,
+> and the figures above are the ones re-run on this commit.
+>
+> **So *"coherent play rather than a defect"* rested on a reader picturing a
+> prison that is visibly short, where the panel is already telling the player
+> to hire.** The prison above is being told the opposite. How many guards it
+> actually needs is stated nowhere a player can read -- the thresholds are
+> `required + 1` to search, `required + 2` to answer a severity-3 assault and
+> `required + 4` for a severity-8 riot. **Whether that should change is not
+> settled here**, and it cannot be: the replacement for a sentence the panel
+> says to a player is the owner's under `AGENTS.md`'s fourth exclusion. What is
+> settled is that this paragraph may not go on saying the two conditions are
+> the same condition.
+
 ## Scale
 
 `tests/unit/incident-scale.test.ts` drives 30 simultaneous sector riots
