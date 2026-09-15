@@ -393,9 +393,11 @@ rather than assumed:
   anywhere in this tree; `defaultMessageCatalogEn` carries exactly **two**
   plural-form entries and both are English-only demonstration values
   (`src/services/localization/default-catalog.ts:25`, `:29`); and
-  `tests/foundation/second-locale-contract.test.ts` pins the 24 flat
-  `{count}` messages (see "Not done here" below) that would each need real
-  plural forms — including a
+  `tests/foundation/second-locale-contract.test.ts` pins the flat
+  `{count}` messages by name in `FLAT_MESSAGES_WITH_COUNT` (see "Not done here"
+  below) — **the count is deliberately not repeated here; it said 24 while the
+  correction three paragraphs down already said 27** — that would each need
+  real plural forms — including a
   Polish `few`/`many` split — before a Polish catalog could resolve them
   correctly. This is genuinely outstanding work, not a restatement of
   something already built.
@@ -444,19 +446,20 @@ locale is authored, and no translation vendor process is defined yet.
 Two things the infrastructure owes a translator, recorded rather than fixed
 because both mean authoring player-visible copy:
 
-- **24 messages interpolate `{count}` into a flat string** (22 when this
-  section was last corrected, 21 when first counted; `hud.alert.occurrences`
-  arrived with #754 and is a `×` formula like the other two, not a sentence).
-  **Re-measured while writing the 2026-09-13 identity-delivery section
-  above**: `FLAT_MESSAGES_WITH_COUNT` in
-  `tests/foundation/second-locale-contract.test.ts` currently pins 24 keys,
-  not 22 — this paragraph is the sentence `docs/AGENT_WORKFLOW.md` §4 warns
-  about, a tally that rots on the next addition and not on the next edit
-  here. English reads correctly; Polish needs `few` and `many` for 2, 3, 4,
-  22 … and a translator cannot add a form to a key that has none. Pinned in
-  that same file so the list cannot grow unnoticed. Only 2 of 644 messages
-  are plural entries today (`defaultMessageCatalogEn.messages` — this said
-  591; re-measured the same pass).
+- **Some messages interpolate `{count}` into a flat string**, and the number
+  is no longer written here. It has rotted four times — 21 → 22 → 24 → 27 —
+  and on 2026-09-15 this file said **24** in three places and **27** in a
+  fourth, all four in the same document, with the assertion pinning 27.
+  `FLAT_MESSAGES_WITH_COUNT` in
+  `tests/foundation/second-locale-contract.test.ts` is the list, by key, and
+  its `toEqual` is the only place the set is stated; a key added without an
+  entry fails there. English reads correctly; Polish needs `few` and `many`
+  for 2, 3, 4, 22 … and a translator cannot add a form to a key that has
+  none. **Exactly two keys in the English catalogue are plural entries**
+  (`save-slots.available` and `save-slots.over-capacity`), which the same file
+  asserts as a floor beside a floor on the catalogue's total size, so the
+  denominator is stated there and not here — it has been written as 591 and
+  as 644 in this bullet alone.
 - **2 accessible names are assembled in code** from a localized word, a
   hard-coded `": "` and another element's text. Rule 4 above forbids it;
   the same gate pins both sites.
