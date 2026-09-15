@@ -42,6 +42,49 @@ This is the tier almost everything load-bearing here sits in, which is different
 from ADR 0023 and deliberate: this ADR decides the shape of code in this tree,
 not what other games do.
 
+> **That sentence is a global pin; it is advisory, and the commit that broke it
+> here was a re-anchoring pass (2026-09-15).** `docs/adr/README.md`'s section on
+> anchor pins carries the evidence that such a pin neither freezes the code nor
+> is honoured by editors. In this document the offender is `e6557d2a`
+> (2026-08-27) — *"Re-anchor ten ADRs' rotted code citations, and name what
+> actually rotted them"* — which moved
+> `src/simulation/runtime/new-session.ts:156-158` to `:244-246` at `§Two things
+> the single capacity field is being asked to be`, **below this line**, leaving
+> the pin untouched. Its own message names the rot and does not name the pin.
+> The replacement it installed has itself drifted: `:244-246` is
+> `ActorIdentityRegistry` today, and `DEFAULT_PRISONER_CAPACITY` /
+> `DEFAULT_GUARD_CAPACITY` are elsewhere again — **a re-anchor is no more
+> durable than the anchor it replaced**, which is `docs/AGENT_WORKFLOW.md` §4's
+> *"a correction is no more durable than the claim it corrected"* in its own
+> right. `9e3727a0` and `08d3e620` also edit below this line, and add no
+> anchors.
+>
+> **Re-read 2026-09-15, all 34 `file:line` citations below this line opened.
+> Five still land on what their sentence names**: `components.ts:19`
+> (`INTAKE_STAGES`), `fixed-step-clock.ts:29`, `build-overlay.ts:30-39`,
+> `room-instance-registry.ts:8-19` and `zoning.ts:48-65`. The remaining
+> twenty-nine do not, and **they are deliberately left where they are.** This
+> ADR's §*Context* is a diagnosis of the tree **before** its own decisions
+> landed — *"`RoomZoningService.zone` registers every instance with
+> `capacity: 0`"*, *"`RoomInstance.capacity` gates intake's residency question
+> and actions' concurrent use question"* — and all six phases shipped. Decision
+> 3 split that one field, so `RoomInstance` now carries `residentCapacity` and
+> `concurrentUseCapacity` (`room-instance-registry.ts:84`, `:97`) and there
+> is no single `capacity` to re-aim an anchor at. **Re-aiming a dead diagnosis
+> makes it read as current**, which is why #1229 left ADR 0040's twenty anchors
+> standing. Read every anchor below as of `f3ffe6d`.
+>
+> **Two of the five that still land carry a claim that has inverted, and both
+> inversions are this ADR's own doing.** §*What this decision does not settle*
+> says `room-instance-registry.ts:8-19` *"currently states that
+> `objectCapabilities` are 'stated up front rather than derived from a placement
+> system that doesn't exist'; phase 1 falsifies that sentence and owes it an
+> edit"*, and that `zoning.ts:48-65` *"is owed an edit in phase 1"*. **Both
+> edits were paid.** That docblock now opens *"What changed, and what the
+> previous version of this comment claimed"* and records the falsification; the
+> zoning one now documents the persisted rectangle decision 6 pays for. The
+> anchors are exact and the debt is discharged.
+
 **Tier E — external, and second-hand.** The comparable-game findings are used
 in three places and only three: RimWorld's bed-width rule, Prison Architect's
 `NumSlots`, and the "degrade, never hard-fail" pattern. They come from the
@@ -1264,6 +1307,20 @@ what the old rule said, and `room.yard` is what it said it about: the only room
 type in `src/content/room-catalog.ts` that requires no object at all, and
 therefore the only genuinely unbounded room. Nothing is authored to make that
 true; it falls out.
+
+(**"Unbounded" expired and the derivation it names did not — marked rather than
+overwritten, 2026-09-15.** The code this paragraph describes read
+`if (capability === undefined) return Number.POSITIVE_INFINITY;`. It now reads
+`if (capability === undefined) return openGroundCapacityOf(instance);`
+(`src/simulation/prisoners/room-instance-registry.ts:610`, the helper at
+`:329`), so a capability-free action is bounded by **the room's own ground**
+rather than by nothing. That is this section's own argument carried one step
+further — *"the honest reading of an undefined ceiling is 'this rule does not
+bound it'"* became *"this rule does not bound it; the floor does"* — and the
+sentence it refutes is *"the only genuinely unbounded room"*, not the
+exemption-to-derivation move the heading is about.
+[ADR 0029](./0029-concurrent-room-use-claims.md)'s 2026-08-26 amendment quotes
+the old line and is corrected in the same pass.)
 
 Two other `room-catalog-id` actions named no capability and were **not**
 unbounded rooms at all, so leaving them unnamed would have handed them the
