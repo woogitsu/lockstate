@@ -17472,13 +17472,35 @@ entire history"* for the 71-second window, and the one beginning *"Read that row
 as 'on every merge', not 'when migration files change'"* for #87 itself. All
 three re-read at this anchor.
 
-**Those last two were `:160` and `:162` here and are now `:164` and `:166`, and
-the table was `:143-147` and is now `:145-152`** — `docs/DEPLOYMENT.md` gained 99
+**Those last two were `:160` and `:162` here and were corrected at that anchor
+to `:164` and `:166`, and the table was `:143-147` and was corrected to
+`:145-152`** — `docs/DEPLOYMENT.md` gained 99
 lines in the `54418b6..bb3a01e` delta. The previous anchor had already corrected the same two from
 `:159` and `:161`. **That was the third consecutive anchor at which the same two
 numbers moved and the two sentences did not**, so they are re-cited by their
 opening words above and the numbers are retired; the sentences have survived
 every edit and the numbers have survived none.
+
+**THE THREE NUMBERS IN THE SENTENCE ABOVE READ "IS NOW" AND "ARE NOW" UNTIL
+`1aef04b1`, AND ALL THREE WERE LONG DEAD — THE PARAGRAPH IS PUT INTO THE PAST
+TENSE RATHER THAN RENUMBERED, AND THE CORRECTION IS MARKED IN BOTH DIRECTIONS**
+(`docs/AGENT_WORKFLOW.md` §4). It sits above every dated reading in this
+section, so a reader who stops at it takes `:164`, `:166` and `:145-152` for
+the current tree. Opened rather than offset, at the anchor `1aef04b1` and again
+at `main`'s tip `e044a3e8` with identical results — `docs/DEPLOYMENT.md` is in
+no merge of `1aef04b1..HEAD` — the *"`migrate-database.yml` has three runs in
+its entire history"* paragraph is at **`:219`**, the *"Read that row as 'on
+every merge'"* paragraph at **`:221`** and the six-row table at **`:200-207`**,
+which is what the live reading at the head of this section and the `1aef04b1`
+reading below it both already give. **Where the three dead numbers land is the
+reason to say so rather than drop them**: `:164` is a bullet about where the
+build's commit is read from, `:166` a bold correction paragraph inside the same
+"Build identity" discussion, and `:145-152` the head of that section itself —
+three plausible neighbours in a document about deploying, none of them about
+what gates a migration. That is the failure §5's ADR 0002 entry calls the worse
+kind of drift, found here by reading this section's own paragraphs against each
+other rather than by any diff, because not one character of this paragraph had
+changed since it was written.
 
 **THE RUN ENDS AT SEVEN, at `a0348955`, and this section finally costs
 something.** `docs/DEPLOYMENT.md` **is** among that window's 51 files — the
@@ -17912,11 +17934,20 @@ to say that "with the queue empty that is the whole of what this section can be:
 either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
 That premise is withdrawn all the same, and with it the claim that those two
-shapes are exhaustive: there are two more, described below. **And the queue is
-not empty now** — §2 holds three entries: the two rulings #382 wrote into ADR 0008
+shapes are exhaustive: there are two more, described below. **And the queue was
+not empty when that premise was withdrawn** — §2 held three entries then: the
+two rulings #382 wrote into ADR 0008
 §2, the 2026-08-27 amendment scoping that ADR's §3, and the preconditions on the
 first server-side entry point — so the "with the queue empty" opening no longer
-describes the file either. **Still three at `bb3a01e`**: no entry was added or
+describes the file either. (**That clause read *"the queue is not empty now"*
+and *"§2 holds three entries"*, in the present tense, until `1aef04b1`, and it
+was three sections' worth of reading away from the *"nine live entries"* this
+preamble opens with and the *"Nine entries"* §2's own heading carries. Counted
+here rather than inherited: §2 holds **nine** `###` entries before its run of
+accepted-and-deleted records, which is what both of those say. The sentence is
+put into the past tense and the number beside it left as the record of what was
+true, because the churn in this count is what the paragraph is for; what it
+could not be allowed to keep is the word "now".) **Still three at `bb3a01e`**: no entry was added or
 deleted in the eleven releases, and this is one of the four places the header
 names as counting the queue, swept here for that reason.
 
@@ -18253,7 +18284,33 @@ one direction.
   > > measured here. It is a member of the window with **no `file:line`
   > > citation anywhere in this file**, so the delta method reaches it only as a
   > > name.
-- **2026-09-15 census at `7e9c3043`: 43 Proposed, 65 Accepted across 108 ADR
+- **2026-09-15 (third) census at the anchor `1aef04b1`, which is `main` at
+  `e044a3e8` for this purpose: 44 Proposed, 65 Accepted across 109 ADR
+  documents**, agreeing with the index on its status column. Five of the
+  Proposed documents have §2 rows (0056, 0059, 0071, 0074, 0077) and all five
+  read `Proposed` on disk here, so forty-four minus five is **THIRTY-NINE
+  outstanding decisions with no entry giving the owner the evidence**; §2 still
+  holds nine entries, counted as its own `###` headings above the run of
+  accepted-and-deleted records. **One ADR arrived and none moved**: **0116**
+  (whether a finished object is an event, and what the log can afford to say
+  about one), whose index row opens `**Proposed, 2026-09-15. Not
+  self-approved, and it implements nothing.**`, and **it carries no §2 row** —
+  the abandonment this bullet counts, and the second running after 0115.
+  **The arrival is inside this anchor's own window rather than after it**:
+  `docs/adr/0116-whether-a-finished-object-is-an-event.md` is absent from
+  `git ls-tree --name-only 7e9c3043 docs/adr/` and present at `1aef04b1`, so
+  the reading below was right on the tree it names and was overtaken by the
+  very window that moved the anchor line — **which the re-anchor pass did not
+  sweep into this bullet, and no delta of a later window ever will, because by
+  then the file is no longer in one.** **The Accepted column is re-derived
+  rather than carried**: seven ADRs state their status as a `## Status`
+  section rather than as a bold word or a `- Status:` line — 0005, 0006, 0007,
+  0009, 0010, 0011 and 0012 — each was opened and each reads `Accepted`, which
+  is what makes the column 65 and not 58.
+
+  **The previous reading is kept rather than overwritten:**
+
+  **2026-09-15 census at `7e9c3043`: 43 Proposed, 65 Accepted across 108 ADR
   documents**, agreeing with the index on its status column. Five of the
   Proposed documents have §2 rows (0056, 0059, 0071, 0074, 0077), unchanged for
   many anchors and all five re-read `Proposed` on disk here, so forty-three
