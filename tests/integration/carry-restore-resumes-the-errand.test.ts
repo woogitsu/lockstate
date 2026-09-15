@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isNeedUnmetForStateIncome } from '../../src/simulation/economy/income';
 import { Container } from '../../src/simulation/operations/inventory';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
@@ -102,6 +103,24 @@ const RUN_FOR = 400;
  */
 const RESTORE_BOUND_TICKS = 40;
 
+/**
+ * Comfortably below `STATE_INCOME_UNMET_NEED_LEVEL`, and the same value
+ * `tests/integration/carry-need-threshold.test.ts` calls urgent -- not the
+ * boundary, which that file measures and this one has no business re-measuring.
+ */
+const URGENT_NEED_LEVEL = 20;
+
+/**
+ * `bladder`, and the choice is load-bearing: the rule only fires when the
+ * prisoner's best *providable* candidate is the one relieving the unmet need,
+ * and the save point is in a recreation/hygiene block where `action.eat-meal`
+ * and `action.kitchen-work` are both illegal. A starving carrier therefore
+ * never reaches the rule at all, while a bursting one does --
+ * `action.use-toilet` is `own-accommodation`, so the fixture's own cell
+ * provides it.
+ */
+const URGENT_NEED: 'bladder' = 'bladder';
+
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
   runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
   runtime.kernel.step();
@@ -193,9 +212,24 @@ function aCarrierMidDropOff(): SimulationRuntime {
   return runtime;
 }
 
+/**
+ * Writes the urgent need on the carrier and returns the runtime, so it can be
+ * applied on every step: `NeedsDecaySystem` runs between reconsiderations and a
+ * level written once would drift back over the threshold on its own, which
+ * would make the case below a test of the decay rate. The same argument
+ * `tests/integration/carry-need-threshold.test.ts` makes for writing it each
+ * time.
+ */
+function withUrgentNeed(runtime: SimulationRuntime): SimulationRuntime {
+  const index = runtime.prisoners.entityStore.getIndex(runtime.prisoners.entityStore.getIdByIndex(0));
+  runtime.prisoners.needs.set(index, URGENT_NEED, URGENT_NEED_LEVEL);
+  return runtime;
+}
+
 /** Steps `runtime` for `RUN_FOR` ticks and reports the tick the errand completed on, if it did. */
-function completedAt(runtime: SimulationRuntime): number | undefined {
+function completedAt(runtime: SimulationRuntime, beforeEachStep?: (runtime: SimulationRuntime) => void): number | undefined {
   for (let step = 0; step < RUN_FOR; step += 1) {
+    beforeEachStep?.(runtime);
     runtime.kernel.step();
     if (runtime.jobs.getById('errand-1')?.state === 'completed') return runtime.kernel.tick;
   }
@@ -266,5 +300,44 @@ describe('issue #882: a restore hands the errand back rather than turning it int
       if (carrier.actionId !== undefined) seen.add(carrier.actionId);
     }
     expect([...seen].sort()).toEqual(['action.carry']);
+  });
+
+  /**
+   * The second gate, and the one the three cases above cannot see.
+   *
+   * `planIdleSelection` asks about the carry twice: whether it is a legal
+   * candidate at all, and whether it is promoted to rank 0. The owner's
+   * amendment of 2026-09-02 governs the second -- *"the institution will not
+   * send a prisoner on an errand while it is already failing to meet a need it
+   * is being docked for"* -- and
+   * `tests/integration/carry-need-threshold.test.ts` is its guard.
+   *
+   * It binds the prisoner being **sent**. A carrier restored mid-walk with the
+   * goods in hand is not being sent anywhere, and continuous play never re-asks
+   * the question for them -- so a restore that answered it would drop the goods
+   * on the floor of whatever block the save landed in, and would do it only to
+   * prisoners whose needs had drifted since the pickup. The need is written
+   * on every step, the way `carry-need-threshold.test.ts` argues for, so this
+   * measures the rule and not the decay rate.
+   */
+  it('does not re-ask the owner\'s need threshold of a carrier who is already carrying', () => {
+    expect(isNeedUnmetForStateIncome(URGENT_NEED_LEVEL), 'the case must be one the state withholds for').toBe(true);
+
+    const live = aCarrierMidDropOff();
+    const bundle = captureSessionSnapshot(withUrgentNeed(live));
+    const continuous = completedAt(live, withUrgentNeed);
+    expect(continuous, 'the reference run must complete, or there is nothing to compare against').toBeDefined();
+
+    const restored = restoreSimulationRuntime(bundle).runtime;
+    const afterRestore = completedAt(restored, withUrgentNeed);
+    expect(
+      afterRestore,
+      `a restored carrier with an urgent need abandoned the goods: ${JSON.stringify(readCarrier(restored))}`,
+    ).toBeDefined();
+    expect(readCarrier(restored)).toMatchObject({ jobState: 'completed', inTheDepot: 4 });
+    expect(
+      afterRestore! - continuous!,
+      'the amendment binds the prisoner being sent, not the one already carrying',
+    ).toBeLessThanOrEqual(RESTORE_BOUND_TICKS);
   });
 });
