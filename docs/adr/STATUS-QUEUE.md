@@ -17049,7 +17049,36 @@ the last 400 first-parent commits finds **four** such pairs — v0.0.615/616,
 v0.0.608/609, v0.0.544/545, v0.0.464/465 — against `version.yml`'s own opening
 line, *"ONE VERSION NUMBER PER MERGE."* Filed as **#1205** rather than fixed,
 because the remedy is inside `.github/workflows/`, which `AGENTS.md`'s third
-reservation keeps as the owner's. **Neither budget constant moved**:
+reservation keeps as the owner's.
+
+**THE SENTENCE ABOVE IS WRONG ABOUT THREE OF ITS FOUR, IT IS KEPT RATHER THAN
+EDITED, AND IT WAS FALSIFIED BY THIS PASS'S OWN MERGE SEQUENCE INSIDE THE
+HOUR.** The four merges of 2026-09-15 produced **v0.0.623 through v0.0.626**,
+with `95f07a13` (v0.0.625) and `6cdbfd03` (v0.0.626) **adjacent on the
+first-parent line and no merge between them** — and nothing was duplicated:
+`version.yml` carries no `concurrency` group, deliberately and with its own
+reasons written into the file, so when merges land close together a bump is
+committed after the *next* merge and the two release commits end up adjacent
+in first-parent order having each been earned. Re-checked against the
+timestamps:
+
+| pair | what is actually around it | verdict |
+| --- | --- | --- |
+| v0.0.615/616 | `a27c437f`/#1189 at 18:33:40, nothing else within an hour either side | **real** |
+| v0.0.608/609 | `918bf008`/#1180 at 12:31:50 **and** `b82a477a`/#1179 at 12:31:58 | two merges, two releases |
+| v0.0.544/545 | `dc031fdb`/#1095, `a19976af`/#1099, with v0.0.543 among them | three merges, three releases |
+| v0.0.464/465 | `46aeade8`/#953, `e96a03b6`/#952, `00381aa8`/#954, `d6c0bc4b`/#951, all inside 28 seconds | four merges, four releases |
+
+**So the count is one, not four — and the arithmetic above is untouched**,
+because the one that survives is the one inside this window: nine merges plus
+the anchor's own v0.0.613 accounts for ten of the eleven releases, and the
+eleventh is v0.0.616. **What does not survive is the method**, which is the
+more useful correction: a pattern over first-parent order cannot tell an
+un-earned release from a bump that serialised behind a merge, and only the
+timestamps and the run list can. Corrected on #1205 within the hour, and the
+original sentence is left standing because a tally asserted from an
+unvalidated pattern is the shape `docs/AGENT_WORKFLOW.md` §4 warns about,
+written here by the pass that quotes that rule. **Neither budget constant moved**:
 `ANCHOR_STALENESS_BUDGET_RELEASES` is unmoved at **10** and
 `ANCHOR_STALENESS_BUDGET_COMMITS` at **100**, against a commit count of 66 that
 was never in danger — the release unit firing first for the third consecutive
@@ -17102,8 +17131,11 @@ never raised.** No gameplay experiment, SQL suite or historical measurement was
 re-run.
 
 - **THE CENSUS RISES AGAIN AND THE FALL THE PREVIOUS PASS RECORDED LASTED
-  EXACTLY ONE ANCHOR. Next free number: 0116**, as `docs/adr/README.md` now
-  states. **43 Proposed, 65 Accepted, 108 documents**, counted on disk by
+  EXACTLY ONE ANCHOR.** The index's next free number was **0116** at this
+  anchor — written that way round rather than as a restatement, because the
+  live restatement in this section is the one in the `main` paragraph below and
+  a second one here would have to say something this anchor cannot know.
+  **43 Proposed, 65 Accepted, 108 documents**, counted on disk by
   replicating `statusStatement` from
   `tests/foundation/adr-status-reference-contract.test.ts` rather than by a
   grep written for the occasion, and compared with the index **document by
@@ -17115,6 +17147,18 @@ re-run.
   **thirty-eight** outstanding decisions, up from thirty-seven. All four
   Proposed-count mirrors are moved together, each with the previous reading
   kept beside it.
+
+  **AND THE CENSUS ROSE AGAIN BEFORE THE DAY WAS OUT, WHICH IS WHY THE LIVE
+  NUMBER BELOW IS 0117 AND THE READING ABOVE IS DATED TO ITS OWN ANCHOR.**
+  Four pull requests merged after this pass was taken — #1206 (this re-anchor),
+  #1197, #1200 and #1204 — and #1200 landed **ADR 0116** (whether a finished
+  object is an event), `Proposed`, with no §2 row. Re-counted on `main` by the
+  same method: **44 Proposed, 65 Accepted, 109 documents**, and
+  `docs/adr/README.md` now states **Next free number: 0117.** So the
+  outstanding count is **thirty-nine**, and the rise this bullet records is two
+  arrivals in one day rather than one. The `c6337952` reading is left exactly
+  as it stands, because it is what was true at the anchor; this paragraph is
+  what is true of `main`, and the two are separated on purpose.
 - **AND TWO SENTENCES THE CENSUS RESTS ON WERE WRONG IN A WAY NO WINDOW COULD
   HAVE MOVED.** *"0064 and 0067 still the only two in bullet form"* is **eight**
   — 0001, 0002, 0003, 0004, 0014, 0021, 0064 and 0067 state status as a
