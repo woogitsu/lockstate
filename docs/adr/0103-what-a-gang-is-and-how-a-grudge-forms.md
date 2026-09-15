@@ -143,6 +143,27 @@ at the site:
   constant, named `CROSS_GANG_ASSAULT_GRUDGE_WEIGHT` so a balance pass moves
   one number.
 
+  **THAT SENTENCE STOPPED BEING TRUE ON 2026-09-11 AND IS CORRECTED RATHER THAN
+  OVERWRITTEN (`docs/AGENT_WORKFLOW.md` §4), BECAUSE THE BALANCE PASS IT
+  PREDICTED IS EXACTLY WHAT HAPPENED.** The constant is **`0.4`**
+  (`src/simulation/incidents/default-gangs.ts:174`), raised by the owner's
+  ruling on this open question in `554984ec`. The reason is in that constant's
+  own docblock and is worth carrying here: at `0.2` the mechanism was
+  measurably close to unreachable — eight seeds, ninety in-game days each, a
+  gang member in **2 of 8** sessions and a retaliation in **1 of 8**. The
+  document's *recommendation* was overruled; the *sentence* was left behind, and
+  a reader taking this bullet at its word would price every figure in Decision
+  2.5 at half the weight the game runs.
+
+  **The two rulings interact, and neither bullet says so.** Open question 2 was
+  answered *"both directions at half weight"*, and
+  `recordGrudgeFromAdjudicatedAssault` splits the constant —
+  `src/simulation/incidents/default-gangs.ts:253-257` — so each direction of a
+  cross-gang assault accrues `0.4 / 2`, which is the `0.2` this bullet names.
+  The recommendation survives as the *per-direction* figure and is false as the
+  *constant*. That is the distinction to hold, and it is why this is marked in
+  place instead of the number simply being changed.
+
 **The measurement this document demanded was run and one of its predictions was
 wrong.** Context 15's arithmetic says a lapsed assault plus *"the next review"*
 reaches tier 3; the review system's cadence is `intervalTicks` and
@@ -1440,6 +1461,32 @@ change touches.**
   `hud/incident-detail` are both unpainted (Context 14b).
 - **No guard against a retaliation with an empty participant list** (Context 6),
   which is the one defect in existing code this document asks to close.
+
+**THREE OF THOSE SIX BULLETS ARE NOW FALSE, AND THE HEADING IS WHY THEY WERE
+NOT NOTICED.** *"What does not exist today"* is a list of absences, which
+`docs/AGENT_WORKFLOW.md` §4 names as the sentence form that rots first —
+*"adding the thing it denies never touches the sentence denying it"* — and this
+document's own decisions are what added them. Marked rather than overwritten,
+and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
+
+- *"No producer of any kind: zero calls to `register`, `addMember` or
+  `addGrudge` outside `loadSnapshot`"* — **there are four.**
+  `src/simulation/incidents/default-gangs.ts:81` registers,
+  `src/simulation/runtime/new-session.ts:671` adds a member at the site
+  Decision 6 named, and `src/simulation/incidents/default-gangs.ts:256-257` add
+  the grudge pair. The count was the claim and the count has moved.
+- *"No guard against a retaliation with an empty participant list"* — **the
+  guard is `src/simulation/incidents/trigger-system.ts:561-563`**, which is
+  Decision 4 built. This bullet called it *"the one defect in existing code this
+  document asks to close"*; it is closed.
+- *"No way for the adjudication seam to name the victim"* — **the seam carries
+  the whole record now**, `src/simulation/incidents/response-system.ts:237`, so
+  both participants are reachable from it. See the marked bullet under *What it
+  costs in code* below, which prices this as still owed.
+- **The other three bullets were not re-checked on this pass and are not
+  asserted either way** — the two about what a player is shown, and the
+  unpainted `hud/incidents` pair. Saying so is cheaper than leaving a reader to
+  guess which half of a list was read.
 
 ### What a first implementation would touch
 
