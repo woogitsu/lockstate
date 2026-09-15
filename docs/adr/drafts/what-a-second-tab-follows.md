@@ -3,12 +3,16 @@
 > **This draft deliberately carries no number.** ADR numbers are assigned
 > centrally after drafts return (`AGENTS.md`), and this one pre-commits to
 > being renumbered without argument, along with every citation of it added by
-> the same branch — `src/main.ts`, `src/input/storage.ts`,
-> `tests/unit/input-cross-tab-settings.test.ts` and
-> `tests/browser/ui-cross-tab-preferences.spec.ts`, each of which names this
-> file by path rather than by number for exactly that reason.
-> `grep -rn "what-a-second-tab-follows" src/ docs/ tests/` is the list, so a
-> fifth citation added later cannot be missed by reading this sentence.
+> the same branch — `src/main.ts`, `docs/INPUT.md`,
+> `tests/unit/input-cross-tab-settings.test.ts`,
+> `tests/browser/ui-cross-tab-preferences.spec.ts` and
+> `tests/foundation/composition-root-contract.test.ts`, each of which names
+> this file by path rather than by number for exactly that reason.
+> `grep -rln "what-a-second-tab-follows" src/ docs/ tests/` is the list, and it
+> was run rather than recalled — a sixth citation added later cannot be missed
+> by reading this sentence. `src/input/storage.ts` deliberately is **not** on
+> it: the subscription's own docblock states the language finding rather than
+> citing a document, so the module stays readable without one.
 
 ## Status
 
