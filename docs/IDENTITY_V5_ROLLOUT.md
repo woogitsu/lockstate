@@ -376,6 +376,61 @@ recorded as such in
   not place is not an agent's to delete; each goes to the owner if and when a
   stage needs an answer for it.
 
+### Checked 2026-09-14 (#1161), and the two owed things are answered differently
+
+The paragraphs above are left exactly as they stood. What follows is what the
+check found, and it is a record rather than a re-plan.
+
+**Nothing was lost.** All seventeen commands are still issued and all seventeen
+still from `src/main.ts`; ten of the fifteen projections still have a reader and
+the same five do not; every operational control on Manage and on Build is laid
+out, enabled and pressable at 1440x900, 1024x768, 900x600 and 375x812. Two new
+gates carry the measurements rather than this document quoting them:
+`tests/browser/operations-reachability.spec.ts` (14 specs) and
+`tests/browser/unplaced-surfaces.spec.ts` (7 specs), each with its own mutation
+table.
+[`docs/research/2026-09-14-what-stage-5-checked-and-what-it-found.md`](./research/2026-09-14-what-stage-5-checked-and-what-it-found.md)
+is the row-by-row record, including six claims in the two lists before it that
+have gone stale and are recorded rather than edited.
+
+**The Manage rail's budget, measured, because this is the first tab to spend it
+twice.** `.hud__side` gives 413 / 405 / 391 CSS px at 1440x900, 900x600 and
+375x812; the two panels want 161+577, 161+342 and 143+361. So the Staff panel is
+**75, 177 and 178 px short** at 1024x768, 900x600 and 375x812 and absorbs the
+whole overdraft through its own `overflow-y: auto`, which is exactly the
+arrangement the 2026-09-14 move chose and wrote into `hud.css`.
+
+**The first owed thing — the Regime panel's split — is filed rather than
+built**, as
+[ADR 0115](./adr/0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md).
+The measurement above is why: the roster is a further 202-220 px before its own
+chrome and before the six-need inspector, and it grows with the population, so
+moving it onto Manage takes height from one of the two panels already there and
+**naming which is a ruling nobody has made**. The delivery's table names
+*osadzeni* under Zarządzaj; the navigation-move record §8 names that same table
+as its own weakest claim, and three of its four open questions were ruled on
+2026-09-14 while the roster was not one of them. Every row of the panel is
+reachable today, and stage 5's exit criterion is that nothing is unreachable —
+so splitting a working panel to satisfy an unruled table would be spending a
+player-visible change on an unanswered question. ADR 0113's acceptance dates the
+question rather than settling it: Plan dnia gains its first write surface under
+[#1167](https://github.com/woogitsu/lockstate/issues/1167), which is a reason to
+answer this after that lands.
+
+**The second owed thing — the eleven unplaced surfaces — is discharged as a
+check and produces one question.** Every one is still mounted, and a twelfth
+exists that stage 0 could not have listed: the language picker (#663), inside
+the Layout menu, reachable at all three tiers. But `.hud__corner` is
+`display: none` at 720 px and below, so the minimap, the zoom control and the
+alerts list have no box on a phone — and **the alerts list is the only surface
+that issues `DismissAlert`, so one of the seventeen commands cannot be issued at
+phone width.** That is deliberate, documented three times in `hud.css` under
+#1117, exempted by `app-shell.spec.ts`'s `NEVER_LAID_OUT_BELOW_720`, and
+**pre-existing rather than anything this rollout did.** It is nonetheless the
+one place where "keeps full function" and the measured page disagree, so it is
+the owner question this stage produces. The new spec records the state at all
+three tiers rather than asserting the phone one is right.
+
 ---
 
 ## Stage 6 — Language
