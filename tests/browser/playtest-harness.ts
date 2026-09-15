@@ -635,6 +635,75 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
 }
 
 /**
+ * Presses a control the interface may have marked **advised against** -- the
+ * way a player can, because a player can.
+ *
+ * ### The defect this is the fix for, measured 2026-09-15
+ *
+ * `playtest-771-starter-rung.playtest.ts:110` buys 656 bricks on a fresh
+ * prison *on purpose*: the whole file is about watching the starter rung
+ * refuse that press and the prison recover. On `origin/main` at `e044a3e8` it
+ * never got there. `buy` pressed `.hud-build__buy-submit` with a bare
+ * `.click()`, and the run died on the 600 s test budget with
+ *
+ * ```
+ * locator resolved to <button ... aria-disabled="true" class="ui-action hud-build__buy-submit">
+ *   2 x waiting for element to be visible, enabled and stable
+ *     - element is not enabled
+ *   120 x waiting for element to be visible, enabled and stable
+ *     - element is not enabled
+ * ```
+ *
+ * **Neither side of that is a defect in its own terms, and that is why it had
+ * to be found by playing.** `build-panel.ts`'s `paintBuyTotal` calls
+ * `buySubmit.setUnavailable(verdict.refused)`, and `setUnavailable` in
+ * `src/ui/primitives/action-button.ts` writes `aria-disabled` and *not* the
+ * `disabled` property -- deliberately, at length, since #772's narrowing of
+ * 2026-09-02: `disabled` would remove the press, and the press is the only
+ * producer of `hud.refusal.purchase-materials-past-floor`, the one sentence a
+ * player is ever given for this refusal. The button is pressable in a real
+ * browser and the refusal band is what answers. Playwright, meanwhile, counts
+ * `aria-disabled="true"` as *not enabled* in its actionability check
+ * (`@playwright/test` 1.56.1, measured), and waits for a state the panel has
+ * no intention of entering.
+ *
+ * So the harness, not the panel, is what was wrong: a helper modelling a
+ * player must press what a player can press.
+ *
+ * ### What it does and does not skip
+ *
+ * `force: true` skips Playwright's actionability checks **wholesale** --
+ * visibility and stability with them -- so this asserts visibility itself
+ * first, by hand, and that assertion is not redundant. The bypass is also
+ * narrowed to the one state it is for: a control carrying the `disabled`
+ * *property* is pressed through the ordinary waiting `.click()`, because that
+ * one is `createBusyGroup`'s in-flight gate (`src/ui/primitives/async-action.ts`
+ * assigns `control.disabled = busy` to every member) and waiting it out is
+ * correct.
+ *
+ * Answers which of the two it was, so a caller that wants to say "the control
+ * was advising against this press" can, and so the log of a playtest that
+ * pressed one records it.
+ */
+export async function pressAdvisedControl(
+  page: Page,
+  selector: string,
+  timeoutMs = ARM_TIMEOUT_MS,
+): Promise<'available' | 'advised-against'> {
+  const control = page.locator(selector);
+  await expect(
+    control,
+    `${selector} is not laid out -- has the panel it lives on moved, or is the control hidden?`,
+  ).toBeVisible({ timeout: timeoutMs });
+  const advisedAgainst =
+    (await control.getAttribute('aria-disabled')) === 'true' &&
+    !(await control.evaluate((node) => (node as Partial<HTMLButtonElement>).disabled === true));
+  if (advisedAgainst) await control.click({ force: true });
+  else await control.click();
+  return advisedAgainst ? 'advised-against' : 'available';
+}
+
+/**
  * Buys `quantity` of the material the given buildable is made of.
  *
  * **It has the same race `armBuildable` had, and #1017's fifth question is what
@@ -654,6 +723,14 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
  * outcome that several playtests here provoke on purpose, and the commands are
  * returned so a caller that cares can say so itself. What was silent was
  * *which* material, not whether one was bought.
+ *
+ * **And until 2026-09-15 it could not reach that outcome at all**, which is
+ * the sentence above being false about the one case it exists for. The submit
+ * goes through `pressAdvisedControl` for the reason that helper's own docblock
+ * states: `buySubmit.setUnavailable(verdict.refused)` marks a refused purchase
+ * with `aria-disabled="true"` and Playwright reads that as *not enabled*, so a
+ * bare `.click()` waited out the whole test budget on the press this function
+ * promises to make.
  */
 export async function buy(page: Page, buildableId: string, quantity: number): Promise<readonly Record<string, unknown>[]> {
   const row = page.locator(`.hud-build__list [data-buildable="${buildableId}"]`);
@@ -668,7 +745,7 @@ export async function buy(page: Page, buildableId: string, quantity: number): Pr
   const buyRow = page.locator('.hud-build__buy');
   if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
   await page.locator('.hud-build__buy .ui-number__input').fill(String(quantity));
-  await page.locator('.hud-build__buy-submit').click();
+  await pressAdvisedControl(page, '.hud-build__buy-submit');
   await page.waitForTimeout(200);
   return (await sentCommands(page)).slice(before);
 }
@@ -903,7 +980,12 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
     else log(`no [data-staff-role] rows: ${JSON.stringify(await panelText(page, '.hud-staff__list'))}`);
     log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
     for (let index = 0; index < options.guards; index += 1) {
-      await page.locator('.hud-staff__hire').click();
+      // Same shape as the Buy submit, one panel along and for the same reason:
+      // `staff-panel.ts`'s `hire.setUnavailable(verdict.refused)` marks a hire
+      // the treasury cannot cover with `aria-disabled`, keeping the press --
+      // and a bare `.click()` would wait that press out instead of making it.
+      const verdict = await pressAdvisedControl(page, '.hud-staff__hire');
+      if (verdict === 'advised-against') log(`hire ${index + 1} was pressed against an aria-disabled control`);
       await page.waitForTimeout(300);
     }
     await page.waitForTimeout(1500);
