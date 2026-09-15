@@ -114,13 +114,13 @@ export interface HudShellState {
  * than renumbered.** It read *"TWELVE places in `src/` alone, counted rather
  * than estimated"* and then listed twelve anchors: `view-model.ts:1090` and
  * `:1146`, `hud.ts:842`, `:896` and `:974`, `rooms-panel.ts:1355`,
- * `simulation-zoning.ts:26`, `content/default-locale-en.ts:539`,
+ * `simulation-zoning.ts` at `:26`, `content/default-locale-en.ts:539`,
  * `main.ts:1100` and `:1667`, `hud.css:351` and `:388`. Opened one at a time
  * on 2026-09-15, **none of the twelve lands on a sentence about the fold**:
  * `view-model.ts:1090` is `readonly width: number;`, `rooms-panel.ts:1355` is
  * an `element('div', {` call, `main.ts:1667` is this constant's own reader,
- * and there is no `src/ui/hud/simulation-zoning.ts` at all -- that file is
- * `src/ui/simulation-zoning.ts`, one directory out. A twelve-item list of
+ * and the zoning module it names does not exist under
+ * `src/ui/hud/` at all -- it sits one directory out, in `src/ui/`. A twelve-item list of
  * `file:line` into files under active edit is the least durable citation this
  * repository has (`docs/AGENT_WORKFLOW.md` §4), and it rotted wholesale
  * without a single one of the underlying facts changing.
