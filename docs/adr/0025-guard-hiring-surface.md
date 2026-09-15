@@ -63,6 +63,19 @@ Two kinds of claim appear here.
 asserts — were verified against this branch's `main` at v0.0.37, and every
 `file:line` below resolves there unless the text says otherwise.
 
+> **That second clause is false, and it is kept rather than deleted because it
+> is what every reader below was told** (`docs/AGENT_WORKFLOW.md` §4: mark both
+> directions). A global anchor pin does not date what is under it. This
+> document's own anchors were re-aimed beneath that unchanged sentence on
+> 2026-09-06 by `f0c7fe9c` — `icon.ts:68` to `:79`, `hud.ts:270` to `:322` —
+> which is one of the seven commits `docs/adr/README.md`'s section *"A global
+> anchor pin in an ADR is advisory, and does not date what is below it"*
+> tabulates. **Read the sentence as a statement about the day it was written
+> and nothing else.** Swept again on 2026-09-15: of the thirteen rooted
+> `file:line` anchors below, **one** still resolved onto what its sentence
+> names. The rest are re-aimed in place, and where the thing itself is gone the
+> prose is corrected beside the original rather than over it.
+
 **Layout claims** are inherited rather than newly measured, and that is stated
 because it is the weaker half. The pixel budgets quoted in
 [ADR 0022](./0022-room-zoning-surface.md) and in `src/ui/hud/hud.css` were
@@ -143,28 +156,50 @@ today, so a panel put there competes with nothing.
 
 ### The consumer is finished, four systems are waiting on it, and nothing in the application can reach it
 
-`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:75`) is complete.
+`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`; the anchor
+read `:75`) is complete.
 It spawns an entity in the roster's own `EntityStore`, mints an actor name
 through the ADR 0015 seam when the session supplied one, and writes a
-`GuardRecord` at `'unassigned'`. It is snapshotted (`:178`), restored (`:192`),
+`GuardRecord` at `'unassigned'`. It is snapshotted (`:240`), restored (`:269`) — the anchors read `:178` and `:192` —
 and its restore path already reasons about a guard caught mid-travel.
 
 **It has zero callers anywhere in `src/`.** Every call in the repository is in
-`tests/`. That single gap starves four systems that are built, scheduled and
+`tests/`.
+
+> **Not since this ADR's own surface shipped** (#302, and the Status block
+> above says so). `GuardRoster.hire` is called from
+> `src/simulation/staff/hiring.ts:221`, which
+> `src/simulation/runtime/session-commands.ts:725` reaches on a `HireStaff`
+> command. This paragraph and the *Consequences* bullet *"`GuardRoster.hire`
+> gains its first production caller"* have therefore disagreed with each other
+> inside one file for as long as the implementation has existed; the Context is
+> the half that is history and is kept, dated, because the decision was taken
+> against it. That single gap starves four systems that are built, scheduled and
 tested:
 
 - `DeploymentSystem` walks `unassignedGuardIds()` to fill a sector's required
-  headcount (`src/simulation/security/deployment-system.ts:108`).
+  headcount (`src/simulation/security/deployment-system.ts:194`).
 - `PatrolSystem` walks `allGuardIds()` and starts a loop for each guard on post
-  (`src/simulation/security/patrol-system.ts:72`).
+  (`src/simulation/security/patrol-system.ts:73`).
 - `IncidentResponseSystem` claims responders from `unassignedGuardIds()`
-  (`src/simulation/incidents/response-system.ts:124`).
+  (`src/simulation/incidents/response-system.ts:535`).
 - `SearchSystem` claims a searcher the same way
-  (`src/simulation/contraband/search-system.ts:150`).
+  (`src/simulation/contraband/search-system.ts:295`).
+
+> **Three of those four no longer call `unassignedGuardIds()` at all**, and the
+> anchors above are the re-aimed ones rather than the originals (`:108`, `:72`,
+> `:124`, `:150`, every one of which now lands in a docblock). Since
+> [ADR 0053](./0053-who-may-stand-a-security-post.md) `DeploymentSystem` and
+> `IncidentResponseSystem` call `claimableGuardIds` and `SearchSystem` calls
+> `claimableSearchGuardIds`, both in `src/simulation/security/post-eligibility.ts`.
+> `PatrolSystem` still walks `allGuardIds()`. What the bullets are being cited
+> for here — that four built systems had no staff to iterate — is unaffected;
+> what has changed is the method name, and decision 5 below turns on it.
 
 All four iterate an empty collection in every session a player can start. The
 status strip's `Staff` count is therefore structurally zero
-(`src/simulation/presentation/status-strip-projection.ts:163`), which is the
+(`src/simulation/presentation/status-strip-projection.ts:782-787`; the anchor
+read `:163`, which is now inside the `StatusStripViewModel` declaration), which is the
 same class of claim `src/ui/hud/projection.ts` warns about for a money counter
 with no economy — and the whole staff projection
 (`src/simulation/presentation/staff-projection.ts`), roster rows, per-role
@@ -172,7 +207,7 @@ counts, per-phase counts, coverage and all, is reachable only from a test.
 
 `src/content/staff-role-catalog.ts` is in the same position from the other
 end. Eight roles, each with a `nameKey` that resolves in the bundled catalogue
-(`src/content/default-locale-en.ts:66-73`), a department, a clearance, a
+(`src/content/default-locale-en.ts:105-112`; the anchor read `:66-73`), a department, a clearance, a
 permission list and a `wageBand`. **Nothing outside `src/content/` reads any of
 it**; `tests/foundation/unconsumed-content-contract.test.ts` records five of
 the eight ids as having no consumer anywhere at all.
@@ -182,7 +217,8 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`src/ui/hud/hud.ts:322`) and `src/main.ts` turns it into
+emits a `HudIntent` (`src/ui/hud/hud.ts:365`; the anchor read `:322`, itself
+the 2026-09-06 re-aim of `:270`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
 route and are the pattern this follows —
 `case 'place-build-order'` and `case 'purchase-materials'` in `src/main.ts`.
@@ -193,8 +229,8 @@ message key, and a stable content id may never reach the player. The staff-role
 catalogue is unusually well placed for that, exactly as the room catalogue was
 for ADR 0022 — all eight roles carry a real `nameKey` and all eight
 `staff-role.*.name` keys ship in the default catalogue, so the producer needs
-no id→key mapping table of the kind `BUILDABLE_LABEL_KEY` (`src/main.ts:269`)
-exists to supply.
+no id→key mapping table of the kind `BUILDABLE_LABEL_KEY` (`src/main.ts:766`;
+the anchor read `:269`) exists to supply.
 
 ### A refusal already has somewhere to go, and this is the first surface built after it
 
@@ -241,6 +277,22 @@ and shows it on one tab: `buildPanel.setVisible(state.activeTab === 'build')`.
 Selecting Security today changes the tab bar's `aria-current`, sets
 `data-active-tab`, hides the Build panel and puts nothing in its place.
 
+> **There is no `security` tab any more, and this paragraph is left as it stood
+> rather than re-aimed onto whatever now sits at that line** (`docs/AGENT_WORKFLOW.md`
+> §4). `HUD_TAB_IDS` is `['overview', 'build', 'zones', 'manage', 'day-plan']`
+> (`src/ui/hud/hud-state.ts:77`), five members, and the Staff panel this
+> decision placed is mounted on `manage`:
+> `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:2506`).
+> What moved it is [ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)
+> decision 3, ruled by the owner on 2026-09-13 and merged as `919d6b15` on
+> 2026-09-14 — whose own text names the rename in this direction: *"Moving staff
+> from Security to Manage is a UI grouping the delivery explicitly marks as a
+> naming proposal rather than a module move."* **Decision 1 itself is not
+> reversed by that**: the gesture is still a press on a Staff panel occupying a
+> rail slot that was otherwise empty, and it is still the only panel in that
+> slot on its tab. Only the tab's id and label moved. The count *"four
+> members"*, the list of ids and *"three of them render no panel at all"* are
+> the sentences that stopped being true, which is the shape §4 says rots first.
 So the surface costs no tab, no catalogue row and no always-visible pixel in
 any panel that already exists. It is a second panel in the same slot, shown
 under the same rule, hidden whenever the Build panel is shown. **The two are
@@ -324,8 +376,8 @@ about to find.
 | `roster-full` | the roster is at the capacity its `EntityStore` was built with | `hire.roster-full` |
 
 `roster-full` is a guard rather than a policy. `EntityStore.spawn()` **throws**
-`'EntityStore capacity exhausted'` (`src/simulation/entity/entity-store.ts:118`;
-the anchor read `:102`),
+`'EntityStore capacity exhausted'` (`src/simulation/entity/entity-store.ts:138`;
+the anchor read `:102`, then `:118`),
 and a throw out of the kernel's command handler is not a refusal — it is a
 crashed tick. Checking the headcount against the capacity before spawning turns
 a structural fault into the ordinary refusal the player is told about, which is
@@ -363,7 +415,24 @@ seven are wrong, but because of what would happen to them: **`DeploymentSystem`,
 `PatrolSystem`, `IncidentResponseSystem` and `SearchSystem` all claim staff from
 `GuardRoster.unassignedGuardIds()` with no filter on role.** A nurse hired
 into that roster is sent to a patrol post by the next scheduled deployment
-tick. Offering the other seven roles would therefore ship seven ways to put the
+tick.
+
+> **The filter now exists, so the premise of this paragraph is gone and the
+> paragraph is kept rather than rewritten** (`docs/AGENT_WORKFLOW.md` §4).
+> [ADR 0053](./0053-who-may-stand-a-security-post.md) put the role test between
+> the roster and the claimants:
+> `source.unassignedGuardIds().filter((entityId) => isEligible(source.getStaffRoleId(entityId)))`
+> is the whole of `claimableGuardIds`
+> (`src/simulation/security/post-eligibility.ts:103-108`), and
+> `DeploymentSystem`, `IncidentResponseSystem` and `SearchSystem` call it or its
+> search-pool sibling in place of `unassignedGuardIds()`. A nurse hired into the
+> roster is **not** sent to a patrol post today. **The decision this paragraph
+> supports is unaffected and the reasoning under it is not**: the surface still
+> offers one role, but *"offering the other seven roles would ship seven ways to
+> put the wrong person on a wall"* is no longer the reason, and the deliberate
+> half below — *"the gap between those two is recorded here rather than closed
+> by a check"* — records a gap that a later ADR closed with exactly such a
+> check. Offering the other seven roles would therefore ship seven ways to put the
 wrong person on a wall, which is worse than not offering them.
 
 The *simulation* is not given a role whitelist, and that is the deliberate half.
@@ -429,6 +498,16 @@ x = 1.8…373.2 at 375×812 — 1.8px of margin per side — and a **sixth tab i
 foreclosed** at that viewport. Spending the one remaining slot on hiring, when
 an existing tab is empty and named for exactly this department, would be
 spending the scarcest thing in the HUD to avoid writing a `setVisible` call.
+
+> **The slot this refuses to spend was spent, twice over, and the bar is not
+> five tabs of the four it was measured against.** ADR 0022's own amendment
+> took the fifth slot for the Rooms tab in #312, and ADR 0112 decision 3 then
+> replaced the whole set with `overview`, `build`, `zones`, `manage`,
+> `day-plan`. So *"an existing tab is empty and named for exactly this
+> department"* describes a tab bar that no longer exists, and the arithmetic
+> above is history. The *conclusion* is untouched — the Staff panel still costs
+> no tab, because it shares `manage` — and that is why the paragraph is kept
+> rather than re-derived against today's bar, which nobody has measured.
 
 ### D — hire for free. **Rejected.**
 
@@ -541,7 +620,7 @@ most effort on.
 - **The save format does not change.** `StaffHiringService` holds no state of
   its own: the money is the treasury's, the staff are the roster's, and both
   are already in the `economy` and `security` sections
-  (`docs/PERSISTENCE.md:555`). A prison saved with hired guards restores with
+  (`docs/PERSISTENCE.md:1291` and `:1294`; the anchor read `:555`). A prison saved with hired guards restores with
   them today, and did before this.
 - **Nothing here is enforced by a test.** This is a decision about a surface,
   and no gate can assert that hiring is a Security-tab panel rather than a
