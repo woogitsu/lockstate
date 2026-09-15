@@ -5,8 +5,9 @@
 `/tmp/claude-0/wt-play`, branch `agent/cold-start-measurement`. **Nothing under
 `src/` differs from that commit** — this branch adds one `*.playtest.ts`
 instrument and this record. The status strip confirms the tree from inside the
-running page in every act: acts 1–3 read `v0.0.640 · e044a3e`, and acts 4–5,
-run after the instrument was committed, read `v0.0.640 · 105a1ea`.
+running page in every act: acts 1–3 read `v0.0.640 · e044a3e`, act 4 reads
+`v0.0.640 · 105a1ea` and act 5 `v0.0.640 · 029e68b` — this branch's own
+instrument-only checkpoints, taken as the acts were written.
 
 ---
 
@@ -28,6 +29,9 @@ question this record actually answers is:
 
 **The answer is that they do disagree, twice, and that the disagreement is
 visible on one screen without scrolling** — §4.
+
+**Five acts, all passed, none re-run.** Acts 1–3 on `origin/main` untouched;
+acts 4 and 5 on instrument-only checkpoints of the same tree.
 
 **But the headline of this record is not that.** It is that **four separate
 findings of this repository's own 2026-09-04 records are refuted by playing,
@@ -74,6 +78,9 @@ LOCKSTATE_BROWSER_TEST_PORT=45247 node_modules/.bin/playwright test \
 | 2 | the naive run — only what the screen says | `1 passed (1.1m)` |
 | 3 | the refusal lifecycle on one tile edge | `1 passed (1.4m)` |
 | 4 | the informed run — a walled, zoned, furnished cell, two admits, one guard, past a day boundary | `1 passed (5.9m)` |
+| 5 | a text-node sweep across four moments something goes right | `1 passed (3.5m)` |
+
+**Five acts were obtained against a budget of five.** Every act passed; none was re-run.
 
 **Presses were proved to land.** Every world gesture goes through the harness's
 `press`/`drag`, which since #1017 compare what the page was last asked to place
@@ -340,9 +347,13 @@ one is that the sentence is *false against a readout on the same screen* and
 *contradicted by the other band about the same press*. A search of the
 repository's issues for the contradiction returned `#894` and nothing else.
 
-**Act 4 does independently reproduce `#894`'s own measurement on a different
-tree, eleven days later**, which is worth recording beside it: the phenomenon it
-describes is not a one-off of the session that filed it.
+**Acts 4 and 5 both independently reproduce `#894`'s own measurement on a
+different tree, eleven days later**, which is worth recording beside it: the
+phenomenon it describes is not a one-off of the session that filed it. In act 5
+the same probe refusal from `+0ms` is still the last row of the alerts list at
+`+147784ms`, under two dated, dismissible acknowledgements — and the list
+**re-sorts it below each new arrival**, so it is not even stationary; it is
+carried along.
 
 ---
 
@@ -456,6 +467,50 @@ when #894 was filed. **The player now learns from three neighbouring rows, in
 the same list, in the same act, that a row carries a day and can be cleared, and
 then meets one that does neither.**
 
+### 5a. MEASURED, act 5 — the sweep §6 asked for, run, and what it can and cannot show
+
+Act 5 diffs **every laid-out text node on the page** across four moments
+something goes right: twenty-four walls ordered, the first room zoned, the
+first bed standing, the first prisoner admitted. **Two things it gains are
+section-independent and therefore clean** — the alerts corner (`.hud__corner`)
+and the status strip are on screen whichever section is open. **Everything else
+in the diff is confounded**, because reaching the next step means changing
+section, so the panel that was open is lost wholesale and the next one gained
+wholesale. That limit is stated here rather than worked around; the two clean
+channels are enough for the question.
+
+**GAINED when the first room was zoned**, clean subset:
+
+> `Cell designated. Day 3` · `Info` · `Clear this alert` · `1 not ready`
+
+**GAINED when the first prisoner was admitted**, clean subset:
+
+> `Hana Marek has a place in Cell.` · `Hana Marek has a place in Cell. Day 4` ·
+> `Info` · `Clear this alert`
+
+— the first of those two on `.hud__event`, the second in the alerts list, which
+is the band-and-log pair working as designed.
+
+**GAINED when the twenty-four walls finished: nothing.** The clean subset is
+`23,080`, `76%`, `Speed 4×`, `×4` and a new save-generation line — a treasury
+figure, a day-progress figure, the transport's own state and the autosave.
+**No sentence anywhere on the page marked twenty-four completed walls.** That is
+the gap in the acknowledgement set as it stands: `rooms.zoned` speaks,
+`prisoners.housed` speaks, and finishing what you paid for and ordered does not.
+
+**And one thing the zoning moment gains is the best guidance in the game**, so
+it is recorded even though a section switch is in the same diff:
+
+> `Cell at 12, 12 is missing` · `a door — nobody can get in` ·
+> `Walled in — not a door check` · `Not ready` · `Needs 1 × Bed` ·
+> `Needs 1 × Toilet`
+
+That names the missing thing, names the room, and gives its coordinates. It
+**confirms** rather than refutes `2026-09-05-does-the-game-say-there-is-no-door.md`,
+which measured the same sentence reaching a player at v0.0.484; what act 5 adds
+is that it now arrives at the *moment of designation*, in the same beat as the
+acknowledgement, rather than having to be gone looking for.
+
 ## 6. MEASURED, acts 1–2 — the status strip against what is true
 
 Eight chips and a clock. Across the whole naive run, **exactly one chip ever
@@ -556,9 +611,13 @@ proposing to fix it in the panel is proposing to cross that boundary.
 - **Nothing about anything drawn.** LFS is in the fourth state in this
   container (see Reproduction); every actor atlas failed to decode in every
   act. No claim here rests on a pixel.
+- **The act 5 diff is confounded by section switching**, and §5a says so in
+  place rather than here: only the alerts corner and the status strip are
+  section-independent, so only gains there are read as gains. Everything a
+  panel contributed is an artefact of which section was open.
 - **Nothing about wall-clock feel.** Act 2 is `1.1m` and act 3 `1.4m` of
-  machine time, on a container shared with other agents and a canvas rasterised
-  in software — `2026-09-14-where-88s-three-minutes-go.md` prices a single
+  machine time, act 4 `5.9m` and act 5 `3.5m`, on a container shared with other
+  agents and a canvas rasterised in software — `2026-09-14-where-88s-three-minutes-go.md` prices a single
   press at 1390 ms against 75 ms for exactly this reason. **The "quarter of an
   hour" in the title is the brief's unit, not a measurement**, and no timing
   claim is made.
