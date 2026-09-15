@@ -3,10 +3,12 @@ import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 import { deliveryBayContainerId } from '../../src/simulation/operations/delivery-route';
+import { JobBoard, TERMINAL_JOB_STATES, type JobLifecycleState } from '../../src/simulation/operations/job';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
 import { DAY_LENGTH_TICKS, GENERAL_POPULATION_REGIME, resolveActiveRegimeBlock } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { createNewSimulationRuntime, CONSTRUCTION_MATERIALS_CONTAINER_ID, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
@@ -410,5 +412,166 @@ describe('the job board on a live session', () => {
      * separates the two scans.
      */
     expect(matching('.submitCarryItem(')).toEqual([CARRY_JOB_PRODUCER_FILE]);
+  });
+});
+
+/**
+ * **Which `JobLifecycleState` members a carry job can actually be in, split
+ * three ways rather than two -- and the third partition is the finding.**
+ *
+ * `JobBoard.loadSnapshot`'s docblock said, until this file existed, that
+ * `'travelling'`, `'performing'` and `'reserved'` all stay in the union
+ * *"because a save written before ADR 0093 can carry them"*. That is a
+ * statement about producers, and it was never checked against any: it holds
+ * for the first two and not for the third.
+ *
+ * - **`'travelling'` and `'performing'` had a producer and lost it.** The
+ *   deleted `JobSystem` assigned both, so a save written by a pre-ADR-0093
+ *   build really can hold them, `carryItemJobSchema` really will validate such
+ *   a save, and `JobBoard.loadSnapshot` really does normalise the first of the
+ *   two back to `'assigned'`. Deleting either is a data-loss bug and not a
+ *   cleanup.
+ * - **`'reserved'` has never had one.** It came in with issue #25's lifecycle
+ *   vocabulary and no commit has ever assigned it. It stays for the reason
+ *   `JobBoard.loadSnapshot`'s docblock now gives -- the save reader's `z.enum`
+ *   and this union are joined by an `as unknown as` cast and nothing else, so
+ *   a union narrower than the reader is an unchecked claim -- and that is a
+ *   different reason from the other two, which is the whole point of writing
+ *   the partition down.
+ *
+ * **What each half of the pin is worth, stated rather than implied.** The
+ * runtime half is a measurement and can only ever be positive evidence: it
+ * samples the board once per tick, so a state entered and left inside one tick
+ * would not appear in it. The source half is what carries the negative claim,
+ * and it is narrow on purpose -- it reads the module that owns the vocabulary
+ * and asks which literals it *writes*, which is the question a grep for the
+ * member name cannot answer (a member named only in a `switch` is still
+ * unreachable if nothing assigns it).
+ *
+ * The exit is the same shape as the rest of this file: a member changes
+ * partition because something started or stopped producing it, and the
+ * `Record` below fails to compile until whoever adds a ninth member has said
+ * which of the three it is.
+ */
+const JOB_LIFECYCLE_REACHABILITY: Readonly<Record<JobLifecycleState, string>> = {
+  available: 'produced: `JobBoard.submitCarryItem` opens every job here.',
+  assigned: 'produced: `JobBoard.assignTo`, and `JobBoard.loadSnapshot` normalising a restored `travelling` job.',
+  cancelled: 'produced: `JobBoard.cancel`.',
+  completed: 'produced: `JobBoard.endJob`, which takes the terminal state as an argument rather than writing a literal.',
+  failed: 'produced: `JobBoard.endJob`, same argument.',
+  performing: 'save-only: the deleted `JobSystem` wrote it; `CarryJobExecutor.reconcileRestoredJobs` decides such a restored job.',
+  travelling: 'save-only: the deleted `JobSystem` wrote it; `JobBoard.loadSnapshot` normalises it to `assigned`.',
+  reserved: 'never produced: no commit in this repository has ever assigned it. Kept to mirror the save reader, not to carry a save.',
+};
+
+const PRODUCED_BY_THIS_BUILD: readonly JobLifecycleState[] = ['assigned', 'available', 'cancelled', 'completed', 'failed'];
+const CARRIED_ONLY_BY_A_PRE_ADR_0093_SAVE: readonly JobLifecycleState[] = ['performing', 'travelling'];
+const NEVER_PRODUCED_BY_ANY_BUILD: readonly JobLifecycleState[] = ['reserved'];
+
+/** The module that owns the vocabulary; the only place a carry job's `state` is written. */
+const OPERATIONS_ROOT = join(SRC_ROOT, 'simulation/operations');
+
+/**
+ * Every `state = 'x'` / `state: 'x'` literal a file **writes**, comments
+ * stripped first (#188).
+ *
+ * The two exclusions in the pattern are both real and both were found by this
+ * assertion failing rather than by reasoning about it: `=(?!=)` keeps
+ * `job.state === 'available'` -- a *read*, and the file is full of them -- out
+ * of a list of writes, and the trailing lookahead keeps
+ * `state: 'completed' | 'failed'` out of it too, because that is
+ * `JobBoard.endJob`'s parameter **type** and a type is not a producer either.
+ */
+function stateLiteralsWrittenIn(path: string): readonly string[] {
+  const source = stripComments(readFileSync(path, 'utf8'));
+  return [...source.matchAll(/\bstate\s*(?:=(?!=)|:)\s*'([a-z-]+)'\s*(?=[,;}\n])/g)].map((match) => match[1]!);
+}
+
+describe('a carry job\'s lifecycle states, partitioned by producer', () => {
+  it('partitions every member of the union exactly once', () => {
+    const partitioned = [...PRODUCED_BY_THIS_BUILD, ...CARRIED_ONLY_BY_A_PRE_ADR_0093_SAVE, ...NEVER_PRODUCED_BY_ANY_BUILD];
+    expect([...partitioned].sort()).toEqual(Object.keys(JOB_LIFECYCLE_REACHABILITY).sort());
+    // Terminal-ness is a property of the produced half alone: neither save-only
+    // member is terminal, which is why a restored one needs a path rather than
+    // being ignored.
+    expect(TERMINAL_JOB_STATES.every((state) => PRODUCED_BY_THIS_BUILD.includes(state))).toBe(true);
+  });
+
+  it('writes only the produced members anywhere under src/simulation/operations/', () => {
+    const written = new Map<string, readonly string[]>();
+    for (const path of typeScriptFilesUnder(OPERATIONS_ROOT)) {
+      const literals = stateLiteralsWrittenIn(path);
+      if (literals.length > 0) written.set(relative(SRC_ROOT, path).split(/[\\/]/).join('/'), literals);
+    }
+
+    /*
+     * The declaration file is the only writer, which is what makes the negative
+     * claim below mean something: a second writer would have to be read before
+     * anybody could say what a job's state can be.
+     */
+    expect([...written.keys()]).toEqual([CARRY_JOB_DECLARATION_FILE]);
+
+    const literals = new Set(written.get(CARRY_JOB_DECLARATION_FILE));
+    /*
+     * `'completed'` and `'failed'` are absent because `JobBoard.endJob` takes
+     * the state as a typed parameter -- the runtime measurement below is what
+     * establishes those two, and the direct transitions in the test after it
+     * establish the pair this fixture's happy path never reaches.
+     */
+    expect([...literals].sort()).toEqual(['assigned', 'available', 'cancelled']);
+    for (const state of [...CARRIED_ONLY_BY_A_PRE_ADR_0093_SAVE, ...NEVER_PRODUCED_BY_ANY_BUILD]) {
+      expect(literals.has(state), `\`${state}\` is written by this build after all: ${JOB_LIFECYCLE_REACHABILITY[state]}`).toBe(false);
+    }
+  });
+
+  it('never shows a save-only or never-produced state on a live prison that runs errands', () => {
+    const runtime = prisonWithTheRoute();
+    const seen = new Set<string>();
+    const record = (): void => {
+      for (const job of runtime.jobs.allSorted()) seen.add(job.state);
+    };
+
+    stepTo(runtime, ADMIT_AT);
+    submit(runtime, 'admit', packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 200_000, priorIncidents: 0, ...ARRIVAL }));
+    stepTo(runtime, WATCH_FROM);
+    record();
+    let bought = false;
+    const until = WATCH_FROM + DAY_LENGTH_TICKS * WATCH_DAYS;
+    for (let tick = runtime.kernel.tick + 1; tick <= until; tick += 1) {
+      stepTo(runtime, tick);
+      if (!bought && tick >= 1_350) {
+        bought = true;
+        submit(runtime, 'buy-more', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-more', itemId: 'item.brick', quantity: 4 }));
+      }
+      record();
+    }
+
+    // Positive half first: an empty board would satisfy every negative below.
+    expect(runtime.jobs.allSorted().length, 'the prison ran no errand, so this measures nothing').toBeGreaterThan(0);
+    expect([...seen].sort()).toEqual(['assigned', 'available', 'completed']);
+  });
+
+  it('reaches the two terminal states the happy path does not, through the board itself', () => {
+    const board = new JobBoard();
+    const input = {
+      priority: 1,
+      itemId: 'item.brick',
+      quantity: 1,
+      sourceContainerId: 'source',
+      sourceTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
+      destinationContainerId: 'destination',
+      destinationTile: { x: tileCoordinate(1), y: tileCoordinate(0) },
+    } as const;
+
+    const failing = board.submitCarryItem({ ...input, id: 'job-fail' }, 0);
+    expect(failing.state).toBe('available');
+    expect(board.assignTo('job-fail', 1)).toBe(true);
+    expect(failing.state).toBe('assigned');
+    expect(board.endJob('job-fail', 'failed', 'carrier-departed')).toBe(true);
+    expect(failing.state).toBe('failed');
+
+    board.submitCarryItem({ ...input, id: 'job-cancel' }, 0);
+    expect(board.cancel('job-cancel')).toBe(true);
+    expect(board.getById('job-cancel')?.state).toBe('cancelled');
   });
 });
