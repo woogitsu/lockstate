@@ -96,10 +96,29 @@ const COVERAGE_FLOOR: Readonly<Record<string, number>> = {
    * says a partial locale should -- and the floor stays where the last
    * deliberate measurement put it.
    */
-  pl: 675,
+  pl: 693,
 };
 
 /*
+ * **Raised 675 -> 690 on 2026-09-14 by the fifteen `hud.layout.*` keys**, the
+ * same deliberate act, measured the same way. Those fifteen were English on a
+ * Polish page -- three of them on screen at boot -- because #1159 added them
+ * after #661 authored this catalogue and #663 deliberately left them (see
+ * `src/content/locale-pl.ts`'s own note for why that was right there and does
+ * not reach here). They are stage 6 work, #1162; `pl` now translates **693 of 693**
+ * against the reference, `auditLocaleCatalog` reporting no findings.
+ *
+ * **It lands at 693 rather than at 675 + 15, which departs from the paragraph
+ * below, and the departure is the point.** That entry left the floor three
+ * keys under the measurement so that the ratchet would credit only what its
+ * own issue added -- three keys #661 and #1190 had translated after the
+ * previous measurement. Attribution is worth recording and this paragraph
+ * records it; a floor is not where it belongs. Three keys of slack in a floor
+ * is three keys that can be lost without this test noticing, which is the one
+ * thing the row exists to prevent. The measurement and the floor are the same
+ * number now, so **any** key lost from `pl` fails here -- watched going red on
+ * a single deleted entry, `hud.layout.map-only`, before this was believed.
+ *
  * **Raised 669 -> 674 on 2026-09-14 by #663**, which is the deliberate act
  * this row's own docblock reserves and not a re-measurement of drift. The
  * language picker authored five `display.language.*` keys and translated all

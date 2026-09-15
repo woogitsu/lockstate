@@ -10,6 +10,7 @@ import {
 import {
   EMPTY_HUD_VIEW_MODEL,
   type HudBuildEdge,
+  type HudCountsViewModel,
   type HudBuildOrder,
   type HudHistoryDirection,
   type HudIntent,
@@ -388,37 +389,47 @@ const countingLocalizer: HudLocalizer = {
 // population would actually have earned by now, rather than a round number:
 // 142 occupied places at 300 minor units a prisoner-day, a quarter of the way
 // through a 2,400-tick day, is `floor(300 x 142 x 601 / 2400)` = 10,667 (#29).
+/*
+ * Lifted out of `BASE_VIEW_MODEL` below by issue #1191, which made
+ * `HudViewModel.counts` optional: a fixture that reads a figure back off the
+ * view model would otherwise have to assert the field's presence at every use.
+ * The row itself is unchanged, and this fixture is deliberately a prison that
+ * *has* reported -- the absent case is what `mountHudShell({ empty: true })`
+ * drives, through `EMPTY_HUD_VIEW_MODEL`.
+ */
+const BASE_COUNTS: HudCountsViewModel = {
+  prisoners: 142,
+  prisonerCapacity: 180,
+  // Everybody housed, which is what the accrual above already assumes: 142
+  // occupied places is where `10_667` comes from. A fixture whose accrual
+  // said 142 and whose place count said otherwise would put the strip's
+  // "N with no bed" badge (#609) on every spec in this file for a prison
+  // the same fixture is paying full price for.
+  occupiedPlaces: 142,
+  staff: 27,
+  // Not painted by anything this harness drives (issue #870): the field
+  // exists on `HudCountsViewModel` and needs a value to satisfy the type,
+  // and it is deliberately not a fraction of `staff` above so a future
+  // reader that confused the two would not get a plausible-looking number
+  // by accident.
+  staffUnassigned: 5,
+  rooms: 61,
+  // The three coverage rungs sum to 142, this fixture's own population, and
+  // no two of them are equal -- so a strip that read the wrong one, or
+  // derived one by subtraction, renders a number this fixture never gave it
+  // (issue #588).
+  prisonersCovered: 100,
+  prisonersUnderstaffed: 30,
+  prisonersUnguarded: 12,
+  prisonersHighRisk: 0,
+  activeIncidents: 0,
+  contrabandFound: 4,
+  treasuryMinorUnits: 24_920,
+  stateIncomeAccruedTodayMinorUnits: 10_667,
+};
+
 const BASE_VIEW_MODEL: HudViewModel = {
-  counts: {
-    prisoners: 142,
-    prisonerCapacity: 180,
-    // Everybody housed, which is what the accrual above already assumes: 142
-    // occupied places is where `10_667` comes from. A fixture whose accrual
-    // said 142 and whose place count said otherwise would put the strip's
-    // "N with no bed" badge (#609) on every spec in this file for a prison
-    // the same fixture is paying full price for.
-    occupiedPlaces: 142,
-    staff: 27,
-    // Not painted by anything this harness drives (issue #870): the field
-    // exists on `HudCountsViewModel` and needs a value to satisfy the type,
-    // and it is deliberately not a fraction of `staff` above so a future
-    // reader that confused the two would not get a plausible-looking number
-    // by accident.
-    staffUnassigned: 5,
-    rooms: 61,
-    // The three coverage rungs sum to 142, this fixture's own population, and
-    // no two of them are equal -- so a strip that read the wrong one, or
-    // derived one by subtraction, renders a number this fixture never gave it
-    // (issue #588).
-    prisonersCovered: 100,
-    prisonersUnderstaffed: 30,
-    prisonersUnguarded: 12,
-    prisonersHighRisk: 0,
-    activeIncidents: 0,
-    contrabandFound: 4,
-    treasuryMinorUnits: 24_920,
-    stateIncomeAccruedTodayMinorUnits: 10_667,
-  },
+  counts: BASE_COUNTS,
   // Day 3, a quarter of the way through a 2,400-tick day, paused.
   clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
   alerts: [],
@@ -2415,7 +2426,7 @@ window.lockstateUiHarness = {
       // the worker's 250 ms clock publication drives.
       hud?.update({
         ...BASE_VIEW_MODEL,
-        counts: { ...BASE_VIEW_MODEL.counts, prisoners: BASE_VIEW_MODEL.counts.prisoners + 1 },
+        counts: { ...BASE_COUNTS, prisoners: BASE_COUNTS.prisoners + 1 },
         clock: { ...BASE_VIEW_MODEL.clock, tickOfDay: BASE_VIEW_MODEL.clock.tickOfDay + 5 },
       });
     } finally {

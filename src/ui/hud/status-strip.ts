@@ -8,7 +8,7 @@ import { type StatChip, createStatChip } from '../primitives/stat-chip';
 import { type StatusBadge, createStatusBadge } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
 import {
-  CLOCK_UNKNOWN_TEXT,
+  UNKNOWN_READOUT_TEXT,
   type HudMetricId,
   type HudMetricText,
   dayProgressPercent,
@@ -130,6 +130,21 @@ function textParameters(text: HudMetricText, localizer: HudLocalizer): MessagePa
   return formatted;
 }
 
+/**
+ * A chip's number, or `--` because no prison has reported one (issue #1191).
+ *
+ * The strip's own decision rather than the projection's, for the reason the
+ * clock's two readouts below take the same decision in the same function:
+ * `projection.ts` is pure and has no localizer, so it says *there is no value*
+ * and this layer says what that looks like. `UNKNOWN_READOUT_TEXT` is the
+ * string the clock already paints, imported rather than respelled, so the two
+ * halves of the strip cannot drift apart again -- which is exactly how they
+ * came to disagree.
+ */
+function metricValueText(value: number | undefined, localizer: HudLocalizer): string {
+  return value === undefined ? UNKNOWN_READOUT_TEXT : localizer.formatNumber(value);
+}
+
 export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   const { localizer } = options;
   const t = (key: LocalizationKey, parameters?: MessageParameters): string =>
@@ -139,29 +154,23 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   const metrics = new Map<HudMetricId, MetricParts>();
   const metricsRow = element('div', { className: 'hud-strip__metrics' });
 
-  // The descriptor list is the single definition of which metrics exist and
-  // in what order; the DOM is built by walking it, never by hand.
-  for (const descriptor of projectStatusMetrics({
-    prisoners: 0,
-    prisonerCapacity: 0,
-    occupiedPlaces: 0,
-    staff: 0,
-    staffUnassigned: 0,
-    rooms: 0,
-    prisonersCovered: 0,
-    prisonersUnderstaffed: 0,
-    prisonersUnguarded: 0,
-    prisonersHighRisk: 0,
-    activeIncidents: 0,
-    contrabandFound: 0,
-    treasuryMinorUnits: 0,
-    stateIncomeAccruedTodayMinorUnits: 0,
-  })) {
+  /*
+   * The descriptor list is the single definition of which metrics exist and
+   * in what order; the DOM is built by walking it, never by hand.
+   *
+   * **Built with no counts, which is what the first paint actually knows**
+   * (issue #1191). This call used to pass a literal row of zeros, so the strip
+   * opened stating *Prisoners 0, Rooms 0, Funds 0* about a prison nothing had
+   * reported -- beside the clock two elements over, which has read `--` in that
+   * state since it was written. Every chip now opens at `--` as well, and
+   * `update` below puts numbers in them when a publication arrives.
+   */
+  for (const descriptor of projectStatusMetrics()) {
     const trailing = element('span', { className: 'hud-metric__trailing' });
     const chip = createStatChip({
       icon: descriptor.icon,
       label: t(descriptor.labelKey),
-      value: localizer.formatNumber(descriptor.value),
+      value: metricValueText(descriptor.value, localizer),
       trailing,
     });
     chip.element.dataset['metric'] = descriptor.id;
@@ -172,8 +181,8 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   // ---- clock and transport -----------------------------------------
   // Both start unknown, because at first paint they are: no session has
   // reported a clock yet, and `--` says so.
-  const dayProgress = valueText(CLOCK_UNKNOWN_TEXT, 'hud-clock__day-progress');
-  const day = valueText(CLOCK_UNKNOWN_TEXT, 'hud-clock__day');
+  const dayProgress = valueText(UNKNOWN_READOUT_TEXT, 'hud-clock__day-progress');
+  const day = valueText(UNKNOWN_READOUT_TEXT, 'hud-clock__day');
   const speed = valueText('×1', 'hud-clock__speed');
   const speedLabel = screenReaderText('');
 
@@ -248,7 +257,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       const parts = metrics.get(descriptor.id);
       if (parts === undefined) continue;
 
-      parts.chip.setValue(localizer.formatNumber(descriptor.value));
+      parts.chip.setValue(metricValueText(descriptor.value, localizer));
       parts.chip.setTone(descriptor.tone);
 
       /*
@@ -300,7 +309,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
         }
       }
 
-      if (descriptor.capacity === undefined) {
+      if (descriptor.capacity === undefined || descriptor.value === undefined) {
         parts.bar?.element.remove();
         parts.bar = undefined;
       } else {
@@ -309,6 +318,10 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
           parts.trailing.prepend(parts.bar.element);
         }
         parts.bar.update({
+          // Narrowed by the branch above: a capacity without a value is not a
+          // state the projection produces -- absence blanks every field of a
+          // descriptor together -- and the compiler needs the pair asked for
+          // rather than the invariant asserted.
           value: descriptor.value,
           max: descriptor.capacity,
           valueText: t(HUD_MESSAGE_KEY.occupancyValue, {
@@ -323,12 +336,12 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     // A clock nobody has reported renders as unknown rather than as the
     // start of day one: the strip may not invent a simulation clock.
     const dayNumber = displayDay(viewModel.clock.day);
-    day.textContent = dayNumber === undefined ? CLOCK_UNKNOWN_TEXT : localizer.formatNumber(dayNumber);
+    day.textContent = dayNumber === undefined ? UNKNOWN_READOUT_TEXT : localizer.formatNumber(dayNumber);
 
     const percent = dayProgressPercent(viewModel.clock.tickOfDay, viewModel.clock.dayLengthTicks);
     dayProgress.textContent =
       percent === undefined
-        ? CLOCK_UNKNOWN_TEXT
+        ? UNKNOWN_READOUT_TEXT
         : // Through the localizer, so the percent sign and grouping follow the
           // player's locale. The *value* is already floored to a whole
           // percent, so this only formats it.

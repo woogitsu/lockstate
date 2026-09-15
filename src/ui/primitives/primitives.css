@@ -31,6 +31,16 @@
   text-transform: uppercase;
   color: var(--text-muted);
   line-height: var(--label-line-height);
+  /* One line unless a placement says otherwise, and several placements do say
+     otherwise in `hud.css` by overriding this declaration by name
+     (`.hud-rooms__note`, `.hud-build__note`). It was removed here in passing by
+     #1192 -- a commit about `.ui-tab__label`, which is a different class -- and
+     the removal cost 13.19px of strip height: `.ui-stat__label` is an eyebrow,
+     so a chip squeezed by a badge broke its label into two line boxes and the
+     status strip pushed the world's top edge down with it
+     (`ui-strip-badged-width.spec.ts:221`, measured 93.88px against 80.69px at
+     1280x800). Restored, with the dependency named so the next removal has to
+     answer for it. */
   white-space: nowrap;
 }
 
@@ -433,6 +443,26 @@
   cursor: pointer;
 }
 
+/*
+ * A section name is one line, in every locale (#1192).
+ *
+ * This element set no `white-space` until then, so a name with a space in it
+ * broke at the space when the tab was squeezed to its `min-width`: in Polish,
+ * *Plan dnia* at 375x812 laid out in two line boxes, 26.38px against every
+ * other label's 13.19, and the second line came off the rail. The default
+ * locale could not see it -- the English name for that section is the
+ * one-word *Schedule*, chosen for this reason
+ * (`docs/VISUAL_IDENTITY.md` item 5) -- so the wrap spec in
+ * `tests/browser/ui-shell.spec.ts` passed while the page it describes wrapped.
+ *
+ * `nowrap` alone is not the whole fix and was measured failing: the five
+ * buttons are already flex-shrunk below their own `min-width` at that
+ * viewport, so the unwrapped labels **overlap by 2.50px**. `hud.css`'s phone
+ * block buys the width back with `--label-tracking-tight`, and that token's
+ * docblock carries the measurement. The rail placement has had this
+ * declaration (with an ellipsis) since the layout stage; this is the bar
+ * placement catching up.
+ */
 .ui-tab__label {
   font-family: var(--font-ui);
   font-size: var(--text-size-label);
@@ -440,6 +470,7 @@
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
   line-height: var(--label-line-height);
+  white-space: nowrap;
 }
 
 .ui-tab:hover { color: var(--text-body); background: var(--surface-overlay); }

@@ -20,7 +20,7 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
 import { alertRows } from '../helpers/alert-rows';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { reportedCounts } from '../helpers/hud-counts';
 
 /**
  * Hiring a guard through the real command path
@@ -169,7 +169,7 @@ describe('hiring a guard through the real command path (ADR 0025)', () => {
     ]);
 
     // 2. The view model the status strip actually renders, off the wire.
-    expect(hudCountsFromWorkerMessage(publication(runtime))?.staff).toBe(1);
+    expect(reportedCounts(publication(runtime)).staff).toBe(1);
 
     // 3. The staff projection's own row, which carries who they are rather
     //    than how many. It is the only place the role survives the hire.

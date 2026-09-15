@@ -662,6 +662,35 @@
   --text-size-body: var(--type-body);
   --text-size-label: var(--type-label);
   --label-tracking: 0.14em;
+  /*
+   * The same label type under width pressure (#1192).
+   *
+   * One consumer: the section names in the bottom tab bar below 721px, where
+   * five of them share a 351px inner bar at 375x812 and the Polish *Plan
+   * dnia* laid itself in **two line boxes** rather than one -- 26.38px against
+   * every other label's 13.19, with the extra 13.19px coming off the rail that
+   * `build-deliveries-outside-the-fold.spec.ts` measures a Cancel control
+   * inside.
+   *
+   * **Tracking rather than a smaller step**, because the ramp bottoms out at
+   * `--type-label` and the tab label is already on it: ADR 0112 ruled the
+   * scale 15 / 13 / 11 and a tenth pixel of label would be a step below what
+   * the owner chose. Tracking is not in that ruling, and the delivery's own
+   * phone CSS makes the same move at the same breakpoint -- `.metric small {
+   * font-size: 12px; letter-spacing: 0 }` inside its
+   * `@media(max-width:720px)` block
+   * (`docs/design/2026-09-13-identity-v5/HISTORIA/ZMIANY/03-panele-i-resize.patch:108`).
+   * This goes half as far as the delivery does: 0.06em keeps uppercase text
+   * tracked open, which is what uppercase needs to stay legible, and 0 does
+   * not.
+   *
+   * **0.06em rather than 0.04**, measured in Chromium at 375x812 in `pl-PL`
+   * with `white-space: nowrap` on the label: the five Polish labels sum to
+   * 291.14px and the tightest adjacent pair sits **5.11px** apart, which is
+   * the gap `Strefy/Zarządzaj` already has today (5.14px). 0.04em buys 7.02px
+   * and tracks the caps tighter for a pixel and a half nothing needs.
+   */
+  --label-tracking-tight: 0.06em;
   /* The line-height every label-sized run of type is set in. A token rather
      than a literal because a layout has to be able to *sum* a line of it:
      `hud.css`'s Build-panel body floor counts one line of the arm hint, and a

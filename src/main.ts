@@ -2106,9 +2106,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * The worker publishes them unprompted while a session exists (ADR 0003's
    * "unsolicited ... do not pretend to be request responses"), which is what
    * makes the readouts move without this thread ever counting anything of its
-   * own. With no worker, no session, or a stopped one, the clock reads
-   * unknown, the counts read empty and the alerts list is empty -- see
-   * `EMPTY_HUD_VIEW_MODEL`.
+   * own. With no worker, no session, or a stopped one, the clock reads unknown
+   * and the counts and the alerts list are absent entirely rather than empty --
+   * see `EMPTY_HUD_VIEW_MODEL`, and `HudViewModel.counts` for why absence and a
+   * reported zero had to stop being the same value (#1184, #1191).
    *
    * **This line is what the alerts list is for.** The list, its severity
    * badges, its folding section, its empty-state row and the insertion
@@ -2252,7 +2253,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
-      ...(counts === undefined ? {} : { counts }),
+      // Three states as of issue #1191, exactly as `overview` below: `undefined`
+      // is a message that said nothing about the counts and leaves them as they
+      // were, `'none'` is `simulation/stopped` and takes them off (the deletion
+      // is below, for the `exactOptionalPropertyTypes` reason `zoning` states),
+      // and a row of figures is a prison reporting -- including a prison
+      // reporting zeros, which is a fact about a prison and stays on screen.
+      ...(counts === undefined ? {} : counts === 'none' ? {} : { counts }),
       // Three states, exactly as `zoning` below: `undefined` leaves the field
       // alone, `'none'` clears it (the deletion is below, because
       // `exactOptionalPropertyTypes` is on and clearing an optional field has
@@ -2285,6 +2292,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // so clearing it deletes the key below rather than writing `undefined`.
       ...(event === undefined ? {} : event === 'none' ? {} : { event }),
     };
+    if (counts === 'none' && viewModel.counts !== undefined) {
+      const { counts: _stopped, ...withoutCounts } = viewModel;
+      viewModel = withoutCounts;
+    }
     if (overview === 'none' && viewModel.overview !== undefined) {
       const { overview: _stopped, ...withoutOverview } = viewModel;
       viewModel = withoutOverview;
@@ -2309,8 +2320,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
     // The room readout rides this cadence -- see `roomNeedsReader` above. A
     // stopped session takes it off instead of asking again, for the reason the
-    // clock reads unknown and the counts read empty: a statement about a prison
-    // that no longer exists is not something the player can act on.
+    // clock reads unknown and the counts come off entirely (#1191): a statement
+    // about a prison that no longer exists is not something the player can act
+    // on.
     if (message.kind === 'simulation/stopped') {
       applyRoomNeeds(undefined);
       applyBuildQueue(undefined);
@@ -3198,12 +3210,32 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * published field the Rooms panel already renders, not a value
            * minted for this call -- see `pressFloorMinorUnits`.
            */
-          const verdict = judgeAffordability(
-            total,
-            viewModel.counts.treasuryMinorUnits,
-            pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, viewModel.counts.roomCapacity === 0),
-          );
-          if (verdict.refused) {
+          /*
+           * **Skipped entirely when no prison has reported a balance** (issue
+           * #1191, forced by `HudViewModel.counts` becoming optional).
+           *
+           * This pre-flight is a *mirror* of a rule the worker owns, kept here
+           * only so a doomed press is refused on the button that was pressed
+           * (#82/#207). A mirror needs something to reflect: before the first
+           * `simulation/status-counts` publication the balance is unknown, and
+           * judging a press against the zeros that used to stand in there would
+           * refuse a purchase a solvent prison can afford, with a sentence
+           * quoting a balance nobody published. So the press goes to the
+           * authority that does know, which refuses it with its own reason if
+           * it must -- the same division of labour as everywhere else on this
+           * thread, and the reason article 4 forbids the UI recomputing what a
+           * projection publishes.
+           */
+          const counts = viewModel.counts;
+          const verdict =
+            counts === undefined
+              ? undefined
+              : judgeAffordability(
+                  total,
+                  counts.treasuryMinorUnits,
+                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, counts.roomCapacity === 0),
+                );
+          if (verdict?.refused === true) {
             /*
              * **The refusal now says which kind it is** -- the owner's ruling
              * 18 of 2026-08-31.
@@ -3220,7 +3252,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
              * The message itself is diagnostic English and reaches the host
              * through `MountHudOptions.onError`, never the screen (ADR 0011).
              */
-            const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${total}.`;
+            const message = `The last reported balance of ${counts?.treasuryMinorUnits} cannot cover ${total}.`;
             throw verdict.refusal === 'past-the-floor'
               ? new HostRefusalError('past-the-overdraft-floor', message)
               : new Error(message);
@@ -3373,7 +3405,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * (`hud.intake.hint`) rather than leaving the player to discover it
            * by pressing.
            */
-          if (viewModel.counts.rooms === 0) {
+          // `=== 0`, so an absent `counts` does not refuse: nothing has
+          // reported a room count, and this pre-flight may only refuse what it
+          // knows to be refusable (#1191). The worker applies the real rule.
+          if (viewModel.counts?.rooms === 0) {
             /*
              * `HostRefusalError`, not a plain `Error`: the owner ruled a
              * sentence for this refusal on 2026-09-03, so the reason now has
@@ -3451,13 +3486,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // limit, not the prison being out of money. The third argument is
           // the same starter-rung awareness the purchase case above carries --
           // hiring shares the press's threshold, mature or starter alike.
-          const hireVerdict = judgeAffordability(
-            hireChargeMinorUnits,
-            viewModel.counts.treasuryMinorUnits,
-            pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, viewModel.counts.roomCapacity === 0),
-          );
-          if (hireVerdict.refused) {
-            const message = `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;
+          // Stood down when nothing has reported a balance, for the reason the
+          // purchase pre-flight above gives in full (#1191): a mirror of the
+          // worker's rule has nothing to reflect until the worker has spoken,
+          // and *"the last reported balance of 0"* would be a sentence about a
+          // publication that never happened.
+          const hireCounts = viewModel.counts;
+          const hireVerdict =
+            hireCounts === undefined
+              ? undefined
+              : judgeAffordability(
+                  hireChargeMinorUnits,
+                  hireCounts.treasuryMinorUnits,
+                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, hireCounts.roomCapacity === 0),
+                );
+          if (hireVerdict?.refused === true) {
+            const message = `The last reported balance of ${hireCounts?.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;
             throw hireVerdict.refusal === 'past-the-floor'
               ? new HostRefusalError('past-the-overdraft-floor', message)
               : new Error(message);

@@ -133,15 +133,20 @@ test.describe('a browser that asks for Polish and cannot have it', () => {
  * change; a pixel floor here would fail on a change that is fine and would say
  * nothing about a change that is not.
  *
- * **Known adjacent defect, deliberately not asserted here:** `Plan dnia` is
- * laid out in **two line boxes** at this viewport (26.38px against every other
- * label's 13.19px), because `.ui-tab__label` sets no `white-space` and that
- * name has a space in it -- the mechanism `ui-shell.spec.ts`'s wrap test
- * records, in the locale that test cannot see. Filed as
- * [#1192](https://github.com/woogitsu/lockstate/issues/1192), with the
- * measurements that rule out `nowrap` and padding as fixes. It is a *height*
- * failure and this is a *width* one, so pinning the width now is not pinning
- * the defect in.
+ * **The adjacent defect this used to record as unfixed is #1192, and it is
+ * closed** -- the paragraph is kept in its own words because it is what this
+ * spec described for a day: *"`Plan dnia` is laid out in two line boxes at
+ * this viewport (26.38px against every other label's 13.19px), because
+ * `.ui-tab__label` sets no `white-space` and that name has a space in it -- the
+ * mechanism `ui-shell.spec.ts`'s wrap test records, in the locale that test
+ * cannot see."*
+ *
+ * The label is `white-space: nowrap` everywhere now, and below 721px the tab
+ * bar tracks it at `--label-tracking-tight` to pay for the width that costs --
+ * `nowrap` alone overlapped `Zarządzaj/Plan dnia` by 2.50px, which is why the
+ * height fix and the width assertion below are one subject after all. The
+ * second `it` in this block is the gate #1192 asks for: the wrap spec, run in
+ * the locale that has the defect.
  */
 test.describe('the Polish section names on a phone', () => {
   test.use({ locale: 'pl-PL' });
@@ -179,5 +184,48 @@ test.describe('the Polish section names on a phone', () => {
       collisions,
       'these Polish section names are drawn on top of each other -- a layout defect, not a word to shorten',
     ).toEqual([]);
+  });
+
+  test('no section name wraps to a second line at 375x812 (#1192)', async ({ page }) => {
+    /*
+     * `ui-shell.spec.ts`'s wrap test, in the locale that finds the defect.
+     *
+     * That one drives the harness in the default locale, where the label that
+     * used to wrap (`Day plan`) was renamed to the one-word `Schedule` for
+     * exactly this reason -- so it has been green over a page that wraps since
+     * the Polish names landed. This drives the real app with the Polish
+     * catalogue reachable, which is the only place `Plan dnia` is laid out at
+     * all.
+     *
+     * Asserted as line boxes **and** as a height, because they fail
+     * differently: a label can be two line boxes inside a button tall enough
+     * to hide it, and a label can be one line box at a font size nothing else
+     * on the bar uses. The height comparison is against the other labels
+     * rather than a pinned pixel count, for the reason the overlap test above
+     * pins no gap floor.
+     */
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(APP_URL);
+    await page.waitForSelector('.hud');
+    await expect(page.locator('#app')).toHaveAttribute('aria-label', POLISH_SHELL_LABEL);
+
+    const labels = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.hud__tabs [data-tab] .ui-tab__label')].map((label) => ({
+        text: label.textContent ?? '',
+        lineBoxes: label.getClientRects().length,
+        height: Math.round(label.getBoundingClientRect().height * 10) / 10,
+      })),
+    );
+
+    // Not vacuous, and Polish rather than an English fallback: the same five
+    // names the test above reads, laid out.
+    expect(labels.map((label) => label.text)).toEqual(['Przegląd', 'Buduj', 'Strefy', 'Zarządzaj', 'Plan dnia']);
+    const shortest = Math.min(...labels.map((label) => label.height));
+    expect(shortest, 'no tab label was laid out at all').toBeGreaterThan(0);
+    expect(
+      labels.filter((label) => label.height > shortest + 1),
+      'these Polish section names wrap, and every line they wrap to comes off the rail',
+    ).toEqual([]);
+    expect(labels.every((label) => label.lineBoxes === 1)).toBe(true);
   });
 });

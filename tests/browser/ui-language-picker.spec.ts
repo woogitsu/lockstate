@@ -238,13 +238,21 @@ test.describe('pressing the control', () => {
      * shipping state.
      *
      * **Measured when this test was written, and left rather than fixed**:
-     * three strings survive for exactly that reason -- `Open the layout menu`,
-     * `Hide the sections`, `Hide the panels`. They are three of the fifteen
+     * three strings survived for exactly that reason -- `Open the layout menu`,
+     * `Hide the sections`, `Hide the panels`. They were three of the fifteen
      * `hud.layout.*` keys that #1159 added to the English catalogue after
-     * #661 authored the Polish one, and they are the three of the fifteen that
-     * are on screen at boot. Translating them here to make this test green
-     * would be the anti-pattern above; they belong to whoever carries the
+     * #661 authored the Polish one, and they were the three of the fifteen that
+     * are on screen at boot. Translating them *to make this test green* would
+     * have been the anti-pattern above; they belonged to whoever carried the
      * Polish catalogue forward.
+     *
+     * **That happened, and this paragraph is kept rather than deleted because
+     * it is what the rule above is for.** All fifteen were translated on
+     * 2026-09-14 as the Polish catalogue's own work, not as a fix for this
+     * test, so those three now move and the rule that lets them survive simply
+     * stops having anything to exempt. Nothing here changed to accommodate
+     * them: the subtraction reads the catalogues, so a key becoming translated
+     * moves it from "may survive" to "must have changed" with no edit.
      *
      * **What this rule cannot see, said rather than implied.** A message with
      * a `{placeholder}` renders to something that is not its own template, so
@@ -300,12 +308,24 @@ test.describe('pressing the control', () => {
     // control itself sits in, including the control.
     await openSettings(page);
     await expect(page.locator(CYCLE)).toHaveText(text(PL, 'display.language.polish'));
-    await expect(page.locator('.hud-layout__legend')).toHaveText(text(EN, 'hud.layout.title'));
-    // `hud.layout.title` is one of the fifteen keys Polish has no entry for,
-    // so it is still English -- asserted rather than glossed, because a reader
-    // who sees English in a Polish drawer should find this line rather than
-    // file a bug.
-    expect(PL['hud.layout.title'], 'hud.layout.title has been translated: move it into the sweep above').toBeUndefined();
+    // `hud.layout.title` was one of the fifteen keys Polish had no entry for,
+    // and this line asserted the English `Settings` in a Polish drawer so that
+    // a reader who saw it would find this line rather than file a bug. The
+    // line it stood beside said what to do when that stopped being true --
+    // *"hud.layout.title has been translated: move it into the sweep above"* --
+    // and the Polish catalogue translated all fifteen on 2026-09-14
+    // (`'hud.layout.title': 'Ustawienia'`). So the drawer is now asserted in
+    // Polish, and the guard below is the same guard pointing the other way: if
+    // the entry is ever dropped, this fails here rather than passing on a
+    // fallback that happens to read the same.
+    await expect(page.locator('.hud-layout__legend')).toHaveText(text(PL, 'hud.layout.title'));
+    expect(
+      PL['hud.layout.title'],
+      'hud.layout.title lost its Polish entry: the drawer assertion above is now checking a fallback',
+    ).toBeDefined();
+    expect(text(PL, 'hud.layout.title'), 'hud.layout.title is untranslated, so it proves nothing here').not.toBe(
+      text(EN, 'hud.layout.title'),
+    );
   });
 
   test('keeps the prison it was showing, and a save lands before the reload', async ({ page }) => {

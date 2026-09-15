@@ -49,11 +49,15 @@ import type { HudLocalizer, HudOverviewViewModel } from './view-model';
  * that stands in before the first worker snapshot (#1184), so *"No active
  * alerts"* was what a page with no simulation behind it said about a prison it
  * had never heard of; **that issue is closed and the alerts list took this
- * panel's shape and this panel's sentence.** A balance is worse and is still
- * unfixed: `EMPTY_HUD_VIEW_MODEL.counts` carries a confident
- * `treasuryMinorUnits: 0`, so the status strip's own chip tells a player their
- * prison is broke before the worker has spoken (#1191). This panel does not,
- * which is the whole reason it reads its own field.
+ * panel's shape and this panel's sentence.** A balance is worse, and
+ * `EMPTY_HUD_VIEW_MODEL.counts` used to carry a confident
+ * `treasuryMinorUnits: 0`, so the status strip's own chip told a player their
+ * prison was broke before the worker had spoken. **That is #1191, and it is
+ * closed too** -- by the same shape a third time: the counts came off the empty
+ * model entirely, `hudCountsFromWorkerMessage` answers `'none'` for a stop, and
+ * the chips paint `--`. This panel never said it, which is the whole reason it
+ * reads its own field; it is now one of three channels agreeing rather than the
+ * only one that could tell the states apart.
  */
 
 export interface OverviewPanelOptions {

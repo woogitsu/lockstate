@@ -27,7 +27,7 @@ import {
   sizeFieldFor,
 } from './hud-layout';
 import { HUD_MESSAGE_KEY } from './messages';
-import { CLOCK_UNKNOWN_TEXT, dayProgressPercent, displayDay } from './projection';
+import { UNKNOWN_READOUT_TEXT, dayProgressPercent, displayDay } from './projection';
 import type { HudClockViewModel, HudLocalizer } from './view-model';
 
 /**
@@ -521,8 +521,8 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
    * layer down -- so these carry `hud-layout__clock-*` names with rules of
    * their own in `hud.css`, and the strip's three selectors stay unambiguous.
    */
-  const clockDay = valueText(CLOCK_UNKNOWN_TEXT, 'hud-layout__clock-day');
-  const clockProgress = valueText(CLOCK_UNKNOWN_TEXT, 'hud-layout__clock-progress');
+  const clockDay = valueText(UNKNOWN_READOUT_TEXT, 'hud-layout__clock-day');
+  const clockProgress = valueText(UNKNOWN_READOUT_TEXT, 'hud-layout__clock-progress');
   const clockSpeed = valueText('', 'hud-layout__clock-speed');
   const clockRow = element('div', {
     className: 'hud-layout__clock',
@@ -713,11 +713,11 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     },
     setClock(clock: HudClockViewModel): void {
       const dayNumber = displayDay(clock.day);
-      clockDay.textContent = dayNumber === undefined ? CLOCK_UNKNOWN_TEXT : localizer.formatNumber(dayNumber);
+      clockDay.textContent = dayNumber === undefined ? UNKNOWN_READOUT_TEXT : localizer.formatNumber(dayNumber);
       const percent = dayProgressPercent(clock.tickOfDay, clock.dayLengthTicks);
       clockProgress.textContent =
         percent === undefined
-          ? CLOCK_UNKNOWN_TEXT
+          ? UNKNOWN_READOUT_TEXT
           : localizer.formatNumber(percent / 100, { style: 'percent', maximumFractionDigits: 0 });
       // The same two-channel rule the strip's own readout follows (#639): the
       // word, and the `data-clock-mode` the stylesheet greys the row by. A

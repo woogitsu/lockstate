@@ -526,6 +526,83 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.transport.pause': 'Pauza',
   'hud.transport.play': 'Odtwarzaj z normalną prędkością',
   'hud.transport.fast-forward': 'Przyspiesz',
+  /*
+   * The Layout menu and the three collapse arrows, translated on 2026-09-14.
+   *
+   * **Fifteen keys that were English on a Polish page**, three of them on
+   * screen at boot: #1159 added them after #661 had authored this catalogue,
+   * and the language-picker branch (#663) deliberately left them, quoting
+   * #664's rule that a gate must not be one *"that can only pass by having a
+   * complete translation"*. That was right for that branch, whose own new gate
+   * they would have greened. It does not reach here: nothing in this change
+   * authors a gate, and the only gate these keys touch --
+   * `second-locale-contract.test.ts`'s `COVERAGE_FLOOR` -- is a **floor**
+   * ratcheted by hand after a measurement, which its own docblock says is the
+   * opposite direction. A player looking at *Settings* on a Polish page is an
+   * ordinary content defect.
+   *
+   * The English is authored under `AGENTS.md`'s fourth reservation -- the
+   * wording is ours, the truth is not -- and so is this, so each one is
+   * recorded against the code opened to establish it rather than against the
+   * English sentence alone.
+   *
+   * - `title` is **Ustawienia**, which is the delivery's own word for this
+   *   drawer (`docs/design/2026-09-13-identity-v5/DOKUMENTACJA/projekt.md`,
+   *   *"Ustawienia udostępniają trzy wybory"*). #1195 renamed the English from
+   *   *Layout* to *Settings* for the reason a Polish player feels hardest: the
+   *   drawer holds the language picker, and a player who cannot read English
+   *   cannot find their own language filed under a word for page furniture.
+   * - `menu` says what pressing the button does rather than naming the drawer
+   *   a second time, exactly as the English does.
+   * - The three sliders are named for the property they set, and which of the
+   *   last two is shown is the layout's own choice: `layout-shell.ts` paints
+   *   the inspector slider with `layoutInspectorHeight` on a phone, where the
+   *   region is a bottom sheet and the drag is vertical, and with
+   *   `layoutInspectorWidth` everywhere else -- so *Wysokość* is never on
+   *   screen for a control that sets a width.
+   * - `reset` is **Resetuj układ** and not *Resetuj ustawienia*, which matters
+   *   more in Polish than in English now that the drawer above it is called
+   *   *Ustawienia*: the button calls `resetLayoutSettings()` and nothing else,
+   *   so the interface scale, the theme, the language and the keyboard remap
+   *   all survive it (constitution article 13's *"niezależny reset"*).
+   * - `map-only` names a mode rather than promising a bare screen, because
+   *   that is what it is: the handler folds `navigation`, `inspector` and
+   *   `metrics` together and article 16 leaves each one a handle behind.
+   * - The three hide/show pairs name **what disappears**, read off
+   *   `REGION_MESSAGES` and `applyLayout`: the five section buttons, the rail's
+   *   panel column, and the strip's counters and clock. *Sekcje* is the word
+   *   this catalogue already uses for them (`hud.tabs.title`, *Sekcje
+   *   więzienia*), so the menu and the bar name one thing once.
+   * - The two separator labels are what a screen reader announces beside
+   *   `aria-valuenow`. **Zmień rozmiar** and not *Przeciągnij*: the separator
+   *   answers arrows, Shift+arrows, Home, End and a double-click as well as a
+   *   drag, and a player reaching it with a keyboard would be told to do the
+   *   one thing they cannot.
+   */
+  'hud.layout.title': 'Ustawienia',
+  'hud.layout.menu': 'Otwórz menu ustawień',
+  'hud.layout.navigation-width': 'Szerokość nawigacji',
+  'hud.layout.inspector-width': 'Szerokość panelu',
+  'hud.layout.inspector-height': 'Wysokość panelu',
+  'hud.layout.reset': 'Resetuj układ',
+  'hud.layout.map-only': 'Tylko mapa',
+  'hud.layout.hide-navigation': 'Ukryj sekcje',
+  'hud.layout.show-navigation': 'Pokaż sekcje',
+  'hud.layout.hide-inspector': 'Ukryj panele',
+  'hud.layout.show-inspector': 'Pokaż panele',
+  // Two of the three folded things, exactly as the English names two of three:
+  // `StatusStrip.foldable` is the metrics row, the clock **and** the transport
+  // group, so the control hides one more thing than either sentence says. It
+  // is named here rather than padded into the label -- *Ukryj liczniki, zegar
+  // i sterowanie czasem* is a menu item nobody reads -- and the difference is
+  // in the direction that cannot mislead: the press does everything the label
+  // promises and one thing more, and the transport buttons are the clock's own
+  // controls (`hud.clock.title`, *Sterowanie czasem*).
+  'hud.layout.hide-metrics': 'Ukryj liczniki i zegar',
+  'hud.layout.show-metrics': 'Pokaż liczniki i zegar',
+  'hud.layout.resize-navigation': 'Zmień rozmiar sekcji',
+  'hud.layout.resize-inspector': 'Zmień rozmiar paneli',
+
   'hud.zoom.title': 'Powiększenie',
   'hud.zoom.in': 'Przybliż',
   'hud.zoom.out': 'Oddal',

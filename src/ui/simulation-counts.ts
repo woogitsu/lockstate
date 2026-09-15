@@ -1,6 +1,6 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
-import { EMPTY_HUD_VIEW_MODEL, type HudCountsViewModel, type HudOverviewViewModel } from './hud/view-model';
+import type { HudCountsViewModel, HudOverviewViewModel } from './hud/view-model';
 
 /**
  * Turns what the worker said about its population into what the HUD paints.
@@ -28,7 +28,7 @@ import { EMPTY_HUD_VIEW_MODEL, type HudCountsViewModel, type HudOverviewViewMode
  * -- so "nothing is derived" above still means what it always meant: no
  * simulation figure is computed here.
  */
-export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCountsViewModel | undefined {
+export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCountsViewModel | 'none' | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
       const { counts } = message.payload;
@@ -217,12 +217,26 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
       };
     }
 
-    // The session is over. Anything still on screen would be the last
-    // reading from a simulation that no longer exists, so the counts go back
-    // to the empty prison -- the same thing the clock does with
-    // `UNKNOWN_HUD_CLOCK`.
+    /*
+     * The session is over. Anything still on screen would be the last reading
+     * from a simulation that no longer exists, so the counts come **off**
+     * (issue #1191).
+     *
+     * **This answered `EMPTY_HUD_VIEW_MODEL.counts` until #1191, and that
+     * object no longer exists.** The argument for it is quoted and refuted in
+     * `hudOverviewFromWorkerMessage`'s docblock below, where it was written:
+     * "the chips are always on screen and must read as an empty prison" is
+     * true about the chips and false about the zeros. A chip that is always on
+     * screen has a third thing it can show, and the clock in the same strip has
+     * been showing it -- `--` -- since it was written.
+     *
+     * `'none'` rather than `undefined`, on the same three-state contract
+     * `overview`, `alerts`, `zoning` and `refusal` use: `undefined` is a
+     * message that said nothing about the counts and must leave them exactly as
+     * they were, and `'none'` is a message that said there is no prison.
+     */
     case 'simulation/stopped':
-      return EMPTY_HUD_VIEW_MODEL.counts;
+      return 'none';
 
     default:
       return undefined;
@@ -242,18 +256,24 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
  * - every other message answers `undefined`, meaning it said nothing about
  *   this and the field must be left exactly as it was.
  *
- * `hudCountsFromWorkerMessage` above collapses the first two by answering
- * `EMPTY_HUD_VIEW_MODEL.counts` for a stopped session, and that is right for
- * the status strip, whose chips are always on screen and must read as an empty
- * prison. It is wrong here: this readout's absence is a *sentence* the panel
- * renders, so "no prison is reporting" and "a prison reporting zero" have to
- * arrive as different values or the panel cannot tell them apart -- the defect
- * #1184 recorded for `'hud.alerts.empty'`, and closed by giving that field this
- * same shape.
+ * **The paragraph that stood here argued the opposite for the strip, and it
+ * was wrong.** It read: `hudCountsFromWorkerMessage` above *"collapses the
+ * first two by answering `EMPTY_HUD_VIEW_MODEL.counts` for a stopped session,
+ * and that is right for the status strip, whose chips are always on screen and
+ * must read as an empty prison."* Its premise is sound and its conclusion does
+ * not follow. The chips are indeed always on screen -- `hud.css` gives them no
+ * hiding rule and the strip is built once and updated in place -- but *always
+ * on screen* constrains the chip, not the number in it, and the counter-example
+ * was two elements to the right the whole time: the clock is always on screen
+ * too, and it reads `--`. A chip has three states available to it, and the
+ * strip was using two of them for the metrics and three for the clock, so one
+ * paint said both *nothing is known* and *this prison is empty and broke*.
  *
- * **The clause above about the strip is the half that has not been settled**,
- * and it is #1191: the chips read a confident `0` in both states while the
- * clock beside them reads `--`.
+ * **So the two functions now have the same shape** (issue #1191), and the
+ * reason this one still exists is the one it always had rather than the one it
+ * claimed: it is a *narrowing*, three published figures out of fourteen, so
+ * the Overview panel is handed the numbers it renders and no others. See
+ * `HudViewModel.overview`.
  *
  * Nothing is derived: the three fields are copied one for one out of the
  * payload, for the reason the module header gives.

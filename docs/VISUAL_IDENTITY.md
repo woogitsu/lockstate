@@ -277,6 +277,47 @@ an impression.
    delivery puts them under Zarządzaj; and the eleven surfaces the direction
    does not place are still unplaced.
 
+   **The Polish name wrapped anyway, and the fix is a layout one** (#1192,
+   2026-09-14). `Plan dnia` has a space in it too, so at 375x812 it laid out in
+   **two line boxes** -- 26.38px against every other label's 13.19 -- in the
+   locale neither wrap spec could see: `ui-shell.spec.ts` drives the default
+   catalogue, where *Schedule* is one word. Both obvious remedies were measured
+   failing. `white-space: nowrap` alone trades the wrap for a **2.50px overlap**
+   between `Zarządzaj` and `Plan dnia`, because the five buttons are already
+   flex-shrunk below their own `min-width`; padding cannot pay for it either,
+   with 323.70px of unwrapped label in a 351px inner bar.
+
+   What shipped is `nowrap` **plus** `--label-tracking-tight` (0.06em) on the
+   tab labels below 721px: the five Polish names then sum to 291.14px and the
+   tightest adjacent pair sits 5.11px apart, which is the gap
+   `Strefy/Zarządzaj` already had (5.14px). It buys back the 13.19px of rail
+   the wrap was charging and takes the bar from 82.38px to 69.19px; at the
+   150 % interface scale it takes the bar from three rows to two and gives the
+   rail 81.80px.
+
+   **Why tracking rather than the two alternatives #1192 named.** A smaller
+   *step* is not available: the ramp bottoms out at `--type-label` and the tab
+   label is already on it, so a smaller label would be a step below the
+   15 / 13 / 11 the owner ruled (ADR 0112). A **scrolling bar** was measured --
+   380px of content in a 351px box, so two of five sections start off-screen
+   with no affordance, on the one navigation surface a phone has -- and ADR
+   0022 already refused overflow in the rail. Tracking is in neither ruling,
+   and the delivery makes the same move at the same breakpoint: its own phone
+   CSS sets `letter-spacing: 0` on the status labels inside
+   `@media(max-width:720px)`. This goes half that far, because uppercase text
+   needs tracking to stay legible.
+
+   **The limit, stated because a media query is a claim about a range.** At a
+   320px viewport the labels overlap by 4.08px even tracked this tight, and no
+   tracking value fixes it (0 tracking is still 266.72px of label in a 296px
+   bar once padding is paid). 375x812 is this repository's narrowest measured
+   viewport, in 24 specs; a 320px gate would need the scrolling bar priced
+   rather than a smaller number here. Both halves are gated in `pl-PL`, in
+   `tests/browser/locale-delivery.spec.ts`: the wrap gate goes red without the
+   `nowrap`, the overlap gate goes red without the tighter tracking, and on
+   today's `main` -- neither declaration -- the wrap gate reports the 26.4px
+   label.
+
    **What the move cost, measured, in two places:** the Manage tab is the first
    in this rail's life to lay out two panels at once, and at 900x600 the Intake
    panel came out 42px shorter than its own content beside the Staff panel —

@@ -8,7 +8,7 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { projectStatusMetrics } from '../../src/ui/hud/projection';
-import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
+import { reportedCounts } from '../helpers/hud-counts';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
@@ -97,11 +97,12 @@ describe('the FUNDS badge during the starter exemption (#771, fixed 2026-09-01)'
 
     // Read the badge the same way the strip does: through the real wire
     // message and the real translator, never a hand-built view model.
-    const counts = hudCountsFromWorkerMessage(publication(runtime));
-    expect(counts, 'a status-counts publication must translate').toBeDefined();
-    expect(counts!.roomCapacity, 'published live, and it is what "fresh, unfurnished" means on the wire').toBe(0);
+    // `reportedCounts` rather than `!`: the translator has answered three
+    // things since #1191, and this assertion is about the one that is a row.
+    const counts = reportedCounts(publication(runtime));
+    expect(counts.roomCapacity, 'published live, and it is what "fresh, unfurnished" means on the wire').toBe(0);
 
-    const fundsMetric = projectStatusMetrics(counts!).find((descriptor) => descriptor.id === 'funds');
+    const fundsMetric = projectStatusMetrics(counts).find((descriptor) => descriptor.id === 'funds');
     expect(fundsMetric, 'no funds metric in the strip').toBeDefined();
 
     /*

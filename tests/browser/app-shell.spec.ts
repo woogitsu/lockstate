@@ -7175,10 +7175,14 @@ test.describe('the assembled application', () => {
       hops.push({ target: description, presses: await shiftTabTo(page, description, target), backwards: true });
     };
 
-    // Pre-state: nothing is zoned and nobody is admitted, so the two numbers
-    // this test moves both start where it can see them start.
-    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('0');
-    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('0');
+    // Pre-state: no prison has been created, so no prison has reported, and
+    // the strip says exactly that -- `--`, the clock's own unknown readout
+    // (#1191). Both assertions read `'0'` until then and both are strictly
+    // stronger this way round: a leaked prison publishes counts, and a
+    // published count is never `--`, so the guard still catches everything it
+    // caught and no longer passes on a strip that has heard nothing.
+    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('--');
+    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('--');
 
     // ---- a prison ----------------------------------------------------
     await hop('the New prison button', {
@@ -7427,7 +7431,10 @@ test.describe('the assembled application', () => {
     await openApp(page);
 
     const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
-    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('0');
+    // `--` rather than `0` for the reason the test above records: nothing has
+    // been created, so nothing has reported (#1191), and a leaked prison would
+    // have published a count rather than left the chip unreported.
+    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('--');
 
     /*
      * The rectangle, and the walls it now needs before `zone` will take it
@@ -8371,10 +8378,21 @@ test.describe('the assembled application', () => {
           .map((message) => ({ kind: message.kind, payload: message.payload }));
       });
 
-    // No session, so nothing has been published and the strip shows an empty
-    // prison.
+    // No session, so nothing has been published and the strip says so: `--`,
+    // the clock's own unknown readout, rather than a zero.
+    //
+    // **This assertion read `'0'` until #1191 and moving it makes this test
+    // stronger rather than weaker, which is why it moved.** The subject of
+    // this test is that the counts come from the worker and not from zeros
+    // baked into the page, and a strip reading `0` before any publication is
+    // exactly what a baked-in zero looks like -- the old assertion was
+    // satisfied by the defect it was written to exclude. `--` cannot be
+    // produced by a hardcoded count, so the pre-publication state now
+    // discriminates. The published zero is still asserted twenty lines below,
+    // against the worker's own `counts.prisoners === 0`: a prison that really
+    // reports nothing in it still states that.
     expect(await publications()).toEqual([]);
-    await expect(metric('prisoners')).toHaveText('0');
+    await expect(metric('prisoners')).toHaveText('--');
 
     // A session exists from the moment a prison is created, and the worker
     // publishes its counts without being asked.
@@ -11159,7 +11177,13 @@ test.describe('the assembled application', () => {
     // `toContain`: a label that still carried its key would contain the words.
     expect(chip!.label).toBe(localeText('classification-group.high-risk.name'));
     expect(chip!.label).toBe('High Risk');
-    expect(chip!.value, 'no prison exists, so nobody is on the restricted regime').toBe('0');
+    // `--` and not `0`: no prison exists, so none has reported, and since
+    // #1191 the strip states the absence rather than a count it was never
+    // given. The chip's *number* is proven from a real publication in *the HUD
+    // counts come from the worker rather than from zeros baked into the page*
+    // above, which is where a 9 arrives over the real decoder; what this line
+    // is for is that the chip is on screen and carries a readout at all.
+    expect(chip!.value, 'no prison has reported, so the high-risk chip has no number to show').toBe('--');
 
     /*
      * And no raw key anywhere in the strip, which is the check that makes the

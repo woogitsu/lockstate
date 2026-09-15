@@ -2731,7 +2731,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // the selected purchase is affordable, and this line decides nothing --
     // it is the same `next.counts` `strip.update` above already read the
     // balance out of.
-    buildPanel.setTreasury(next.counts);
+    /*
+     * Withheld when no prison has reported (issue #1191). `next.counts` is
+     * optional now, and the two treasury setters below are the same case: a
+     * panel handed nothing keeps the figures it was last given, which before
+     * the first publication are its own zeroed defaults -- the state its
+     * docblock already describes as never rendered, because the buy row cannot
+     * be open before a session exists. What it must not be handed is a
+     * fabricated `0` balance presented as a reading, which is what
+     * `EMPTY_HUD_VIEW_MODEL.counts` used to pass through this line.
+     *
+     * The narrower fix -- `BuildPanel.setTreasury` and `StaffPanel.setTreasury`
+     * taking `HudCountsViewModel | undefined` and disclosing "no balance
+     * reported" on the button itself -- is those panels' own decision and is
+     * filed separately; this line decides nothing, as the comment above says.
+     */
+    if (next.counts !== undefined) buildPanel.setTreasury(next.counts);
     // And which guards are held and by what, on identical terms (ADR 0034). The
     // projection resolved every claim -- through the same rule the release
     // itself uses -- the panel decides the sentences, and this line decides
@@ -2752,13 +2767,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // the counts stream since ADR 0042 step 3 and read by nothing in `src/ui/`
     // until this line; the panel decides whether a shut fold states it, and
     // this line decides nothing.
-    staffPanel.setDailyWageBill(next.counts.dailyWageBillMinorUnits);
+    // `undefined` when no prison has reported (#1191), which is a state this
+    // setter already takes: the panel's own signature is `number | undefined`
+    // and it draws no figure for it, because "nobody has published a wage bill"
+    // and "the wage bill is zero" are different facts.
+    staffPanel.setDailyWageBill(next.counts?.dailyWageBillMinorUnits);
     // And the two treasury figures the hire button's availability is judged
     // against, on the terms `buildPanel.setTreasury` above is passed the same
     // `next.counts` on: the panel decides whether the selected role is
     // affordable -- through the same `pressAffordabilityVerdict` `src/main.ts`
     // judges the `hire-staff` press with -- and this line decides nothing.
-    staffPanel.setTreasury(next.counts);
+    // Withheld on absence, for the reason `buildPanel.setTreasury` above gives.
+    if (next.counts !== undefined) staffPanel.setTreasury(next.counts);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the
