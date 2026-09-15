@@ -649,15 +649,22 @@ function landingsSince(anchorSha: string, until: string): number {
  * The refs that can name `main`'s tip, in the order they are trusted.
  *
  * `refs/remotes/origin/main` first because it is the published branch and is
- * what every checkout this gate runs in actually has: `.github/workflows/ci.yml`
- * checks out at `fetch-depth: 0`, whose refspec is
- * `+refs/heads/*:refs/remotes/origin/*` — the same fact
- * `documentation-commit-citation-contract.test.ts` states in its own
- * `UNPUBLISHED_BY_ORIGIN` docblock and then *depends on*, since its
- * `git rev-list --remotes=origin --tags` reads nothing without it and it
- * asserts a floor of 500 commits rather than tolerating that. That gate is
- * green on CI, which is the evidence that `refs/remotes/origin/*` is populated
- * there, on a `push` and on a `pull_request` alike.
+ * what every checkout this gate runs in actually has. **Read out of a CI log
+ * rather than inferred from the action's source**, `verify`'s Checkout step in
+ * run 35025508661's sibling 35025070176 (pull request #1241, `pull_request`
+ * event, runner `docker-runner-03`) at 21:20:52Z:
+ *
+ *     /usr/bin/git -c protocol.version=2 fetch --no-tags --prune
+ *       --no-recurse-submodules --unshallow origin
+ *       +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+ *       +11dc3b87...:refs/remotes/pull/1241/merge
+ *
+ * — so `refs/remotes/origin/main` is written on every run of the one job that
+ * runs `pnpm test`, and HEAD there is the merge ref
+ * (*"HEAD is now at 11dc3b87 Merge 4513c919 into e044a3e8"*, the same line),
+ * whose first parent is `main`'s tip. `documentation-commit-citation-contract`
+ * states the same refspec in its `UNPUBLISHED_BY_ORIGIN` docblock and depends
+ * on those refs already; this is the direct observation behind it.
  *
  * `refs/heads/main` second, for a checkout whose remote is under another name.
  * It is the weaker of the two — a local `main` can sit months behind — which
