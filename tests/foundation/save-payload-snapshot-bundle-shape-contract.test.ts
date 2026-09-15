@@ -495,9 +495,20 @@ describe('the conversions into a session snapshot bundle are declared, not inlin
    * SessionSnapshotBundle` erases the argument as well as the result, so a
    * site spelling it inline is outside every check this file makes -- which is
    * precisely issue #1225's complaint. Two named conversions replaced the four
-   * that existed; this refuses a fifth.
+   * that existed; this refuses a fifth. The positive control below keeps the
+   * refusal from passing vacuously.
    */
   const SOURCES = everyTypeScriptFileUnder(SRC_ROOT);
+
+  it('is reading the source tree, and its pattern matches the spelling it forbids', () => {
+    // Non-vacuous in both directions. An empty `SOURCES`, or a pattern that
+    // had drifted past the spelling, would make the assertion below pass by
+    // checking nothing -- which is the shape of gate this repository refuses
+    // (see test-suite-carries-no-scratch-probe-contract.test.ts).
+    expect(SOURCES.length).toBeGreaterThan(100);
+    const restore = readFileSync(join(SRC_ROOT, 'simulation/runtime/restore-session.ts'), 'utf8');
+    expect(/\bas\s+unknown\s+as\s+SessionSnapshotBundle\b/.test(stripComments(restore))).toBe(true);
+  });
 
   it('finds no source file asserting its way to a bundle inline', () => {
     const offenders = SOURCES.filter((file) => {
