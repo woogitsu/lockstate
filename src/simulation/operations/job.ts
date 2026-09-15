@@ -273,6 +273,41 @@ export class JobBoard {
    * carrier has no `action.carry` in its `actionIndex` either and
    * `CarryJobExecutor.reconcileRestoredJobs` is the path that decides such a
    * job's fate.
+   *
+   * **THE SENTENCE ABOVE IS RIGHT ABOUT TWO OF ITS THREE MEMBERS AND WRONG
+   * ABOUT THE THIRD, AND IT IS KEPT RATHER THAN REWRITTEN BECAUSE THE HALF IT
+   * GETS WRONG IS THE HALF A READER WOULD ACT ON.** *"The three members stay
+   * in `JobLifecycleState` because a save written before ADR 0093 can carry
+   * them"* holds for `'travelling'` and `'performing'`: the deleted
+   * `JobSystem` assigned both, so a save written by a build before that
+   * decision really can hold them, and each has a named path here
+   * (normalisation for the first, `CarryJobExecutor.reconcileRestoredJobs` for
+   * the second).
+   *
+   * **`'reserved'` has never had a producer, in this build or in any build
+   * this repository has ever had.** It arrived with the lifecycle vocabulary
+   * issue #25 named -- the comment on `TERMINAL_JOB_STATES` above still quotes
+   * that list -- and no commit in this repository's history has ever assigned
+   * it to a job's `state`. So no save can carry it either, and the provenance
+   * the sentence above gives it is a guess that reads like a measurement.
+   *
+   * **It stays anyway, and for a different reason, which is why the
+   * distinction is worth writing down rather than quietly deleting one word.**
+   * `save-schema.ts`'s `carryItemJobSchema` validates `state` as a closed
+   * `z.enum` listing all eight, and the decoded payload reaches this method
+   * through `as unknown as SessionSnapshotBundle`
+   * (`persistence/session/session-controller.ts`) -- there is **no
+   * compile-time link** between that enum and this union. So a union narrower
+   * than the reader would be a claim the type system cannot check, and
+   * narrowing the *reader* to match would turn any save carrying the value
+   * into an unloadable prison -- the failure mode `CARRY_JOB_FAIL_REASONS`
+   * above refuses for `failReason`, bought here against a member with no
+   * producer to protect from. A phantom member is cheaper than a save that
+   * will not open.
+   *
+   * `tests/foundation/job-production-contract.test.ts` pins all three
+   * partitions -- produced, save-only, never produced -- so the next edit to
+   * this paragraph has to move a test rather than a sentence.
    */
   public loadSnapshot(snapshot: readonly CarryItemJob[]): void {
     this.jobs.clear();

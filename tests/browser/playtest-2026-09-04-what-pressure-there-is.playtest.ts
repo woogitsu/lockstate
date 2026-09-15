@@ -43,6 +43,19 @@ import {
  *
  * ## The one thing this file cannot do for you
  *
+ * **Read the whole of this section against 2026-09-04 before running it: the
+ * tree it was written for had the constant at `0`, and the tree you are
+ * running on has it at `40`.** The owner restored
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` on 2026-09-04
+ * (ADR 0064's amendment of that date, reaching the source at `3134a78e`), so
+ * on today's `main` the `sed` below matches nothing and acts **P** and **Y**
+ * need no mutation at all -- they measure the shipped tree. It is act **B**,
+ * *"the shipped curve"*, that now needs the mutation, in the other direction
+ * (`40` -> `0`), and running it unmutated reproduces P rather than B. The
+ * instructions are marked rather than rewritten
+ * (`docs/AGENT_WORKFLOW.md` §4) because this file is the record of a
+ * measurement taken on 2026-09-04 and the rate is what it was measuring.
+ *
  * Acts **P** and **Y** measure the game with
  * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `40` -- the value the
  * owner suspended. That is a **source mutation**, not a fixture: the constant
@@ -498,8 +511,14 @@ async function playTheReasonablePrison(page: Page, label: string, days: number, 
 
 test.describe('What pressure there is', () => {
   /**
-   * **B -- the shipped curve.** Run this on an unmodified tree, where
-   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is `0`.
+   * **B -- the curve with the penalty suspended.** Named *"the shipped curve"*
+   * because on 2026-09-04 it was one: this said *"run this on an unmodified
+   * tree, where `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` is `0`"*,
+   * and that was true for the day the measurement was taken. The owner
+   * restored the rate to `40` on 2026-09-04, so an unmodified tree now
+   * produces act P's curve and this act needs the inverse of the header's
+   * mutation (`40` -> `0`) to reproduce what it measured. Both directions are
+   * marked rather than overwritten (`docs/AGENT_WORKFLOW.md` §4).
    */
   test('B the shipped curve', async ({ page }) => {
     await playTheReasonablePrison(page, 'B', 7, false);
