@@ -735,7 +735,7 @@ describe('the same lock reached by a charge the player cannot decline', () => {
    * `PayrollSystem` bills every employee's `wageBand.minPerDay` at the end of
    * every in-game day -- a guard is 80 (`src/content/staff-role-catalog.ts:150`)
    * -- and `HireStaff` charges one day's wage up front
-   * (`src/simulation/staff/hiring.ts:198`). A prison that spends most of its
+   * (`src/simulation/staff/hiring.ts:202`). A prison that spends most of its
    * money on walls and hires one guard is then losing 80 a day against an
    * income line that cannot start until it buys a 65 plank. The balance walks
    * itself below 65 with no further press, and every press after that is
