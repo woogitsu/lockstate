@@ -8,11 +8,37 @@ criteria, comments, or accepted ADRs.
 ## Source-of-truth order
 
 1. `AGENTS.md` and accepted ADRs define non-negotiable engineering contracts.
-2. `docs/ARCHITECTURE.md` defines the current product architecture.
-3. GitHub Issues define scoped implementation work and acceptance criteria.
-4. `docs/ROADMAP.md` and this file define intended sequencing.
-5. Research records are advisory until their decisions are incorporated into
+2. **The repository's reading of an accepted ADR** binds *where it restates a
+   ruling*, and does not bind where it is a snapshot of code.
+   `docs/VISUAL_IDENTITY.md` and `docs/IDENTITY_V5_ROLLOUT.md` are the rung's
+   only members today.
+3. `docs/ARCHITECTURE.md` defines the current product architecture.
+4. GitHub Issues define scoped implementation work and acceptance criteria.
+5. `docs/ROADMAP.md` and this file define intended sequencing.
+6. Research records are advisory until their decisions are incorporated into
    an issue or ADR.
+
+**Rung 2 is new, and it is the owner's ruling of 2026-09-15.** It was added
+because the list had no rung for what `docs/VISUAL_IDENTITY.md` is. Level 5
+meant, in this file's own deleted words, that such a document *"may [not] cite
+the delivery … as settling a design question on its own; it can only motivate
+an issue"* — so `docs/VISUAL_IDENTITY.md` would have carried the amended
+article 8 (15px) and the 15/13/11 type scale as **advisory** while
+[ADR 0112](./adr/0112-what-the-2026-09-13-identity-delivery-decides.md) and
+`tests/unit/ui-design-tokens.test.ts` already enforce them: the least
+authoritative statement of a decision the tests pin. Level 1 was the other
+candidate and was not taken, because a non-ADR document with contract force
+turns any later drift from ADR 0112 into a conflict of contracts rather than a
+documentation bug.
+
+**What rung 2 costs, said here rather than discovered later.** Each sentence in
+such a document has to be classifiable as *restatement of a ruling* or as
+*reading of the code*, and **nothing checks that classification**. A sentence
+that drifts from the ADR it claims to restate is a contract conflict; a
+measured-gap figure that rots is an ordinary documentation bug. The two look
+identical on the page. Where a document's own sentence does not make clear
+which it is, it is a reading and does not bind — the narrower half, chosen so
+the ambiguity cannot silently promote anything.
 
 **Where the 2026-09-13 identity delivery sits in this order.**
 `docs/VISUAL_IDENTITY.md`, `docs/IDENTITY_V5_ROLLOUT.md` and the vendored tree
@@ -83,6 +109,18 @@ constitution is now a product contract subordinate to `AGENTS.md`. What has not
 changed is the ranking — a question the ADR does not answer is still settled in
 an issue at level 3, and the delivery is still advisory on everything its
 rulings do not reach.
+
+> **THE RANKING DID CHANGE ON 2026-09-15, AND THAT CLAUSE IS KEPT RATHER THAN
+> CORRECTED IN PLACE** (`docs/AGENT_WORKFLOW.md` §4: mark both directions).
+> *"What has not changed is the ranking"* was true of the list as it stood and
+> is no longer. The owner added rung 2 above, so `docs/VISUAL_IDENTITY.md` and
+> `docs/IDENTITY_V5_ROLLOUT.md` are no longer at the bottom of this list: they
+> bind where they restate one of ADR 0112's five rulings. **The rest of the
+> clause stands unchanged** — a question the ADR does not answer is still
+> settled in an issue, and the delivery is still advisory on everything its
+> rulings do not reach. The level numbers in this file's older prose are the
+> pre-2026-09-15 ones: what this paragraph calls "level 3" is rung 4 now, and
+> "level 5" is rung 6.
 
 ## Delivery sequence
 
