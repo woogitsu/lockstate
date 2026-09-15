@@ -104,10 +104,10 @@ export interface HudShellState {
  *
  * **The same fold is cited as a reason not to route anything to that list in
  * TWELVE places in `src/` alone**, counted rather than estimated:
- * `view-model.ts:1090` and `:1146`, `hud.ts:842`, `:896` and `:974`,
- * `rooms-panel.ts:1355`, `simulation-zoning.ts:26`,
- * `content/default-locale-en.ts:539`, `main.ts:1100` and `:1667`, and
- * `hud.css:351` and `:388`. Each is a true record of issue #220's defect -- a
+ * `view-model.ts:1593` and `:1649`, `hud.ts:1129`, `:1200` and `:1295`,
+ * `rooms-panel.ts:1520`, `simulation-zoning.ts:26`,
+ * `content/default-locale-en.ts:1973`, `main.ts:1336` and `:2131`, and
+ * `hud.css:710` and `:747`. Each is a true record of issue #220's defect -- a
  * message that reaches the player at *no* viewport -- and each is why some
  * sentence got a HUD row of its own instead. **Opening the list by default is
  * the one change that addresses all twelve at once**, which is why the ruling
