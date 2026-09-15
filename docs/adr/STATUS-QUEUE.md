@@ -770,8 +770,22 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `c6337952` (**v0.0.622**) by the delta method,
-from `d57b97ba`. This is #1203's merge commit, the last merge on `main`;
+Re-anchored at `main` @ `1aef04b1` (**v0.0.633**) by the delta method,
+from `c6337952`. This is #1216's merge commit, the last merge on `main`;
+`package.json` ships **0.0.633** at it, and two release commits sit above it
+— `178e42e2` (`chore(release): v0.0.634`) and `b08e0d0c`
+(`chore(release): v0.0.635`), which is what `package.json` ships at `HEAD`.
+**Two release commits above one merge is the divergence the new unit was
+introduced for, and this is its first live sighting**: the window below
+spent **13 release numbers on 12 merges**, so the gate that fired this pass
+reported 12 and a gate still counting releases would have reported 13 and
+fired one merge earlier. It is the merge rather than a release commit for
+the reason every anchor in this chain gives: a `chore(release)` commit
+starts no CI run and a reader who followed one out would have nothing to
+verify against.
+
+**The anchor before this one, kept — v0.0.622.** It read: *"Re-anchored at `main` @
+`c6337952` (**v0.0.622**) by the delta method, from `d57b97ba`. This is #1203's merge commit, the last merge on `main`;
 `package.json` ships **0.0.622** at it, and `7e9c3043`
 (`chore(release): v0.0.623`) sits one commit above it and is what
 `package.json` ships at `HEAD`, so the release assertion reads 623 − 622 =
@@ -785,7 +799,7 @@ unit of budget by breaking the rule every anchor in this chain has kept
 costs more than the unit is worth, and the pair is named in this paragraph
 instead. The tree CI actually ran is `3963bdc5`, #1203's branch head, green
 on all three jobs (run 34936526854) — the first run of any branch after the
-owner's self-hosted runners came back at 2026-09-15T06:20Z.
+owner's self-hosted runners came back at 2026-09-15T06:20Z."*
 
 **THE UNIT THAT PARAGRAPH'S LAST CLAUSE PREDICTS CHANGED LATER THE SAME DAY,
 AND THE CLAUSE IS KEPT RATHER THAN CORRECTED IN PLACE.** *"So the release
@@ -17285,6 +17299,122 @@ this clone plus `git merge-base --is-ancestor`; the values were read at both
 ends directly, so a route this clone does not hold would move a date and not a
 number.
 
+## 3. What the anchor pass of 2026-09-15 (second, afternoon) opened with the gate RED for the seventh time: twelve merges against thirteen releases — the two units' first measurable divergence in one window — 56 changed paths, eight coordinates moved on one file in two different amounts, and every other live coordinate held
+
+**The window is `c6337952..1aef04b1`**, read at `1aef04b1` (v0.0.633), the last
+merge on `main`. The gate fired at **12 merges against a budget of 10**, its
+first red since the unit changed.
+
+**The unit change earns itself in this window, which is worth recording because
+the change was made on argument rather than on a measurement of its own.** The
+same span spent **thirteen release numbers on twelve merges**: a gate still
+counting releases would have read 13 and fired one merge earlier than this one
+did. The divergence is visible on the first-parent line without any tooling —
+`178e42e2` (v0.0.634) and `b08e0d0c` (v0.0.635) both sit above `1aef04b1` with
+no merge between them, which is the shape `.github/workflows/version.yml`
+carrying no `concurrency` group produces and which #1205's first draft misread
+as four duplicated bumps. **One of those three rows was real and three were
+not**, and this window is the same pattern happening again with nothing
+duplicated.
+
+**56 paths changed; 19 of them are in §§4-6's cited set, and 18 once this file
+itself is excluded** (it is deliberately not a member of its own set). Of those
+18, five carry live coordinate citations: `src/main.ts`,
+`src/simulation/protocol/types.ts`, `src/ui/tokens.css`, `src/ui/hud/hud.ts`
+and `docs/adr/README.md`.
+
+### The one file that moved: `src/main.ts`, all eight anchors, in two amounts
+
+**Every value below was found by searching this tree for the construct's own
+text, not by offsetting the previous one.** That is the discipline this chain
+adopted after a recorded incident in which an offset applied to a wrong number
+returned a wrong number, and it is the reason the two amounts below could be
+separated at all.
+
+| what | at `c6337952` | at `1aef04b1` | moved |
+| --- | --- | --- | --- |
+| the import trio | `:138-140` | **`:139-141`** | +1 |
+| the pipeline build, `createTelemetryPipeline({` | `:198` | **`:199`** | +1 |
+| the `crashReporter` gate | `:236-239` | **`:237-240`** | +1 |
+| the crash listeners | `:242-249` | **`:243-250`** | +1 |
+| the prose hit | `:214` | **`:215`** | +1 |
+| the `src/main.ts:161-223` span | `:186-248` | **`:187-249`** | +1 |
+| the second `telemetry.enabled` gate | `:3963` | **`:4056`** | +93 |
+| the consent mount, `createTelemetryConsentPrompt({` | `:3968` | **`:4061`** | +93 |
+
+**So the two halves moved by different amounts for the ninth consecutive
+reading, and this time the top half's amount is one line.** `git diff
+c6337952..1aef04b1 -- src/main.ts` has ten hunks and exactly one of them,
+`@@ -9,6 +9,7 @@`, sits above the top-of-file anchors: a single import added to
+the opening block. Every other hunk is at `:2106` or below, which is why the
+bottom two anchors carry the whole of the remaining +92 and the top six carry
+none of it.
+
+### What held, each on a file the window touched
+
+- **`src/simulation/protocol/types.ts:173`** still reads
+  `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION),`, unmoved on a file
+  this window changed elsewhere.
+- **The `grep -rn '3\.9' src/` bullet still returns exactly three hits**, all
+  three unmoved: `src/ui/tokens.css:482`, `src/ui/primitives/icon.ts:113` and
+  `src/ui/primitives/resize-separator.ts:110`. `tokens.css` is a member of this
+  window and the hit did not move inside it, which is the first time in four
+  readings that the `.css` one has held.
+- **The telemetry grep's own count holds**: eleven hits outside
+  `src/services/telemetry/`, across `src/main.ts` (four),
+  `src/ui/telemetry-consent-prompt.ts` (two),
+  `src/worker/telemetry-ingest-route.ts` (two) and
+  `src/worker/telemetry-ingest.ts` (three).
+- **`src/ui/telemetry-consent-prompt.ts:8` and `:17` are unmoved for the twelfth
+  anchor running**, on a file no window has yet touched.
+- **`docs/adr/README.md:103-110`** still holds the wording constraint it is
+  cited for — the paragraphs deliberately written so a `Proposed` number never
+  shares a sentence with the word `Accepted`, because
+  `adr-status-reference-contract.test.ts` matches on the status word.
+- **`docs/adr/README.md` reads Next free number: 0117** at `:289`, read at
+  this anchor rather than carried. **This restatement is the one sentence in
+  this entry with a known way of going wrong, and it went wrong that way eleven
+  hours ago**: the pass of this morning wrote a live restatement of 0116, and
+  merging ADR 0116 two commits later moved the index to 0117 and left `main`
+  red on this gate for about forty minutes. So it is written here as a reading
+  taken at `1aef04b1` and nowhere else in this entry, and the next ADR to land
+  falsifies it by design — that is what the gate is for, and the repair is one
+  line rather than a re-read.
+- **§2 still holds nine live entries**, counted rather than carried: nine `###`
+  headings between §2 and §3, plus a tenth that is ADR 0031's deleted entry and
+  says so in its own heading. §2's own heading and §5's preamble both say nine.
+
+### The non-delta read, because the delta method's blind spot is not a footnote
+
+The re-anchor of this morning found **23 of its 30 movers outside the delta
+intersection** — already wrong before the window opened, on files no diff would
+have raised. So this pass also read §5's four live coordinates, none of which
+is in this window's 56 paths:
+
+- `docs/PERSISTENCE.md:2717-2718` still carries *"It is reached only after the
+  one retry below has been tried and refused"*, which is the half of the
+  discrepancy §5 asserts.
+- `docs/PERSISTENCE.md:2722-2724` still describes a writer whose session is gone
+  as *"dropped without a write, a retry or a report"*.
+- `src/persistence/session/session-controller.ts:997` still returns another
+  tab's conflict immediately — `if (first.stale.durableRevision !== session.revision) return first;`.
+
+**All four held.** That is a result and is reported as one rather than skipped:
+this is the first pass in the recent sequence whose non-delta read found
+nothing, and a non-delta read that finds nothing is exactly as much evidence
+about the method as one that finds something.
+
+### Weakest claim in this entry, named rather than left to a reader
+
+**That five files is the right count of members carrying live coordinates.** It
+comes from intersecting a backticked-path scan of §§4-6 against the window's
+changed paths, and a path scan cannot see a citation written as a bare ADR
+number or one whose coordinate was written without backticks. The chain's own
+header records that the derivation scan has been incomplete twice before and
+that both times the failure was in reading its output rather than in running
+it. This pass ran it and read it; it did not widen it.
+
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -17457,8 +17587,31 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
-**RE-VERIFIED AT `c6337952`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
-NINE — AND FOR ONCE THIS SECTION HAS NOTHING TO CORRECT.** The reading was
+**RE-VERIFIED AT `1aef04b1`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+TEN — AND FOR THE SECOND ANCHOR RUNNING THIS SECTION HAS NOTHING TO CORRECT.**
+`git diff --name-only c6337952..1aef04b1 -- .github/ docs/DEPLOYMENT.md`
+returns **nothing at all**: neither half of this section's evidence is a member
+of this window's twelve merges, for the tenth anchor running. **All four
+`migrate-database.yml` citations were opened anyway** and land unmoved — `:20`
+is the ADR 0016 §2 comment, `:33` is `on:`, `:34` is `workflow_dispatch:`,
+`:41` is `confirm_project_ref:`, `:65` is `environment:` — and
+`grep -c '^\s*push:'` over the file still returns **0**. **So do all four into
+`docs/DEPLOYMENT.md`**: the table header at `:200` with the on-every-merge row
+at `:207`, the *"`migrate-database.yml` has three runs in its entire history"*
+paragraph at `:219`, the *"Read that row as 'on every merge'"* paragraph at
+`:221`, and *"What currently serves lockstate.io"* at `:255`.
+`docs/DEPLOYMENT.md` has still not changed since `5954af75` (2026-09-04) —
+eleven days, and the longest any file this section depends on has gone
+untouched in this chain. **Nothing about the risk this section names has
+moved**: migrations still reach hosted staging on every merge with gating
+*"none"*, ADR 0016 §2 is still binding at
+`0016-migration-delivery-mechanism.md:108` — *"Recorded as a constraint
+precisely because nothing enforces it mechanically."* — and nothing in `tests/`
+can see the dashboard setting that would break it.
+
+**The reading below is kept as the record of a superseded anchor, and it
+said:** **RE-VERIFIED AT `c6337952`, AND THE RUN OF ABSENCE-BASED READINGS WAS
+THEN AT NINE — AND FOR ONCE THAT SECTION HAD NOTHING TO CORRECT.** The reading was
 taken on `7e9c3043`, the `chore(release)` commit one above the anchor, and
 that is stated rather than smoothed over: `git diff --stat c6337952 7e9c3043`
 is **one file, one line** — `package.json`'s `version` — so every coordinate
