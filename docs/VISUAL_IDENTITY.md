@@ -372,6 +372,34 @@ an impression.
    this stage inherited is **unchanged**: 23 of 36 viewport × interface-scale
    combinations fail, the same 23 as before the stage, and commit `d7aab8d8`
    carries both sweeps and what clearing it would take.
+
+   > **THE "23 OF 36" ABOVE IS KEPT AND IS NOT COMPARABLE TO ANY FIGURE
+   > MEASURED SINCE (#1202).** It is left in place because it is what stage 3
+   > was measured against and because the instrument that produced it —
+   > `d7aab8d8`'s own message calls it *"a throwaway spec and is not
+   > committed"* — no longer exists, so nobody can re-derive it. What replaced
+   > it is `tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`,
+   > written for stage 8 and committed, and it is a **stricter** instrument:
+   > run on `d7aab8d8` itself it reports **32 of 36**, nine combinations more
+   > than the 23 recorded here from the same commit. So a later "29" does not
+   > mean six new failures, and the two numbers must not be subtracted from
+   > each other.
+   >
+   > **Held to the one instrument that still exists, the debt went 32 → 29.**
+   > Three combinations fixed between `d7aab8d8` and `2559eb14` (v0.0.628) —
+   > `1280x720@100%`, `1024x768@100%`, `900x600@75%` — and none added. Both
+   > figures re-measured for #1202 rather than quoted, in two worktrees on two
+   > ports, with
+   > `node_modules/.bin/playwright test --config tests/browser/playwright.playtest.config.ts tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`:
+   > `32 of 36` on a detached worktree at `d7aab8d8` with the playtest copied
+   > in, `29 of 36` on `2559eb14`. Neither tree had the Git LFS bytes, so the
+   > actor atlases failed to decode in both — the sweep measures DOM geometry
+   > in `.hud-*` and not the canvas, and the two runs shared the condition.
+   >
+   > **What did not change is that the row still fails.** 29 of 36 is not a
+   > cleared debt, the delivery's *"Brak utraty treści i działań"* is unmet,
+   > and constitution article 8's third element is unmet with it. `d7aab8d8`
+   > still carries the price of clearing it.
 7. **The integration points the delivery names are all real.** Every path
    listed under *"Rozpoznane wcześniej punkty integracji"* in
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked

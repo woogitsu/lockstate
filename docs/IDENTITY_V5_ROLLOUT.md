@@ -226,6 +226,17 @@ introduces none of it, and the magnitudes move a little (strip spill
 **not** met today and was not met before this stage either. That is a layout
 defect and belongs to stage 3.
 
+> **This paragraph's measurements come from the same deleted instrument as the
+> "23 of 36" below, and are marked for that reason rather than corrected
+> (#1202).** Nothing here is re-derivable: the harness was a throwaway spec
+> that `d7aab8d8` did not commit. The committed sweep that replaced it,
+> `tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`, does still
+> report a strip spill of the same order at the tightest pair — `.hud-strip
+> spills 35px` at 375×812 @ 200 % on `2559eb14`, against the 34.7 px recorded
+> here — so the finding survives its instrument even though the numbers cannot
+> be joined to it. **The conclusion is untouched:** article 8's 200 % clause is
+> not met today either.
+
 ---
 
 ## Stage 3 — The HUD shell: collapse, resize, layout memory
@@ -292,6 +303,42 @@ cursor-leaves-the-window case beside it.
 combinations fail, the same 23 as on the base commit, and `d7aab8d8` carries
 both sweeps, the two things this stage had added to that number and removed
 again, and what clearing it would actually take.
+
+> **THE "23 OF 36" ABOVE IS KEPT AND IS NOT COMPARABLE TO THE "29 OF 36" THIS
+> DOCUMENT REPORTS AT §"Worked 2026-09-15 (#1164)" (#1202).** It stands because
+> it is the stage 3 finding, taken with stage 3's instrument, and that
+> instrument is gone: `d7aab8d8`'s own message records it as *"a throwaway spec
+> and is not committed: it loads 36 pages and asserts nothing"*. Its tolerances
+> therefore cannot be read, and the 23 cannot be re-derived by anybody.
+>
+> **The two numbers are two instruments, not two states of the interface.** The
+> committed replacement is
+> `tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`. Run on
+> `d7aab8d8` — the very commit the 23 came from — it reports **32 of 36**. So
+> 29 against 23 is not six regressions during the rollout; it is a stricter
+> instrument reading nine more combinations on the same tree, and the
+> subtraction is meaningless in either direction.
+>
+> **Held to the one instrument, the debt went 32 → 29 and nothing was added.**
+> The three that were fixed are `1280x720@100%`, `1024x768@100%` and
+> `900x600@75%`, all of them at or below 100 % interface scale.
+>
+> **Re-measured for #1202 rather than quoted**, in two worktrees on two ports,
+> `node_modules/.bin/playwright test --config tests/browser/playwright.playtest.config.ts tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`
+> in each: **32 of 36** at `d7aab8d8` (detached worktree, the playtest copied
+> in, port 5417) and **29 of 36** at `2559eb14` / v0.0.628 (port 5331). That
+> extends the stage 8 head reading from `584f5ca1` to `2559eb14` unchanged.
+> Neither tree held the Git LFS bytes, so the actor atlases failed to decode in
+> both runs; the sweep measures `.hud-*` DOM geometry rather than the canvas,
+> and the condition was the same on both sides of the comparison.
+>
+> **`playwright.playtest.config.ts` has to be named directly.** A playtest is
+> deliberately not one of the two gate suites, so `tests/browser/run-suite.ts
+> --suite playtest` cannot drive it — `tests/browser/browser-suites.ts` says
+> why, and `LOCKSTATE_BROWSER_TEST_PORT` is what moves it off its default 5184.
+>
+> **What did not change: the row still fails.** 29 of 36 is a smaller debt, not
+> a cleared one.
 
 ---
 
@@ -577,6 +624,12 @@ the record says so wherever it quotes a number.
   compared. Held to one instrument the debt went **32 → 29** — three
   combinations fixed, none added. The 23 above is left unedited on purpose; it
   is a stage 3 finding and this is a stage 8 pass.
+
+  **Re-measured independently for #1202 and both figures reproduced:** **29 of
+  36** on `2559eb14` (v0.0.628), 35 commits on from the `584f5ca1` this row
+  reports, and **32 of 36** on a detached worktree at `d7aab8d8`. The 23 is now
+  marked in place at §"Stage 3" and in `docs/VISUAL_IDENTITY.md`, kept rather
+  than overwritten.
 - **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
   is about the delivery's own design-book device previews, which this
   repository does not have. The clause beside it *does* transfer and is unmet:
