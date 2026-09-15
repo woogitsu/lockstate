@@ -48,6 +48,40 @@ wall*.
 Read on `6f671d5` (v0.0.136). Every line below was opened, and the run at the
 end of this section was produced by executing the shipped classes.
 
+**THAT PIN IS ADVISORY, AND IT IS CORRECTED HERE RATHER THAN DELETED
+(`docs/AGENT_WORKFLOW.md` §4).** Swept by hand on 2026-09-15 against `main` at
+`e044a3e8`; all four of this document's rooted anchors opened.
+
+- **A global pin does not date what is below it.** The convention, the evidence
+  behind it and what to write instead are in `docs/adr/README.md`'s section
+  *"A global anchor pin in an ADR is advisory, and does not date what is below
+  it"* (added by pull request #1231). Cited, not restated.
+- **`445f5465` edited below this pin with the pin sentence byte-identical in its
+  parent and in itself**, and its message does not mention a pin. One commit is
+  enough to make a global pin advisory; this document has one.
+- **This section diagnoses a defect that no longer exists, so its anchors are
+  not re-aimed.** The decision below shipped in `a7aa52ed`:
+  `projectExecuteTick` today is `Math.max(this.projectFromClock(leadTicksOverride), this.highestSubmittedTick)`
+  at `src/ui/simulation-commands.ts:290-291`, the floor is a field at
+  `src/ui/simulation-commands.ts:234`, and `seedTickFloor` reads the restored
+  queue at `src/ui/simulation-commands.ts:636-641`. Item 2's *"That expression is
+  not monotonic"* is therefore false in the present tense it is written in, and
+  re-aiming the citation under it would make a dead diagnosis read as current —
+  the error pull request #1229 avoided in ADR 0040 and named.
+- **What became of the four anchors, since a reader who wants the live code
+  should not have to re-derive it.** `handleSetClock` still answers a pause with
+  the kernel's own tick, now at
+  `src/simulation/worker/state-machine.ts:1098-1114`, cited above as
+  `state-machine.ts:827-849`. `ConstructionSystem` still holds the two stacks,
+  now at `src/simulation/construction/system.ts:363-365`, cited above as
+  `system.ts:358-424`. The per-gesture transaction id is minted at
+  `src/main.ts:2934` and the docblock recording why the grouping rule is what it
+  is runs `src/main.ts:2916-2933`, cited below as `main.ts:1915` and
+  `main.ts:1900-1914`; those two are the furthest travelled — a thousand lines —
+  and both land, in range, on code about the prisoner roster, which is
+  `documentation-source-anchor-contract.test.ts`'s stated blind spot rather than
+  a failure of it.
+
 1. **The `executeAtTick` every command carries is computed in exactly one
    place**: `SimulationCommandSender.projectExecuteTick`
    (`src/ui/simulation-commands.ts`). It returns the last reported tick while

@@ -78,8 +78,10 @@ AND BECAUSE THE SENTENCE IS WHAT A LATER READER WAS TOLD.** Swept by hand on
   this document is a second instance of it.
 - **The Context and Decision sections below diagnose and design against a tree
   this decision has since replaced, so their anchors are NOT re-aimed.**
-  `cd41a1d6` deleted `src/simulation/operations/job-system.ts` and
-  `src/simulation/prisoners/job-worker-adapter.ts` outright. Re-aiming a
+  `cd41a1d6` deleted both `job-system.ts` and `job-worker-adapter.ts` outright
+  — named here as bare basenames, which is this corpus's form for a path that
+  is history, and which is what `documentation-links-contract.test.ts` went red
+  over when this note first spelled them rooted. Re-aiming a
   citation inside a diagnosis whose subject no longer exists would make a dead
   diagnosis read as current — the error pull request #1229 avoided in ADR 0040
   and named. What is recorded instead is what became of each subject.
