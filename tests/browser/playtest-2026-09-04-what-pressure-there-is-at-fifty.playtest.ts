@@ -20,12 +20,15 @@ import {
  * **The same question as the four-prisoner instrument, at fifty prisoners
  * instead of four.**
  *
- * That instrument is `playtest-2026-09-04-what-pressure-there-is.playtest.ts`
- * beside this file, and it is cited without a rooted path deliberately: it
- * lives on branch `measure/what-pressure-there-is` (PR #971), which is not
- * merged, so a rooted citation of it is a dangling path here and
- * `tests/foundation/documentation-links-contract.test.ts` fails on it. That
- * failure is how this file's own header was found to carry two of them.
+ * That instrument is
+ * `tests/browser/playtest-2026-09-04-what-pressure-there-is.playtest.ts`, and
+ * the rooted path is now the citation it should carry. **It was cited by bare
+ * filename while PR #971 was open**, because a rooted citation of an unmerged
+ * path is dangling and
+ * `tests/foundation/documentation-links-contract.test.ts` fails on it -- which
+ * is how this file's own header was found to carry two of them. #971 merged,
+ * so the reason expired; the rooted form is checked by that same gate and the
+ * bare one never was.
  *
  * That instrument measured the shipped treasury curve and the curve with
  * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` restored to `40`, and
@@ -77,6 +80,15 @@ import {
  * `src/input/bindings.ts`) and the escape issue #957 §3 names.
  *
  * ## The one thing this file cannot do for you
+ *
+ * **On today's tree there is no mutation left to make, and the `sed` below is
+ * a no-op.** This section was written on 2026-09-04, when the constant was
+ * `0`; the owner restored it to `40` later that day (ADR 0064's amendment of
+ * 2026-09-04, reaching the source at `3134a78e`), so acts P, F and Y now
+ * measure the shipped tree unmodified. The instructions are kept rather than
+ * rewritten (`docs/AGENT_WORKFLOW.md` §4) because they are what the recorded
+ * numbers were taken under, and because they are what a reader needs if the
+ * owner ever turns the dial back.
  *
  * Acts P, F and Y measure the game with
  * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` at `40`. That is a
