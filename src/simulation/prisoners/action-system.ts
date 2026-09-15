@@ -1410,15 +1410,72 @@ export class ActionSystem implements SystemRegistration {
      * what they may do.
      */
     const awaitingAccommodation = this.records.intakeStage[index] === intakeStageIndex('accommodation-assignment');
+    /*
+     * **Taking an errand and resuming one are two decisions, and issue #882 is
+     * what it cost to spell them with one predicate.**
+     *
+     * `action.carry` is category `'work'`, so this gate used to read
+     * `isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories) &&
+     * this.carryAvailableFor(entityId)`. `carryAvailableFor` answers the
+     * resumption question correctly -- a prisoner whose own `activeJobFor` is
+     * defined is eligible whatever else the board holds -- but `&&`
+     * short-circuits before it the moment the work block ends, so a prisoner
+     * **already holding the goods** was filtered out of their own errand and
+     * selected something else while carrying it.
+     *
+     * That contradicts [ADR 0093](../../../docs/adr/0093-a-carry-is-an-action.md)'s
+     * Consequences in the ADR's own words -- *"A carry outlasts its block.
+     * Like every action, it is not cut at a regime boundary; a prisoner who
+     * picked up at 1,795 finishes the drop-off in the recreation block"* --
+     * and it contradicted them **only across a restore**, because continuous
+     * play keeps the carrier in `travelling`/`performing` and never re-enters
+     * this method. `PrisonerOperationsRuntime.loadSnapshot` drops every
+     * restored traveller to `'idle'`, which is the one restore rule decision 5
+     * (as corrected by its own landing note 2) deliberately relies on to
+     * resume a carrier without adding a field or a path. It only works if the
+     * re-selection it forces answers the way the uninterrupted action would
+     * have.
+     *
+     * **So the rule this line now carries is general, and it is worth more
+     * than the carry:** a restore may not ask a question continuous play never
+     * asks, and where it is forced to ask one it must get the answer the
+     * unbroken action already had. The regime gate is about *sending* a
+     * prisoner on an errand; it has nothing to say to a prisoner who is
+     * already on one and whose hands are full.
+     *
+     * Nothing here widens who may *take* an errand. `activeJobFor` is a keyed
+     * read of the asking prisoner's own assignment (see `carryAvailableFor`
+     * for why that stays inside ADR 0062 decision 3), so a prisoner with no
+     * job of their own is gated exactly as before, in every block; and a job
+     * whose carrier is not in the restored session is
+     * `CarryJobExecutor.reconcileRestoredJobs`'s, not this method's. The ADR's
+     * open question 1 -- *"should a carrier be interruptible by a regime
+     * change?"* -- is left where it is, the owner's and unanswered: this makes
+     * the restore path agree with the continuous one, which is the answer the
+     * document already gives (*"this document says no"*), rather than choosing
+     * a different one.
+     *
+     * `awaitingAccommodation` still wins over both, and no carrier can be at
+     * that stage anyway -- the reconsideration loop's own
+     * `abandonActionOnIneligibleStage` comment states why.
+     */
+    const resumingAnErrand = CARRY_ACTION !== undefined
+      && !awaitingAccommodation
+      && this.carry?.board.activeJobFor(entityId) !== undefined;
     const carryEligible = CARRY_ACTION !== undefined
       && !awaitingAccommodation
-      && isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories)
+      && (resumingAnErrand || isActionCategoryAllowed(CARRY_ACTION, block.allowedCategories))
       && this.carryAvailableFor(entityId);
     const legalActions = DEFAULT_ACTIONS.filter(
       (action) =>
-        isActionCategoryAllowed(action, block.allowedCategories)
-        && (action !== CARRY_ACTION || carryEligible)
-        && !(awaitingAccommodation && action.category === 'work'),
+        // The carry's legality is `carryEligible` entire: it already folds in
+        // the category test for the taking case and waives it for the resuming
+        // one. Leaving the shared `isActionCategoryAllowed` in front of it here
+        // would re-impose, one line later, the gate the line above just lifted.
+        action === CARRY_ACTION
+          ? carryEligible
+          : isActionCategoryAllowed(action, block.allowedCategories)
+            && !(awaitingAccommodation && action.category === 'work'),
     );
     const ranked = rankActions(this.needs, index, legalActions);
     // `needUrgency` split in two (issue #435), so that one walk over
@@ -1456,8 +1513,27 @@ export class ActionSystem implements SystemRegistration {
      * determinism is unaffected -- need levels are integers in component
      * storage and the threshold is a constant comparison.
      */
+    /*
+     * **The amendment binds the prisoner being SENT, not the one already
+     * carrying** -- the same distinction the `resumingAnErrand` block above
+     * draws, applied to the second of this method's two carry gates (#882).
+     *
+     * The owner's sentence is *"the institution will not send a prisoner on an
+     * errand while it is already failing to meet a need it is being docked
+     * for"*, and `carry-need-threshold.test.ts` records it in exactly those
+     * terms. A prisoner who is mid-errand with the goods in their hands is not
+     * being sent anywhere; continuous play never re-asks the question for
+     * them, so a restore that answers it differently would drop the goods on
+     * the floor of whatever block the save happened to land in and would do it
+     * *only* to prisoners whose needs had drifted since. Making resumption
+     * exempt is what keeps the restored future equal to the continuous one,
+     * which is the whole of this fix and not a re-balancing of the amendment:
+     * every prisoner who does not already hold a job reaches the rule below
+     * unchanged, and `carry-need-threshold.test.ts` still measures it.
+     */
     const bestProvidable = rankedProvidedIndex < 0 ? undefined : ranked[rankedProvidedIndex]!;
-    const aNeedIsUrgent = bestProvidable !== undefined
+    const aNeedIsUrgent = !resumingAnErrand
+      && bestProvidable !== undefined
       && bestProvidable !== CARRY_ACTION
       && relievesAnUnmetNeed(this.needs, index, bestProvidable);
 

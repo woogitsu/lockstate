@@ -287,6 +287,40 @@ export function tab(page: Page, id: 'overview' | 'build' | 'zones' | 'manage' | 
   return page.locator(`.hud__tabs [data-tab="${id}"]`);
 }
 
+/**
+ * Open a section and wait until the panel that section was opened *for* is
+ * laid out, failing with a sentence that names the panel and the section.
+ *
+ * WHY THIS EXISTS, AND IT IS NOT A STYLE PREFERENCE (#1211). `buildAndPopulate`
+ * opened `overview` and then pressed `.hud-intake__admit`. The Intake panel
+ * moved to Manage on 2026-09-14 (`d5137d5d`, issue #1183, PR #1190):
+ * `src/ui/hud/hud.ts` reads `intakePanel.setVisible(state.activeTab ===
+ * 'manage')`, and `intake-panel.ts`'s `setVisible` sets
+ * `panel.element.hidden`. So the button stayed in the DOM, `aria-busy="false"`
+ * and not disabled, and was never actionable -- and what Playwright reports
+ * for that, ten minutes later, is *"element is not visible"* against
+ * `.hud-intake__admit`. That message names the **button**, so it reads as a
+ * defect in the control, and says nothing about the section the panel is on.
+ * Three separate measurement passes were blocked by it.
+ *
+ * The check was already written one panel along -- the Rooms retry loop in
+ * `buildAndPopulate` asserts `.hud-rooms` visible after clicking `zones`, for
+ * a neighbouring reason -- and this is that line made shared. The next panel
+ * to move produces a named sentence in ten seconds instead of a timeout on a
+ * class selector at the test budget.
+ */
+export async function showPanel(
+  page: Page,
+  id: 'overview' | 'build' | 'zones' | 'manage' | 'day-plan',
+  panelSelector: string,
+): Promise<void> {
+  await tab(page, id).click();
+  await expect(
+    page.locator(panelSelector),
+    `${panelSelector} is not laid out on the ${JSON.stringify(id)} section -- has the panel moved to another section?`,
+  ).toBeVisible({ timeout: ARM_TIMEOUT_MS });
+}
+
 export async function openApp(page: Page): Promise<void> {
   await page.goto(APP_URL);
   await page.waitForSelector('#game-root canvas');
@@ -837,8 +871,10 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
   await tab(page, 'zones').click();
   log(`rooms panel: ${await panelText(page, '.hud-rooms')}`);
 
-  // Admit, from the Overview tab's Intake panel.
-  await tab(page, 'overview').click();
+  // Admit, from the Manage tab's Intake panel. It was the Overview tab's from
+  // #261 until 2026-09-14, when `d5137d5d` placed it by subject beside the
+  // Staff panel; `showPanel` is what makes the next such move say so.
+  await showPanel(page, 'manage', '.hud-intake');
   const admitMs: number[] = [];
   for (let index = 0; index < options.admits; index += 1) {
     const pressStarted = Date.now();
@@ -857,7 +893,7 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
   log(`status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
 
   if (options.guards > 0) {
-    await tab(page, 'manage').click();
+    await showPanel(page, 'manage', '.hud-staff');
     // `staff-role.guard`, not `staff.guard`: the catalogue ids are
     // `staff-role.*` (`src/content/staff-role-catalog.ts:148`). The row is
     // clicked only if it is there -- the panel already selects Guard on
