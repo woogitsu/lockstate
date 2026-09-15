@@ -686,7 +686,8 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
  * prison *on purpose*: the whole file is about watching the starter rung
  * refuse that press and the prison recover. On `origin/main` at `e044a3e8` it
  * never got there. `buy` pressed `.hud-build__buy-submit` with a bare
- * `.click()`, and the run died on the 600 s test budget with
+ * `.click()`, and the run died on whatever test budget it had -- 180 s in the
+ * reproduction transcribed below, 240 s in the file itself -- with
  *
  * ```
  * locator resolved to <button ... aria-disabled="true" class="ui-action hud-build__buy-submit">
