@@ -352,11 +352,12 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  * its numbers the owner ruled the constant back to `40` **on condition that a
  * fifty-prisoner prison was measured first**. Both measurements now exist:
  * [the four-prisoner one](../../../docs/research/2026-09-04-what-pressure-there-is.md),
- * merged on `main` as PR #971, and the fifty-prisoner one, which is
- * `2026-09-04-what-pressure-there-is-at-fifty.md` in `docs/research/` -- named
- * without a rooted path because its branch is unmerged and
- * `tests/foundation/documentation-links-contract.test.ts` fails on a dangling
- * link. **Unlike the
+ * merged on `main` as PR #971, and
+ * [the fifty-prisoner one](../../../docs/research/2026-09-04-what-pressure-there-is-at-fifty.md).
+ * **The second was named here without a rooted path while its own branch was
+ * unmerged**, because `tests/foundation/documentation-links-contract.test.ts`
+ * fails on a dangling link; it has since merged, so the citation is rooted and
+ * that gate now checks it. **Unlike the
  * suspension, this ruling was made by choosing a presented option rather than
  * in the owner's own words**, so there is no verbatim quotation of it to set
  * beside *"usuń na razie kary"* below, and none is invented here.
@@ -497,8 +498,8 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  *   that such a room is dead. **That is a separate finding and probably a
  *   separate defect; it is recorded here and not fixed here**, because it is
  *   this bullet that it contradicts. Numbers in
- *   `2026-09-04-what-pressure-there-is-at-fifty.md` §6, in `docs/research/`
- *   (unrooted, for the reason given above).
+ *   `docs/research/2026-09-04-what-pressure-there-is-at-fifty.md` §6 (rooted
+ *   since that note merged; see the paragraph above for why it was not).
  *
  *   **THAT CANDIDATE WAS CONFIRMED ON 2026-09-05, SO THE BULLET ABOVE IS KEPT
  *   AND ITS ATTRIBUTION IS WITHDRAWN.** The paragraph is left standing rather

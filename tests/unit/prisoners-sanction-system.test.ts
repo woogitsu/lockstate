@@ -97,7 +97,14 @@ describe('SanctionSystem: the follow-through half of a solitary sanction (issue 
     );
     // And what that same restricted day would cost at ADR 0064's own rate,
     // so the sanction's money consequence stays measured rather than merely
-    // described while the rate is off.
+    // described. **This clause ended "while the rate is off" and that clause
+    // is dead**: the owner restored
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` on 2026-09-04
+    // (ADR 0064's amendment of that date; the constant's own docblock carries
+    // both rulings), so the literal `40` here is the shipped rate rather than
+    // a rate the game is not charging. The line is kept rather than deleted
+    // because it is what held the sanction's money consequence asserted
+    // through the day the rate was `0`, and it would do so again.
     expect(stateIncomeForPrisonerDayAt(40, duringUnmet)).toBeLessThan(stateIncomeForPrisonerDayAt(40, before));
 
     // The term ends (200 ticks after imposition) and `SanctionSystem` moves
