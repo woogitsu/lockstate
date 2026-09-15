@@ -313,6 +313,51 @@ still holds — is the failure `adr-quotation-verbatim-contract.test.ts` exists
 to catch, and an anchor it cannot catch is one this document has to check by
 hand.
 
+**BOTH PARAGRAPHS ABOVE ARE NOW FALSE, AND THEY ARE CORRECTED HERE RATHER THAN
+OVERWRITTEN (`docs/AGENT_WORKFLOW.md` §4), BECAUSE EACH WAS TRUE OF THE TREE IT
+NAMES AND THE SECOND ONE IS THIS DOCUMENT'S OWN RECORD OF HAVING CHECKED.**
+Swept by hand on 2026-09-15 against `main` at `e044a3e8`, every anchor opened.
+
+- **A global pin is advisory and does not date what is below it.** The
+  convention is stated in `docs/adr/README.md`, in the section *"A global
+  anchor pin in an ADR is advisory, and does not date what is below it"* added
+  by pull request #1231 — which quotes **this document's** pin sentence among
+  the five it collects. It is cited here and not restated: the reason a reader
+  cannot trust the sentence above belongs in one place.
+- **This document is an instance of that finding rather than an exception to
+  it.** `338b053b` and `51b882d4` each edited anchors below the pin's own line
+  with the pin sentence byte-identical in the commit's parent and in the commit
+  itself. Neither commit message mentions a pin.
+- **#1231 excluded `338b053b` from its evidence table on the ground that it is
+  *"a reformat, not a re-aim"*, and that reading does not survive opening the
+  diff.** That commit demoted two live anchors into historical blockquotes and
+  wrote replacements beside them — Context 6's `trigger-system.ts:531` and
+  Context 13's `response-system.ts:329` and `:218`, each moved into a quoted
+  block introduced *"so they are quoted here as history rather than as live
+  citations"*. Re-aiming an anchor into a history block is the most deliberate
+  form of re-aiming there is. The exclusion is withdrawn; the row belongs in
+  that table.
+- **The enumeration above — *"every one still lands on the line it names"* — is
+  a tally, which `docs/AGENT_WORKFLOW.md` §4 names as the sentence form that
+  rots first, and it has.** Of its twenty-six entries, **at least eight no
+  longer land on what the sentence citing them names**: all five of
+  `response-system.ts` (`:218`, `:326`, `:327`, `:328`, `:329` — `:218` is now
+  a docblock line that opens the note recording that the port stopped taking
+  `(entityId, tick)`, and `:326` through `:329` sit inside an unrelated docblock
+  about plural rules) and three
+  of the ten `trigger-system.ts` entries (`:262`, `:531`, `:546`). The other
+  eleven still land exactly: all ten `gangs.ts` entries and `flashpoint.ts:343`.
+  **The split is the finding.** `gangs.ts` was not touched by the
+  implementation; `response-system.ts` and `trigger-system.ts` are the two files
+  decision 2 and decision 4 changed. An anchor into the file a decision edits is
+  the anchor that decision breaks, and this document's Context sections cite
+  those two files most.
+- **Where the anchor still names live code, it is re-aimed below and the old
+  number is kept beside it.** Where the sentence is a diagnosis of the tree this
+  document replaced, it is left alone: re-aiming it would make a dead diagnosis
+  read as current, which is the error pull request #1229 avoided in ADR 0040 and
+  named.
+
 ---
 
 ## Context
@@ -997,8 +1042,11 @@ them rather than on the words alone.
 #### 2.1 What the ruling confirms, and what this document had already argued
 
 The producer is the seam Context 9 named and Decision 2 already proposed:
-`adjudicateAssaultIfAny` (`src/simulation/incidents/response-system.ts:327`),
-the one door both terminal transitions of an assault go through. The offending
+`adjudicateAssaultIfAny` (`src/simulation/incidents/response-system.ts:346`),
+the one door both terminal transitions of an assault go through. **Re-aimed
+2026-09-15 from `:327`**, which is where that method stood when this section was
+written and which `338b053b` — the implementation of this very decision — moved
+without touching the pin above. The offending
 gang is the instigator's, the offended gang is the other participant's, and
 `addGrudge(offendedGangId, offendingGangId, weight)` is called only when both
 lookups return a gang and the two differ.
@@ -1110,7 +1158,8 @@ two cross-gang assaults buy one retaliation — on the reasoning that one is
 indistinguishable from "an assault sometimes escalates" and three is far enough
 away that a player would never connect the two events. It is a directional
 default in the same sense `retaliationThreshold` calls itself one
-(`src/simulation/incidents/trigger-system.ts:261`). Open Question 6.
+(`src/simulation/incidents/trigger-system.ts:274`, re-aimed 2026-09-15 from
+`:261`). Open Question 6.
 
 **"Two assaults" means two in the SAME direction, and this is the part an
 implementer will get wrong.** Grudges are keyed
@@ -1202,7 +1251,8 @@ untouched.
 computes, and not by a new random draw.**
 
 Intake already classifies every arrival on the `prisoners.classification`
-stream (`src/simulation/prisoners/intake-system.ts:224`) into a risk tier and a
+stream (`src/simulation/prisoners/intake-system.ts:565-571`, re-aimed
+2026-09-15 from `:224`) into a risk tier and a
 classification group. The recommendation is: **`high-risk` arrivals join a
 gang; everyone else joins none**, and which of the two gangs is chosen
 alternates on the arrival's entity id parity, which is recorded input and needs
@@ -1242,7 +1292,9 @@ criterion survives; the *timing* does not. A membership rule that reads
 high-risk prisoners are made rather than admitted. The repair is to evaluate
 membership wherever the tier is written — `ClassificationReviewSystem` already
 writes both fields at
-`src/simulation/prisoners/classification-review-system.ts:384-385` — but that is
+`src/simulation/prisoners/classification-review-system.ts:443-444` (re-aimed
+2026-09-15 from `:384-385`, which this document also carried in Open Question 5
+below) — but that is
 a second write site, a second determinism question and a decision this document
 has not priced. **Open Question 5**, and it is the one an implementer hits
 first.
@@ -1266,7 +1318,8 @@ can check against the code above rather than as an assertion:**
 1. **A grudge is a directional, single-use ledger entry, not a standing
    relationship.** `grudges` is keyed `offended->offending`
    (`src/simulation/incidents/gangs.ts:82`) and is *cleared on use*
-   (`src/simulation/incidents/trigger-system.ts:546`). The genre's usual model
+   (`src/simulation/incidents/trigger-system.ts:580`, re-aimed 2026-09-15 from
+   `:546`). The genre's usual model
    is a persistent inter-gang hostility that modulates a probability; ours is a
    debt that is created by one identifiable event and discharged by one
    identifiable event. That is closer to the incident ledger this repository
@@ -1313,7 +1366,7 @@ see what was given up, and every one of these will be proposed again.
 1. **A scheduled or random injection** — "gangs act up every N ticks", or a
    per-sample draw on a new RNG stream.
    *What it would have cost:* a seventh named RNG stream, which
-   `src/simulation/runtime/new-session.ts:471-478` sets out as a
+   `src/simulation/runtime/new-session.ts:476-481` sets out as a
    save-compatibility question in full, and the loss of the property Context 10
    establishes — that nothing in `src/simulation/incidents/` draws a random
    number. *What it would have bought:* a retaliation reachable in a prison that
@@ -1455,9 +1508,18 @@ ruling and wins.
   is kept because the correction is one an implementer would otherwise make at
   the keyboard:** a port *of the same shape* is not enough. `onAssaultAdjudicated`
   is `(entityId: EntityId, tick: number) => void`
-  (`src/simulation/incidents/response-system.ts:218`) and a directional grudge
+  (`response-system.ts:218`) and a directional grudge
   needs both participants, so the new port must carry the record or the pair —
   Context 13, point 3.
+
+  **THAT BULLET IS SPENT, AND IT IS MARKED RATHER THAN OVERWRITTEN
+  (`docs/AGENT_WORKFLOW.md` §4) BECAUSE IT IS WHAT THE PRICE WAS BEFORE IT WAS
+  PAID.** The port was widened when this decision was implemented and today
+  takes `(incident: IncidentRecord, tick: number)` at
+  `src/simulation/incidents/response-system.ts:237` — the record, which is the
+  first of the two shapes the bullet named. Its anchor above is demoted to a
+  bare basename for the same reason: `:218` is now a line of the docblock
+  recording that widening, and that docblock marks both directions itself.
 - Two `register` calls and a membership rule at session creation.
 - Extending two existing unit-test fixtures that today assert on memberless
   gangs (Decision §4).
@@ -1973,8 +2035,12 @@ a reader holding the earlier draft can follow.**
    > Decision 6 says intake; Context 15 shows the population that actually
    > becomes `high-risk` becomes so at review, long after intake, and that
    > `ClassificationReviewSystem` writes both `riskTier` and
-   > `classificationGroupIndex` at
-   > `src/simulation/prisoners/classification-review-system.ts:384-385`.
+   > `classificationGroupIndex` at `classification-review-system.ts:384-385`.
+   > (**The anchor in this quoted block is left as it was written and demoted to
+   > a bare basename**, which is this corpus's form for a number that is no
+   > longer current; the live pair is
+   > `src/simulation/prisoners/classification-review-system.ts:443-444`, given
+   > once in Decision 6 above.)
    > Assigning at both sites is the obvious repair and it is a second write
    > site with its own determinism question; assigning *only* at review means a
    > prison's first gang members appear after its first review interval, which
