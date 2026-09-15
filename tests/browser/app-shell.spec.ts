@@ -8371,10 +8371,21 @@ test.describe('the assembled application', () => {
           .map((message) => ({ kind: message.kind, payload: message.payload }));
       });
 
-    // No session, so nothing has been published and the strip shows an empty
-    // prison.
+    // No session, so nothing has been published and the strip says so: `--`,
+    // the clock's own unknown readout, rather than a zero.
+    //
+    // **This assertion read `'0'` until #1191 and moving it makes this test
+    // stronger rather than weaker, which is why it moved.** The subject of
+    // this test is that the counts come from the worker and not from zeros
+    // baked into the page, and a strip reading `0` before any publication is
+    // exactly what a baked-in zero looks like -- the old assertion was
+    // satisfied by the defect it was written to exclude. `--` cannot be
+    // produced by a hardcoded count, so the pre-publication state now
+    // discriminates. The published zero is still asserted twenty lines below,
+    // against the worker's own `counts.prisoners === 0`: a prison that really
+    // reports nothing in it still states that.
     expect(await publications()).toEqual([]);
-    await expect(metric('prisoners')).toHaveText('0');
+    await expect(metric('prisoners')).toHaveText('--');
 
     // A session exists from the moment a prison is created, and the worker
     // publishes its counts without being asked.
