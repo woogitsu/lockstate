@@ -78,10 +78,19 @@ const WATCHED_RUNGS = ['deliveries', 'construction'] as const;
  * `restoreSimulationRuntime`, runs before the kernel ever steps), so a
  * prison that reloads already below a rung seeds `standing` with that rung
  * already in it and announces nothing -- correctly, because nothing new just
- * happened. `statusCountsSchema.conditions` still tells that player
- * immediately, on the very first publication after load, exactly as ADR
- * 0087 decision 2 intends; what this class adds is the notice for the
- * moment a rung is crossed *during* a session, which a restore is not.
+ * happened. The player is still told immediately, on the very first
+ * publication after load, exactly as ADR 0087 decision 2 intends -- by the
+ * FUNDS chip of the status strip, whose `{remaining} left` badge and tooltip
+ * `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`) computes from
+ * `counts.treasuryMinorUnits` and `counts.treasuryOverdraftFloorMinorUnits`
+ * on that first payload. What this class adds is the notice for the moment a
+ * rung is crossed *during* a session, which a restore is not.
+ *
+ * **Corrected 2026-09-15 (issue #930).** This paragraph named
+ * `statusCountsSchema.conditions` as what tells that player. The field is
+ * published on that first payload and does record the standing rung -- but it
+ * is a set of NAMES with no magnitude, and nothing under `src/ui/` reads it,
+ * so on its own it tells the player nothing. The chip does, and with a figure.
  *
  * ## Determinism
  *

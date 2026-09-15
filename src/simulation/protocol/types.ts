@@ -2191,12 +2191,28 @@ const wagesUnpaidEventSchema = z
  * not once per tick the fact remains true.
  *
  * No figure carried, matching `incidents.all-clear` and the three
- * zero-parameter incident openings: the sentence names what changed and the
- * `treasury.deliveries-refused` condition beside it is where a player reads
- * the standing fact, exactly as `economy.wages-unpaid` carries the arrears
- * and `incidents.riot-opened` alone among the incident events carries a
- * count, because each of those is the one whose sentence needs a number.
- * This one's does not.
+ * zero-parameter incident openings: the sentence names what changed, and the
+ * figure a player would want -- how far under, how much room is left -- stays
+ * readable afterwards on the FUNDS chip of the always-visible status strip.
+ *
+ * **Where the number actually lives, corrected 2026-09-15 (issue #930's
+ * re-measurement).** This paragraph used to point at the
+ * `treasury.deliveries-refused` member of `statusCountsSchema.conditions` as
+ * the place a player reads the standing fact. The member does record the
+ * standing fact -- but `conditions` is a **set of names** and
+ * `PrisonCondition` has no magnitude, so it can never carry a number, and
+ * nothing under `src/ui/` reads it today. The number comes from
+ * `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`), which computes
+ * `counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(...)` off the
+ * same payload's `treasuryMinorUnits` and `treasuryOverdraftFloorMinorUnits`
+ * and paints it as the chip's `{remaining} left` badge with a tooltip
+ * sentence beside it. `remaining === 0` is exactly this condition, so the
+ * chip is never silent while this event's fact stands.
+ *
+ * Compare `economy.wages-unpaid`, which carries the arrears, and
+ * `incidents.riot-opened`, alone among the incident events in carrying a
+ * count: each of those is the one whose sentence needs a number of its own.
+ * This one's does not, because the strip is already holding it.
  */
 const deliveriesRefusedEventSchema = z
   .object({
@@ -2246,15 +2262,20 @@ const constructionRefusedEventSchema = z
  * crossing -- `canAfford` refuses every positive amount once `balance <= floor`
  * -- but the mirror is not universal in reverse: clearing the floor by one
  * minor unit affords a purchase of one minor unit and nothing larger. So the
- * sentence this schema backs says only that the floor is cleared, the same
- * narrow fact `treasury.deliveries-refused` on `statusCountsSchema.conditions`
- * already exists to keep answering in more precise terms after this notice has
- * scrolled away -- it does not say "you can afford it now", which would claim
- * more than the crossing knows.
+ * sentence this schema backs says only that the floor is cleared -- it does not
+ * say "you can afford it now", which would claim more than the crossing knows.
  *
  * No figure carried, for the same reason `deliveriesRefusedEventSchema` carries
- * none: the sentence names what changed and the standing condition beside it is
- * where the number lives.
+ * none, and with the same correction of 2026-09-15 (issue #930): the sentence
+ * names what changed, and the number is on the FUNDS chip, not on
+ * `statusCountsSchema.conditions`. This paragraph and the clause above it used
+ * to say that the standing `treasury.deliveries-refused` condition kept
+ * answering the figure "in more precise terms" -- it cannot. `conditions` is a
+ * set of **names**; the one member is the same narrow fact this sentence
+ * states, at the same precision, and carries no magnitude at all. What states
+ * the magnitude is `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`),
+ * whose `{remaining} left` badge goes from `0` back to a positive number on
+ * the very publication this crossing fires on.
  */
 const deliveriesRestoredEventSchema = z
   .object({

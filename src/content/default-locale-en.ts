@@ -1267,9 +1267,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.economy.wages-unpaid': 'Payday went unpaid — your staff are owed {total}.',
   // The owner's ruling of 2026-09-01 on issue #767 (ADR 0087 decision 2's
   // amendment): a one-off notice at the moment the treasury crosses a rung,
-  // beside the standing `treasury.deliveries-refused` /
-  // `treasury.construction-refused` conditions that keep saying so
-  // afterward. **Owner-pending**: written to be the clearest sentence
+  // beside the FUNDS chip of the status strip, which keeps saying so
+  // afterward -- and, unlike either sentence here, keeps saying *how much*:
+  // `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`) paints
+  // `{remaining} left` from `counts.treasuryMinorUnits` and
+  // `counts.treasuryOverdraftFloorMinorUnits`. **Corrected 2026-09-15 (issue
+  // #930)**: these lines named the standing `treasury.deliveries-refused` /
+  // `treasury.construction-refused` members of `statusCountsSchema.conditions`
+  // as the surface that keeps saying so. Those members record the fact, but
+  // `conditions` is a set of NAMES carrying no magnitude and nothing under
+  // `src/ui/` reads it; the chip is the surface a player actually sees.
+  // **Owner-pending**: written to be the clearest sentence
   // available rather than a settled answer -- see `InsolvencyRungSystem`
   // (`src/simulation/economy/insolvency-rung-system.ts`) for the mechanism
   // and `docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md`'s
@@ -1296,9 +1304,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * floor by one minor unit only affords a purchase of one minor unit. A
    * sentence claiming "you can afford it now" would say more than the crossing
    * knows -- exactly the shape of false promise reservation 4's release warns
-   * against -- so both sentences below name only the floor, the same fact the
-   * standing `treasury.deliveries-refused` / `treasury.construction-refused`
-   * conditions keep answering in more precise terms afterward.
+   * against -- so both sentences below name only the floor.
+   *
+   * **Where the more precise answer is, corrected 2026-09-15 (issue #930).**
+   * This paragraph used to say the standing `treasury.deliveries-refused` /
+   * `treasury.construction-refused` conditions keep answering "in more precise
+   * terms" afterward. They do not and cannot: `statusCountsSchema.conditions`
+   * is a set of NAMES, `PrisonCondition` carries no magnitude, and nothing
+   * under `src/ui/` reads the field. The precise answer is the FUNDS chip's
+   * `{remaining} left` badge and its tooltip sentence, computed by
+   * `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`) from
+   * `counts.treasuryMinorUnits` and `counts.treasuryOverdraftFloorMinorUnits`
+   * on the same `statusCounts` payload -- which is exactly the surface that
+   * flips back off `0` on the crossing these two sentences announce.
    *
    * **Kept under the twelve-word ceiling `EVENT_BAND_HOLD_CEILING_MS`
    * (`src/ui/hud/event-band-dwell.ts`) is derived against**, so this pair adds
