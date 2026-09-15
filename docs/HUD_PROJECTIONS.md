@@ -1295,6 +1295,22 @@ decision about what to build next.
     fans out over catalog room ids, so an instance registered under a
     room-catalog id the catalog does not define is invisible to the room
     list and to the status strip's room count.
+
+    > **The last clause under-states what this reaches, corrected
+    > 2026-09-15 and marked rather than rewritten.** "The room list and the
+    > status strip's room count" are readouts, and the sentence reads as if a
+    > blind spot here only costs a display. It also costs a **decision**:
+    > `counts.roomCapacity` is summed over the same fan-out, and
+    > `src/ui/hud/projection.ts`, `src/ui/hud/build-panel.ts` and
+    > `src/ui/hud/staff-panel.ts` each derive "is this prison fresh and
+    > unfurnished" from `roomCapacity === 0` — the predicate ADR 0017's
+    > "Amendment, 2026-09-01" defines as
+    > `RoomInstanceRegistry.totalResidentCapacity === 0`, which is a different
+    > question with a different answer. The registry's own docblock already
+    > names this gap as the reason a structural gate asks the registry
+    > directly; the host cannot, because the registry figure is never put on
+    > the wire. Measured consequence and the reason it is not fixed in place
+    > are in that amendment's §2.
 16. **No room-to-sector mapping.** A room's security grade requires a
     caller-supplied `sectorIdByRoomInstanceId`; without it the projection
     omits security rather than guessing a spatial containment rule.
