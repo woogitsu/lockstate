@@ -828,6 +828,36 @@ under a single version number, a window this gate was green over. The test's
 own header carries both measurements, the controls, and the counter-case for
 keeping releases.
 
+**THE LAST SENTENCE OF THE FIRST PARAGRAPH ABOVE HELD FOR ONE DAY AND IS KEPT
+RATHER THAN CORRECTED IN PLACE, BECAUSE THE DAY IS THE POINT.** It said
+`ANCHOR_STALENESS_BUDGET_RELEASES` stays declared beside the merge budget
+*"because `tooling/anchor-budget-spend.mjs`'s CI annotation still counts
+releases and its own contract test reads that declaration by name"*. That
+annotation is the line `.github/workflows/version.yml` prints at every release
+commit, the one moment `ci.yml` never gets to run the gate — so for a day it
+measured a budget no gate enforced, in the unit the gate had just abandoned.
+Read on `b08e0d0c` (v0.0.635) with this file anchored at `c6337952`
+(v0.0.622), the script printed *"13 of 10 … exceeded by 3 releases"* while
+`adr-status-queue-anchor-contract` failed on the identical tree with
+*"12 merges have landed on main since, against a budget of 10"*. Two numbers
+for one budget, and the near case is worse than a wrong number: on the
+`7e9c3043` (v0.0.623) window this section opens with, the release arithmetic
+reads **eleven** and the annotation would have announced a failing contract
+over a gate that passes there at **nine** merges.
+
+**So the annotation counts merges now, and the constant it used to mirror is
+removed.** `tooling/anchor-budget-spend.mjs` runs the gate's own count —
+first-parent commits since the anchor whose subject is not
+`chore(release): v` — names the unit in the sentence it prints, and reports
+the release figure beside it as an aside marked as not the unit, exactly as
+the gate's failure message does. Its `BUDGET` mirrors
+`ANCHOR_STALENESS_BUDGET_MERGES` at **10**;
+`ANCHOR_STALENESS_BUDGET_RELEASES` is no longer declared anywhere, because
+nothing was left reading it. `anchor-budget-spend-annotation.test.ts` pins
+both halves of the unit by name out of the gate's source — the budget and
+`RELEASE_COMMIT_SUBJECT`, the pattern that decides which commits are not
+history — so the two copies cannot drift on the number or on what they count.
+
 **The previous anchor is kept below and it read:**
 
 > Re-anchored at `main` @
