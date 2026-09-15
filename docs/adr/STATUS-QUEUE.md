@@ -16662,12 +16662,26 @@ on, at both ends, plus the unchanged files those claims cite. No gameplay
 experiment, SQL suite or historical measurement was re-run.
 
 - **The census falls for the first time in this sequence. Next free number:
-  0115**, unmoved, as `docs/adr/README.md` states. **42 Proposed, 65
-  Accepted, 107 documents**, counted on disk under each document's own
+  0116**, as `docs/adr/README.md` now states. **43 Proposed, 65
+  Accepted, 108 documents**, counted on disk under each document's own
   status statement and cross-checked against the index's status column,
   which returns 42 against 65 across 107 linked rows, summing exactly. No
   ADR arrived; **0114 moved from `Proposed` to `Accepted` on 2026-09-14**,
-  in `918bf008`/#1180, the merge that implemented it. **All four
+  in `918bf008`/#1180, the merge that implemented it.
+
+  **The three numbers in the sentence above read "0115", "42 Proposed" and
+  "107 documents", and the clause after them read "No ADR arrived", until
+  2026-09-14, when stage 5 of the identity rollout (#1161) filed
+  [ADR 0115](./0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md),
+  `Proposed`.** They are corrected in place rather than left to contradict the
+  index, which is the one thing this bullet may not do, for the reason the
+  2026-09-13 pass above states in its own words: it is the number a reader
+  drafting an ADR copies out of here. **The census's direction is unchanged by
+  the correction** — the fall this bullet reports is in the *Accepted* share,
+  and a new `Proposed` document moves it further the same way. 0115 proposes
+  nothing implemented and asks the owner one question: whether the prisoner
+  roster moves to Zarządzaj, which is the fourth row of the same table three
+  rulings of 2026-09-14 answered and this one was not put with. **All four
   Proposed-count mirrors are moved together** — this section's opening, the
   header's paragraph, §5's first bullet and §6's `income.ts` bullet — each
   with the previous reading kept beside it. **And the on-disk scan and the
