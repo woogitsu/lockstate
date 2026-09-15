@@ -273,3 +273,124 @@ export function loadLanguageSettings(store: KeyValueStore): LanguageSettings {
 export function saveLanguageSettings(store: KeyValueStore, settings: LanguageSettings): boolean {
   return writeJson(store, LANGUAGE_SETTINGS_STORAGE_KEY, settings);
 }
+
+/**
+ * One `storage` event, as much of it as this module needs (#1199).
+ *
+ * A structural port rather than the DOM's `StorageEvent`, for the reason every
+ * other seam in this tree is one: `docs/INPUT.md`'s rule is that settings
+ * persistence goes through an injectable contract "so tests stay headless",
+ * and a `node` test can construct these two fields and cannot construct a
+ * `StorageEvent`. A real `StorageEvent` satisfies it structurally, so the
+ * composition root hands the browser's own event straight through.
+ */
+export interface SettingsStorageEvent {
+  /** The key that changed, or `null` when the whole store was cleared. */
+  readonly key: string | null;
+  /** The value now at that key, or `null` when it was removed. */
+  readonly newValue: string | null;
+}
+
+/** The event surface `subscribeToSettingsChanges` attaches to -- `window` in the running app. */
+export interface SettingsChangeTarget {
+  addEventListener(type: 'storage', listener: (event: SettingsStorageEvent) => void): void;
+  removeEventListener(type: 'storage', listener: (event: SettingsStorageEvent) => void): void;
+}
+
+/**
+ * What a second tab is told when a first tab writes a preference.
+ *
+ * **Three of the four settings keys are here and the fourth is deliberately
+ * not.** `lockstate.settings.language` has no handler because this repository
+ * has no path that hands a different `Localizer` to an interface that is
+ * already mounted -- 19 modules under `src/ui/` hold one across 331 call
+ * sites and none of them exposes a setter, which is the count
+ * `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md` measured
+ * and the reason a language change is applied by reloading the page. A
+ * `storage` handler for that key could only do one of two things, and both are
+ * worse than doing nothing: re-texting what happens to repaint would turn the
+ * world's room labels Polish under an English HUD (`WorldSceneOptions.roomName`
+ * closes over the localizer and `RoomLabelLayer` re-reads it every refresh,
+ * while a tab label is written once at construction), and reloading a tab the
+ * player did not touch would interrupt a game they are in the middle of
+ * playing to apply a preference they expressed somewhere else.
+ *
+ * So the decision this subscription records is that the **cheap** three
+ * follow and the expensive one does not: the language a tab booted in is the
+ * language it stays in until it is reloaded, and nothing on screen says
+ * otherwise.
+ */
+export interface SettingsChangeHandlers {
+  readonly onAccessibilityChange?: (settings: AccessibilitySettings) => void;
+  readonly onThemeChange?: (settings: ThemeSettings) => void;
+  readonly onLayoutChange?: (settings: LayoutSettings) => void;
+}
+
+/**
+ * Follows preference writes made by **other** tabs of this origin (#1199).
+ *
+ * `storage` is the browser's own cross-document notification and it has one
+ * property that makes this safe without any loop guard: **it does not fire in
+ * the document that performed the write.** So a tab that applies what it is
+ * told here cannot echo the value back to the tab it came from, and the
+ * handlers below are free to be the same apply-paths the local controls use.
+ *
+ * Every decode goes through the same `decode*` the load path uses, so a value
+ * another tab wrote is checked exactly as a value read at boot is; an
+ * unparseable or unrecognised one becomes that key's defaults rather than
+ * being ignored, because "another tab wrote rubbish here" and "this key is
+ * empty" are the same fact for a reader.
+ *
+ * `event.key === null` is the whole store being cleared -- `localStorage.clear()`
+ * reports no key rather than one event per key -- so it is answered as all
+ * three keys reverting to their defaults, which is what the store now holds.
+ *
+ * Returns its own unsubscribe, so a caller with a teardown has one. The
+ * composition root has no teardown and does not use it: the subscription lives
+ * exactly as long as the document does.
+ */
+export function subscribeToSettingsChanges(
+  target: SettingsChangeTarget,
+  handlers: SettingsChangeHandlers,
+): () => void {
+  const listener = (event: SettingsStorageEvent): void => {
+    const changed = event.key;
+    if (changed === null) {
+      handlers.onAccessibilityChange?.(DEFAULT_ACCESSIBILITY_SETTINGS);
+      handlers.onThemeChange?.(DEFAULT_THEME_SETTINGS);
+      handlers.onLayoutChange?.(DEFAULT_LAYOUT_SETTINGS);
+      return;
+    }
+    // `JSON.parse` on a value another document wrote, so the same `try` the
+    // read path puts around `getItem` is around this: a tab with a corrupt
+    // entry must not take the page down.
+    let parsed: unknown;
+    try {
+      parsed = event.newValue === null ? undefined : JSON.parse(event.newValue);
+    } catch {
+      parsed = undefined;
+    }
+    switch (changed) {
+      case ACCESSIBILITY_SETTINGS_STORAGE_KEY:
+        handlers.onAccessibilityChange?.(
+          decodeAccessibilitySettings(parsed) ?? DEFAULT_ACCESSIBILITY_SETTINGS,
+        );
+        return;
+      case THEME_SETTINGS_STORAGE_KEY:
+        handlers.onThemeChange?.(decodeThemeSettings(parsed) ?? DEFAULT_THEME_SETTINGS);
+        return;
+      case LAYOUT_SETTINGS_STORAGE_KEY:
+        handlers.onLayoutChange?.(decodeLayoutSettings(parsed) ?? DEFAULT_LAYOUT_SETTINGS);
+        return;
+      default:
+        // Every other key on this origin, `lockstate.settings.language` and
+        // `lockstate.settings.input` among them. Saved prisons live in
+        // IndexedDB and never reach this event at all.
+        return;
+    }
+  };
+  target.addEventListener('storage', listener);
+  return () => {
+    target.removeEventListener('storage', listener);
+  };
+}

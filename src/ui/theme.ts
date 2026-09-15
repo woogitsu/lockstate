@@ -128,6 +128,23 @@ export interface ThemeController {
   readonly theme: Theme;
   /** Persists the preference, applies the theme it resolves to, and reports both. */
   select(preference: ThemePreference): void;
+  /**
+   * Applies a preference this page did **not** choose -- another tab of the
+   * same origin wrote the key, and `src/main.ts` heard the `storage` event
+   * (#1199).
+   *
+   * The difference from `select` is the whole of it: this does not persist.
+   * The value is already in the store -- that is how it got here -- so writing
+   * it back would be a second write of the same bytes, and a controller that
+   * persisted what it was told would make "the player chose this here" and
+   * "another tab chose this" indistinguishable at the one place that knows the
+   * difference.
+   *
+   * It goes through the same `settle` a press does, so `onChange` fires and
+   * the control follows: a second tab whose theme has moved must not be left
+   * with a button naming the theme that used to be on screen.
+   */
+  adopt(preference: ThemePreference): void;
 }
 
 /**
@@ -186,6 +203,9 @@ export function createThemeController(options: ThemeControllerOptions): ThemeCon
       // without anything having noticed -- the ordering `main.ts` already uses
       // for the interface scale, kept here for the same reason.
       options.persist(next);
+      settle(next, system.matches);
+    },
+    adopt(next: ThemePreference): void {
       settle(next, system.matches);
     },
   };
