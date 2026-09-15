@@ -58,6 +58,81 @@ signed on another.
 Measured on v0.0.364 (`1547c7f6`), the head of `main` when this branch was cut.
 Every `file:line` below was opened at that commit.
 
+**THAT PIN IS ADVISORY AND IT IS CORRECTED HERE RATHER THAN DELETED
+(`docs/AGENT_WORKFLOW.md` §4), BECAUSE IT WAS TRUE ON THE DAY IT WAS WRITTEN
+AND BECAUSE THE SENTENCE IS WHAT A LATER READER WAS TOLD.** Swept by hand on
+2026-09-15 against `main` at `e044a3e8`, every rooted anchor opened.
+
+- **A global pin does not date what is below it.** The convention is stated
+  once, in `docs/adr/README.md`'s section *"A global anchor pin in an ADR is
+  advisory, and does not date what is below it"* (added by pull request #1231),
+  and is cited here rather than restated.
+- **Four commits edited below this pin with the pin sentence byte-identical in
+  the parent and in the commit**: `cd41a1d6`, `a21258e4`, `490df767` and
+  `24c5ea65`. None of their messages mentions a pin.
+- **`a21258e4` is the worse of the two shapes #1231 distinguishes.** It did not
+  move an existing anchor; it **added** one below the pin —
+  `src/content/simulation-message-keys.ts:159`, in the amendment of 2026-09-03 —
+  read against that day's tree and thereby inheriting, silently, a date at which
+  it was never opened. That is the shape #1231 records against ADR 0008, and
+  this document is a second instance of it.
+- **The Context and Decision sections below diagnose and design against a tree
+  this decision has since replaced, so their anchors are NOT re-aimed.**
+  `cd41a1d6` deleted `src/simulation/operations/job-system.ts` and
+  `src/simulation/prisoners/job-worker-adapter.ts` outright. Re-aiming a
+  citation inside a diagnosis whose subject no longer exists would make a dead
+  diagnosis read as current — the error pull request #1229 avoided in ADR 0040
+  and named. What is recorded instead is what became of each subject.
+
+**What became of the anchors, opened one at a time on 2026-09-15.** Four of
+them no longer have a subject at all, and one sentence is now false in a
+direction worth knowing about.
+
+- *"`JobSystem` is constructed at `src/simulation/runtime/new-session.ts:860`
+  and registered at `src/simulation/runtime/new-session.ts:1400`"* — **the class
+  is gone.** `job-system.ts` was deleted by `cd41a1d6`, the implementation of
+  this document's own decision 4, and nothing in `src/` declares `JobSystem`
+  today; the surviving mentions are prose in docblocks that record the
+  retirement. Both anchors are in range and land on unrelated code (`:860` is a
+  line of a docblock about withdrawal and recording, `:1400` reads
+  `const occupants = resolveOccupants(sectorId);`), which is
+  `documentation-source-anchor-contract.test.ts`'s own stated blind spot:
+  *"an anchor that drifts onto plausible-looking code is worse than one that
+  drifts onto nothing"*. The lifecycle survives as
+  `src/simulation/operations/carry-executor.ts`, whose header says so.
+- *"the order is pinned at `tests/determinism/kernel-system-order.test.ts:434`"*
+  — cited **four times** in this document, and **the pinned row is gone.** That
+  line today reads `{ id: 'procurement', order: 110 }`; the removal of
+  `operations.jobs` at 260 is recorded in that file's own comment at
+  `tests/determinism/kernel-system-order.test.ts:454-457`, which names this ADR.
+  This is what decision 4 said would happen, so the four sentences are not wrong
+  about the future they described; they are wrong about the present tense they
+  are written in.
+- *"`JobBoard.submitCarryItem` has exactly one occurrence under `src/` and it is
+  the declaration (`job.ts:106`)"* — **false twice over, and this is the
+  finding.** The declaration is `src/simulation/operations/job.ts:144`, and
+  `job.ts:106` is now a blank line. More importantly the *count* is stale in the
+  direction the whole document is about: there is a production writer now,
+  `src/simulation/operations/delivery-route.ts:231`, so the "consumer with no
+  writer" shape #811 named and this section measured is **closed**. A sentence
+  asserting a count is the form `docs/AGENT_WORKFLOW.md` §4 says rots first, and
+  this one rotted because the decision it supports was implemented.
+- *"two test helpers doing so by hand (`tests/helpers/determinism-scenario.ts:188`
+  and `:195`)"* — `:188` is today a line of the docblock recording that **no
+  worker is registered any more, because there is no pool to register in**, and
+  the two carry jobs the sentence's `:195` meant are submitted at
+  `tests/helpers/determinism-scenario.ts:204-209`.
+- *"`PrisonerWorkerReleasePort` (`src/simulation/prisoners/release.ts:32-34`)"* —
+  the port is gone and its replacement stands at those very lines, which is the
+  most misleading kind of drift this corpus has: the anchor still lands on a
+  docblock about ending a departing prisoner's errand, and
+  `src/simulation/prisoners/release.ts:36-38` states the substitution in place.
+- **Not a finding, and recorded because it looked like one.** *"(whole file,
+  decision 5)"* beside `tests/determinism/job-performing-restart-bound.test.ts`
+  reads as a deletion; the file is still on disk. The list item that governs it
+  says *"rewritten"*, and the sentence quoted is inside *What shifts* rather
+  than *What is deleted*. Checked before being reported.
+
 **Every player-facing sentence this needs is deliberately absent.**
 `AGENTS.md`'s fourth exclusion reserves them; the section *What is owed to the
 owner* lists them. Where a word is owed, this document says so rather than
