@@ -16662,12 +16662,35 @@ on, at both ends, plus the unchanged files those claims cite. No gameplay
 experiment, SQL suite or historical measurement was re-run.
 
 - **The census falls for the first time in this sequence. Next free number:
-  0116**, as `docs/adr/README.md` now states. **43 Proposed, 65
-  Accepted, 108 documents**, counted on disk under each document's own
+  0117**, as `docs/adr/README.md` now states. **44 Proposed, 65
+  Accepted, 109 documents**, counted on disk under each document's own
   status statement and cross-checked against the index's status column,
-  which returns 42 against 65 across 107 linked rows, summing exactly. No
+  which returns 44 against 65 across 109 linked rows, summing exactly. No
   ADR arrived; **0114 moved from `Proposed` to `Accepted` on 2026-09-14**,
   in `918bf008`/#1180, the merge that implemented it.
+
+  **The four numbers in the sentence above read "0116", "43 Proposed", "108
+  documents" and "42 against 65 across 107 linked rows" until 2026-09-15**,
+  when the pass answering [#960](https://github.com/woogitsu/lockstate/issues/960)
+  filed
+  [ADR 0116](./0116-whether-a-finished-object-is-an-event.md), `Proposed`.
+  They are corrected in place for the reason the 2026-09-14 correction
+  directly below gives in its own words: this is the number a reader drafting
+  an ADR copies out of here, and it may not be left contradicting the index.
+  **The census's direction is unchanged**: the fall this bullet reports is in
+  the *Accepted* share, and a new `Proposed` document moves it further the
+  same way.
+
+  **And the index cross-check now agrees exactly where it used to differ by
+  one, which is a change of method rather than of the tree, and is recorded
+  so the next reading is not taken as a movement.** The 42/107 figure came
+  from a scan reading the index cell's *first* status word; the 44/109 above
+  comes from matching the first status keyword appearing anywhere in the
+  cell, which is what reconciles the rows whose Status opens with an
+  acceptance clause and names `Proposed` after it. Both scans were run here
+  and the whole of the difference is that one row family. On disk the two
+  methods already agreed and still do: 44 and 65, summing to the 109 files
+  matching `docs/adr/[0-9][0-9][0-9][0-9]-*.md`.
 
   **The three numbers in the sentence above read "0115", "42 Proposed" and
   "107 documents", and the clause after them read "No ADR arrived", until
