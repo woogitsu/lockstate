@@ -81,6 +81,26 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * panel's *computed* `overflow-y` is what closes it, and it is written as its
  * own test rather than folded into the sweep for exactly that reason.
  *
+ * **CLOSED AT THE SOURCE ON 2026-09-15, AND THE PARAGRAPH ABOVE IS KEPT
+ * BECAUSE IT IS THE READING THAT WAS WORKED AROUND.** `railControls` no longer
+ * calls `scrollIntoView`; `revealTheWayAPlayerCan` below moves only boxes whose
+ * own computed `overflow` on that axis is `auto` or `scroll`, so the
+ * per-control reading now asks the question the paragraph above says it could
+ * not. Re-measured under the same mutation, `.ui-panel.hud-staff`'s
+ * `overflow-y: auto` -> `hidden` (`hud.css:1590`): **5 failed, 9 passed**
+ * against the 1 failed / 13 passed recorded above. The four new reds are
+ * "every control on Manage is pressable" at all four viewports, each naming
+ * the control rather than the rule -- *"Who to hire" in .hud-staff cannot be
+ * brought inside its panel at phone 375x812*. Desktop is among them, so the
+ * panel is over its box at every viewport this file visits and the old reading
+ * was blind at all four rather than at the short ones.
+ *
+ * The separate computed-`overflow-y` test stays regardless. It is not made
+ * redundant by this: it names the panel and the property, so a failure says
+ * *which rule* was lost, where the sweep can only say which controls went out
+ * of reach -- and it holds at viewports where the panel happens not to be
+ * overflowing, which is where the sweep has nothing to see.
+ *
  * **One thing this file deliberately does not cover.** `src/main.ts`'s
  * `if (activeTab === 'manage') refreshIntakePipeline();` gate is not reachable
  * from here: the UI harness publishes to the panels directly and never loads
@@ -219,6 +239,64 @@ interface ControlReading {
  */
 async function railControls(page: Page): Promise<readonly ControlReading[]> {
   return page.evaluate(() => {
+    /**
+     * Bring `node` into view using only the scrolls a player has: the same
+     * reveal `app-shell.spec.ts`'s `controlReachability` makes, duplicated
+     * here because Playwright ships an evaluate callback to the browser as its
+     * own source text, so it can close over nothing this module imports.
+     *
+     * `scrollIntoView` is what this used to call, and it scrolls every
+     * scrollport on the way up including `overflow: hidden` ones -- which is
+     * the weakness the docblock above records this file as having worked
+     * around rather than closed. This closes it: a box only moves when its own
+     * computed `overflow` on that axis says a player could have moved it.
+     */
+    const revealTheWayAPlayerCan = (node: Element): void => {
+      const playerScrollable = (overflow: string): boolean => overflow === 'auto' || overflow === 'scroll';
+      for (let ancestor = node.parentElement; ancestor !== null; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const border = ancestor.getBoundingClientRect();
+        const top = border.top + ancestor.clientTop;
+        const left = border.left + ancestor.clientLeft;
+        const bottom = top + ancestor.clientHeight;
+        const right = left + ancestor.clientWidth;
+        if (playerScrollable(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+          const rect = node.getBoundingClientRect();
+          if (rect.bottom > bottom) ancestor.scrollTop += rect.bottom - bottom;
+          else if (rect.top < top) ancestor.scrollTop += rect.top - top;
+        }
+        if (playerScrollable(style.overflowX) && ancestor.scrollWidth > ancestor.clientWidth) {
+          const rect = node.getBoundingClientRect();
+          if (rect.right > right) ancestor.scrollLeft += rect.right - right;
+          else if (rect.left < left) ancestor.scrollLeft += rect.left - left;
+        }
+      }
+      // The window is the last box on that chain and it obeys the same rule.
+      // `src/styles.css:6` makes it `overflow: hidden`, and the harness page
+      // this file drives loads that stylesheet, so nothing below moves here --
+      // written out rather than assumed, because the assumption is the kind
+      // that rots when a stylesheet changes.
+      const root = document.documentElement;
+      const rootStyle = getComputedStyle(root);
+      const bodyStyle = document.body === null ? null : getComputedStyle(document.body);
+      const propagated = (rootValue: string, bodyValue: string | undefined): string =>
+        rootValue === 'visible' ? (bodyValue ?? 'visible') : rootValue;
+      const overflowY = propagated(rootStyle.overflowY, bodyStyle?.overflowY);
+      const overflowX = propagated(rootStyle.overflowX, bodyStyle?.overflowX);
+      const rect = node.getBoundingClientRect();
+      let byY = 0;
+      let byX = 0;
+      if (overflowY !== 'hidden' && overflowY !== 'clip') {
+        if (rect.bottom > window.innerHeight) byY = rect.bottom - window.innerHeight;
+        else if (rect.top < 0) byY = rect.top;
+      }
+      if (overflowX !== 'hidden' && overflowX !== 'clip') {
+        if (rect.right > window.innerWidth) byX = rect.right - window.innerWidth;
+        else if (rect.left < 0) byX = rect.left;
+      }
+      if (byX !== 0 || byY !== 0) window.scrollBy(byX, byY);
+    };
+
     const side = document.querySelector<HTMLElement>('.hud__side');
     if (side === null) return [];
     const readings: ControlReading[] = [];
@@ -230,7 +308,7 @@ async function railControls(page: Page): Promise<readonly ControlReading[]> {
       for (const control of panel.querySelectorAll<HTMLElement>('button')) {
         const laidOut = control.getClientRects().length > 0;
         if (!laidOut) continue;
-        control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        revealTheWayAPlayerCan(control);
         const box = control.getBoundingClientRect();
         const fold = panel.getBoundingClientRect();
         const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);

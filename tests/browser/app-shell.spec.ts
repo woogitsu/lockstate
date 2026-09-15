@@ -2885,9 +2885,32 @@ interface ControlReachability {
  *   reaches it by scrolling. Scrolling it into view and re-measuring asks the
  *   real question — "once it is on screen, can it be pressed" — instead of
  *   flagging every list that is longer than its box.
+ *
+ *   **But only the scrolls a player has, which this did not check until
+ *   2026-09-15.** It called `control.scrollIntoView({ block: 'nearest' })`,
+ *   and `scrollIntoView` scrolls every scrollport on the way up, including
+ *   `overflow: hidden` ones — which are scrollable by script and by nothing
+ *   a player can do. So the gesture that made the measurement possible was
+ *   also a gesture the player cannot make, and a control clipped out of a
+ *   hidden box was certified as pressable. `revealTheWayAPlayerCan` below
+ *   walks the same chain and moves only the boxes whose own computed
+ *   `overflow` is `auto` or `scroll`.
  * - **A `null` hit is a failure, not a skip.** `elementFromPoint` returns
  *   `null` for a point outside the viewport, so a control pushed off the
  *   edge by an overflowing layout reports here rather than silently passing.
+ *
+ *   **That sentence was false for as long as the one above it was**, and in
+ *   the same way: `src/styles.css:6` makes the window itself an
+ *   `overflow: hidden` box, and `scrollIntoView` scrolled *it* too. A control
+ *   carried off the bottom of the viewport was scrolled back on before it was
+ *   hit-tested, so it answered its own element and passed. The reveal now
+ *   reads the viewport's propagated overflow like any other box, finds
+ *   `hidden`, and leaves the window where it is.
+ * - **The selector is a parameter, defaulting to every interactive element.**
+ *   One caller narrows it to `.save-panel__button`, which used to be its own
+ *   inline sweep with its own `scrollIntoView` and one sample point. A
+ *   narrowed selector makes an empty match possible, so that caller asserts
+ *   the match is non-empty and wholly measured; the default never can be.
  * - **Zero-area elements are reported, not swallowed.** An inactive tab's
  *   panel and the corner the responsive rules drop are not laid out, so there
  *   is nothing to hit-test; but "skipped" has to be a fact the caller can
@@ -2895,7 +2918,7 @@ interface ControlReachability {
  *   out in *any* state the test visits has silently escaped the check, and
  *   the caller fails on exactly that.
  */
-async function controlReachability(page: Page): Promise<ControlReachability> {
+async function controlReachability(page: Page, selector: string = INTERACTIVE_SELECTOR): Promise<ControlReachability> {
   return page.evaluate((selector: string) => {
     const describe = (node: Element): string => {
       const label =
@@ -2937,6 +2960,85 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       return `${name} #${ordinal}`;
     });
 
+    /**
+     * Whether a box with this computed `overflow` on one axis is one a player
+     * can scroll on that axis. `hidden` and `clip` are not: the content is
+     * outside the box and no gesture brings it in. `visible` is not either --
+     * there is nothing to scroll, the content is painted outside the box
+     * already, and the first clipping ancestor above it decides whether the
+     * player ever sees it.
+     */
+    const playerScrollable = (overflow: string): boolean => overflow === 'auto' || overflow === 'scroll';
+
+    /**
+     * Bring `node` into view using only the scrolls a player has.
+     *
+     * This is `scrollIntoView({ block: 'nearest', inline: 'nearest' })` with
+     * one thing taken away: `scrollIntoView` scrolls **every** scrollport
+     * between the node and the viewport, `overflow: hidden` ones included,
+     * because the specification tells it to. A hidden box is programmatically
+     * scrollable and is not scrollable by a finger, a wheel or a key -- so a
+     * control clipped out of one is certified reachable by a gesture the
+     * player cannot make. This walks the same chain and moves only the boxes
+     * whose own `overflow` says the player could have moved them.
+     *
+     * Innermost outwards, re-reading the node's rect at each step, because
+     * scrolling an inner box is what puts the node where the outer box has to
+     * judge it.
+     */
+    const revealTheWayAPlayerCan = (node: Element): void => {
+      for (let ancestor = node.parentElement; ancestor !== null; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const border = ancestor.getBoundingClientRect();
+        // The *client* box, which is what `scrollTop` moves content through:
+        // the border box less its borders and any scrollbar gutter.
+        const top = border.top + ancestor.clientTop;
+        const left = border.left + ancestor.clientLeft;
+        const bottom = top + ancestor.clientHeight;
+        const right = left + ancestor.clientWidth;
+
+        if (playerScrollable(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+          const rect = node.getBoundingClientRect();
+          if (rect.bottom > bottom) ancestor.scrollTop += rect.bottom - bottom;
+          else if (rect.top < top) ancestor.scrollTop += rect.top - top;
+        }
+        if (playerScrollable(style.overflowX) && ancestor.scrollWidth > ancestor.clientWidth) {
+          const rect = node.getBoundingClientRect();
+          if (rect.right > right) ancestor.scrollLeft += rect.right - right;
+          else if (rect.left < left) ancestor.scrollLeft += rect.left - left;
+        }
+      }
+
+      // And the viewport itself, on the same rule. The root's `overflow`
+      // propagates to the viewport, and falls through to `body` only when the
+      // root is `visible`; `src/styles.css:6` sets both to `hidden`, so on
+      // this page the window is a box the player cannot scroll either and
+      // nothing below this line moves. It is written out rather than assumed,
+      // because the assumption is exactly the kind that rots when a stylesheet
+      // changes.
+      const root = document.documentElement;
+      const rootOverflowY = getComputedStyle(root).overflowY;
+      const rootOverflowX = getComputedStyle(root).overflowX;
+      const bodyStyle = document.body === null ? null : getComputedStyle(document.body);
+      const viewportOverflowY = rootOverflowY === 'visible' ? (bodyStyle?.overflowY ?? 'visible') : rootOverflowY;
+      const viewportOverflowX = rootOverflowX === 'visible' ? (bodyStyle?.overflowX ?? 'visible') : rootOverflowX;
+      // `visible` on the viewport is the ordinary scrolling page: it scrolls.
+      const viewportScrollsY = viewportOverflowY !== 'hidden' && viewportOverflowY !== 'clip';
+      const viewportScrollsX = viewportOverflowX !== 'hidden' && viewportOverflowX !== 'clip';
+      const rect = node.getBoundingClientRect();
+      let byX = 0;
+      let byY = 0;
+      if (viewportScrollsY) {
+        if (rect.bottom > window.innerHeight) byY = rect.bottom - window.innerHeight;
+        else if (rect.top < 0) byY = rect.top;
+      }
+      if (viewportScrollsX) {
+        if (rect.right > window.innerWidth) byX = rect.right - window.innerWidth;
+        else if (rect.left < 0) byX = rect.left;
+      }
+      if (byX !== 0 || byY !== 0) window.scrollBy(byX, byY);
+    };
+
     const measured: number[] = [];
     const unreachable: { control: string; hit: string }[] = [];
 
@@ -2945,7 +3047,7 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       if (initial.width === 0 || initial.height === 0) return;
       measured.push(index);
 
-      control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      revealTheWayAPlayerCan(control);
 
       // Re-read after the scroll: that is where the control now is.
       const rect = control.getBoundingClientRect();
@@ -2969,7 +3071,7 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
     });
 
     return { controls: names, measured, unreachable };
-  }, INTERACTIVE_SELECTOR);
+  }, selector);
 }
 
 /**
@@ -3012,6 +3114,17 @@ interface RailIntegrity {
  * that: a rail 81px over its budget at 1280x720 in the *default* state, whose
  * gutter hit-tested to the world canvas, its clipped content reachable only
  * because a wheel event over a panel chain-scrolled the panel's ancestor.
+ *
+ * **Half of that stopped being true on 2026-09-15 and the paragraph is kept as
+ * it stood, because it is the reading this function was built on.** The sweep
+ * no longer scrolls an `overflow: hidden` box: `revealTheWayAPlayerCan` moves
+ * only boxes whose own computed `overflow` on that axis is `auto` or `scroll`,
+ * and the window — `html, body { overflow: hidden }` at `src/styles.css:6` —
+ * is one of the boxes it now leaves alone. The **gutter** half is untouched
+ * and is still this function's alone: a container that really is `auto` but
+ * whose scrollbar lies where no pointer can land is scrollable by the sweep's
+ * reveal and by nothing a player does, and no hit test on the *control* can
+ * see that.
  *
  * So three separate claims, none of which the sweep can make:
  *
@@ -3274,6 +3387,14 @@ test.describe('the assembled application', () => {
    * because `scrollIntoView` found it. Position, unscrolled, on this page --
    * the harness in `ui-shell.spec.ts` cannot see this defect, because nothing
    * there occupies the rail's aside slot.
+   *
+   * **Both paragraphs above are history and stay history.** Since 2026-09-15
+   * the sweep scrolls only what a player can scroll, so the first of those two
+   * defects -- content reachable only because a hidden box was scrolled -- is
+   * one it would now catch itself. The second is not: a panel that really is
+   * `overflow-y: auto` and holds its last section below its own fold is
+   * *reachable*, correctly, and the reason these two measurements exist beside
+   * the sweep is that reachable is not the whole claim. Neither is removed.
    *
    * **This was one test until 2026-09-14 and is five now, one per viewport
    * (#1181).** Nothing above changed: the same states, the same sweep, the
@@ -3737,20 +3858,35 @@ test.describe('the assembled application', () => {
     await page.locator('.hud-layout__button').click();
     await expect(page.locator('.hud-layout__body')).toBeHidden();
 
-    // Saving is not a Build-tab activity, and the Build tab is where the
-    // player spends their time. Named separately so a regression says so.
+    /*
+     * Saving is not a Build-tab activity, and the Build tab is where the
+     * player spends their time. Named separately so a regression says so.
+     *
+     * **This was its own inline `page.evaluate` until 2026-09-15**, with its
+     * own `scrollIntoView` and its own single centre sample -- so it carried
+     * the hole `controlReachability` had, plus a weaker sample set, and would
+     * have had to be fixed twice. It is the same sweep narrowed to one
+     * selector instead, which also gains it the five sample points and a
+     * failure that names what covered the button rather than only which
+     * button it was.
+     *
+     * Two assertions rather than one, because narrowing the selector makes an
+     * empty match possible in a way `INTERACTIVE_SELECTOR` never was: a save
+     * panel that stopped rendering buttons, or a button collapsed to a zero
+     * box, would leave nothing for the sweep to skip *and nothing to report*.
+     * The count is the guard against a vacuous pass.
+     */
     await page.locator('.ui-tab[data-tab="build"]').click();
+    const saveButtons = await controlReachability(page, '.save-panel__button');
     expect(
-      await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>('.save-panel__button')]
-          .map((button) => {
-            button.scrollIntoView({ block: 'nearest' });
-            const rect = button.getBoundingClientRect();
-            const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-            return hit !== null && button.contains(hit) ? null : (button.textContent?.trim() ?? '');
-          })
-          .filter((label) => label !== null),
-      ),
+      saveButtons.measured.length,
+      `save-panel buttons with a box to hit-test at ${width}x${height}, of ${saveButtons.controls.length} matched`,
+    ).toBe(saveButtons.controls.length);
+    expect(saveButtons.controls.length, `the save panel drew no buttons at all at ${width}x${height}`).toBeGreaterThan(
+      0,
+    );
+    expect(
+      saveButtons.unreachable,
       `save-panel buttons unreachable from the Build tab at ${width}x${height}`,
     ).toEqual([]);
 
