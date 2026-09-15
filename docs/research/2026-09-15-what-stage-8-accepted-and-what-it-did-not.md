@@ -36,10 +36,11 @@ Two ways, never mixed, in `docs/research/README.md`'s sense of VERIFIED:
   Nothing here is a layout claim made by reading CSS, except where it says so.
 
 **The delivery's own nine cases are not evidence for anything here, and #1164
-says why.** `06-PLAN-TESTOW.md`'s *"ponownie uzyskano 9/9 PASS"* is
-`tests/audit.cjs` in the prototype package: *"Testy uruchamiają fragmenty kodu w
-Node VM z atrapami UI; nie przeglądarkę"* — fragments in a Node VM against
-stubbed UI, not a browser and not this codebase. Constitution article 20 is the
+says why.** `06-PLAN-TESTOW.md`'s *"ponownie uzyskano 9/9 PASS"* is an
+`audit.cjs` inside the prototype package, not a file of this repository, and the
+same paragraph says what it runs: *"Testy uruchamiają fragmenty kodu w Node VM z
+atrapami UI; nie przeglądarkę"* — fragments in a Node VM against stubbed UI, not
+a browser and not this codebase. Constitution article 20 is the
 delivery agreeing with that in its own voice.
 
 ---
