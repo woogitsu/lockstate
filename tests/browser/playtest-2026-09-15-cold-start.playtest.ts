@@ -11,11 +11,13 @@ import {
   ARM_TIMEOUT_MS,
   TILE,
   armBuildable,
+  buildAndPopulate,
   calibrate,
   centreOf,
   currentClock,
   currentTick,
   drag,
+  fastForwardToMax,
   installTee,
   latestCounts,
   openApp,
@@ -24,6 +26,7 @@ import {
   sentCommands,
   showPanel,
   tab,
+  waitForQueueEmpty,
 } from './playtest-harness';
 
 const SECTIONS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
@@ -188,4 +191,241 @@ test('act 2 -- the naive first quarter hour: only what the screen says', async (
 
   await showPanel(page, 'overview', '.hud-overview');
   log(`overview now: ${JSON.stringify(await panelText(page, '.hud-overview'))}`);
+});
+
+/**
+ * Installs a recorder for every sentence the two bands ever carry, so an
+ * acknowledgement census does not depend on polling catching the moment.
+ */
+async function recordBands(page: import('@playwright/test').Page): Promise<void> {
+  await page.evaluate(() => {
+    const seen: { band: string; text: string; at: number }[] = [];
+    (window as unknown as { lockstateBandLog?: unknown[] }).lockstateBandLog = seen;
+    const note = (band: string, node: HTMLElement | null) => {
+      if (node === null) return;
+      const text = (node.innerText ?? '').trim();
+      const hidden = node.hidden || node.getClientRects().length === 0;
+      const last = seen.filter((s) => s.band === band).pop();
+      const value = hidden ? '<hidden>' : text;
+      if (last?.text === value) return;
+      seen.push({ band, text: value, at: Date.now() });
+    };
+    const watch = (band: string, selector: string) => {
+      const tick = () => note(band, document.querySelector<HTMLElement>(selector));
+      tick();
+      setInterval(tick, 120);
+    };
+    watch('refusal', '.hud__refusal');
+    watch('event', '.hud__event');
+    watch('alerts', '.hud-alerts__list');
+  });
+}
+
+async function bandLog(page: import('@playwright/test').Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const seen = ((window as unknown as { lockstateBandLog?: { band: string; text: string; at: number }[] }).lockstateBandLog ?? []);
+    const first = seen[0]?.at ?? 0;
+    return seen.map((s) => `+${String(s.at - first).padStart(7)}ms ${s.band}: ${JSON.stringify(s.text)}`);
+  });
+}
+
+test('act 3 -- does a refusal stop being shown when it stops being true', async ({ page }) => {
+  await openApp(page);
+  const log = (line: string) => console.log(`[act3] ${line}`);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await showPanel(page, 'build', '.hud-build');
+  const origin = await calibrate(page);
+  await recordBands(page);
+  log(`origin ${origin.originX},${origin.originY}`);
+
+  const band = async () => JSON.stringify(await panelText(page, '.hud__refusal'));
+
+  // 1. A remove press on an empty tile edge. `calibrate` leaves the tool armed
+  //    to remove, which is exactly the state a player is in after pressing
+  //    "Remove".
+  const target = { x: origin.originX + 20 * TILE + TILE / 2, y: origin.originY + 20 * TILE };
+  await press(page, target.x, target.y);
+  log(`A. after a remove press on the empty north edge of tile (20,20): ${await band()}`);
+
+  // 2. A second remove press on a DIFFERENT empty tile. Does the band
+  //    accumulate, replace, or say which tile it is about?
+  await press(page, origin.originX + 25 * TILE + TILE / 2, origin.originY + 25 * TILE);
+  log(`B. after a second remove press on (25,20)'s edge: ${await band()}`);
+
+  // 3. Now place a wall on the tile edge sentence A was about. If the band
+  //    still carries A, it is describing a tile that now has a wall order on
+  //    it.
+  await armBuildable(page, 'wall-brick');
+  const placed = await press(page, target.x, target.y);
+  log(`C. placing a wall on the very edge A refused: ${placed.length} command(s)`);
+  log(`C. band now: ${await band()}`);
+  log(`C. queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+
+  // 4. Run the clock so the wall is really there, then look again.
+  await page.locator('.hud-strip__transport button').nth(1).click();
+  await page.waitForTimeout(6000);
+  log(`D. tick=${await currentTick(page)} clock=${JSON.stringify(await currentClock(page))}`);
+  log(`D. queue: ${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
+  log(`D. band with the wall finished: ${await band()}`);
+
+  // 5. And the same remove press again, now that there IS a wall there.
+  await page.locator('.hud-build__remove').click();
+  const removed = await press(page, target.x, target.y);
+  log(`E. remove press on the finished wall: ${removed.length} command(s) -> ${JSON.stringify(removed.map((c) => String(c['type'])))}`);
+  log(`E. band: ${await band()}`);
+
+  log(`band log:`);
+  for (const line of await bandLog(page)) log(`  ${line}`);
+});
+
+test('act 4 -- the informed run: what is acknowledged, and where the money goes', async ({ page }) => {
+  await openApp(page);
+  const log = (line: string) => console.log(`[act4] ${line}`);
+  await recordBands(page);
+
+  const funds: string[] = [];
+  const mark = async (label: string) => {
+    const counts = await latestCounts(page);
+    funds.push(`${label}: funds=${counts?.treasuryMinorUnits} earnedToday=${counts?.stateIncomeAccruedTodayMinorUnits} wages=${counts?.dailyWageBillMinorUnits} rooms=${counts?.rooms} prisoners=${counts?.prisoners} staff=${counts?.staff}`);
+  };
+
+  const origin = await buildAndPopulate(page, { beds: 2, admits: 2, guards: 1, label: 'act4' });
+  log(`origin ${origin.originX},${origin.originY}`);
+  await mark('after the whole build, two admits and one guard');
+
+  // Run to a day boundary so the state grant lands.
+  await fastForwardToMax(page);
+  const started = Date.now();
+  for (;;) {
+    const tick = await currentTick(page);
+    if (tick >= 2500 || Date.now() - started > 180_000) break;
+    await page.waitForTimeout(2000);
+  }
+  await mark(`at tick ${await currentTick(page)}`);
+
+  for (const line of funds) log(`FUNDS ${line}`);
+  log(`overview: ${JSON.stringify(await panelText(page, '.hud-overview'))}`);
+  await showPanel(page, 'overview', '.hud-overview');
+  log(`overview (on its own section): ${JSON.stringify(await panelText(page, '.hud-overview'))}`);
+  log(`strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  log(`alerts list: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  log(`refusal: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  log(`event: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+
+  log(`EVERY band sentence this run ever showed:`);
+  for (const line of await bandLog(page)) log(`  ${line}`);
+});
+
+/**
+ * Every text node laid out anywhere on the page, as one sorted set, so two
+ * moments can be diffed for *what the page gained* rather than polled for a
+ * sentence somebody guessed at in advance. This is the sweep
+ * `docs/research/2026-09-04-what-the-game-acknowledges.md` section 6 names as
+ * the thing that would settle its weakest claim.
+ */
+async function pageText(page: import('@playwright/test').Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const out = new Set<string>();
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const text = (node.textContent ?? '').trim();
+      if (text === '') continue;
+      const parent = node.parentElement;
+      if (parent === null) continue;
+      if (parent.closest('[hidden]') !== null) continue;
+      if (parent.getClientRects().length === 0) continue;
+      out.add(text);
+    }
+    return [...out].sort();
+  });
+}
+
+test('act 5 -- a text sweep across the moment something goes right', async ({ page }) => {
+  await openApp(page);
+  const log = (line: string) => console.log(`[act5] ${line}`);
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await showPanel(page, 'build', '.hud-build');
+  const origin = await calibrate(page);
+  await recordBands(page);
+
+  const before = await pageText(page);
+  log(`page text BEFORE anything (${before.length} strings)`);
+
+  // A walled 6x6 box, the clock run until it stands, then zoned as a Cell and
+  // given a bed and a toilet -- three things going right in a row.
+  await armBuildable(page, 'wall-brick');
+  const westX = origin.originX + 12 * TILE;
+  const eastX = origin.originX + 18 * TILE;
+  const northY = origin.originY + 12 * TILE;
+  const southY = origin.originY + 18 * TILE;
+  for (const run of [
+    { a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    await drag(page, run.a, run.b);
+  }
+  const afterOrders = await latestCounts(page);
+  log(`24 wall orders placed: funds=${afterOrders?.treasuryMinorUnits}`);
+
+  await fastForwardToMax(page);
+  await waitForQueueEmpty(page);
+  const walled = await latestCounts(page);
+  log(`walls stood up at tick ${walled?.tick}: funds=${walled?.treasuryMinorUnits} rooms=${walled?.rooms}`);
+  const afterWalls = await pageText(page);
+  log(`GAINED when 24 walls finished: ${JSON.stringify(afterWalls.filter((s) => !before.includes(s)))}`);
+  log(`LOST: ${JSON.stringify(before.filter((s) => !afterWalls.includes(s)))}`);
+
+  // Zone it.
+  let rooms = 0;
+  for (let attempt = 1; attempt <= 8 && rooms === 0; attempt += 1) {
+    await showPanel(page, 'zones', '.hud-rooms');
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    const roomRow = page.locator('.hud-rooms__list [data-room="room.cell"]');
+    await roomRow.click();
+    await expect(roomRow).toHaveAttribute('data-selected', 'true', { timeout: ARM_TIMEOUT_MS });
+    const roomArm = page.locator('.hud-rooms__arm');
+    if ((await roomArm.getAttribute('data-armed')) !== 'true') await roomArm.click();
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(1200);
+    rooms = (await latestCounts(page))?.rooms ?? 0;
+    log(`designate attempt ${attempt}: rooms=${rooms} | refusal=${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+    if (rooms === 0) await page.waitForTimeout(4000);
+  }
+  const afterZone = await pageText(page);
+  log(`GAINED when the first room was zoned: ${JSON.stringify(afterZone.filter((s) => !afterWalls.includes(s)))}`);
+  log(`LOST: ${JSON.stringify(afterWalls.filter((s) => !afterZone.includes(s)))}`);
+  log(`counts: ${JSON.stringify(await latestCounts(page))}`);
+
+  // A bed, inside.
+  await showPanel(page, 'build', '.hud-build');
+  await armBuildable(page, 'bed-wooden');
+  const bed = centreOf(origin, 13, 13);
+  await press(page, bed.x, bed.y);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(2500);
+  const afterBed = await pageText(page);
+  log(`GAINED when the first bed stood up: ${JSON.stringify(afterBed.filter((s) => !afterZone.includes(s)))}`);
+  log(`LOST: ${JSON.stringify(afterZone.filter((s) => !afterBed.includes(s)))}`);
+  log(`counts: ${JSON.stringify(await latestCounts(page))}`);
+
+  // And an admission, which is the thing the game has been telling the player
+  // to work towards since the arrival screen.
+  await showPanel(page, 'manage', '.hud-intake');
+  await page.locator('.hud-intake__admit').click();
+  await page.waitForTimeout(2500);
+  const afterAdmit = await pageText(page);
+  log(`GAINED when the first prisoner was admitted: ${JSON.stringify(afterAdmit.filter((s) => !afterBed.includes(s)))}`);
+  log(`LOST: ${JSON.stringify(afterBed.filter((s) => !afterAdmit.includes(s)))}`);
+  log(`counts: ${JSON.stringify(await latestCounts(page))}`);
+  log(`intake panel: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+  log(`strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+
+  log(`EVERY band sentence this run showed:`);
+  for (const line of await bandLog(page)) log(`  ${line}`);
 });
