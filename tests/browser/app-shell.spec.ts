@@ -313,7 +313,7 @@ interface StatusCountsPublication {
   readonly payload: {
     readonly tick: number;
     readonly schemaVersion: number;
-    readonly counts: Record<string, number>;
+    readonly counts: Record<string, number | boolean>;
   };
 }
 
@@ -346,6 +346,20 @@ const INJECTED_STATUS_COUNTS = {
       staffUnassigned: 1,
       rooms: 12,
       roomCapacity: 48,
+      // The twenty-second count (2026-09-15), and the first boolean on this
+      // channel: `RoomInstanceRegistry.totalResidentCapacity === 0`, ADR 0017's
+      // "Amendment, 2026-09-01" §2. Required for the same `.strict()` reason
+      // as the fields around it.
+      //
+      // **Deliberately `false` against a `roomCapacity` of 48, and the pair is
+      // the fixture's own idiom.** The host derived this predicate from
+      // `roomCapacity === 0` until 2026-09-15, and that derivation cannot see a
+      // room instance registered under a room-catalog id the content registry
+      // does not define -- so a host that reached for `roomCapacity` again
+      // would be visible on the prison where they come apart
+      // (`tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`)
+      // rather than plausible. This prison is furnished on both readings.
+      isFreshUnfurnishedPrison: false,
       // Required, not optional, for the reason the paragraph above and the
       // note on `stateIncomeAccruedTodayMinorUnits` below both give: the
       // counts payload is `.strict()`, so a fixture missing this field is
