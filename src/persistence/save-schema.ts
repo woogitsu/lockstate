@@ -71,8 +71,17 @@ const namedRngStreamStateSchema = z
  * (`tests/perf/persistence-decode-aliasing.perf.ts`).
  *
  * One line, and it closes both trust entry points -- `createSaveEnvelope` and
- * `decodeSaveEnvelope` -- across all three payload versions and the V1 -> V2 ->
- * V3 migration chain, because `kernelSnapshotSchema` is shared by all of them.
+ * `decodeSaveEnvelope` -- across every payload version and the whole migration
+ * chain, because `kernelSnapshotSchema` is shared by all of them: it appears
+ * once per version below, and `save-migrations.ts` exports one
+ * `migrateSaveEnvelopeV<n>ToV<n+1>` per step.
+ *
+ * **This read "all three payload versions and the V1 -> V2 -> V3 migration
+ * chain" on 2026-09-15, when there were six schemas and five steps** -- and
+ * `docs/PERSISTENCE.md` carried the same claim twice, once as "four" and once
+ * as "three", in one file. The number is gone rather than set to six because
+ * the sentence is about the schema being *shared*, which is true at any count
+ * and stops the tally from rotting a fourth time.
  */
 const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredClone(value) as JsonValue);
 
