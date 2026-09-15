@@ -1770,7 +1770,11 @@ test('act M: the interaction budget for one usable cell', async ({ page }) => {
   note(`[M] plus ${transportPresses} transport presses (start/stop the clock), so ${presses.total + transportPresses} presses of any kind`);
   note(`[M] money spent: 25000 -> ${done?.treasuryMinorUnits}`);
   note(`[M] the Rooms panel at the end:\n${await panelText(page, '.hud-rooms')}`);
-  await presses.click(tab(page, 'overview'), 'Overview tab, to see whether a prisoner can now be admitted');
+  // The Manage tab, not Overview: the Intake panel moved there on 2026-09-14
+  // (`d5137d5d`). Counted through `presses` rather than through `showPanel`
+  // because this act's measurement IS the press count -- a navigation this
+  // file does not count is a press a player still has to make.
+  await presses.click(tab(page, 'manage'), 'Manage tab, to see whether a prisoner can now be admitted');
   note(`[M] the Intake panel now says:\n${await panelText(page, '.hud-intake')}`);
   note(`[M] status strip: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
   await shot(page, 'M06-one-usable-cell');

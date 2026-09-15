@@ -5,6 +5,7 @@ import {
   buy,
   calibrate,
   centreOf,
+  type CountsSample,
   countsSeries,
   currentTick,
   drag,
@@ -15,10 +16,10 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
   TILE,
   waitForQueueEmpty,
-  type CountsSample,
 } from './playtest-harness';
 
 /**
@@ -424,7 +425,7 @@ async function zoneTheYard(page: Page, label: string, origin: { originX: number;
 }
 
 async function admit(page: Page, label: string, wanted: number): Promise<number> {
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   let admitted = 0;
   for (let index = 0; index < wanted; index += 1) {
     const control = page.locator('.hud-intake__admit');

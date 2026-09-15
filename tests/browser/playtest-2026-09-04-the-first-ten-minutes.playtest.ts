@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import {
-  TILE,
   calibrate,
   centreOf,
   currentClock,
@@ -12,7 +11,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
 } from './playtest-harness';
 
 /**
@@ -553,7 +554,7 @@ test.describe('the first ten minutes', () => {
 
     // ---- N11. The room is "not ready". Does the screen say what to do?
     console.log(`[act2] N11 rooms panel: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     tally.step('Overview tab');
     await page.locator('.hud-intake__admit').click();
     tally.step('press Admit a prisoner');
@@ -763,7 +764,7 @@ test.describe('the first ten minutes', () => {
     console.log(`[act3] furniture built ${(await currentTick(page)) - fromFurniture} ticks later; counts ${JSON.stringify(await latestCounts(page))}`);
 
     // 7. Admit.
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     tally.step('Overview tab');
     await page.locator('.hud-intake__admit').click();
     tally.step('press Admit a prisoner');
