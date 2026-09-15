@@ -264,6 +264,33 @@ overwritten.*
 *Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
 (v0.0.121); every migration named below was opened on that tree.*
 
+> **Corrected 2026-09-15: the pin sentence above is advisory, it is kept word
+> for word rather than deleted, and it is false about part of what sits below
+> it.** `docs/adr/README.md`'s section *"A global anchor pin in an ADR is
+> advisory, and does not date what is below it"* — added by pull request #1231
+> and not on `main` as this is written — names this very sentence as one of its
+> rows, and this document is the worst of the shapes it found. Three things a
+> reader should not infer from it:
+>
+> - **"below" reaches past the end of this amendment.** `002e1183` appended a
+>   second amendment under it later the same day, carrying its own pin at
+>   `30db0e9` — 108 commits further on. Every anchor in that section therefore
+>   sits under *two* pins naming two different trees, and inherits from this one
+>   a date at which it was never read. That is #1231's "worse shape" and it is
+>   this row: the anchors were not moved under a stale pin, they were **added**
+>   under one.
+> - **The migrations are the half that held, and the word is doing real work.**
+>   Re-checked 2026-09-15 by opening each one: every anchor into
+>   `supabase/migrations/` in this document still lands on the statement its
+>   sentence names. What rotted is everything the word *migration* excludes —
+>   `vite.config.ts`, `src/services/telemetry/events.ts` and the anchors into
+>   `supabase/tests/` — each corrected at its own site below.
+> - **`(v0.0.121)` is the working version string, not the tag, and is kept.**
+>   Checked rather than assumed: `package.json` reads `0.0.121` at `792bf94`,
+>   so the parenthetical is honest — but `v0.0.121` the tag is `54418b6`, and
+>   `792bf94` is fifty commits after it, first released in `v0.0.122`. A reader
+>   who resolves the tag will land somewhere else.
+
 ### The sentence, and the function it does not describe
 
 §3 opens:
@@ -350,7 +377,17 @@ triggers on exactly the three tables §2 names — `prisons` (`:161-163`),
 `profiles` (`:166-168`) and `user_settings`. T3's `evidence_digest` is a real
 column with a real unique constraint
 (`20260824100000_bind_challenge_evidence_to_payload.sql:252`, `:291-292`). T9's
-`sourcemap: false` is at `vite.config.ts:84`. The Consequences bullet holds in
+`sourcemap: false` is at `vite.config.ts:84`.
+
+> **Corrected 2026-09-15. Everything in the paragraph above that is a migration
+> re-verified exactly, opened line by line; the one anchor in it that is not a
+> migration has drifted, which is the pin's own scope word showing through.**
+> `vite.config.ts:84` is today a line of the comment block explaining
+> `telemetryDefines()`. The claim is intact and the anchor is not: the line
+> reading `sourcemap: false,` is at `vite.config.ts:91`, still inside the
+> `build` block and still carrying the two-line comment the ADR's T9 row is
+> about. The old number is left in the sentence, as a bare `:84`, because it is
+> now a statement about a tree rather than about this one. The Consequences bullet holds in
 both halves: `grep -rn "from '.*services/" src/simulation/` is empty, nothing
 under `src/services/` imports Phaser or touches the DOM, and
 `supabase/` holds `config.toml`, `migrations` and `tests` and no `functions`
@@ -358,6 +395,19 @@ directory at all, so the deployment units really are still uncreated while the
 modules they will host exist. (That directory is named here without a rooted
 path on purpose: `documentation-links-contract.test.ts` refuses a cited path
 that is not on disk, and this one is absent by design.)
+
+> **Corrected 2026-09-15, and this one is a fact rather than a number.** The
+> first clause still holds — `supabase/` holds `config.toml`, `migrations` and
+> `tests`, and there is still no `functions` directory. The conclusion drawn
+> from it does not. **A server-side deployment unit exists**: `src/worker/`
+> holds `index.ts`, `telemetry-ingest-route.ts` and `telemetry-ingest.ts`, and
+> `index.ts` describes itself as *"The first code in this project that runs
+> where a player cannot see it"* — the ADR 0046 telemetry ingest, named as
+> `main` in `wrangler.jsonc`. So the sweep above proved the absence of an
+> *Edge Function* and was read as proving the absence of a server tier; the
+> tier arrived through Cloudflare instead. Both halves are marked rather than
+> overwritten because the reasoning was sound on its own evidence and the
+> evidence was incomplete.
 
 Two forward commitments are worth a reader's attention and neither is a defect.
 The Consequences bullet *"Each of entitlements, diagnostics and localization gets
@@ -395,6 +445,18 @@ mechanical gate in `docs/adr/`.*
 
 *Read on the tree at `30db0e9`. Every SQL, test and source citation below was
 opened there.*
+
+> **Corrected 2026-09-15, on the same terms as the pin above and for the same
+> reason: kept, not deleted, and no longer true of the non-SQL half.** This
+> section's anchors into `supabase/migrations/` all still resolve; its two
+> anchors into `src/services/telemetry/events.ts` and its two into
+> `supabase/tests/003_data_api_grants.test.sql` do not, and are re-aimed where
+> they are cited. Read this sentence as a record of where the section was
+> written from, not as a statement that its numbers are current.
+>
+> **And one claim under it is not an anchor problem but a fact problem:
+> the endpoint this amendment reasons about as unbuilt has been built.** See
+> part 6 below, where it is corrected in place.
 
 ### Part 1. The clause
 
@@ -541,6 +603,19 @@ every entry point in the table above derives its principal from `auth.uid()` or
 is granted to `service_role` alone. The clause is what makes that reading the
 document's rather than a reader's.
 
+> **Updated 2026-09-15: it is no longer vacuous about HTTP, and this is the
+> clause being spent rather than tested.** An unauthenticated HTTP mutation
+> endpoint now exists — `src/worker/index.ts`, which cites this amendment by
+> name for its permission and says of itself that the ingest is *"unauthenticated
+> by design"*. **Nothing above needs re-deciding**: the reading is that §3 binds
+> by the authority of the state a path decides, the ingest decides nothing, so
+> §3 step 1 does not reach it and is not contradicted. What changes is the
+> reader's situation. Until 2026-09-03 a reader could satisfy themselves that
+> step 1 held by observing that there were no endpoints; from the ingest onward
+> they have to accept the clause to keep reading step 1 as true, and that is a
+> heavier thing to ask of a sentence that still says *"without exception"* four
+> hundred lines above. §3's own pointer to this amendment is what carries it.
+
 **The retention job — inside, and this one is not obvious.** Deciding which
 events survive *is* the half §2 assigns to Z2. A scheduled deletion is a
 mutation over it, so §3 binds it: the job records what rule it applied, over
@@ -586,6 +661,28 @@ server-side validation or append-only storage, and those two bind whether or not
     deletes on a stored client timestamp deletes nothing that was sent with a
     timestamp far enough in the future. The stored occurrence time must be the
     server's; keeping the client's is fine as a separate, clearly named column.
+
+  > **Corrected 2026-09-15, in three directions, and the middle one is the
+  > interesting one.**
+  >
+  > 1. **One anchor holds and one has drifted.** `occurredAt` is still
+  >    `occurredAt: z.number().int().min(0),` (verbatim in
+  >    `src/services/telemetry/events.ts`) at `events.ts:39`, exactly as cited.
+  >    The `sampleRate` field is no longer at `:50` — that line opens the
+  >    docblock above it — but at `src/services/telemetry/events.ts:64`.
+  > 2. **The quotation attributed to the field is no longer in the file, and
+  >    the code now argues this paragraph's own case.** `events.ts` used to say
+  >    the receiver could *"weight instead of guessing"*; `98b8862e` replaced
+  >    that with the refutation — the docblock there now reads *"It used to say
+  >    the receiver can "weight instead of guessing" by it. That holds only
+  >    for a *trusted* sender."* So the quotation above is a quotation of a
+  >    deleted sentence and is left as history rather than re-attributed.
+  > 3. **Both hazards are answered in shipped code.** `src/worker/index.ts`'s
+  >    guard table names `receivedAt` stamped at the Worker against retention
+  >    evasion, and `registrySampleRate` taken from the registry against
+  >    aggregate amplification — which is what this bullet pair asked for,
+  >    arriving after it was written. The obligation is discharged, not
+  >    withdrawn.
 - **Step 5, apply as an append.** Aggregates are folded from the stored events,
   never written independently. This is the same rule that makes the entitlement
   ledger auditable and it costs nothing here.
@@ -624,7 +721,14 @@ roles**, not HTTP callers:
   and function privilege set of `anon`, `authenticated` and `service_role`, each
   named as a literal — `has_function_privilege('service_role', p.oid, 'EXECUTE')`
   at `supabase/tests/003_data_api_grants.test.sql:607` is the shape, and the
-  three role names are spelled out throughout. A fourth database role, created
+  three role names are spelled out throughout. **Re-aimed 2026-09-15: that line
+  is today the `authenticated` arm of the assertion above it. The
+  `service_role` one this sentence means is
+  `and has_function_privilege('service_role', p.oid, 'EXECUTE')),` (verbatim in
+  `supabase/tests/003_data_api_grants.test.sql`), at
+  `supabase/tests/003_data_api_grants.test.sql:634`; `:607` is kept as history.
+  Nothing about the claim moved — the sweep is still by literal role name and
+  still reaches no fourth role.** A fourth database role, created
   for a Worker to hold, is **swept by none of it**. The suite's separate
   PUBLIC-grantee assertion does not reach a named role either.
 - **A Worker calling a `SECURITY DEFINER` function with a server-side key is
@@ -633,6 +737,20 @@ roles**, not HTTP callers:
   in this repository observes who reached the Worker. There is no HTTP surface
   here to observe: the deployment units are still not created, exactly as this
   ADR's Consequences say.
+
+  > **Corrected 2026-09-15. The last sentence is false and is the sharpest thing
+  > this pass found in this document.** The Worker landed: `src/worker/index.ts`
+  > is named as `main` in `wrangler.jsonc` and carries the ADR 0046 telemetry
+  > ingest route. So there **is** an HTTP surface here now, and the rest of the
+  > bullet is about the only part that has not changed — nothing in this
+  > repository observes who reached it, and by design: `src/worker/index.ts`
+  > records that it makes no `console` call at all, because a log line in a
+  > Cloudflare Worker carries the visitor's IP into the account's log stream.
+  > **The conclusion of this part survives its premise**: §3 step 1's
+  > enforcement is still only the pgTAP suites, they still sweep database roles
+  > by literal name, and they are still structurally blind to HTTP — which is
+  > now a statement about a live endpoint rather than about a hypothetical one.
+  > That makes part 6 more load-bearing than when it was written, not less.
 
 So **§3 step 1's only enforcement is structurally blind to unauthenticated HTTP
 ingest.** That is not an argument against the owner's choice — an authenticated
@@ -648,7 +766,10 @@ holds the paid-entitlement write path.** `record_entitlement_event` is granted t
 (`supabase/migrations/20260824110000_generalize_entitlement_idempotency.sql:346-348`),
 and `supabase/tests/003_data_api_grants.test.sql` pins that as *"service_role may call exactly
 one RPC: the Z3 -> Z2 payment-webhook write path"*
-(`supabase/tests/003_data_api_grants.test.sql:609`). `service_role` additionally
+(`supabase/tests/003_data_api_grants.test.sql:609`; **re-aimed 2026-09-15 to
+`supabase/tests/003_data_api_grants.test.sql:636` — the quoted sentence is still
+in that file word for word, and `:609` now falls on the `authenticated`
+assertion twenty-seven lines above it**). `service_role` additionally
 holds the verdict `UPDATE` on `challenge_submissions`. So the blast radius of a
 bug in an unauthenticated telemetry handler is not telemetry: it is entitlements
 and leaderboard rank, reached through the same key.
@@ -660,6 +781,23 @@ on the ingest function and nothing else — not `service_role`, and not
 - Such a role is **unswept**, per part 6 above. Adding it means extending
   `003_data_api_grants.test.sql`'s role list in the same change; extending a
   pinned list is what adding a role looks like here.
+
+  > **Re-read 2026-09-15: the deadline in "both due before the ingest ships"
+  > has partly passed, and what that does and does not mean is worth stating
+  > rather than leaving as an alarm.** The ingest handler has shipped. The role
+  > has not, and neither has a destination: `src/worker/telemetry-ingest.ts`
+  > takes its store as an injected `TelemetryIngestStore`, and
+  > `src/worker/index.ts` records that **no key, token, project reference or
+  > database credential appears in that file or anywhere under `src/`** — with
+  > the path deliberately unclaimed unless a deployment sets
+  > `LOCKSTATE_TELEMETRY_INGEST_PATH`. So the amplification this part warns
+  > about is not open: there is no `service_role` key in front of the endpoint
+  > because there is no key in front of it at all. **What has changed is that
+  > the obligation is now the last thing between the ingest and a destination,
+  > rather than one of several things between it and existing.** Stated as an
+  > observation: nothing here measures what a deployment holds, and
+  > `docs/AGENT_WORKFLOW.md` §3's *"Ask about state this repository cannot
+  > read"* covers the rest.
 - The role's key is a Z2 credential and §4's *"No service-role credential ever
   reaches Z0/Z1"* covers it by intent. It is worth reading as covering any
   elevated database role, not only the one Supabase happens to name
