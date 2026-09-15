@@ -472,6 +472,17 @@ other accrual against a negative balance, and nothing bounds them.** Measured:
 3,220 → 27,220 in six in-game days, growing 4,800/day for as long as the prison
 is left alone.
 
+> **"Six" is one too many, and the growth rate beside it is right.** The
+> sentence is kept as it stood (`docs/AGENT_WORKFLOW.md` §4: mark both
+> directions) because the figure it exists to carry — 4,800 a day, unbounded —
+> is unaffected. The measured span is act B's day-by-day table in
+> `docs/research/2026-09-04-can-this-prison-fail.md`: 3,220 at **day 4**,
+> 8,020, 12,820, 17,620, 22,420, and 27,220 at **day 9**. That is six rows and
+> **five** day-boundaries of growth, and the arithmetic agrees —
+> 27,220 − 3,220 = 24,000, and 24,000 ÷ 4,800 = **5**. Six days at 4,800 would
+> have reached 28,800. **Nothing else in this document reads the span as a
+> duration**, so no figure above or below moves.
+
 **What unbounded arrears cost, in the only unit a player feels.** **ARITHMETIC**
 over the measured figures: 27,220 of arrears against one recovered occupied
 place at 300/day is **91 in-game days** before the prison may spend one minor
