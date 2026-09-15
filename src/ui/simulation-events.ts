@@ -1228,18 +1228,34 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     case 'incidents.riot-opened':
       return { count: event.participantCount };
     // The crossing is the whole sentence; the figure a player would want --
-    // how far under, how much room is left -- is what
+    // how far under, how much room is left -- is on the FUNDS chip of the
+    // always-visible status strip, which keeps answering it after this notice
+    // has scrolled away. That is ADR 0087 decision 2's division of labour
+    // between the two channels, and the durable half of it is already built.
+    //
+    // **Corrected 2026-09-15 (issue #930).** These lines used to name
     // `treasury.deliveries-refused` / `treasury.construction-refused` on
-    // `statusCountsSchema.conditions` exist to keep answering after this
-    // notice has scrolled away, per ADR 0087 decision 2's own division of
-    // labour between the two channels.
+    // `statusCountsSchema.conditions` as the channel holding the figure.
+    // `conditions` is a set of NAMES -- `PrisonCondition` has no magnitude --
+    // so it could never have held one, and nothing under `src/ui/` reads it.
+    // The number is `overdraftRemaining` in `src/ui/hud/projection.ts:590-595`,
+    // computed from `counts.treasuryMinorUnits` and
+    // `counts.treasuryOverdraftFloorMinorUnits` on this same payload and
+    // painted as `{remaining} left` beside the balance, with
+    // `hud.status.funds-deliveries-stopped` /
+    // `hud.status.funds-treasury-floor-exhausted`
+    // as its sentence. `remaining === 0` is exactly the deliveries condition,
+    // so the chip is never silent while either of these two facts stands.
     case 'economy.deliveries-refused':
     case 'economy.construction-refused':
       return {};
     // Issue #966 site 1's mirror of the two crossings above: the recovery is
-    // the whole sentence, and it carries no figure for the identical reason --
-    // the standing `treasury.*-refused` condition is where a player still
-    // reads a number, until it stops standing at all.
+    // the whole sentence, and it carries no figure for the identical reason,
+    // corrected the same way (issue #930, 2026-09-15) -- the FUNDS chip is
+    // where a player still reads a number, and on this crossing its
+    // `{remaining} left` badge goes from `0` back to a positive figure. The
+    // standing `treasury.*-refused` condition names the fact and never the
+    // number.
     case 'economy.deliveries-restored':
     case 'economy.construction-restored':
       return {};
