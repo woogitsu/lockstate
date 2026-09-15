@@ -268,6 +268,30 @@ export function deliveriesRungFloorMinorUnits(
  * is `statusCountsSchema`'s own field, already on the wire for the Rooms
  * panel, not a value minted for this call.
  *
+ * **That last sentence is wrong and is kept rather than rewritten, because
+ * reading `roomCapacity` here *is* the second definition (2026-09-15).** The
+ * simulation's own answer is `RoomInstanceRegistry.totalResidentCapacity === 0`
+ * — ADR 0017's "Amendment, 2026-09-01" §2 defines it that way, and
+ * `createSessionCommandHandler`, `PayrollSystem`, `InsolvencyRungSystem` and
+ * `computeStandingPrisonConditions` all read exactly that. `roomCapacity` is
+ * summed over `collectRoomInstances`, a fan-out over the *content* room
+ * registry's catalogue ids, so it cannot see an instance registered under an
+ * id that registry does not define (`docs/HUD_PROJECTIONS.md` gap 15, which
+ * `totalResidentCapacity`'s own docblock cites for this reason). The
+ * implication runs one way only: every prison the simulation calls fresh the
+ * host calls fresh, and not the reverse.
+ *
+ * Measured on a restored session with one off-catalogue room instance holding
+ * a bed: registry 1, published `roomCapacity` 0, so at a balance of −1,200 the
+ * badge reads `0 left` and this module refuses a 40-minor-unit press
+ * `past-the-floor` while the real command handler accepts it and lands at
+ * −1,240. The direction is the safe one — the host is stricter, never looser —
+ * and the case is unreachable by play (`RoomZoningService.zone` refuses
+ * `unknown-room-type`), which is why this is recorded here rather than fixed
+ * in place: the fix is to publish the predicate `projectStatusStrip` already
+ * computes and drops, which widens `statusCountsSchema` and changes what a
+ * press is judged against.
+ *
  * **Leaving `HOST_PRESS_FLOOR_MINOR_UNITS` as the mature constant, rather than
  * folding this into it, is deliberate.** The old constant is still what a
  * caller gets by omitting the third argument to `judgeAffordability`
