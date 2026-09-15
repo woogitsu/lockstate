@@ -17547,6 +17547,25 @@ one direction.
   >   **both sides**, which is what the ADR asked for rather than one of them.
   >   The cited span widens with the implementation, `:525-532` → **`:537-566`**.
   >
+  > **AND THREE OF THIS CLOSURE'S FOUR RE-DERIVED COORDINATES WERE ALREADY
+  > STALE WHEN THE 2026-09-15 WINDOW OPENED, ON FILES NO DELTA WOULD HAVE
+  > RAISED.** Re-run at `7e9c3043` and at `d57b97ba`, with identical results at
+  > both, so this is not drift either window caused:
+  > `grep -n 'new GangRegistry();' src/simulation/runtime/new-session.ts`
+  > returns **`:548`** against the `:546` above;
+  > `grep -n 'addMember(' src/simulation/runtime/new-session.ts` returns
+  > **`:671`** against `:651`;
+  > `grep -n 'addGrudge(' src/simulation/incidents/default-gangs.ts` returns
+  > **`:256` and `:257`** — a pair, not the single `:186`; and
+  > `grep -n 'gains one guard'` over ADR 0103 returns **`:1158`** against the
+  > `:1134` this entry cites below. **Two of the three code numbers land on
+  > docblock prose** — `default-gangs.ts:186` is *"the one door both terminal
+  > transitions of an assault go through"* — which is the plausible-neighbour
+  > failure this section already names as the costly one.
+  > `default-gangs.ts:81` and `trigger-system.ts:563` still land exactly, and
+  > every claim above survives: the registry has three producers, none of them
+  > a restore path, and the guard asks both sides.
+  >
   > **The player-facing half this entry escalated is answered in the code that
   > landed it, not by this file.** This entry declined to price the missing
   > guard because *"the ADR names a prison-wide lockdown, a severity-≥6 danger
@@ -17604,7 +17623,30 @@ one direction.
   > > measured here. It is a member of the window with **no `file:line`
   > > citation anywhere in this file**, so the delta method reaches it only as a
   > > name.
-- **2026-09-14 (second) census at `d57b97ba`: 42 Proposed, 65 Accepted
+- **2026-09-15 census at `7e9c3043`: 43 Proposed, 65 Accepted across 108 ADR
+  documents**, agreeing with the index on its status column. Five of the
+  Proposed documents have §2 rows (0056, 0059, 0071, 0074, 0077), unchanged for
+  many anchors and all five re-read `Proposed` on disk here, so forty-three
+  minus five is **THIRTY-EIGHT outstanding decisions with no entry giving the
+  owner the evidence**; the queue still has nine entries overall and §2 is
+  byte-identical across the whole window (`md5sum` over
+  `awk '/^## 2\. Nine entries/,/^## 3\. Still outstanding/'` at both ends:
+  `9f13a89ee53d11fccb08fcccd9c82278`, 1441 lines). **One ADR arrived and none
+  moved**: **0115** (where the prisoner roster lives and what the Manage rail
+  can afford), `**Proposed.** Nothing here is decided and no code implements
+  it.`, landed at `167580ca` inside `4bc52d8f`/#1196, and **it carries no §2
+  row** — the abandonment this bullet counts, and the first since 0114. **So
+  the fall the reading below records as the first in this sequence lasted
+  exactly one anchor**, and the mechanism is the ordinary one rather than the
+  exemption case: an arrival with no row, not a document leaving the
+  denominator. **And the four places came apart again**: §3's own reading at
+  this anchor already names 0115 and this bullet did not, which is the split
+  the header predicts in terms and which no diff finds — only reading the
+  file's sections against each other does.
+
+  **The previous reading is kept rather than overwritten:**
+
+  **2026-09-14 (second) census at `d57b97ba`: 42 Proposed, 65 Accepted
   across 107 ADR documents**, agreeing with the index on its status column.
   Five of the Proposed documents have §2 rows (0056, 0059, 0071, 0074,
   0077), unchanged for many anchors, so forty-two minus five is
@@ -18278,7 +18320,20 @@ one direction.
   The zeroes `register` writes
   are still in the tree (**`:600-602`**, which read `:560-562` over the same
   six anchors) and the comment above them still says they
-  are *"never as the final answer"* (**`:596`**, which read `:556`) — and two object ids are now built
+  are *"never as the final answer"* (**`:596`**, which read `:556`) —
+  (**AND ALL FOUR `zoning.ts` COORDINATES WERE STALE BEFORE THE 2026-09-15
+  WINDOW, FOR THE TENTH TIME IN THIS ENTRY'S HISTORY.** Re-derived at
+  `7e9c3043` and at `d57b97ba` with identical results, so that window caused
+  none of it: the `capacity` constructor parameter is at **`:467`** — not the
+  `:448` above, which is `private readonly refusals: ZoneRoomRefusal[] = [];`,
+  a plausible neighbour again — `this.capacity?.resolveInstance(instanceId)` at
+  **`:653`** rather than `:634`, the *"never as the final answer"* comment at
+  **`:635`** rather than `:596`, and the three zeroes it guards at
+  **`:639-641`** rather than `:600-602`. The claims are untouched: the
+  parameter is still optional and fourth, and the resolver is still the only
+  thing that may change the three fields — which is this entry's own point
+  about naming the parameter and the call expression rather than the numbers
+  beside them, made for the fourth time and still not acted on.) — and two object ids are now built
   by construction
   definitions (`placesObjectId: 'object.bed'` on `BUILDABLE_REGISTRY`'s
   `bed-wooden` row and `'object.toilet'` on its `toilet-brick` row,
@@ -18365,6 +18420,16 @@ one direction.
   `benchmarks/` — measured at `3bfb799` over 705 files — and the three citations
   that did not resolve were fixed with it.
 
+  (**All three numbers in the two paragraphs above are stale and none of it is
+  the 2026-09-15 window's doing** — identical at `7e9c3043` and `d57b97ba`.
+  The corrected comment naming `tests/unit/environment-art.test.ts` is at
+  **`:76`**, not `:24`, and the dead-name line below it at **`:82`**; `:24` is
+  now *"`zonedFloorSprite` is read by the painter, inside `paintChunk`"*. The
+  two assertions are at **`:292`** and **`:300`**, not `:248` and `:256`. The
+  discharge is unaffected in every clause, and so is the count beside it: the
+  object-id grep still returns **39** hits in **two** files, nineteen and
+  twenty.)
+
   **Two clauses in the paragraph above are therefore false and are withdrawn
   rather than edited away.** *"That gate reads `docs/`, `README.md` and
   `.github/` and not `src/` comments, which is why the comment shipped"* — it
@@ -18448,6 +18513,18 @@ one direction.
   `e1813b7` made them `:545`/`:539` and `004f799` made them `:558`/`:552`, and
   every anchor from `e1813b7` to `a54899a` carried the `82ae630` pair forward.
   Traced out of each anchor tree rather than asserted.
+
+  **EIGHTH READING, AND IT IS A CORRECTION RATHER THAN A MOVE — `:639` AND
+  `:633`, UNCHANGED ACROSS THIS WINDOW AND THE PREVIOUS ONE.**
+  `grep -n 'findBestAvailable(' src/simulation/prisoners/intake-system.ts`
+  returns **`:639`** at `7e9c3043` and at `d57b97ba` alike, and the `#79`
+  comment above it **`:633`**, against the `:604`/`:598` below. So the pair
+  went stale somewhere between `e5fbe9d9` and the previous anchor and no pass
+  re-derived it, which is the third time this entry has recorded exactly that;
+  `intake-system.ts:558`, the older value still carried in the live prose
+  above, is a mid-docblock line. The claim survives the move again:
+  `findBestAvailable` is still handed a `rateCellSharing` closure and is still
+  the only allocator.
 
   **SEVENTH ANCHOR, SEVENTH PAIR — `:604` AND `:598` AT `e5fbe9d9`, AND THE
   FIRST PAIR IN THREE TAKEN WITH THE FILE INSIDE THE WINDOW.**
@@ -19266,6 +19343,45 @@ one direction.
   which only 77 belongs to this window. Every value above is kept rather than
   overwritten, because the sequence is this bullet's whole argument.
 
+  **RE-DERIVED AT `7e9c3043`: ALL EIGHT MOVED AGAIN, ALL EIGHT BY THIS WINDOW,
+  AND THE CLEAN RESULT REPEATS.** Each found by searching this tree for the
+  construct's own text. The five top-of-file anchors and the span moved a
+  uniform **+20**: the import trio **`:118-120` → `:138-140`**, the pipeline
+  build **`:178` → `:198`**, the `crashReporter` gate **`:216-219` →
+  `:236-239`**, the crash listeners **`:222-229` → `:242-249`**, the prose hit
+  **`:194` → `:214`**, and the `src/main.ts:161-223` span **`:166-228` →
+  `:186-248`**. The two bottom-of-file anchors moved **+334**: the second
+  `telemetry.enabled` gate **`:3629` → `:3963`** and the consent mount
+  **`:3634` → `:3968`**. **So the two halves moved by different amounts for the
+  eighth consecutive reading**, and for the second running both amounts belong
+  to this window rather than to history.
+  `src/ui/telemetry-consent-prompt.ts:8` and `:17` are unmoved for the
+  eleventh anchor running, on a file no window has yet touched.
+
+  **AND THE COUNT ITSELF IS WRONG, NOT ONLY THE COORDINATE — SEVEN IS TWELVE,
+  AND HAS BEEN SINCE THE WORKER LANDED.** The paragraph below corrects
+  `admission.ts:17` to `:18` and calls it *"the seventh raw-grep hit"*; re-run
+  here rather than carried, `grep -rn "services/telemetry" src/ --include=*.ts`
+  returns **twelve** hits in **five** files, **eleven** of them outside
+  `src/services/telemetry/`: `src/main.ts:138`, `:139`, `:140` and `:214`,
+  `src/ui/telemetry-consent-prompt.ts:8` and `:17`,
+  `src/worker/telemetry-ingest-route.ts:1` and `:9`,
+  `src/worker/telemetry-ingest.ts:2`, `:3` and `:7`, and `admission.ts:18`
+  itself — which makes `admission.ts` the third hit in sort order of twelve
+  rather than the seventh of seven. The three `src/worker/` files are what the
+  sentence never counted: they arrived with the server entry point at
+  `b2aaa3f1` on 2026-09-03, under reservation 1's release, and the same
+  `git grep` at `d57b97ba` returns the same twelve. **So *"still returns
+  seven"* was false at every anchor that asserted it**, including the three
+  that re-ran the grep, and no delta method could reach it — the falsifying
+  files were in nobody's window. The clause it supports is unhurt: the
+  pipeline still constructs nothing with no destination configured, and the two
+  prose hits in `telemetry-consent-prompt.ts` are still prose. The *number* is
+  retired rather than repaired, for the reason §6's recommendation 1 gives.
+  This bullet's subject is the six import-and-prose sites in `main.ts` and
+  `telemetry-consent-prompt.ts`, and it should name them rather than a tally
+  over an unbounded grep.
+
   **RE-DERIVED AT `d57b97ba`: ALL EIGHT MOVED, ALL EIGHT BY THIS WINDOW, AND
   FOR THE FIRST TIME IN SIX READINGS NONE OF THEM WAS STALE BEFORE IT.** Each
   found by searching this tree for the construct's own text. The five
@@ -19406,6 +19522,21 @@ one direction.
   than waved through as noise. `verifyChallengeSubmission`
   and `isPubliclyRankable` are unmoved, still `:136` and `:324`, on a file
   (`src/services/challenges/verification.ts`) this window does not touch.
+
+  **THE QUARTET WAS STALE AGAIN BEFORE THE 2026-09-15 WINDOW AND IS
+  TWENTY-FIVE LINES OUT AFTER IT, WHICH MAKES THE PARAGRAPH BELOW ABOUT A
+  "ONE-LINE DRIFT" RIGHT ABOUT THE CLASS AND WRONG ABOUT THE SCALE.**
+  Re-derived at `7e9c3043`: `import { createTelemetryConsentPrompt }`
+  **`:137`**, `import './styles.css'` **`:142`**, the challenges comment
+  **`:158`** and `import type { CancelScheduledPump }` **`:140`**. At
+  `d57b97ba` they were `:117`, `:122`, `:138` and `:120` — already a uniform
+  **+5** on the `:112`/`:117`/`:133`/`:115` below — so the drift was owed at
+  the previous anchor and this window added a further twenty. **The sweep this
+  paragraph asks for has now failed to fire at three consecutive anchors**,
+  which is its own *"a sweep that fires once is not a sweep"* demonstrated a
+  third time. `verifyChallengeSubmission` and `isPubliclyRankable` are
+  unmoved, still `:136` and `:324`, and `masterSeedSchema`'s comment is
+  unmoved at `:1444`.
 
   **THE QUARTET IS UNMOVED BY THE `ebdcb317..3399b1f9` WINDOW AND IS STILL A
   UNIFORM +2 SHORT, WHICH IS THE SAME +1 THIS PARAGRAPH ALREADY CAUGHT, TWICE
@@ -19574,6 +19705,18 @@ one direction.
   handover below is unchanged in substance and larger in size: what ADR 0025
   is owed is not one clause naming one hit but a sentence that stops inviting
   the grep at all.
+
+  **RE-RUN AT `7e9c3043`: STILL THREE HITS, AND THIS TIME IT IS THE ICON'S
+  TURN.** `grep -rn '3\.9' src/` returns `src/ui/tokens.css:482` and
+  `src/ui/primitives/resize-separator.ts:110`, both unmoved, and
+  `src/ui/primitives/icon.ts` **`:93` → `:113`**, still `'M15.8 16.1h3.9'`, on
+  a file this window does touch. `find src/ui -name "*.css"` still returns
+  **four** — `brand.css`, `hud/hud.css`, `primitives/primitives.css`,
+  `tokens.css` — with `3.9` in none of them. **That is the sixth line number
+  this one unchanged string has carried** (`:68`, `:77` twice as this entry
+  counts it, `:79`, `:93`, `:113`), inside a bullet whose subject is that an
+  absence claim rots first. The handover to ADR 0025 is unchanged and still
+  outstanding.
 
   **RE-RUN AT `d57b97ba`: STILL THREE HITS, AND THE `.css` ONE MOVED.**
   `grep -rn '3\.9' src/` returns `src/ui/tokens.css:482` (was `:413`; the
@@ -19832,7 +19975,12 @@ one direction.
   the treasury to the staff panel as a setter rather than as an intent — the
   panel's comment on it (`src/ui/hud/staff-panel.ts:526` — **this read `:489`
   through the v0.0.402 anchor; #857's staff-coverage readout added 37 lines
-  above it in this window and the comment itself is byte-identical**) says the
+  above it in this window and the comment itself is byte-identical**;
+  **`:526` is `:690` at `7e9c3043` and was `:690` at `d57b97ba` too** —
+  `grep -n "decides nothing" src/ui/hud/staff-panel.ts` at both ends — so this
+  number went stale in a window nobody re-derived it against, and `:526` now
+  lands on a different docblock's sentence about a disabled control; the quoted
+  words are the citation and the number is not) says the
   line *"decides nothing"* and that `BuildPanel.setTreasury` *"is the same
   setter for the same reason on the Buy button"*. The previous anchor's minimap
   control was kept out of the union because it never reaches the simulation;
@@ -19893,6 +20041,21 @@ one direction.
   `AWAITING_PRODUCER`'s declaration and gate comment in
   `tests/foundation/unconsumed-command-contract.test.ts` are unmoved, still
   `:224` and `:250`, on a file this window does not touch.
+
+  **STILL TWENTY-TWO MEMBERS AT `7e9c3043`, AND THE WINDOW MOVED ALL SEVEN
+  COORDINATES BY A UNIFORM +6.** Re-derived at both ends by searching for each
+  construct's own text: `export type HudIntent =` **`:359` → `:365`**, the
+  union's last member (`select-prisoner`) **`:732` → `:738`**,
+  `HudUnavailableNotice` **`:746` → `:752`**, `arm-build-tool`
+  **`:518` → `:524`**, `arm-room-tool` **`:701` → `:707`**,
+  `cancel-build-order` **`:561` → `:567`** and `dismiss-alert`
+  **`:659` → `:665`**. The member count, taken the way this passage specifies,
+  is **22** at both ends — so the fifth window in a row to touch this file
+  without growing the union. `AWAITING_PRODUCER`'s declaration and gate comment
+  are unmoved, still `:224` and `:250`, and **`EditRegimeBlock` is still in the
+  list** (`tests/foundation/unconsumed-command-contract.test.ts:263`): the
+  producer the previous anchor said the Day-plan panel would bring has not
+  arrived, so the emptiness claim stays falsified rather than restored.
 
   **STILL TWENTY-TWO MEMBERS AT `d57b97ba`, AND FOR THE FIRST TIME IN FOUR
   READINGS THE WINDOW IS WHAT MOVED THE COORDINATES RATHER THAN HAVING
