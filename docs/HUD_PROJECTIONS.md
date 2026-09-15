@@ -934,6 +934,44 @@ decision about what to build next.
    (`PrisonerDetailViewModel.needs`), the second is derivable from figures the
    status strip already carries, and the third exists nowhere.
 
+   **The middle clause is false, and it is kept rather than rewritten because
+   it is an instruction to the next implementer and the instruction is the
+   defect** (`docs/AGENT_WORKFLOW.md` §4). *"the second is derivable from
+   figures the status strip already carries"* tells a reader to subtract one
+   grant from another in the HUD. Re-measured 2026-09-15 on `2559eb14` it fails
+   for two independent reasons, and either one alone is enough.
+
+   1. **The strip does not carry the headline rate, and the HUD may not go and
+      fetch it.** What `projectStatusStrip` publishes is the *prorated* grant --
+      `stateIncomeAccruedTodayMinorUnits`, which is
+      `stateIncomeForOccupiedPlaces` folded through `stateIncomeAccruedByTick`,
+      so the withholding is already inside it -- and the count,
+      `occupiedPlaces`. `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS` is declared
+      in `src/simulation/economy/income.ts` and reaches no payload in
+      `src/simulation/protocol/types.ts`, and
+      `tests/unit/ui-hud-messages.test.ts`'s *"imports nothing from the
+      simulation"* forbids every module under `src/ui/hud/` from importing it
+      (`AGENTS.md` boundary 1). Hard-coding 300 beside the projection is the
+      drift `status-strip-projection.ts`'s own comment refuses in the
+      neighbouring case: *"Deriving it from the count instead would be a chip
+      that promises money the day boundary then does not pay."*
+   2. **The subtraction is not exact, so even given the rate it is the wrong
+      arithmetic.** `stateIncomeAccruedByTick` floors --
+      `floorDiv(dailyGrantMinorUnits * ticksServed, DAY_LENGTH_TICKS)` -- and
+      flooring does not distribute over subtraction. For the smallest prison
+      that can show it, one occupied place with one unmet need, a 300 headline
+      against the 260 actually accrued: `accrued(300) - accrued(260)` differs
+      from `accrued(300 - 260)` at **1,320 of the day's 2,400 ticks**, computed
+      on today's constants. The discrepancy is exactly one minor unit, and it
+      is **zero at the payment tick** (`tickOfDay === DAY_LENGTH_TICKS - 1`,
+      where the numerator divides by 2,400 exactly) -- which is what makes it
+      dangerous rather than obvious, because a test written at a day boundary
+      agrees with it and the chip is still wrong for 1,320 ticks of every day.
+
+   So the second of ADR 0064's three is **not** derivable from what the channel
+   carries: it is a figure the simulation would have to project beside the two
+   it already does, computed where the withholding is computed.
+
    **Half-answered by #535 decision 6, and the half that moved is the first
    one.** `PrisonerNeedViewModel` now carries `unmetForStateIncome` — computed
    by `isNeedUnmetForStateIncome`, the same predicate `unmetNeedCount` sums to
@@ -1348,6 +1386,39 @@ decision about what to build next.
 
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
     paragraph names all three.
+
+    **Unmet needs withhold 40 again, and have since 2026-09-04.** The sentence
+    three paragraphs up -- *"**Unmet needs withhold nothing as of
+    2026-09-03**"* -- is the state of the game for one day and not a standing
+    fact: the owner restored
+    `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` on 2026-09-04,
+    after the two measurements they had made the restoration conditional on.
+    Both rulings are in that constant's own docblock in
+    `src/simulation/economy/income.ts`, and the restoration reached the source
+    at `3134a78e`. The suspended reading is kept rather than cut for exactly
+    the §4 reason it was itself written under: it happened, and a document that
+    erases it cannot show that this rate is a dial the owner turns rather than
+    a constant of the design.
+
+    **That correction reached `src/` on the day and did not reach this file for
+    eleven days, and the asymmetry is worth naming because it is where this
+    repository's documentation rot actually comes from.** Three consumers of
+    that constant mark both directions in their own comments --
+    `src/simulation/protocol/types.ts` (*"There were no 40s to attribute
+    between 2026-09-03 and 2026-09-04, and there are again"*),
+    `src/ui/hud/regime-panel.ts`, and
+    `src/simulation/presentation/prisoner-projection.ts` (*"it stopped being
+    true on 2026-09-03 ... and it is true again since they restored it to `40`
+    on 2026-09-04"*) -- as does
+    `tests/integration/economy-bed-recycling.test.ts`, which numbers the moves
+    of its own literal and calls the restoration *"the fifth move ... the first
+    that is a return rather than a step"*. Every one of those is a file the
+    restoring change had to open. Nothing made that change open a document.
+    **A ruling recorded in a code comment is carried by the next edit of that
+    code; a ruling recorded in `docs/` is carried by nobody** -- so a change
+    that moves an authored constant should be assumed to have left every
+    document naming its value behind, and `grep` for the value is the whole of
+    the check.
 
     **A fourth crediting *event* arrived with the owner's ruling 20 of
     2026-08-31, and it does not move the file list that gate checks, which is

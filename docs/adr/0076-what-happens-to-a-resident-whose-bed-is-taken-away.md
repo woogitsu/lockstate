@@ -485,6 +485,26 @@ charge for becomes rare, which weakens the case for it.
   (`docs/AGENT_WORKFLOW.md` §4: mark both directions); what it says about
   **places** — that the withholding had nothing to do with them — is unaffected
   either way, and is the half this bullet actually turns on.
+  **The rate returned on 2026-09-04, so the correction above is itself now
+  history and is kept rather than rewritten for the reason it gave when it kept
+  the sentence it corrected.** *"Corrected 2026-09-03: there is no 40 any
+  more"* held for one day; the owner restored
+  `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` on 2026-09-04
+  (`src/simulation/economy/income.ts`, reaching the source at `3134a78e`; both
+  rulings are in that constant's own docblock), which is the *"will do again if
+  the rate returns"* that correction closed with, arriving. So the 130 minor
+  units of materials are no longer what separates the two arms **alone**: the
+  recycled arm pays one more day's withholding than the control does, and
+  `tests/integration/economy-bed-recycling.test.ts` pins the gap at **90** --
+  *"the right-hand side became `130 - 40` again"*, the same relation it
+  asserted before the suspension.
+  **What did not move across either ruling is the half this bullet turns on.**
+  The recycled arm has sat below the control at both withholding rates since
+  the ruling of 2026-09-01, so *"recycling is
+  now strictly worse than playing it straight"* is unaffected, and so is the
+  claim about **places** -- the withholding has nothing to do with them whether
+  it is 0 or 40. Three passes over this paragraph have left that clause alone,
+  and only the arithmetic beside it has had to move.
   **What is outstanding is therefore B alone**, together with the gate this ADR
   made non-optional for it: one refund per order, the allocation emptied in the
   same step, and a conservation test over `Remove` → `Undo` and
