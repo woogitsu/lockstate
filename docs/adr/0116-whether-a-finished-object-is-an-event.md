@@ -133,7 +133,7 @@ later, by the owner's ruling on #966 site 2, and its docblock is explicit that
 the routing *"is now a decision somebody has to take per member"*.
 
 Three members have since been routed `'log-only'`, each by a ruling, and the
-reason given for the two most recent (`src/ui/simulation-events.ts:611-617`,
+reason given for the two most recent (`src/ui/simulation-events.ts:613-617`,
 #1006 findings 3 and 5) is the reason that would apply here almost word for
 word:
 
