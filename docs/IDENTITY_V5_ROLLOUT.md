@@ -549,6 +549,52 @@ command to the world; the phone gives access to the map; the themes preserve
 contrast and focus; the target tests and the build pass. Show test results, not
 just a screenshot.")
 
+### Worked 2026-09-15 (#1164): ten pass, one is not applicable, one fails, one is partial
+
+The paragraphs above are left exactly as they stood. What follows is the
+outcome, and it is a record rather than a re-plan.
+[`docs/research/2026-09-15-what-stage-8-accepted-and-what-it-did-not.md`](./research/2026-09-15-what-stage-8-accepted-and-what-it-did-not.md)
+is the row-by-row pass; this is what a reader of the plan needs to know without
+opening it.
+
+**Nine gates, nine green, on `584f5ca1` (v0.0.622).** `pnpm test:browser` **525
+passed in 30.5 m**; `pnpm test` 450 files / 5,291 passed / 2 skipped;
+`pnpm verify` including the production build; `test:artifact` 2;
+`verify:assets` 10 atlases + 3 catalog entries; `verify:sql` 414 pgTAP
+assertions; `test:perf` 36; `verify:benchmark` 18 deterministic scenarios;
+`typecheck` clean. **None of this is CI's verdict** — the owner's self-hosted
+runners were stuck for the whole pass, so no CI run exists for the branch, and
+the record says so wherever it quotes a number.
+
+**The three areas that are not a plain pass:**
+
+- **Text (200 % page zoom): FAIL, 29 of 36 combinations.** The harness behind
+  this document's own "23 of 36" at §"Stage 3" had been deleted by the commit
+  that produced it, so the stage wrote it again and committed it as
+  `tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`. **29 against
+  23 is not six new failures**: run on `d7aab8d8` itself the rewrite reports
+  **32**, so it is the stricter instrument and the two figures cannot be
+  compared. Held to one instrument the debt went **32 → 29** — three
+  combinations fixed, none added. The 23 above is left unedited on purpose; it
+  is a stage 3 finding and this is a stage 8 pass.
+- **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
+  is about the delivery's own design-book device previews, which this
+  repository does not have. The clause beside it *does* transfer and is unmet:
+  nothing in `src/` binds the `storage` event, so a second Lockstate tab never
+  follows the first (#1199).
+- **Touch: PARTIAL.** Every gesture passes and the phone does reach the map.
+  `DismissAlert` still has no route at 375×812 — stage 5's open owner question,
+  which stage 8 does not answer. **What stage 8 adds is that the closing
+  criterion above depends on it**: *"Każda obecna akcja ma osiągalną drogę"* is
+  false at one of the three device tiers the delivery itself names.
+
+**So the closing criterion is six clauses satisfied, one satisfied only
+locally, and one false.** The record's §16 takes it apart clause by clause, and
+separates a clause that passes from the article behind it that does not:
+*"motywy zachowują kontrast i fokus"* holds — contrast computed in both themes,
+focus at 3:1 against every surface — while constitution article 8 asks for three
+things and the third, 200 % text, is the row above.
+
 ---
 
 ## What an agent may not decide alone
