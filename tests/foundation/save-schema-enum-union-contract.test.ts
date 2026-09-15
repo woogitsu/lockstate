@@ -56,6 +56,16 @@ import type { ChunkLifecycle } from '../../src/simulation/world/sparse-world';
  *   every reader-only member has to be **named with the build that wrote it**
  *   in `readerOnly` below rather than merely tolerated.
  *
+ * **`docs/PERSISTENCE.md` had already ruled on the asymmetry, for enums
+ * specifically, and this file applies that ruling rather than reopening it.**
+ * Recording ADR 0061's widening of `simulation.contraband.items[].state` to
+ * admit `'departed'` with no version bump, it says of the other direction:
+ * *"A narrowing would be a different question entirely and is not what this
+ * precedent covers: removing a member makes every save that recorded one
+ * unreadable, which is a migration."* So a widened reader is a change this
+ * repository already knows how to make cheaply, and a narrowed one is a
+ * migration nobody has written -- which is precisely the shape of gate below.
+ *
  * An equality assertion would be cheaper and would fail for the wrong reason
  * the first time a member is legitimately retired from the union while saves
  * carrying it still exist -- and the fix under a failing equality assertion is
