@@ -9,7 +9,6 @@ import {
   saveLayoutSettings,
   saveThemeSettings,
   saveAccessibilitySettings,
-  subscribeToSettingsChanges,
 } from './input';
 import {
   type LanguagePreference,
@@ -3806,21 +3805,6 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    *     path for "a preference restored after mount" and deliberately does
    *     *not* report back through `onLayoutChange`.
    */
-  subscribeToSettingsChanges(globalThis.window, {
-    onThemeChange: (settings) => {
-      themeController.adopt(settings.preference);
-    },
-    onAccessibilityChange: (settings) => {
-      accessibility = settings;
-      applyAccessibilitySettings(document.documentElement, accessibility);
-      displayScale.setScale(accessibility.uiScale);
-      hud?.refreshLayout();
-    },
-    onLayoutChange: (settings) => {
-      hud?.setLayout(settings);
-    },
-  });
-
   hud.asideSlot.append(chromeRow);
   hud.preferencesSlot.append(languageControl.element);
 
