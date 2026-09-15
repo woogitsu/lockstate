@@ -17900,6 +17900,27 @@ thing to watch for is the creation of a second Supabase project.
 
 ## 5. Where an accepted decision and the code disagree
 
+**Scope at the anchor `1aef04b1`, which is `main` at `e044a3e8` for every
+coordinate in this section.** §2 still holds **nine** live entries — counted as
+its own `###` headings above the run of accepted-and-deleted records, which is
+what §2's heading and §5's own first sentence both say. **The two documentation
+discrepancies below stand and all four of their coordinates hold**, re-read one
+at a time rather than rested on a diff: `docs/PERSISTENCE.md:2717-2718` is the
+refusal string and its *"reached only after the one retry below"* clause;
+`src/persistence/session/session-controller.ts:997` is
+`if (first.stale.durableRevision !== session.revision) return first;`; lines
+**2722–2724** are the writer-whose-session-is-gone bullet; and
+`session-controller.ts:1045-1054` is `saveNow`'s failed `SaveResult`. **Neither
+file is in any merge of `1aef04b1..HEAD`**, so nothing here distinguishes the
+anchor from the tip. **What did move in this window is recorded in the bullets
+below rather than here** — the telemetry coordinates, the ADR 0009 import
+quartet, the census and two `wrangler.jsonc` anchors that had been dead since
+2026-09-03 — because the re-anchor pass that declared this anchor swept none of
+them.
+
+**The previous reading is kept rather than overwritten**
+(`docs/AGENT_WORKFLOW.md` §4). It read:
+
 **2026-09-14 (second) scope at `d57b97ba`.** §2 still holds nine live
 entries, byte-identical across the window. **The two documentation
 discrepancies below stand and all four of their coordinates moved** — the
