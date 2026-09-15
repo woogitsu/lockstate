@@ -553,6 +553,40 @@ export const centreOf = (o: { originX: number; originY: number }, tx: number, ty
 export const ARM_TIMEOUT_MS = 10_000;
 
 /**
+ * What the Build catalogue actually looks like, for the one message that needs
+ * it: `armBuildable`'s wait giving up.
+ *
+ * Every line of this is a hypothesis someone has already spent a run on --
+ * which row the panel thinks is selected, whether the row asked for is
+ * filtered away by the category `<select>` (ADR 0035 hides a filtered row with
+ * `hidden`, so it lays out no box), whether the panel or its section is folded,
+ * and what the page recorded as the last catalogue click (`installTee`'s
+ * capture-phase listener, so it sees the click whoever made it). A message
+ * that answers them costs one `evaluate` on a path that is already failing.
+ */
+async function describeCatalogue(page: Page, wanted: string): Promise<string> {
+  const state = await page.evaluate((id) => {
+    const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
+    const row = rows.find((element) => element.dataset['buildable'] === id);
+    const panel = document.querySelector<HTMLElement>('.hud-build');
+    const filter = document.querySelector<HTMLSelectElement>('.hud-build__category');
+    return {
+      rowsInTheList: rows.length,
+      matchingRows: rows.filter((element) => element.dataset['buildable'] === id).length,
+      selectedRows: rows.filter((element) => element.dataset['selected'] === 'true').map((element) => element.dataset['buildable']),
+      wantedHidden: row === undefined ? 'no such row' : row.hidden,
+      wantedBoxes: row === undefined ? 'no such row' : row.getClientRects().length,
+      wantedDisabled: row === undefined ? 'no such row' : (row as Partial<HTMLButtonElement>).disabled === true,
+      categoryFilter: filter === null ? 'no filter drawn' : filter.value,
+      panelHidden: panel === null ? 'no .hud-build' : panel.hidden,
+      panelCollapsed: panel === null ? 'no .hud-build' : panel.dataset['collapsed'],
+    };
+  }, wanted);
+  const intent = await buildIntent(page);
+  return `the catalogue when the wait gave up: ${JSON.stringify(state)} | last catalogue click the page saw: ${JSON.stringify(intent)}`;
+}
+
+/**
  * Selects a buildable in the Build catalogue and leaves the world tool armed
  * with it -- **or throws.** Issue #1017.
  *
@@ -603,11 +637,19 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
   const row = page.locator(`.hud-build__list [data-buildable="${id}"]`);
   await row.click();
 
-  await expect(row, `the Build panel never redrew with ${JSON.stringify(id)} selected`).toHaveAttribute(
-    'data-selected',
-    'true',
-    { timeout: timeoutMs },
-  );
+  try {
+    await expect(row, `the Build panel never redrew with ${JSON.stringify(id)} selected`).toHaveAttribute(
+      'data-selected',
+      'true',
+      { timeout: timeoutMs },
+    );
+  } catch (failure) {
+    // `showPanel`'s lesson (#1211), one panel along: the bare message names
+    // the row and says nothing about the catalogue around it, and three
+    // measurement passes have now been spent re-deriving that state by hand.
+    // So the state is read here, once, at the moment the wait gave up.
+    throw new Error(`${failure instanceof Error ? failure.message : String(failure)}\n${await describeCatalogue(page, id)}`);
+  }
   await expect(
     page.locator('.hud-build__list [data-buildable][data-selected="true"]'),
     `more than one catalogue row claimed to be selected while arming ${JSON.stringify(id)}`,
