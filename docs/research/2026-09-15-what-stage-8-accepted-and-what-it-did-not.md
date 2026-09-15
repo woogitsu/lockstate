@@ -60,7 +60,7 @@ delivery agreeing with that in its own voice.
 | 9 | Save | **PASS** |
 | 10 | Embed | **NOT APPLICABLE** — the surface does not exist here |
 | 11 | Theme | **PASS**, with one clause of the delivery's row unimplemented |
-| 12 | Text (200 %) | **FAIL** — re-measured this stage, and the figure moved |
+| 12 | Text (200 %) | **FAIL** — 29 of 36, re-measured rather than quoted |
 | 13 | Touch | **PARTIAL** — gestures pass; one command has no phone route |
 
 Ten pass, one is not applicable, one fails, one is partial. The two that are not
@@ -446,8 +446,7 @@ see §10. A second tab does not follow the first.
 
 ---
 
-## 12. Text (200 % page zoom) — FAIL, and the figure this repository has been
-quoting is out of date
+## 12. Text (200 % page zoom) — FAIL at 29 of 36, and the figure this repository quotes came from an instrument that no longer exists
 
 **The row.** *"Powiększenie 200%, długie tłumaczenia"* against *"Brak utraty
 treści i działań"*.
@@ -480,7 +479,56 @@ source. This stage committed one —
 place. It measures `d7aab8d8`'s four things, verbatim, over `d7aab8d8`'s 36
 pairs.
 
-**What it reports on `584f5ca1`:** see §13's table.
+### What it reports, and the mistake it was one step away from
+
+**On `584f5ca1`: 29 of 36 fail.** Against a document that says 23, the obvious
+reading is that the debt grew by six during the rollout. **That reading is
+wrong, and the way to know is to run the same instrument on both commits.**
+
+**On `d7aab8d8` — stage 3's own commit, the one whose message says 23 — this
+harness reports 32 of 36.** So the two harnesses are not the same instrument:
+mine is the stricter of the two, by nine combinations on the very commit the
+23 was measured on. Nothing can be inferred by comparing 29 to 23.
+
+Measured with **one** instrument across both commits, the direction is the
+opposite of the alarming one:
+
+| Commit | This harness reports |
+|---|---|
+| `d7aab8d8` (stage 3, 2026-09-14) | **32 of 36 fail** |
+| `584f5ca1` (this pass, 2026-09-15) | **29 of 36 fail** |
+
+**Three combinations stopped failing and none started**, which is a set
+difference rather than a count: `1280x720@100%`, `1024x768@100%` and
+`900x600@75%`. Every one of them is a combination that was failing on **overflow
+alone** — `.hud__aside` or `.hud-strip` spilling its own box — and every one is
+at or below 100 % interface scale, which is where the rail has the most room.
+
+**How the base run was taken**, because a reproduction is worth more than the
+number: `git worktree add --detach` at `d7aab8d8`, this playtest file copied in,
+`git lfs checkout` from the local object cache, and the same command on a
+different port. The worktree was removed afterwards.
+
+### Why the instruments differ, stated as an unknown rather than guessed
+
+The original harness is not in the tree, so its tolerances cannot be read. What
+can be said is what this one does: it counts a box as overflowing when
+`scrollHeight - clientHeight > 1`, it treats a zero-area box as not laid out
+rather than as a failure, and it checks `.hud__aside` **and** `.hud-strip` for
+that overflow. Any one of those three could account for nine combinations.
+**This is written down as the reason the two numbers must not be compared, not
+as a claim about what `d7aab8d8` measured.**
+
+### So the row still fails, and the repository's quoted figure is stale in both directions
+
+29 of 36 combinations fail on the head that ships. *"Brak utraty treści i
+działań"* is not met. Separately, the "23 of 36" in
+`docs/VISUAL_IDENTITY.md:331` and `docs/IDENTITY_V5_ROLLOUT.md:291` is now a
+figure from an instrument nobody has, and the two documents should say so —
+**not corrected here**, because this record's directory rule is that a record
+becomes older rather than wrong, and because editing a stage 3 finding from
+inside a stage 8 pass is the sort of thing `CLAUDE.md`'s preamble exists to warn
+about.
 
 ### What clearing it would take, which is not this stage's to do
 
@@ -596,7 +644,54 @@ evidence; it is not the same evidence.
 
 ### 14.1 Results
 
-<!-- GATES-TABLE -->
+| Gate | Result | The numbers it printed |
+|---|---|---|
+| `pnpm typecheck` | **PASS** | `tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false`, exit 0, no diagnostics |
+| `pnpm test` | **PASS** | **450 test files, 5,291 passed, 2 skipped (5,293)**, 83.6 s |
+| `pnpm test:browser` | **PASS** | **525 passed, 30.5 m**, exit 0. Slowest file `app-shell.spec.ts` at 14.4 m |
+| `pnpm test:artifact` | **PASS** | **2 passed, 14.9 s** — the built client in `dist/`, served by workerd |
+| `pnpm verify` | **PASS** | typecheck + the 5,291 above + the production build: 439 modules, built in 1.94 s, *"Verified Cloudflare production output: dist/lockstate_development/wrangler.json -> dist/client"* |
+| `pnpm verify:assets` | **PASS** | *"Validated 10 clip atlases"*, *"Validated 3 rendered-art catalog entries"* — after `git lfs checkout`; see §15.3 |
+| `pnpm verify:sql` | **PASS** | *"All pgTAP suites passed (414 assertions)"* |
+| `pnpm test:perf` | **PASS** | **4 files, 36 tests passed**, 75.9 s |
+| `pnpm verify:benchmark` | **PASS** | *"Verified benchmark schema v1, harness v2, 18 deterministic scenario(s)"* |
+
+**Nine gates, nine green.** That is the delivery's *"docelowe testy oraz build
+przechodzą"*, locally.
+
+### 14.2 Three numbers in that table that are not what an older document says
+
+- **525 browser tests, not 429.** `CLAUDE.md`'s re-measurement of 2026-09-12
+  records 429 for the `browser` suite on the serving CI pool. The suite has
+  grown by 96 since — stages 4, 5 and 6 each added specs — so a reader comparing
+  the two is comparing two different suites.
+- **36 perf tests, not 35.** `CLAUDE.md`'s 2026-09-09 entry says 35.
+- **One skip became a pass, and it is the LFS materialisation that did it.**
+  The first `pnpm test` of this pass, run before `git lfs checkout`, reported
+  **5,290 passed | 3 skipped**; every run after it reports 5,291 | 2. The test
+  is `tests/unit/appearance-zoning-tint-legibility.test.ts:232`, an
+  `it.skipIf(isLfsPointer)`. The two that remain skipped in every run are the
+  Blender-dependent determinism pair
+  (`tests/determinism/art-pipeline-determinism.test.ts:83` and
+  `environment-render-determinism.test.ts:69`), which skip visibly rather than
+  passing silently — their own docblocks say that is the point.
+
+### 14.3 One gate went red, on this pass's own document, and it was right to
+
+`pnpm verify` failed the first time it was run here, with two foundation
+contracts red and both of them mine:
+
+- `tests/foundation/research-index-contract.test.ts` — this record had no row in
+  `docs/research/README.md`. *"Adding a record means adding its row in the same
+  commit, and the index says so itself."*
+- `tests/foundation/documentation-links-contract.test.ts` — this record cited
+  `audit.cjs` as a rooted repository path, and it is a file of the delivery's
+  prototype package rather than of this tree.
+
+Both fixed in `f795649d`, and recorded here rather than quietly: **the second is
+a gate catching an acceptance document for exactly the defect the acceptance
+document is about** — a claim that looks checkable and is not.
+
 
 ---
 
@@ -612,8 +707,18 @@ The repository's most-cited accessibility figure — "23 of 36" in two documents
 — rested on a spec `d7aab8d8` says in its own message it did not commit.
 **Done:** `tests/browser/playtest-1164-the-200-percent-sweep.playtest.ts`, the
 harness written again and committed, as a playtest so that no gate collects it
-and no assertion pins the failing set in place. §12 and §13 of that file's
-docblock say why each of those two choices is the way it is.
+and no assertion pins the failing set in place.
+
+**And the finding that came out of it is a method one.** The rewrite reports 29
+of 36 on the head that ships, which against a document saying 23 reads as six
+new failures. It is not: run on `d7aab8d8` itself, the rewrite reports **32**,
+so it is a stricter instrument and the two numbers are not comparable. Held to
+one instrument, the debt went **32 → 29** over the rollout — three combinations
+fixed, none added. §12 carries the table and the reproduction.
+
+**A number is not a measurement unless the thing that produced it still
+exists.** That is the whole cost of `d7aab8d8`'s throwaway harness, and it came
+within one sentence of being paid by this document.
 
 ### 15.2 A second Lockstate tab does not follow the first
 
