@@ -9,11 +9,80 @@ this repository's code disagrees with it today.
 [ADR 0112](./adr/0112-what-the-2026-09-13-identity-delivery-decides.md) is the
 decision record. **The owner ruled on all five of its decisions on 2026-09-13**,
 two of them against its recommendations; its Status block carries each ruling
-and its provenance, and the three sentences of this document that the rulings
-changed say so where they stand. [`docs/IDENTITY_V5_ROLLOUT.md`](./IDENTITY_V5_ROLLOUT.md) is the
-staged plan for getting from today's UI to this one.
+and its provenance. [`docs/IDENTITY_V5_ROLLOUT.md`](./IDENTITY_V5_ROLLOUT.md) is
+the staged plan for getting from today's UI to this one.
+
+> **This sentence used to end "and the three sentences of this document that the
+> rulings changed say so where they stand", and it is corrected rather than
+> deleted** (`docs/AGENT_WORKFLOW.md` §4: mark both directions, and a tally is
+> the sentence form that rots first). The count was wrong in both directions at
+> once: four sentences said so, not three — the constitution's acceptance, the
+> type scale, article 8's amendment and the navigation move — while **two of the
+> five rulings, decisions 2 and 5, were restated nowhere in this document at
+> all**. Both are restated below now. The section that follows replaces the
+> tally with a subject: it names each ruling and the place that restates it, so
+> adding a sixth ruling breaks a named row rather than silently making a number
+> stale.
+
+## How to read a sentence in this document
+
+`docs/ISSUE_BACKLOG.md`'s source-of-truth order gained a rung on 2026-09-15, by
+the owner's ruling, and this document is one of that rung's two members: **the
+repository's reading of an accepted ADR binds where it restates a ruling, and
+does not bind where it is a snapshot of code.** That file states the cost in its
+own words — *"Each sentence in such a document has to be classifiable as
+**restatement of a ruling** or as **reading of the code**, and **nothing checks
+that classification**"* — and it sets the default: *"Where a document's own
+sentence does not make clear which it is, it is a reading and does not bind."*
+
+That default is safe and it is lossy: applied to this document as it stood, it
+demoted every real restatement in it, because not one of them said out loud
+which kind it was. So this document now says so where each sentence stands.
+Three kinds appear below.
+
+- **A restatement of a ruling. It binds.** It carries a bold lead-in naming what
+  it restates — **Restates ADR 0112 decision 3**, or **Binds through decision 1**
+  for a constitution article. If one of these disagrees with ADR 0112, that is a
+  conflict of contracts rather than a documentation bug: the ADR wins and the
+  sentence here is the defect.
+- **A reading of the code. It binds nothing.** A measurement of `src/` at a
+  stated commit. Where it disagrees with the code, the code is right and the
+  sentence rotted (`docs/AGENT_WORKFLOW.md` §3). The whole of §"Where this
+  repository stands against it" is this kind and repeats the warning under its
+  own heading.
+- **The delivery's own material, which no ruling reaches.** Palette values,
+  spacing, radii, motion durations, the character note. It is the reference a
+  UI change is checked against — that obligation is `.agents/rules/lockstate.md`'s
+  and `AGENTS.md`'s, and it is a *reading* obligation rather than a contract
+  rung — and turning any of it into a contract needs a ruling, not an edit here.
+
+**Where each of the five rulings is restated, named rather than counted.**
+
+| ADR 0112 decision | What was ruled | Restated in this document at |
+|---|---|---|
+| 1 — the constitution binds | it binds, as a product contract under `AGENTS.md` | §"The constitution" |
+| 2 — themes | two themes, the light one default | §"The palettes" |
+| 3 — navigation | the delivery's five sections, now | §"Navigation" |
+| 4 — type scale | 15 / 13 / 11, and article 8 amended to 15 px | §"Typography, shape and motion" and §"The constitution" |
+| 5 — world illustration | a reference, nothing cut out of it, plus new production prompts | §"What is explicitly **not** binding" |
+
+**One thing this classification found that it is not an agent's to settle, so it
+is stated as a question rather than answered.** Constitution article 8's type
+sentence carries three numbers — *"Tekst podstawowy: 16 px, regularne etykiety:
+14 px, metadane: 12 px."* — and decision 4 amends the article *"to 15 px"*,
+while ADR 0112's list of what in article 8 is untouched (*"contrast, visible
+focus, 200 % text, a status carrying a label and an icon as well as a colour"*)
+names none of the other two. The ruled scale is 15 / 13 / 11 and the code ships
+it, pinned by `tests/unit/ui-design-tokens.test.ts`; read strictly, the amended
+article still says 14 px and 12 px. **Whether the amendment carries all three of
+the article's numbers or only the first is the owner's to say**, and nothing is
+changed here on either reading. It is recorded here and nowhere in the delivery,
+for the reason decision 4 already gives.
 
 ## The three-line summary, before any detail
+
+**Lines 1 and 2 bind through decision 1** — they are constitution articles 1, 2
+and 5 in English. **Line 3 is a reading of the delivery and binds nothing.**
 
 1. **The map is the game; panels serve it.** One panel is the place of work at
    any moment, it sits beside the map rather than over it, and opening it issues
@@ -45,9 +114,22 @@ staged plan for getting from today's UI to this one.
 | `HISTORIA/` | All five iterations as complete snapshots, plus git patches between them |
 | `ASSETY/`, `REFERENCJE/` | The world illustration; screenshots of this repository's UI and the owner's marked-up notes |
 
-## What is binding
+## What is binding, and what here is only the delivery's own material
+
+**Read the lead-ins, not the heading.** This section used to be titled
+*"What is binding"*, and under the rung added on 2026-09-15 that title was the
+single most misleading sentence in the file: most of what follows is the
+delivery's material, which no ruling reaches. Each subsection now says which
+kind it is in its first line, and the heading is widened rather than the
+contents moved, so every existing citation of a subsection still lands.
 
 ### Product promise and voice
+
+**Binds through decision 1, in part: the message pattern is constitution
+article 6** (*"Komunikat podaje fakt, lokalizację i następny krok"* — a message
+gives the fact, the place and the next step), so decision 1 makes it a contract.
+**The promise line and the verb list are the delivery's material and are not
+ruled.**
 
 **"Twoje decyzje. Żywy świat."** — "Your decisions. A living world." The
 delivery states in `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md` that this is identity
@@ -61,6 +143,14 @@ specification carries a ten-row table of worked examples. Those rows are
 the owner's, not ours, however free we are with its wording.
 
 ### The palettes
+
+**Restates ADR 0112 decision 2: two themes, the light one the default, the dark
+one kept.** That much binds, and `src/ui/theme.ts`'s own docblock already reads
+the ruling the same way — *"light **is** the default theme (ADR 0112 decision
+2)"*. **The values in the two tables below are the delivery's material and are
+not themselves ruled**; they bind here only as the source
+`src/ui/tokens.css:83` cites for the rungs it declares, and that file records a
+derivation and its reason beside every rung that is not one of these values.
 
 Day (the default the delivery designs for). Eleven of these rows are
 `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`'s own table; **"secondary ink" is not** —
@@ -106,6 +196,10 @@ sprawdzeniu kontrastu. Nie wracać do pierwszej wartości."*
 
 ### Typography, shape and motion
 
+**Restates ADR 0112 decision 4 in its first sentence; everything after
+"Tabular figures" is the delivery's material and is not ruled** — with one
+exception named where it stands.
+
 **The delivery's target scale is 32 / 24 / 20 / 16 / 14 / 12 px with 16 px body,
 and the owner ruled on 2026-09-13 for a smaller step: 15 / 13 / 11.** The
 delivery's figure is kept in this sentence rather than overwritten, because the
@@ -128,7 +222,30 @@ the original specification are explicitly history. Motion 160–200 ms, honourin
 `prefers-reduced-motion`. Shadow means "floating above the map"; fixed panels
 are separated by borders instead.
 
+**The exception, because it is the one value in that list with a contract behind
+it.** *Honouring* `prefers-reduced-motion` binds through decision 1 —
+constitution article 10 reads *"Ustawienie ograniczonego ruchu ma
+pierwszeństwo"*, the reduced-motion setting takes precedence. The **160–200 ms**
+beside it does not: no ruling reaches a duration. The same split applies to the
+spacing steps and the radii, which are `DOKUMENTACJA/projekt.md`'s and are
+nobody's contract.
+
+**And the six-step ramp is `DOKUMENTACJA/projekt.md`'s too, not
+`DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`'s**, which is worth one sentence because
+the paragraph above says as much about spacing and motion and leaves the type
+scale looking like an exception. `02-SYSTEM-WIZUALNY.md` §"Typografia i ikony"
+gives three numbers — *"Docelowo tekst podstawowy 16 px, etykiety 14 px,
+metadane 12 px"* — and the full 32 / 24 / 20 / 16 / 14 / 12 appears once in the
+delivery, in `DOKUMENTACJA/projekt.md`'s §"Iteracja 01" line beginning
+*"Hierarchia docelowa"*.
+
 ### Character
+
+**The delivery's material, and not ruled.** The owner's correction quoted at the
+end of it is theirs and is recorded rather than adopted as a rule; the nearest
+thing with contract force is constitution article 11's *"ograniczone
+dekoracje"*, which binds through decision 1 and says far less than this
+paragraph does.
 
 "Architectural workshop": flat groups, value columns, zone numbers, a marked
 edge on the active element. Explicitly rejected: a separate rounded card per
@@ -138,28 +255,48 @@ keeping its geometry and palette.
 
 ### Navigation
 
+**Restates ADR 0112 decision 3**, which the owner ruled against the ADR's own
+recommendation and ruled to happen immediately rather than after the stage 0
+inventory. The five titles bind. Which English word carries one of them does
+not: §"Where this repository stands against it" item 5 records why *Plan dnia*
+ships as **Schedule**.
+
 Five sections — **Przegląd / Buduj / Strefy / Zarządzaj / Plan dnia** (Overview
-/ Build / Zones / Manage / Day plan) — with matter-of-fact titles. Today's HUD
-has five too, and they are not the same five; §"Where this repository stands"
-below has the mapping.
+/ Build / Zones / Manage / Day plan) — with matter-of-fact titles.
+
+> **This paragraph used to end "Today's HUD has five too, and they are not the
+> same five; §"Where this repository stands" below has the mapping", and that
+> clause is kept here rather than deleted** (`docs/AGENT_WORKFLOW.md` §4). It
+> stopped being true on 2026-09-14, when the sections moved, and it then
+> contradicted this document's own item 5 — *"since 2026-09-14 they are the
+> direction's own five"* — for a day, in a file whose two halves nothing reads
+> against each other. That is the §4 check that no diff performs: reading a
+> file's own headings against each other. Today's HUD **is** the direction's
+> five; item 5 carries the move, its cost and the two gaps it left.
 
 ### The constitution
 
 Twenty articles, in `DOKUMENTACJA/konstytucja.md`, with a tie-break order for
 design disputes: data truth and save safety first, then reachability of the
 needed action, then legibility, then naming consistency, and aesthetics last.
-**The owner accepted the constitution on 2026-09-13, as a product contract
-subordinate to `AGENTS.md`.** Six of the twenty (1, 2, 4, 7, 10, 13) restate
+**Restates ADR 0112 decision 1, and it is the ruling that gives every article
+below its force: the owner accepted the constitution on 2026-09-13, as a product
+contract subordinate to `AGENTS.md`.** Six of the twenty (1, 2, 4, 7, 10, 13) restate
 constraints this repository already held; the other fourteen are new, and are
 now binding rather than proposed.
 
-**Article 8 is amended, by the same ruling and in the same breath as the type
-scale.** It reads *"tekst podstawowy 16 px"*; the owner chose 15 px and chose to
+**Restates the second half of ADR 0112 decision 4. Article 8 is amended, by the
+same ruling and in the same breath as the type scale.** It reads *"tekst podstawowy 16 px"*; the owner chose 15 px and chose to
 amend the article rather than record an exception to it. **That amendment lives
 here and in ADR 0112 and never in the delivery** — `docs/design/README.md`'s
 rule is that a delivery is not edited after it lands. Everything else in article
 8 stands: contrast measured rather than assumed, visible focus, 200 % text, and
-a status that carries a label and an icon as well as a colour. **Article 5 — every
+a status that carries a label and an icon as well as a colour. **"Everything
+else" is this document's word and not the ruling's, and the gap it hides is the
+open question named in §"How to read a sentence in this document"**: the
+article's type sentence carries 14 px and 12 px beside the 16, ADR 0112's own
+enumeration of the untouched parts names neither, and the shipped ramp is
+13 and 11. Nothing here decides it. **Article 5 — every
 sentence the game shows is true — was in the first list when this document was
 written, and it does not belong there.** The nearest thing `AGENTS.md` holds is
 the fourth reservation, which is about the truth of a *player-visible string*
@@ -181,7 +318,13 @@ hedge added here:
   with no protection against two ordinary tabs overwriting each other — the
   audit records that as a known gap, not as a fix to copy.
 - **The map illustration.** One 1536×1024 render, not a production atlas. The
-  delivery says not to cut sprites out of it.
+  delivery says not to cut sprites out of it. **Restates ADR 0112 decision 5,
+  and the ruling went further than this bullet did:** the illustration stays a
+  reference and nothing is cut out of it, *and* the owner asked for new
+  production prompts covering tiles and objects in the same style, so the
+  catalogue is produced rather than improvised. That half is stage 7's work and
+  is tracked in #1163; the CI include-list constraint on it is the owner's to
+  release and is unchanged.
 - **Camera limits and grid.** ±600 / ±500 px and a decorative grid are prototype
   limits, not the chunked world's.
 - **`app.js` and the mock's CSS.** The delivery's own audit says the layered
@@ -191,15 +334,44 @@ hedge added here:
 
 ## Where this repository stands against it
 
-Measured on this checkout at `e5628369`, so that the gap is a fact rather than
-an impression.
+**Every numbered item below is a reading of the code and binds nothing.** Under
+the rung added on 2026-09-15 this is the half of the document that is an
+ordinary documentation bug when it goes wrong rather than a conflict of
+contracts: where one of these disagrees with `src/`, the code is right and the
+sentence rotted. Two of them had rotted when this classification was made, and
+both are marked in place below rather than overwritten.
 
-1. **There is one theme and it is the dark one.** `grep -rn prefers-color-scheme
-   src/` returns nothing, and the token file's ramps are an ink/paper dark set
-   (`src/ui/tokens.css:161-190`). The delivery designs a **light** day theme as
-   the default and a night theme beside it, switchable and remembered. That is
-   the single largest piece of work in the whole direction, and it is a token
-   architecture question before it is a colour question.
+Measured on this checkout at `e5628369`, so that the gap is a fact rather than
+an impression. **That anchor is now two days and one whole stage old**, which is
+the honest reason to read each item's own dated update before its opening
+sentence.
+
+1. **Stage 1 landed on 2026-09-13 (#1157) and this item was false from the day
+   it was written. The measurement is kept below rather than overwritten**
+   (`docs/AGENT_WORKFLOW.md` §4), because it is what the stage was measured
+   against and because *when* it became false is the part worth seeing:
+
+   > **There is one theme and it is the dark one.** `grep -rn
+   > prefers-color-scheme src/` returns nothing, and the token file's ramps are
+   > an ink/paper dark set (`tokens.css:161-190`). The delivery designs a
+   > **light** day theme as the default and a night theme beside it, switchable
+   > and remembered. That is the single largest piece of work in the whole
+   > direction, and it is a token architecture question before it is a colour
+   > question.
+
+   Both halves are wrong today. `grep -rn prefers-color-scheme src/` returns
+   seven lines, and the one that decides is `src/ui/theme.ts:64`; the
+   stated-as-absent thing is the only shape §4 warns about first. The token file
+   carries **both** palettes on one layer, the light one on bare `:root` so a
+   page that runs no script renders the day theme, and `:root[data-theme='dark']`
+   selects the night one. The anchor rotted with it: `tokens.css:161-190` is an
+   `@property` block for spacing, radius and type steps today, and no ramp is
+   declared there at all. The three commits are `24798b49` (both palettes on one
+   token layer), `f604b711` (the control, following the device until the player
+   chooses) and `1274d23e` (one cycling button rather than three). All three are
+   dated **2026-09-13** — `f62d8d43`, the commit that first wrote this document,
+   is the same day, so this item never described a tree anyone could check it
+   against for long.
 2. **The type scale was smaller than the target by three steps, and stage 2
    closed the gap on 2026-09-14 (#1158).** The sentence this item used to
    carry is kept below rather than overwritten, because the measurement is
@@ -238,9 +410,22 @@ an impression.
    by the 1.7 px the status strip's own growth hands the rail. Its docblock
    already required that a change to it arrive with the measurement that
    caused it, and #545 and #634 each moved it that way before.
-3. **The interactive hue is a single desaturated steel blue**
-   (`--sky-600: #4a7fa5`, `src/ui/tokens.css:186-188`), where the direction has
-   a teal action colour and a mint brand colour with different jobs.
+3. **Closed by the same stage, and kept rather than overwritten for the same
+   reason.** It read:
+
+   > **The interactive hue is a single desaturated steel blue**
+   > (`--sky-600: #4a7fa5`, `tokens.css:186-188`), where the direction has a
+   > teal action colour and a mint brand colour with different jobs.
+
+   `--sky-600` is not declared anywhere in `src/ui/tokens.css` today; it left in
+   `24798b49`. The day action colour is `--teal-600: #007477`, the delivery's
+   own value including its recorded contrast correction, and `--accent` resolves
+   to it in the light theme and to `--teal-300` in the dark one. The anchor is
+   the same kind of rot as item 1's: `tokens.css:186-188` is in range and lands
+   on the `@property --type-display` declaration, which is exactly the drift
+   `tests/foundation/documentation-source-anchor-contract.test.ts` says in its
+   own docblock it cannot catch — *"an anchor that drifts onto plausible-looking
+   code is worse than one that drifts onto nothing"*.
 4. **The status tones carry measured contrast arguments that a re-skin must not
    silently discard.** `src/ui/tokens.css` records three owner rulings of
    2026-09-02 on issue #788 and the exact ratios they were chosen to clear, and
@@ -405,9 +590,19 @@ an impression.
    `DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md` exists at `e5628369` — checked
    one by one, eighteen of them. That is worth stating because the delivery
    asks the reader to verify it and because it is the part of an outside brief
-   that most often rots.
+   that most often rots. **Not re-checked in the 2026-09-15 classification
+   pass**, so "eighteen" is a tally carried from `e5628369` and is the shape §4
+   warns about; the paths it counts are in
+   `docs/design/2026-09-13-identity-v5/DOKUMENTACJA/05-INSTRUKCJA-DLA-MODELU.md`
+   under *"Rozpoznane wcześniej punkty integracji"* for whoever re-counts it.
 
 ## The rule this document exists to make unmissable
+
+**Binds twice over, and neither route is this document's own authority.** The
+demand is constitution article 5, which binds through ADR 0112 decision 1, and
+`AGENTS.md`'s fourth reservation, which binds because `AGENTS.md` is rung 1. If
+this section and either of those ever disagree, they win and this paragraph is
+the defect.
 
 **A visual direction cannot change what the game may say.** Every constitution
 article that promises the player something — "Zapisano", "wolne miejsce", "brak
