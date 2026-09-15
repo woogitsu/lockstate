@@ -254,17 +254,26 @@ never a transition to `<hidden>`:
 **Three separate things are wrong on that screen and they are wrong in three
 different ways.**
 
-1. **At step D the two readouts contradict each other in the same words.** The
-   refusal band says `none being built there` while the Build panel's queue,
-   laid out on the same screen with no scrolling, says `1 being built`. The
-   band's sentence is in the **present tense** about **that tile**, and the
-   tile is the one the player last pressed — the same one that now carries the
-   order. **VERIFIED, read:** the sentence's own locale comment at
-   `src/content/default-locale-en.ts:1104-1108` is explicit that the clause is
-   about a live state — *"a wall still being built answers `nothing-to-remove`
-   here too … and a sentence that said 'no wall' would be false of that case"*
-   — so the clause was written precisely to be true of a moment, and the band
-   goes on showing it past that moment.
+1. **At step D two readouts on one unscrolled screen use the same words for
+   opposite facts.** The refusal band says `none being built there`; the Build
+   panel's queue says `1 being built`. The band's sentence is in the **present
+   tense** about **that tile**, and the tile is the one the player last pressed
+   — the same one that now carries the order.
+
+   **The reading under which this is not a contradiction is stated rather than
+   argued away, because it is available and I cannot rule it out from a
+   run.** **VERIFIED, read:** the locale comment at
+   `src/content/default-locale-en.ts:1099-1108` says the `RemoveWall` branch
+   *"tries the object arm first, so this sentence is only ever what the player
+   reads when that arm **also** found nothing … 'none being built there' is
+   carried over from `remove-object.*`'s own sentence"*. So `being built` may
+   mean **an object on the tile** rather than **a wall on its edge**, in which
+   case the clause was true when it was written and is true still. **A player
+   has no way to make that distinction**, and the two phrases are word-for-word
+   identical on one screen.
+
+   **Step E is the half that does not depend on the reading**, and it is why
+   this is listed as a finding rather than a quibble.
 
 2. **At step E the two bands disagree about whether anything was removed.** The
    Remove press succeeded: it cancelled the in-flight order, and the event band
@@ -276,6 +285,12 @@ different ways.**
    The refusal band, still visible, still read `Nothing was removed`. **Two
    sentences about the same press, on two adjacent grid rows, saying opposite
    things.**
+
+   **The attribution of that event to step E is by elimination and is stated as
+   such**: it is the only cancellation in the act, and the only command in the
+   act that could produce one. Step E's own command is logged as `RemoveWall`,
+   so the press reached the world; what it removed was the order placed at C,
+   which at D the queue still reported as `1 being built`.
 
 3. **B answers a question the player cannot ask.** The sentence names no tile,
    so a second refusal on a different edge is indistinguishable from the first
