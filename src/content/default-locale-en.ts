@@ -359,7 +359,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * No amount is quoted, deliberately: what a place pays is
    * `stateIncomeForPrisonerDay`, which withholds per unmet need, and a figure
    * in this sentence would go stale the day
-   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` moves off zero.
+   * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` moves. **It has moved
+   * since this was written, which is the argument rather than a footnote to
+   * it.** The clause read *"the day ... moves off zero"* when it was authored
+   * at `c56e18bd` on 2026-09-04, and the rate was `0` at that moment; the
+   * owner restored it to `40` later the same ruling day (reaching the source
+   * at `3134a78e`), so a figure quoted here would already have been wrong
+   * within a day. Both rulings, and the measurements the second was
+   * conditional on, are in that constant's own docblock and in
+   * [ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)'s
+   * amendments of 2026-09-03 and 2026-09-04.
    *
    * Authored by an agent under the owner's release of 2026-09-04
    * (*"Sam decyduj zawsze, jak zacznę grać to ujednolicimy"*), so the voice is

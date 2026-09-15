@@ -294,6 +294,21 @@ pretend to have done it:
   by symbol here rather than re-numbered, for §4's reason — a second number
   rots on the next edit above it.
 
+**Corrected again 2026-09-04: the suspension ended, so the correction above is
+itself history and is kept rather than rewritten** (`docs/AGENT_WORKFLOW.md`
+§4, the same terms it was written under). The owner restored
+`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` on 2026-09-04, after
+the four-prisoner and fifty-prisoner measurements they made the restoration
+conditional on — their ruling is in
+[ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md)'s amendment of that
+date and in that constant's own docblock, and it reached the source at
+`3134a78e`. So the paragraph this block corrected — *"Income is 180 a
+prisoner-day, not 300"* — describes the game again, a bare cell's three unmet
+needs cost the prison 120 a day again, and the two consequences above are once
+more the hypothetical rather than the state of the tree. Nothing in this ADR's
+`Status`, decisions or measured sweep moves on either date: the sweep was run
+at 180 a prisoner-day, which is what the code pays again.
+
 **The step does not fire at all below a principal the ruled 45 days make large.**
 At 25% of a 180-a-day inflow the debt clears in `1.15P / 45` days, so day 45 is
 reached only when `P > 1,761`; with a full cell at 720 a day it takes

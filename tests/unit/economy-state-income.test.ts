@@ -387,10 +387,11 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     // shown the four-prisoner measurement, ruled the constant back to `40`
     // **on condition that a fifty-prisoner prison was measured first**. Both
     // measurements exist -- `docs/research/2026-09-04-what-pressure-there-is.md`
-    // and its `-at-fifty` companion, the latter named without a rooted path
-    // because its branch is unmerged and
+    // and `docs/research/2026-09-04-what-pressure-there-is-at-fifty.md` -- so
+    // this is that ruling carried out. **The second was named here without a
+    // rooted path while its branch was unmerged**, because
     // `tests/foundation/documentation-links-contract.test.ts` fails on a
-    // dangling link -- so this is that ruling carried out.
+    // dangling link; it merged, so the rooted form is now the checked one.
     // Unlike the suspension, the restoration was made by choosing a presented
     // option rather than in the owner's own words, so no verbatim quotation of
     // it is available to put here and none is invented.
@@ -403,14 +404,25 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     expect([0, 1, 2, 3, 4, 5, 6].map(stateIncomeForPrisonerDay)).toEqual([300, 260, 220, 180, 140, 100, 60]);
   });
 
-  it('withholds the rate per unmet need whenever the rate is not zero, which is what keeps the mechanic gated while it is off', () => {
+  it('withholds exactly the rate per unmet need at every rate, which is the gate that survived the mechanic being switched off', () => {
     // **This is the test the ruling's reversibility rests on.** It drives
     // `stateIncomeForPrisonerDayAt` -- the same formula
     // `stateIncomeForPrisonerDay` calls, with the withheld rate as an argument
     // -- so the shape ADR 0064 decided (linear in the count, one term per
-    // need, no interaction) stays asserted at a rate the owner has switched
-    // off. Deleting the `- withheld x unmetNeeds` term as dead arithmetic goes
-    // red here.
+    // need, no interaction) stays asserted at rates the shipped constant does
+    // not hold. Deleting the `- withheld x unmetNeeds` term as dead arithmetic
+    // goes red here.
+    //
+    // **The title and this paragraph said the shape was asserted "at a rate
+    // the owner has switched off", and that stopped being true on 2026-09-04**
+    // when the owner restored
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` to `40` (ADR 0064's
+    // amendment of that date; both rulings are in the constant's own
+    // docblock). `40` is the shipped rate again, so the literal `40` below is
+    // no longer a switched-off rate -- what the parameter still buys is `0`
+    // and the rates the clamp binds on, which the shipped constant has never
+    // held. The old wording is recorded rather than dropped
+    // (`docs/AGENT_WORKFLOW.md` §4) because it is why the parameter exists.
     //
     // ADR 0064's own schedule, written out for the same #375 reason as above.
     const SCHEDULE_AT_FORTY = [300, 260, 220, 180, 140, 100, 60];
@@ -427,7 +439,9 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     expect(shipped).toEqual(parameterised);
 
     // One term per need and no interaction: each step down the schedule is the
-    // same rate, at three rates including the suspended one.
+    // same rate, at three rates including `0` -- the rate the owner suspended
+    // the mechanic at from 2026-09-03 to 2026-09-04, and the one the shipped
+    // constant no longer holds.
     for (const rate of [0, 40, STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS]) {
       for (let unmet = 1; unmet <= NEED_IDS.length; unmet += 1) {
         expect(
@@ -442,10 +456,19 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     // `300 - 6 x 40` reaches 60 exactly; the floor is arrived at rather than
     // clamped, and ADR 0049 made insolvency a state rather than a loss
     // condition, which an income line that could reach zero would undo. Stated
-    // at `40` rather than at the shipped rate because that is the rate the
-    // property was chosen for; at the suspended `0` the figure is the full 300
-    // and the property holds trivially, which is asserted second so that both
-    // rates are covered.
+    // at the literal `40` rather than at the shipped constant because that is
+    // the rate the property was chosen for, and asserted a second time through
+    // the shipped constant so that the property is pinned at whatever the
+    // owner has the rate set to.
+    //
+    // **This comment read "at the suspended `0` the figure is the full 300 ...
+    // which is asserted second so that both rates are covered", and the
+    // restoration of 2026-09-04 made it false about its own assertion**: with
+    // `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` back at `40`, the
+    // third expectation below prices six unmet needs at 60 rather than at 300.
+    // Kept rather than deleted (`docs/AGENT_WORKFLOW.md` §4): the two readings
+    // are the two sides of one dial, and the assertion was written to hold at
+    // both, which is why no expectation here had to move.
     expect(stateIncomeForPrisonerDayAt(40, NEED_IDS.length)).toBe(60);
     expect(stateIncomeForPrisonerDayAt(40, NEED_IDS.length)).toBeGreaterThan(0);
     expect(stateIncomeForPrisonerDay(NEED_IDS.length)).toBeGreaterThan(0);
