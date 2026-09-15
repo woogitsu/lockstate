@@ -19352,6 +19352,34 @@ one direction.
   re-intake comment, `:529` — this entry's companion in §6 cited `:494`). What is
   no longer true is *three*:
 
+  (**THE FIVE `DEFECT`-LABELLED CASES DO NOT EXIST, AND HAVE NOT SINCE
+  2026-08-29 — THIS IS A CITATION WHOSE SUBJECT IS GONE RATHER THAN MOVED, AND
+  §6 OF THIS FILE HAS SAID SO IN ITS OWN WORDS FOR SEVENTEEN DAYS.** Run at the
+  anchor `1aef04b1` and again at `main`'s tip `e044a3e8`, the file being in no
+  merge of `1aef04b1..HEAD`: `grep -n 'DEFECT'
+  tests/unit/entity-generation-wrap.test.ts` returns **nothing at all**, and the
+  file's six `it(` cases are at `:83`, `:122`, `:137`, `:153`, `:167` and
+  `:188`. `git log -S'DEFECT'` on that path names **`f920ba56`** (2026-08-29,
+  #505) as the commit that removed the label, which is the same commit §6's own
+  bullet on this file already cites for rewriting it *"from `DEFECT`-pinning to
+  fixed-behaviour pinning"* — so the two sections of this document have
+  disagreed about the same file, by name, since the day it changed. **No diff
+  could find that and reading the two sections against each other takes a
+  minute**, which is the check `docs/AGENT_WORKFLOW.md` §4 prescribes and the
+  reason this is recorded rather than renumbered: there is no line to re-aim at,
+  the labels are gone. **The wrap-period pin at `:124` is the same shape.** That
+  citation is quoted below as *"rejects a stale handle for every one of the
+  4,095 recycles before the wrap, and only wraps at 4,096"*, and `f920ba56`
+  rewrote that title too; `:124` is now `const stale = store.spawn();`, a line
+  inside the case below it. **The claim the paragraph rests on survives and its
+  evidence does not**: the wrap period is still pinned in that file, in its own
+  case at **`:83`**, whose title now reads *"rejects a stale handle for every one
+  of the 4,095 recycles before retirement, and retires the index at the 4,096th
+  destroy rather than recycling it"* — which is the option-A re-baselining the
+  paragraph three below this one records, arriving in the citation that had not
+  been read since. `tests/unit/prisoners-intake-system.test.ts:529` lands
+  unmoved, so the pair did not drift together.)
+
   - **Question 2 is answered**, as option C plus the accounting option C asked
     for. `EntityStore.destroy` now has a call site in `src/`
     (`src/simulation/prisoners/release.ts:216` — this read `:194` through the
@@ -20030,6 +20058,41 @@ one direction.
   which only 77 belongs to this window. Every value above is kept rather than
   overwritten, because the sequence is this bullet's whole argument.
 
+  **RE-DERIVED AT THE ANCHOR `1aef04b1`: ALL EIGHT MOVED AGAIN, AND THE EIGHT
+  VALUES THE READING BELOW GIVES WERE ALREADY WRONG WHEN THE ANCHOR LINE AT THE
+  HEAD OF THIS FILE WAS WRITTEN.** `src/main.ts` is a member of the
+  `7e9c3043..1aef04b1` window (`git diff --numstat` reports `114 21`) and the
+  re-anchor pass that declared `1aef04b1` moved this bullet's numbers not at
+  all, so every coordinate below was stale on the tree the file now says it was
+  read at. Each found by searching this tree for the construct's own text, at
+  `1aef04b1` and again at `main`'s tip `e044a3e8` with identical results
+  (`src/main.ts` is in no merge of `1aef04b1..HEAD`). The five top-of-file
+  anchors and the span moved a uniform **+1**: the import trio
+  **`:138-140` → `:139-141`**, the pipeline build **`:198` → `:199`**, the
+  `crashReporter` gate **`:236-239` → `:237-240`**, the crash listeners
+  **`:242-249` → `:243-251`**, the prose hit **`:214` → `:215`**, and the
+  `src/main.ts:161-223` span **`:186-248` → `:187-249`**. The two
+  bottom-of-file anchors moved **+93**: the second `telemetry.enabled` gate,
+  `if (telemetry.enabled && appRoot !== null) {`, **`:3963` → `:4056`** and the
+  consent mount, `createTelemetryConsentPrompt({`, **`:3968` → `:4061`**. **So
+  the two halves moved by different amounts for the ninth consecutive reading.**
+  `src/ui/telemetry-consent-prompt.ts:8` and `:17` are unmoved for the twelfth
+  anchor running, on a file no window has yet touched.
+
+  **AND THE LISTENER SPAN CARRIES AN OFF-BY-ONE THIS READING INHERITED RATHER
+  THAN INTRODUCED, MARKED HERE RATHER THAN QUIETLY CLOSED.** `:242-249` at
+  `7e9c3043` ended one line short of the construct it names: the second
+  listener's closing `});` was `:250` on that tree and is **`:251`** here, which
+  is why the corrected span is `:243-251` and not `:243-250`. The `+1` above is
+  the window's; the extra line is the previous value's. **The count is
+  untouched**: `grep -rn "services/telemetry" src/ --include=*.ts` still returns
+  **twelve** hits in **five** files, eleven of them outside
+  `src/services/telemetry/`, and `admission.ts:18` is still the third in sort
+  order — so what this window moved is where four of those hits sit in
+  `src/main.ts`, not how many there are.
+
+  **The previous reading is kept rather than overwritten:**
+
   **RE-DERIVED AT `7e9c3043`: ALL EIGHT MOVED AGAIN, ALL EIGHT BY THIS WINDOW,
   AND THE CLEAN RESULT REPEATS.** Each found by searching this tree for the
   construct's own text. The five top-of-file anchors and the span moved a
@@ -20209,6 +20272,23 @@ one direction.
   than waved through as noise. `verifyChallengeSubmission`
   and `isPubliclyRankable` are unmoved, still `:136` and `:324`, on a file
   (`src/services/challenges/verification.ts`) this window does not touch.
+
+  **THE QUARTET MOVES A UNIFORM +1 AT THE ANCHOR `1aef04b1`, AND THE SWEEP THE
+  PARAGRAPH BELOW ASKS FOR HAS NOW FAILED TO FIRE AT FOUR CONSECUTIVE
+  ANCHORS.** Re-derived by searching this tree for each import's own text, at
+  `1aef04b1` and again at `main`'s tip `e044a3e8` with identical results
+  (`src/main.ts` is in no merge of `1aef04b1..HEAD`):
+  `import { createTelemetryConsentPrompt }` **`:137` → `:138`**,
+  `import './styles.css'` **`:142` → `:143`**, the challenges comment
+  **`:158` → `:159`** and `import type { CancelScheduledPump }`
+  **`:140` → `:141`**. The `+1` is the same single line above the import block
+  that moved this bullet's telemetry sibling above, so for once the two bullets
+  agree on an amount. `verifyChallengeSubmission` and `isPubliclyRankable` are
+  unmoved, still `:136` and `:324`, and `masterSeedSchema`'s comment is unmoved
+  at `:1444` — an eighth anchor at which that one comment holds its value,
+  against seven values before it.
+
+  **The previous reading is kept rather than overwritten:**
 
   **THE QUARTET WAS STALE AGAIN BEFORE THE 2026-09-15 WINDOW AND IS
   TWENTY-FIVE LINES OUT AFTER IT, WHICH MAKES THE PARAGRAPH BELOW ABOUT A
@@ -21216,6 +21296,37 @@ serving traffic"*, `:33` quotes the deployment document, and `:42` states *"This
 note records the discrepancy; it does not resolve it"* and assigns the open
 decision to issue #274, Q9.
 
+**BOTH `wrangler.jsonc` NUMBERS IN THE PARAGRAPH ABOVE HAVE BEEN WRONG SINCE
+2026-09-03, AND BOTH LAND ON A PLAUSIBLE NEIGHBOUR — WHICH IS THE FAILURE THIS
+ENTRY ITSELF IS ABOUT.** They are dated *"at `bb3a01e`"* and were exact there.
+`b2aaa3f1`/#873, the telemetry ingest's server entry point, is the **only**
+commit to touch `wrangler.jsonc` since — `git log bb3a01e..HEAD --
+wrangler.jsonc` names it and nothing else — and it put a `main` key and its
+eight-line comment above the `env` block. Opened at the anchor `1aef04b1` and
+again at `main`'s tip `e044a3e8` with identical results (`wrangler.jsonc` is in
+no merge of `1aef04b1..HEAD`): `"name": "lockstate-staging"` is at **`:30`**,
+inside a `staging` block spanning **`:29-42`**, and `"name": "lockstate"` at
+**`:44`**, inside a `production` block spanning **`:43-58`**. `:12` is
+`"preview_urls": true` on the top-level *development* worker and `:20` is a line
+of the comment explaining `not_found_handling` — two lines that read like
+configuration of the same shape in the same file, which is exactly the drift
+this entry spends its next paragraph condemning in `docs/DEPLOYMENT.md`. The old
+pair is kept above rather than overwritten, because a dated reading re-pointed is
+a reading destroyed, and because **twelve days and every anchor since** carried
+it on the strength of a file nobody opened: `wrangler.jsonc` has been in no
+window since, so no delta was ever going to raise it.
+
+**And the same drift is in ADR 0002's own body, which is handed over rather than
+fixed here.** `docs/adr/0002-cloudflare-static-assets.md:31` says
+`wrangler.jsonc` configures *"`:11-18` for `lockstate-staging` on `workers.dev`
+with no route, `:19-32` for `lockstate` on the `lockstate.io` Custom Domain"* —
+the same two spans, moved by the same commit, inside the ADR this entry cites as
+having corrected its own anchors and written a paragraph about why. What the
+sentence claims is untouched: the two environments are still exactly that, now at
+`:29-42` and `:43-58`. An accepted ADR's body is amended in its own commit, which
+is the rule §5 applies to every other entry, so this is recorded here and left
+for that change.
+
 **Both of this entry's `docs/DEPLOYMENT.md` numbers are retired rather than
 repaired, and ADR 0002 is the reason.** They read `:167` and `:172`. At `bb3a01e`
 that section began at `:200` and at `c00b641` it begins at `:253`, which is the
@@ -21637,7 +21748,23 @@ never recorded before this round:
   same question and #458's discharge work moved it again. **Three anchors, three
   numbers, one unchanged sentence** — so the quotation above is the citation and
   the number is the aid.)
-- `src/simulation/economy/income.ts` — **2026-09-15 census at
+- `src/simulation/economy/income.ts` — **2026-09-15 (third) census at the
+  anchor `1aef04b1`: 44 Proposed and 65 Accepted across 109 ADR documents**,
+  matching the index on its status column. `grep -c Proposed
+  src/simulation/economy/income.ts` returns **0** — run here, not recalled — so
+  the file still carries no count at all and this mirror is a document-level
+  count kept here rather than a sentence in that file. **One ADR arrived and
+  none was accepted: 0116 (`Proposed`, 2026-09-15), the only numbered addition
+  under `docs/adr/` between `7e9c3043` and the anchor** — which is the whole of
+  the move, and which the re-anchor pass that declared `1aef04b1` did not bring
+  down into this bullet. The Accepted column was re-derived over all 109
+  documents rather than incremented: the seven that state their status as a
+  `## Status` section (0005, 0006, 0007, 0009, 0010, 0011, 0012) were opened
+  one at a time and all seven read `Accepted`.
+
+  **The previous reading is kept rather than overwritten:**
+
+  **2026-09-15 census at
   `7e9c3043`: 43 Proposed and 65 Accepted across 108 ADR documents**, matching
   the index on its status column, compared document by document rather than by
   totals — **zero disagreements**, which is a stronger statement than two equal
