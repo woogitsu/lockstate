@@ -259,3 +259,54 @@ describe('applyTheme', () => {
     expect(root.dataset['theme']).toBe('light');
   });
 });
+
+describe('a theme another tab chose (#1199)', () => {
+  it('is applied, reported, and not written back', () => {
+    const root = fakeRoot();
+    const store = memoryStore();
+    const changes: ThemePreference[] = [];
+    const controller = createThemeController({
+      root,
+      ...persistence(store),
+      system: fakeSystem(false),
+      onChange: (_theme, preference) => changes.push(preference),
+    });
+    expect(root.dataset['theme']).toBe('light');
+
+    // The other tab has already written the key -- that is how a `storage`
+    // event exists at all -- so this one applies it and stores nothing. The
+    // store staying empty is the assertion: a controller that persisted what
+    // it was told would make "this player chose dark here" and "some other tab
+    // did" indistinguishable at the one place that knows the difference.
+    controller.adopt('dark');
+
+    expect(root.dataset['theme']).toBe('dark');
+    expect(controller.preference).toBe('dark');
+    expect(store.getItem('lockstate.settings.theme')).toBeNull();
+    // And the control follows, so the button cannot be left naming the theme
+    // that used to be on screen.
+    expect(changes).toEqual(['dark']);
+  });
+
+  it('carries `system` across as `system`, not as the theme it happens to resolve to', () => {
+    const root = fakeRoot();
+    const system = fakeSystem(true);
+    const controller = createThemeController({
+      root,
+      ...persistence(memoryStore()),
+      system,
+      preference: 'light',
+    });
+    expect(root.dataset['theme']).toBe('light');
+
+    controller.adopt('system');
+
+    expect(controller.preference).toBe('system');
+    expect(root.dataset['theme']).toBe('dark');
+    // And the adopting tab is now following the device live, exactly as the
+    // tab that made the choice is: an adopted `'system'` that had been flattened
+    // to a theme would stop moving at sunset.
+    system.change(false);
+    expect(root.dataset['theme']).toBe('light');
+  });
+});
