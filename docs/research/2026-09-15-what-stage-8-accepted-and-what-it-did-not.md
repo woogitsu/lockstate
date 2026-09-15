@@ -409,7 +409,8 @@ preference changes through the `storage` event. **This repository has no
 two Lockstate tabs open at once do not follow each other's theme, interface
 scale, layout or language until each is reloaded. That is a divergence from the
 delivery's described behaviour, it is not a regression this stage caused, and
-nothing in this repository promises a player otherwise. Filed in §15.
+nothing in this repository promises a player otherwise. Filed as
+[#1199](https://github.com/woogitsu/lockstate/issues/1199); §15.2 records it.
 
 ---
 
@@ -607,7 +608,9 @@ value is arguably wrong for a player."*
 > On a phone the log is still out of reach; on every viewport above 720px it is
 > not.
 
-**It is an open owner question and stage 8 does not answer it.** Stage 5 asked
+**It is an open owner question and stage 8 does not answer it**, and stage 8
+filed it as [#1201](https://github.com/woogitsu/lockstate/issues/1201) so it is
+tracked rather than only recorded. Stage 5 asked
 it (`docs/research/2026-09-14-what-stage-5-checked-and-what-it-found.md` §4);
 ADR 0112's rule for an unplaced surface is that it goes to the owner when a
 stage needs an answer. Fixing it inside an acceptance pass would be exactly what
@@ -714,7 +717,9 @@ of 36 on the head that ships, which against a document saying 23 reads as six
 new failures. It is not: run on `d7aab8d8` itself, the rewrite reports **32**,
 so it is a stricter instrument and the two numbers are not comparable. Held to
 one instrument, the debt went **32 → 29** over the rollout — three combinations
-fixed, none added. §12 carries the table and the reproduction.
+fixed, none added. §12 carries the table and the reproduction, and the two stale documentation
+lines are filed as [#1202](https://github.com/woogitsu/lockstate/issues/1202)
+rather than edited from inside an acceptance pass.
 
 **A number is not a measurement unless the thing that produced it still
 exists.** That is the whole cost of `d7aab8d8`'s throwaway harness, and it came
@@ -732,7 +737,7 @@ This is a divergence from the delivery, not a regression and not a broken
 promise: no player-visible sentence in this repository says otherwise, and the
 theme controller's own docblock (`src/ui/theme.ts:140-147`) is explicit that a
 refused write must still let the switch happen, which is a within-tab
-guarantee. **Done:** filed as an issue rather than fixed; §10 records it.
+guarantee. **Done:** filed as [#1199](https://github.com/woogitsu/lockstate/issues/1199) rather than fixed; §10 records it.
 
 ### 15.3 `pnpm verify:assets` fails on a clean worktree of this branch, for an
 environment reason
