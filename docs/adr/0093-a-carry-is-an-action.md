@@ -790,6 +790,38 @@ here rather than in a commit message nobody keeps:**
    the tile the save carried. Same one restore rule, reached without adding a
    path. The other direction — a job whose carrier is not in this session — is
    `CarryJobExecutor.reconcileRestoredJobs`, as decision 5 requires.
+
+   **NOTE 2 IS KEPT AS IT STANDS AND IT WAS HALF TRUE, WHICH IS THE PART THAT
+   COST SOMETHING — corrected 2026-09-15, issue #882.** *"A prisoner's own
+   active job makes the carry providable again"* is true of `prisonProvides`
+   and of `carryAvailableFor`, and it is not true of `planIdleSelection`, which
+   is the method the re-selection actually goes through. That gate tested the
+   regime block's `allowedCategories` **before** the active-job check and `&&`
+   short-circuited, so a carrier whose re-selection landed after the work block
+   had ended was filtered out of their own errand and chose something else with
+   the goods already in their hands. The substitution of one path for another is
+   sound; what note 2 did not check is that the substituted path asks a
+   *second* question the re-seat sketch never would have.
+
+   **So this document's own Consequence — *"A carry outlasts its block … not
+   cut at a regime boundary"* — was true continuously and false across a
+   restore, for as long as the mechanic has existed.** Reproduced seeded and
+   exactly, never statistically: a save taken mid-drop-off at tick 1,880, 80
+   ticks past the work block that started the errand, finished the errand in
+   continuous play and, restored from that same bundle, sent the carrier to the
+   lavatory holding four bricks and left the job `assigned` for **1,140 ticks**
+   against note 3's bound of 40. The fix consults the carrier's own active job
+   **before** the category gate and exempts a resuming carrier from the owner's
+   need-threshold amendment of 2026-09-02, which binds the prisoner being
+   *sent*. No payload changed and `SAVE_SCHEMA_VERSION` did not move: decision
+   5 holds exactly as written, and the general rule the fix records beside the
+   code is that **a restore may not ask a question continuous play never asks**.
+   The guard is `tests/integration/carry-restore-resumes-the-errand.test.ts`.
+
+   **Open question 1 is untouched.** *"Should a carrier be interruptible by a
+   regime change?"* is still the owner's and still unanswered; this made the
+   restore path agree with the continuous one, which is the answer this
+   document already gives.
 3. **Decision 5's restore bound is two reconsideration cycles, not one.** It
    predicted *"a restored carrier loses at most one reconsideration cycle to
    the travel restart"*; measured, the worst mid-walk capture costs **40
