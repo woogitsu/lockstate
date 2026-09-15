@@ -92,7 +92,32 @@ const readSource = (file: string): string => readFileSync(join(REPOSITORY_ROOT, 
  * an unlabelled enum is a reviewable diff rather than an omission -- the
  * same device as the allow-list in the ambient-nondeterminism contract.
  */
-const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: string; readonly reason: string }[] = [
+/**
+ * An exemption whose `reason` argues about the declaration's *members* pins
+ * them here, and `members` is checked against the source on every run.
+ *
+ * **Why the field exists (#930, 2026-09-15).** This census keys on the
+ * declaration NAME and not on its members -- the `RoomAccess` entry below
+ * says so in its own words and records that ADR 0108 predicted the prose
+ * would stop being true rather than turn the gate red. It was right twice:
+ * `RoomAccess` gained a fourth value while its reason still read "its three
+ * values", and `PRISON_CONDITIONS`'s reason undercounted how many of its
+ * members reach a player. Neither cost a red run, because nothing asserted
+ * the membership an argument was made over. A fifth `PrisonCondition` would
+ * likewise inherit this exemption in silence. Pinning the member list is the
+ * cheap half of the field-level reachability gate #930 §7 asks for: it does
+ * not prove a member is read, it makes a member added under an argument that
+ * does not cover it fail loudly here, next to the argument.
+ */
+interface UnlabelledEnum {
+  readonly sourceFile: string;
+  readonly declaration: string;
+  readonly reason: string;
+  /** Exact members, in source order, when the `reason` reasons about them one by one. */
+  readonly members?: readonly string[];
+}
+
+const UNLABELLED: readonly UnlabelledEnum[] = [
   {
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'MAIN_TO_WORKER_MESSAGE_KINDS',
@@ -169,7 +194,10 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'PRISON_CONDITIONS',
     reason:
-      "A closed union recomputed onto `statusCountsSchema.conditions` (ADR 0087 decision 2, the owner's 2026-09-01 amendment on issue #767), and, as of this decision, read by nothing under `src/ui/`: no panel, no alerts row and no badge names a `PrisonCondition` member yet. That is provisional rather than an argument that it never will be -- the change that built this union was scoped to the protocol shape, the pure producer (`computeStandingPrisonConditions`) and the crossing event 'and no further', deliberately deferring the labelling `REFUSAL_REASONS` and `SIMULATION_EVENT_TYPES` above already do for the two sibling vocabularies this same decision touches. Two of this union's four members already reach a player in different words today -- `BuildQueueMaterialsFundingViewModel.shortfallMinorUnits` and `HudIntakePipelineViewModel.waitingWithoutPlace` render as pulled panel copy, and the other two fire the `economy.deliveries-refused` / `economy.construction-refused` crossing sentences this same amendment adds -- so nothing here is silently unrendered; what is deferred is a *second*, standing rendering of the same four facts. When a panel reads this field directly, the labelling takes the same `Record`-over-closed-union shape those two entries argue for, or this exemption is removed rather than kept out of habit.",
+      "A closed union recomputed onto `statusCountsSchema.conditions` (ADR 0087 decision 2, the owner's 2026-09-01 amendment on issue #767), and, as of this decision, read by nothing under `src/ui/`: no panel, no alerts row and no badge names a `PrisonCondition` member yet. That is provisional rather than an argument that it never will be -- the change that built this union was scoped to the protocol shape, the pure producer (`computeStandingPrisonConditions`) and the crossing event 'and no further', deliberately deferring the labelling `REFUSAL_REASONS` and `SIMULATION_EVENT_TYPES` above already do for the two sibling vocabularies this same decision touches. **This reason read \"Two of this union's four members already reach a player in different words today\" until 2026-09-15; it is four of four, and all four durably** (issue #930's re-measurement on `2559eb14`). `construction.unfunded` is the Build panel's `queueShortfall` row off the same predicate (`src/simulation/presentation/construction-projection.ts:396`), *\"Waiting for {total} to unblock the next order.\"*; `intake.no-place` is `isIntakeWithoutPlaceWorthShowing` / `formatIntakeWithoutPlaceText` (`src/ui/hud/intake-panel.ts:231`) on the same `> 0`, *\"{count} waiting with no bed to sleep in\"*, on a panel that starts uncollapsed; and both `treasury.*-refused` members are the always-visible FUNDS chip, whose `overdraftRemaining` (`src/ui/hud/projection.ts:590-595`) is zero on exactly the deliveries rung this union's predicate reads, driving the chip's tone, its `{remaining} left` badge and its tooltip sentence. So nothing here is silently unrendered, and three of the four are painted *with a figure this union could never carry*: `conditions` is a set of names. What is deferred is a *second*, standing rendering of four facts already painted -- which is why #930's re-measurement recommends leaving the field rather than building the reader. When a panel reads this field directly, the labelling takes the same `Record`-over-closed-union shape those two entries argue for, or this exemption is removed rather than kept out of habit.",
+    // Pinned because the paragraph above argues member by member and this
+    // census keys on the declaration name: see `UnlabelledEnum.members`.
+    members: ['construction.unfunded', 'intake.no-place', 'treasury.construction-refused', 'treasury.deliveries-refused'],
   },
   {
     sourceFile: 'src/simulation/presentation/construction-projection.ts',
@@ -506,6 +534,26 @@ describe('no enum reaches the HUD without a group covering it', () => {
       .filter((key) => !COVERED.has(key) && !exempt.has(key));
 
     expect(unaccounted).toEqual([]);
+  });
+
+  it('keeps a pinned member list matching its declaration -- an added member cannot inherit an exemption silently', () => {
+    const byKey = new Map(discovered.map((entry) => [groupKey(entry.sourceFile, entry.declaration), entry.ids]));
+    const pinned = UNLABELLED.filter((entry) => entry.members !== undefined);
+
+    // The pin mechanism is worthless if nothing carries one, and an entry
+    // losing its pin would otherwise make this assertion pass vacuously.
+    expect(pinned.map((entry) => groupKey(entry.sourceFile, entry.declaration))).toContain(
+      'src/simulation/protocol/types.ts::PRISON_CONDITIONS',
+    );
+
+    for (const entry of pinned) {
+      const ids = byKey.get(groupKey(entry.sourceFile, entry.declaration));
+      expect(ids, `pinned exemption names no discovered enum: ${entry.declaration}`).toBeDefined();
+      expect(
+        [...entry.members!].sort(),
+        `${entry.declaration} in ${entry.sourceFile} no longer has the members its exemption reasons about, one by one. Re-read that reason against the new member list before extending the pin: the member may need labelling rather than exempting.`,
+      ).toEqual([...ids!].sort());
+    }
   });
 
   it('keeps the exemption list honest -- every entry still names a real enum with a real reason', () => {
