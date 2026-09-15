@@ -2163,3 +2163,33 @@ decision about what to build next.
     *"ostrzeżenia"* reach a refusal of a player's own command, or only a
     warning about a condition of the prison?** Nothing in `src/` moves until
     that is answered.
+
+    > **ANSWERED BY THE OWNER ON 2026-09-15: ONLY A CONDITION OF THE PRISON.**
+    > Put to them as the sentence above, they ruled that article 6 governs
+    > arrears, missing beds, an open incident — the state of the prison — and
+    > **not** the decline of a press. That is article 3's *odmowa*, which has
+    > its own vocabulary in the same document. **This records the repository
+    > owner's own ruling, dated. It is not a recommendation of this
+    > repository's and it was not self-approved** — the terms
+    > [ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md)'s two
+    > amendments are recorded under, and for the same reason
+    > (`docs/AGENT_WORKFLOW.md` §3).
+    >
+    > **So this is not a constitutional conflict, and the paragraphs above are
+    > kept rather than deleted** (`docs/AGENT_WORKFLOW.md` §4: mark both
+    > directions). Everything they measure is still true and still worth
+    > having — the refusal channel does replace rather than accumulate, eleven
+    > of twelve refusals from one wall drag are reduced before anything
+    > crosses the worker boundary, and no refusal is a `SimulationEventType`
+    > so the event scrollback never holds one. **What changed is what those
+    > measurements mean**: they describe how the refusal channel works, not a
+    > promise the code fails to keep. A future reader weighing whether to
+    > carry more than one refusal should read them as the cost side of that
+    > question rather than as a defect report.
+    >
+    > **And the reading the ruling rejects is the one the code's own word
+    > invites**, which is the part worth carrying: every refusal row is graded
+    > `severity: 'warning'` for a reason that has nothing to do with the
+    > constitution, so *"warning"* in `src/` and *ostrzeżenie* in
+    > `konstytucja.md` are now known to be different words. Nothing enforces
+    > that distinction; this paragraph is the only place it is written down.
