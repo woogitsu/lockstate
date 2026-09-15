@@ -2072,3 +2072,78 @@ decision about what to build next.
     different question from the one answered above — a fault is not a refusal
     and does not belong on a band that says a command was declined — and it is
     deliberately still open here rather than settled as a side effect.
+
+    **A third half opened on 2026-09-15, and it is not a placement question:
+    a refusal a player never saw is not retained anywhere, and constitution
+    article 6 appears to forbid that.** The article is
+    `docs/design/2026-09-13-identity-v5/DOKUMENTACJA/konstytucja.md:35`, and
+    ADR 0112 decision 1 accepted the constitution as a product contract under
+    `AGENTS.md`:
+
+    > *"Ostrzeżenia nie znikają dlatego, że przyszło nowsze zdarzenie.
+    > Historia zdarzeń pozostaje dostępna."*
+
+    ("Warnings do not disappear because a newer event arrived. The event
+    history remains available.")
+
+    **Measured rather than argued**, with a throwaway `vitest` probe against
+    `RefusalLog`, `hudAlertsFromWorkerMessage` and `hudRefusalFromWorkerMessage`
+    directly (deleted before commit, `docs/AGENT_WORKFLOW.md` §2; the four
+    assertions and their output are in the report that accompanies this
+    change):
+
+    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:119-123`).
+      Two refusals leave `count === 2` and `last` holding only the second; the
+      first is unreachable from the object.
+    - The alerts list keeps exactly one refusal row, keyed by ordinal, and
+      the previous one is filtered out before the new one is appended
+      (`src/ui/simulation-alerts.ts:325-338`). Probe: after
+      `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
+      is `[{"id":"refusal-2", …}]` — length 1.
+    - The band carries the newest ordinal and nothing else
+      (`src/ui/simulation-alerts.ts:440-448`, `src/ui/hud/hud.ts:1678-1692`).
+    - Neither surface shows the count. The row literal carries `id`,
+      `labelKey` and `severity` only, and `sequence` reaches a player only as
+      an opaque row id.
+
+    **Eleven of twelve refusals from one gesture never cross the worker
+    boundary at all**, which is stronger than "overwritten fast". One build
+    drag submits one `PlaceBuildOrder` per edge (`src/main.ts:2934-2949`) and
+    the handler records one refusal per failed order
+    (`src/simulation/construction/handler.ts:113-115`); the publisher reads
+    `this._runtime.refusals.last` once per wake
+    (`src/simulation/worker/state-machine.ts:579`, called from `onTickLoop` at
+    `:389`), so a burst decided inside one dispatch pass is reduced to its last
+    member before anything is posted. Probe: twelve recorded refusals across
+    three reasons leave one row, `refusal-12`, `build.out-of-bounds`; the
+    `build.water-blocked` and `build.unowned-land` sentences are gone from both
+    surfaces with no trace. **What was not done: the gesture was not reproduced
+    in a browser.** The reduction is established from the call graph and from
+    the probe against the three pure functions; that a twelve-edge drag across
+    a shoreline is a first-ten-minutes gesture is an inference from
+    `build-tool.ts`'s one-gesture-many-edges contract, not a measurement.
+
+    **Why this is not fixable here and is the owner's.** Every route out
+    changes something reserved or already ruled on: carrying more than one
+    refusal changes `SimulationRefusal` and the `simulation/status-counts`
+    payload (the worker boundary); routing refusals into
+    `SIMULATION_EVENT_TYPES` gives them a save section
+    (`simulation.alerts`) and an `EVENT_PRESENTATION` row whose severity and
+    `surfaces` value has been an owner's ruling every previous time
+    (ADR 0084 ruling 11, #1006, #998); and re-announcing a standing refusal is
+    the unbounded inflation ADR 0087 cost 1 measured at 240 rows in twelve
+    seconds. ADR 0087 is `Proposed, not self-approved` for exactly decision 1,
+    and ADR 0084 says in terms that it does not reopen this gap.
+
+    **And the reading itself is not settled.** Article 3 gives *odmowa* (a
+    refusal) its own vocabulary, distinct from a *komunikat* (a message), so
+    article 6's *ostrzeżenia* may mean a warning about a condition of the
+    prison rather than the decline of a press the player has just made. The
+    literal reading is unusually easy to reach here only because every refusal
+    row is graded `severity: 'warning'` uniformly — and that grading was chosen
+    for an unrelated reason, stated at `src/ui/simulation-alerts.ts:262-268`:
+    grading one refusal above another is a balance judgement this layer has no
+    basis for. **The question, in one sentence: does article 6's
+    *"ostrzeżenia"* reach a refusal of a player's own command, or only a
+    warning about a condition of the prison?** Nothing in `src/` moves until
+    that is answered.
