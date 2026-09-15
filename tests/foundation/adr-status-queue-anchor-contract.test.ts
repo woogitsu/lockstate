@@ -163,6 +163,40 @@ import { describe, expect, it } from 'vitest';
  *    `.github/workflows/version.yml` runs, which is not this file's to change.
  *    It is recorded here so that the next reader who finds the two numbers
  *    disagreeing knows it is designed rather than broken.
+ *
+ * **ITEM 3 LASTED ONE DAY AND IS KEPT ABOVE BECAUSE IT IS THE STATE THIS FILE
+ * DESCRIBED FOR THAT DAY.** The annotation counts merges now, the same way
+ * this gate counts them, so there is no divergence left to tolerate. Two of
+ * that paragraph's clauses were wrong rather than merely superseded, and both
+ * are worth naming because they are the reasons it was left alone:
+ *
+ * - *"it lives in a script `.github/workflows/version.yml` runs, which is not
+ *   this file's to change"* — the reservation is over `.github/workflows/`,
+ *   and `tooling/anchor-budget-spend.mjs` is not in it. A file a reserved
+ *   workflow *invokes* is not thereby reserved; nothing in that script was
+ *   ever the owner's, and changing it needed no permission.
+ * - *"informational and does not block, which is what makes the divergence
+ *   tolerable"* — being non-blocking bounds the damage to what a reader is
+ *   told, and what a reader is told is the whole purpose of an annotation.
+ *   Measured on `b08e0d0c` (v0.0.635) with the anchor at `c6337952`
+ *   (v0.0.622), it printed *"13 of 10 ... exceeded by 3 releases"* against
+ *   this gate's *"12 merges ... against a budget of 10"*; at `7e9c3043`
+ *   (v0.0.623) against `d57b97ba` (v0.0.612) the release arithmetic reads
+ *   ELEVEN, so it would have announced a failing contract over a gate that
+ *   passes there at nine merges. An annotation that inverts the verdict costs
+ *   exactly the lead time it exists to buy, whether or not it blocks.
+ *
+ * `ANCHOR_STALENESS_BUDGET_RELEASES` is therefore removed — it is no longer
+ * declared here or anywhere else in this repository, and the name above is a
+ * record of what used to stand below rather than a live citation. The
+ * annotation's `BUDGET` now mirrors
+ * `ANCHOR_STALENESS_BUDGET_MERGES`, which is the number this gate enforces,
+ * and `anchor-budget-spend-annotation.test.ts` reads *that* name out of this
+ * source — plus `RELEASE_COMMIT_SUBJECT` below, so the two cannot drift on
+ * what counts as a merge either. The release figure itself is untouched: still
+ * computed by `patchReleasesBetween`, still printed beside the merge count in
+ * the failure message, and now printed beside it in the annotation too.
+ *
  * ## The assumption this number rests on, stated because it had never been
  *
  * [#449](https://github.com/woogitsu/lockstate/issues/449)'s second item asked
@@ -285,25 +319,13 @@ const INDEX_PATH = join(REPOSITORY_ROOT, 'docs/adr/README.md');
  */
 const ANCHOR_STALENESS_BUDGET_MERGES = 10;
 
-/**
- * The same number in the unit this gate USED to enforce, kept for two reasons
- * and no longer read by any assertion here.
- *
- * 1. `tooling/anchor-budget-spend.mjs`'s `BUDGET` is a second literal copy of
- *    it, printed as a CI annotation by `.github/workflows/version.yml` at the
- *    release commit, and `anchor-budget-spend-annotation.test.ts` reads this
- *    declaration **by name out of this file's source** to keep the two from
- *    drifting. Renaming it here silently breaks that coupling test, which is
- *    the one place the annotation's budget is checked against the gate's.
- * 2. The failure message below reports the release count beside the merge
- *    count, so a window where the two units disagree — a duplicate bump, a
- *    skipped bump — says so in the text a reader is handed.
- *
- * It is deliberately equal to `ANCHOR_STALENESS_BUDGET_MERGES` rather than
- * derived from it: they are numbers in different units that happen to agree,
- * and the day one moves is the day that should be argued in a commit.
- */
-const ANCHOR_STALENESS_BUDGET_RELEASES = 10;
+// `ANCHOR_STALENESS_BUDGET_RELEASES = 10` stood here for one day, unread by
+// any assertion, so that `tooling/anchor-budget-spend.mjs` had a name in this
+// file to mirror while it still counted releases. It counts merges now and
+// mirrors `ANCHOR_STALENESS_BUDGET_MERGES` above, so the declaration has no
+// remaining reader and is gone. See the header's correction to "What is lost
+// by no longer counting releases", item 3. The release *count* is unaffected:
+// `patchReleasesBetween` below still computes it for the failure message.
 
 /**
  * The subject `.github/workflows/version.yml` writes for its bump commit, and
