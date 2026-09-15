@@ -27,13 +27,18 @@ question this record actually answers is:
 > *happened* keep up — and do any two of them ever disagree on one screen?
 
 **The answer is that they do disagree, twice, and that the disagreement is
-visible on one screen without scrolling.** §4 is the finding; §5 is the
-acknowledgement census, which came back at zero again and this time from a
-running page rather than from a grep.
+visible on one screen without scrolling** — §4.
 
-**Two of the 2026-09-04 record's headline findings are refuted by this run**
-and are refuted in the good direction — §2. That is the more important half of
-this document and it is deliberately first.
+**But the headline of this record is not that.** It is that **four separate
+findings of this repository's own 2026-09-04 records are refuted by playing,
+every one of them in the good direction**, and one of them is the most-quoted
+sentence in the corpus: *nothing a player does right is ever acknowledged*.
+**That is no longer true and this pass watched it happen.** §2 and §5.
+
+So the honest summary of the first quarter of an hour on this tree is: **the
+game leads a newcomer better than any record here says it does, and the one
+thing it still does badly is stop talking.** A refusal, once shown, is never
+taken back.
 
 ---
 
@@ -68,6 +73,7 @@ LOCKSTATE_BROWSER_TEST_PORT=45247 node_modules/.bin/playwright test \
 | 1 | the arrival screen and all five sections, nothing pressed | `1 passed (27.5s)` |
 | 2 | the naive run — only what the screen says | `1 passed (1.1m)` |
 | 3 | the refusal lifecycle on one tile edge | `1 passed (1.4m)` |
+| 4 | the informed run — a walled, zoned, furnished cell, two admits, one guard, past a day boundary | `1 passed (5.9m)` |
 
 **Presses were proved to land.** Every world gesture goes through the harness's
 `press`/`drag`, which since #1017 compare what the page was last asked to place
@@ -308,6 +314,23 @@ sentence.
 
 ### What is already filed, and what is not
 
+**Independently reproduced in act 4, on a run that did nothing but succeed.**
+`calibrate` leaves one probe refusal on the band at `+15590ms`. Act 4 then
+built twenty-four walls, zoned a Cell, placed two beds and a toilet, admitted
+two prisoners and hired a guard, and crossed seven in-game day boundaries. The
+final reading, **5.9 minutes and at in-game `DAY 8` later**:
+
+```
+[act4] refusal: "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either."
+```
+
+and at the moment the room was successfully designated, the harness's own log
+line carries the two side by side:
+
+```
+[act4] designate attempt 1: rooms=1 | panel said ["MUST BE ENCLOSED"] | band "Nothing was removed — …"
+```
+
 **`#894` is the closest and it is not this.** It records a refusal from tick 0
 still on screen on in-game day 9, and it is about the **alerts list row** being
 undismissable — `docs/HUD_PROJECTIONS.md` gap 34, which ADR 0084 declined to
@@ -317,52 +340,121 @@ one is that the sentence is *false against a readout on the same screen* and
 *contradicted by the other band about the same press*. A search of the
 repository's issues for the contradiction returned `#894` and nothing else.
 
+**Act 4 does independently reproduce `#894`'s own measurement on a different
+tree, eleven days later**, which is worth recording beside it: the phenomenon it
+describes is not a one-off of the session that filed it.
+
 ---
 
-## 5. MEASURED, acts 1–3 — nothing acknowledged anything, and this is the first time that was measured by playing
+## 5. THE OTHER FINDING — MEASURED, act 4: the game acknowledges things now, and this is the first time anybody watched it
 
-`2026-09-04-what-the-game-acknowledges.md` censused twenty event types off
-`SIMULATION_EVENT_TYPES` and found **9 bad news, 6 undo, 2 recovery, 1 neither,
-0 acknowledgements**. Its §6 names its own weakest claim and says exactly what
-would settle it:
+`2026-09-04-what-the-game-acknowledges.md` censused the event registry at
+**twenty types — 9 bad news, 6 undo, 2 recovery, 1 neither, 0
+acknowledgements** — and its own §6 named its weakest claim and said what would
+settle it:
 
 > **That no acknowledgement reaches a player by some route other than the
 > events channel.** … What would settle it: a text-node sweep of the assembled
 > page across a session in which something goes right … which is a playtest and
 > not a grep.
 
-**Every band sentence that appeared in act 3's whole run, in order, is two:**
+**It did not need the other route. The events channel itself grew three
+acknowledgements, and act 4 caught two of them on the page.** The band
+recorder, sampling `.hud__event` and `.hud-alerts__list` every 120 ms across
+the whole 5.9-minute run, logged these:
 
 ```
-+      0ms refusal: "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either."
-+      0ms alerts:  "Nothing was removed — … Warning"
-+  24848ms event:   "The order was cancelled. Anything already spent past the point of no return stays spent."
-+  24848ms alerts:  "Nothing was removed — … Warning
-                     The order was cancelled. Anything already spent past the point of no return stays spent. Day 1
-                     Warning
-                     Clear this alert"
++ 214072ms alerts: "… Cell designated. Day 5 / Info / Clear this alert"
++ 274015ms event:  "Fiona Eriksen has a place in Cell."
++ 280215ms event:  "Carla Tamm has a place in Cell."
 ```
 
-One refusal and one undo. **In act 2, six wall orders were placed, paid for and
-queued, and not one band said anything at all** — `.hud__event` read
-`not laid out` at every reading in that act.
+and the alerts list at the end of the run reads, verbatim:
 
-**And a second asymmetry falls out of the same log, which nothing had
-recorded.** In the alerts list the *cancellation* row carries `Day 1` and a
-`Clear this alert` control; the *refusal* row carries neither. That is #894's
-undismissable row observed from the other side — the player learns from the row
-beneath that rows can be cleared and dated, and then meets one that is neither.
+> `Cell designated. Day 5 / Info / Clear this alert`
+> `Fiona Eriksen has a place in Cell. Day 7 / Info / Clear this alert`
+> `Carla Tamm has a place in Cell. Day 7 / Info / Clear this alert`
+> `Nothing was removed — there is no object on that tile, none being built
+> there, and no finished wall there either. / Warning`
 
-**What this does not settle.** The sweep §6 asked for is a *diff* of every laid
-out text node across a moment when something goes right — a first room zoned, a
-first bed standing, a first admission. Act 5 of the instrument does exactly
-that and **is not reported here, because it had not returned when this record
-was written.** §7 says so under "what was not reached", and the zero above is
-therefore bounded by what acts 1–3 reached: **no acknowledgement on any surface
-across six placed orders, one designation, one admission attempt and one
-successful cancellation.**
+**Three `Info` rows about things that went right, each dated and each
+dismissible.** The first is the room the player designated; the other two are
+the prisoners the player made a place for.
 
----
+### VERIFIED, read — the registry moved from 20 to 27, and three of the seven are acknowledgements
+
+`SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts`) holds **27**
+today against the **20** the census counted at `4c00eaba`. Both counts are
+derived by the census's own command rather than by hand. The seven added:
+
+| new type | what it is |
+| --- | --- |
+| `rooms.zoned` | **acknowledgement** — `'{room} designated.'` |
+| `prisoners.housed` | **acknowledgement** — `'{name} has a place in {room}.'` |
+| `rooms.needs-cleared` | **acknowledgement** — a room that was not ready now is |
+| `rooms.unzoned` | undo |
+| `construction.undo-refused-newer-action` | refusal |
+| `economy.construction-restored` | recovery |
+| `economy.deliveries-restored` | recovery |
+
+The commits, and the dates matter because one of them is the *same day* as the
+census:
+
+- `20aa619e`, **2026-09-04** — *"feat(rooms): a designated room says so, which
+  is the first thing this game acknowledges (#966)"*
+- `659a388b`, **2026-09-10** — *"fix(rooms): confirm a repair and confirm a
+  removal in the alerts column (#1006)"*
+- `eea81acb`, **2026-09-11** — *"fix(events): publish the two remaining #966
+  sites still silent"*
+
+**So the census's `0 acknowledgements` was true of the tree it read and the fix
+was landing beside it.** That is not a criticism of the census — it is the
+mechanism `docs/AGENT_WORKFLOW.md` §4 warns about, a count rotting because
+adding the thing it denies never touches the sentence denying it, and here the
+addition was hours away.
+
+### VERIFIED, read — neither is a clock, which is the check the 2026-09-04 census makes necessary
+
+That census took `prisoners.discharged` apart precisely because it *"fires for
+a prison that did nothing"* — the gate is a sentence, not good play — so a new
+acknowledgement is only one if a player's own action produces it. Both
+producers were opened:
+
+- **`rooms.zoned`** is recorded at `src/simulation/runtime/session-commands.ts:314`,
+  inside the `DesignateRoom` branch and only after `zone` returned an accepted
+  outcome. The comment beside it notes the refused press *"takes the other arm,
+  which records a `RefusalLog` reason and calls nothing here"*. **It is the
+  player's own press, acknowledged.**
+- **`prisoners.housed`** is recorded through
+  `src/simulation/events/intake-housed-notice.ts:67`, when an arrival is
+  actually given a place. Its own header says what it deliberately does not
+  announce: *"Nothing about an arrival still waiting, still being classified,
+  or resolved `'failed'` for want of any instance of its room type."* **It
+  fires on the payoff of the player's build, not on a timer.**
+
+**Neither has the shape `prisoners.discharged` has.** What is still open — and
+§8 says so — is whether either could fire in a prison the player is neglecting;
+no act here ran one.
+
+**What this pass adds that a re-census would not:** the sentences reached a
+player. They were on `.hud__event`, they were in the alerts list, they were
+dated, and they carried `Clear this alert`. That is the part only a run can
+establish, and it is what §6 of that record asked for.
+
+### And the contrast is sharper than §4 could make it on its own
+
+Look at the last line of that alerts list. **Three dated, dismissible
+acknowledgements sit above one refusal that has neither** — the refusal from
+`calibrate`'s probe press at the very start of the act, still there **5.9
+minutes and eight in-game days later**, with no `Day` stamp and no `Clear this
+alert`.
+
+That is `#894`'s measurement — *a refusal from tick 0 was still on screen on day
+9* — reproduced independently on a different tree, and it is now worse in a way
+#894 could not have said, because the rows it is sitting beside did not exist
+when #894 was filed. **The player now learns from three neighbouring rows, in
+the same list, in the same act, that a row carries a day and can be cleared, and
+then meets one that does neither.**
 
 ## 6. MEASURED, acts 1–2 — the status strip against what is true
 
@@ -401,6 +493,64 @@ candidate and it is the least obvious one.
 
 ---
 
+### 6a. MEASURED, act 4 — the strip told the player something true that the build had got wrong
+
+On the informed run the strip moved for the first time, and one badge is the
+most useful thing on it:
+
+```
+2 PRISONERS / 0 HIGH RISK / 1 STAFF / 2 COVERAGE Covered / 1 ROOMS  1 not ready /
+0 INCIDENTS Clear / 0 CONTRABAND / 22,860 FUNDS / 515 EARNED TODAY / DAY 8 / 86%
+```
+
+**`1 not ready` is true and is the only thing on screen that says so.** The
+prison act 4 built is `buildAndPopulate`'s sealed 6×6 box: four wall runs and
+**no door**. The published counts agree the room is otherwise finished —
+`rooms=1 roomCapacity=2 accommodationCapacity=2` — so a player reading the
+count alone would think the cell was done. **VERIFIED, read:**
+`hud.status.rooms-not-ready` counts
+`requirementSummary.missingCapability + (access === 'no-way-in' ? 1 : 0)`
+(`src/content/default-locale-en.ts:180-187`), and the no-way-in term is the one
+that fires here. The badge's own locale comment states its limit in the same
+breath — *"Not **why**: a missing bed and a missing door are both counted here
+and only the panel tells them apart"* — which is exactly the limit a player
+meets.
+
+**REASONED:** the strip is not wrong anywhere this pass could find. The
+sentence *"it has been wrong before, in both directions"* in the brief did not
+reproduce on this tree in any of the four acts.
+
+### 6b. MEASURED, act 4 — where the money went, and whether the player could tell
+
+Every figure from the tee, beside the same moment's strip:
+
+| moment | `treasuryMinorUnits` | what happened |
+| --- | --- | --- |
+| new prison | `25,000` | — |
+| after buying 60 bricks and 4 beds | `22,340` | **−2,660**, and the Build panel's deliveries block itemised it |
+| 24 walls, a zoned cell, 2 beds, a toilet, 2 admits — at `DAY 7` | `22,340` | **0**, because the build consumed stock already paid for |
+| after hiring one guard, at `DAY 8` | `22,860` | **+520** |
+
+**The `+520` is the interesting one and the player is not told what it is.**
+`Hire Guard · 80` is the control's own label and `dailyWageBillMinorUnits`
+becomes `80`, so hiring is not what added money — a day boundary crossed
+between the two readings and paid the prison. The Overview panel at that moment
+reads:
+
+> `Finances / FUNDS 22,860 / EARNED TODAY 494 / WAGES A DAY 80`
+
+**Three true figures and no rate.** The brief's fourth bullet asks whether a
+player can tell whether the prison runs at `+320/day` or `−80/day`, and the
+answer on this tree is: **they can compute it and nothing computes it for
+them** — `EARNED TODAY` is a partial day's accrual (it read `173`, `348`, `494`
+and `515` at four readings inside one day), `WAGES A DAY` is a full day's bill,
+and the two are not the same unit. **VERIFIED, read:** that is deliberate —
+`src/ui/hud/overview-panel.ts`'s header states *"every figure here arrives on
+`HudOverviewViewModel`, already decided, and this file does arithmetic on none
+of them"*, with the reason that a second authority would drift from the
+treasury. **So the missing rate is a boundary, not an oversight**, and anyone
+proposing to fix it in the panel is proposing to cross that boundary.
+
 ## 7. What this record does not claim, and what was not reached
 
 - **Nothing about anything drawn.** LFS is in the fourth state in this
@@ -412,14 +562,19 @@ candidate and it is the least obvious one.
   press at 1390 ms against 75 ms for exactly this reason. **The "quarter of an
   hour" in the title is the brief's unit, not a measurement**, and no timing
   claim is made.
-- **Acts 4 and 5 did not return inside this pass's budget.** Act 4 (the
-  informed run through `buildAndPopulate`, two admits, a guard, a day
-  boundary) and act 5 (the text-node diff across four moments something goes
-  right) are committed and runnable and are **not reported**. Three acts were
-  obtained against a budget of five. What they would have settled: §5's
-  remaining half, and the brief's *"a prison can sit at +320/day with nothing
-  contained or −80/day with everything contained"* — **no daily figure appears
-  anywhere in this record, because no act of mine crossed a day boundary.**
+- **No daily rate was measured.** §6b reports four treasury readings and one
+  `+520` across a day boundary. **That is one boundary on one prison and it is
+  not a rate**, so the brief's *"a prison can sit at +320/day with nothing
+  contained or −80/day with everything contained"* is neither confirmed nor
+  refuted here. `2026-08-29-what-a-day-actually-pays.md` is the record that
+  took that question seriously and this one does not re-take it.
+- **Nothing about a prison under pressure.** No incident, no contraband, no
+  escape and no unpaid wage occurred in any act. The nine bad-news event types
+  are therefore unobserved here; §5's acknowledgement finding is about the
+  three that fired, not about the balance of the twenty-seven.
+- **Only one act was run per question.** Nothing below is a repeated
+  measurement, and act 3's five steps in particular are one sequence on one
+  tile in one container.
 - **Nothing about causes.** §4 establishes that the band keeps a sentence and
   that the sentence contradicts a neighbouring readout. It does not establish
   what that costs a player, and no word like *defect*, *regression* or *users
@@ -428,7 +583,8 @@ candidate and it is the least obvious one.
 ## 8. The weakest claim, and what would change my mind
 
 **The weakest claim is §6's third bullet — that the landing section telling a
-newcomer nothing is worth noticing at all.** It is a JUDGEMENT about a player
+newcomer nothing is worth noticing at all.** (§5's headline is the strongest
+thing here and §4 the second; this is the one to attack.) It is a JUDGEMENT about a player
 nobody has watched, it rests on one arrangement of five panels measured on one
 day, and the counter-argument is strong and already written down in the panel's
 own header: a finance readout is what Overview is *for* since ruling 4 of
@@ -439,7 +595,14 @@ competing with four panels that each say it in their own context.
 observed to either (a) find Build within a few seconds unaided, which would make
 the observation empty, or (b) sit on Overview. Neither is available from here.
 
-**The strongest claim is §4**, and what would change my mind about it is
+**The residual doubt about §5 is named and partly closed in §5 itself**, so it
+is not repeated here: `rooms.zoned` is a player's own press, `prisoners.housed`
+is the payoff of one, and neither is a clock — both producers opened. What is
+not established is whether either would fire in a prison the player is
+neglecting, which is the test `prisoners.discharged` failed in the 2026-09-04
+census and which no act here ran.
+
+**The second strongest claim is §4**, and what would change my mind about it is
 narrow and checkable: if `.hud__refusal` were shown to be *hidden* rather than
 merely unchanged at act 3 steps C–E, the contradiction would evaporate. It is
 not — `panelText` answers `"not laid out"` for a hidden node and never did in
