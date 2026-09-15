@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -295,6 +296,30 @@ describe('anchor-budget-spend.mjs: countLandingsSince, against this repository',
     // prints the sentence that says so, instead of the zero a "count whatever
     // git printed" implementation would have reported.
     expect(countLandingsSince('0'.repeat(40), REPOSITORY_ROOT)).toBeNull();
+  });
+
+  it('is what the CLI actually prints with, so the wiring cannot quietly go back to releases', () => {
+    // The two pure functions above can be right while the CLI hands them the
+    // wrong thing -- which is precisely the defect this commit repairs, one
+    // level down: `computeAnchorSpend` was never wrong about releases, it was
+    // asked for releases. So this runs the script the way
+    // `.github/workflows/version.yml` runs it and checks the number against a
+    // count taken here.
+    const printed = spawnSync(process.execPath, [join(REPOSITORY_ROOT, 'tooling/anchor-budget-spend.mjs')], {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    });
+
+    expect(printed.status, `the annotation must never exit non-zero: ${printed.stderr}`).toBe(0);
+
+    const anchorSha = /Re-anchored at `main` @ `([0-9a-f]{7,40})`/u.exec(
+      readFileSync(join(REPOSITORY_ROOT, 'docs/adr/STATUS-QUEUE.md'), 'utf8'),
+    )?.[1];
+    const landings = anchorSha === undefined ? null : countLandingsSince(anchorSha, REPOSITORY_ROOT);
+
+    expect(printed.stdout).toMatch(
+      new RegExp(`^::(notice|warning)::docs/adr/STATUS-QUEUE\\.md anchor budget spend: ${String(landings)} of ${String(BUDGET)} merges since \`${String(anchorSha)}\``, 'u'),
+    );
   });
 
   it('drops a chore(release) subject and keeps everything else, which is what RELEASE_COMMIT_SUBJECT is for', () => {
