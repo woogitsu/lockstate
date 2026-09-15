@@ -45,12 +45,15 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * than by the panel growing eleven rows taller — which it cannot, because the
  * queue's height is already bought out of the catalogue's floor and there is
  * nothing to buy it a second time. Each row is therefore scrolled into view
- * before it is measured, exactly as a player's thumb would.
+ * before it is measured, exactly as a player's thumb would — and *only* the way
+ * a thumb would, which is `revealTheWayAPlayerCan` below rather than
+ * `scrollIntoView`; see its docblock for what the difference was worth here.
  *
  * The vacuity guard is what stops that being a test about nothing: the list is
- * required to *be* over-full — `scrollHeight` greater than `clientHeight` — at
- * every viewport. If a future change made the whole list fit, no scroll would
- * happen and this file would pass without exercising what it is named for.
+ * required to *be* over-full — `scrollHeight` greater than `clientHeight` — and
+ * to be scrollable *by a player* at every viewport. If a future change made the
+ * whole list fit, no scroll would happen and this file would pass without
+ * exercising what it is named for.
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
@@ -139,13 +142,112 @@ async function openBuildTab(page: Page): Promise<void> {
  * and taking all fourteen answers inside one frame keeps them comparable. The
  * behavioural half — that a real press reaches the simulation — is a genuine
  * `locator.click()` in the last case below.
+ *
+ * ## Why the reveal is hand-written rather than `scrollIntoView`
+ *
+ * `scrollIntoView` scrolls **every** scrollport between the node and the
+ * viewport, `overflow: hidden` ones included, because the specification tells
+ * it to. A hidden box is scrollable by script and by no gesture a player has,
+ * so a row clipped out of one is certified pressable by a movement the player
+ * cannot make. #1204 replaced the call in the two `app-shell.spec.ts` and
+ * `operations-reachability.spec.ts` sweeps for that reason and left this one,
+ * on the reading that its two extra compensations — the centre must lie inside
+ * the panel's own fold, and the list is established to scroll by *moving* it —
+ * already closed the hole here.
+ *
+ * **Measured 2026-09-15, and they do not.** With the queue list's
+ * `overflow-y: auto` changed to `overflow-y: hidden` in `src/ui/hud/hud.css`
+ * — eleven of fourteen rows clipped, no gesture in the game reaching them —
+ * this whole file passed **5 passed (12.3s)**, every one of the fourteen rows
+ * at every one of the six viewports reported reached. Neither compensation
+ * fires against that mutation, and the reason is the same for both: setting
+ * `scrollTop` on an `overflow: hidden` box *works*. The list moves, so the
+ * vacuity guard's `scrolled > 0` is satisfied; the row is brought inside the
+ * list's own box, so its centre lands inside the panel's fold and the hit test
+ * answers the button. The compensations are both real and both measure the
+ * wrong thing when the scroll itself is the thing in question.
+ *
+ * `revealTheWayAPlayerCan` walks the same ancestor chain and moves only boxes
+ * whose own computed `overflow` on that axis is `auto` or `scroll`, and reads
+ * the viewport on the same rule (`src/styles.css:6` is
+ * `html, body { overflow: hidden }`, so on this page the window never moves).
+ * It is a copy of the helper in those two files rather than an import because
+ * it runs inside `page.evaluate` and is serialised into the page.
+ *
+ * The panel's box is also re-read per row rather than measured once before the
+ * sweep, which the `scrollIntoView` version did not do: a reveal that moves any
+ * ancestor of the panel moves the panel, and a stale rectangle then judges the
+ * row against a fold that is no longer there.
  */
 const reachOf = (page: Page): Promise<readonly Reach[]> =>
   page.evaluate(() => {
     const panel = document.querySelector<HTMLElement>('.ui-panel.hud-build');
     if (panel === null) return [];
-    const panelRect = panel.getBoundingClientRect();
-    const visibleBottom = panelRect.top + panel.clientHeight;
+
+    /**
+     * Whether a box with this computed `overflow` on one axis is one a player
+     * can scroll on that axis. `hidden` and `clip` are not: the content is
+     * outside the box and no gesture brings it in. `visible` is not either —
+     * there is nothing to scroll, and the first clipping ancestor above it
+     * decides whether the row is ever seen.
+     */
+    const playerScrollable = (overflow: string): boolean => overflow === 'auto' || overflow === 'scroll';
+
+    /**
+     * Bring `node` into view using only the scrolls a player has: innermost
+     * outwards, re-reading the node's rect at each step, because scrolling an
+     * inner box is what puts the node where the outer box has to judge it.
+     */
+    const revealTheWayAPlayerCan = (node: Element): void => {
+      for (let ancestor = node.parentElement; ancestor !== null; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const border = ancestor.getBoundingClientRect();
+        // The *client* box, which is what `scrollTop` moves content through:
+        // the border box less its borders and any scrollbar gutter.
+        const top = border.top + ancestor.clientTop;
+        const left = border.left + ancestor.clientLeft;
+        const bottom = top + ancestor.clientHeight;
+        const right = left + ancestor.clientWidth;
+
+        if (playerScrollable(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+          const rect = node.getBoundingClientRect();
+          if (rect.bottom > bottom) ancestor.scrollTop += rect.bottom - bottom;
+          else if (rect.top < top) ancestor.scrollTop += rect.top - top;
+        }
+        if (playerScrollable(style.overflowX) && ancestor.scrollWidth > ancestor.clientWidth) {
+          const rect = node.getBoundingClientRect();
+          if (rect.right > right) ancestor.scrollLeft += rect.right - right;
+          else if (rect.left < left) ancestor.scrollLeft += rect.left - left;
+        }
+      }
+
+      // And the viewport itself, on the same rule. The root's `overflow`
+      // propagates to the viewport and falls through to `body` only when the
+      // root is `visible`. Written out rather than assumed, because the
+      // assumption is exactly the kind that rots when a stylesheet changes.
+      const root = document.documentElement;
+      const rootOverflowY = getComputedStyle(root).overflowY;
+      const rootOverflowX = getComputedStyle(root).overflowX;
+      const bodyStyle = getComputedStyle(document.body);
+      const viewportOverflowY = rootOverflowY === 'visible' ? bodyStyle.overflowY : rootOverflowY;
+      const viewportOverflowX = rootOverflowX === 'visible' ? bodyStyle.overflowX : rootOverflowX;
+      // `visible` on the viewport is the ordinary scrolling page: it scrolls.
+      const viewportScrollsY = viewportOverflowY !== 'hidden' && viewportOverflowY !== 'clip';
+      const viewportScrollsX = viewportOverflowX !== 'hidden' && viewportOverflowX !== 'clip';
+      const rect = node.getBoundingClientRect();
+      let byX = 0;
+      let byY = 0;
+      if (viewportScrollsY) {
+        if (rect.bottom > window.innerHeight) byY = rect.bottom - window.innerHeight;
+        else if (rect.top < 0) byY = rect.top;
+      }
+      if (viewportScrollsX) {
+        if (rect.right > window.innerWidth) byX = rect.right - window.innerWidth;
+        else if (rect.left < 0) byX = rect.left;
+      }
+      if (byX !== 0 || byY !== 0) window.scrollBy(byX, byY);
+    };
+
     const out: { orderId: string; reached: boolean; detail: string }[] = [];
     for (const row of [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')]) {
       if (row.hidden) continue;
@@ -155,7 +257,11 @@ const reachOf = (page: Page): Promise<readonly Reach[]> =>
         out.push({ orderId, reached: false, detail: 'the row has no button' });
         continue;
       }
-      button.scrollIntoView({ block: 'nearest' });
+      revealTheWayAPlayerCan(button);
+      // Read after the reveal, and per row: the panel is where the reveal has
+      // left it, not where it was before the sweep started.
+      const panelRect = panel.getBoundingClientRect();
+      const visibleBottom = panelRect.top + panel.clientHeight;
       const rect = button.getBoundingClientRect();
       const centreX = rect.left + rect.width / 2;
       const centreY = rect.top + rect.height / 2;
@@ -192,13 +298,23 @@ const reachOf = (page: Page): Promise<readonly Reach[]> =>
  * other assertion in this file's first case still passed. Measured that way
  * while mutating the fix. A box that does not move when it is scrolled is not a
  * scroll container, whatever its heights say.
+ *
+ * **And moving is not sufficient either, which was measured on 2026-09-15 and
+ * is why `overflowY` is reported beside `scrolled` rather than instead of it.**
+ * `scrollTop` assignment moves an `overflow: hidden` box perfectly well; it is
+ * the *player* who cannot move it. With `overflow-y: hidden` in place of
+ * `auto`, `scrolled` came back positive at all six viewports and this guard was
+ * satisfied by a list eleven of whose fourteen rows no gesture reaches. So both
+ * halves are required and neither is redundant: the box must move, **and** the
+ * movement must be one a player has.
  */
 const listOf = (
   page: Page,
-): Promise<{ scrollHeight: number; clientHeight: number; boxHeight: number; scrolled: number }> =>
+): Promise<{ scrollHeight: number; clientHeight: number; boxHeight: number; scrolled: number; overflowY: string }> =>
   page.evaluate(() => {
     const list = document.querySelector<HTMLElement>('.hud-build__queue-list');
-    if (list === null) return { scrollHeight: -1, clientHeight: -1, boxHeight: -1, scrolled: -1 };
+    if (list === null)
+      return { scrollHeight: -1, clientHeight: -1, boxHeight: -1, scrolled: -1, overflowY: 'no list' };
     const wasAt = list.scrollTop;
     list.scrollTop = list.scrollHeight;
     const scrolled = list.scrollTop;
@@ -208,6 +324,7 @@ const listOf = (
       clientHeight: list.clientHeight,
       boxHeight: Math.round(list.getBoundingClientRect().height * 10) / 10,
       scrolled,
+      overflowY: getComputedStyle(list).overflowY,
     };
   });
 
@@ -246,7 +363,11 @@ test.describe('every queued order has a control a player can reach', () => {
       expect(queue.moreText, `the queue claims a tail at ${width}x${height}`).toBe('');
 
       const list = await listOf(page);
-      if (list.scrollHeight > list.clientHeight && list.scrolled > 0) {
+      if (
+        list.scrollHeight > list.clientHeight &&
+        list.scrolled > 0 &&
+        (list.overflowY === 'auto' || list.overflowY === 'scroll')
+      ) {
         overFull.push(`${width}x${height}:${String(list.scrollHeight)}/${String(list.clientHeight)}`);
       }
 
@@ -262,7 +383,7 @@ test.describe('every queued order has a control a player can reach', () => {
     // be measuring a three-row list under a fourteen-row name.
     expect(
       overFull.length,
-      'the queue list is not an over-full scroll container at every viewport, so the scroll every assertion above depends on never happened — either all fourteen rows fitted, or the box does not move when it is scrolled',
+      'the queue list is not an over-full scroll container a player can scroll at every viewport, so the scroll every assertion above depends on never happened — either all fourteen rows fitted, or the box does not move when it is scrolled, or its computed overflow-y says only a script can move it',
     ).toBe(VIEWPORTS.length);
   });
 

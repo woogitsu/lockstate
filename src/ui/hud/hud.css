@@ -2067,7 +2067,7 @@
    */
   flex: 0 0 auto;
   max-height: calc(var(--tap-target) * 3 + var(--hud-build-map-gutter) * 2);
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /*
