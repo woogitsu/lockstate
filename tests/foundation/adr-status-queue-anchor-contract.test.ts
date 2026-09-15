@@ -39,8 +39,11 @@ import { describe, expect, it } from 'vitest';
  *    or a commit the sentence is explicitly quoting as *history* (the past-tense
  *    form `read … re-verified at`, which records what a superseded entry used
  *    to claim). Two live anchors is the defect above and it is caught outright.
- * 2. **The anchor has not fallen far behind the release the tree ships.** A
- *    staleness budget, not an equality check — see below.
+ * 2. **The anchor has not fallen far behind the history the tree carries.** A
+ *    staleness budget, not an equality check — see below. That sentence read
+ *    *"behind the release the tree ships"* until 2026-09-15, because the
+ *    budget was counted in version numbers; it is counted in merges now, and
+ *    the section "The unit stopped being releases" below is the argument.
  *
  * ## Why a budget rather than `anchorVersion === packageVersion`
  *
@@ -52,7 +55,7 @@ import { describe, expect, it } from 'vitest';
  * teach everyone that this file's gate is noise. A gate that fires on work it
  * has no complaint about does not survive.
  *
- * `ANCHOR_STALENESS_BUDGET_RELEASES` is therefore a bound on unreviewed
+ * The budget is therefore a bound on unreviewed
  * history rather than a demand for freshness. It is **10**, chosen against the
  * failure that actually happened rather than from taste: the header lagged by
  * 11 and the body by 18, so 10 is the largest round number that would have
@@ -65,6 +68,101 @@ import { describe, expect, it } from 'vitest';
  * to make visible, and it would pass — that is the honest boundary, and it is
  * why the failure message says what work the number stands for.
  *
+ *
+ * ## The unit stopped being releases on 2026-09-15, and the measurements that
+ * moved it
+ *
+ * Everything above argues for a *budget*. It does not argue for the *unit*,
+ * and the unit was `package.json`'s patch number for one unstated reason:
+ * that the number advances once per merge. It does not, in either direction.
+ *
+ * **A release can be spent on nothing.** `.github/workflows/version.yml` runs
+ * on `push` to `main`, and GitHub delivered two push events for one sha on
+ * 2026-09-14 — `a27c437f` (#1189) produced two `CI` runs and two `Version`
+ * runs, distinct check suites, `run_attempt: 1` on both. The second `Version`
+ * job reset onto the first's release commit and bumped it again, so
+ * `82fba666` (v0.0.615) and `deac3215` (v0.0.616) stand ten seconds apart,
+ * each changing the one line of `package.json`, with no merge between them.
+ * v0.0.616 carries no work at all.
+ *
+ * **It is not a one-off, and that is a count rather than an impression.** Over
+ * the whole of first-parent `main`, **24 of the 628 release commits sit
+ * directly on another release commit** — 3.8% of every version number this
+ * repository has ever issued — the most recent being `6cdbfd03` (v0.0.626) on
+ * `95f07a13` (v0.0.625), fourteen seconds apart on 2026-09-15. Every one of
+ * them spends a release of this budget on nothing.
+ *
+ * **The error runs the other way too, and that half is worse.** A merge can
+ * land with no bump at all: between `491fcdce` (v0.0.541) and `450c9819`
+ * (v0.0.542) first-parent `main` carries **20** commits — nineteen merges,
+ * #1072 through #1096, and one direct push (`80b54a97`) — under a single
+ * version number. Ten releases of headroom bought twenty merges of unread
+ * history there and this assertion could not see it. That is
+ * [#449](https://github.com/woogitsu/lockstate/issues/449)'s defect, the one
+ * `ANCHOR_STALENESS_BUDGET_COMMITS` below exists for, reproduced in the
+ * current regime rather than the old one.
+ *
+ * **What it cost, which is why this changed today and not in the abstract.**
+ * On 2026-09-15 this assertion fired at **eleven** releases, with the anchor
+ * at `d57b97ba` (v0.0.612) and the tree at v0.0.623. **Nine** merges had
+ * landed in that window; `82fba666`/`deac3215` is inside it, and so the gate
+ * demanded a re-anchor pass a merge before any work had earned one. The
+ * remedy inside `.github/workflows/` was examined and refused on evidence —
+ * every topology-based guard there also drops *earned* bumps, because a
+ * duplicate delivery and a serialised race look identical from the commit
+ * graph — and `version.yml` is the owner's under reservation 3 in any case.
+ * This file is ours, and the unit is the part that was wrong.
+ *
+ * **So the unit is first-parent commits since the anchor whose subject is not
+ * `chore(release): v`.** A merge counts. A direct push to `main` counts, and
+ * is one of the twenty above. A duplicate delivery contributes zero, because
+ * it adds no such commit; a skipped bump still contributes one, because the
+ * merge is there to count whether or not a version number followed it.
+ *
+ * **The budget stays at 10, and the paragraph above says why in its own
+ * words.** *"It leaves ten merges of ordinary work untouched"* — the
+ * justification was already written in merges while the arithmetic was in
+ * releases, because in the ordinary case the two are the same number. This
+ * change makes the measurement say what its own argument always said, so
+ * there is nothing to re-derive and nothing here argues for moving the number.
+ *
+ * ## What is lost by no longer counting releases
+ *
+ * Three things, and the first is the honest case for the old unit:
+ *
+ * 1. **A release is a thing a human decided to ship; a merge is only a thing
+ *    that landed.** That is the sentence this budget was chosen on, it is kept
+ *    above rather than deleted, and it is the reason the release unit was
+ *    preferred to the commit unit rather than replaced by it. What the
+ *    measurements above establish is that it was never true *here*: nothing
+ *    human happens at a `chore(release)` commit. It is written by a workflow
+ *    reacting to a push event, seconds after the fact, and the human decision
+ *    it stands proxy for is the merge that triggered it. Counting the merge
+ *    counts the same decision one commit earlier and one bot nearer the human.
+ *    If that bot ever becomes a human release step — a tag cut by hand, a
+ *    version bumped in a reviewed pull request — this argument reverses and
+ *    the release unit becomes the right one again.
+ * 2. **The count is no longer readable off two version strings.** It costs a
+ *    `git log --first-parent`, and it needs the anchor commit present in the
+ *    checkout: the same precondition, with the same two guards (shallow tree,
+ *    unresolvable sha), that `ANCHOR_STALENESS_BUDGET_COMMITS` below already
+ *    carries. The release figure is still computed and still printed beside
+ *    the merge count in the failure message, so no number a reader used to get
+ *    from this gate is gone — and a window where the two disagree is now
+ *    visible in the failure text instead of being invisible in the pass.
+ * 3. **`tooling/anchor-budget-spend.mjs` still counts releases**, and
+ *    `ANCHOR_STALENESS_BUDGET_RELEASES` is still the number it mirrors
+ *    (`anchor-budget-spend-annotation.test.ts` pins the two together, which is
+ *    why that constant stays declared here rather than being renamed away).
+ *    So the annotation `version.yml` prints at the release commit and the gate
+ *    `ci.yml` enforces now measure different things, **in both directions**: a
+ *    window carrying a duplicate bump warns earlier than the gate fires, and a
+ *    window carrying a skipped bump warns later. That annotation states of
+ *    itself that it is informational and does not block, which is what makes
+ *    the divergence tolerable — and it lives in a script
+ *    `.github/workflows/version.yml` runs, which is not this file's to change.
+ *    It is recorded here so that the next reader who finds the two numbers
+ *    disagreeing knows it is designed rather than broken.
  * ## The assumption this number rests on, stated because it had never been
  *
  * [#449](https://github.com/woogitsu/lockstate/issues/449)'s second item asked
@@ -124,6 +222,11 @@ import { describe, expect, it } from 'vitest';
  *   releases of history that no entry in that file has been read against"*, and
  *   fails the single-anchor case too, because the body then names a commit the
  *   header does not.
+ *   **That quoted sentence is no longer the one this gate prints** — the
+ *   budget counts merges since 2026-09-15 and the message now opens *"N merges
+ *   have landed on main since"*. The control itself still holds and was re-run
+ *   in the unit that replaced it; see "It bites in the new unit" at the end of
+ *   this header.
  * - Restoring one body sentence to *"re-verified at `4ed571f`"* fails the
  *   single-anchor case alone, naming that sentence. This is the exact defect
  *   that was on `main`.
@@ -131,6 +234,39 @@ import { describe, expect, it } from 'vitest';
  *   **all four** cases rather than passing three of them by reading nothing.
  *   A scanner that stops matching must fail, or the other assertions are a
  *   green light for an empty file.
+ *
+ * ## It bites in the new unit, and the controls are the ones that matter
+ *
+ * Four, run on real trees rather than fabricated ones, because the whole claim
+ * is about what this repository's history actually looks like:
+ *
+ * - **The case that moved it, both units on one tree.** Checked out at
+ *   `7e9c3043` (v0.0.623), where `STATUS-QUEUE.md`'s own header named
+ *   `d57b97ba` (v0.0.612) — the tree that failed on 2026-09-15. The release
+ *   assertion as it stood fails there: *"11 releases of history that no entry
+ *   in that file has been read against … expected 11 to be less than or equal
+ *   to 10"*. The merge assertion replacing it **passes on the identical tree**,
+ *   `10 tests | 10 passed`, because nine merges landed in that window and the
+ *   eleventh release is `deac3215`, which landed nothing.
+ * - **The window the release unit was blind to.** Checked out at `450c9819`
+ *   (v0.0.542) with the header's anchor line rewritten to name `491fcdce`
+ *   (v0.0.541). The release assertion **passes** there — one release spent,
+ *   nine of ten remaining — while the merge assertion fails with *"20 merges
+ *   have landed on main since, against a budget of 10 … The same window spent
+ *   1 release number"*. A gate that was green over twenty unread merges is the
+ *   defect, not the early firing, and it is the reason this change is not
+ *   simply a loosening.
+ * - **It still fires on ordinary staleness.** On the tree that landed this,
+ *   with the header's anchor moved back to `d57b97ba`: *"14 merges have landed
+ *   on main since … The same window spent 16 release numbers"*. Restored, and
+ *   the restoration verified by an empty `git diff` on that file rather than by
+ *   eye.
+ * - **`RELEASE_COMMIT_SUBJECT` is load-bearing and fails loudly.** Replacing
+ *   the pattern with one that matches no commit in this repository takes the
+ *   `7e9c3043` window from nine to **20** and turns the first control's green
+ *   red. So a change to `version.yml`'s subject line cannot make this gate
+ *   quietly under-count; it makes it over-count by roughly two, which is the
+ *   direction that gets noticed.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
@@ -138,8 +274,50 @@ const STATUS_QUEUE_PATH = join(REPOSITORY_ROOT, 'docs/adr/STATUS-QUEUE.md');
 const PACKAGE_JSON_PATH = join(REPOSITORY_ROOT, 'package.json');
 const INDEX_PATH = join(REPOSITORY_ROOT, 'docs/adr/README.md');
 
-/** See the header. A bound on unreviewed history, not a freshness requirement. */
+/**
+ * See the header. A bound on unreviewed history, not a freshness requirement.
+ *
+ * **This is the gate's budget, and since 2026-09-15 its unit is merges** —
+ * first-parent commits since the anchor whose subject is not
+ * `chore(release): v`. The number did not move when the unit did; the section
+ * "The unit stopped being releases on 2026-09-15" in the header says why it
+ * did not need to.
+ */
+const ANCHOR_STALENESS_BUDGET_MERGES = 10;
+
+/**
+ * The same number in the unit this gate USED to enforce, kept for two reasons
+ * and no longer read by any assertion here.
+ *
+ * 1. `tooling/anchor-budget-spend.mjs`'s `BUDGET` is a second literal copy of
+ *    it, printed as a CI annotation by `.github/workflows/version.yml` at the
+ *    release commit, and `anchor-budget-spend-annotation.test.ts` reads this
+ *    declaration **by name out of this file's source** to keep the two from
+ *    drifting. Renaming it here silently breaks that coupling test, which is
+ *    the one place the annotation's budget is checked against the gate's.
+ * 2. The failure message below reports the release count beside the merge
+ *    count, so a window where the two units disagree — a duplicate bump, a
+ *    skipped bump — says so in the text a reader is handed.
+ *
+ * It is deliberately equal to `ANCHOR_STALENESS_BUDGET_MERGES` rather than
+ * derived from it: they are numbers in different units that happen to agree,
+ * and the day one moves is the day that should be argued in a commit.
+ */
 const ANCHOR_STALENESS_BUDGET_RELEASES = 10;
+
+/**
+ * The subject `.github/workflows/version.yml` writes for its bump commit, and
+ * the only commit shape this gate refuses to count as history.
+ *
+ * Anchored at both ends: `^` because a merge whose branch was named after a
+ * release must not be mistaken for one, and `$` on a full patch version
+ * because a hand-written `chore(release): v0.1 prep` is prose about a release
+ * rather than the workflow's own commit. If that workflow ever changes this
+ * subject, this gate starts counting release commits as merges and reports a
+ * spend roughly twice the real one — loud and early rather than silent, which
+ * is the direction to fail in.
+ */
+const RELEASE_COMMIT_SUBJECT = /^chore\(release\): v\d+\.\d+\.\d+$/u;
 
 /**
  * The same bound in the other unit, because a release is a proxy for unread
@@ -154,6 +332,19 @@ const ANCHOR_STALENESS_BUDGET_RELEASES = 10;
  * made, which is a real argument and is why it is kept rather than replaced —
  * but it holds only while releases are roughly uniform in size, and they are
  * not.
+ *
+ * **THAT PARAGRAPH IS KEPT AND ITS LAST CLAUSE IS NOW THE WEAKER HALF OF THE
+ * STORY.** On 2026-09-15 the budget above stopped being counted in releases
+ * at all, because *"a release is a decision point a human made"* turned out to
+ * be false of this repository: the bump is a workflow's reaction to a push
+ * event, it can fire twice for one merge (24 times in 628 releases) and it can
+ * fail to fire at all across twenty merges. The header's section "The unit
+ * stopped being releases on 2026-09-15" carries the measurements. What
+ * survives here unchanged is the *reason this second budget exists* — that a
+ * unit which is not history is a proxy for history, and a proxy can be green
+ * over 169 commits nobody read. Merges are a closer proxy than releases were.
+ * They are still a proxy: a one-line merge and a forty-file merge count the
+ * same, which is precisely what the commit budget below is for.
  *
  * **MEASURED OVER THE WHOLE ANCHOR CHAIN, 39 CONSECUTIVE WINDOWS, ON
  * 2026-09-11.** Every `Re-anchored at` sha this file still carries was
@@ -391,6 +582,24 @@ function patchReleasesBetween(anchor: string, shipped: string): number {
   return shippedPatch - anchorPatch;
 }
 
+/**
+ * The gate's unit since 2026-09-15: how much history has landed on `main`
+ * since the anchor, counted in the commits that carry work.
+ *
+ * `--first-parent` is what makes this a count of landings rather than of
+ * authorship — a pull request with forty commits on its branch is one merge on
+ * `main`, and one thing for a re-anchor pass to read. `%s` rather than `%H` so
+ * the release commits can be told apart at all; `RELEASE_COMMIT_SUBJECT` is
+ * the only thing dropped, so a direct push to `main` still counts, exactly as
+ * `80b54a97` does in the header's twenty-commit window.
+ */
+function landingsSince(anchorSha: string): number {
+  return git(['log', '--first-parent', '--format=%s', `${anchorSha}..HEAD`])
+    .split('\n')
+    .filter((subject) => subject.trim().length > 0)
+    .filter((subject) => !RELEASE_COMMIT_SUBJECT.test(subject.trim())).length;
+}
+
 describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
   const statusQueue = readFileSync(STATUS_QUEUE_PATH, 'utf8');
   const packageVersion = (JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as { version: string }).version;
@@ -426,14 +635,29 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
     ).toEqual([]);
   });
 
-  it('has not fallen more than the staleness budget behind the shipped release', () => {
+  it('has not fallen more than the staleness budget behind the history that has landed', () => {
+    const anchorSha = anchors[0]![1]!;
     const anchorVersion = anchors[0]![2]!;
-    const behind = patchReleasesBetween(anchorVersion, packageVersion);
+
+    // Same precondition, same wording and same reason as the commit budget
+    // below: a checkout that cannot see the anchor cannot be measured against
+    // it, and that is a broken citation rather than stale history. Asserted
+    // here too because this assertion now shells out to git as well, and a
+    // `git log` against a missing sha would surface as an exception rather
+    // than as the sentence that says what is actually wrong.
+    const resolved = spawnSync('git', ['cat-file', '-e', `${anchorSha}^{commit}`], { cwd: REPOSITORY_ROOT });
+    expect(
+      resolved.status,
+      `STATUS-QUEUE.md is anchored at ${anchorSha} and this checkout does not contain that commit, so the merge budget cannot be counted. That is a broken citation rather than stale history -- see documentation-commit-citation-contract for the same failure in the other direction`,
+    ).toBe(0);
+
+    const behind = landingsSince(anchorSha);
+    const releases = patchReleasesBetween(anchorVersion, packageVersion);
 
     expect(
       behind,
-      `STATUS-QUEUE.md is anchored at v${anchorVersion} and package.json ships ${packageVersion}: ${String(behind)} releases of history that no entry in that file has been read against. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_RELEASES to make this pass, because the number is what the budget is for`,
-    ).toBeLessThanOrEqual(ANCHOR_STALENESS_BUDGET_RELEASES);
+      `STATUS-QUEUE.md is anchored at ${anchorSha} (v${anchorVersion}) and ${String(behind)} merges have landed on main since, against a budget of ${String(ANCHOR_STALENESS_BUDGET_MERGES)}: that much history, and no entry in that file has been read against any of it. The same window spent ${String(releases)} release ${releases === 1 ? 'number' : 'numbers'}, which is the unit this gate used to count and no longer does -- a version number can be spent on nothing (see the header, "The unit stopped being releases"), and a merge cannot. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_MERGES to make this pass, because the number is what the budget is for`,
+    ).toBeLessThanOrEqual(ANCHOR_STALENESS_BUDGET_MERGES);
   });
 
   it('runs on a checkout deep enough to count, and fails rather than skipping when it is not', () => {

@@ -787,6 +787,33 @@ instead. The tree CI actually ran is `3963bdc5`, #1203's branch head, green
 on all three jobs (run 34936526854) — the first run of any branch after the
 owner's self-hosted runners came back at 2026-09-15T06:20Z.
 
+**THE UNIT THAT PARAGRAPH'S LAST CLAUSE PREDICTS CHANGED LATER THE SAME DAY,
+AND THE CLAUSE IS KEPT RATHER THAN CORRECTED IN PLACE.** *"So the release
+assertion reads 623 − 622 = **one** once this line moves"* was true of the
+gate as it stood and is no longer the arithmetic that gate does.
+`adr-status-queue-anchor-contract` now counts **first-parent commits since
+the anchor whose subject is not `chore(release): v`** — merges, plus the
+occasional direct push — so the same window reads **zero**, because
+`7e9c3043` is a release commit and lands nothing. The budget is renamed
+`ANCHOR_STALENESS_BUDGET_MERGES` and is unmoved at **10**;
+`ANCHOR_STALENESS_BUDGET_RELEASES` stays declared beside it at **10**,
+unread by any assertion, because `tooling/anchor-budget-spend.mjs`'s CI
+annotation still counts releases and its own contract test reads that
+declaration by name.
+
+**The reason is the overrun this very pass was dispatched by.** Of the
+eleven releases the paragraph above counts, one is spent on nothing:
+`deac3215` (v0.0.616) sits directly on `82fba666` (v0.0.615) with no merge
+between them, ten seconds apart, a second `Version` run for one duplicated
+push event on `a27c437f`. The window carried **nine** merges, so the gate
+fired a merge before any work had earned it. That is not rare —
+**24 of this repository's 628 release commits sit directly on another
+release commit** — and the error runs the other way too: between `491fcdce`
+(v0.0.541) and `450c9819` (v0.0.542) twenty first-parent commits landed
+under a single version number, a window this gate was green over. The test's
+own header carries both measurements, the controls, and the counter-case for
+keeping releases.
+
 **The previous anchor is kept below and it read:**
 
 > Re-anchored at `main` @
