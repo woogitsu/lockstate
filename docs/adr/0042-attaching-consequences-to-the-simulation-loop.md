@@ -62,6 +62,29 @@ Every anchor below was opened in the working tree at this branch's base. Where a
 finding rests on a measurement rather than on a reading, that is said, and the
 measurement is the filing issue's, not this document's.
 
+> **That sentence is a global pin, it is advisory, and this document is one of
+> the places that proves it (2026-09-15).** `docs/adr/README.md`'s section on
+> anchor pins records the evidence: seven commits across six documents moved or
+> added anchors below an unchanged pin. Here the offender is `6c7ae159`
+> (2026-08-27), which added **two new anchors** below this line —
+> `action-system.ts:106` and `prisoners/prisoner-operations-runtime.ts:137`, in
+> decision 1's landing note — read at that day's tree rather than at this
+> branch's base, with the pin untouched and its own message silent about it.
+> One of the two is not even a repository-rooted path, so nothing resolves it.
+>
+> **Re-read 2026-09-15, all 63 `file:line` citations below this line opened.
+> Eight still land on what their sentence names**: `classification-review-system.ts:57-59`,
+> `informants.ts:87` (both sites), `hiring.ts:37-44`, `cell-sharing.ts:76`,
+> `disciplinary-record.ts:48-58`, `escape.ts:19`, `gangs.ts:123-124` and
+> `streams.ts:20-24`. **The other fifty-five are deliberately left where they
+> are, and that is a decision rather than an omission.** Re-aiming them would
+> present this document's census as a reading of today's tree, and it is not:
+> the tree it diagnoses has been replaced under it, by decisions taken in other
+> ADRs while this one stayed `Proposed` — see the block at the head of the
+> *Decision* section. #1229 left ADR 0040's twenty anchors standing for the same
+> reason and was right to. **Read every anchor in this section as of
+> 2026-08-27.**
+
 ### #440 — two action categories with no action — **holds, and its persistence
 claim is wrong in a way that matters**
 
@@ -153,6 +176,36 @@ arrival"*). A housed prisoner is therefore never on the post tile, so
 that houses anybody.** #442's headline is "hiring one guard makes the incident
 system unreachable"; the code says it is unreachable before the first hire, and
 the guard count is the second lock on a door that was already locked.
+
+> **Every load-bearing noun in that paragraph is gone, and the correction was
+> published in another document and never brought back here (2026-09-15).**
+> [ADR 0048](./0048-what-a-sectors-occupants-are.md)'s §*What the code did, and
+> the one place ADR 0042 is wrong about it* answers this paragraph by name: it
+> calls the arithmetic right and the conclusion *"too strong"*, because
+> `IntakeSystem` left an unhousable arrival standing on the arrival tile, which
+> ADR 0036 derived to be the post tile — so the trigger did fire, for exactly
+> the prisoners the prison had failed to house, and only while the player had
+> hired nobody. **That correction has been on disk since 2026-08-28 and this
+> paragraph was never marked with it.**
+>
+> What the tree does now, opened today:
+> - `resolveSectorOccupants` is no longer in `new-session.ts` at all. It is
+>   `src/simulation/security/sector-occupancy.ts:132`, and for the derived
+>   sector it counts **every prisoner standing on an owned tile**
+>   (`sectorCoversTile`, `:122-128`), not the post tile. `countSectorOccupants`
+>   (`:158`) is the same predicate without the array.
+> - **There is no *"Abstracted arrival"* comment and no teleport.** A prisoner
+>   walks, and the write of the anchor tile is now explicitly *"exact rather
+>   than corrective"* because *"the walk has already stepped the prisoner onto
+>   this tile one tile at a time"*
+>   (`src/simulation/prisoners/action-system.ts:1259-1264`).
+> - So `needsPressure` is not 0 by construction, and the clause below this one
+>   — *"that term is multiplied by `needsPressure`, which is zero in any prison
+>   that houses anybody … it is **nothing at all**"* — is false for the same
+>   reason.
+>
+> Marked rather than rewritten: the paragraph is what #442 was read as saying
+> and it is the finding that produced ADR 0048.
 
 The three sub-findings check out too. `StaffHiringService.hire` accepts any of
 the eight catalogue roles and puts every one of them on the `GuardRoster`
@@ -301,6 +354,38 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 
 ## Decision
 
+> **Four of these six steps have landed, none of them through this document, and
+> its Status line above still reads as it did on 2026-08-27 (recorded
+> 2026-09-15).** The ordering was the decision this ADR put to the owner, and
+> the work went ahead on it in other ADRs' names, so a reader arriving here
+> finds a plan presented as unstarted. Opened and checked:
+>
+> - **Step 1** — already marked below as *"Landed 2026-08-27"*.
+> - **Step 2** *(make the sector risk score reachable: occupancy first)* — taken
+>   by [ADR 0048](./0048-what-a-sectors-occupants-are.md) decision 1, *"a
+>   sector's occupants are the prisoners standing inside it, and the derived
+>   sector is the prison"*. `resolveSectorOccupants` left
+>   `src/simulation/runtime/new-session.ts` for
+>   `src/simulation/security/sector-occupancy.ts:132`.
+> - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
+>   exists, `insolvencyRungs` is registered on the kernel
+>   (`src/simulation/runtime/new-session.ts:1586`), and the save carries
+>   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1209`).
+>   [ADR 0049](./0049-what-a-prison-that-cannot-make-payroll-owes.md) was
+>   written to answer this document's open question 3.
+> - **Step 4** *(point `needsPressure` at the needs that are actually
+>   neglected)* — taken by ADR 0048 decision 2, *"the mean deficit over all six
+>   needs, not `safety` alone"*.
+> - **Steps 5 and 6** — open. Step 5 still waits on
+>   [ADR 0026](./0026-entity-id-lifetime.md); step 6 (`work` as authored
+>   content) has no action in `DEFAULT_ACTIONS`.
+>
+> **Nothing below is rewritten to match.** Each step's *Depends on / Unblocks /
+> Persistence / Determinism* block is the argument that produced the ordering,
+> and an argument is not made true or false by being acted on. The two figures
+> inside step 3 that a reader would take as current are corrected in place
+> there.
+
 **Six steps, in this order. The order is argued from what each step unblocks,
 not from which finding is worst.**
 
@@ -395,7 +480,18 @@ schema pins it: `balanceMinorUnits: z.number().int().nonnegative().safe()`
 a persisted field or a new persisted arrears field, and both are `AGENTS.md`
 boundary 7 changes needing a version and a migration
 ([ADR 0038](./0038-what-makes-a-save-compatible.md)) — `SAVE_SCHEMA_VERSION` is
-5 (`src/persistence/save-schema.ts:34`). *Determinism:* a day-boundary integer
+5 (`src/persistence/save-schema.ts:34`).
+
+(**Both of those two figures are now wrong, and the prediction they carry came
+true, which is why the sentence is kept — 2026-09-15.** The schema field is
+`balanceMinorUnits: z.number().int().safe()`
+(`src/persistence/save-schema.ts:1146`), and the docblock above it says why in
+terms: *"**`.safe()` and not `.nonnegative()` since ADR 0075 decision 2**, and
+the loosening is the point rather than a slip. A balance may now be negative"*
+(`:1092-1094`). `Treasury` no longer validates non-negative anywhere —
+`grep -n "nonnegative" src/simulation/economy/treasury.ts` returns nothing. And
+`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:38`). So the sign
+change this paragraph priced as a version bump is exactly what was paid.) *Determinism:* a day-boundary integer
 debit, the same shape `StateIncomeSystem` already has; no RNG.
 
 ### 4. Point `needsPressure` at the needs that are actually neglected
