@@ -17016,6 +17016,31 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
+**RE-VERIFIED AT `7e9c3043`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+NINE — AND FOR ONCE THIS SECTION HAS NOTHING TO CORRECT.**
+`git diff --name-only d57b97ba..7e9c3043 -- .github/` returns **nothing at
+all** — no `.github/` path is a member of this window's nine merges — and
+`docs/DEPLOYMENT.md` is absent from its 139 paths too, so both halves of this
+section's evidence were left alone for the ninth anchor running. All four
+`migrate-database.yml` citations were opened anyway and land: `:20` is the ADR
+0016 §2 comment, `:33` is `on:` with `workflow_dispatch:` as its only child,
+`:34` is `workflow_dispatch:`, `:41` is `confirm_project_ref:`, `:65` is
+`environment:`, and `grep -c '^\s*push:'` over the file returns **0**. So do
+all four into `docs/DEPLOYMENT.md`: the six-row table at `:200-207` with its
+migrations row still gating on *"none"*, the *"`migrate-database.yml` has
+three runs in its entire history"* paragraph at `:219`, the *"Read that row as
+'on every merge'"* paragraph at `:221`, and *"What currently serves
+lockstate.io"* at `:255` — **the first anchor since `a29699ff` at which the
+paragraph pair needed no repair**, because the previous reading repaired them.
+`docs/DEPLOYMENT.md` has still not changed since `5954af75` (2026-09-04).
+Nothing about the risk this section names has moved: migrations still reach
+hosted staging on every merge with gating *"none"*, ADR 0016 §2 is still
+binding at `0016-migration-delivery-mechanism.md:108`, and nothing in `tests/`
+can see the dashboard setting that would break it.
+
+**The previous reading is kept rather than overwritten, and it is the one
+that repaired the pair above.**
+
 **RE-VERIFIED AT `d57b97ba`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
 EIGHT — BUT TWO OF THE FOUR NUMBERS THE READING ABOVE CERTIFIED ARE WRONG,
 AND WERE WRONG WHEN IT WROTE THEM.** `git diff --name-only a29699ff..HEAD --
@@ -20762,7 +20787,22 @@ never recorded before this round:
   same question and #458's discharge work moved it again. **Three anchors, three
   numbers, one unchanged sentence** — so the quotation above is the citation and
   the number is the aid.)
-- `src/simulation/economy/income.ts` — **2026-09-14 (second) census at
+- `src/simulation/economy/income.ts` — **2026-09-15 census at
+  `7e9c3043`: 43 Proposed and 65 Accepted across 108 ADR documents**, matching
+  the index on its status column, compared document by document rather than by
+  totals — **zero disagreements**, which is a stronger statement than two equal
+  sums. `git diff --name-only d57b97ba..7e9c3043 --
+  src/simulation/economy/income.ts` returns nothing and
+  `grep -c Proposed src/simulation/economy/income.ts` returns **0** — run
+  locally — so the file still carries no count at all. **One ADR arrived and
+  none was accepted: 0115 (`Proposed`, 2026-09-14), the only numbered addition
+  under `docs/adr/` in the window** — the other addition,
+  `docs/adr/drafts/how-a-language-change-reaches-a-running-page.md`, is
+  unnumbered and outside the census — **which is the whole of the move.**
+
+  **The previous reading is kept rather than overwritten:**
+
+  **2026-09-14 (second) census at
   `d57b97ba`: 42 Proposed and 65 Accepted across 107 ADR documents**,
   matching the index on its status column. `git diff --name-only
   a29699ff..HEAD -- src/simulation/economy/income.ts` returns nothing, and
@@ -21373,9 +21413,13 @@ never recorded before this round:
   approval asked for in the Status table above should be given or withheld
   against these figures"*, which is a request that has been answered; it now
   says these are the figures §4's bound stands on.
-- `docs/adr/0015-actor-identity-allocation.md:159-163` — *"Accepting 0015
+- `docs/adr/0015-actor-identity-allocation.md:160-163` — *"Accepting 0015
   without 0012 leaves the taxonomy it argues in still Proposed"*, describing a
-  case that cannot arise. Both were accepted in the same commit, so item 1 of
+  case that cannot arise. (**The span read `:159-163` until `7e9c3043`, and
+  `:159` is a blank line — the correction below reproduced, one line smaller,
+  the very off-by-one it was written to correct, and did so on a tree no
+  window has touched since: `git show d57b97ba:` gives the identical
+  layout.**) Both were accepted in the same commit, so item 1 of
   *What this asks a human to accept* is discharged and says so: *"**Both were
   accepted in the same commit**, so the taxonomy this ADR argues in is settled
   and the case this item guarded against — 0015 accepted while 0012 was not —
@@ -21418,7 +21462,17 @@ never recorded before this round:
   not accepted"*, and *"ADR 0013 is in `Proposed` status"*. Both corrected — the
   bullet now reads *"**The 4 MiB per-save figure is accepted** — ADR 0013 §4"*
   (`:604` at `bb3a01e`) — and the two numbers that genuinely remain open are
-  named as §§5-6 (`:607`) and the churn lever as §7 (`:610`). This entry cited
+  named as §§5-6 (`:607`) and the churn lever as §7 (`:610`) — **both dated to
+  `bb3a01e` with the number beside them, because at `7e9c3043` they are
+  `:610` and `:613`, and have been since `d0f550ed` (2026-09-04) added three
+  lines above the block. Neither was overtaken by any window this file has
+  read: they were three short at `5459254c`, at `a29699ff` and at `d57b97ba`,
+  in a file absent from all three deltas, which is why nothing but opening
+  them could raise it.** The sentences they point at are
+  *"**The 4 MiB per-save figure is accepted** — ADR 0013 §4"*,
+  *"…are ADR 0013 §§5-6, still `Proposed`…"* and
+  *"…ADR 0013 §7 records rather than closes."*, and those are the citations
+  from here on. This entry cited
   `:577`, which was a bullet about `public.create_prison()`, and the citation was
   wrong when it was written rather than overtaken; it then read `:592-598`, which
   was exact at `54418b6` and is twelve lines short at `bb3a01e`.
@@ -21600,8 +21654,24 @@ numbers were not the damage.** Stated so it can be checked:
   `prisoners-intake-system.test.ts:230` and `:529`;
   `entity-generation-wrap.test.ts:96`, `:124`, `:163`, `:178`, `:190` and
   `:204`; `unconsumed-command-contract.test.ts:204` and `:230`;
-  `ui-hud-messages.test.ts:295-301` **at `d57b97ba` — moved by TWO lines in
-  this window, the second consecutive window to move it after eleven readings
+  `ui-hud-messages.test.ts:314-320` **at `7e9c3043` — moved by NINETEEN lines
+  in this window, the THIRD consecutive window to move it after eleven readings
+  that did not, and the largest single move this chain has recorded:
+  `'overview-panel.ts'` joins `HUD_MODULE_NAMES` at `:73` (`919d6b15`/#1155)
+  and a seventeen-line comment block plus `'hud.overview.wages'` join
+  `ALLOWED_MONEY_KEYS` (`d5137d5d`/#1183), the file's only two hunks
+  (`@@ -70,6 +70,7 @@` and `@@ -276,6 +277,23 @@`) and both above the cited
+  span, so `grep -n 'for (const allowed of ALLOWED_MONEY_KEYS)'` returns
+  **317** here against **298** at `d57b97ba`, read at both ends rather than
+  offset, and the seven lines `sed -n '314,320p'` prints are the allow-list
+  staleness comment and the loop this citation names, byte-identical to the
+  seven at `:295-301` before. **Three consecutive moves is the point at which
+  this parenthesis stops being a record of a stable coordinate and becomes the
+  case for recommendation 1 at the foot of this section**: the loop has not
+  changed a character across all three, and only the number has. The previous
+  reading is kept verbatim below and read
+  `:295-301`** **at `d57b97ba` — moved by TWO lines in
+  that window, the second consecutive window to move it after eleven readings
   that did not: `src/ui/hud/hud-layout` and `src/ui/hud/layout-shell` join
   `HUD_MODULE_NAMES` at `:65` and `:71` (#1187), the file's only two hunks and
   both above the cited span, so `grep -n 'for (const allowed of
