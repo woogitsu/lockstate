@@ -667,7 +667,8 @@ server-side validation or append-only storage, and those two bind whether or not
   >
   > 1. **One anchor holds and one has drifted.** `occurredAt` is still
   >    `occurredAt: z.number().int().min(0),` (verbatim in
-  >    `src/services/telemetry/events.ts`) at `events.ts:39`, exactly as cited.
+  >    `src/services/telemetry/events.ts`) at
+  >    `src/services/telemetry/events.ts:39`, exactly as cited.
   >    The `sampleRate` field is no longer at `:50` — that line opens the
   >    docblock above it — but at `src/services/telemetry/events.ts:64`.
   > 2. **The quotation attributed to the field is no longer in the file, and
