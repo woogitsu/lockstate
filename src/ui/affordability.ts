@@ -292,6 +292,17 @@ export function deliveriesRungFloorMinorUnits(
  * computes and drops, which widens `statusCountsSchema` and changes what a
  * press is judged against.
  *
+ * **That last clause is now history: the fix was made on 2026-09-15, and this
+ * paragraph is kept rather than deleted because it is the state this module
+ * described for a day and every measurement in it still holds.**
+ * `projectStatusStrip` publishes the predicate it used to drop, as
+ * `statusCountsSchema.isFreshUnfurnishedPrison`, and every host site reads it
+ * through `freshUnfurnishedPrison` above rather than deriving one. What
+ * changed is the answer the host gives on that prison, which is now the
+ * worker's own.
+ * `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+ * builds it and pins the two equal.
+ *
  * **Leaving `HOST_PRESS_FLOOR_MINOR_UNITS` as the mature constant, rather than
  * folding this into it, is deliberate.** The old constant is still what a
  * caller gets by omitting the third argument to `judgeAffordability`
@@ -304,6 +315,37 @@ export function deliveriesRungFloorMinorUnits(
  */
 export function pressFloorMinorUnits(overdraftFloorMinorUnits: number, isFreshUnfurnishedPrison: boolean): number {
   return rungFloorMinorUnits('deliveries', overdraftFloorMinorUnits, isFreshUnfurnishedPrison);
+}
+
+/**
+ * **The host's one reading of "is this prison fresh and unfurnished".**
+ *
+ * It is the published predicate and nothing else:
+ * `statusCountsSchema.isFreshUnfurnishedPrison`, which is the simulation's own
+ * `RoomInstanceRegistry.totalResidentCapacity === 0` (ADR 0017's
+ * "Amendment, 2026-09-01" §2). It exists as a function rather than three
+ * `counts.isFreshUnfurnishedPrison === true` expressions because three
+ * `counts.roomCapacity === 0` expressions are exactly what went wrong: the
+ * defect was not that any one of them was written badly, it was that the host
+ * had a definition at all. There is now one line in `src/ui/` that answers
+ * this question, and it reads an answer rather than computing one.
+ *
+ * **`=== true`, so absence reads as "not fresh".** The field is required on
+ * the wire, so every real session supplies it; it is optional on
+ * `HudCountsViewModel` only for fixtures written before it existed, and
+ * `undefined` there means no session has said anything. Resolving that to
+ * *not* fresh selects the mature, already-shipped rung, which is what
+ * `roomCapacity`'s `undefined` already resolved to and is the conservative
+ * direction for a control that cannot be on screen before a session has
+ * published.
+ *
+ * Structurally typed rather than importing `HudCountsViewModel`, because
+ * `src/ui/hud/` imports *this* module (`AGENTS.md` boundary 1 forbids it
+ * importing the simulation, which this module may and does), and an import
+ * back the other way would close that loop.
+ */
+export function freshUnfurnishedPrison(counts: { readonly isFreshUnfurnishedPrison?: boolean }): boolean {
+  return counts.isFreshUnfurnishedPrison === true;
 }
 
 /**

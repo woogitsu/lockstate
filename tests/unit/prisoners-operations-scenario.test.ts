@@ -51,7 +51,7 @@ describe('prisoner operations: representative headless scenario (250 actors, no 
   const SCENARIO_SEED = 0xa11ce;
   /** The bound in the intake test's name: every admitted prisoner must be through intake by this tick. */
   const INTAKE_DEADLINE_TICKS = 2_000;
-  /** `DAY_LENGTH_TICKS` is 2,400 (`src/simulation/prisoners/regime.ts:10`), so this is just over one full regime day. */
+  /** `DAY_LENGTH_TICKS` is 2,400 (`src/simulation/prisoners/regime.ts:12`), so this is just over one full regime day. */
   const SCENARIO_TICKS = 3_000;
 
   let scenario: PrisonerScenarioFixture;
@@ -68,8 +68,8 @@ describe('prisoner operations: representative headless scenario (250 actors, no 
    * 3,000-tick ones were identical to each other.
    *
    * Nothing observed here is weakened by sharing. Both metrics accessors
-   * return fresh object literals (`intake-system.ts:80`,
-   * `action-system.ts:87`), so `intakeMetricsAtDeadline` is a genuine
+   * return fresh object literals (`intake-system.ts:374`,
+   * `action-system.ts:441`), so `intakeMetricsAtDeadline` is a genuine
    * snapshot of tick 2,000 and continuing to 3,000 cannot retroactively
    * change it; and all three tests only read the fixture, never mutate it.
    *

@@ -32,12 +32,18 @@ design. That gap is now closed except where noted:
   the server timestamps a client could stamp (see "The server's timestamps
   are the server's" below), `20260824110000`, `20260824110100` and
   `20260824110200` for findings 6, 7, 9 and 11, and `20260824150000` for
-  #163's trusted-role `TRUNCATE`, and the two dated `20260826` for #280 and
-  #194's open half. So do **suites 005 to 011 in their
-  entirety** and every change the first four suites have gained since. All of
-  it has been executed only against plain PostgreSQL. The date is what
-  defines the set here, not this list: the list stood at eleven while twelve
-  postdated the run. The counts above are the stack-run counts, not today's.
+  #163's trusted-role `TRUNCATE`, the two dated `20260826` for #280 and
+  #194's open half, and `20260904090000` for the telemetry ingest. So does
+  **every suite from 005 onwards, in its entirety**, and every change the
+  first four suites have gained since. All of it has been executed only
+  against plain PostgreSQL. The date is what defines the set here, not this
+  list: the list stood at eleven while twelve postdated the run, **and then
+  the same thing happened twice more** — re-derived 2026-09-15,
+  `ls supabase/migrations/ | cut -c1-8 | sort | uniq -c` shows a
+  `20260904` migration this enumeration did not name, and `supabase/tests/`
+  holds a suite `012` that "005 to 011" excluded. A closed range is a tally
+  wearing different clothes; the range is now open-ended. The counts above are
+  the stack-run counts, not today's.
   `pnpm verify:sql` is at 412 assertions
   (54/54, 104/104, 37/37, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6, 89/89), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
@@ -106,7 +112,7 @@ design. That gap is now closed except where noted:
 
   Two limits of that stand-in, because they are what a reader of this bullet
   needs next. **It does not cast.** It accepts `'prison-1'` as a prison id
-  (`tests/unit/persistence-cloud-supabase-client.test.ts:430`) where the real
+  (`tests/unit/persistence-cloud-supabase-client.test.ts:475`) where the real
   `prisons.id` is `uuid` and the database refuses it -- #338. That is one
   concrete instance of this bullet's own warning that a fake tests the fake,
   and it is named here so the caution reads as a live risk rather than a

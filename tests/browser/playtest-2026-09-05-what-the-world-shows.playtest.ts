@@ -1,7 +1,6 @@
 import { test, type Page } from '@playwright/test';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import {
-  TILE,
   armBuildable,
   buildAndPopulate,
   buy,
@@ -17,7 +16,9 @@ import {
   press,
   runUntilTick,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -602,6 +603,12 @@ test('act 4 — stacking at twelve and at fifty', async ({ page }) => {
    * beds and fifty arrivals is exactly the state where a capacity guard would
    * bite, and "the control went dead at N" is a better reading than a hang.
    */
+  // The screenshots above are taken from Overview, which is where this act
+  // navigated; the Intake panel is on Manage since 2026-09-14 (`d5137d5d`).
+  // Without this the loop's `isDisabled()` reads false on a hidden button --
+  // `isDisabled` does not require a box -- and the `click()` below then waits
+  // out the whole 600 s budget.
+  await showPanel(page, 'manage', '.hud-intake');
   const admitStarted = Date.now();
   let admitted = 0;
   for (let index = 0; index < 38; index += 1) {
