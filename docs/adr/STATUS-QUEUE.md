@@ -926,6 +926,41 @@ now reads five, five, nine, five, six, five, six, five, eight, FOURTEEN,
 ELEVEN, EIGHT, NINE, TEN, EIGHT, TEN, SEVEN, SIX, TWELVE, EIGHT, SEVEN,
 SEVEN, NINE, SEVEN, ELEVEN, TEN — **twenty-six entries, one added here.**
 
+**2026-09-16 census at `1aef04b1` (v0.0.633): 44 Proposed, 65 Accepted, 109
+ADR documents**, agreeing with the index on its status column (44 against 65
+across 109 linked rows, summing exactly; **111** numbered rows once the two
+kept rows that carry no link — `0018`, freed, and `0030`, retired — are
+counted). This supersedes every dated count below, including the line
+immediately under it, **and the line immediately under it is why this reading
+was taken at all**: it was the topmost census in this file while the header
+had named `1aef04b1` for a full anchor, so the number a reader drafting an ADR
+takes out of the preamble disagreed with the number the same file's §§4-6
+already carried. Section 2 still has nine entries, five of them attached to
+`Proposed` ADRs (0056, 0059, 0071, 0074, 0077, all five re-read on disk at
+this anchor), so **thirty-nine** outstanding decisions have no entry giving
+the owner the evidence — thirty-eight below, and the one added is the same
+document that moves every term of the count. **One document arrived and none
+moved, for the second anchor running**: ADR **0116** (whether a finished
+object is an event) landed `**Proposed, 2026-09-15. Not self-approved, and it
+implements nothing.**` at `911424c6`, merged by `f7337d97`/#1200, with no
+section 2 row — so the ratio moves to **five of forty-four**, and the
+abandonment this sequence has tracked since `01974e5` continues unbroken.
+**Next free number: 0117**, moved 0116 → 0117 by 0116 landing on the number
+the line below named. Counted on disk by replicating `statusStatement` from
+`tests/foundation/adr-status-reference-contract.test.ts` rather than by a grep
+written for the occasion, so the two methods cannot silently disagree, and the
+index's own column was counted separately with
+`grep -cE '^\|.*\| *\*{0,2}Proposed' docs/adr/README.md` → **44** rather
+than inherited from the disk scan.
+
+**AND THE CLAUSE BELOW ABOUT BULLET-FORM STATUSES HOLDS AT EIGHT.** Re-counted
+at this anchor rather than carried: 0001, 0002, 0003, 0004, 0014, 0021, 0064
+and 0067 state status as a `- Status:` bullet, against 101 under a `## Status`
+heading. The reading below moved that number from two to eight and nothing in
+this window moved it again.
+
+**The previous reading is kept rather than overwritten:**
+
 **2026-09-15 census at `7e9c3043` (v0.0.623): 43 Proposed, 65 Accepted, 108
 ADR documents**, agreeing with the index on its status column (43 against 65
 across 108 linked rows, summing exactly; **110** numbered rows once the two
