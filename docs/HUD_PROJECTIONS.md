@@ -2154,7 +2154,7 @@ decision about what to build next.
     assertions and their output are in the report that accompanies this
     change):
 
-    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:119-123`).
+    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:158-166`).
       Two refusals leave `count === 2` and `last` holding only the second; the
       first is unreachable from the object.
     - The alerts list keeps exactly one refusal row, keyed by ordinal, and
@@ -2163,10 +2163,47 @@ decision about what to build next.
       `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
       is `[{"id":"refusal-2", …}]` — length 1.
     - The band carries the newest ordinal and nothing else
-      (`src/ui/simulation-alerts.ts:440-448`, `src/ui/hud/hud.ts:1678-1692`).
+      (`src/ui/simulation-alerts.ts:449-453`, `src/ui/hud/hud.ts:1730-1745`).
     - Neither surface shows the count. The row literal carries `id`,
       `labelKey` and `severity` only, and `sequence` reaches a player only as
       an opaque row id.
+
+    **Four of the five code coordinates above were repinned on 2026-09-16, and
+    one of the four sentences is now false. Both are #1261's doing** — ADR 0091
+    decision 2, option F, ruled by the owner on 2026-09-16 — and the sentence is
+    kept rather than rewritten (`docs/AGENT_WORKFLOW.md` §4: mark both
+    directions).
+
+    - **The repins are citation maintenance and change no finding.** `record`
+      is `refusal-log.ts:158-166`, `supersessionKeyRoute` having been added
+      above it; the band's notice is built at `simulation-alerts.ts:449-453`;
+      the band's rule is `hud.ts:1730-1745`; and the publisher's single read of
+      `refusals.last` is `state-machine.ts:597`, called from `onTickLoop` at
+      `:407`. Each measurement re-reads the same at its new coordinate.
+    - **"The band carries the newest ordinal and nothing else" is false in both
+      directions since #1261.** It carries one thing *more*: the notice now
+      forwards `routeDecidedSince` as well
+      (`src/ui/simulation-alerts.ts:452`). And on that flag it carries *less*
+      than the newest ordinal — a notice marked `routeDecidedSince` is treated
+      as no notice at all, so the corner is cleared while the refusal still
+      stands in `RefusalLog` and still holds its row in the alerts list
+      (`src/ui/hud/hud.ts:1731-1735`). The band is therefore no longer even a
+      lossy copy of the newest refusal; it is a copy that retires itself when
+      the same command route decides something else.
+    - **What that does not touch is the retention finding this section is
+      about.** Option F makes the band hold *less* of the history, never more,
+      so a refusal a player never saw is if anything less retained after #1261
+      than before it. The other three bullets are unchanged and were re-read at
+      their new coordinates: `record` still replaces, the alerts list still
+      keeps exactly one refusal row keyed by ordinal, and neither surface shows
+      the count. So is the twelve-refusal measurement below — `supersede` on a
+      *different* target now marks the standing record instead of doing nothing
+      at all, but a `record` on a failed order still replaces outright, which is
+      the reduction that measurement is about.
+    - **And #1261 is not this section's question being answered by the back
+      door.** It moved `src/` for ADR 0091 decision 2 — when the *band* retires
+      a sentence — not for article 6, which the owner answered separately below
+      on 2026-09-15 by ruling that article 6 does not reach a refusal at all.
 
     **Eleven of twelve refusals from one gesture never cross the worker
     boundary at all**, which is stronger than "overwritten fast". One build
@@ -2174,8 +2211,8 @@ decision about what to build next.
     the handler records one refusal per failed order
     (`src/simulation/construction/handler.ts:113-115`); the publisher reads
     `this._runtime.refusals.last` once per wake
-    (`src/simulation/worker/state-machine.ts:579`, called from `onTickLoop` at
-    `:389`), so a burst decided inside one dispatch pass is reduced to its last
+    (`src/simulation/worker/state-machine.ts:597`, called from `onTickLoop` at
+    `:407`), so a burst decided inside one dispatch pass is reduced to its last
     member before anything is posted. Probe: twelve recorded refusals across
     three reasons leave one row, `refusal-12`, `build.out-of-bounds`; the
     `build.water-blocked` and `build.unowned-land` sentences are gone from both
