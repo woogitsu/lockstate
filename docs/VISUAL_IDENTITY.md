@@ -79,6 +79,24 @@ the article's numbers or only the first is the owner's to say**, and nothing is
 changed here on either reading. It is recorded here and nowhere in the delivery,
 for the reason decision 4 already gives.
 
+> **RULED BY THE OWNER ON 2026-09-16: the amendment carries all three.**
+> Article 8 reads **15 / 13 / 11**. **This restates ADR 0112's §*Amendment,
+> 2026-09-16*, so it binds under the first of the three kinds above**; the
+> paragraph it sits under is kept exactly as it stood rather than rewritten,
+> because the record of a question having been open is what makes the answer
+> legible (`docs/AGENT_WORKFLOW.md` §4, both directions) — and because *"read
+> strictly, the amended article still says 14 px and 12 px"* was a true
+> description of the documents for three days.
+>
+> **The provenance is the weaker kind, and the paragraph above is the reason it
+> is worth having anyway.** The owner chose a clickable option labelled
+> *"Poprawka niesie wszystkie trzy"* rather than typing a sentence, and what the
+> label agreed is the **reading of article 8's scope**. No ramp value was
+> agreed, because none was open: 15 / 13 / 11 was already ruled, already built
+> and already pinned by `tests/unit/ui-design-tokens.test.ts`. The sentence above
+> remains right that *"nothing is changed here on either reading"* — what changed
+> is which reading the documents state.
+
 ## The three-line summary, before any detail
 
 **Lines 1 and 2 bind through decision 1** — they are constitution articles 1, 2
@@ -296,12 +314,29 @@ else" is this document's word and not the ruling's, and the gap it hides is the
 open question named in §"How to read a sentence in this document"**: the
 article's type sentence carries 14 px and 12 px beside the 16, ADR 0112's own
 enumeration of the untouched parts names neither, and the shipped ramp is
-13 and 11. Nothing here decides it. **Article 5 — every
+13 and 11. Nothing here decides it. *(It was decided on 2026-09-16, two
+sentences below; this one is kept because it is what this section said while the
+question was open.)* **Article 5 — every
 sentence the game shows is true — was in the first list when this document was
 written, and it does not belong there.** The nearest thing `AGENTS.md` holds is
 the fourth reservation, which is about the truth of a *player-visible string*
 that somebody is already writing; article 5 is a standing demand on what the
 interface may display at all, and it is the most expensive of the fourteen.
+
+**Restates ADR 0112's §*Amendment, 2026-09-16*, which settles the open question
+the paragraph above names.** The owner ruled on 2026-09-16 that decision 4's
+amendment of article 8 carries **all three** of the article's numbers: article 8
+reads **15 / 13 / 11**, not 15 px with 14 px and 12 px left standing. **The
+provenance is the weaker kind** — a clickable option labelled *"Poprawka niesie
+wszystkie trzy"*, not a sentence the owner typed — and what it agreed is the
+scope of the amendment and nothing else. **No ramp value moved**: 15 / 13 / 11
+was ruled by decision 4 on 2026-09-13, built on 2026-09-14, and is pinned by
+`tests/unit/ui-design-tokens.test.ts`, so the ruling removes a contradiction
+between these documents and the code rather than changing either. **"Everything
+else" in the paragraph above is now exhaustive rather than hiding a gap**:
+contrast, visible focus, 200 % text and the status that carries a label and an
+icon as well as a colour are untouched, and the delivery's own copy of article 8
+still reads 16 / 14 / 12 and is never edited.
 
 ## What is explicitly **not** binding
 
