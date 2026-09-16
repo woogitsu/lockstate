@@ -1722,7 +1722,7 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  *
  * Four of its hops were most of that, because they cross the HUD rather than a
  * form -- and the tab bar is the **last child of `.hud`**
- * (`src/ui/hud/hud.ts:2228`), so forwards from a panel to a tab is nearly a lap
+ * (`src/ui/hud/hud.ts:2441`), so forwards from a panel to a tab is nearly a lap
  * of the page. Both directions, measured at 1280x800 on the same runs:
  *
  * | Hop | `Tab` | `Shift+Tab` |
@@ -2644,7 +2644,7 @@ const INTERACTIVE_SELECTOR =
  * stay here while the four the roster adds do not. **Hiring is not what holds a
  * guard.** `DeploymentSystem.assignUnassignedGuards` is called from that
  * system's `update` and from nowhere else
- * (`src/simulation/security/deployment-system.ts:130`); the sweep pauses the
+ * (`src/simulation/security/deployment-system.ts:128`); the sweep pauses the
  * clock before its viewport loop and never restarts it; and ADR 0051's paused
  * drain dispatches the `HireStaff` command *without* running a tick. So three
  * guards are hired, no system ever looks at them, all three stay `'unassigned'`,
@@ -7353,7 +7353,7 @@ test.describe('the assembled application', () => {
     // ---- the Rooms tab, and what the room is for ----------------------
     // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
     // transport's *Pause*, and the tab bar is the last child of `.hud`
-    // (`src/ui/hud/hud.ts:2228`), so forwards is 24 presses and backwards is 4.
+    // (`src/ui/hud/hud.ts:2441`), so forwards is 24 presses and backwards is 4.
     // `shiftTabTo` carries the table and the argument.
     await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');

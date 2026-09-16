@@ -295,8 +295,8 @@ const entityStoreSnapshotV1Schema = z
      * `decodeSaveEnvelope`, which aborted `PrisonSaveRepository.loadCurrent`'s
      * recovery walk before it could reach the older good generation.
      *
-     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:13`), the
-     * ceiling `EntityStore`'s own constructor enforces at `:83`, so this is
+     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:15`), the
+     * ceiling `EntityStore`'s own constructor enforces at `:103`, so this is
      * not a number invented for a schema. **It narrows nothing that was
      * loadable**: V2's identical bound already refused every such save one
      * step later, as `migration-produced-invalid-output` -- above `0xf_ffff` a
@@ -304,7 +304,7 @@ const entityStoreSnapshotV1Schema = z
      * allocation instead of after) and the label on it.
      *
      * The widest capacity any writer in this repository produces is
-     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:244,326`);
+     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:392,597`);
      * a sweep of every numeric and symbolic `capacity` assignment in `src/`
      * and `tests/` finds nothing above it, and both checked-in V1 fixtures
      * carry 8. ADR 0038 §1 classifies this as a *value* the build cannot
@@ -611,7 +611,8 @@ const objectsSectionSchema = z
  * log. So no migration step is added, and `SAVE_SCHEMA_VERSION` does not move.
  * ADR 0084 predicted this in its Consequences and said to record it so a
  * future implementer does not re-litigate it; this is that record, and it was
- * re-checked against ADR 0038 section 1 and `docs/PERSISTENCE.md:69-92` rather
+ * re-checked against ADR 0038 section 1 and that document's own
+ * "Adding an optional field without a version bump" section rather
  * than taken from the ADR.
  *
  * The cost of not bumping is the one `masterSeed` records: an **older** build

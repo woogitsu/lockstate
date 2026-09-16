@@ -601,7 +601,8 @@ export function zoneSupersessionKey(roomCatalogId: string, x: number, y: number,
  * and `not-enclosed` are all read straight off the rectangle and the world --
  * `RoomZoningService.zone` decides every one of them from `request.x/y/
  * width/height` and `this.world`, never from `definition` (`../rooms/
- * zoning.ts:505-576`). Folding the room type into their key anyway is what
+ * zoning.ts:489-689`, the whole of `zone`). Folding the room type into their
+ * key anyway is what
  * let a `room.cell` attempt's `not-enclosed` refusal outlive a `room.yard`
  * zoned successfully at the *identical* rectangle moments later: the yard
  * needs no enclosure (`enclosureRequirement`, `'outdoors'` rather than
