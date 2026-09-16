@@ -166,6 +166,52 @@ matters (`new-session seed 10: f0b81b8c50f1d4a9` vs `seed 0: 7eb581098131504f`).
 The seed is **superseded, not lost**: its only use is deriving the four initial
 stream states, and `restoreState` overwrites all four.
 
+> **Amended 2026-09-15. Every structural claim in the `#412` paragraph above
+> has stopped being true, and the measurement below it is kept rather than
+> overwritten because it was real on `54418b6`.** The amendment is written here
+> in the form §4 below already uses for the same reason.
+>
+> - *"`masterSeed` is absent from the save payload — 0 hits in
+>   `src/persistence/save-schema.ts`"*. It is a declared optional field there
+>   now, in V6 and in the envelope: `masterSeed: uint32Schema.optional()`
+>   (`src/persistence/save-schema.ts:1454` and `:1491`), with
+>   `readonly masterSeed?: number;` on the envelope input
+>   (`src/persistence/save-schema.ts:1824`). That file's own V6 note records the
+>   change — *"V5 gained one more optional field after it shipped: `masterSeed`
+>   (#412)"*.
+> - *"Both production restore paths take the `= 0` default"*. Neither does.
+>   `restoreSimulationRuntime` builds the runtime from
+>   `createNewSimulationRuntime(bundle.masterSeed ?? masterSeed, { world })`
+>   (`src/simulation/runtime/restore-session.ts:375`), preferring the **saved**
+>   seed, and `SessionController.createPrison` draws
+>   `this.masterSeed ?? this.generateMasterSeed()`
+>   (`src/persistence/session/session-controller.ts:460`).
+> - *"`src/main.ts:2100` constructs `SessionController` with no `masterSeed` at
+>   all"*. It passes a generator: `new SessionController(repository, host, {`
+>   with `generateMasterSeed` among its options
+>   (`src/main.ts:3943-3946`), that function drawn from
+>   `crypto.getRandomValues` at `src/main.ts:3863`. This is the same change §4's
+>   2026-08-28 amendment records, and this paragraph was not amended with it.
+> - *"It is currently **inert**"*. It is not, and the three sentences above are
+>   why.
+>
+> **The anchors rotted as well as the prose, and none was repaired by an
+> offset.** `restore-session.ts:321` is a bare `return {`;
+> `session-controller.ts:66` is inside a docblock about the revision counter and
+> issue #582; `main.ts:2100` is a bare `/**`. They are left in the sentence
+> above, which is now explicitly historical, and the live anchors are the ones
+> in this note.
+>
+> **This is what a global anchor pin costs, and it is recorded here because
+> this ADR carries the corpus's most emphatic one.** Pull request #1229
+> declined to sweep this document on the strength of its header, reasonably:
+> *"Every `file:line` below is pinned to `main` @ `54418b6`"* reads as a
+> sentence that dates everything under it. It does not — `docs/adr/README.md`,
+> *"A global anchor pin in an ADR is advisory"*, carries the seven commits that
+> settle it, two of which re-anchored this very file against `83d9616` without
+> moving its pin.
+
+
 The two issues meet at one point. **The moment a restore has to *seed* a stream
 the save does not carry, the seed stops being superseded** — it becomes the only
 input the missing stream has. #415's second option is unavailable without #412's

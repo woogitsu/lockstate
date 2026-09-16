@@ -13,7 +13,7 @@ import { VOID_APPEARANCE, VOID_COLOR } from '../../src/rendering/world/appearanc
  *
  * ## Why a drift here would be visible, unlike most duplicated constants
  *
- * `TileLayer.updateChunks` (`src/rendering/phaser/tile-layer.ts:130-132`)
+ * `TileLayer.updateChunks` (`src/rendering/phaser/tile-layer.ts:276-278`)
  * gives an unloaded chunk **no draw calls at all**:
  *
  * ```ts

@@ -22,7 +22,7 @@ import {
   type SubstitutionRecordComponent,
 } from './components';
 import { NEED_IDS, type NeedId, type NeedsComponent } from './needs';
-import { findRegimeSchedule, resolveActiveRegimeBlock, type ActionCategory, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
 import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
 
@@ -1307,33 +1307,6 @@ export class ActionSystem implements SystemRegistration {
   }
 
   /**
-   * What one idle prisoner *wants* this cycle, and how badly -- the half of the
-   * old `beginNextAction` that reads nothing but the prisoner.
-   *
-   * Split out for issue #434, so that the whole idle population can be planned,
-   * reordered by `compareByNeedUrgency` and only then executed. Everything it
-   * touches is that prisoner's own state plus the tick, so the split changes no
-   * answer: the block comes from a gapless schedule, the candidates from
-   * `DEFAULT_ACTIONS` filtered by that block, and the ranking from
-   * `rankActions`' total order over needs. `resolveTargetInstance` -- the one
-   * step that looks at a room and at the claims other prisoners have taken --
-   * stays in `beginNextAction` below, which is what keeps a claim visible to
-   * everybody scanned after the prisoner who took it.
-   */
-  /**
-   * The regime block this prisoner is under at `tick` -- their own override
-   * where one stands, their classification group's timetable otherwise.
-   *
-   * Split out of `planIdleSelection` so that `arrive` can ask the same question
-   * without planning a selection, and so the two cannot answer it differently.
-   */
-  private activeBlockCategories(entityId: number, index: number, tick: number): readonly ActionCategory[] {
-    const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
-    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules(), classificationGroupId);
-    return resolveActiveRegimeBlock(schedule, tick).allowedCategories;
-  }
-
-  /**
    * Is there an errand this prisoner could be given right now?
    *
    * **Two ways, and the second is what makes a restore need no new field**
@@ -1368,6 +1341,20 @@ export class ActionSystem implements SystemRegistration {
     return this.carry.board.availableJobsSorted().length > 0;
   }
 
+  /**
+   * What one idle prisoner *wants* this cycle, and how badly -- the half of the
+   * old `beginNextAction` that reads nothing but the prisoner.
+   *
+   * Split out for issue #434, so that the whole idle population can be planned,
+   * reordered by `compareByNeedUrgency` and only then executed. Everything it
+   * touches is that prisoner's own state plus the tick, so the split changes no
+   * answer: the block comes from a gapless schedule, the candidates from
+   * `DEFAULT_ACTIONS` filtered by that block, and the ranking from
+   * `rankActions`' total order over needs. `resolveTargetInstance` -- the one
+   * step that looks at a room and at the claims other prisoners have taken --
+   * stays in `beginNextAction` below, which is what keeps a claim visible to
+   * everybody scanned after the prisoner who took it.
+   */
   private planIdleSelection(entityId: number, index: number, tick: number): PlannedSelection {
     const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
     // The override, where one stands, *replaces* the timetable rather than

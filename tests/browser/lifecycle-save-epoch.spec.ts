@@ -27,7 +27,7 @@ import { openHarness, reloadHarness } from './harness-fixture';
  * can produce a browser-generated `pagehide` against a realm that is genuinely
  * being destroyed. The ADR's own measurements used `InProcessSessionHost` and
  * it says so; the harness arms this probe with `SimulationWorkerChannel` +
- * `WorkerPerSessionHost`, the pair `src/main.ts:265` and `:3413` construct.
+ * `WorkerPerSessionHost`, the pair `src/main.ts:291` and `:3914` construct.
  *
  * ### What it measured, which is stronger than the claim needed
  *

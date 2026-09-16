@@ -472,6 +472,17 @@ other accrual against a negative balance, and nothing bounds them.** Measured:
 3,220 → 27,220 in six in-game days, growing 4,800/day for as long as the prison
 is left alone.
 
+> **"Six" is one too many, and the growth rate beside it is right.** The
+> sentence is kept as it stood (`docs/AGENT_WORKFLOW.md` §4: mark both
+> directions) because the figure it exists to carry — 4,800 a day, unbounded —
+> is unaffected. The measured span is act B's day-by-day table in
+> `docs/research/2026-09-04-can-this-prison-fail.md`: 3,220 at **day 4**,
+> 8,020, 12,820, 17,620, 22,420, and 27,220 at **day 9**. That is six rows and
+> **five** day-boundaries of growth, and the arithmetic agrees —
+> 27,220 − 3,220 = 24,000, and 24,000 ÷ 4,800 = **5**. Six days at 4,800 would
+> have reached 28,800. **Nothing else in this document reads the span as a
+> duration**, so no figure above or below moves.
+
 **What unbounded arrears cost, in the only unit a player feels.** **ARITHMETIC**
 over the measured figures: 27,220 of arrears against one recovered occupied
 place at 300/day is **91 in-game days** before the prison may spend one minor
@@ -480,6 +491,55 @@ playtest measured, spent pressing nothing. Two more days of neglect before the
 player notices adds another **32 in-game days** to that wait. **A recovery a
 player will not sit through is not a way back**, and decision 1's bound exists
 to say so.
+
+> **THE 300/day IN THAT PARAGRAPH IS THE SUSPENDED RATE, AND THE RATE IS NO
+> LONGER SUSPENDED. The paragraph is kept exactly as it stood rather than
+> rewritten** (`docs/AGENT_WORKFLOW.md` §4: mark both directions), because it
+> is the arithmetic this decision was argued from and a reader has to be able
+> to see that it was argued under the suspension. The live line is
+> `export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;` (verbatim in `src/simulation/economy/income.ts`),
+> restored by the owner on
+> 2026-09-04 — ADR 0064's *"Amendment, 2026-09-04: the owner restored the
+> withheld share to 40"*. **No decision moves here; only the premise is
+> corrected.**
+>
+> **The wall-clock conversion, derived rather than scaled.** One in-game day is
+> `DAY_LENGTH_TICKS`, 2,400 ticks, and the playtest that measured these arrears
+> measured the clock beside them: *"`DAY_LENGTH_TICKS` is 2,400 and the clock
+> at 4× ran at **≈78 ticks a second** in every act"*
+> (`docs/research/2026-09-04-can-this-prison-fail.md`, the same act B whose
+> day-by-day table is 3,220 → 27,220). So one in-game day is 2,400 ÷ 78 ≈
+> **30.8 wall-clock seconds**, and 91 × 30.8 s = 2,800 s = **46.7 minutes** —
+> which is where the paragraph's "about 47" comes from, reproduced rather than
+> taken on trust. Days below are `ceil`, as the 91 is (27,220 ÷ 300 = 90.7).
+>
+> **Both rates, side by side. The live one is a row below the first.** A place
+> pays `max(0, 300 − 40 × unmetNeeds)` (ADR 0064 decision 2), so the recovered
+> place's rate is decided by how many of its occupant's needs are unmet:
+>
+> | unmet needs on the recovered place | pays/day | days to clear 27,220 | wall clock | two more days' neglect (+9,600) |
+> | --- | --- | --- | --- | --- |
+> | rate suspended at 0 — **not live** | 300 | 91 | ≈47 min | +32 days |
+> | 2, the fifty-prisoner instrument | 220 | **124** | **≈64 min** | +44 days |
+> | 5 of 6, the four-prisoner instrument | 100 | **273** | **≈2 h 20 m** | +96 days |
+> | 6, decision 2's own floor | 60 | **454** | **≈3 h 53 m** | +160 days |
+>
+> **Which of the middle two is the live figure is a disagreement ADR 0064
+> records rather than settles**, and the bullet below under *"ADR 0064"* takes
+> only the gentler of them. That ADR's 2026-09-04 amendment, *"What the
+> measurements said"*, prices a **housed** prisoner at **two** unmet needs at
+> fifty prisoners and at **five of six** at four — *"at four housed prisoners
+> with five of six needs unmet"* is the four-prisoner note's own phrasing
+> (`docs/research/2026-09-04-what-pressure-there-is.md`) — and it calls the
+> fifty-prisoner figures *"the pessimistic end of a range"* only because an
+> unbuilt door could lower that two, not because five is ruled out. **The
+> prison decision 3(c) is about is act B's: one recovered occupied place, needs
+> at the bottom by construction** — the four-prisoner shape rather than the
+> fifty-prisoner one — so **273 days is the closer estimate here and 124 the
+> optimistic one.** Both are stated because this document cannot settle which
+> instrument generalises, and **neither weakens the argument above: the
+> shortest of them is 36% longer than the 91 days the paragraph already calls
+> more than a player will sit through, and the closest is three times it.**
 
 **Proposed: arrears stop accruing at a bound, and what cannot accrue is
 forgiven rather than deferred.** The magnitude is #29's; the candidate this
@@ -556,7 +616,7 @@ silently and three of these would be contradicted by the recommendation above.**
   subject. **This is an amendment to ADR 0083 decision 1's scope, not a
   reversal of it.**
 
-### ADR 0064 — what an unmet need costs a prison (Proposed, with the withheld share suspended at 0)
+### ADR 0064 — what an unmet need costs a prison (Proposed; this section was written while the withheld share was suspended at 0, and the owner restored it to 40 later the same day, 2026-09-04)
 
 - **Decision 1 stands and nothing above narrows it.** The grant is still paid
   per occupied place per in-game day, holding no state; decision 3's sum over
@@ -581,6 +641,57 @@ silently and three of these would be contradicted by the recommendation above.**
   move — that is the owner's and they have ruled on it twice. What it asks is
   that decision 3(c)'s bound be set with this ratio in front of whoever sets
   it, because the bound is what stops the interaction mattering.
+
+  > **THE RATE HAS BEEN RESTORED. This bullet is kept as it stood rather than
+  > rewritten** (`docs/AGENT_WORKFLOW.md` §4), because *"which the owner should
+  > see before they restore the rate"* is what it was written to say and an
+  > interaction argued prospectively reads differently from one argued after
+  > the fact. **What moved:** the restoration happened on 2026-09-04, the same
+  > day as the reaffirmation this bullet quotes, and the live line is
+  > `export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;` (verbatim in `src/simulation/economy/income.ts`).
+  > So the bullet's *"at the
+  > suspended rate"* row is history and its *"at the authored
+  > 40-per-unmet-need rate"* row is the game. Nothing it asks for is withdrawn:
+  > the bound is still what stops the interaction mattering, and it now matters
+  > already rather than prospectively.
+  >
+  > **The owner's ruling on the apparent contradiction, 2026-09-15, in their
+  > own words.** This bullet says the suspension was *"reaffirmed on 2026-09-04
+  > with 'Zostaw bez kar — najpierw sam pogram'"*, while ADR 0064's
+  > *"Amendment, 2026-09-04"* records the owner restoring the share to 40 on
+  > that same date. Asked which of the two was right, they ruled:
+  >
+  > > Oba — najpierw zawiesiłem, potem przywróciłem
+  >
+  > ("Both — I suspended it first, then restored it.") **So both sentences are
+  > true of 2026-09-04 and the order is settled: the reaffirmation came first,
+  > the restoration after it, on the same day.** This records the repository
+  > owner's own ruling, dated, in their words. **It is not a recommendation of
+  > this repository's and it was not self-approved** — the terms ADR 0064's two
+  > amendments are recorded under, and for the same reason
+  > (`docs/AGENT_WORKFLOW.md` §3). **Nothing in this ADR's `Status` moves and
+  > no decision is edited.**
+  >
+  > **One weakness in that quotation, named rather than left for the next
+  > reader.** *"Zostaw bez kar — najpierw sam pogram"* appears nowhere in this
+  > repository except this bullet: `git log -S` over every ref finds it first
+  > and only in `8baa6513`, the commit that proposed this ADR. The 2026-09-03
+  > ruling it sits beside is attested twice over (*"usuń na razie kary,
+  > zobaczymy jak pogram i ocenię łatwość"*, in ADR 0064 and in
+  > `docs/research/README.md`); this one is attested once, here. The owner's
+  > ruling above confirms that a reaffirmation happened and does not
+  > re-attest the wording, so the wording is this document's own record of it
+  > and nothing else in the corpus checks it.
+  >
+  > **And one figure in the bullet is understated, which the recomputation
+  > under decision 3(c) above sets out in full.** *"ADR 0064's own measured
+  > worst case for a housed prisoner (two unmet)"* is the **fifty**-prisoner
+  > instrument's figure; the **four**-prisoner instrument measured five of six
+  > unmet on four *housed* prisoners, which is worse and is the shape a
+  > recovering prison with one recovered place is closer to. At 100/day the
+  > same arrears take **273 in-game days**, so the bullet's range is **1.4× to
+  > 5×** with a measured **3.0×** missing from the middle of it, and its
+  > conclusion holds a fortiori.
 
 ### ADR 0049 — what a prison that cannot make payroll owes (Accepted)
 

@@ -18,7 +18,7 @@ import type { IncidentRecord } from './incident';
  * file under `src/simulation/incidents/` reads an RNG stream and decision 5
  * keeps it that way, so membership alternates on a recorded input -- the
  * arrival's entity id -- rather than on a seventh named stream and the
- * save-compatibility question `src/simulation/runtime/new-session.ts:471-478`
+ * save-compatibility question `src/simulation/runtime/new-session.ts:476-481`
  * sets out for one.
  *
  * **No gang id reaches a player.** ADR 0103 Context 7 read the alert row and

@@ -242,7 +242,7 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['concrete', 'dirt'
  * prison and looked at it (the first time anyone had, since #1059 only wired
  * it and never played it) found that judgement call did not survive contact
  * with the screen: at both zoom 1 (the zoom a player builds at) and zoom 3
- * (`ZOOM_BOUNDS.max`, `src/rendering/scene/world-scene.ts:70`), the frame is a
+ * (`ZOOM_BOUNDS.max`, `src/rendering/scene/world-scene.ts:71`), the frame is a
  * flat grey-blue rectangle with a single vertical seam line down the middle --
  * no doors, no handle, no hinge, no shading suggesting depth -- which is
  * exactly the "rounded blob barely distinct from this fallback slab" failure
