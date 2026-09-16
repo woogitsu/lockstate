@@ -9186,6 +9186,42 @@ settled, items 2 and 3 as still owed.
    applied to a coordinate already two out. An offset applied to a wrong
    number returns a wrong number — the sentence this entry wrote about
    `HudPrisonerDetailViewModel`, now true of its neighbour.
+
+   **RE-OPENED AT `1aef04b1`, AND THE PARAGRAPH ABOVE IS WHAT IT FALSIFIES:
+   the chain `728 → 736 → 741` follows `setRoster`, not the inspector — so
+   `:738` WAS right, and the "never right" verdict is itself the misaim it
+   condemns.** Every number in that chain is real and was opened; the line it
+   follows is
+   `setRoster(roster: HudPrisonerRosterViewModel | undefined): void;`
+   (verbatim in `src/ui/hud/regime-panel.ts`), the member standing two lines
+   *beside* the one this sentence names. The subject is the inspector repaint,
+   and `grep -n 'Repaint the inspector from a fresh'` puts it at **730** at
+   `9e68f100`, **738** at `f4239950` and **743** at `a173fd2f`, `7e9c3043` and
+   `1aef04b1` alike — three commits, one command, no offset. So `:730` was
+   right when it was written, #993's *"moved by eight"* landed on **738**,
+   which was right too, and the live coordinate is **`:743`** rather than
+   `:741`. Both readings are kept (`docs/AGENT_WORKFLOW.md` §4): the paragraph
+   above is what this entry asserted, and the two members are two lines apart,
+   which is exactly why no range check and no diff could have separated them.
+   **The failure shape is this entry's own, turned on the pass that wrote it**
+   — an offset applied to a wrong number returns a wrong number, and a chain
+   followed on the wrong symbol returns a wrong number twice over, once when
+   it condemns a correct coordinate and once when it installs an incorrect one
+   in its place.
+
+   **AND TWO OF THE THREE COORDINATES BESIDE IT ARE STALE AT THE ANCHOR THIS
+   FILE NOW DECLARES, one window after they were taken.** The block above was
+   read at `7e9c3043` and the header has named `1aef04b1` since. Re-derived by
+   `grep` at `1aef04b1` rather than by offsetting the window:
+   `const prisonerDetailReader = …` is **`:1665`** in `src/main.ts` rather
+   than `:1664`, the single line #1216 added above every coordinate this file
+   carries in that file; `export interface HudPrisonerDetailViewModel {` is
+   **`:2084`** in `src/ui/hud/view-model.ts` rather than `:2049`, thirty-five
+   lines; and `src/ui/simulation-prisoner-detail.ts:212` holds unmoved. **The
+   two quotations needed no edit for the fifth consecutive anchor** while the
+   numbers beside them have now moved at four of the five, which is §6's
+   recommendation 1 measured rather than restated.
+
    **`src/main.ts` read `:1429` at the `829d3c11` anchor and is `:1439` at
    this one** — correct on that tree and ten lines further down on this one,
    #1009's play-test wiring having landed above it. So it is a mover of this
