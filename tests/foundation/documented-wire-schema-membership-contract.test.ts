@@ -59,6 +59,14 @@ import {
  * `{ locale, version, messages }` and the rest resolve to nothing and are
  * skipped, because nothing on the wire has those keys.
  *
+ * **Re-measured on the merge with `main` that this branch was rebuilt on:
+ * 19 enumerations, of which 5 resolve** -- still all to `refusal`, still none
+ * ambiguously. The two new ones are in `docs/adr/STATUS-QUEUE.md`, which now
+ * quotes the ADR 0003 amendment twice while recording the very defect this
+ * contract exists for. Both figures are kept rather than overwritten, per
+ * `docs/AGENT_WORKFLOW.md` section 4: the movement between them is the
+ * evidence that the pin below is derived and not hand-kept.
+ *
  * `RESOLVED_ENUMERATIONS` below is not that table. It is the *output* of the
  * derivation, pinned, so that a resolution which stops happening -- a renamed
  * field, a reworded sentence, a regex that quietly stops matching -- fails
@@ -75,13 +83,16 @@ const KEY_SET_SEPARATOR = '\u0000';
  * Every backticked brace enumeration under `docs/` that resolves to a wire shape.
  *
  * Pinned because every substantive assertion below is a "found nothing" claim,
- * and a scanner that resolves nothing satisfies all of them. Two rows are
- * identical because ADR 0003 carries the enumeration twice.
+ * and a scanner that resolves nothing satisfies all of them. Rows repeat
+ * because a document may carry the same enumeration more than once: ADR 0003
+ * carries it twice, and `STATUS-QUEUE.md` quotes that ADR twice.
  */
 const RESOLVED_ENUMERATIONS: readonly string[] = [
   'docs/HUD_PROJECTIONS.md {reason, sequence, tick} -> refusal',
   'docs/adr/0003-simulation-worker-protocol.md {reason, sequence, tick} -> refusal',
   'docs/adr/0003-simulation-worker-protocol.md {reason, sequence, tick} -> refusal',
+  'docs/adr/STATUS-QUEUE.md {reason, sequence, tick} -> refusal',
+  'docs/adr/STATUS-QUEUE.md {reason, sequence, tick} -> refusal',
 ];
 
 /**
