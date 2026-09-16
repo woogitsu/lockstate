@@ -778,11 +778,23 @@ export async function pressAdvisedControl(
 export async function buy(page: Page, buildableId: string, quantity: number): Promise<readonly Record<string, unknown>[]> {
   const row = page.locator(`.hud-build__list [data-buildable="${buildableId}"]`);
   await row.click();
-  await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
-    'data-selected',
-    'true',
-    { timeout: ARM_TIMEOUT_MS },
-  );
+  // The same wait `armBuildable` makes, on the same locator, attribute and
+  // budget -- so it gets the same diagnostic, for the reason `describeCatalogue`
+  // exists at all. Measured 2026-09-16: mutating `paintCatalogue()` out of the
+  // catalogue row's `onActivate` in `src/ui/hud/build-panel.ts` reds
+  // `playtest-771-starter-rung` and `playtest-intake-and-classification` HERE
+  // and not in `armBuildable`, because both reach `buy` first. The diagnostic
+  // added on the other copy alone would have been unreachable for the exact
+  // mutation it was written for.
+  try {
+    await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
+      'data-selected',
+      'true',
+      { timeout: ARM_TIMEOUT_MS },
+    );
+  } catch (failure) {
+    throw new Error(`${failure instanceof Error ? failure.message : String(failure)}\n${await describeCatalogue(page, buildableId)}`);
+  }
 
   const before = (await sentCommands(page)).length;
   const buyRow = page.locator('.hud-build__buy');
