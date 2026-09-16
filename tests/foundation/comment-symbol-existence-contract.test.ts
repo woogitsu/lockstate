@@ -614,11 +614,22 @@ describe('a comment that names a symbol names one that exists', () => {
    * untouched. The global stays tight so a genuinely hung test still fails in
    * five seconds.
    *
-   * Two more are the next candidates and are deliberately left alone until
-   * they exceed it: `documentation-source-anchor-contract`'s anchor
+   * Two more were named here as the next candidates, deliberately left alone
+   * until they exceeded it: `documentation-source-anchor-contract`'s anchor
    * resolution and `documentation-claims-contract`'s treasury-credit census,
    * both observed over 5,000 ms under heavier contention and both comfortably
    * under it in the measurement above.
+   *
+   * **The first of the two did exceed it, and the remedy was not this one.**
+   * Under 12 busy loops on four cores its anchor resolution timed out at
+   * 5,000 ms on an unmodified `main` -- the red seven agents hit in one day.
+   * It turned out to be reading the cited file once per anchor: 4,017 anchors
+   * over 479 distinct files, 387 MB read where the distinct set is 15 MB.
+   * Memoising the line count per path took it to 892 ms and 391 ms under the
+   * same synthetic load, so it now clears the global with five-fold margin
+   * and needs no timeout of its own. Prefer that order -- find the repeated
+   * work first, and reach for this escape hatch only when the walk really is
+   * the whole cost, as it is here: this test reads its corpus once already.
    */
   it('resolves every member path and screaming constant cited in src/ and tests/', async () => {
     const vocabularyFiles = [
