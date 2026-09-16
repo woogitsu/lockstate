@@ -63,8 +63,8 @@ import { stripComments } from '../helpers/canonical-iteration';
  * three-segment screaming constant inside a backticked token, precisely the
  * shape matched here — with **one occurrence in the whole tree** and no
  * declaration anywhere in it. The constant that sentence means is
- * `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:692`), which `src/main.ts:3054` does
- * fill `AdmitPrisoner`'s `x`/`y` from and `src/main.ts:837` does hand the
+ * `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:869`), which `src/main.ts:3437` and
+ * `:3516` do fill `AdmitPrisoner`'s `x`/`y` from and `src/main.ts:1023` does hand the
  * Build panel as its `origin`. It survived only because it was in Markdown.
  *
  * **`docs/adr/` and `docs/research/` are not read, and that is a rule about
@@ -103,9 +103,9 @@ import { stripComments } from '../helpers/canonical-iteration';
  *     `docs/adr/0012:179` cites `JobRegistry.loadSnapshot` with a `file:line`
  *     beside it and the class is `JobBoard`; `docs/adr/0034:422` says
  *     `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` *"names the three controls"*
- *     in the present tense and `tests/browser/app-shell.spec.ts:2150` says
+ *     in the present tense and `tests/browser/app-shell.spec.ts:2596` says
  *     *"This constant **was**"* that, now `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD`
- *     at `:2266`; `docs/adr/0097:634` calls `ZONING_TINT_BY_CATEGORY`
+ *     at `:2712`; `docs/adr/0097:634` calls `ZONING_TINT_BY_CATEGORY`
  *     *"load-bearing for both decisions"* and
  *     `tests/unit/appearance-zoning-tint.test.ts:11` says it *"no longer
  *     exists"* and is `ZONING_TINT_BY_ROOM_ID`; `SAVE_ENVELOPE_VERSION` names
@@ -270,8 +270,8 @@ import { stripComments } from '../helpers/canonical-iteration';
  * `src/`, all inside comments."* **It is a symbol.** It is declared at
  * `src/simulation/construction/definition.ts:83` and has been since `b5f2fd21`
  * (2026-08-22), including at `376b48bf` (v0.0.477), the commit the issue's own
- * audit names; `src/main.ts:770`, `src/rendering/world/appearance.ts:413` and
- * `src/simulation/construction/system.ts:458` are three of the code sites. So
+ * audit names; `src/main.ts:947`, `src/rendering/world/appearance.ts:413` and
+ * `src/simulation/construction/system.ts:545` are three of the code sites. So
  * the root resolves, and **no rule about two-segment constants would have
  * flagged those five comments.** What is false in them is a *number* — "has
  * two entries" against a registry of twenty-one — and a count is the
@@ -322,7 +322,7 @@ import { stripComments } from '../helpers/canonical-iteration';
  * `src/ui/`, which another agent held while this landed — it is reported
  * instead, with the red above reproducible by adding `'.css'` to both walks."*
  * Both halves are spent: the third `it(...)` below walks the stylesheets,
- * `src/ui/hud/hud.css:3812` now cites `RoomsProbe.needsItemRows`, and the
+ * `src/ui/hud/hud.css:4143` now cites `RoomsProbe.needsItemRows`, and the
  * reproduction was taken in that order — the scan added first and run red
  * against the unfixed comment, then the token corrected. The clause is
  * corrected rather than deleted because it is the reason this measurement sat

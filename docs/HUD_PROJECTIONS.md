@@ -536,14 +536,16 @@ Four properties are worth stating because each is a decision:
   *"the counts cadence"*, and six sentences in this section said so; the
   composition root's nine comments said it with a number, *"up to 500ms for the
   next counts publication"*. **All of them were false the day they were
-  written.** `src/main.ts:1781` opens **one** listener for every worker-to-main
-  message, and its early return (`src/main.ts:1822-1830`) fires only when all
+  written.** `src/main.ts:2164` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:2244-2253`) fires only when all
   six of its translators say nothing. `hudClockFromWorkerMessage`
   (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
   returns a view model for *every* `simulation/clock-state` — so every one of
-  those falls through to the nine-call refresh block at
-  `src/main.ts:1886-1894`. (**Those three citations read `1702`, `1735-1740`
-  and `1795-1804` until 2026-09-02** and all three had rotted; the quoted
+  those falls through to the refresh block at `src/main.ts:2355-2364`, which
+  calls ten refreshers. (**Those three citations read `1702`, `1735-1740` and
+  `1795-1804` until 2026-09-02 and `1781`, `1822-1830` and `1886-1894` until
+  2026-09-15, and the block this sentence called "nine-call" at both of those
+  readings now makes ten calls** — every one of them had rotted; the quoted
   sentences are unchanged, which is why the quotations are the durable half and
   the line numbers are not.) `publishClockState` posts one at most every 250 ms
   and only when the tick has moved
@@ -845,7 +847,7 @@ one are `hud/security`, `hud/contraband`,
 `hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
 last of which is worth naming rather than assumed read, because the world is
 plainly on screen: `SimulationSnapshotFeed` reaches it through
-`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:383`)
+`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:450`)
 and not through this channel at all, which is why it has a cadence of its own
 and why that cadence is the only worked precedent this repository has for
 [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md)'s question.

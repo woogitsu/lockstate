@@ -452,11 +452,19 @@ it is on.
   the same population, two different errands, two different answers, and a
   reader has to ask which one a given guard is on rather than assume either.
 
-- **Environment art, for everything except floors, walls and doors.** Three of
-  the 23 sheets under `public/game-content/source-art/` are now read
+- **Environment art, for everything except floors, walls and doors.** A minority
+  of the published art under `public/game-content/source-art/` is read
   (ADR-0052): a zoned tile is drawn as institutional linoleum, an east-west wall
   as a frontal elevation, a north-south wall as its coping seen from above, and
-  a door as a door. Everything else is still shaded geometry from the appearance
+  a door as a door. **This read "Three of the 23 sheets" and both halves had
+  moved by 2026-09-15**: `ls public/game-content/source-art/ | wc -l` returns
+  **26** files (23 owner sheets plus three `rendered.*` renders published under
+  ADR 0100), and the distinct sources named in
+  `src/rendering/assets/environment-sprites.ts` are **seven**, not three — the
+  four object sprites below arrived without this sentence moving. The pair is
+  replaced by its enumerator rather than by a new pair: `ENVIRONMENT_SPRITE_IDS`
+  in that module is the list of what is drawn, and each entry names the sheet or
+  render it comes from. Everything else is still shaded geometry from the appearance
   tables in `src/rendering/world/appearance.ts`, and which identities those are
   is written down rather than implied —
   `src/rendering/world/environment-art.ts` holds the lists and the reason for
@@ -467,13 +475,26 @@ it is on.
 
   Furniture is the largest gap. Seven of the twenty catalogued objects have no
   sheet at all — no stove, fridge, bookshelf, washing machine, medical bed,
-  medicine cabinet or security console — and the thirteen that do have one are
+  medicine cabinet or security console — and most of those that do have one are
   left on colour deliberately, because each additional sheet is a ~1.5 MiB
-  download. ADR-0052 records that as its open question.
+  download. ADR-0052 records that as its open question. **Which objects are on
+  colour is not tallied here**: `OBJECTS_ON_COLOUR_FALLBACK` and
+  `SPRITE_BY_OBJECT_ID` in `src/rendering/world/environment-art.ts` partition
+  the catalogue between them, that module's docblock carries a reason per entry,
+  and `tests/unit/environment-art.test.ts` fails if either list names something
+  the content registries do not.
 
-  **One of those thirteen is no longer on colour, and the paragraph above is
-  kept because the download argument it makes is still the reason the other
-  twelve are (#1020, 2026-09-05).** `object.bed` is drawn from
+  **One object left the colour fallback on 2026-09-05, and the paragraph above
+  is kept because the download argument it makes is still the reason most of the
+  rest are (#1020).** This said "one of those thirteen ... the other twelve are",
+  and it was overtaken the next day and never moved: re-derived 2026-09-15,
+  `SPRITE_BY_OBJECT_ID` holds **four** — `object.bed`, and `object.toilet`,
+  `object.bench` and `object.desk` on 2026-09-06 (ADR 0100, #1020) — against
+  sixteen still on colour, of which seven have no sheet at all.
+  `environment-art.ts`'s own docblock recorded every one of those departures,
+  including `object.storage-rack` leaving and returning; this sentence recorded
+  none of them, which is the argument for citing the module rather than
+  restating its arithmetic. `object.bed` is drawn from
   `furniture.cell.bed.single.variants` — the one view on that sheet taken from
   directly above — and it is the first object of any kind drawn as art rather
   than as a shaded slab. What had to be built first was not the mapping row but
