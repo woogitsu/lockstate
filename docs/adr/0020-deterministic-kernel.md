@@ -107,7 +107,10 @@ commands whose sequence order and tick order disagree. The kernel then applies
 the later one first.
 
 This is not a determinism defect and is not reported as one: both keys are
-persisted (`src/persistence/save-schema.ts:79-87`; the anchor read `:75-82`), the comparator is total, and
+persisted (`src/persistence/save-schema.ts:88-95`; the anchor read `:75-82`, was
+re-aimed to `:79-87` by this branch, and had drifted **a second time** by the
+time `origin/main` was merged on 2026-09-16 — `:79-87` is now a docblock about a
+schema-version tally), the comparator is total, and
 every client restoring the same bundle dispatches in the same order. It is the
 *documented* ordering that is wrong, and the sentence is load-bearing — the
 overdue-drain fix in `bb8a57e` (#422) quotes exactly this sentence as its
@@ -144,8 +147,10 @@ behaviour change to a boundary the HUD already depends on.
 and reads no clock. Pacing lives one module over, in
 `FixedStepClock` (`src/simulation/clock/fixed-step-clock.ts:29`, `stepMilliseconds
 = 50`), which the worker constructs as `new FixedStepClock(50, { mode: 'paused' })`
-at `src/simulation/worker/state-machine.ts:254` and again at `:1045` (the anchors
-read `:203` and `:724`). That clock
+at `src/simulation/worker/state-machine.ts:254` and again at `:1067` (the anchors
+read `:203` and `:724`, were re-aimed to `:254` and `:1045` on 2026-09-15, and
+the second went stale **again** before this branch merged `origin/main` on
+2026-09-16 — `:1045` is a bare `try {`). That clock
 multiplies elapsed real time by the player's chosen speed before dividing by the
 step (`:69-70`), and the ladder is `[1, 2, 4]` (`:17`). So the kernel advances
 50 ms of *simulated* time per tick — which is the durable half of the sentence
@@ -230,9 +235,13 @@ Flagged, not corrected — nothing below is wrong on this tree.
   (`kernel.ts:392`), `restoreState` assigns the queue directly (`:373`), and
   the save schema validates `tick` and each `executeAtTick` as independent
   non-negative integers and never their relation
-  (`src/persistence/save-schema.ts:79-87` and `:88-95`; those four anchors read
-  `:315-316`, `:296`, `:75-82` and `:84-91` until 2026-09-15, and the claims they
-  carry were re-checked at the new lines: all four hold). The kernel's own comment states this
+  (`src/persistence/save-schema.ts:88-95` and `:97-104`; those four anchors read
+  `:315-316`, `:296`, `:75-82` and `:84-91` until 2026-09-15, were re-aimed to
+  `:392`, `:373`, `:79-87` and `:88-95` then, and **the two save-schema ones went
+  stale a second time** before this branch merged `origin/main` on 2026-09-16.
+  `queuedCommandSchema` is `:88-95`, `kernelSnapshotSchema` is `:97-104`, and the
+  two kernel anchors still hold. The claims were re-checked at the new lines: all
+  four hold). The kernel's own comment states this
   and says the missing check belongs at the save boundary (`:252-262`; the anchor read `:189-199`); it is
   still not there.
 - **"100% decoupling from Phaser render ticks."** Holds: `grep -rn "from
@@ -292,8 +301,10 @@ queue is admitted, exactly as today, and the queue keeps dispatching in ascendin
 ### Every caller, and what each one submits
 
 There is **one** caller in `src/`:
-`src/simulation/worker/state-machine.ts:1130`, inside `handleSubmitCommand`
-(`:1117`; the anchor read `:786`), which
+`src/simulation/worker/state-machine.ts:1152`, inside `handleSubmitCommand`
+(`:1139`; the anchor read `:786`, was re-aimed to `:1130`/`:1117` on 2026-09-15,
+and **both went stale a second time** before this branch merged `origin/main` on
+2026-09-16 — `:1130` is now the `payload:` key of `handleSetClock`'s reply), which
 forwards `commandId`, `sequence`, `executeAtTick` and the packed command straight
 off a `simulation/submit-command` message. Nothing else in `src/` calls it —
 `Kernel.restore` and `restoreState` deliberately do not (below), and the only
@@ -321,7 +332,10 @@ below records ADR 0056 as having closed.
 **Yes, something legitimately submits a tick below the highest already queued,
 and this is the timing.** The player gives an order while the clock runs — it is
 projected twenty-odd ticks into the future — and then pauses. `handleSetClock`
-answers with the kernel's exact tick (`state-machine.ts:1101-1115`; the anchor read `:763-773`), the HUD's
+answers with the kernel's exact tick (`state-machine.ts:1126-1131`, which posts
+`tick: this._kernel!.tick`; the anchor read `:763-773`, was re-aimed to
+`:1101-1115` on 2026-09-15, and that landed on the tail of the *previous* method
+even before `origin/main` was merged on 2026-09-16), the HUD's
 projection collapses onto it, and the next order given during that pause carries
 a *lower* tick and a *higher* sequence than the one still queued. Driven through
 the shipped sender against the shipped worker, with a real `Kernel` and a real
@@ -365,7 +379,13 @@ was the only one.**
 **2. The cost is not one refusal, it is every refusal for the length of the
 pause.** `FixedStepClock.pump` returns `0` while paused
 (`src/simulation/clock/fixed-step-clock.ts:68`) and the worker's tick loop runs
-only in state `running` (`state-machine.ts:353-359`; the anchor read `:269-282`), so while the player is
+only while the clock is pumping (`state-machine.ts:392-398`; the anchor read
+`:269-282`, was re-aimed to `:353-359` on 2026-09-15, and that landed on two
+unrelated private fields). **One word of the claim is corrected rather than
+overwritten** (`docs/AGENT_WORKFLOW.md` §4): `onTickLoop`'s own guard admits
+`running` **and** `paused` (`:393`), so the loop does run while paused — what
+makes nothing drain is `FixedStepClock.pump` returning `0`, which the sentence
+before this one already says. So while the player is
 paused *nothing drains the command queued ahead*. It stays the highest tick in
 the queue, and every further order given during that pause meets the same
 refusal. Pausing to give orders carefully is the ordinary way this game is
@@ -401,8 +421,11 @@ a command that was never desynced.
 - **Throw**, which is what `submitCommand` already does. Safe at this boundary,
   and worth saying because it is easy to assume otherwise: the fault path #415
   and #424 exist for is a throw *inside the tick loop*
-  (`state-machine.ts:393`), which becomes a terminal `internal-error`.
-  `handleSubmitCommand` catches separately (`:1148-1165`) and posts a `rejected`
+  (`state-machine.ts:410-411`, the `catch (e)` that calls
+  `this.fault('internal-error', ...)`; the anchor read `:307`, was re-aimed to
+  `:393` on 2026-09-15, and `:393` is the loop's *state guard* rather than its
+  fault path), which becomes a terminal `internal-error`.
+  `handleSubmitCommand` catches separately (`:1170-1188`) and posts a `rejected`
   command-result with `recoverable: true`, and `COMMAND_REJECTION_FAULT_CODES`
   maps the kind to a fault code exhaustively (`:231-235`; these four anchors read `:307`, `:804-821`,
   `:180-184` and, below, `:801`) — a fourth
@@ -415,7 +438,9 @@ a command that was never desynced.
 - **Clamp** — raise `executeAtTick` to the highest queued. Deterministic, and it
   adds no state: the clamp would be a pure function of the queue. But it makes
   the worker's acknowledgement untrue — `handleSubmitCommand` reports
-  `scheduledForTick: msg.payload.executeAtTick` (`:1146`), the tick the main
+  `scheduledForTick: msg.payload.executeAtTick` (`:1168`; the anchor read `:801`,
+  was re-aimed to `:1146` on 2026-09-15 and went stale **a second time** before
+  this branch merged `origin/main` on 2026-09-16), the tick the main
   thread *asked* for, so a clamp silently disagrees with what the HUD is told
   unless that line changes too. And it puts the fix in the wrong layer: the
   kernel would be second-guessing a projection it cannot see.

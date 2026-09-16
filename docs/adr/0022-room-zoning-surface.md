@@ -101,8 +101,18 @@ dimensions at `MAX_ZONE_DIMENSION_TILES` (`:142`), checks every tile for bounds,
 ownership and overlap *before* writing any tile (`:544-562`), paints the world's
 zoning plane with the room catalog's own `numericId` (`:619`), registers a
 `RoomInstance` and returns `{ kind: 'zoned', instance }` (`:650`, `:679-688`).
-Refusals are typed — six reasons at `:140-146` — and kept in a bounded window
+Refusals are typed — eight reasons at `:209-217` — and kept in a bounded window
 because a command handler returns `void`.
+
+> **`:140-146` and *"six"* stood in that sentence until 2026-09-16, when this
+> branch merged `origin/main` and every anchor in it was opened**
+> (`docs/AGENT_WORKFLOW.md` §4). `:140-146` is the docblock over
+> `MAX_ZONE_DIMENSION_TILES`, which is the anchor the *previous* clause of the
+> same sentence already cites at `:142` — so the refusal anchor had drifted onto
+> its own neighbour, and pointing at a plausible-looking docblock is exactly
+> what hid it. The count was corrected in the note below and the coordinate was
+> not; a correction that repairs the prose and leaves the coordinate is the
+> failure this sweep exists for.
 
 > **Re-aimed 2026-09-15; those six anchors read `:203`, `:101`, `:225-241`,
 > `:243-251` and `:252-263` and every one of them had drifted, four of them
@@ -144,7 +154,9 @@ introduced.
 > (`docs/AGENT_WORKFLOW.md` §4: a correction is no more durable than the claim
 > it corrected). Read on 2026-09-15 at `origin/main` `e044a3e8`: `HudIntent` is
 > `src/ui/hud/hud.ts:365-738` and declares **twenty-two** members, still three
-> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:174`. The
+> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:174`. Re-opened 2026-09-16 after this
+> branch merged `origin/main`: `HudIntent` still spans `:365-738`, still
+> declares twenty-two members, and `HudRoomGesture` is still `:174`. The
 > sentence the paragraph is checking — that none of `HudIntent`'s members was
 > about a room at v0.0.30 — is unaffected, and *"eighteen"* is the shape §4
 > names as rotting first. So a reader following the old anchor to check *"none of them is a
@@ -176,8 +188,9 @@ build gesture already takes that route: `case 'place-build-order'` at `:511`.
 Text never crosses either ([ADR 0011](./0011-localization-architecture.md)):
 every rendered string is a message key, and a stable content id may never reach
 the player. The room catalog is unusually well placed for that — all 18 room
-definitions carry a real `nameKey` (`src/content/room-catalog.ts:92-186`; the
-anchor read `:66-159`) and
+definitions carry a real `nameKey` (`src/content/room-catalog.ts:92-189`; the
+anchor read `:66-159`, and the `:92-186` this branch re-aimed it to stopped
+three lines short of `room.utility-room`, the eighteenth) and
 all 18 `room.*.name` keys ship in the default catalog
 (`src/content/default-locale-en.ts:26-43`).
 
@@ -775,7 +788,10 @@ because "renders no panel" and "unclaimed" are different facts:
 
 > **Two of those three tab ids no longer exist**, and the list is kept as the
 > record of what was weighed. Under ADR 0112 decision 3 the Staff panel is on
-> `manage` (`src/ui/hud/hud.ts:2506`) and the schedule on `day-plan`. The
+> `manage` — `staffPanel.setVisible(state.activeTab === 'manage')`
+> (`src/ui/hud/hud.ts:2558`; the anchor read `:2506` when this branch was
+> written, and was a bare `*/` by the time it merged `origin/main` on
+> 2026-09-16) — and the schedule on `day-plan`. The
 > argument the list makes — that a tab whose label names another feature is an
 > ADR 0011 problem rather than a layout one — is untouched by the rename.
 

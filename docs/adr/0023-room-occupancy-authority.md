@@ -27,7 +27,10 @@ with `capacity: 0` and `objectCapabilities: []`
 > ceiling after issue #326. `docs/HUD_PROJECTIONS.md`'s gap 13, cited three
 > times below as the authority for *"object placement does not exist"*, today
 > reads **"Object placement exists, and `minQuantity` is counted"**
-> (`docs/HUD_PROJECTIONS.md:1093`).
+> (`docs/HUD_PROJECTIONS.md:1120`; the anchor read `:1093` when this branch was
+> written and had drifted 27 lines by the time it merged `origin/main` on
+> 2026-09-16 — a `file:line` into a document under active edit, which
+> `docs/AGENT_WORKFLOW.md` §4 names as the least durable citation here).
 >
 > **What is still unimplemented is the half this ADR was actually asked to
 > settle**, and that is why the Status is not reversed here: no room definition
@@ -145,13 +148,19 @@ decision keeps.
   and there is no field called `capacity`** — and
   `IntakeSystem`/`ActionSystem` gate on capability tags that
   `src/content/object-catalog.ts` puts on objects
-  (`src/simulation/prisoners/intake-system.ts:30-32`,
-  `src/simulation/prisoners/actions.ts:28`; both anchors now land in docblocks,
-  and are left because the claim they carry — that the gates read capability
-  tags authored on objects — is unchanged).
+  (`src/simulation/prisoners/intake-system.ts:93-97`,
+  `src/simulation/prisoners/actions.ts:28`; the intake anchor read `:30-32` until
+  2026-09-16, where it was not a docblock about capability at all but one about
+  `NamedRngStreams.get` throwing for an unregistered stream. `:93-97` is
+  `AccommodationTarget`, *"One room type an arrival of some classification group
+  may be housed in, and the object capability that room must offer to hold
+  them."* `actions.ts:28` is a docblock and is left, because the claim it carries
+  — that the gates read capability tags authored on objects — is unchanged).
 - **"Object placement does not exist"** (`:54`), citing
   `docs/HUD_PROJECTIONS.md` gap 13. Verified: gap 13
-  (`docs/HUD_PROJECTIONS.md:1093`; the anchor read `:315-329`) says no system
+  (`docs/HUD_PROJECTIONS.md:1120`; the anchor read `:315-329`, and the `:1093`
+  this branch re-aimed it to had itself drifted by the time the branch merged
+  `origin/main` on 2026-09-16) says no system
   tracks which objects are physically in which room and that
   `RoomInstance.objectCapabilities` is declared at registration — **and it says
   the opposite now**: its heading is *"Object placement exists, and
@@ -160,7 +169,7 @@ decision keeps.
   scope assumption at the type it applies to.
 - `0` and `[]` **"are not a constant chosen to make a feature work — they are
   what an empty rectangle accommodates"** (`:56-58`). Verified at the
-  registration site: `zoning.ts:252-261` registers `capacity: 0` and
+  registration site: `zoning.ts:252-261` registered `capacity: 0` and
   `objectCapabilities: []` with a comment saying exactly that — **neither the
   anchor nor the registration survives: `zone` registers at
   `src/simulation/rooms/zoning.ts:650` and declares no capacity of any kind,
@@ -180,11 +189,22 @@ decision keeps.
   conclusion holds and only its count has rotted — the shape
   `docs/AGENT_WORKFLOW.md` §4 names as rotting first.
 
-`docs/PRISONER_OPERATIONS.md:162-184` (unchecked against its subject; see the
-pin note above) restates the same thing from the intake
-side and adds the consequence: a zoned cell is a *matching* instance that can
+`docs/PRISONER_OPERATIONS.md:733-742` restated the same thing from the intake
+side and added the consequence: a zoned cell is a *matching* instance that can
 never free up, so `accommodation-assignment` retries against it forever rather
 than failing fast.
+
+> **Opened 2026-09-16, and the anchor was pointing at the wrong section of the
+> wrong argument** (`docs/AGENT_WORKFLOW.md` §4). The citation read `:162-184`,
+> which this branch had already flagged *"unchecked against its subject"*; at
+> `:162-184` that file is about `sentenceEndTick`, the `Uint32` wrap and the
+> release system's order-65 slot, and says nothing about accommodation at all.
+> **Re-aimed to `:733-742` — and that passage now says the opposite of the
+> sentence citing it**, in its own words: *"This section used to say the zero
+> meant … `accommodation-assignment` keeps retrying against it rather than
+> failing fast … It holds now: capacity *does* return, when the player places a
+> bed."* So the sentence above is kept in the past tense as the state this
+> decision was taken against, and the tense is the only thing changed in it.
 
 **The decision above is consistent with that model, and an authoritative
 authored figure would contradict it.** A *fallback* leaves "capacity comes from

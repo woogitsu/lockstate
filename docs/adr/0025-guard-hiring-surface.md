@@ -160,7 +160,11 @@ today, so a panel put there competes with nothing.
 read `:75`) is complete.
 It spawns an entity in the roster's own `EntityStore`, mints an actor name
 through the ADR 0015 seam when the session supplied one, and writes a
-`GuardRecord` at `'unassigned'`. It is snapshotted (`:240`), restored (`:269`) — the anchors read `:178` and `:192` —
+`GuardRecord` at `'unassigned'`. It is snapshotted (`:249-250`, `getSnapshot`),
+restored (`:278`, `loadSnapshot`) — the anchors read `:178` and `:192`, were
+re-aimed to `:240` and `:269` when this branch was written, and **both had gone
+stale a second time** by the time it merged `origin/main` on 2026-09-16:
+`:240` is `allGuardIds()` and `:269` is a bare ` *` inside a docblock —
 and its restore path already reasons about a guard caught mid-travel.
 
 **It has zero callers anywhere in `src/`.** Every call in the repository is in
@@ -174,7 +178,9 @@ and its restore path already reasons about a guard caught mid-travel.
 > gains its first production caller"* have therefore disagreed with each other
 > inside one file for as long as the implementation has existed; the Context is
 > the half that is history and is kept, dated, because the decision was taken
-> against it. That single gap starves four systems that are built, scheduled and
+> against it.
+
+That single gap starves four systems that are built, scheduled and
 tested:
 
 - `DeploymentSystem` walks `unassignedGuardIds()` to fill a sector's required
@@ -198,8 +204,12 @@ tested:
 
 All four iterate an empty collection in every session a player can start. The
 status strip's `Staff` count is therefore structurally zero
-(`src/simulation/presentation/status-strip-projection.ts:782-787`; the anchor
-read `:163`, which is now inside the `StatusStripViewModel` declaration), which is the
+(`src/simulation/presentation/status-strip-projection.ts:798-803`, `let staff =
+0; … for (const entityId of source.staff.allGuardIds()) { staff += 1;`; the
+anchor read `:163`, was re-aimed to `:782-787` when this branch was written, and
+**that went stale a second time** before it merged `origin/main` on 2026-09-16 —
+`:782-787` counts *rooms*, not staff, which is the kind of near-miss that reads
+as correct to anyone who does not open it), which is the
 same class of claim `src/ui/hud/projection.ts` warns about for a money counter
 with no economy — and the whole staff projection
 (`src/simulation/presentation/staff-projection.ts`), roster rows, per-role
@@ -293,6 +303,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > slot on its tab. Only the tab's id and label moved. The count *"four
 > members"*, the list of ids and *"three of them render no panel at all"* are
 > the sentences that stopped being true, which is the shape §4 says rots first.
+
 So the surface costs no tab, no catalogue row and no always-visible pixel in
 any panel that already exists. It is a second panel in the same slot, shown
 under the same rule, hidden whenever the Build panel is shown. **The two are
@@ -620,7 +631,11 @@ most effort on.
 - **The save format does not change.** `StaffHiringService` holds no state of
   its own: the money is the treasury's, the staff are the roster's, and both
   are already in the `economy` and `security` sections
-  (`docs/PERSISTENCE.md:1291` and `:1294`; the anchor read `:555`). A prison saved with hired guards restores with
+  (`docs/PERSISTENCE.md:1310` for `economy` and `:1307` for `security`, the two
+  rows of the section-ownership table; the anchor read `:555`, was re-aimed to
+  `:1291`/`:1294` when this branch was written, and **both went stale a second
+  time** before it merged `origin/main` on 2026-09-16, landing mid-sentence in a
+  paragraph about a partial save). A prison saved with hired guards restores with
   them today, and did before this.
 - **Nothing here is enforced by a test.** This is a decision about a surface,
   and no gate can assert that hiring is a Security-tab panel rather than a
