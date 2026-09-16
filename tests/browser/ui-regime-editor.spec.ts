@@ -44,9 +44,9 @@ const HARNESS_URL = '/tests/browser/ui-harness.html';
  * **The single-category row is the subject of the lock case and is not a
  * contrivance for it.** `HIGH_RISK_REGIME` has three blocks against
  * `GENERAL_POPULATION_REGIME`'s ten (`src/simulation/prisoners/regime.ts`), and
- * the integration test beside this one measures general population's own
- * opening block at exactly one category too -- a block down to its last
- * category is the ordinary state of this prison, not an edge of it.
+ * general population's own opening block is `[0, 400) sleep` -- one category.
+ * A block down to its last category is the shipped state of this prison at
+ * tick 0, not an edge of it.
  *
  * The two `startTickOfDay` values differ so the assertion on the intent cannot
  * pass with the wrong row's boundary on it.

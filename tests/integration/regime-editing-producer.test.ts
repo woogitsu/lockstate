@@ -35,6 +35,28 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * wire. A fixture agrees with whoever wrote it.
  */
 
+/**
+ * A session standing inside a regime block that does **not** start at tick 0.
+ *
+ * Every test below runs here rather than on a fresh runtime, and that is the
+ * difference between an assertion and a decoration. `GENERAL_POPULATION_REGIME`
+ * opens with `[0, 400) sleep`, so at tick 0 the boundary the panel would send
+ * is `0` -- and a translator that published a hard-coded `0` for every row
+ * would pass a test taken there. Measured: pinning
+ * `HudRegimeBlockViewModel.startTickOfDay` to `0` leaves this file green at
+ * tick 0 and red at tick 500.
+ *
+ * 500 is the start of `[500, 1,000) work / education / free-association`, and
+ * having three categories there is also what gives the removal case below
+ * anything to remove: the opening block allows one, and removing that one is
+ * the case the lock exists for rather than a case of ordinary editing.
+ */
+function runtimeInABlockThatDoesNotStartTheDay(seed: number): SimulationRuntime {
+  const runtime = createNewSimulationRuntime(seed);
+  while (runtime.kernel.tick < 500) runtime.kernel.step();
+  return runtime;
+}
+
 function statusStrip(runtime: SimulationRuntime): StatusStripViewModel {
   const entry = PROJECTION_CATALOG['hud/status-strip'];
   const projected = entry.project(runtime, runtime.kernel.tick, undefined as never) as unknown as { view: StatusStripViewModel };
@@ -76,7 +98,7 @@ function submitEdit(runtime: SimulationRuntime, id: string, intent: {
 
 describe("the Regime panel's editor, from the projection it reads to the day it changes", () => {
   it('is handed the block boundary and the category ids the command is built out of', () => {
-    const runtime = createNewSimulationRuntime(0x11_67);
+    const runtime = runtimeInABlockThatDoesNotStartTheDay(0x11_67);
     const row = group(runtime, 'general-population');
 
     // Not a fixture's idea of the running block: the same figures the
@@ -85,6 +107,10 @@ describe("the Regime panel's editor, from the projection it reads to the day it 
     const block = schedule?.blocks.find((candidate) => candidate.startTickOfDay === row.startTickOfDay);
     expect(block, 'the tick the panel would send names no block in the session registry').toBeDefined();
     expect(row.allowedCategoryIds).toEqual(block?.allowedCategories);
+    // And it is the *running* block's own boundary rather than the day's:
+    // this is the assertion a hard-coded `0` fails.
+    expect(row.startTickOfDay).toBe(500);
+    expect(row.startTickOfDay).toBeGreaterThan(0);
 
     // And the two forms of the same fact agree, which is what lets the panel
     // render one and send the other.
@@ -95,7 +121,7 @@ describe("the Regime panel's editor, from the projection it reads to the day it 
     // The vocabulary the panel builds its toggles from. If this were the
     // block's own list a player could switch categories off and never back on.
     const categoryIds = simulationEnumIds('action-category');
-    const runtime = createNewSimulationRuntime(0x11_67);
+    const runtime = runtimeInABlockThatDoesNotStartTheDay(0x11_67);
     const row = group(runtime, 'general-population');
 
     expect(categoryIds.length).toBeGreaterThan(row.allowedCategoryIds.length);
@@ -104,7 +130,7 @@ describe("the Regime panel's editor, from the projection it reads to the day it 
 
   it('turns one toggle press into an edit the same projection reports back', () => {
     const categoryIds = simulationEnumIds('action-category');
-    const runtime = createNewSimulationRuntime(0x11_67);
+    const runtime = runtimeInABlockThatDoesNotStartTheDay(0x11_67);
     const before = group(runtime, 'general-population');
 
     // The category the block does not allow, so the press is an addition and
@@ -128,25 +154,12 @@ describe("the Regime panel's editor, from the projection it reads to the day it 
 
   it('takes a category away again, and the block the player did not name does not move', () => {
     const categoryIds = simulationEnumIds('action-category');
-    const runtime = createNewSimulationRuntime(0x11_67);
-    const opening = group(runtime, 'general-population');
+    const runtime = runtimeInABlockThatDoesNotStartTheDay(0x11_67);
     const untouched = group(runtime, 'high-risk');
-
-    /*
-     * Widened first, because the running block at tick 0 allows exactly one
-     * category and removing that one is the case the *next* test is about --
-     * the schema refuses it, which is why the panel locks it. Two presses
-     * rather than one is also the honest shape of what a player does here.
-     */
-    const added = categoryIds.find((id) => !opening.allowedCategoryIds.includes(id));
-    expect(added, 'the running block already allows every category').toBeDefined();
-    submitEdit(runtime, 'widen', {
-      classificationGroupId: opening.classificationGroupId,
-      startTickOfDay: opening.startTickOfDay,
-      allowedCategoryIds: nextAllowedCategories(opening.allowedCategoryIds, added!, true, categoryIds),
-    });
-
     const before = group(runtime, 'general-population');
+    // Three categories in this block, so removing one is not the last-category
+    // case the next test is about.
+    expect(before.allowedCategoryIds.length).toBeGreaterThan(1);
     const removed = before.allowedCategoryIds[0];
     expect(removed, 'the running block allows nothing to remove').toBeDefined();
 
@@ -165,7 +178,7 @@ describe("the Regime panel's editor, from the projection it reads to the day it 
 
   it('locks the last remaining category, because the command the unlocked press would send is refused at decode', () => {
     const categoryIds = simulationEnumIds('action-category');
-    const runtime = createNewSimulationRuntime(0x11_67);
+    const runtime = runtimeInABlockThatDoesNotStartTheDay(0x11_67);
     const row = group(runtime, 'general-population');
 
     // Empty the block down to one category the way a player would: one press
@@ -207,7 +220,7 @@ describe("the Regime panel's editor, from the projection it reads to the day it 
 
   it('sends the same categories whatever order they were pressed in', () => {
     const categoryIds = simulationEnumIds('action-category');
-    const runtime = createNewSimulationRuntime(0x11_67);
+    const runtime = runtimeInABlockThatDoesNotStartTheDay(0x11_67);
     const row = group(runtime, 'general-population');
     const [first, second] = categoryIds.filter((id) => !row.allowedCategoryIds.includes(id));
     expect(second, 'fewer than two categories are off in the running block').toBeDefined();
