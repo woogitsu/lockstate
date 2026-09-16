@@ -498,6 +498,16 @@ question rather than settling it: Plan dnia gains its first write surface under
 [#1167](https://github.com/woogitsu/lockstate/issues/1167), which is a reason to
 answer this after that lands.
 
+> **RULED BY THE OWNER ON 2026-09-16, AND THE PARAGRAPH ABOVE IS KEPT AS THE
+> CASE FOR ASKING.** The panel is split in code and **both halves stay on Plan
+> dnia**; the roster does not move to Manage. ADR 0115's Status block is the
+> record — it carries the ruling, its weaker provenance (a clickable option
+> labelled *"Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia
+> (zalecane)"*, not a typed sentence), the measurement that declined the third
+> Manage panel, and what the ruling does not settle. **Nothing under `src/`
+> implements it**, so this stage's owed item is answered rather than
+> discharged.
+
 **The second owed thing — the eleven unplaced surfaces — is discharged as a
 check and produces one question.** Every one is still mounted, and a twelfth
 exists that stage 0 could not have listed: the language picker (#663), inside
@@ -511,6 +521,70 @@ phone width.** That is deliberate, documented three times in `hud.css` under
 one place where "keeps full function" and the measured page disagree, so it is
 the owner question this stage produces. The new spec records the state at all
 three tiers rather than asserting the phone one is right.
+
+> **ANSWERED BY THE OWNER ON 2026-09-16, AND THE PARAGRAPH ABOVE IS KEPT EXACTLY
+> AS IT STOOD.** It is the question, and the answer is only legible beside it.
+> **The alerts fold gets a route below 720 px: it is mounted in the rail, on the
+> Overview tab, at that breakpoint and no other.**
+> [#1201](https://github.com/woogitsu/lockstate/issues/1201) is the issue; this
+> paragraph is the durable record, because the dossier that priced the options
+> is held by an unmerged branch ([#1242](https://github.com/woogitsu/lockstate/pull/1242))
+> and a GitHub comment is not a record.
+>
+> **The provenance is the weaker of the two kinds this repository
+> distinguishes**, the same kind `CLAUDE.md` flags for the 2026-09-08, -09 and
+> -10 releases inside reservation 3 and the same kind ADR 0091's Status block
+> records of itself. The owner did not type a sentence; they chose a clickable
+> option whose label an agent session had written:
+>
+> > Zamontuj fold w szynie poniżej 720 px (zalecane)
+>
+> ("Mount the fold in the rail below 720 px (recommended).") **The option's own
+> label is the whole of what was agreed** — the mount, at that breakpoint. No
+> markup, no second issuing site and no change to `alertRowDismissal` is agreed
+> with it; the command stays on the row that names the alert, which is what
+> makes `tests/foundation/unconsumed-command-contract.test.ts`'s
+> `producersOf('DismissAlert')` pin survive the change unedited.
+>
+> **Why Overview and not "wherever the player is", measured rather than
+> reasoned.** The dossier mounted a 360 px worst-case stub inside `.hud__side`
+> at 375x812, one tab at a time: on Overview the Overview panel measured
+> **112.50 px before and 112.50 px after**, unchanged, while the same stub on
+> Zones took the Rooms panel from 457.13 to 144.00 and on Manage took the Staff
+> panel from 307.38 to 2.00, because the phone sheet is already at its 536 px
+> ceiling there. **Those figures are the dossier's and are not re-taken here.**
+> "Mount it everywhere" was therefore never on the table; the Overview-only
+> shape is the one that costs nothing measurable.
+>
+> **Two options were declined and both are worth keeping, because each is what
+> somebody will propose next.** Accepting the phone as a viewing tier — which
+> would have made the closing criterion's *"Każda obecna akcja ma osiągalną
+> drogę"* acquire a written phone carve-out in ADR 0112, and would have turned
+> `unplaced-surfaces.spec.ts`'s `'desktop: flex / tablet: flex / phone: none'`
+> from a recorded assertion into an endorsed one. And putting the fold in the
+> Layout menu, which is reachable today but files world state inside the one
+> menu constitution article 13 defines as *not* world state. Un-hiding
+> `.hud__corner` whole was already measured failing twice and `hud.css` carries
+> both runs.
+>
+> **The caveat the owner was shown before choosing, recorded because it runs
+> against the ruling.** The 360 px fold height was read at 1440x900, where
+> `.hud-alerts__list` is 372 px wide; at phone width the same sentences wrap to
+> more line boxes, so the real worst-case fold is **taller** than 360 px, not
+> shorter, and Overview's measured headroom over the stub is 150.31 px. One
+> measurement nobody has taken settles whether that headroom survives. The
+> ruling is the arrangement; if the re-wrap eats the headroom, what that costs
+> is a fresh question rather than a licence to mount it elsewhere.
+>
+> **Nothing under `src/` implements this**, and the ruling does not by itself
+> change that.
+>
+> **One count in the kept paragraph is stale and is marked rather than
+> edited.** *"One of the seventeen commands"* is **eighteen**: opened on this
+> branch, `simulationCommandSchema` in `src/simulation/protocol/commands.ts`
+> lists eighteen member schemas, `editRegimeBlockSchema` among them. A tally,
+> rotting first, exactly as `docs/AGENT_WORKFLOW.md` §4 predicts — and the
+> subject of the sentence is unaffected, which is why the sentence stands.
 
 ---
 
@@ -686,6 +760,14 @@ the record says so wherever it quotes a number.
   which stage 8 does not answer. **What stage 8 adds is that the closing
   criterion above depends on it**: *"Każda obecna akcja ma osiągalną drogę"* is
   false at one of the three device tiers the delivery itself names.
+
+  > **The question was answered on 2026-09-16 and the row above is kept as the
+  > measurement it was.** The owner ruled that the alerts fold is mounted in the
+  > rail on Overview below 720 px — §"Stage 5" carries the ruling, its weaker
+  > provenance and the two declined options. **The row does not change**: the
+  > ruling settles the arrangement and nothing under `src/` implements it, so
+  > *"still has no route at 375×812"* is true of the tree today and stays PARTIAL
+  > until something ships.
 
 **So the closing criterion is six clauses satisfied, one satisfied only
 locally, and one false.** The record's §16 takes it apart clause by clause, and
