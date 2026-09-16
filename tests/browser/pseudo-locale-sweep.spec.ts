@@ -358,7 +358,42 @@ test.describe('the assembled application under the pseudo-locale (#664)', () => 
       await hire.first().click();
       await page.waitForTimeout(500);
     }
-    await page.waitForTimeout(60_000);
+    /*
+     * A MINUTE OF WALL CLOCK USED TO STAND HERE, AND IT BOUGHT ONE THING.
+     *
+     * `await page.waitForTimeout(60_000)`, measured on CI run 35078011261's own
+     * per-test list (`browser` on `lockstate-wsl-DOM-NEW-02`, 531 passed in
+     * 21.9 min) as 60 s of this test's 72.0 s -- which made this the single most
+     * expensive test in the browser suite, 5.5 % of it, and 4.6 % of the suite in
+     * this one call.
+     *
+     * **What the minute actually bought, probed rather than assumed.** The same
+     * sleep was replaced by a loop reading the page every two seconds and the
+     * trajectory is flat: `.hud-staff__roster .hud-staff__held-row[data-staff]`
+     * stayed at the 3 rows the hires above put there, `.hud-intake__pipeline-stage`
+     * stayed at **0**, `[data-metric="prisoners"] .ui-stat__value` stayed at
+     * **"0"** and `.hud-alerts__list` stayed at 4 children, from t = 2 s to
+     * t = 60 s. One reading changed: `.hud-clock__day`, 1 -> 2, at t = 36 s.
+     *
+     * The comment on the fast-forward above says the wait is there "so intake,
+     * wages and incidents have time to happen". On this scenario intake never
+     * produces an arrival at all, so what the minute was buying was a day
+     * counter, and the DOM this sweep walks at t = 60 s is the DOM it could have
+     * walked at t = 2 s with one digit different.
+     *
+     * So wait for the digit. How much simulation a second of wall clock buys is a
+     * property of the machine; the day roll is the same game state on every one
+     * of them, which makes this a **more** repeatable state than the sleep it
+     * replaces rather than a cheaper approximation of it. The ceiling is the
+     * minute the sleep was, so the worst case is unchanged, and a poll that never
+     * succeeds falls through exactly as the sleep did -- nothing here can fail a
+     * test that passed before it.
+     */
+    const dayRollDeadline = Date.now() + 60_000;
+    while (Date.now() < dayRollDeadline) {
+      if ((await page.locator('.hud-clock__day').textContent()) !== '1') break;
+      await page.waitForTimeout(250);
+    }
 
     await walkTabs(page, 'populated prison');
     console.log(
