@@ -16,6 +16,30 @@ comes from the GitHub Actions REST API through the `mcp__github__*` tools and
 from `git` in a worktree of `origin/main`. No `gh` CLI was available and none
 was used.
 
+### Re-measured against the API on 2026-09-16, and §3 is fully overtaken
+
+**Nothing below is edited away; both directions are marked** per
+`docs/AGENT_WORKFLOW.md` §4. The original figures keep their date and commit
+(`e044a3e8`, v0.0.640, taken 2026-09-15) and the re-measurement is recorded
+beneath each with its own (`54adc87c`, v0.0.646, taken 2026-09-16 ~19:50Z).
+Every re-measured figure below came from the same `mcp__github__*` endpoints in
+this session.
+
+- **§3 is history.** `main` is **no longer ahead of what is served at all** —
+  the eleven-commit backlog drained on 2026-09-16 and the live build is
+  `main`'s own tip. Addendum in §3.
+- **§1's census extends and the rate went up**: 818 → **843** completed
+  push-started `main` CI runs, 65 → **75** cancelled, 7.9 % → **8.9 %**. All
+  ten new cancellations are zero-job. Addendum in §1.
+- **§4.1's absence claim survives re-derivation** — the largest lethal gap is
+  still under 16.5 minutes — and the new maximum is 15.87 min, which is the
+  closest anything has come to it. Addendum in §4.1.
+- **This record carries no `file:line` citation into source**, so there was
+  nothing to re-pin. What it cites is run ids and commit shas, and the ones the
+  addenda below turn on were re-fetched rather than carried.
+
+---
+
 ## Evidence tiers
 
 Using this directory's tiers, mapped onto an API rather than onto a web page:
@@ -56,6 +80,32 @@ without returning any log body:
 **No run outside the 65 recorded zero jobs**, because no run with zero jobs can
 conclude `success` or `failure`; so "cancelled or zero jobs" and "cancelled" name
 the same 65 runs here, and the census's interesting split is the 47/18 inside it.
+
+> **Extended 2026-09-16, and the rate moved up rather than down.** The table
+> above is the census as of 2026-09-15T17:09:09Z and is not re-stated. Asked
+> again on 2026-09-16 at ~19:50Z, the API reports **844** push-started `ci.yml`
+> runs on `main`, of which **843** are `completed` and one was still `queued`
+> (`35139857720`, created 2026-09-16T19:19:24Z). Every one of the **25** new
+> completed runs was read and classified: 7 `success`, 8 `failure`,
+> **10 `cancelled`**.
+>
+> | | 2026-09-15 census | + 2026-09-16 | total at `54adc87c` |
+> | --- | ---: | ---: | ---: |
+> | completed push runs | 818 | +25 | **843** |
+> | `cancelled` | 65 | +10 | **75** |
+> | cancelled share | 7.9 % | — | **8.9 %** |
+>
+> **All ten recorded zero jobs**, checked one `get_job_logs(run_id,
+> failed_only)` call each — `35137189647`, `35083342924`, `35083333404`,
+> `35083325328`, `35083160015`, `35082953525`, `35076502742`, `35076492834`,
+> `35072356539`, `35072190452`, each answering
+> `{"failed_jobs":0,…,"total_jobs":0}` with HTTP 200. So the interesting split
+> becomes **57 zero-job / 18 job-bearing**, and the eighteen of §5 are
+> unchanged: not one cancellation since the census is of that second kind.
+>
+> **The day is the second worst on record.** Extending §1.2's per-day series:
+> **09-16 26/10**, against 09-08's 19/12. The burstiness §1.2 reports is not a
+> historical artefact; it recurred the day after this record was written.
 
 ### 1.1 The workflow comment's own figure reproduces exactly — VERIFIED
 
@@ -166,6 +216,32 @@ the last `workflow_dispatch` of `deploy.yml` was `32657945974`, 2026-08-23.
 deletions**; restricted to what ships (`src/`, `public/`, `index.html`) it is
 **5 files, 158 insertions, 13 deletions**.
 
+> **OVERTAKEN 2026-09-16: the backlog drained, and `main` is no longer ahead of
+> the site at all.** Everything above is kept because it is what was true on
+> 2026-09-15 and because §3.1's superseded/unpublished distinction is the part
+> that generalises. As of 2026-09-16T19:36:14Z:
+>
+> - **The live build is `54adc87c` (v0.0.646), which is `main`'s tip.** Deploy
+>   run **`35141185377`**, created 2026-09-16T19:32:40Z from CI's completion,
+>   concluded `success`; its three jobs are `staging` **`success`**,
+>   `production` `skipped` and `staging-blocked` `skipped`, and the step
+>   *"Deploy to Cloudflare (staging)"* concluded `success` at 19:36:14Z on
+>   runner `lockstate-wsl-DOM-NEW-01`. **Confirmed by job name and step, not by
+>   the run's conclusion alone**, which is the check §2.2 says this record owes
+>   a publication claim.
+> - **`c3faf19d..e044a3e8` is therefore published**, by §3.1's own mechanism: a
+>   successful `staging` deploy publishes a whole tree, so all eleven commits
+>   — including `f1cf9d15` (#1218) and its eighteen lines of shipped code, and
+>   `0f91582e` (#1213)'s eighty-one — were carried to the site by a later
+>   merge's deploy. **The three commits §3.1 names as "not superseded, and
+>   they are today's" are now superseded**, exactly as it predicted the other
+>   sixty-two had been.
+> - **So §3's eleven-row table is a snapshot of a hole that closed in
+>   twenty-seven hours**, and the generalisable claim is §3.1's: a
+>   cancellation costs a **gate result** permanently and a **deployment** only
+>   until the next green merge. Nothing in this addendum changes §4 or §6,
+>   which are about the gate.
+
 ### 3.1 Superseded versus unpublished — the distinction the brief asks for
 
 **Sixty-two of the 65 cancelled commits are superseded and cost nothing.** A
@@ -208,6 +284,23 @@ with zero jobs when the next merge was more than **16.5 minutes** behind it. The
 comparison set matters: of the other 752 runs, 366 also had a successor inside 20
 minutes and survived — so a short gap is necessary for this failure, not
 sufficient, which is what the three-run mechanism predicts.
+
+> **Re-derived 2026-09-16 over the ten new zero-job cancellations, and the
+> absence claim holds.** Gaps from each cancelled run's `created_at` to the
+> next push-started `main` run's `created_at` — the same proxy the measurement
+> above uses:
+>
+> ```
+> 0.07 0.08 0.10 0.12 0.12 1.78 1.88 2.13 3.52 15.87        (minutes)
+> ```
+>
+> **Maximum 15.87 min**, on run `35076502742` (created 2026-09-16T08:55:44Z,
+> next push 09:11:36Z). So *"not one run was cancelled with zero jobs when the
+> next merge was more than 16.5 minutes behind it"* survives at **57 of 57**
+> rather than 47 of 47 — and 15.87 is the closest any run has come to 16.42
+> without passing it, which is worth saying because a single counter-example
+> is what would break the sentence. **The 20-minute rule in §4.2 is untouched
+> by this and is not re-derived**: `D` was not re-measured on 2026-09-16.
 
 ### 4.2 The rule, and why it is half a run rather than a whole one
 
