@@ -15,10 +15,12 @@ import { describe, expect, it } from 'vitest';
  * mechanical can decide whether an anchor lands on the code its sentence
  * means"* -- and quotes ADR 0006 for the sharper form: *"an anchor that drifts
  * onto plausible-looking code is worse than one that drifts onto nothing"*
- * (`tests/foundation/documentation-source-anchor-contract.test.ts:42-43`).
+ * (`tests/foundation/documentation-source-anchor-contract.test.ts:39-41`,
+ * `ADR 0006's paragraph is the sharper way to put the limit`).
  * It then says two further things this file must not quietly reverse: that the
  * remedy is *"preferring a symbol name and a quoted line of code over a bare
- * number ... which is a writing convention, also not a mechanism"*, and that
+ * number ... which is a writing convention, also not a mechanism"*
+ * (`:42-44`), and that
  * *"there is no allowlist at all today, and one should not be added"*.
  *
  * This file is the mechanism for the first of those and it needs the second.
@@ -191,6 +193,46 @@ import { describe, expect, it } from 'vitest';
  *   `supabase/`, `.github/` -- are counted by neither gate here. They are a
  *   small and slow-moving population; extending to them is a widening of
  *   `IN_SCOPE_ROOTS` and nothing else.
+ *
+ * ## Watched going red, every assertion, each mutation reverted before the next
+ *
+ * Documents first, because a gate proved only against itself is not proved:
+ *
+ * - **ADR 0079's `src/simulation/prisoners/regime.ts:12` shifted to `:22`**
+ *   (a zero-budget document): 2 failed -- the control, reporting *"the scan no
+ *   longer finds this anchor"*, and the budget, reporting *"1 anchor into src/
+ *   or tests/ carr[ies] no quoted fragment ... against a budget of 0"*.
+ * - **The same row's `` `DAY_LENGTH_TICKS` `` replaced by the words "the
+ *   day-length constant"**, the anchor untouched: 2 failed, the control
+ *   flipping `regime.ts:12` from `true` to `false`. This is the case the gate
+ *   exists for -- nothing about the anchor changed, only whether anyone can
+ *   check it.
+ * - **ADR 0103's `src/simulation/incidents/gangs.ts:71` shifted to `:171`** (a
+ *   document with a budget of 69): 2 failed, the budget reporting *"70 anchors
+ *   ... against a budget of 69"*. The ratchet holds on a document that already
+ *   has slack, which is the case a pure "did it grow" check would miss.
+ * - **ADR 0012's one unverified anchor repaired** (`:672` -> `:670` beside
+ *   `` `carryItemJobSchema` ``): 1 failed -- the spent-budget assertion, naming
+ *   the row to delete. A fix must be able to fail this gate, or the table
+ *   becomes a licence nobody ever spends down.
+ *
+ * Then the scanner, because the "found nothing" assertions have no document
+ * mutation that can reach them:
+ *
+ * - **`ANCHOR` blinded (`/^(` -> `/^ZZZ(`)**: 5 failed. All three vacuity pins
+ *   read `expected 0 to be greater than 60 / 1100 / 550`.
+ * - **`CANDIDATE_WINDOW_CHARS` 160 -> 0**: 4 failed. The anchor count survives
+ *   and the fragment count does not, which is the pair that separates "the
+ *   anchors went away" from "the fragments went away".
+ * - **`TOLERANCE_LINES` 3 -> 100**: 2 failed, and this is the important one.
+ *   The three positive controls still pass; **`system.ts:266` and
+ *   `refusal-log.ts:325-327` flip from `false` to `true`**, and sixteen budget
+ *   rows go spent. A loosened tolerance does not quietly buy coverage here --
+ *   it is caught by the two anchors whose defect a loose tolerance forgives.
+ *
+ * Reverted, all six pass in 292 ms. No document was edited to conform; the four
+ * document mutations above were restored from copies and `git status` was clean
+ * after each.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -372,8 +414,13 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  *
  *     it('derive', () => {
  *       const rows = [...unverifiedByDocument().entries()].sort(([a], [b]) => a.localeCompare(b));
- *       console.log(rows.map(([doc, n]) => `  '${doc}': ${n},`).join('\n'));
+ *       writeFileSync('/tmp/budget.txt', rows.map(([doc, n]) => `  '${doc}': ${n},`).join('\n'));
  *     });
+ *
+ * It writes a file rather than printing, because
+ * `tests/foundation/test-suite-carries-no-scratch-probe-contract.test.ts:83`'s
+ * `CONSOLE_WRITE` forbids `console.log` anywhere under `tests/foundation/` --
+ * including, as this file found out, inside a comment.
  *
  * Regenerating it is not a neutral act: every row it raises is an anchor nobody
  * can check. Lower a row by quoting the anchors; raise one only with the reason
@@ -581,7 +628,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
       const budget = UNVERIFIED_BUDGET[document] ?? 0;
       if (count <= budget) continue;
       over.push(
-        `${document}: ${count} anchors into src/ or tests/ carry no quoted fragment that occurs within ` +
+        `${document}: ${count} ${count === 1 ? 'anchor' : 'anchors'} into src/ or tests/ carry no quoted fragment that occurs within ` +
           `${TOLERANCE_LINES} lines of them, against a budget of ${budget}. Quote the code beside the ` +
           `anchor -- \`file.ts:123\`, \`theSymbolOnThatLine\` -- rather than raising the budget.`,
       );
