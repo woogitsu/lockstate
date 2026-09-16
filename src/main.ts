@@ -2892,9 +2892,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * `ActionCategory[]` on the wire, and the widening is deliberate.** The
          * HUD may not import `src/simulation/**`, so it cannot hold the union;
          * `editRegimeBlockSchema`'s `z.enum(ACTION_CATEGORIES)` is what narrows
-         * it, and a member outside the vocabulary makes `unpackCommand` answer
-         * `null` rather than reaching the registry. The cast is that decode's
-         * precondition, not a claim this thread has checked anything.
+         * it, and a member outside the vocabulary is rejected by `packCommand`
+         * inside `submit` -- on this thread, before anything is sent -- rather
+         * than reaching the registry. The cast is that parse's precondition,
+         * not a claim this thread has checked anything.
+         *
+         * Nothing can produce one today: the panel's toggles are built from
+         * `simulationEnumIds('action-category')`, which
+         * `tests/foundation/content-vocabulary-contract.test.ts` holds equal to
+         * `ACTION_CATEGORIES` exactly.
          */
         case 'edit-regime-block':
           requireSimulation(commands).submit({

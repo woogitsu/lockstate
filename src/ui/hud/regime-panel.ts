@@ -766,11 +766,19 @@ export function nextAllowedCategories(
  * Which of a block's toggles may not be pressed, and it is never more than one.
  *
  * A block must allow at least one category -- `editRegimeBlockSchema` puts
- * `.min(1)` on `allowedCategories`, so a command emptying one is refused at
- * decode time and `unpackCommand` answers `null`. A panel that let the press
- * happen anyway would be a control that did nothing and said nothing, which is
- * the shape the owner's standing directive names. So the **last remaining**
- * category is locked, with `hud.regime.edit-last-category` saying why.
+ * `.min(1)` on `allowedCategories` -- and the press that emptied one would not
+ * be quietly dropped so much as **thrown**: `packCommand` parses against that
+ * schema inside `SimulationCommandSender.submit`
+ * (`src/ui/simulation-commands.ts`), on this thread, before anything is sent.
+ * The refusal a player would then read is `hud.refusal.*`'s generic line,
+ * which says nothing about what they did. A panel that let that happen would
+ * be a control that failed and did not say why, which is the shape the owner's
+ * standing directive names. So the **last remaining** category is locked, with
+ * `hud.regime.edit-last-category` saying why instead.
+ *
+ * (`unpackCommand` answering `null` is the same rule one boundary further on,
+ * for a payload that reached the worker some other way. Nothing on this path
+ * gets that far.)
  *
  * Only the pressed member is ever locked: an *off* toggle can always be
  * switched on, whatever else is off, because adding a category can never empty
