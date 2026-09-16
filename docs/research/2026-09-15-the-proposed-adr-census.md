@@ -10,6 +10,65 @@ line is touched by the commit that adds this file, and moving one is the
 owner's (`AGENTS.md`: never self-approve an ADR). This document exists so the
 owner can rule on a list rather than on 44 separate documents.
 
+## Correction, 2026-09-16: the count moved by one, and two of the sentences below are refuted
+
+**This record is not re-anchored, because `docs/research/README.md` forbids it**
+— *"when the code moves on, a record here does not become wrong, it becomes
+older. Do not update one to match current `main`."* Everything below stands as
+it was read at `e044a3e8`. What follows is the delta, marked in both directions
+as `docs/AGENT_WORKFLOW.md` §4 requires. Each bucket and each refuted section
+below carries its own dated note pointing back here, and no note rewrites the
+sentence it corrects.
+
+**The count, with the commit it is taken at, because a tally is the sentence
+form that rots first.** Re-running the same extractor (the `statusStatement`
+replication described under *How the 44 were derived*) over `docs/adr/` at
+**`54adc87c`** — `main`, 2026-09-16, `chore(release): v0.0.646` — returns:
+`git archive 54adc87c docs/adr | tar -x -C <dir>`, then the extractor over
+`<dir>/docs/adr`, so the count is taken from the commit rather than from a
+working tree:
+
+```
+TOTAL 109 accepted 66 proposed 43 other 0
+```
+
+So: **44 `Proposed` at `e044a3e8`, 43 at `54adc87c`.** Both numbers are true of
+the commit named beside them and neither is true on its own. The sets differ by
+exactly one member, computed by diffing the two extractions rather than by
+reading the diff: **ADR 0091** left, in `d4cca21e` (merged as `b0356b66`,
+#1253). Nothing entered, and no other document's leading status word moved.
+
+**The bucket arithmetic at `54adc87c` is 30 / 7 / 6 = 43.** Bucket 1 is
+untouched, so *"30 are already built"* is unchanged as a number and its
+denominator is now 43 rather than 44 — 0091 was a bucket 2 document and bucket 2
+is the bucket that lost it.
+
+**ADR 0091 decision 2 was ruled, and then built, after this census was taken.**
+The section *"ADR 0091 decision 2: why it has stood longest"* opens *"It was
+never put to the owner"* and that sentence is refuted: it was put to the owner
+and ruled on **2026-09-16**, option F — *a decided outcome of the SAME route
+retires the refusal band*. The census's second claim about it, that decision 2
+*"remains unimplemented today (VERIFIED)"*, is refuted too: `routeDecidedSince`
+landed in `563ed7fc` and is read in six files under `src/`. Both corrections
+are marked at the section itself rather than only here.
+
+**ADR 0116 was ruled the same day and the ruling is NOT on `main` at
+`54adc87c`, which is why it is still inside the 43.** The owner ruled option 2 —
+a construction-completion event, graded `'info'`, routed `'log-only'`, counted
+rather than repeated — on 2026-09-16; the `Status` block carrying it is on the
+unmerged branch `agent/0116-dossier`, and `docs/adr/0116-whether-a-finished-object-is-an-event.md`
+at `54adc87c` still reads *"Proposed, 2026-09-15. Not self-approved, and it
+implements nothing."* When that branch merges the count goes to **42** and
+bucket 3 to five. Bucket 3's own row for 0116 — *"never put to the owner"* — is
+refuted as of 2026-09-16 regardless of where the file sits.
+
+**A third ruling of 2026-09-16 touches nothing here, and that is worth stating
+rather than leaving a reader to check.** Constitution article 8 was amended so
+that ADR 0112 decision 4's amendment carries all three of its numbers
+(15 / 13 / 11). ADR 0112 is `Accepted` and was never among the 44; its only
+appearance below is as an example of a `Status` block holding two states, which
+still holds.
+
 **Claim tiers used below**, in the sense `docs/research/README.md` defines:
 
 - **VERIFIED** — a file under `src/` or `tests/` was opened at the coordinate
@@ -43,6 +102,10 @@ Two of the 44 (0064, 0067) carry the older `- Status:` bullet rather than a
 | 2. Overtaken in part — some decisions built, others not | **8** |
 | 3. Waiting on the owner — nothing built, the question is theirs | **6** |
 | 4. Genuinely open — the ADR has not settled its own question | **0** |
+
+**The table is taken at `e044a3e8` and totals 44.** At `54adc87c` it is
+**30 / 7 / 6 = 43**, bucket 2 having lost ADR 0091 to `Accepted`. See the
+correction of 2026-09-16 above.
 
 **Bucket 4 is empty, and that is a result rather than a gap.** Every one of the
 44 states a decision and argues it; what none of them has is a signature. The
@@ -113,6 +176,11 @@ decisions rather than a list of documents.
 | 0091 What clears the refusal band | decision 1 | decision 2 | See the section below. |
 | 0092 Who decides where a guard stands | decision 3 of 8 | the other 7 | The ADR's own Status: *"**Decision 3 landed on `main` in `4a53d292` (pull request #825).** … it is the only one that has been built. Nothing else here has a line of code behind it: no command, no `SetSectorPost`, no control a player can press."* |
 
+**0091 left this bucket on 2026-09-16**, by being accepted: it is no longer
+`Proposed` at `54adc87c` and so is no longer a member of this census's
+population at all. The row above is kept as it was read at `e044a3e8`. Seven
+rows remain at `54adc87c`.
+
 ## Bucket 3 — waiting on the owner
 
 | ADR | the question, in one sentence |
@@ -124,11 +192,25 @@ decisions rather than a list of documents.
 | 0115 Where the prisoner roster lives | Which of the Regime-panel splits stage 5 owes; the ADR says outright *"Nothing here is decided and no code implements it"* and carries a section titled *"Why this is not ours to decide"*. |
 | 0116 Whether a finished object is an event | Should object completion produce an alert at all, given §4's noise number. *"Not self-approved, and it implements nothing … there is no ruling behind it at all."* Weakest provenance on the board: an agent brief, never put to the owner. |
 
+**0116 was ruled on 2026-09-16 and the row above is refuted in its last
+clause.** *"An agent brief, never put to the owner"* was true when it was
+written and stopped being true that day: the owner chose option 2 — a
+construction-completion event, graded `'info'`, routed `'log-only'`, counted
+rather than repeated. The document is still `Proposed` on `main` at `54adc87c`
+because the branch carrying the ruling has not merged, and nothing under `src/`
+implements it either way, so the rest of the row stands.
+
 ## Bucket 4 — genuinely open
 
 **Empty.** See the note under "The counts".
 
 ## ADR 0091 decision 2: why it has stood longest
+
+> **REFUTED ON 2026-09-16, ONE DAY AFTER THIS SECTION WAS WRITTEN. The
+> sentences below are kept exactly as they were read at `e044a3e8`, and the
+> correction is at the end of the section rather than in place of them.** Both
+> of this section's load-bearing claims — that the decision was never put to the
+> owner, and that it remains unimplemented — are now false.
 
 **It was never put to the owner.** ADR 0091 landed `Proposed` on 2026-09-02 and
 `docs/adr/STATUS-QUEUE.md` — the owner-facing queue, whose §2 is where an ADR
@@ -163,6 +245,45 @@ second state option D requires. A grep for it returns nothing.
 **Decision 1 of the same document is shipped**, which is why the document is in
 bucket 2 rather than bucket 3.
 
+### Correction, 2026-09-16: it was put to the owner, ruled, and built
+
+**Ruled.** ADR 0091's `Status` block at `54adc87c` reads *"**Accepted,
+2026-09-16, by the repository owner, for decision 2 (option F: a decided outcome
+of the SAME route retires the band).**"* — that is, neither of the two states
+the section above frames the ask as (*"does the corner's sentence retire on any
+decided outcome, or only on another refusal"*), but the third one: the same
+**route**. Option D, which this section records the document as recommending,
+was declined, and the block records that it was declined twice and on what
+ground. The provenance is the weaker kind this repository distinguishes: a
+clickable option an agent session wrote, *"F — ta sama trasa (zalecane)"*, not
+a sentence the owner typed.
+
+**So the diagnosis above was right about the mechanism and wrong about the
+outcome.** No `STATUS-QUEUE.md` §2 row ever carried it — that gap is real and
+this section's reading of it stands — but a dossier pass carried it to the owner
+directly, which is a second route to a ruling that the section did not consider
+and that the queue's bookkeeping cannot see. *"It has stood thirteen days"* was
+true for one more day.
+
+**Built.** *"Decision 2 remains unimplemented today (VERIFIED)"* and *"There is
+no band-only 'last decided outcome' state anywhere under `src/` — a grep for it
+returns nothing"* are both refuted. `routeDecidedSince` landed in `563ed7fc` and
+`grep -rn "routeDecidedSince" src/` returns sixteen lines in six files:
+`src/simulation/protocol/types.ts:1525` (the wire field),
+`src/simulation/refusals/refusal-log.ts:237-241` (where the flag is set, and set
+monotonically), `src/simulation/worker/state-machine.ts:599`,
+`src/ui/hud/view-model.ts:1685`, `src/ui/simulation-alerts.ts:452` (forwarded,
+not acted on — the list keeps its row) and `src/ui/hud/hud.ts:1731`, where a
+notice carrying the flag is treated as no notice at all.
+
+**The quoted paragraph is still there, and that is the part of this section that
+aged well.** `src/ui/hud/hud.ts` still carries the *"It does **not**
+auto-dismiss"* text this section quotes — a quoted sentence is the durable
+citation and a `file:line` is not — and it is now followed in the same docblock
+by *"**The last clause was the whole of the rule until 2026-09-16 and is now one
+of three, and it is kept rather than rewritten because it is the rule that
+moved.**"*
+
 ## Which ADRs carry two states in one `Status` block
 
 The trap the brief names is real and it is not rare. Twelve of the 44 `Proposed`
@@ -185,6 +306,11 @@ each of them wrong. **Every one of these was read in full** for this census:
 | 0110 | `Proposed, 2026-09-12` | *"The owner did rule on the scope, and only on the scope."* |
 | 0111 | `Proposed, 2026-09-12` | the same scope ruling, *"covers only the filing"* |
 
+**Twelve at `e044a3e8`; eleven of them are still `Proposed` at `54adc87c`.**
+0091's row is the one that moved — its block now leads `Accepted, 2026-09-16`
+and keeps the prior state below it, so it changes which side of this table it
+belongs on rather than leaving it.
+
 Two more carry the split outside the `Status` block, where an extractor reading
 the first paragraph will never see it:
 
@@ -204,7 +330,8 @@ those by reading, not by the regex.
 
 ## Scope: where the line was drawn, and what was left
 
-- **All 44 were classified.** None is unexamined.
+- **All 44 were classified**, at `e044a3e8`. None is unexamined. The
+  population is 43 at `54adc87c`; see the correction of 2026-09-16 at the top.
 - **The evidence is not uniform, and the tier column says which is which.** 18
   rows are VERIFIED (a named symbol opened under `src/`); 12 are REFERENCE
   (production code asserts by ADR number what it now does, and that assertion
