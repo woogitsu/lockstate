@@ -76,12 +76,41 @@ import './ui-harness-api';
 const HARNESS_URL = '/tests/browser/ui-harness.html';
 
 /**
+ * **What a session says about its rooms**, published as the pair the wire
+ * carries rather than as the one figure the host used to derive the other
+ * from -- the same reading `ui-buy-button-affordability.spec.ts` defines, and
+ * kept per-spec rather than shared for the reason `hireOpacity` is kept
+ * beside `buyOpacity`.
+ *
+ * Both fields are set together and neither is optional, because the cases
+ * below exist precisely to drive them *apart*: `isFreshUnfurnishedPrison` is
+ * the simulation's own `RoomInstanceRegistry.totalResidentCapacity === 0`
+ * (ADR 0017's "Amendment, 2026-09-01" §2), and `roomCapacity` is a sub-sum of
+ * that same figure over the room-catalogue fan-out (`collectRoomInstances` in
+ * `src/simulation/presentation/status-strip-projection.ts`).
+ */
+interface RoomsReading {
+  /** `statusCountsSchema.isFreshUnfurnishedPrison`, the predicate the worker judges with. */
+  readonly isFreshUnfurnishedPrison: boolean;
+  /** `statusCountsSchema.roomCapacity`, the catalogue sub-sum, published beside it. */
+  readonly roomCapacity: number;
+}
+
+/**
  * A populated prison, so the panel is the one a player really sees -- the same
  * reasoning `ui-buy-button-affordability.spec.ts` and
- * `ui-overdraft-badge.spec.ts` give for theirs. Only the treasury and
- * `roomCapacity` move between cases.
+ * `ui-overdraft-badge.spec.ts` give for theirs. Only the treasury and `rooms`
+ * move between cases.
+ *
+ * **`rooms` used to be a bare `roomCapacity?: number`, and a `0` in it was how
+ * the freshness case below said "fresh, unfurnished" (corrected
+ * 2026-09-15).** That worked only for as long as the host derived the
+ * predicate itself; `staff-panel.ts` now reads
+ * `counts.isFreshUnfurnishedPrison` through `freshUnfurnishedPrison`
+ * (`src/ui/affordability.ts`), so a fixture publishing `roomCapacity: 0` and
+ * nothing else describes a prison the worker calls *furnished*.
  */
-function counts(treasuryMinorUnits: number, roomCapacity?: number): HudCountsViewModel {
+function counts(treasuryMinorUnits: number, rooms?: RoomsReading): HudCountsViewModel {
   return {
     prisoners: 42,
     prisonerCapacity: 48,
@@ -96,14 +125,16 @@ function counts(treasuryMinorUnits: number, roomCapacity?: number): HudCountsVie
     activeIncidents: 0,
     contrabandFound: 3,
     treasuryMinorUnits,
-    ...(roomCapacity === undefined ? {} : { roomCapacity }),
+    ...(rooms === undefined
+      ? {}
+      : { roomCapacity: rooms.roomCapacity, isFreshUnfurnishedPrison: rooms.isFreshUnfurnishedPrison }),
     stateIncomeAccruedTodayMinorUnits: 10_667,
   };
 }
 
-function viewModelAt(treasuryMinorUnits: number, roomCapacity?: number): HudViewModel {
+function viewModelAt(treasuryMinorUnits: number, rooms?: RoomsReading): HudViewModel {
   return {
-    counts: counts(treasuryMinorUnits, roomCapacity),
+    counts: counts(treasuryMinorUnits, rooms),
     clock: { day: 9, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
     alerts: [],
   };
@@ -181,8 +212,10 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
      * **Past the mature hiring rung** (-1,250, which `'hiring'` shares with
      * `'deliveries'` in `INSOLVENCY_RUNG_FLOORS_MINOR_UNITS`): a balance of
      * -1,180 leaves 70 of spendable room, and the 80 this press spends does
-     * not fit in 70. No `roomCapacity` published, which is "mature" by
-     * default (`pressFloorMinorUnits`'s own contract for an absent value).
+     * not fit in 70. Nothing published about the rooms, which
+     * `freshUnfurnishedPrison` reads as *not* fresh -- the mature,
+     * already-shipped rung (`src/ui/affordability.ts`'s contract for an
+     * absent value).
      *
      * 70 is also more than the role's 55 daily wage, so a button that had
      * compared what keeping the guard costs instead of what hiring one costs
@@ -267,7 +300,21 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
     const matureAtNinety = await push(page, viewModelAt(-1_160));
     expect(matureAtNinety.hireUnavailable, 'the mature hiring rung leaves 90 of room for an 80 hire').toBe(false);
 
-    const freshAtTwentyFive = await push(page, viewModelAt(-1_160, 0));
+    /*
+     * **Fresh, and it is the published predicate that says so -- against a
+     * `roomCapacity` of 48, which says the opposite.** Until 2026-09-15 this
+     * case was written `viewModelAt(-1_160, 0)`: a `roomCapacity` of zero,
+     * from which the panel derived its own freshness. It no longer derives
+     * anything, so the fixture states it, and the 48 beside it makes this a
+     * case no derivation from `roomCapacity` can pass -- a panel reaching for
+     * that field again would call this prison furnished, take the mature
+     * -1,250, find 90 of room for the 80 charge and leave the button
+     * available.
+     */
+    const freshAtTwentyFive = await push(
+      page,
+      viewModelAt(-1_160, { isFreshUnfurnishedPrison: true, roomCapacity: 48 }),
+    );
     expect(
       freshAtTwentyFive.hireUnavailable,
       'a fresh, unfurnished prison’s starter rung leaves only 25 of room for an 80 hire',
@@ -275,5 +322,27 @@ test.describe('the Hire button says whether it can act before it is pressed (#77
     // And the starter rung advises against the press without removing it
     // either, for the reason the refused case above gives at length.
     expect(freshAtTwentyFive.hireDisabled, 'the starter rung took the press away').toBe(false);
+
+    /*
+     * **And the same pair the other way round, which is the prison the host's
+     * old derivation actually got wrong.** `roomCapacity` is a sub-sum of
+     * `totalResidentCapacity` over the room-catalogue fan-out, so a restored
+     * session holding a room instance registered under an id the content
+     * registry does not define publishes `roomCapacity: 0` while the worker
+     * goes on judging hires as furnished
+     * (`tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+     * builds that prison). At -1,160 the mature -1,250 leaves 90 and the 80
+     * charge fits, so this button must be available; a panel that re-derived
+     * freshness from `roomCapacity === 0` takes -1,185 and turns it
+     * unavailable.
+     */
+    const offCatalogueRoom = await push(
+      page,
+      viewModelAt(-1_160, { isFreshUnfurnishedPrison: false, roomCapacity: 0 }),
+    );
+    expect(
+      offCatalogueRoom.hireUnavailable,
+      'a prison the worker calls furnished was judged against the starter rung because its catalogue sub-sum reads zero',
+    ).toBe(false);
   });
 });

@@ -27,6 +27,7 @@ import {
   openApp,
   panelText,
   runUntilTick,
+  showPanel,
   tab,
 } from './playtest-harness';
 
@@ -400,7 +401,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     // accepts an admission.
     await buildAndPopulate(page, { beds: 4, admits: 0, guards: 0, label });
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     const admit = page.locator('.hud-intake__admit');
     const cycles: Record<string, number>[] = [];
     for (let index = 0; index < 12; index += 1) {
@@ -438,7 +439,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
     await buildAndPopulate(page, { beds: 4, admits: 0, guards: 0, label });
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
 
     await page.evaluate(() => {
       const button = document.querySelector<HTMLButtonElement>('.hud-intake__admit');
@@ -855,7 +856,7 @@ test.describe('the twelve changes of 2026-08-31, played', () => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await log(label, 'intake panel before pressing', await panelText(page, '.hud-intake'));
     await log(label, 'refusal band before pressing', await panelText(page, '.hud__refusal'));
     for (let index = 0; index < 3; index += 1) {

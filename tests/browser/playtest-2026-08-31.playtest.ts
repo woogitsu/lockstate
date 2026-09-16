@@ -1,6 +1,5 @@
 import { test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buildAndPopulate,
   calibrate,
@@ -14,7 +13,9 @@ import {
   openApp,
   panelText,
   press,
+  showPanel,
   tab,
+  TILE,
 } from './playtest-harness';
 
 /**
@@ -519,7 +520,7 @@ test('act 1: an ambitious first prison, buying nothing on purpose (#640, #693, #
   log(`after four hires: staff=${hired?.staff} dailyWageBill=${hired?.dailyWageBillMinorUnits} treasury=${hired?.treasuryMinorUnits}`);
   log(`staff panel after hiring: ${JSON.stringify((await panelText(page, '.hud-staff')).split('\n'))}`);
 
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   for (let index = 0; index < 10; index += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(200);
@@ -898,7 +899,7 @@ test('act 5: pressing a tab before the first New prison (#685)', async ({ page }
   );
   const after = (await latestCounts(page))?.treasuryMinorUnits;
   log(`one wall run after a pre-boot tab press: treasury ${before} -> ${after} queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   await page.locator('.hud-intake__admit').click({ timeout: 20_000 });
   await page.waitForTimeout(1500);
   log(`after one Admit: ${JSON.stringify((await panelText(page, '.hud-intake')).split('\n'))}`);
