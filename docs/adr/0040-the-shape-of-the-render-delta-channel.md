@@ -71,6 +71,31 @@ and adding no new message kind, no envelope field and no envelope-version bump.*
 
 ## What the code does today
 
+> **"Today" is 2026-08-26, and this section is kept as it stood rather than
+> rewritten, because it is the state the decision above was taken against.**
+> Slice 1 of that decision has since shipped (`ea117cd4`, `c35da9e8`, #414), and
+> three of this section's load-bearing claims are false as a result, so a reader
+> following its anchors should expect a different tree:
+>
+> - *"`simulation/delta` is fully specified and unsent"* — it has a sender.
+>   `SimulationWorkerStateMachine.publishRenderDelta` builds one at
+>   `src/simulation/worker/state-machine.ts:796`, unprompted on the tick loop,
+>   and `SimulationSnapshotFeed` applies it at
+>   `src/rendering/feed/simulation-snapshot-feed.ts:497`.
+> - *"The `array-buffer` transport … has never been used"* — it carries that
+>   delta, and `src/simulation/protocol/render-actors-payload.ts` is the one
+>   definition of the bytes.
+> - *"The simulation has no motion to publish"* — it has. Prisoners and guards
+>   both walk through a `LocomotionStore`
+>   (`src/simulation/prisoners/prisoner-operations-runtime.ts:336`,
+>   `src/simulation/security/guard-roster.ts:61`), the guard half landing with
+>   #740 and ADR 0059 answering the prisoner half.
+>
+> The anchors below are therefore dated with the section and are left where they
+> point rather than re-aimed onto code that no longer makes the same argument.
+> The two that already carry *"as of `83d9616`"* were corrected by an earlier
+> pass and keep that pin.
+
 **The renderer is fed by a borrowed save request.**
 `src/rendering/feed/simulation-snapshot-feed.ts:181-186` sends
 `simulation/request-snapshot` with `reason: 'consistency-check'` — the persistence
@@ -103,7 +128,9 @@ carries **no `replyTo`** — the "never a reply" publication form ADR 0003's
 `:996` puts it in the decode union; `src/simulation/protocol/transferables.ts:24-25`
 already unwraps an `ArrayBuffer` body from it.
 `tests/foundation/message-kind-reachability-contract.test.ts:152-153` records that
-nothing sends one.
+nothing sends one. **That entry no longer exists**: #414 deleted it as a required
+step of giving the kind a sender, and the file says so in place at
+`tests/foundation/message-kind-reachability-contract.test.ts:154-157`.
 
 **The `array-buffer` transport has existed since the protocol's first commit and
 has never been used.** `types.ts:68-92`. `git log -S "transport: 'array-buffer'"
@@ -429,9 +456,11 @@ update, so `TileLayer` does not repaint. The snapshot poll's interval relaxes fr
 
 Delete the
 `UNSENT_WORKER_TO_MAIN_KINDS['simulation/delta']` entry in
-`tests/foundation/message-kind-reachability-contract.test.ts:152-153` — that gate
+`tests/foundation/message-kind-reachability-contract.test.ts` — that gate
 is written to fail when a sender appears, so this is a required step and not an
-afterthought. **This is the first slice**, and it alone delivers the two
+afterthought. **Done, in #414**; the anchor this step carried (`:152-153`) is
+dropped rather than re-aimed, because the entry it named is what was removed, and
+the file's docblock at `:154-157` now records the deletion. **This is the first slice**, and it alone delivers the two
 criteria that are actually reachable: validation off the hot path and a
 population-independent boundary cost.
 
@@ -477,6 +506,13 @@ alone.
 ---
 
 ## Consequences if this stands
+
+> **It stood, and slice 1 shipped, so this list is a record of what was owed
+> rather than what is outstanding.** Its anchors are dated with it. Two are worth
+> naming because their targets moved rather than merely aged:
+> `docs/RENDERING.md:128-142`'s paragraph is at `docs/RENDERING.md:171` today,
+> and `docs/adr/0003-simulation-worker-protocol.md:408-412`'s *"still no sender"*
+> sentence has already been corrected in place, at `:511-516` of that file.
 
 - `docs/RENDERING.md:128-142` — the paragraph beginning *"ADR-0003 publishes
   snapshots, deltas and events... only the correlated snapshot path is

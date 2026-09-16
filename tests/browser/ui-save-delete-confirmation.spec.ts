@@ -10,7 +10,7 @@ import './ui-harness-api';
  *
  * `SavePanel.requestDelete` called `controller.deletePrison(prisonId)` on the
  * click and then wrote `save.status.deleted`. One layer down,
- * `PrisonSaveRepository.delete` (`src/persistence/local/repository.ts:467`)
+ * `PrisonSaveRepository.delete` (`src/persistence/local/repository.ts:637`)
  * walks every generation the slot references, deletes each, then deletes the
  * slot -- in one `readwrite` transaction, with no flag, no dry run and nothing
  * that could refuse. So the entire distance between a player's finger and the

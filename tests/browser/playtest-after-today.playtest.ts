@@ -1,6 +1,5 @@
 import { test, type Page } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buildAndPopulate,
   buy,
@@ -16,7 +15,9 @@ import {
   openApp,
   panelText,
   press,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -439,7 +440,7 @@ test.describe('playtest: main after the fifteen changes of 2026-08-30', () => {
     await page.waitForTimeout(2_000);
     log(`north furnished at tick ${await currentTick(page)}: ${JSON.stringify(await latestCounts(page))}`);
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await page.locator('.hud-intake__admit').click();
     const startedAt = Date.now();
     let housed = false;

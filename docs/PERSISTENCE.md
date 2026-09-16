@@ -942,8 +942,23 @@ const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredC
 ```
 
 and `queuedCommandSchema.payload` uses it. One line closes both trust entry
-points across all four payload versions and the V1 → V2 → V3 → V4 migration
-chain, because `kernelSnapshotSchema` is shared by all of them.
+points across **every** payload version and the whole migration chain, because
+`kernelSnapshotSchema` is shared by all of them — `grep -c kernelSnapshotSchema
+src/persistence/save-schema.ts` counts one use per version and
+`grep -nE '^export function migrateSaveEnvelopeV' src/persistence/save-migrations.ts`
+is the chain.
+
+**Three different numbers stood for this one fact, two of them in this file.**
+This sentence said "all four payload versions and the V1 → V2 → V3 → V4
+migration chain"; the bullet under "Two further things decided it" below said
+"all three payload versions"; and `src/persistence/save-schema.ts`'s own
+docblock said "all three payload versions and the V1 -> V2 -> V3 migration
+chain". Re-derived 2026-09-15 there are **six** payload schemas and five
+migration functions, so all three were stale and no diff could have found the
+pair in this file, because neither half moved on the day the other did. The
+number is deleted rather than set to six for the reason
+`docs/AGENT_WORKFLOW.md` §4 gives: the sentence's subject is that the schema is
+*shared*, and "every version" is true of any number of them.
 
 `tests/unit/persistence-save-schema-aliasing.test.ts` pins the detachment from
 both entry points, and also pins a rule about the *module*: no object-literal
@@ -1014,8 +1029,9 @@ to the envelope's own holder is a separate concern the module doc never claimed.
 Two further things decided it, both from #106:
 
 - **A comment cannot close a hole that widens.** The alias was reachable
-  through `kernelSnapshotSchema` from all three payload versions and the
-  migration chain, and any future `jsonValue`-typed payload section would have
+  through `kernelSnapshotSchema` from every payload version and the whole
+  migration chain (this read "all three" while the paragraph above it read
+  "all four" — see there), and any future `jsonValue`-typed payload section would have
   widened one field into a subtree. That is a code hole, and it is now closed
   by the module rule above.
 - **The cost is 0.01–0.29 ms.** A queued command payload is the *pending

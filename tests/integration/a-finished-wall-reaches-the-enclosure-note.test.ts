@@ -47,7 +47,7 @@ import { LoopbackWorker, TICK_MILLISECONDS } from '../helpers/loopback-simulatio
  * with no memo, `WorldRenderView.getTopEdge` is a direct chunk read whose
  * docblock says it is *deliberately* not routed through `readTile`'s memo, and
  * `WorldScene` hands the newest world over on every rendered frame
- * (`src/rendering/scene/world-scene.ts:759`).
+ * (`src/rendering/scene/world-scene.ts:763`).
  *
  * **Three links, all currently sound, and a test is what keeps them so.** Any
  * one of them is a plausible future edit -- a memo added to the perimeter walk

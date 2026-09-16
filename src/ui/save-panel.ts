@@ -1069,7 +1069,7 @@ export class SavePanel {
    *
    * One press of a row's Delete control and the prison was gone: every
    * retained generation and the slot record, in one transaction
-   * (`PrisonSaveRepository.delete`, `src/persistence/local/repository.ts:467`),
+   * (`PrisonSaveRepository.delete`, `src/persistence/local/repository.ts:637`),
    * with nothing in between that could have been read, hesitated over or
    * refused. That is the whole of issue #1142, and it is quoted here rather
    * than described because the shape of the old code is the reason the new

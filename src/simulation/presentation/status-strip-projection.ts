@@ -529,6 +529,16 @@ export interface StatusStripViewModel {
      */
     readonly treasuryOverdraftFloorMinorUnits: number;
     /**
+     * Whether this prison is "fresh, unfurnished":
+     * `RoomInstanceRegistry.totalResidentCapacity === 0`, ADR 0017's
+     * "Amendment, 2026-09-01" §2. Published so the host judges a press against
+     * the floor the command handler enforces rather than re-deriving the
+     * predicate from `roomCapacity` -- see
+     * `statusCountsSchema.isFreshUnfurnishedPrison` for the divergence that
+     * put it here and for what it measured.
+     */
+    readonly isFreshUnfurnishedPrison: boolean;
+    /**
      * What the in-game day in progress has earned the prison so far, in the
      * same minor units, at `tick` (#29, ADR 0017 decision 3).
      *
@@ -695,7 +705,13 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  *
  * **That accessor is `residentIdsWithExistingPlace` and this paragraph named
  * `residentIds` until now**, which was true when it was written and stopped
- * being true when issue #585 split the two (`income.ts:405-411`). The cost
+ * being true when issue #585 split the two -- `income.ts`'s
+ * `OccupiedPlaceSource.residentIdsWithExistingPlace` declaration, whose own
+ * docblock names #585 and says what the split cost. **That citation read
+ * `income.ts:405-411` until 2026-09-15**, which by then was a paragraph about
+ * the withheld-need rate's suspension and nothing to do with #585; it is
+ * named by symbol rather than renumbered because a number here has now rotted
+ * once. The cost
  * class is identical -- `O(P log P)` in housed prisoners, one array -- so
  * nothing this note claims about performance moves; what was wrong was the
  * name, and a reader chasing it would have landed on an accessor the income
@@ -830,16 +846,25 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   // disagreeing the day either default changes.
   const treasuryMinorUnits = source.treasury?.balanceMinorUnits ?? 0;
   const treasuryOverdraftFloorMinorUnits = source.treasury?.overdraftFloorMinorUnits ?? 0;
+  // Live, exactly as `createSessionCommandHandler`'s `'deliveries'` press
+  // reads it (`src/simulation/runtime/session-commands.ts`) and for the
+  // same reason: "fresh, unfurnished" is a moment-of-read fact, not a flag
+  // that can go stale between the room that furnishes it and this read.
+  //
+  // **Read once and published, rather than computed here and dropped.** Until
+  // 2026-09-15 this expression sat inline in the call below and reached
+  // nothing else, so the host re-derived its own `counts.roomCapacity === 0`
+  // -- a sub-sum of this same figure over the catalogue fan-out
+  // (`docs/HUD_PROJECTIONS.md` gap 15) that answers the question differently.
+  // `counts.isFreshUnfurnishedPrison` below is this value, and its schema
+  // member carries the measurement.
+  const isFreshUnfurnishedPrison = source.prisoners.roomInstances.totalResidentCapacity === 0;
   const conditions = computeStandingPrisonConditions({
     treasuryMinorUnits,
     treasuryOverdraftFloorMinorUnits,
     buildQueueUnfunded: (source.materialsFunding?.lastReport.unfunded.length ?? 0) > 0,
     waitingWithoutPlace: population.waitingWithoutPlace,
-    // Live, exactly as `createSessionCommandHandler`'s `'deliveries'` press
-    // reads it (`src/simulation/runtime/session-commands.ts`) and for the
-    // same reason: "fresh, unfurnished" is a moment-of-read fact, not a flag
-    // that can go stale between the room that furnishes it and this read.
-    isFreshUnfurnishedPrison: source.prisoners.roomInstances.totalResidentCapacity === 0,
+    isFreshUnfurnishedPrison,
   });
 
   return {
@@ -882,6 +907,11 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // one line up: a runtime with no treasury has no facility, and `0` is
       // exactly what a `Treasury` with none reports.
       treasuryOverdraftFloorMinorUnits,
+      // The registry's own answer, the one `Treasury.floorFor` selects the
+      // starter rung on -- not `roomCapacity === 0`, which the host used to
+      // derive and which cannot see an instance under an unknown room-catalog
+      // id. See `statusCountsSchema.isFreshUnfurnishedPrison`.
+      isFreshUnfurnishedPrison,
       // The registry's own total, not `roomOccupants` above: that count is
       // built from the catalog fan-out and cannot see an instance registered
       // under an unknown room-catalog id (gap 15), while the income line is
