@@ -653,6 +653,28 @@ written to fix is still right and only the number moved, twice, which is §6's
 recommendation 1 demonstrated on the sentence that exists to correct an
 attribution. The durable form is the quotation already beside it.
 
+**AND IT IS WRONG BY MORE AGAIN AT `fa783381` — THIRD READING, THIRD VALUE, AND
+THE COORDINATE WAS ALREADY FALSE BEFORE THIS WINDOW OPENED.** This is a repin
+rather than a discovery, and saying so is the point: the number was **1266** at
+`ca82e946`, the previous anchor, so it was **sixty-one** lines stale before the
+window this pass reads even began. `docs/AGENT_WORKFLOW.md` is a member of this
+window — #1264 — and the edit moved it a further thirty-seven lines. Read off
+the tree rather than offset:
+`grep -n 'Propose an ADR rather than deciding' docs/AGENT_WORKFLOW.md` answers
+**1303** and `grep -n 'never self-approve' docs/AGENT_WORKFLOW.md` answers
+**1304**, the two lines of one bullet. **The live coordinate is
+`docs/AGENT_WORKFLOW.md:1303`** for the sentence this clause quotes, and `:1205`
+now reads *"  `docs/TESTING.md` lists the forms this takes here."* — a bullet
+about test forms, in a section about something else, which is the
+lands-on-plausible-neighbouring-prose failure this file calls the costly one.
+**The `:1205` above is not rewritten**, because its own sentence dates itself to
+`3399b1f9` and a dated coordinate is a record: at that commit
+`grep -n 'never self-approve'` really did answer 1205, the second line of the
+bullet whose first line is the quotation. The two greps beside it still hold at
+this anchor, re-run rather than carried: `grep -c 'never self-approve'
+AGENTS.md` returns **0**, and `AGENTS.md:93` still reads *"an implementing agent
+does not approve its own work"*.
+
 **#639 supplied exactly that for 0051** by naming the ADR as *"a decision
 the code already keeps, waiting on a signature"*; nothing has yet supplied it
 for the other two.
@@ -770,15 +792,40 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `ca82e946` (**v0.0.641**) by the delta method,
-from `36d35998`. This is #1248's merge commit, the last merge on `main`;
+Re-anchored at `main` @ `fa783381` (**v0.0.647**) by the delta method,
+from `ca82e946`. This is #1264's merge commit, the last merge on `main`;
+`package.json` ships **0.0.647** at it, and all **six** of the window's release
+commits sit *inside* it — the highest, `7bc6afd8` (`chore(release): v0.0.647`),
+one commit below the tip — so the anchor's version and `HEAD`'s are the same
+string and the release assertion reads 647 − 647 = **zero** for the fourth
+anchor running. It is the merge rather than a release commit for the reason
+every anchor in this chain gives: a `chore(release)` commit starts no CI run
+and a reader who followed one out would have nothing to verify against.
+
+**THE TWO UNITS AGREE TO WITHIN ONE FOR THE FIRST TIME IN FOUR ANCHORS, WHICH
+IS WORTH RECORDING BECAUSE THE THREE BEFORE IT WERE CHOSEN AS DIVERGENCES.**
+The window below is **7 merges against 6 release numbers**, against
+8-against-0 at the previous anchor, 9-against-1 before that and 11-against-7
+before that. A gate still counting releases would have read **6 of 10** where
+this one reads **7 of 10** — the ordinary case, where a merge and a bump are
+the same decision one commit apart, and the case the 2026-09-15 unit change
+says it does not disturb. It is the first window on this chain since
+2026-09-15 that argues for neither unit over the other. The commit budget read
+**32 of 100**. Three merges of margin is why the pass was raised now rather
+than waited for, and the reason it was raised at all is that nothing in the
+window is production code: **fourteen changed paths, none of them under
+`src/`** — the first such window this chain has read.
+
+**The anchor before this one, kept — v0.0.641 (`ca82e946`).** It read: *"Re-anchored at `main` @
+`ca82e946` (**v0.0.641**) by the delta method, from `36d35998`. This is #1248's merge commit, the last merge on `main`;
 `package.json` ships **0.0.641** at it, and **no release commit sits anywhere
 in this window** — `git log --first-parent 36d35998..ca82e946` carries no
 `chore(release)` subject at all — so the anchor's version and `HEAD`'s are the
 same string and the release assertion reads 641 − 641 = **zero** for the third
-anchor running. It is the merge rather than a release commit for the reason
-every anchor in this chain gives: a `chore(release)` commit starts no CI run
-and a reader who followed one out would have nothing to verify against.
+anchor running."*
+
+**That anchor's own commentary is kept unchanged rather than folded into the
+quotation above** (`docs/AGENT_WORKFLOW.md` §4), and it read:
 
 **THE UNIT CHANGE'S LIMIT CASE, NOT ITS WIDEST MARGIN — AND IT IS A DIFFERENT
 OBSERVATION FROM THE PREVIOUS ANCHOR'S.** The window below is **8 merges
@@ -15095,6 +15142,19 @@ happened to agree.
   `AGENTS.md:93` still reads *"an implementing agent does not approve its own
   work"*, `grep -c 'never self-approve' AGENTS.md` still returns **0** at both
   ends, and the rule really is at `docs/AGENT_WORKFLOW.md:1205`.
+  **REPINNED AT `fa783381`, AND THE COORDINATE WAS ALREADY FALSE WHEN THIS
+  BULLET CERTIFIED IT.** The clause above is dated to `3399b1f9`/`e5fbe9d9` and
+  is left standing as the record of what that pass read; what it should not be
+  read as is a live coordinate, which is how it reads to anyone who stops at the
+  words *"the rule really is at"*. At the anchor of that very pass
+  `grep -n 'never self-approve' docs/AGENT_WORKFLOW.md` already answered a
+  number in the 1250s, not 1205 — the header's own correction two thousand lines
+  above says so with both greps — so this bullet re-certified an inherited
+  error rather than re-running it, and the word *"really"* is the tell. **Live
+  at this anchor: `docs/AGENT_WORKFLOW.md:1303`**, from
+  `grep -n 'Propose an ADR rather than deciding' docs/AGENT_WORKFLOW.md`, with
+  *"and never self-approve one"* on `:1304`. The two `AGENTS.md` greps beside it
+  were re-run here and both still hold.
 - **`src/simulation/protocol/types.ts` — thirteen citations across four
   coordinates, ALL HELD, and all thirteen kept history.** `:7`, `:12`, `:168`
   and `:173` are byte-identical; the file's three hunks start at old `:1716`,
@@ -17532,7 +17592,18 @@ re-run.
   `environment-art.ts`'s discharge triple, `src/main.ts`'s challenges quartet,
   the two bare `docs/TRUSTED_SERVICES.md` numbers, ADR 0015's span,
   `docs/AGENT_WORKFLOW.md:1205`, §2's four `action-system.ts` numbers and §2's
-  four ADR 0093 numbers. **Four of them land on plausible neighbouring prose**
+  four ADR 0093 numbers. **`docs/AGENT_WORKFLOW.md:1205` IS STILL THE
+  NUMBER THIS LIST NAMES AND IS DELIBERATELY NOT REPOINTED**: this list is a
+  record of coordinates that did not land in the `d57b97ba..7e9c3043` window,
+  and repointing a member of it would destroy the record rather than repair it
+  (§6 recommendation 1's own rule, and the same judgement §2 makes about
+  `staff-panel.ts:526`). **Where it now lands is stated instead, at
+  `fa783381`: the rule is at `docs/AGENT_WORKFLOW.md:1303`**, ninety-eight lines
+  past the cited one — **sixty-one** of them already spent before the
+  2026-09-16 (fourth) window opened, and thirty-seven added inside it by
+  #1264. Three of this file's four citations of `:1205` are dated records like
+  this one; the fourth, in the delta-read bullet above, was written in the
+  present tense and is corrected there. **Four of them land on plausible neighbouring prose**
   — `default-gangs.ts:186` is a docblock sentence, `zoning.ts:448` is a
   different field's declaration, `view-model.ts:1954` is a field of a different
   interface, and `0015-actor-identity-allocation.md:159` is a blank line — which
@@ -18070,6 +18141,36 @@ anchor's intersection and the largest this chain has recorded since 2026-09-11.
   seventh consecutive anchor.
 - **`src/ui/hud/hud.ts:271` and `:444-449` hold, and `src/ui/hud/staff-panel.ts:526`
   holds**, all three on files the window changed *below* them.
+
+  **THAT BULLET IS FALSE IN ALL THREE OF ITS CLAIMS AND IS KEPT RATHER THAN
+  REWRITTEN** (`docs/AGENT_WORKFLOW.md` §4), **because it is the shape this
+  file's own §3 warns about, committed by a §3 pass.** What "holds" means for a
+  citation is that it still points at the construct its sentence names. None of
+  the three does, and this file says so about each of them somewhere else:
+  `export type HudIntent =` is at **`:365`**, not `hud.ts:271`;
+  `'arm-build-tool'` is at **`:524`**, not `hud.ts:444-449`; and
+  `grep -n 'decides nothing' src/ui/hud/staff-panel.ts` answers **`:690`**, not
+  `:526`. All three greps run at `fa783381`. The three numbers are **dated
+  decoys** — attached in their own sentences to `bb3a01e`, `cfab558` and the
+  v0.0.402 anchor — and this file has twice ruled that a dated coordinate is a
+  record and must not be moved: *"Neither points where it says any more, and
+  neither should be moved"*, and §2's *"`src/ui/hud/staff-panel.ts:526`, three
+  anchors stale and inside a dated pass account, correctly does not"*. **So the
+  three are still not repointed; what is corrected is the certificate.** The
+  failure is the one the same passage names in the same breath — *"the
+  extract-open-print check flags a decoy exactly as loudly as a mover, and the
+  discriminator is the sentence around the number, never the number"* — run
+  with the sentences unread, so an unchanged line was reported as a landing
+  citation. **A diff could not have found this, and the delta method
+  delivered it and was not believed**: both files *are* members of the
+  `36d35998..ca82e946` window, so the intersection put all three coordinates in
+  front of that pass, which opened them, saw unchanged lines and wrote
+  "hold" — the bullet's own clause *"on files the window changed *below* them"*
+  is the offset reasoning the method forbids, applied to numbers that were
+  never aimed at this tree in the first place. Neither file is in the
+  2026-09-16 (fourth) window — it touches nothing under `src/` — so no
+  intersection would ever raise them again. It was found by reading this file's
+  §3 against its own §2 and §5.
 - **`docs/adr/README.md`'s cited spans `:44-52`, `:97`, `:100`, `:102-106`,
   `:103-110` and `:108` all hold** — the file's one changed line is `:264`, ADR
   0091's row — and the index still reads **Next free number: 0117** at `:289`.
@@ -18369,8 +18470,56 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
-**RE-VERIFIED AT `ca82e946`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
-THIRTEEN — AND FOR THE FIFTH ANCHOR RUNNING THIS SECTION HAS NOTHING TO
+**RE-VERIFIED AT `fa783381`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+FOURTEEN — AND FOR THE SIXTH ANCHOR RUNNING THIS SECTION HAS NOTHING TO CORRECT
+IN ITS OWN LIVE TEXT, WHICH IS NOT THE SAME AS HAVING NOTHING TO CORRECT.**
+`git diff --name-only ca82e946..fa783381 -- .github/ docs/DEPLOYMENT.md`
+returns **nothing at all**: neither half of this section's evidence is a member
+of this window's seven merges, for the fourteenth anchor running. **All five
+`migrate-database.yml` coordinates were opened anyway** and land unmoved —
+`:20` is the ADR 0016 §2 comment (*"target and must never be repointed at
+production (ADR 0016 §2, Accepted;"*), `:33` is `on:`, `:34` is
+`workflow_dispatch:`, `:41` is `confirm_project_ref:`, `:65` is `environment:`
+— and `grep -c '^\s*push:'` over the file still returns **0**. Into
+`docs/DEPLOYMENT.md`, the table header holds at `:200`, the
+*"`migrate-database.yml` has three runs in its entire history"* paragraph at
+`:219`, the *"Read that row as 'on every merge'"* paragraph at `:221`, and
+*"What currently serves lockstate.io"* at `:255`. `docs/DEPLOYMENT.md` has
+still not changed since `5954af75` (2026-09-04) — **twelve days**, the same
+figure the previous three readings give, because those three and this one all
+fall on 2026-09-16. **Nothing about the risk this section names has moved**:
+migrations still reach hosted staging on every merge with gating *"none"*, ADR
+0016 §2 is still binding at `0016-migration-delivery-mechanism.md:108` —
+*"Recorded as a constraint precisely because nothing enforces it
+mechanically."* — and nothing in `tests/` can see the dashboard setting that
+would break it.
+
+**THE FIFTH COORDINATE IS THE ONE THIS READING DOES NOT REPEAT, BECAUSE IT HAS
+BEEN AIMED AT THE WRONG ROW FOR FOUR CONSECUTIVE ANCHORS AND NO WINDOW COULD
+EVER HAVE RAISED IT.** The four readings below each say *"the on-every-merge
+row at `:207`"*, and the risk this whole section exists for is the **migrations**
+row — *"Migrations → Supabase **staging** | automatically, on every merge to
+`main`, through Supabase's own GitHub integration | none"* — which is
+**`docs/DEPLOYMENT.md:205`**. `:207` is the row below the row below it: *"Patch
+version bump + `v0.0.N` tag on `main` | automatically, on every merge to `main`,
+from `version.yml` | none"*. **It is wrong in the way this file calls the costly
+one rather than the loud one**: `:207` also says "on every merge" and also says
+gate "none", so a reader who follows the number finds a row that answers to the
+description and concludes the citation landed. Opened here row by row — `:200`
+header, `:201` separator, `:202`-`:207` the six rows — and `docs/DEPLOYMENT.md`
+has not changed since 2026-09-04, so the number was already wrong at the anchor
+that first wrote it and at each of the three that repeated it. **No delta method
+could reach it**: the file has been absent from every window for twelve days,
+which is exactly the absence the readings below rest on. It was found by reading
+this section's citation against the table it cites, and by nothing else. The
+four readings below are **not** repointed — each dates itself to a named commit
+— and the live coordinate is stated here instead: the row is `:205`, and the
+durable form, as §6 recommendation 1 has said for a dozen anchors, is the row's
+own text rather than its number.
+
+**The reading below is kept as the record of a superseded anchor, and it
+said:** **RE-VERIFIED AT `ca82e946`, AND THE RUN OF ABSENCE-BASED READINGS WAS
+THEN AT THIRTEEN — AND FOR THE FIFTH ANCHOR RUNNING THIS SECTION HAS NOTHING TO
 CORRECT.** `git diff --name-only 36d35998..ca82e946 -- .github/
 docs/DEPLOYMENT.md` returns **nothing at all**: neither half of this section's
 evidence is a member of this window's eight merges, for the thirteenth anchor
