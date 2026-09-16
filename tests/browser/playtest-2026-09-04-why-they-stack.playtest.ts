@@ -96,6 +96,7 @@ import {
   openApp,
   press,
   runUntilTick,
+  showPanel,
   tab,
   TILE,
 } from './playtest-harness';
@@ -359,7 +360,7 @@ async function readBothChannels(page: Page, label: string): Promise<{ actors: Ac
  * loop below exists so that an act's population is the number it says.
  */
 async function admitUntil(page: Page, target: number, label: string): Promise<void> {
-  await tab(page, 'overview').click({ timeout: 15_000 });
+  await showPanel(page, 'manage', '.hud-intake');
   let presses = 0;
   for (;;) {
     const counts = await latestCounts(page);

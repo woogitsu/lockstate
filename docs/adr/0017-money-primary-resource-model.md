@@ -1241,6 +1241,48 @@ the boundary, for the reason `src/ui/hud/` may not import the simulation
 > figures are `0` on a prison that is fresh by both definitions, which is the
 > one case in which they cannot disagree.
 
+> **Fixed on 2026-09-15, and the block above is kept rather than rewritten
+> because every measurement in it still holds and only the last paragraph is
+> now history.** `projectStatusStrip` publishes the predicate it used to
+> compute and drop, as `statusCountsSchema.isFreshUnfurnishedPrison`, and the
+> three host sites read it through one function,
+> `freshUnfurnishedPrison` in `src/ui/affordability.ts`, instead of each
+> deriving `counts.roomCapacity === 0`. Three copies of a definition were the
+> defect, so the repair is one reader rather than three corrected
+> derivations. Nothing in §3's arithmetic moves and no published figure moves,
+> exactly as the block above says.
+>
+> **It cannot turn the safe refusal into a false promise, and the sub-sum is
+> the proof.** `roomCapacity` is accumulated over `collectRoomInstances` from
+> the same `residentCapacity` values `totalResidentCapacity` sums, over
+> non-negative terms, so it is a sub-sum: the host's "fresh" set strictly
+> contained the simulation's, and it now equals it. Every prison whose answer
+> changes moves from fresh to **not** fresh — from the starter −1,185 to the
+> mature −1,250, a **deeper** floor, which is the floor the worker was already
+> enforcing on that same prison. The host can therefore claim no room the
+> worker will refuse; it claims exactly the room the worker computes from the
+> same tick's state, which is a tighter coupling than any derivation can be.
+> No player-facing string is authored: `hud.status.funds-remaining`
+> (*"{remaining} left"*) is unchanged, and only the number it interpolates
+> moves, upward, on a prison where it had been understated.
+>
+> **The gate this block called for exists**:
+> `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`,
+> which builds the divergent prison through the restore path's own three calls
+> and pins the published predicate equal to
+> `RoomInstanceRegistry.totalResidentCapacity === 0`. Watched red first, on
+> three cases; and red again under mutation — publishing `roomCapacity === 0`
+> in the projection's place reproduces this block's own measurement exactly:
+> badge `0 left` in the danger tone, `judgeAffordability` refusing the 40 as
+> `past-the-floor` at a spendable of −15, while the command handler accepts it.
+>
+> **`docs/HUD_PROJECTIONS.md` gap 15's correction of 2026-09-15 still says the
+> three host sites derive freshness from `roomCapacity`, and as of this entry
+> that sentence is stale.** It is left for whoever holds that file; the
+> *enumeration* gap it records is real and is not closed by this — the registry
+> still has no `all()`, and the fix works by not asking the fan-out the
+> question rather than by fixing the fan-out.
+
 ### 3. The starter limit, and its arithmetic
 
 **`INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS = -1,185`** —

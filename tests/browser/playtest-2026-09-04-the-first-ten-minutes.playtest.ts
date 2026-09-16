@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import {
-  TILE,
   calibrate,
   centreOf,
   currentClock,
@@ -12,7 +11,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
 } from './playtest-harness';
 
 /**
@@ -276,10 +277,20 @@ test.describe('the first ten minutes', () => {
     tally.step('press New prison');
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
-    // ---- N1. The default tab offers exactly one action. Press it.
-    console.log(`[act2] N1 the only thing the arrival tab offers: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+    // ---- N1. Find the one action the game offers, and press it.
+    //
+    // It used to be on the tab a new prison opens on, which is what made this
+    // step one press. `d5137d5d` (2026-09-14) moved the Intake panel to
+    // Manage, so a naive player now pays a navigation press first -- and this
+    // act counts presses, so that press is counted rather than hidden inside a
+    // helper. The Overview tab a player lands on is read first, because what
+    // it offers instead is part of the same question.
+    console.log(`[act2] N1 what the arrival tab offers: ${JSON.stringify(await panelText(page, '.hud-overview'))}`);
+    await showPanel(page, 'manage', '.hud-intake');
+    tally.step('press Manage, to find something to do');
+    console.log(`[act2] N1 what the Manage tab offers: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
     await page.locator('.hud-intake__admit').click();
-    tally.step('press Admit a prisoner (the only action on the arrival tab)');
+    tally.step('press Admit a prisoner (the only action on the Manage tab)');
     await page.waitForTimeout(500);
     console.log(`[act2] N1 refusal band: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
     console.log(`[act2] N1 event band: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
@@ -553,7 +564,7 @@ test.describe('the first ten minutes', () => {
 
     // ---- N11. The room is "not ready". Does the screen say what to do?
     console.log(`[act2] N11 rooms panel: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     tally.step('Overview tab');
     await page.locator('.hud-intake__admit').click();
     tally.step('press Admit a prisoner');
@@ -763,7 +774,7 @@ test.describe('the first ten minutes', () => {
     console.log(`[act3] furniture built ${(await currentTick(page)) - fromFurniture} ticks later; counts ${JSON.stringify(await latestCounts(page))}`);
 
     // 7. Admit.
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     tally.step('Overview tab');
     await page.locator('.hud-intake__admit').click();
     tally.step('press Admit a prisoner');

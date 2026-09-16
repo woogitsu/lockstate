@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
-  TILE,
-  buildAndPopulate,
   armBuildable,
+  buildAndPopulate,
   buy,
   calibrate,
   centreOf,
@@ -15,7 +14,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -554,7 +555,7 @@ test.describe('is there anything to do', () => {
     console.log(`[act2] the Rooms tab with twelve beds in one 6x6 cell (UPPER BOUND):\n${await screen(page)}`);
 
     // Admit eight more, one press at a time, reading the refusal band each time.
-    await tab(page, 'overview').click({ timeout: 15_000 });
+    await showPanel(page, 'manage', '.hud-intake');
     for (let index = 0; index < 8; index += 1) {
       await page.locator('.hud-intake__admit').click({ timeout: 20_000 });
       await page.waitForTimeout(250);
@@ -1017,7 +1018,7 @@ test.describe('is there anything to do', () => {
     console.log(`[act5] the Rooms tab with a doored cell and a doored shower room (UPPER BOUND):\n${await screen(page)}`);
 
     // Four prisoners and a guard, then let it run.
-    await tab(page, 'overview').click({ timeout: 15_000 });
+    await showPanel(page, 'manage', '.hud-intake');
     for (let index = 0; index < 4; index += 1) {
       await page.locator('.hud-intake__admit').click({ timeout: 20_000 });
       await page.waitForTimeout(250);

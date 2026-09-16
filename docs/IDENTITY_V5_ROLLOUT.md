@@ -10,6 +10,40 @@ It is written to be picked up by an agent that has never seen the delivery, in a
 container that will be thrown away, with the delivery as the only thing it can
 rely on being there.
 
+## How to read a sentence in this document
+
+`docs/ISSUE_BACKLOG.md`'s source-of-truth order gained a rung on 2026-09-15, by
+the owner's ruling, and this file is one of that rung's two members: the
+repository's reading of an accepted ADR **binds where it restates a ruling** and
+**does not bind where it is a snapshot of code**, with the ambiguous case
+falling to the second.
+
+**Almost nothing here is the first kind, and saying so is the point of this
+section.** This document is a *plan* — sequencing, method, predictions, and
+records of what each stage did. A plan is neither a restatement nor a
+measurement, and a sequencing decision an agent made does not acquire contract
+force by sitting on rung 2. Concretely:
+
+- **The sentences that restate a ruling, named rather than counted**, because a
+  count is what rots first: §"The shape of the whole thing" and §"Stage 0" both
+  say the navigation moves without waiting for the inventory (ADR 0112 decision
+  3) and both quote the owner's words; §"Stage 2" says *"the owner ruled on
+  2026-09-13 for 15 / 13 / 11"* and that article 8 was amended (decision 4);
+  §"Stage 7" says the owner extended the stage with production prompts
+  (decision 5). [`docs/VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) carries the
+  map from all five rulings to the sentences that restate them, and is the file
+  to check a restatement against.
+- **The "Landed"/"Worked" sections are readings of the code at a named commit.**
+  They bind nothing. Where one disagrees with `src/`, the code is right and the
+  sentence rotted.
+- **Everything else — the stage order, the gates, the "done when" clauses, the
+  weakest-claim notes — is method.** It is what this repository decided to do,
+  it is revisable by an agent with evidence, and it is not a contract.
+- **§"What an agent may not decide alone" is the exception in the other
+  direction:** its four items bind, and not because of this rung. Item 1 is
+  `AGENTS.md`'s four reservations restated, which is rung 1; items 2–4 are the
+  delivery's and `AGENTS.md`'s boundaries, not this document's invention.
+
 ## Where the work is tracked
 
 The nine stages are filed as GitHub issues under one epic, so a session that
@@ -632,9 +666,21 @@ the record says so wherever it quotes a number.
   than overwritten.
 - **Embed: NOT APPLICABLE**, and deliberately not recorded as a pass. The row
   is about the delivery's own design-book device previews, which this
-  repository does not have. The clause beside it *does* transfer and is unmet:
-  nothing in `src/` binds the `storage` event, so a second Lockstate tab never
-  follows the first (#1199).
+  repository does not have. The clause beside it *does* transfer, and was unmet
+  when stage 8 measured it: nothing in `src/` bound the `storage` event, so a
+  second Lockstate tab never followed the first (#1199).
+
+  > **That clause was written in the present tense and went stale within the
+  > hour; it is corrected above rather than deleted** (`docs/AGENT_WORKFLOW.md`
+  > §4). #1199 landed as `162e9656` on 2026-09-15, and the commit that recorded
+  > this row, `0253a832`, is **one minute and thirty-seven seconds later** on
+  > the same day — the two passed each other. `src/input/storage.ts` now carries
+  > `subscribeToSettingsChanges`, and `src/main.ts` answers three of the four
+  > preference keys with the same apply-path its own control uses. The fourth,
+  > `lockstate.settings.language`, is answered by nothing on purpose, and
+  > `docs/adr/drafts/what-a-second-tab-follows.md` carries why. **What is not
+  > closed is the row's verdict**: this was a NOT APPLICABLE row and remains
+  > one, because the previews it is about still do not exist here.
 - **Touch: PARTIAL.** Every gesture passes and the phone does reach the map.
   `DismissAlert` still has no route at 375×812 — stage 5's open owner question,
   which stage 8 does not answer. **What stage 8 adds is that the closing

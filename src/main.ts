@@ -118,7 +118,7 @@ import {
   staffDailyWageMinorUnits,
 } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
-import { judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
+import { freshUnfurnishedPrison, judgeAffordability, pressFloorMinorUnits } from './ui/affordability';
 import { HostRefusalError } from './ui/host-refusal';
 import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
@@ -3210,6 +3210,19 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * unfurnished" is read off `viewModel.counts.roomCapacity`, the same
            * published field the Rooms panel already renders, not a value
            * minted for this call -- see `pressFloorMinorUnits`.
+           *
+           * **The last sentence was the defect and is kept rather than
+           * rewritten (2026-09-15).** `roomCapacity` is not a value minted for
+           * this call and never was, which is what made it look safe -- but it
+           * is a *different question*, accumulated over `collectRoomInstances`
+           * and therefore a sub-sum of the registry figure the worker judges
+           * with (`docs/HUD_PROJECTIONS.md` gap 15). Reading it here answered
+           * "fresh" in strictly more cases than the worker did, so this
+           * pre-flight refused presses the worker accepts -- the #82/#207
+           * failure this paragraph warns about, wearing the opposite sign.
+           * The predicate is now published
+           * (`statusCountsSchema.isFreshUnfurnishedPrison`) and read through
+           * `freshUnfurnishedPrison`, the one reader in `src/ui/`.
            */
           /*
            * **Skipped entirely when no prison has reported a balance** (issue
@@ -3234,7 +3247,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
               : judgeAffordability(
                   total,
                   counts.treasuryMinorUnits,
-                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, counts.roomCapacity === 0),
+                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, freshUnfurnishedPrison(counts)),
                 );
           if (verdict?.refused === true) {
             /*
@@ -3486,7 +3499,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // same reason (ruling 18): a wage the facility cannot carry is a
           // limit, not the prison being out of money. The third argument is
           // the same starter-rung awareness the purchase case above carries --
-          // hiring shares the press's threshold, mature or starter alike.
+          // hiring shares the press's threshold, mature or starter alike. It
+          // read `hireCounts.roomCapacity === 0` until 2026-09-15; see the
+          // purchase pre-flight's own correction for why that was a second
+          // definition of "fresh" rather than the published one.
           // Stood down when nothing has reported a balance, for the reason the
           // purchase pre-flight above gives in full (#1191): a mirror of the
           // worker's rule has nothing to reflect until the worker has spoken,
@@ -3499,7 +3515,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
               : judgeAffordability(
                   hireChargeMinorUnits,
                   hireCounts.treasuryMinorUnits,
-                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, hireCounts.roomCapacity === 0),
+                  pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, freshUnfurnishedPrison(hireCounts)),
                 );
           if (hireVerdict?.refused === true) {
             const message = `The last reported balance of ${hireCounts?.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`;

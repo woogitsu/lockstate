@@ -189,7 +189,7 @@ The alerts channel is two bands and one list, all fed by pure translator
 functions outside `src/ui/hud/` (`AGENTS.md` boundary 1 — the HUD may not
 import `src/simulation/**`):
 
-- **`.hud__refusal`** (`src/ui/hud/hud.ts:1163-1170`) — the most recent refusal,
+- **`.hud__refusal`** (`src/ui/hud/hud.ts:1298-1305`) — the most recent refusal,
   always laid out, never dismissed by a player gesture
   (`docs/HUD_PROJECTIONS.md` gap 34).
 - **`.hud__event`** (`src/ui/hud/hud.ts:1265-1272`) — the most recent
@@ -197,18 +197,18 @@ import `src/simulation/**`):
   whatever arrives next" is the pre-amendment behavior this section describes
   before the 2026-09-05 Amendment below reversed it** — `applyEventNotice`
   is no longer the ~26-line function this row quotes; it is a two-line
-  delegate to a dwell/hold-ceiling state machine (`hud.ts:1333-1335`,
+  delegate to a dwell/hold-ceiling state machine (`hud.ts:1468-1470`,
   `event-band-dwell.ts`) that the Amendment's §1 already marks and explains.
   This row is left as the historical record the Amendment points back to
   rather than rewritten a second time.
 - **The alerts list** (`HudViewModel.alerts`, a flat `HudAlertViewModel[]`) —
   fed by three independent producers that share it without knowing about one
   another: `hudAlertsFromWorkerMessage` for refusals and protocol faults
-  (`src/ui/simulation-alerts.ts:269-333`), `hudEventAlertsFromWorkerMessage`
-  for domain events (`src/ui/simulation-events.ts:387-445`), and each keeps
+  (`src/ui/simulation-alerts.ts:318-391`), `hudEventAlertsFromWorkerMessage`
+  for domain events (`src/ui/simulation-events.ts:861-943`), and each keeps
   the others' rows untouched by filtering on an id prefix
-  (`REFUSAL_ROW_PREFIX` / `FAULT_ROW_PREFIX`, `simulation-alerts.ts:183-184`;
-  `EVENT_ROW_PREFIX`, `simulation-events.ts:205`).
+  (`REFUSAL_ROW_PREFIX` / `FAULT_ROW_PREFIX`, `simulation-alerts.ts:191-192`;
+  `EVENT_ROW_PREFIX`, `simulation-events.ts:638`).
 
 Both issues under this ADR (#741, #700) are about the list and the event band
 respectively; neither touches the refusal band, which has its own dismissal
@@ -225,15 +225,15 @@ no tick, no in-game time and no `×3`.
 
 This is not a capacity accident. The four incident-opening event types that
 can repeat verbatim carry **no distinguishing payload at all** —
-`gangRetaliationOpenedEventSchema` (`types.ts:1701-1706`),
-`assaultOpenedEventSchema` (`types.ts:1708-1713`),
-`escapeAttemptOpenedEventSchema` (`types.ts:1715-1720`) and
-`incidentsAllClearEventSchema` (`types.ts:1813-1818`) are each `{ ...envelope,
+`gangRetaliationOpenedEventSchema` (`types.ts:2362-2367`),
+`assaultOpenedEventSchema` (`types.ts:2369-2374`),
+`escapeAttemptOpenedEventSchema` (`types.ts:2376-2381`) and
+`incidentsAllClearEventSchema` (`types.ts:2490-2495`) are each `{ ...envelope,
 type: literal }` and nothing else, and the schema's own comment says why:
 *"No incident id, no sector id: the channel carries no identity"*
-(`types.ts:1670-1673`). `incidents.escape-succeeded` is the one member of the
+(`types.ts:2331-2334`). `incidents.escape-succeeded` is the one member of the
 union that does carry a payload (`entityId`, an optional name,
-`types.ts:1770-1783`) and is not part of this finding for exactly that
+`types.ts:2431-2444`) and is not part of this finding for exactly that
 reason — a second escape names a different prisoner and reads differently.
 Two occurrences of `incidents.assault-opened` are
 therefore byte-identical on the wire, not merely similarly worded — there is
@@ -241,12 +241,15 @@ no field this layer is declining to show; there is no field to show.
 
 `MAX_EVENT_ALERT_ROWS = 8` and the eviction rule are exactly where the owner's
 ruling 11 (2026-08-31, #703) already changed the cap's behavior once, and the
-docblock at `simulation-events.ts:207-333` is the fullest measured account of
+docblock at `simulation-events.ts:640-767` is the fullest measured account of
 why: the old evict-oldest rule let a discharge- and all-clear-heavy prison
 evict an escape row after **67 seconds at ×1** in a 289-resident prison, so
-`SEVERITY_EVICTION_ORDER` (`simulation-events.ts:344-348`) now evicts `info`
+`SEVERITY_EVICTION_ORDER` now evicts `info`
 before `warning` before `danger`, oldest-within-band
-(`simulation-events.ts:435-441`), which raised the same worst case to 23,390
+(`simulation-events.ts:921-923`)  — **that constant left this file on 2026-09-01**
+and is declared at `src/ui/hud/view-model.ts:466-470` beside `HudSeverity`, because
+the event band arbitrates a dwell floor by the same map (decision 4's ruling,
+*"one game, one ordering"*); `simulation-events.ts:12-19` records the move, which raised the same worst case to 23,390
 ticks. **That fix is what #741 says makes repetition more likely, not less**:
 the eight rows a player keeps are now the eight *most severe* standing, and a
 prison in enough trouble to fill the cap with `danger` and `warning` rows is
@@ -259,7 +262,9 @@ becoming visible in play.
 
 ### Finding 2 — no dismissal, in the module's own words
 
-`src/ui/simulation-alerts.ts:227-234`:
+`src/ui/simulation-alerts.ts:235-242` — **that docblock now carries a marked
+correction of its own beside the passage (`:244-252`), because the list's rows
+can be dismissed since this ADR's decision 2; the bands still cannot**:
 
 > Nothing clears a row: "the last refusal was X" stays true until another
 > refusal replaces it or the session ends, and the same holds of a fault --
@@ -269,7 +274,7 @@ becoming visible in play.
 > a decision rather than a detail, so it is recorded in
 > `docs/HUD_PROJECTIONS.md` instead of guessed at here.
 
-`src/ui/simulation-events.ts:365-382` makes the same claim for the event
+`src/ui/simulation-events.ts:785-812` makes the same claim for the event
 family, on a different and stronger argument: a refusal is at least a fact
 about a control (*"the build order failed" stops being the current answer
 about that control*), so a *later* answer can retire it; an event has no
@@ -292,7 +297,9 @@ alerts"]` after a real page navigation and *Load*, with the rest of the prison
 restored counter for counter.
 
 This is not an omission. `SimulationEventLog`'s own docblock
-(`src/simulation/events/event-log.ts:70-84`) argues it at length:
+(`src/simulation/events/event-log.ts:97-109`) argues it at length — **that docblock now
+keeps the passage as a quotation and opens with *"It was not snapshotted, and since
+2026-09-01 it is"* (`:90`), which is this ADR's decision 3 having shipped**:
 
 > It is not snapshotted... A restored session starts with an empty log, so it
 > announces nothing that happened before the save. That is the honest reading
@@ -303,7 +310,7 @@ This is not an omission. `SimulationEventLog`'s own docblock
 > arrears are in the save (ADR 0049, "arrears are *history*"), so the next
 > failed payday says so again...
 
-`RefusalLog`'s own docblock (`src/simulation/refusals/refusal-log.ts:52-65`)
+`RefusalLog`'s own docblock (`src/simulation/refusals/refusal-log.ts:55-67`)
 makes the identical case for the refusal row and prices it explicitly:
 
 > It is not snapshotted... That is a decision, not an oversight, and not a
@@ -353,7 +360,7 @@ function applyEventNotice(notice: HudEventNoticeViewModel | undefined): void {
 **Re-anchored 2026-09-06: this is Finding 4's own diagnosis, kept as the
 historical record of the defect the 2026-09-05 Amendment below fixed — the
 function this fenced block quotes no longer exists in this shape**
-(`applyEventNotice` is now the two-line delegate at `hud.ts:1333-1335`; the
+(`applyEventNotice` is now the two-line delegate at `hud.ts:1468-1470`; the
 dwell/hold-ceiling arbitration this finding says is missing is
 `event-band-dwell.ts`'s subject). The comment that used to stand immediately
 above it (previously `hud.ts:1053-1061`) said there was
@@ -365,7 +372,7 @@ the *same* class could collide inside one tick, which #700's own investigation
 (issue comment, 2026-08-31) found is exactly what happens for a lapsed escape
 (**the quoted comment's `EventLog` is this repository's `SimulationEventLog`** —
 `src/simulation/events/event-log.ts:201`, the method at `:825`, and
-`src/ui/hud/hud.ts:1299` is the same citation spelled right. The quotation
+`src/ui/hud/hud.ts:1434` is the same citation spelled right. The quotation
 below is left exactly as it was written, because a quotation of somebody
 else's sentence is not ours to correct; there is no `EventLog`, and there
 never was one):
@@ -382,7 +389,7 @@ never was one):
 > replacing it, which is a decision about what the band does with two events
 > in one tick — and that reaches every alert, not just this one.**
 
-`simulation-events.ts:297-304` independently confirms the collision is bounded
+`simulation-events.ts:733-737` independently confirms the collision is bounded
 rather than freak: a tick carries an opening or a closing and never both for
 one sector, the measured maximum on one tick across 2,433 events is two, and
 the escape row is therefore always the newer of its own tick — so any rule
@@ -434,14 +441,14 @@ when a new event's `labelKey` and resolved parameters exactly match a row
 already in the list, retire that row and append the new occurrence in its
 place, the same shape `hudAlertsFromWorkerMessage`'s refusal branch already
 uses (filter the old copy out, append the new one at the end,
-`simulation-alerts.ts:276-290`). It would need no new field, no new message,
+`simulation-alerts.ts:325-334`). It would need no new field, no new message,
 and no new locale string — the sentence painted is one already authored.
 
 **It is rejected, for reasons internal to the module rather than external
 policy:**
 
 - **It contradicts the exhaustive rule the module already states.**
-  `simulation-events.ts:372-382` does not merely fail to mention a
+  `simulation-events.ts:785-812` does not merely fail to mention a
   content-based retirement; it states there are **exactly two** reasons a row
   leaves — the cap, and `simulation/stopped` — and argues why an event
   specifically cannot be retired the way a refusal can (no control, no
@@ -461,7 +468,7 @@ policy:**
   the symptom quieter, not a fix.
 - **It is not actually free of new state**, on inspection: "the same
   rendered sentence" is well-defined only for the four incident-opening
-  events that carry zero payload fields (`types.ts:1701-1818`, Finding 1
+  events that carry zero payload fields (`types.ts:2362-2495`, Finding 1
   above). `prisoners.discharged` carries `count`, `economy.wages-unpaid`
   carries a sum, `incidents.riot-opened` carries `participantCount` — two
   occurrences of any of those are almost never byte-identical, so the
@@ -487,9 +494,9 @@ one exists, and left there.
 
 **What it would take:** `HudAlertViewModel` gains one field (a `count` on the
 row, or a `firstTick`/`lastTick` pair, or both), populated by extending
-`eventAlertRow` (`simulation-events.ts:496-511`) to look up and increment a
+`eventAlertRow` (`simulation-events.ts:1043-1080`) to look up and increment a
 match in `previous` instead of always appending, mirroring the shape already
-used at `simulation-alerts.ts:276-290` for the refusal row. New state on a projection
+used at `simulation-alerts.ts:325-334` for the refusal row. New state on a projection
 that has never carried per-row history before; a rendered digit or clock
 reading is new player-facing text regardless of which locale key holds it —
 `AGENTS.md`'s fourth exclusion. **Not decided here**, including whether the
@@ -546,14 +553,14 @@ this change, needs **no `SAVE_SCHEMA_VERSION` bump** — absence would mean
 exactly what a restored session gives today, "nothing to show," which is
 unambiguous under the rule quoted in Finding 3. What is not small is what
 persisting it commits to semantically: every current producer treats "now"
-as the whole of what a row can honestly assert (`event-log.ts:70-84`,
-`refusal-log.ts:52-65`, both quoted above, both independently reasoned), and
+as the whole of what a row can honestly assert (`event-log.ts:97-109`,
+`refusal-log.ts:55-67`, both quoted above, both independently reasoned), and
 a restored row is a row about a tick the player was not looking at when it
 happened. **A narrower, reversible option exists and is named here without
 being adopted:** persist only the row *shape* the two docblocks already treat
 as safe to re-announce — the ones ADR 0076's relocation notice and #703
 ruling 13's contraband notice already handle by carrying the *outcome* in the
-save rather than the notice (gap 33, `HUD_PROJECTIONS.md:1611-1632`) — rather
+save rather than the notice (gap 33, `HUD_PROJECTIONS.md:1878-1946`) — rather
 than the raw notice queue, which would require deciding what a stale `danger`
 row is allowed to keep saying. **Not decided here**, including which of the
 two shapes, or neither.
@@ -581,10 +588,10 @@ that actually closes the escape/all-clear collision has to say what the band
 does when a *second* event arrives inside the floor — hold the first and drop
 the second, queue the second behind the first, or promote by severity the
 way the list's cap already does (`SEVERITY_EVICTION_ORDER`,
-`simulation-events.ts:344-348`) — and whichever answer is chosen slows down
+now `src/ui/hud/view-model.ts:466-470`) — and whichever answer is chosen slows down
 *every* other event's arrival on the one band a player watches without
 opening anything, which is the property #507 and #220 built that band to
-have in the first place (`hud.ts:1172-1262`, re-anchored and now the larger
+have in the first place (`hud.ts:1308-1400`, re-anchored and now the larger
 docblock the 2026-09-05 Amendment grew around the same rationale). This is
 squarely the
 "playability" territory the standing mandate would otherwise leave to an
@@ -627,7 +634,7 @@ it does and does not settle.
 - **No `SAVE_SCHEMA_VERSION` bump is implied by any of the four**, should the
   owner take decisions 1 or 3: ADR 0038 §1's rule covers an optional `alerts`
   section the same way it already covers `masterSeed`, `placementSequence`
-  and five other additions (`docs/PERSISTENCE.md:69-92`). This is recorded so
+  and six other additions (`docs/PERSISTENCE.md:91-105`). This is recorded so
   a future implementer does not re-litigate the schema question the owner
   did not actually need to answer.
 - **No player-visible copy is authored here.** Every sentence quoted above

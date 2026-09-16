@@ -9,6 +9,7 @@ import {
   latestCounts,
   openApp,
   panelText,
+  showPanel,
   tab,
 } from './playtest-harness';
 
@@ -583,7 +584,7 @@ test('act 2: save during a live response, reload, load, and watch the guards', a
     // hiring, a dirty-driven autosave has had 30 s to fire and produce a
     // snapshot of its own. If the admissions land now, the channel healed
     // without a pressed save and no claim is made about which snapshot did it.
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await page.waitForTimeout(600);
     for (let index = 0; index < 8; index += 1) {
       await page.locator('.hud-intake__admit').click();
@@ -596,7 +597,7 @@ test('act 2: save during a live response, reload, load, and watch the guards', a
     if ((healed?.prisoners ?? 0) === 0) {
       await pressSaveNow(page);
       console.log(`[act2] HUD save panel after pressing Save now :: ${JSON.stringify(await savePanel(page))}`);
-      await tab(page, 'overview').click();
+      await showPanel(page, 'manage', '.hud-intake');
       await page.waitForTimeout(600);
       for (let index = 0; index < 8; index += 1) {
         await page.locator('.hud-intake__admit').click();
@@ -1065,7 +1066,7 @@ test('act 4: no save, two saves, and an older save over a newer prison', async (
 
   // And can a player still act on it? One admission is the cheapest gesture
   // that changes simulation state.
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   await page.waitForTimeout(600);
   const admit = page.locator('.hud-intake__admit');
   console.log(`[act4d] HUD admit control disabled=${await admit.getAttribute('disabled')}`);

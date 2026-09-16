@@ -5,6 +5,7 @@ import {
   buy,
   calibrate,
   centreOf,
+  type CountsSample,
   countsSeries,
   currentClock,
   currentTick,
@@ -17,10 +18,10 @@ import {
   press,
   reportBoundary,
   sentCommands,
+  showPanel,
   tab,
   TILE,
   waitForQueueEmpty,
-  type CountsSample,
 } from './playtest-harness';
 
 /**
@@ -381,7 +382,7 @@ async function buildGrownPrison(
    * admissions the simulation dropped -- and those are different findings.
    * The count below separates them.
    */
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   const admitCommandsBefore = (await sentCommands(page)).filter((c) => c['type'] === 'AdmitPrisoner').length;
   let admitPressesThatThrew = 0;
   for (let index = 0; index < options.admits; index += 1) {
@@ -576,7 +577,7 @@ test.describe('Hour two — the prison after the first prisoner', () => {
     console.log(`[act2] ONE RESIDENT controls: ${await inventory()}`);
     console.log(`[act2] ONE RESIDENT lists: ${JSON.stringify(await listSizes(page))}`);
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     for (let index = 0; index < 23; index += 1) {
       await page.locator('.hud-intake__admit').click();
       await page.waitForTimeout(120);
