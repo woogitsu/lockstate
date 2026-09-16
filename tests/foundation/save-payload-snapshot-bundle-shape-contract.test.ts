@@ -73,6 +73,45 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
  * `sessionSnapshotBundleFromTransport` in
  * `src/simulation/runtime/restore-session.ts`).
  *
+ * ## Where this gate is STRICTER than #1227's ruling, and what to do about it
+ *
+ * **Measured 2026-09-16, by mutation, after #1227 landed on `main` as
+ * `tests/foundation/save-schema-enum-union-contract.test.ts`.** The two gates
+ * are mostly disjoint -- that one matches on `z.enum` and compares *members*,
+ * this one compares *keys and leaf types* and never reads the schema source --
+ * but they overlap at exactly one place: an enum leaf that sits inside a
+ * section this file compares whole is compared here too, by assignability.
+ *
+ * And in that overlap this file is the stricter of the two, deliberately or
+ * not. #1227 rules that the reader is *allowed* to be wider than the union,
+ * because a save carrying a retired member must still load, and it makes that
+ * width legal on condition it is named in `readerOnly` with the build that
+ * wrote it. This file's `ShapesAgree` is mutual assignability, so the same
+ * widening is a **red** here with no ledger to record it in.
+ *
+ * Worked, so the claim is not a reading of the types: adding `'retired'` to
+ * `carryItemJobSchema.state`'s `z.enum` in `save-schema.ts` reds
+ * `carryJobWithoutFailReason` in this file (`schemaLeaf` / `bundleLeaf`, the
+ * whole job object printed) *and* reds #1227's "every member the reader at
+ * carryItemJobSchema.state accepts beyond its union is named with the build
+ * that wrote it" (1 failed | 45 passed).
+ *
+ * **The danger is which red a reader believes.** #1227's names the fix in its
+ * own failure message; this one prints two object types and names nothing, and
+ * the cheapest way to make *this* file green again is to delete the member
+ * from the `z.enum` -- which is the narrowed reader, the unloadable prison,
+ * and the precise defect #1225 exists to prevent.
+ *
+ * **So: never satisfy a red in this file by narrowing `save-schema.ts`.** A
+ * legitimate reader-only widening is declared the same way the three leaves
+ * below are -- split the section around the leaf with `Omit`, assert the
+ * direction with `Widens`, and add a `DECLARED_DIVERGENCES` entry naming the
+ * build that wrote the member. That is more ceremony than #1227 asks for the
+ * same change, and it is the known cost of this file comparing shapes rather
+ * than matching on `z.enum`; it is recorded here rather than smoothed away,
+ * because a gate whose stricter direction is undocumented gets "fixed" in the
+ * dangerous direction by whoever meets it first.
+ *
  * ## Measured, 2026-09-15, before any of this was written
  *
  * The normalised shapes are equal at every section and at every leaf except
