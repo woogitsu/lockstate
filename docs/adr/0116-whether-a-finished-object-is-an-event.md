@@ -16,9 +16,108 @@
 
 ## Status
 
-**Proposed, 2026-09-15. Not self-approved, and it implements nothing.** No
-file under `src/` is changed by the pass that wrote this document, and none is
-proposed to change until the owner rules.
+**Accepted, 2026-09-16, by the repository owner: option 2 — a
+construction-completion event, graded `'info'`, routed `'log-only'`.** It
+reaches the alerts list and never the band, and it is counted rather than
+repeated, so twenty-four finished walls are **one row carrying a count of 24**.
+**Nothing under `src/` implements it, and the ruling does not by itself change
+that** — it settles which rule is right, not that it is built.
+
+*The paragraph replaced here read "**Proposed, 2026-09-15. Not self-approved,
+and it implements nothing.** No file under `src/` is changed by the pass that
+wrote this document, and none is proposed to change until the owner rules." The
+first half is still true and the last clause is what just stopped being true; it
+is quoted rather than deleted, because every argument below was written from a
+position this document no longer holds.*
+
+**The provenance is the weaker of the two kinds this repository distinguishes,
+and it is recorded here rather than left to be inferred.** The owner did not
+type a sentence. They were shown four options in a clickable question an agent
+session had written, priced by the dossier below, and chose the one labelled:
+
+> Opcja 2 — jeden zliczany wiersz (zalecane, słabo)
+
+("Option 2 — one counted row (recommended, weakly).") That is the same
+provenance `CLAUDE.md` flags for the 2026-09-08, -09 and -10 releases inside
+reservation 3, and it is weaker than a quoted instruction in exactly one way
+that matters here: **the option's own label is the whole of what was agreed.**
+
+**The label says *weakly* because the recommendation is weak, and the owner was
+shown why before they chose it.** The dossier's D11 records what did not survive
+being measured, and it is recorded here rather than left in a section a reader
+may not reach:
+
+- **The constitutional case does not reach a finished wall.** The owner's own
+  ruling of 2026-09-15 on `docs/HUD_PROJECTIONS.md` gap 34 partitions
+  *ostrzeżenia* into a condition of the prison and the decline of a press, and a
+  finished wall is neither; article 6's heading is *Problem prowadzi do
+  działania*, and a finished wall is not a problem and has no next step (D9).
+  What is left of §3's case is one clause about history standing on its own,
+  unsupported by the article around it.
+- **The price is wrong by between five and fifteen times.** §5 and the
+  Consequences below say *"roughly 40 lines across four files"*. Measured
+  against the three commits that have actually added event members to this tree,
+  one member cost **635 insertions across 13 files** (`20aa619e`), two cost
+  1,288 across 15 (`659a388b`) and three cost 738 across 13 (`eea81acb`) (D7).
+- **The save cost is neither bounded nor dull, and no payload shape avoids it.**
+  Twenty-four completions occupy **37.5 % of the 64-record persisted buffer**
+  and evict **10 records** of a 50-record history — identically for options 2, 3
+  and 4, because the counted row is a HUD-side reading and `SimulationEventLog`
+  appends every record (D6). No section of this document above the dossier
+  prices that at all.
+
+**And the ruling was made over a named counter-argument rather than in the
+absence of one.** D11 says in terms that *"if the buffer cost is the one that
+matters to the owner, option 1 gets stronger than §6 allows"*, and declines to
+argue the owner out of it. They were shown that and chose option 2 anyway. It is
+kept here rather than retired with the question, because a ruling recorded
+against a live objection is a stronger record than one that reads as unanimous —
+and because it is the argument anyone re-opening this will reach for first.
+
+**What is NOT agreed is any of the implementation the dossier prices under this
+rule, and the payload's shape before anything else.** The rule is that a
+completion is an event, log-only, counted. The "one counted row" figure behind
+it was obtained by running the shipped reducer against a **proxy** member —
+`economy.construction-restored` for the envelope-only shape and `rooms.zoned`
+for the one-identifier shapes — because no completion member exists; what is
+proxied is the type string and nothing else (D4, D12). **A completion schema
+carrying a field neither proxy has** — a count, a tick-derived figure, anything
+that varies between two completions of the same buildable — **would invalidate
+the one-row result**, at which point the ruling's own headline figure is a
+result about a payload nobody has agreed to. The cheapest settlement is to build
+option 2 behind this ruling and re-run D4's four shapes against the real member.
+
+**This ruling authors no player-visible sentence, and option 2 does not author
+one by itself.** §6's *"What this document deliberately does not decide"* stands
+word for word: the sentence a completion row would carry is still unwritten, and
+`AGENTS.md`'s fourth reservation governs its truth rather than its wording. What
+the ruling settles about the surface is only *where* such a statement may go —
+the alerts list, never the band — which is what the `'log-only'` routing means.
+
+**The three declined options, and what declining each costs.** Option 1 is the
+only one that costs the persisted log nothing, and D11 is explicit that it gets
+stronger, not weaker, under measurement. Option 3 is the only one whose sentence
+could name *what* finished; declining it means the row can say how many things
+finished and not what, which §6 names as option 2's own weakness. Option 4 was
+rejected in this document rather than offered neutrally, on §4d's 625 ms
+cadence — which D3 has since re-measured at 750 ms against the 600 ms dwell
+floor, leaving 150 ms of margin where §4d had 25.
+
+**This document is otherwise left in the tense it was written in**, per
+`docs/AGENT_WORKFLOW.md` §4: §6 still recommends, the dossier still recommends,
+and the ruling is marked beside them rather than written over them. A
+recommendation silently rewritten into a ruling destroys the evidence of what
+the ruling chose between.
+
+**The three paragraphs below are the proposal's own, kept because they are
+what the owner ruled on.**
+
+**This document authors no player-visible string**, and it is careful about
+why rather than merely compliant: the sentence a completion event would carry
+is a sentence whose truth depends on a mechanism that does not exist yet. §6
+names the truth conditions instead, in the shape ADR 0114 §4 uses. *Still true
+after the ruling, and the ruling does not license one: see the paragraph above
+about `AGENTS.md`'s fourth reservation.*
 
 **Its provenance is the weakest kind this corpus records, and it is weaker
 still than the clickable-option rulings `AGENTS.md` discloses from 2026-09-08
@@ -30,18 +129,20 @@ asking for research first and an ADR after. Nothing here has been put to the
 owner. The brief's own instruction was that concluding *no ADR is needed* is a
 perfectly good outcome; §1 and §2 below are the part of this document that
 takes that instruction seriously, and they refute the finding that
-commissioned it in two places before §3 argues anything.
-
-**This document authors no player-visible string**, and it is careful about
-why rather than merely compliant: the sentence a completion event would carry
-is a sentence whose truth depends on a mechanism that does not exist yet. §6
-names the truth conditions instead, in the shape ADR 0114 §4 uses.
+commissioned it in two places before §3 argues anything. *Two of its sentences
+stopped being true on 2026-09-16 and are marked rather than cut — "there is no
+ruling behind it at all" and "nothing here has been put to the owner". What
+replaced them is a clickable-option ruling, which is the very provenance class
+this paragraph measures itself against, not a stronger one; the clause about §1
+and §2 is unaffected.*
 
 **It deliberately leaves the implementation unbuilt even though §5 prices it
 at a few dozen lines.** [ADR 0115](./0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md)
 was proposed and not built two days ago for the same reason and that is the
 precedent followed here: a player-visible change made in anticipation of a
-ruling spends something that may have to be spent back.
+ruling spends something that may have to be spent back. *The ruling does not
+change this either: the implementation is still unbuilt, and D7 has since
+priced "a few dozen lines" at 635.*
 
 ## 1. The finding that commissioned this, checked rather than repeated — and it has aged
 
@@ -370,6 +471,23 @@ thing in this repository to a place where a routing decision gets a signature.
 message every other member already reaches.
 
 ## 6. The decision, as options, with the recommendation
+
+> **RULED 2026-09-16: OPTION 2, and everything below is left in the tense it
+> was written in.** The owner chose option 2 from a clickable question — the
+> label was *"Opcja 2 — jeden zliczany wiersz (zalecane, słabo)"*, "one counted
+> row (recommended, weakly)" — so the recommendation below is still a
+> recommendation and this note is the ruling beside it, per
+> `docs/AGENT_WORKFLOW.md` §4's rule about marking both directions rather than
+> overwriting. A recommendation rewritten into a ruling destroys the evidence
+> of what the ruling chose between, and what it chose between is these four
+> options as written, re-priced under **D10** and weakened under **D9**, **D6**
+> and **D7**.
+>
+> **What was ruled is the rule and not the implementation**: a completion is an
+> event, `'info'`, `'log-only'`, counted rather than repeated. The payload shape
+> below is *not* settled — the one-counted-row figure rests on a proxy member
+> (D4, D12). The `## Status` block carries the ruling in full, including the
+> counter-argument the owner was shown and ruled against.
 
 ### Option 1 — do nothing
 
@@ -754,7 +872,10 @@ appeared**, not at the top of the list.
 
 - **Nothing changes in `src/` until the owner rules**, including under option
   2, which §5 prices at roughly 40 lines across four files plus one authored
-  sentence. **The implementation being small and obvious is not a reason to
+  sentence. *Marked rather than rewritten, 2026-09-16: the owner has now ruled
+  (option 2) and nothing under `src/` has changed, so the bullet's condition is
+  spent while its conclusion holds; D7 prices the same work at 635 insertions
+  across 13 files.* **The implementation being small and obvious is not a reason to
   build it**: the smallness is entirely in the plumbing, and the part that is
   not small is the sentence and the surface, which are the owner's.
 - **Issue #960's title should be corrected or the issue closed and re-filed.**
