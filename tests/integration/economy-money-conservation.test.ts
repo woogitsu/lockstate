@@ -1450,10 +1450,10 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
  *
  * A completed order's value could return by exactly three presses, and each has
  * a case below. `RemoveObject` on a standing object
- * (`object-placement-service.ts:582`) already returned nothing and is pinned
- * here so that it stays that way; `Undo` (`system.ts:525`) and
- * `CancelBuildOrder` (`handler.ts:97`) both delegate to
- * `ConstructionSystem.cancelOrder` (`system.ts:653`) and are what this changes.
+ * (`object-placement-service.ts:646`) already returned nothing and is pinned
+ * here so that it stays that way; `Undo` (`system.ts:797`) and
+ * `CancelBuildOrder` (`handler.ts:174`) both delegate to
+ * `ConstructionSystem.cancelOrder` (`system.ts:1004`) and are what this changes.
  * The Build panel cannot aim `CancelBuildOrder` at a finished order —
  * `PENDING_BUILD_ORDER_STATES` excludes `'completed'` — so `Undo` and
  * `RemoveObject` are the only two presses a player can actually reach one with,

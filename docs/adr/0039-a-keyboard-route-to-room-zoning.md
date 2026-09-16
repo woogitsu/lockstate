@@ -72,8 +72,8 @@ document landed** and the second half had never been established at all.
 This paragraph read *"Fifteen of the seventeen `HudIntent` kinds had a keyboard
 producer"* until it was corrected. The union declares **eighteen** members and
 declared eighteen at `9a43f3e`, the commit that landed this document:
-`src/ui/hud/hud.ts:322-668` (re-anchored 2026-09-06), opening at `export type HudIntent =` and closing at
-its last member, before the comment that introduces `HudUnavailableNotice` (`:670`) —
+`src/ui/hud/hud.ts:365-738` (re-anchored 2026-09-06, again 2026-09-16), opening at `export type HudIntent =` and closing at
+its last member, before the comment that introduces `HudUnavailableNotice` (`:752`) —
 `select-tab`, `set-clock`, `toggle-panel`, `place-build-order`, `place-object`,
 `remove-object`, `purchase-materials`, `admit-prisoner`, `hire-staff`,
 `arm-build-tool`, `undo`, `redo`, `cancel-build-order`,
@@ -92,6 +92,18 @@ this corpus's own rule (`docs/AGENT_WORKFLOW.md` §4, "a correction is no more
 durable than the claim it corrected"), the count above is marked rather than
 silently bumped to twenty-one, because a paragraph that keeps drifting past
 its own correction is the pattern worth recording, not just the number.
+
+**Stale a third time, ten days later: the union is 22 members, and the
+correction above is the claim that rotted this round.** Counted the same way on
+2026-09-16 — `readonly kind:` occurs **22** times in the span, which is
+`hud.ts:365-738` today and had to be re-anchored again to be counted at all.
+The one neither list names is **`sell-materials`** (`hud.ts:459`). Marked, not
+bumped, for the third time and for the reason the paragraph above already gave:
+**five figures have now been live for this one union — seven, fifteen/sixteen,
+seventeen, eighteen, twenty-one — and every one of them was written by somebody
+who had just counted.** The durable form is the list and the boundary, which is
+why both are here; the number is the part that keeps expiring. A reader who
+needs today's figure should run the count, not read it.
 
 **Four figures for this one union were in the repository simultaneously when
 that sentence was written, and three of them were prose.**
@@ -117,21 +129,21 @@ natively focusable control, or a key binding.
 
 - **Fourteen reach a real `<button>`.** Every HUD control here is one:
   `createActionButton` builds `element('button', …)`
-  (`src/ui/primitives/action-button.ts:37`), `createTabButton` likewise
+  (`src/ui/primitives/action-button.ts:81`), `createTabButton` likewise
   (`tab-button.ts:44`), and a collapsible section's header is a `<button>` too
   (`collapsible-section.ts:69`). That covers `select-tab`, `set-clock`,
   `toggle-panel`, `arm-build-tool`, `arm-room-tool`, `hire-staff`,
   `release-guard`, `admit-prisoner`, `purchase-materials`,
   `cancel-material-purchase` and `cancel-build-order`; a catalogue row with an
-  `onActivate` is a `<button>` too (`list-row.ts:40`), so choosing *what* to
+  `onActivate` is a `<button>` too (`list-row.ts:125`), so choosing *what* to
   place is reachable as well. `place-build-order`, `place-object` and
   `remove-object` add the Build panel's numeric fields, which are real
-  `<input type="number">` (`number-field.ts:46,50`) feeding the submit button —
+  `<input type="number">` (`number-field.ts:118,122`) feeding the submit button —
   the precedent this document's decision follows, and the one quoted below.
 - **Two are keys and nothing else.** `undo` and `redo` are `edit.undo` and
   `edit.redo` (`src/input/actions.ts:11-12`), dispatched from the `keydown`
-  listener at `src/rendering/scene/world-scene.ts:335` and handled at `:585`
-  and `:588`. They have no on-screen control at all, which is its own gap and
+  listener at `src/rendering/scene/world-scene.ts:561` and handled at `:857`
+  and `:860`. They have no on-screen control at all, which is its own gap and
   is not this document's.
 - **`zone-room` and `unzone-room` had none, and the reason is sharper than "no
   control".** Their control *was* keyboard-reachable — the confirm button is a
@@ -140,12 +152,13 @@ natively focusable control, or a key binding.
   writer that set it to anything other than `undefined`, `setPendingArea`
   (`src/ui/hud/rooms-panel.ts:820`, verified still correct **at `cf723b3`**,
   the commit this paragraph is dated to — `setPendingArea` has since moved to
-  `rooms-panel.ts:1997` and its call site to `hud.ts:1917`, but this sentence
+  `rooms-panel.ts:2076` and its call site to `hud.ts:2113`, but this sentence
   is explicitly historical and was never a claim about current `main`); its
   only caller anywhere in `src/` at that commit was
-  `src/ui/hud/hud.ts:1305`, fed from `worldRooms.attachGestures`, i.e.
+  `hud.ts`, fed from `worldRooms.attachGestures`, i.e.
   `WorldScene.commitArea`, which is reached only from `finishPointer` on
-  `'pointerup'` (`src/rendering/scene/world-scene.ts:449`). So the player could
+  `'pointerup'` (`world-scene.ts`, `finishPointer` at `:673` and its two
+  registrations at `:683-684` today). So the player could
   focus and press the confirm button all day and it would dispatch nothing.
 
 That is what makes this a keyboard *route* rather than a keyboard *control*, and
@@ -378,6 +391,17 @@ cannot catch this class at all.
 
 1. **Does `uiScale` change any of this?** `docs/INPUT.md` names `uiScale` as a
    validated accessibility setting and every figure here was taken at one scale.
+
+   > **Still open, and narrower than when it was written: the mechanism is now
+   > named rather than suspected.** `--tap-target`, `--space-1` through
+   > `--space-5` and the three `--icon-size-*` tokens are each
+   > `calc(… * var(--ui-scale))` (`src/ui/tokens.css:572-576`, `:702-704`,
+   > `:709`), and `--hairline` is not (`:582`). So the answer to *"do the row
+   > heights it competes with all scale together?"* is **yes for the heights and
+   > no for the rules between them**, which is checkable rather than a guess.
+   > What is still unmeasured is the only thing the question actually asks: the
+   > folded 45px and the open 252.56px at a scale other than 1. Nobody has taken
+   > those, and this note does not.
    The exposure is smaller than it would have been for the draft's placement —
    the form is inside a scroller, so a taller form scrolls rather than overflows
    — but the *folded* 45px is inside that scroller too, and the row heights it
@@ -402,20 +426,36 @@ cannot catch this class at all.
    `.ui-section` header is 44px"* and prices the refusals against 44; open
    question 1 above, ADR 0031's decision 3 (*"A collapsed `.ui-section` is
    45px"*), ADR 0022's amendment (*"a 45px collapsed section"*) and
-   `src/ui/hud/build-panel.ts:380` (*"a collapsed section of its own is 45px"*)
+   `src/ui/hud/build-panel.ts:664` (*"a collapsed section of its own is 45px"*,
+   said again at `:1658` with the split written out — *"1px border plus a 44px
+   header"*)
    all say 45. **This is recorded open rather than settled, and deliberately so
    — nothing here picks a side.**
 
    What the stylesheet suggests, which is a hypothesis and not the measurement:
    the two figures may not name the same box. `.ui-section__header` carries
-   `min-height: var(--tap-target)` (`src/ui/primitives/primitives.css:368`) and
-   `--tap-target` is `44px` (`src/ui/tokens.css:150`), while `.ui-section`
-   itself carries `border-top: var(--hairline)` (`primitives.css:360`) with
-   `--hairline: 1px` (`tokens.css:121`) — so a collapsed *header* would be 44px
+   `min-height: var(--tap-target)` (`src/ui/primitives/primitives.css:540-545`) and
+   `--tap-target` is `44px`, while `.ui-section`
+   itself carries `border-top: var(--hairline)` (`primitives.css:537`) with
+   `--hairline: 1px` (`tokens.css:582`) — so a collapsed *header* would be 44px
    and a collapsed *section* 45px, which is exactly how the two phrasings
-   divide. ADR 0031's own decision 3 says a queue costs *"a 1px border and a
+   divide.
+
+   > **`--tap-target` is not `44px`. It is
+   > `calc(44px * var(--ui-scale))` (`src/ui/tokens.css:709`), and the sentence
+   > is marked rather than patched because the difference is open question 1's
+   > whole subject rather than a typo.** `--ui-scale` defaults to `1`
+   > (`tokens.css:569`), so at the scale every figure in this document was taken
+   > at the arithmetic above is unchanged and the hypothesis stands exactly as
+   > written. What it is not is scale-free: `src/ui/display-scale.ts:115` writes
+   > the player's `uiScale` setting onto the root, so a player who enlarges the
+   > UI moves the 44 and leaves `--hairline` where it is — which means the
+   > *gap* between the two phrasings stays 1px while both numbers grow, and a
+   > reader re-using either figure has to say at which scale. Whether the token
+   > read `44px` when this entry was written was not established; `git log -S`
+   > would settle it and was not run. ADR 0031's own decision 3 says a queue costs *"a 1px border and a
    44px header"*, which is that reading written out. Against it:
-   `.ui-section:first-child` zeroes the border (`primitives.css:361`), so the
+   `.ui-section:first-child` zeroes the border (`primitives.css:538`), so the
    first section in a body would be 44px either way, and `min-height` is a floor
    rather than a height, so neither number is forced by the CSS alone.
 

@@ -301,6 +301,29 @@ import { describe, expect, it } from 'vitest';
  *   red. So a change to `version.yml`'s subject line cannot make this gate
  *   quietly under-count; it makes it over-count by roughly two, which is the
  *   direction that gets noticed.
+ *
+ * ## The window stopped ending at HEAD on 2026-09-15, later the same day
+ *
+ * Both budgets counted to `HEAD`, which on a feature branch counts that
+ * branch's own unmerged commits as merges landed on `main` — and says so, in a
+ * message whose every clause was then false of the situation. Five empty
+ * commits on unmodified `origin/main`, touching no file, reproduce it exactly.
+ * They end at `landedTipOfMain` now: `merge-base HEAD <main tip>`, the tip of
+ * `main` the tree actually sits on. That function's docblock carries the
+ * measurement, the four contexts it was verified in, and what the shape gives
+ * up; `MAIN_TIP_REFS` beside it carries the evidence that CI has the ref.
+ *
+ * **It reopens a divergence with `tooling/anchor-budget-spend.mjs`, narrowly,
+ * and deliberately.** That script still counts to `HEAD`. It runs from one
+ * place — `.github/workflows/version.yml`, on `main`, after a bump has been
+ * pushed — where HEAD *is* `main`'s tip and the two agree; and where the merge
+ * base would be the weaker answer, because the remote-tracking ref can lag the
+ * commit the run is annotating and the annotation would then under-report by
+ * the very merge that triggered it. The divergence is therefore confined to
+ * running that script by hand on a branch, where it over-reports exactly as
+ * this gate used to. `anchor-budget-spend-annotation.test.ts` pins the budget
+ * and the unit across the two copies, which is what must not drift; where the
+ * window ends is not the same question.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
@@ -615,11 +638,99 @@ function patchReleasesBetween(anchor: string, shipped: string): number {
  * the only thing dropped, so a direct push to `main` still counts, exactly as
  * `80b54a97` does in the header's twenty-commit window.
  */
-function landingsSince(anchorSha: string): number {
-  return git(['log', '--first-parent', '--format=%s', `${anchorSha}..HEAD`])
+function landingsSince(anchorSha: string, until: string): number {
+  return git(['log', '--first-parent', '--format=%s', `${anchorSha}..${until}`])
     .split('\n')
     .filter((subject) => subject.trim().length > 0)
     .filter((subject) => !RELEASE_COMMIT_SUBJECT.test(subject.trim())).length;
+}
+
+/**
+ * The refs that can name `main`'s tip, in the order they are trusted.
+ *
+ * `refs/remotes/origin/main` first because it is the published branch and is
+ * what every checkout this gate runs in actually has. **Read out of a CI log
+ * rather than inferred from the action's source**: the `verify` job of run
+ * 35025070176 (a `pull_request` event, runner `docker-runner-03`), whose
+ * Checkout step logs its fetch at 21:20:52Z as
+ *
+ *     git -c protocol.version=2 fetch --no-tags --prune
+ *       --no-recurse-submodules --unshallow origin
+ *       +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+ *       +<head sha>:refs/remotes/pull/<n>/merge
+ *
+ * — so `refs/remotes/origin/main` is written on every run of the one job that
+ * runs `pnpm test`, and the same step reports HEAD as *"Merge <head> into
+ * <base>"*, the merge ref whose first parent is `main`'s tip.
+ * `documentation-commit-citation-contract` states the same refspec in its
+ * `UNPUBLISHED_BY_ORIGIN` docblock and depends on those refs already; this is
+ * the direct observation behind it. (No sha is quoted from that log on
+ * purpose: a pull request's head and merge-ref commits stop being published
+ * the moment `delete-branches.yml` removes the branch, which is exactly what
+ * `UNPUBLISHED_BY_ORIGIN` is a list of.)
+ *
+ * `refs/heads/main` second, for a checkout whose remote is under another name.
+ * It is the weaker of the two — a local `main` can sit months behind — which
+ * is why it is second and not first, and why neither is silently swapped for
+ * `HEAD` when both are missing.
+ */
+const MAIN_TIP_REFS = ['refs/remotes/origin/main', 'refs/heads/main'] as const;
+
+/** The first of `MAIN_TIP_REFS` this checkout can resolve, or `undefined`. */
+function resolveMainTip(): string | undefined {
+  for (const ref of MAIN_TIP_REFS) {
+    const resolved = spawnSync('git', ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`], {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    });
+    if (resolved.error === undefined && resolved.status === 0 && resolved.stdout.trim().length > 0) {
+      return resolved.stdout.trim();
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Where both budgets below stop counting: the tip of `main` **this tree sits
+ * on**, which is what "history that has landed" means from anywhere.
+ *
+ * ## The defect this replaced, fixed 2026-09-15
+ *
+ * Both budgets counted `<anchor>..HEAD`, and on a feature branch HEAD carries
+ * that branch's own unmerged commits — so an agent's working commits were
+ * counted as merges on `main`, by a message that said *"N merges have landed
+ * on main since"* of a tree where nothing had landed. **Proved rather than
+ * inferred: five empty commits on unmodified `origin/main`, touching no file,
+ * took the merge count from 7 to 12 and failed the budget.** Four agent
+ * branches hit it in one day; one squashed four commits into one to get green,
+ * which is this gate teaching a habit that has nothing to do with what it
+ * guards. The intent was already written in the `landingsSince` docblock above
+ * — *"a pull request with forty commits on its branch is one merge on `main`"*
+ * — and was true only after the merge.
+ *
+ * ## Why the merge base rather than the main tip itself
+ *
+ * Counting `<anchor>..origin/main` fixes the branch case and breaks the
+ * controls this file's own header is verified by: every one under "It bites in
+ * the new unit" is a **detached checkout at a historical commit**
+ * (`7e9c3043`, `450c9819`), where `origin/main` is today's tip and the window
+ * would be measured against a tree the checkout is nowhere near. The merge
+ * base answers with the right commit in each context instead: HEAD on `main`
+ * and at a historical checkout, the fork point on a branch, and the base of a
+ * `refs/pull/N/merge` ref on a pull request in CI — that ref's first parent
+ * *is* `main`'s tip, so the base is that tip.
+ *
+ * ## What it gives up, said here rather than discovered later
+ *
+ * A branch forked before the budget blew stays green while `main` is red. That
+ * is deliberate and it is not a hole: the branch's verdict becomes a function
+ * of the tree it actually carries, and the run that fires is `main`'s own,
+ * which is the one the gate exists for. The moment that branch merges, `main`
+ * is past the budget and `ci.yml` says so on the merge commit.
+ */
+function landedTipOfMain(mainTip: string): string {
+  return git(['merge-base', 'HEAD', mainTip]).trim();
 }
 
 describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
@@ -627,6 +738,10 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
   const packageVersion = (JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as { version: string }).version;
 
   const anchors = [...statusQueue.matchAll(ANCHOR_LINE)];
+
+  // Resolved once, used by both budgets: they measure the same window in two
+  // units and must not be able to disagree about where it ends.
+  const mainTip = resolveMainTip();
 
   it('declares exactly one re-anchoring line', () => {
     // Non-vacuous in both directions: zero matches means the line was reworded
@@ -673,12 +788,24 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
       `STATUS-QUEUE.md is anchored at ${anchorSha} and this checkout does not contain that commit, so the merge budget cannot be counted. That is a broken citation rather than stale history -- see documentation-commit-citation-contract for the same failure in the other direction`,
     ).toBe(0);
 
-    const behind = landingsSince(anchorSha);
+    expect(
+      mainTip,
+      `this gate measures history that has landed on main, so it needs a ref naming main's tip and this checkout resolves none of ${MAIN_TIP_REFS.join(', ')}. Fetch one (\`git fetch origin main\`) rather than making this pass: counting to HEAD instead is exactly the defect repaired on 2026-09-15, because on a branch HEAD's own unmerged commits are not history that has landed anywhere`,
+    ).toBeDefined();
+
+    const landed = landedTipOfMain(mainTip!);
+    const onMain = spawnSync('git', ['merge-base', '--is-ancestor', anchorSha, landed], { cwd: REPOSITORY_ROOT });
+    expect(
+      onMain.status,
+      `STATUS-QUEUE.md is anchored at ${anchorSha}, and the main this checkout can see (${mainTip!.slice(0, 8)}) does not contain that commit, so there is no window to count. Either this checkout's view of main is stale (\`git fetch origin main\`) or the anchor names a commit that never landed on main -- both are a broken citation rather than stale history`,
+    ).toBe(0);
+
+    const behind = landingsSince(anchorSha, landed);
     const releases = patchReleasesBetween(anchorVersion, packageVersion);
 
     expect(
       behind,
-      `STATUS-QUEUE.md is anchored at ${anchorSha} (v${anchorVersion}) and ${String(behind)} merges have landed on main since, against a budget of ${String(ANCHOR_STALENESS_BUDGET_MERGES)}: that much history, and no entry in that file has been read against any of it. The same window spent ${String(releases)} release ${releases === 1 ? 'number' : 'numbers'}, which is the unit this gate used to count and no longer does -- a version number can be spent on nothing (see the header, "The unit stopped being releases"), and a merge cannot. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_MERGES to make this pass, because the number is what the budget is for`,
+      `STATUS-QUEUE.md is anchored at ${anchorSha} (v${anchorVersion}) and ${String(behind)} merges have landed on main since, counted to ${landed.slice(0, 8)} -- the tip of main this tree sits on rather than HEAD, so nothing unmerged on this branch is in that number -- against a budget of ${String(ANCHOR_STALENESS_BUDGET_MERGES)}: that much history, and no entry in that file has been read against any of it. The same window spent ${String(releases)} release ${releases === 1 ? 'number' : 'numbers'}, which is the unit this gate used to count and no longer does -- a version number can be spent on nothing (see the header, "The unit stopped being releases"), and a merge cannot. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_MERGES to make this pass, because the number is what the budget is for`,
     ).toBeLessThanOrEqual(ANCHOR_STALENESS_BUDGET_MERGES);
   });
 
@@ -692,7 +819,7 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
     // not a case to tolerate.
     expect(
       git(['rev-parse', '--is-shallow-repository']).trim(),
-      'this gate counts commits between the anchor and HEAD, which a shallow checkout cannot do. Fetch full history (`git fetch --unshallow`) rather than making this pass',
+      'this gate counts commits between the anchor and the tip of main this tree sits on, which a shallow checkout cannot do. Fetch full history (`git fetch --unshallow`) rather than making this pass',
     ).toBe('false');
   });
 
@@ -709,11 +836,23 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
       `STATUS-QUEUE.md is anchored at ${anchorSha} and this checkout does not contain that commit, so the commit budget cannot be counted. That is a broken citation rather than stale history -- see documentation-commit-citation-contract for the same failure in the other direction`,
     ).toBe(0);
 
-    const behind = Number.parseInt(git(['rev-list', '--count', `${anchorSha}..HEAD`]).trim(), 10);
+    expect(
+      mainTip,
+      `this gate measures history that has landed on main, so it needs a ref naming main's tip and this checkout resolves none of ${MAIN_TIP_REFS.join(', ')}. Fetch one (\`git fetch origin main\`) rather than making this pass: counting to HEAD instead is exactly the defect repaired on 2026-09-15, because on a branch HEAD's own unmerged commits are not history that has landed anywhere`,
+    ).toBeDefined();
+
+    const landed = landedTipOfMain(mainTip!);
+    const onMain = spawnSync('git', ['merge-base', '--is-ancestor', anchorSha, landed], { cwd: REPOSITORY_ROOT });
+    expect(
+      onMain.status,
+      `STATUS-QUEUE.md is anchored at ${anchorSha}, and the main this checkout can see (${mainTip!.slice(0, 8)}) does not contain that commit, so there is no window to count. Either this checkout's view of main is stale (\`git fetch origin main\`) or the anchor names a commit that never landed on main -- both are a broken citation rather than stale history`,
+    ).toBe(0);
+
+    const behind = Number.parseInt(git(['rev-list', '--count', `${anchorSha}..${landed}`]).trim(), 10);
 
     expect(
       behind,
-      `STATUS-QUEUE.md is anchored at ${anchorSha} and HEAD is ${String(behind)} commits past it: history that no entry in that file has been read against. The release budget beside this one can be well inside its bound while this one is not -- that is the whole of issue #449, which measured one release carrying 169 commits while this gate was green. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_COMMITS to make this pass, because the number is what the budget is for`,
+      `STATUS-QUEUE.md is anchored at ${anchorSha} and main is ${String(behind)} commits past it, counted to ${landed.slice(0, 8)} -- the tip of main this tree sits on rather than HEAD, so nothing unmerged on this branch is in that number: history that no entry in that file has been read against. The release budget beside this one can be well inside its bound while this one is not -- that is the whole of issue #449, which measured one release carrying 169 commits while this gate was green. Re-read §§3-6 against main and move the anchor — do not raise ANCHOR_STALENESS_BUDGET_COMMITS to make this pass, because the number is what the budget is for`,
     ).toBeLessThanOrEqual(ANCHOR_STALENESS_BUDGET_COMMITS);
   });
 
