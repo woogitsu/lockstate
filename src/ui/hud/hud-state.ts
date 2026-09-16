@@ -103,18 +103,49 @@ export interface HudShellState {
  * constant kept shut.
  *
  * **The same fold is cited as a reason not to route anything to that list in
- * TWELVE places in `src/` alone**, counted rather than estimated:
+ * many places across `src/`**, and opening the list by default is the one
+ * change that addresses all of them at once, which is why the ruling went this
+ * way rather than giving the escape sentence a row of its own. Each of those
+ * citations is a true record of issue #220's defect -- a message that reaches
+ * the player at *no* viewport -- and each is why some sentence got a HUD row
+ * instead.
+ *
+ * **This paragraph's twelve-item enumeration was deleted on one branch and
+ * re-aimed on another, the two met in a merge, and both were partly right.**
+ * The deletion (#1235) opened the twelve numbers then on disk and found none of
+ * them landing on a sentence about the fold: `view-model.ts:1090` was
+ * `readonly width: number;`, `rooms-panel.ts:1355` an `element('div', {` call.
+ * That is a true report of numbers that had rotted wholesale -- and it is not
+ * a reason to delete the citations, because the underlying facts had not
+ * changed and the anchors were repairable. The re-aiming pass (#1224) repaired
+ * eleven of them. The merged list is below, with the two defects found while
+ * resolving this conflict corrected rather than carried:
  * `view-model.ts:1593` and `:1649`, `hud.ts:1129`, `:1200` and `:1295`,
- * `rooms-panel.ts:1520`, `simulation-zoning.ts:26`,
- * `content/default-locale-en.ts:1973`, `main.ts:1336` and `:2131`, and
- * `hud.css:710` and `:747`. Each is a true record of issue #220's defect -- a
- * message that reaches the player at *no* viewport -- and each is why some
- * sentence got a HUD row of its own instead. **Opening the list by default is
- * the one change that addresses all twelve at once**, which is why the ruling
- * went this way rather than giving the escape sentence a thirteenth row.
- * Every one of the twelve is corrected in both directions by the change that
- * carries this one, because a docblock naming a reason that no longer holds is
- * how the next reader gets talked out of using the list again.
+ * `rooms-panel.ts:1520`, `src/ui/simulation-zoning.ts:26`,
+ * `content/default-locale-en.ts:1982`, `main.ts:1336` and `:2131`, and
+ * `hud.css:710` and `:747`.
+ *
+ * **The two corrections, stated so neither is re-derived.**
+ * `default-locale-en.ts:1973` was a blank line; the sentence it was aimed at --
+ * *"DOM and painted at no viewport, because that section starts folded"* -- is
+ * at `:1982`, nine lines down. And `simulation-zoning.ts` was written bare,
+ * which `documentation-links-contract` resolves relative to THIS file; the
+ * module sits at `src/ui/simulation-zoning.ts`, one directory out from
+ * `src/ui/hud/`, so the bare form named nothing. It is rooted here.
+ *
+ * **What is NOT asserted, because the claim was checked and did not hold.**
+ * The re-aiming pass closed with *"Every one of the twelve is corrected in
+ * both directions"*; one of the twelve then landed on a blank line, so that
+ * sentence is dropped rather than repeated. Each of the twelve above was
+ * opened on `4453ef1b` while writing this. What no list can promise is that it
+ * will still be true next week: a twelve-item list of `file:line` into files
+ * under active edit is the least durable citation this repository has
+ * (`docs/AGENT_WORKFLOW.md` §4), and this one rotted wholesale once already
+ * without a single underlying fact changing.
+ *
+ * The enumeration a reader can run instead, which is a lower bound rather than
+ * the curated set above:
+ * `grep -rniE "starts folded|starts collapsed" src/ --include=*.ts --include=*.css`
  *
  * The accepted cost, stated by the owner: a fixed slice of screen height at
  * every width. The fold itself is untouched -- a player who wants the world
