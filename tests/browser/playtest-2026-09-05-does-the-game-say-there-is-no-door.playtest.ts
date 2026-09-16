@@ -1,6 +1,5 @@
 import { test, type Page } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -13,7 +12,9 @@ import {
   openApp,
   panelText,
   press,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -231,7 +232,7 @@ test('act 1: the naive build, watched from the Overview tab', async ({ page }) =
   await page.waitForTimeout(2000);
   console.log(`counts after furnishing: ${JSON.stringify(await latestCounts(page))}`);
 
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   for (let index = 0; index < 4; index += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(250);
@@ -366,7 +367,7 @@ test('act 2: doorless on purpose, and does the message survive anything', async 
   console.log(`needs items: ${JSON.stringify(rooms.needs)}`);
   await shot(page, 'act2-furnished-rooms-panel');
 
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   for (let index = 0; index < 4; index += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(250);
@@ -513,7 +514,7 @@ async function buildDoorlessPrison(page: Page): Promise<{ originX: number; origi
   await press(page, t.x, t.y);
   await waitForQueueEmpty(page);
   await page.waitForTimeout(1500);
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   for (let index = 0; index < 4; index += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(250);

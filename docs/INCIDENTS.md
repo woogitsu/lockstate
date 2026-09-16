@@ -430,7 +430,7 @@ obstacle this paragraph claimed it was, because re-dispatch mounts a new
 response rather than returning the incident to `'active'`.
 
 The outcome is the **same terminal state, later by at most one scheduling
-interval**: `tests/integration/incident-response-restore.test.ts:392-404` runs a
+interval**: `tests/integration/incident-response-restore.test.ts:443-456` runs a
 restored session against a continuous one and asserts both reach `'resolved'`
 with equal outcomes, the restored one closing at tick 81 against the continuous
 run's 71. `docs/DETERMINISM.md` has carried that reading since the change.

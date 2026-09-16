@@ -63,8 +63,8 @@ import { stripComments } from '../helpers/canonical-iteration';
  * three-segment screaming constant inside a backticked token, precisely the
  * shape matched here — with **one occurrence in the whole tree** and no
  * declaration anywhere in it. The constant that sentence means is
- * `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:692`), which `src/main.ts:3054` does
- * fill `AdmitPrisoner`'s `x`/`y` from and `src/main.ts:837` does hand the
+ * `NEW_PRISON_ORIGIN_TILE` (`src/main.ts:869`), which `src/main.ts:3437` and
+ * `:3516` do fill `AdmitPrisoner`'s `x`/`y` from and `src/main.ts:1023` does hand the
  * Build panel as its `origin`. It survived only because it was in Markdown.
  *
  * **`docs/adr/` and `docs/research/` are not read, and that is a rule about
@@ -103,9 +103,9 @@ import { stripComments } from '../helpers/canonical-iteration';
  *     `docs/adr/0012:179` cites `JobRegistry.loadSnapshot` with a `file:line`
  *     beside it and the class is `JobBoard`; `docs/adr/0034:422` says
  *     `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` *"names the three controls"*
- *     in the present tense and `tests/browser/app-shell.spec.ts:2150` says
+ *     in the present tense and `tests/browser/app-shell.spec.ts:2596` says
  *     *"This constant **was**"* that, now `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD`
- *     at `:2266`; `docs/adr/0097:634` calls `ZONING_TINT_BY_CATEGORY`
+ *     at `:2712`; `docs/adr/0097:634` calls `ZONING_TINT_BY_CATEGORY`
  *     *"load-bearing for both decisions"* and
  *     `tests/unit/appearance-zoning-tint.test.ts:11` says it *"no longer
  *     exists"* and is `ZONING_TINT_BY_ROOM_ID`; `SAVE_ENVELOPE_VERSION` names
@@ -270,8 +270,8 @@ import { stripComments } from '../helpers/canonical-iteration';
  * `src/`, all inside comments."* **It is a symbol.** It is declared at
  * `src/simulation/construction/definition.ts:83` and has been since `b5f2fd21`
  * (2026-08-22), including at `376b48bf` (v0.0.477), the commit the issue's own
- * audit names; `src/main.ts:770`, `src/rendering/world/appearance.ts:413` and
- * `src/simulation/construction/system.ts:458` are three of the code sites. So
+ * audit names; `src/main.ts:947`, `src/rendering/world/appearance.ts:413` and
+ * `src/simulation/construction/system.ts:545` are three of the code sites. So
  * the root resolves, and **no rule about two-segment constants would have
  * flagged those five comments.** What is false in them is a *number* — "has
  * two entries" against a registry of twenty-one — and a count is the
@@ -322,7 +322,7 @@ import { stripComments } from '../helpers/canonical-iteration';
  * `src/ui/`, which another agent held while this landed — it is reported
  * instead, with the red above reproducible by adding `'.css'` to both walks."*
  * Both halves are spent: the third `it(...)` below walks the stylesheets,
- * `src/ui/hud/hud.css:3812` now cites `RoomsProbe.needsItemRows`, and the
+ * `src/ui/hud/hud.css:4143` now cites `RoomsProbe.needsItemRows`, and the
  * reproduction was taken in that order — the scan added first and run red
  * against the unfixed comment, then the token corrected. The clause is
  * corrected rather than deleted because it is the reason this measurement sat
@@ -614,11 +614,22 @@ describe('a comment that names a symbol names one that exists', () => {
    * untouched. The global stays tight so a genuinely hung test still fails in
    * five seconds.
    *
-   * Two more are the next candidates and are deliberately left alone until
-   * they exceed it: `documentation-source-anchor-contract`'s anchor
+   * Two more were named here as the next candidates, deliberately left alone
+   * until they exceeded it: `documentation-source-anchor-contract`'s anchor
    * resolution and `documentation-claims-contract`'s treasury-credit census,
    * both observed over 5,000 ms under heavier contention and both comfortably
    * under it in the measurement above.
+   *
+   * **The first of the two did exceed it, and the remedy was not this one.**
+   * Under 12 busy loops on four cores its anchor resolution timed out at
+   * 5,000 ms on an unmodified `main` -- the red seven agents hit in one day.
+   * It turned out to be reading the cited file once per anchor: 4,017 anchors
+   * over 479 distinct files, 387 MB read where the distinct set is 15 MB.
+   * Memoising the line count per path took it to 892 ms and 391 ms under the
+   * same synthetic load, so it now clears the global with five-fold margin
+   * and needs no timeout of its own. Prefer that order -- find the repeated
+   * work first, and reach for this escape hatch only when the walk really is
+   * the whole cost, as it is here: this test reads its corpus once already.
    */
   it('resolves every member path and screaming constant cited in src/ and tests/', async () => {
     const vocabularyFiles = [

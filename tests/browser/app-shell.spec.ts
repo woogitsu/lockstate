@@ -313,7 +313,7 @@ interface StatusCountsPublication {
   readonly payload: {
     readonly tick: number;
     readonly schemaVersion: number;
-    readonly counts: Record<string, number>;
+    readonly counts: Record<string, number | boolean>;
   };
 }
 
@@ -346,6 +346,20 @@ const INJECTED_STATUS_COUNTS = {
       staffUnassigned: 1,
       rooms: 12,
       roomCapacity: 48,
+      // The twenty-second count (2026-09-15), and the first boolean on this
+      // channel: `RoomInstanceRegistry.totalResidentCapacity === 0`, ADR 0017's
+      // "Amendment, 2026-09-01" §2. Required for the same `.strict()` reason
+      // as the fields around it.
+      //
+      // **Deliberately `false` against a `roomCapacity` of 48, and the pair is
+      // the fixture's own idiom.** The host derived this predicate from
+      // `roomCapacity === 0` until 2026-09-15, and that derivation cannot see a
+      // room instance registered under a room-catalog id the content registry
+      // does not define -- so a host that reached for `roomCapacity` again
+      // would be visible on the prison where they come apart
+      // (`tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`)
+      // rather than plausible. This prison is furnished on both readings.
+      isFreshUnfurnishedPrison: false,
       // Required, not optional, for the reason the paragraph above and the
       // note on `stateIncomeAccruedTodayMinorUnits` below both give: the
       // counts payload is `.strict()`, so a fixture missing this field is
@@ -1722,7 +1736,7 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  *
  * Four of its hops were most of that, because they cross the HUD rather than a
  * form -- and the tab bar is the **last child of `.hud`**
- * (`src/ui/hud/hud.ts:2228`), so forwards from a panel to a tab is nearly a lap
+ * (`src/ui/hud/hud.ts:2441`), so forwards from a panel to a tab is nearly a lap
  * of the page. Both directions, measured at 1280x800 on the same runs:
  *
  * | Hop | `Tab` | `Shift+Tab` |
@@ -2644,7 +2658,7 @@ const INTERACTIVE_SELECTOR =
  * stay here while the four the roster adds do not. **Hiring is not what holds a
  * guard.** `DeploymentSystem.assignUnassignedGuards` is called from that
  * system's `update` and from nowhere else
- * (`src/simulation/security/deployment-system.ts:130`); the sweep pauses the
+ * (`src/simulation/security/deployment-system.ts:128`); the sweep pauses the
  * clock before its viewport loop and never restarts it; and ADR 0051's paused
  * drain dispatches the `HireStaff` command *without* running a tick. So three
  * guards are hired, no system ever looks at them, all three stay `'unassigned'`,
@@ -7353,7 +7367,7 @@ test.describe('the assembled application', () => {
     // ---- the Rooms tab, and what the room is for ----------------------
     // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
     // transport's *Pause*, and the tab bar is the last child of `.hud`
-    // (`src/ui/hud/hud.ts:2228`), so forwards is 24 presses and backwards is 4.
+    // (`src/ui/hud/hud.ts:2441`), so forwards is 24 presses and backwards is 4.
     // `shiftTabTo` carries the table and the argument.
     await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');

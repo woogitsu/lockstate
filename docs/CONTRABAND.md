@@ -16,7 +16,7 @@ intelligence projections are distinct." `ContrabandRegistry` is the
 ground truth of what contraband actually exists, where, and how it got
 there -- this is never exposed wholesale to a UI. `IntelligenceLedger`
 records are one of the things a security-desk UI reads — and, since
-`src/simulation/presentation/contraband-projection.ts:53-60` takes five sources
+`src/simulation/presentation/contraband-projection.ts:64-71` takes five sources
 (`searchSystem`, `confiscations`, `intelligence`, `informants` and
 `searchPolicies`), not the only one. **This sentence said "the *only* thing"**,
 which an added source falsifies without touching it; that projection's own

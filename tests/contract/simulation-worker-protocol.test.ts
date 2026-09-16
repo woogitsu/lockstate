@@ -201,6 +201,16 @@ describe('simulation worker protocol', () => {
             // to name (issue #506 finding 2).
             activeIncidentType: undefined,
             contrabandDiscovered: 7,
+            // Deliberately `false` against a `roomCapacity` of 158 above, and
+            // the pair is the point: the two used to be asked the same
+            // question on two sides of the boundary and a fixture where they
+            // agreed could not tell a host that re-derived the predicate from
+            // `roomCapacity === 0` apart from one that read it
+            // (`statusCountsSchema.isFreshUnfurnishedPrison`). This prison is
+            // furnished on both readings, which is the ordinary case; the
+            // prison where they come apart is
+            // `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`.
+            isFreshUnfurnishedPrison: false,
             treasuryMinorUnits: 24_920,
             // Derived from this payload's own `tick` and `occupiedPlaces`
             // rather than picked: two occupied places, thirteen ticks of the
@@ -547,6 +557,11 @@ describe('simulation worker protocol', () => {
       activeIncidents: 0,
       activeIncidentType: undefined,
       contrabandDiscovered: 0,
+      // A prison at tick 0 has furnished nothing, so it is fresh -- the same
+      // reading as `roomCapacity: 0` above, which is the one case in which the
+      // registry figure and the catalogue fan-out cannot disagree
+      // (`statusCountsSchema.isFreshUnfurnishedPrison`).
+      isFreshUnfurnishedPrison: true,
       treasuryMinorUnits: 25_000,
       stateIncomeAccruedTodayMinorUnits: 0,
       // A session that has hired nobody: the whole of this fixture is a prison
