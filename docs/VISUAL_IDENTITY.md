@@ -541,9 +541,9 @@ sentence.
    > **RULED BY THE OWNER ON 2026-09-16: BELOW THE BREAKPOINT THE TABS SHOW
    > THEIR ICONS AND NOT THEIR NAMES.** **This is a restatement of a ruling and
    > binds**, under the first of the three kinds in §"How to read a sentence in
-   > this document"; the four paragraphs above it are a *reading of the code* and
-   > are kept exactly as they stand, because they are what the ruling was made
-   > against. The issue is
+   > this document"; the paragraphs above it, from *"The Polish name wrapped
+   > anyway"* to *"The limit"*, are a *reading of the code* and are kept exactly
+   > as they stand, because they are what the ruling was made against. The issue is
    > [#1192](https://github.com/woogitsu/lockstate/issues/1192), and this block is
    > the durable record: the dossier that priced the five options is held by an
    > unmerged branch ([#1242](https://github.com/woogitsu/lockstate/pull/1242)),
