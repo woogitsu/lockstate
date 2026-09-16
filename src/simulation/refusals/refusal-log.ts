@@ -76,6 +76,13 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   `supersede` and read by nothing else, including nothing in
  *   `src/ui/`. It is what lets a later success withdraw the very refusal it
  *   answers without needing a tile on the public payload -- see `supersede`.
+ *   **The key itself still never reaches the wire, and since 2026-09-16 one
+ *   bit derived from it does**: `supersessionKeyRoute` reads the key's route
+ *   prefix, and `SimulationRefusal.routeDecidedSince` reports whether that
+ *   route has decided anything since (ADR 0091 decision 2, option F). A
+ *   route is a command name the protocol already spells out in every
+ *   `RefusalReason`, so this adds no target, no tile and no id to the
+ *   payload; the sentence above is narrowed rather than withdrawn.
  * - **It orders nothing.** There is exactly one record, so there is no
  *   iteration here for `docs/DETERMINISM.md`'s canonical-order rule to
  *   govern -- the rule is satisfied by there being no list, not by a sort.
@@ -86,6 +93,38 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * the same order. `supersede` is called from the same handler at the same
  * point, so a withdrawal is exactly as deterministic as a record.
  */
+/**
+ * The command route a supersession key names: everything before the first
+ * `:`, or the whole key where a route carries no target.
+ *
+ * ADR 0091 decision 2 (option F, ruled 2026-09-16) needs "the same route" as
+ * a comparison, and this is where that comparison is defined. It reads the
+ * keys this module already builds rather than introducing a second
+ * vocabulary: every `*SupersessionKey` below returns either `<route>:<target>`
+ * or a bare route (`admitSupersessionKey` -> `'admit'`,
+ * `materialsFundingSupersessionKey` -> `'materials-funding'`), so the prefix
+ * is already the thing, and a route added tomorrow gets one for free. A table
+ * mapping `RefusalReason` namespaces onto routes would be the alternative and
+ * it would be a second list to keep in step with this one -- and it would
+ * already be wrong for `construction.materials-unfunded`, whose key is
+ * `materials-funding`.
+ *
+ * **`zone` and `zone-area` are two prefixes for one route and this function
+ * does not merge them, deliberately.** Decision 1 of the same ADR made the
+ * `ZoneRoom` success path call `supersede` with *both* keys unconditionally
+ * (`session-commands.ts`), so a standing `zone.*` refusal filed under either
+ * shape sees a decided outcome of its own prefix on every successful zoning
+ * anyway. Merging them here would add an alias table -- the exact thing the
+ * paragraph above declines -- to buy nothing.
+ * `tests/unit/simulation-refusals.test.ts` pins the prefix of every key
+ * builder in this module, so a new route whose key does not follow the shape
+ * fails there rather than silently never retiring a band.
+ */
+export function supersessionKeyRoute(key: string): string {
+  const separator = key.indexOf(':');
+  return separator === -1 ? key : key.slice(0, separator);
+}
+
 export class RefusalLog {
   /**
    * The total number of refusals ever recorded. Monotonic -- `supersede`
@@ -118,6 +157,10 @@ export class RefusalLog {
    */
   public record(reason: RefusalReason, tick: number, key?: string): void {
     this._sequence += 1;
+    // No `routeDecidedSince`: a refusal decided *now* has by definition had
+    // nothing decided since. A replacement therefore also clears the flag the
+    // record it replaces may have carried, which is why this assigns a whole
+    // value rather than mutating the old one.
     this._current = { sequence: this._sequence, tick, reason };
     this._currentKey = key;
   }
@@ -148,11 +191,54 @@ export class RefusalLog {
    * `undefined` is not a match, so a caller may call this on every success
    * unconditionally rather than guarding it on "is anything currently
    * standing".
+   *
+   * **"Silent" narrowed on 2026-09-16 and the clause above is kept because it
+   * is the half that moved.** A miss still changes nothing this class
+   * reports as a refusal -- `last`'s `sequence`, `tick` and `reason`, and
+   * `count`, are all exactly what they were, and the withdrawal rule #492
+   * asked for is untouched. What a miss can now do is set
+   * `routeDecidedSince` on the standing record, and only when the key names
+   * the same **route** as the standing refusal's own; see
+   * `noteRouteDecided`. It is still cheap: one `indexOf` and one string
+   * comparison on a path that already did one.
    */
   public supersede(key: string): void {
-    if (this._currentKey === undefined || this._currentKey !== key) return;
-    this._current = undefined;
-    this._currentKey = undefined;
+    if (this._currentKey !== undefined && this._currentKey === key) {
+      this._current = undefined;
+      this._currentKey = undefined;
+      return;
+    }
+    this.noteRouteDecided(key);
+  }
+
+  /**
+   * Records that the standing refusal's own **route** has decided something
+   * else, without touching the refusal (ADR 0091 decision 2, option F).
+   *
+   * Reached only from `supersede`, and only on the path that used to `return`
+   * having done nothing -- a key that misses. The withdrawal rule above is
+   * untouched: a match still withdraws, a miss still leaves `_current`,
+   * `_currentKey`, `_sequence` and `count` exactly as they were. What is new
+   * is that a *near* miss -- the same route, a different target -- is now
+   * reported on the record instead of being silent, so the refusal band can
+   * retire a sentence about a subject the player has visibly moved on from
+   * while the alerts list keeps the entry. See `SimulationRefusal`'s
+   * `routeDecidedSince` for what a route is and why the key's own prefix is
+   * it.
+   *
+   * **This is not #492's wide reading arriving by another door.** The wide
+   * reading was about what the *log* withdraws, and the log withdraws exactly
+   * what it withdrew before. `tests/unit/simulation-refusals.test.ts`'s two
+   * guarding cases assert on `last?.reason` after a different rectangle and a
+   * different tile succeed, and both still read the standing refusal here.
+   */
+  private noteRouteDecided(key: string): void {
+    const current = this._current;
+    if (current === undefined || current.routeDecidedSince === true) return;
+    const standingRoute = this._currentKey;
+    if (standingRoute === undefined) return;
+    if (supersessionKeyRoute(standingRoute) !== supersessionKeyRoute(key)) return;
+    this._current = { ...current, routeDecidedSince: true };
   }
 
   /** The most recent refusal, or `undefined` while the session has refused nothing or the last one was superseded. */
@@ -601,7 +687,8 @@ export function zoneSupersessionKey(roomCatalogId: string, x: number, y: number,
  * and `not-enclosed` are all read straight off the rectangle and the world --
  * `RoomZoningService.zone` decides every one of them from `request.x/y/
  * width/height` and `this.world`, never from `definition` (`../rooms/
- * zoning.ts:505-576`). Folding the room type into their key anyway is what
+ * zoning.ts:489-689`, the whole of `zone`). Folding the room type into their
+ * key anyway is what
  * let a `room.cell` attempt's `not-enclosed` refusal outlive a `room.yard`
  * zoned successfully at the *identical* rectangle moments later: the yard
  * needs no enclosure (`enclosureRequirement`, `'outdoors'` rather than

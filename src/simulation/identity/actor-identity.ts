@@ -119,6 +119,28 @@ export interface ActorIdentityMinter {
  * `ActorIdentityRegistry` satisfies it. `GuardRoster` still takes the minter
  * alone, which is honest: no path in `src/` dismisses a guard, so nothing there
  * has a release to call yet.
+ *
+ * **The reason given in that last sentence has been false since 2026-08-29, and
+ * it is quoted rather than overwritten because the conclusion outlived its own
+ * premise.** `a8a446ed` (issue #533, ADR 0070) added
+ * `src/simulation/staff/dismissal.ts`, whose documented step 6 is *"The name is
+ * given back"*: `dismissStaff` calls `StaffNameReleasePort.release('staff', id)`
+ * before `GuardRoster.forget` destroys the entity, and
+ * `src/simulation/runtime/new-session.ts` supplies the real
+ * `ActorIdentityRegistry` for that port -- on the one construction of
+ * `StaffDismissalService` in `src/`, which `restoreSimulationRuntime` also goes
+ * through because it builds its runtime with `createNewSimulationRuntime`. So a
+ * path in `src/` does dismiss a guard, the release it needs is called, and
+ * `tests/unit/staff-dismissal-completeness.test.ts` fails on the whole session
+ * graph if that wiring is dropped.
+ *
+ * **`GuardRoster` still taking the minter alone is now honest for the opposite
+ * reason, which is why the type did not change with the fact.** The release is
+ * not the roster's to call: `forget`'s own docblock says a dismissal *"has to
+ * give back a claim through its claimant, cancel a route, release a name and
+ * take contraband out of the prison, and none of that is the roster's to
+ * know"*. Widening its constructor to `ActorIdentityLifecycle` would hand it a
+ * release it must not use. Was: nobody could call it. Is: somebody else does.
  */
 export interface ActorIdentityLifecycle extends ActorIdentityMinter {
   release(kind: ActorKind, entityId: EntityId): boolean;

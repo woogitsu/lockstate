@@ -74,7 +74,17 @@ interface Published {
     readonly schemaVersion: number;
     readonly counts: Record<string, number>;
     /** Absent until the session has refused something (#261). */
-    readonly refusal?: { readonly sequence: number; readonly tick: number; readonly reason: string };
+    readonly refusal?: {
+      readonly sequence: number;
+      readonly tick: number;
+      readonly reason: string;
+      /**
+       * Present once the same command route has decided something else since
+       * (ADR 0091 decision 2, option F). `true`-or-absent, exactly as
+       * `SimulationRefusal` declares it.
+       */
+      readonly routeDecidedSince?: true;
+    };
   };
 }
 
@@ -267,6 +277,16 @@ describe('publishing the status counts', () => {
       // The starting balance, unspent: this scenario buys nothing, so the
       // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
       // rather than as an arbitrary constant (#96).
+      // `false`, and **not** because `roomCapacity: 4` above is nonzero:
+      // this is `RoomInstanceRegistry.totalResidentCapacity === 0`, the
+      // registry's own walk, which the host read as `roomCapacity === 0`
+      // until 2026-09-15 and got a different answer from on any prison holding
+      // a room the content catalogue does not define
+      // (`statusCountsSchema.isFreshUnfurnishedPrison`, and
+      // `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+      // is the prison where they come apart). This scenario's rooms are all
+      // catalogued, so the two agree here, which is the ordinary case.
+      isFreshUnfurnishedPrison: false,
       treasuryMinorUnits: TREASURY_STARTING_BALANCE_MINOR_UNITS,
       // The facility under it, published since the owner's ruling 18 of
       // 2026-08-31 so the strip can say how much of it is left rather than only
@@ -546,6 +566,57 @@ describe('publishing the status counts', () => {
     expect(harness.publications()).toHaveLength(2);
   });
 
+  /**
+   * **ADR 0091 decision 2, option F (ruled by the owner 2026-09-16): the
+   * publication gate has to open on a flag that moves no ordinal.**
+   *
+   * `RefusalLog.supersede` sets `routeDecidedSince` on the *standing* record
+   * when the same route decides something at a different target, so nothing
+   * about that record's `sequence` changes -- and the gate above is a
+   * comparison against `_publishedRefusalSequence`. Without a second
+   * watermark this publication does not happen at all, and the band never
+   * learns it should retire the sentence: the same failure mode #261 names
+   * for a refusal that moves no count, one field over.
+   *
+   * The counts are asserted equal to the previous publication for exactly
+   * that reason -- if a count had moved, the interval gate could have carried
+   * this message anyway and the test would be pinning nothing.
+   */
+  test('publishes again when the standing refusal own route decides elsewhere, though its ordinal never moves (ADR 0091)', () => {
+    const harness = new Harness();
+    harness.run(1);
+    // Refused: outside the one owned chunk.
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    const refused = harness.publications();
+    expect(refused).toHaveLength(2);
+    expect(refused[1]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+
+    // Accepted: inside it, and a different tile, so #492's key misses and the
+    // refusal is *not* withdrawn. Same route, so option F marks it.
+    submitBuildOrder(harness['machine'], 1, { x: 4, y: 4 }, 1);
+    harness.advance(50);
+
+    const after = harness.publications();
+    expect(after, 'a publication the sequence gate alone would have suppressed').toHaveLength(3);
+    expect(after[2]?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      routeDecidedSince: true,
+    });
+    // Nothing but the flag can have caused this message: the interval gate
+    // returns early unless `eventIsNew`, and only 100 ms of the 500 ms
+    // interval has elapsed. A moved count is not enough to get past it --
+    // which matters here, because the accepted order *does* move the treasury.
+    expect(harness.elapsedMs).toBeLessThan(STATUS_COUNTS_PUBLISH_INTERVAL_MS);
+
+    // And it does not become a new firehose: the flag is monotone per record,
+    // so the gate opens once for it and not once per wake thereafter.
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+    expect(harness.publications()).toHaveLength(3);
+  });
+
   test('replaces the standing refusal when the simulation refuses something else', () => {
     const harness = new Harness();
     harness.run(1);
@@ -578,8 +649,33 @@ describe('publishing the status counts', () => {
     const carrying = harness.publications().filter((publication) => publication.payload.refusal !== undefined);
     expect(carrying.length).toBeGreaterThan(1);
     for (const publication of carrying) {
-      expect(publication.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+      expect(publication.payload.refusal).toMatchObject({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
     }
+
+    /*
+     * **This case asserted the whole object until ADR 0091 decision 2 (option
+     * F, ruled 2026-09-16), and the clause that moved is worth naming rather
+     * than quietly relaxing.** The record really is republished unchanged --
+     * `sequence`, `tick` and `reason` are asserted above on every carrying
+     * publication, which is what this test has always been about. What is new
+     * is a fourth member that is *not* part of the record: the scenario
+     * session's own queued build orders succeed as the clock runs, and a
+     * success on the `build` route marks the standing `build.out-of-bounds`
+     * refusal as no longer being about anything the player is looking at.
+     *
+     * So the property to pin is that the mark is **monotone** -- it appears
+     * once and never comes back off a republication -- because a flag that
+     * flickered would make the band show a retired sentence again. The record
+     * itself is untouched either way, which the `toMatchObject` assertions
+     * above and `refusals.count` in `tests/unit/simulation-refusals.test.ts`
+     * both hold.
+     */
+    const marks = carrying.map((publication) => publication.payload.refusal?.routeDecidedSince === true);
+    expect(marks, 'the scenario builds successfully as it runs, so the mark has to arrive').toContain(true);
+    expect(
+      marks.slice(marks.indexOf(true)).every((mark) => mark),
+      'a route cannot un-decide: once marked, every later republication carries it',
+    ).toBe(true);
   });
 
   test('still projects at most once per interval plus once per refusal', () => {
@@ -771,6 +867,14 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // This is what a status-counts
       // payload is, and why it needs no paging.
       //
+      // **22, not 21, since `isFreshUnfurnishedPrison` was published on
+      // 2026-09-15.** ADR 0017's "Amendment, 2026-09-01" §2 defines the
+      // predicate as `RoomInstanceRegistry.totalResidentCapacity === 0`, and
+      // `projectStatusStrip` computed it and dropped it while three host sites
+      // re-derived a different answer from `roomCapacity`. It is an always-present
+      // scalar, so it moves the base count by exactly one -- which is the
+      // visible one-line edit this assertion exists to force.
+      //
       // **21, not 20, since ADR 0087 decision 2 added `conditions`.** Unlike
       // the two conditional keys below it, `conditions` is a third field this
       // object admits as `.optional()` on the wire yet **always** publishes --
@@ -778,7 +882,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        21 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        22 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -825,6 +929,17 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
               condition,
             );
           }
+          continue;
+        }
+        // **The first boolean on this channel** (2026-09-15):
+        // `isFreshUnfurnishedPrison`, ADR 0017's amendment §2 predicate,
+        // published so the host stops re-deriving one from `roomCapacity`. A
+        // boolean is a scalar and is exactly what this loop is protecting --
+        // it is named here rather than waved through by loosening the check
+        // below, so a count that started arriving as `0`/`1`, or a second
+        // boolean nobody meant to add, still fails.
+        if (key === 'isFreshUnfurnishedPrison') {
+          expect(typeof value, 'counts.isFreshUnfurnishedPrison is not a boolean').toBe('boolean');
           continue;
         }
         expect(typeof value, `counts.${key} is not a scalar`).toBe('number');
@@ -932,7 +1047,22 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // `treasuryOverdraftFloorMinorUnits` shape again: a field's *spelling*
       // moving the bound, not the population or the count of fields. 710 + 18
       // = **728**, the same headroom every previous raise in this file left.
-      expect(JSON.stringify(payload).length).toBeLessThan(728);
+      //
+      // **761 and not 728, and the raise is one new field** --
+      // `isFreshUnfurnishedPrison`, ADR 0017's amendment §2 predicate,
+      // published on 2026-09-15 so the three host sites stop re-deriving it
+      // from `roomCapacity`. Re-measured on this tree at the same worst case
+      // every previous raise used: `payloadJsonBytes=741` at 250 actors and
+      // `743` at 1,000, 2,500 and 5,000 -- still the two-byte digit-count
+      // spread between the tiers rather than growth, which is the property
+      // this bound exists to protect and the one a boolean trivially keeps.
+      // The 33 bytes are arithmetic rather than a measurement to be trusted on
+      // its own: `"isFreshUnfurnishedPrison":false,` is 26 + 1 + 5 + 1, and
+      // `false` is the longer of the two spellings, so this is the worst case
+      // and not a sample of it. 743 + 18 = **761**, the same headroom every
+      // previous raise in this file left, so the next field breaches this one
+      // too and the soft limit goes on being felt one field at a time.
+      expect(JSON.stringify(payload).length).toBeLessThan(761);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(
@@ -1010,6 +1140,9 @@ describe('statusCountsEqual: conditions compares by content, not by array identi
     staffUnassigned: 0,
     rooms: 0,
     roomCapacity: 0,
+    // A prison with nothing registered is fresh on the registry's own reading,
+    // which is the one case where it and `roomCapacity` above cannot disagree.
+    isFreshUnfurnishedPrison: true,
     accommodationCapacity: 0,
     roomOccupants: 0,
     activeIncidents: 0,

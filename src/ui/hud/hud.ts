@@ -1294,6 +1294,19 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * acknowledge it -- so a host refusal stays until the same action later
    * succeeds, and a simulation refusal until another replaces it or the
    * session ends, which are the first moments each sentence stops being true.
+   *
+   * **The last clause was the whole of the rule until 2026-09-16 and is now
+   * one of three, and it is kept rather than rewritten because it is the rule
+   * that moved.** ADR 0091 decision 2 added a fourth moment and the owner
+   * ruled it: a **decided outcome of the same command route**. A
+   * `remove-wall.nothing-to-remove` refusal is retired by the player's next
+   * removal, whatever tile it names; it is left alone by a wall drag, a hire
+   * or an admission. That is not the timer this paragraph declines -- nothing
+   * here runs on a clock, and a player who refuses a press and then does
+   * something unrelated still reads the sentence. See
+   * `applySimulationRefusal` for the measurement that separates "same route"
+   * from "any route", and `SimulationRefusal.routeDecidedSince` for where the
+   * comparison is made, which is in the simulation and not here.
    */
   const refusalId = nextUiId('hud-refusal');
   const refusalText = element('span', { className: 'hud-refusal__text' });
@@ -1634,7 +1647,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * says nothing about a refusal the simulation decided -- that command was
    * accepted too, and was refused on its content several ticks later -- so a
    * later success may not clear it. What clears a simulation refusal is
-   * another one, or the session ending; see `applySimulationRefusal`.
+   * another one, the session ending, or -- since ADR 0091 decision 2 was
+   * ruled on 2026-09-16 -- a decided outcome of the *same simulation route*,
+   * which the simulation reports on the record and this thread never infers;
+   * see `applySimulationRefusal`.
    */
   const clearRefusal = (actionId: string): void => {
     if (refusalSource !== 'host' || refusedAction !== actionId) return;
@@ -1674,9 +1690,45 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *     with no memory of what it last painted -- so the two surfaces
    *     disagreed about the identical fact until this. See
    *     `docs/adr/0091-what-clears-the-refusal-band.md`.
+   *
+   * ## The band retires on a decided outcome of the same route (ADR 0091
+   * decision 2, option F, ruled by the owner 2026-09-16)
+   *
+   * The first case above has a second door into it, and the whole of option F
+   * is that door: a notice carrying `routeDecidedSince` is treated exactly as
+   * no notice at all. The player refused a wall removal and has since removed
+   * a wall somewhere else; refused a rectangle and has since zoned another.
+   * The sentence in the corner is still *true* -- #492's rule, untouched, and
+   * the reason the simulation has not withdrawn the record -- but it is no
+   * longer about anything the player is looking at, and the corner names no
+   * location, so a player reading it beside the thing they just did has no way
+   * to tell the two apart. ADR 0091's own measurement of that is a screen
+   * contradicting itself about one press: the event band reading "The order
+   * was cancelled" while this line still read "Nothing was removed".
+   *
+   * **Same route, not any route.** Option D -- any decided outcome retires it
+   * -- was measured at a band lifetime of 2 ms, because the eight commands of
+   * one wall drag are submitted 2 ms apart, against the 600 ms floor
+   * `EVENT_BAND_DWELL_FLOOR_MS` records as the minimum an event needs to be
+   * readable. That is the timer the paragraph in `mountHud`'s refusal element
+   * declines to have, with the player's hand as the clock. Under F an
+   * unrelated gesture leaves the sentence alone, which is when it is most
+   * likely to be read.
+   *
+   * **The list does not do this.** `hudAlertsFromWorkerMessage` never reads
+   * the flag, so the refusal keeps its row. The band and the list therefore
+   * disagree here on purpose, which is the split
+   * `src/ui/simulation-alerts.ts` has described in prose since #507 without
+   * anything making it true.
+   *
+   * **Nothing is restored.** `simulationRefusalSequence` is cleared with the
+   * line, exactly as it is when the worker withdraws a refusal outright, so
+   * the next *new* ordinal takes the band normally. The flag is monotone per
+   * record -- a route cannot un-decide -- so a retired sentence never comes
+   * back on a later republication of the same refusal.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
-    if (notice === undefined) {
+    if (notice === undefined || notice.routeDecidedSince === true) {
       simulationRefusalSequence = undefined;
       if (refusalSource === 'simulation') clearRefusalLine();
       return;
