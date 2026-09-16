@@ -12,6 +12,7 @@ import {
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   rungFloorMinorUnits,
 } from '../../src/simulation/economy';
+import { staffHireCostMinorUnits } from '../../src/simulation/staff';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 
@@ -300,6 +301,8 @@ interface SubmittedCommand {
         readonly transactionId?: string;
         readonly itemId?: string;
         readonly quantity?: number;
+        /** The role a `HireStaff` names (ADR 0025), read by `hiresSent`. */
+        readonly staffRoleId?: string;
         /** The anchor tile a `PlaceObject`, `RemoveObject` or `RemoveWall` names (ADR 0028, ADR 0106). */
         readonly x?: number;
         readonly y?: number;
@@ -687,6 +690,21 @@ async function purchasesSent(page: Page): Promise<readonly { itemId: string; qua
         itemId: message.payload?.command?.data?.itemId ?? '',
         quantity: message.payload?.command?.data?.quantity ?? 0,
       })),
+  );
+}
+
+/**
+ * Every `HireStaff` the page has posted, the sibling of `purchasesSent` above
+ * and for the same reason: the `hire-staff` pre-flight throws *instead of*
+ * submitting, so "nothing left this thread" is a claim only the tee can settle.
+ */
+async function hiresSent(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() =>
+    ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
+      .map((message) => message as SubmittedCommand)
+      .filter((message) => message.kind === 'simulation/submit-command')
+      .filter((message) => message.payload?.command?.data?.type === 'HireStaff')
+      .map((message) => message.payload?.command?.data?.staffRoleId ?? ''),
   );
 }
 
@@ -10134,6 +10152,140 @@ test.describe('the assembled application', () => {
     await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
       `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
     );
+  });
+
+  /**
+   * **The same boundary on the other call site: a hire (#771, #1257).**
+   *
+   * `src/main.ts` has two pre-flights that read the starter rung, and the test
+   * above only presses one of them. This presses the other, and it is not a
+   * copy — a hire has no quantity field, so the boundary cannot be dialled in
+   * on the control. The prison is walked to the balance instead: 654 bricks
+   * settles it at **-1,160**, twenty-five short of the starter rung, and the
+   * cheapest role in `src/content/staff-role-catalog.ts` charges **60** — one
+   * day of `wageBand.minPerDay`, which is what `staffHireCostMinorUnits`
+   * returns. -1,220 is past -1,185 and inside -1,250, so the starter rung
+   * refuses the hire and the mature rung would sell it.
+   *
+   * Both bounds are asserted from the constants rather than written out, and
+   * the role is chosen by price rather than by name for the same reason: a
+   * later change to the catalogue that moves the cheapest hire out of the
+   * 65-unit gap fails here on the arithmetic instead of turning this back into
+   * a press both rungs answer alike.
+   *
+   * **The clock is stopped again before the hire.** ADR 0051 dispatches a
+   * command given against a paused clock at once, so the purchase still
+   * settles — and a running clock past that point is a second thing that could
+   * move the balance the hire is judged against.
+   */
+  test('a fresh, unfurnished prison is refused a hire the starter rung cannot carry and a furnished one could (#771, #1257)', async ({
+    page,
+  }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // No room is zoned here either, so `totalResidentCapacity` is 0 and the
+    // published `isFreshUnfurnishedPrison` is `true` for the whole test.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    const starterFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
+    const matureFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
+    const unitPrice = unitPriceOf('item.brick');
+    // The largest purchase the starter rung allows, which is also the balance
+    // that puts the cheapest hire inside the gap between the two rungs.
+    const quantity = Math.floor((TREASURY_STARTING_BALANCE_MINOR_UNITS - starterFloor) / unitPrice);
+    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
+
+    /*
+     * **The role is `staff-role.guard` because it is the only one the HUD can
+     * hire**, not because it is the cheapest in the catalogue: `src/main.ts`
+     * projects `HIREABLE_STAFF_ROLE_IDS`, one entry long, into the view model
+     * the Staff panel lists. The catalogue declares eight roles and seven of
+     * them have no control on the page, so choosing by price would pick
+     * `staff-role.kitchen-staff` and press a row that does not exist --
+     * measured, and the reason this comment is here.
+     *
+     * The charge is still read rather than written down:
+     * `staffHireCostMinorUnits` is one day of `wageBand.minPerDay`, which is
+     * 80 for this role.
+     */
+    const staffRoleId = 'staff-role.guard';
+    const hireCharge = staffHireCostMinorUnits(staffRoleId);
+    expect(hireCharge, `${staffRoleId} is not in the staff catalogue, so no hire can be driven`).toBeDefined();
+    // **The arithmetic this test is made of**: the hire must land past the
+    // starter rung and within the mature one, or it is a press both rungs
+    // answer the same way.
+    expect(settled - hireCharge!).toBeLessThan(starterFloor);
+    expect(settled - hireCharge!).toBeGreaterThanOrEqual(matureFloor);
+
+    // ---- walk the prison to -1,160 ----------------------------------------
+    await openBuyRow(page);
+    await setBuyQuantity(page, quantity);
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await page.locator('.hud-build__buy-submit').click();
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the purchase that walks the balance to the rung was never dispatched',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(settled));
+    // Stopped again, so nothing else can move the balance under the hire.
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
+    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // ---- the hire: refused here, and never sent ---------------------------
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
+    await expect(staffMetric).toHaveText('0');
+    // The panel preselects `model.roles[0]`, and this is the one role in it --
+    // so the click is a no-op on the selection and an assertion that the row
+    // the hire below charges for is the row on the page.
+    await expect(page.locator(`[data-staff-role="${staffRoleId}"]`)).toHaveCount(1);
+    await page.locator(`[data-staff-role="${staffRoleId}"]`).click();
+
+    const hire = page.locator('.hud-staff__hire');
+    // The same pair `pressBuyExpectingRefusal` asserts of the Buy button, and
+    // for the same reason (#772, #799): the control has to say it cannot act
+    // and still be pressable, or the sentence that explains the limit is
+    // unreachable.
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const button = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
+            return {
+              saysItCannotAct: button?.getAttribute('aria-disabled') === 'true',
+              pressable: button !== null && !button.disabled,
+            };
+          }),
+        {
+          message:
+            'before a hire the starter rung refuses, the Hire control must say it cannot act and must still be pressable',
+        },
+      )
+      .toEqual({ saysItCannotAct: true, pressable: true });
+    await hire.click({ force: true });
+
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
+    // This thread refused it. Under the mutation the pre-flight accepts the
+    // hire, the command is sent, and the worker -- which is never fooled --
+    // refuses it and paints its own line with `data-source="simulation"`.
+    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
+    await expect(refusal).toHaveAttribute('data-action', 'hire-staff');
+    await expect(refusal).toContainText(localeText('hud.refusal.hire-staff-past-floor'));
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('cannot cover');
+    await expect(hire).toHaveAttribute('data-action-failed', 'true');
+    // Nothing left this thread, and nobody reached the payroll.
+    expect(await hiresSent(page)).toEqual([]);
+    await expect(staffMetric).toHaveText('0');
+    await expect(funds).toHaveText(fundsText(settled));
   });
 
   /*
