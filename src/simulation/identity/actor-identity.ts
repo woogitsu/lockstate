@@ -286,7 +286,7 @@ export class ActorIdentityRegistry implements ActorIdentitySource {
     const existing = names.get(entityId);
     if (existing === undefined) return false;
     names.delete(entityId);
-    this.forget(existing);
+    // MUTATION: name count not forgotten
     return true;
   }
 
