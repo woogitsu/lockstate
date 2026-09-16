@@ -51,7 +51,7 @@ import './ui-harness-api';
  *
  * ## Why the delivery has to go through separate tasks
  *
- * `src/main.ts:1779` calls `hud?.update(viewModel)` **synchronously, once per
+ * `src/main.ts:1784` calls `hud?.update(viewModel)` **synchronously, once per
  * worker message**, with no animation-frame batching anywhere in the path.
  * `SimulationWorkerStateMachine.publishEvents` posts one `simulation/event` per
  * event in a single loop, so two events recorded on one tick arrive as two

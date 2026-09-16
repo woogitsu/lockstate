@@ -392,8 +392,8 @@ affected: both are still here. The paragraph here used to end *"`JobSystem`'s ow
 job simply restarts its dwell timer"*, and **ADR 0093 retired both halves of
 that**: `performingSince` is deleted and the dwell timer is the prisoner's
 `phaseStartedAtTick`, which the save does carry (decision 5,
-`src/simulation/operations/carry-executor.ts:27` and
-`src/simulation/prisoners/action-system.ts:659`). A restored carry therefore
+`src/simulation/operations/carry-executor.ts:28` and
+`src/simulation/prisoners/action-system.ts:775`). A restored carry therefore
 resumes its dwell rather than restarting it, and nothing about the wait is
 session-scoped any more.
 
@@ -462,8 +462,8 @@ production chains; detailed HVAC/CFD or electrical engineering simulation
 final UI/visual effects (a session UI does now exist -- the HUD and save
 panel mounted by `src/main.ts` -- and since `0e70f14` (#367) the Build queue
 surfaces an order in `'materials-pending'`, the state this document's
-`ContainerMaterialsProvider` produces: `src/ui/hud/view-model.ts:279` carries it,
-`src/content/simulation-message-keys.ts:456` labels it "Awaiting Materials" and
+`ContainerMaterialsProvider` produces: `src/ui/hud/view-model.ts:777` carries it,
+`src/content/simulation-message-keys.ts:510` labels it "Awaiting Materials" and
 `src/rendering/world/structures.ts:31` draws it. Nothing surfaces containers,
 jobs or the utility networks. **This clause read "nothing in it surfaces any of
 this"**,

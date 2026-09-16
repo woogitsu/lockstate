@@ -37,10 +37,10 @@ import { installTee, openApp, press, tab } from './playtest-harness';
  * **on the panel's own root element**, verified by opening each rule rather
  * than trusting its neighbours:
  *
- *   - `.ui-panel.hud-build`  -- `hud.css:1054-1057`
- *   - `.ui-panel.hud-staff`  -- `hud.css:1380-1383`
- *   - `.ui-panel.hud-rooms`  -- `hud.css:3149-3152`
- *   - `.ui-panel.hud-regime` -- `hud.css:2339-2342`
+ *   - `.ui-panel.hud-build`  -- `hud.css:1248-1249`
+ *   - `.ui-panel.hud-staff`  -- `hud.css:1589-1590`
+ *   - `.ui-panel.hud-rooms`  -- `hud.css:3529-3530`
+ *   - `.ui-panel.hud-regime` -- `hud.css:2709-2710`
  *   - `.save-panel`          -- `src/styles.css:56-76` ("`overflow-y: auto`
  *     makes this a scroll container... a long prison list or a short window
  *     scrolls *here*")
