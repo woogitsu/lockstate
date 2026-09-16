@@ -806,8 +806,9 @@ counted an unmet cycle and returned; there was no second candidate. The fallback
 > `for (let rank = 0; rank < plan.candidates.length; rank += 1)` (`:1624`) —
 > and `continue`s past any candidate whose target does not resolve (`:1627`,
 > `if (target === undefined) continue;`), counting `unmetDemandCycles` **once,
-> after every candidate has been tried** (`:1669`, the last statement of the
-> method) rather than at the first that failed. So a prisoner refused a canteen
+> after every candidate has been tried** (`:1668`,
+> `this.unmetDemandCycles += 1;`, the last statement of the method) rather than
+> at the first that failed. So a prisoner refused a canteen
 > seat now falls through to `action.eat-in-cell`, which is precisely the
 > fallback this paragraph called unreachable, and `recordSubstitution` (`:1724`)
 > is a second counter for how often it happens.
