@@ -10019,9 +10019,11 @@ test.describe('the assembled application', () => {
    * `environment: 'node'` and `src/main.ts` touches `document` — which is the
    * stated reason `src/ui/affordability.ts` exists as a separate module.
    * The three sibling tests here that *do* drive real presses through this
-   * pre-flight work at balances nowhere near the boundary (11,840 against a
-   * floor of 13,160; 25,000 against 26,280), so every one of them is refused,
-   * or accepted, by both rungs alike.
+   * pre-flight work nowhere near either rung: a charge of 13,160 against a
+   * balance of 11,840, and one of 26,280 against 25,000 -- 1,320 and 30 past
+   * the *mature* floor respectively, and the second one is the closest any of
+   * them comes. Every one of them is therefore refused, or accepted, by both
+   * rungs alike.
    *
    * ## Why 655 bricks, and why one brick fewer
    *
