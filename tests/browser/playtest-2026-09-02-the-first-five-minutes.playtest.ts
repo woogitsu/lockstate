@@ -1,6 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -13,7 +12,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -150,8 +151,14 @@ test('act 1: the first screen a player sees, and the default tab', async ({ page
 
   // What the default (Overview) tab actually shows — this is the very first
   // content-bearing thing on screen after New prison, before any click into
-  // another tab.
-  log('act1', `Overview/.hud-intake panel, verbatim: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+  // another tab. Since 2026-09-14 (`d5137d5d`) that is the Finances readout
+  // and NOT the Intake panel, so both are read: `.hud-overview` where a player
+  // actually lands, and `.hud-intake` after the one click it now costs to
+  // reach it. Reading `.hud-intake` alone here printed `not laid out`, which
+  // is a fact about the section and not about the panel.
+  log('act1', `Overview/.hud-overview panel, verbatim: ${JSON.stringify(await panelText(page, '.hud-overview'))}`);
+  await showPanel(page, 'manage', '.hud-intake');
+  log('act1', `Manage/.hud-intake panel, verbatim: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
   const admit = page.locator('.hud-intake__admit');
   log('act1', `Admit button label: ${JSON.stringify((await admit.innerText()).trim())}`);
   log('act1', `Admit button disabled attribute (with zero cells zoned): ${await admit.getAttribute('disabled')}`);
@@ -162,9 +169,11 @@ test('act 1: the first screen a player sees, and the default tab', async ({ page
 });
 
 /* ==================================================================== */
-/* Act 2 — pressing the one button the default tab offers, before        */
-/* anything else exists, and finding out where (if anywhere) the game    */
-/* says why it did nothing                                               */
+/* Act 2 — pressing the one button the game offers before anything else  */
+/* exists, and finding out where (if anywhere) the game says why it did  */
+/* nothing. It was the default tab's one button until 2026-09-14, when   */
+/* `d5137d5d` moved the Intake panel to Manage; the press is now one     */
+/* click further in and that click is counted as part of the act.        */
 /* ==================================================================== */
 
 test('act 2: pressing Admit on a prison with no cell at all', async ({ page }) => {
@@ -173,6 +182,12 @@ test('act 2: pressing Admit on a prison with no cell at all', async ({ page }) =
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
+  // Admit is no longer on the tab a new prison opens on: it moved to Manage on
+  // 2026-09-14 (`d5137d5d`). The act's question -- what does the game say when
+  // the press does nothing -- is unchanged; what changed is that reaching the
+  // press is a click, and that click is taken before the tick is sampled so
+  // the two readings still bracket the press and nothing else.
+  await showPanel(page, 'manage', '.hud-intake');
   const beforeTick = await currentTick(page);
   const before = (await sentCommands(page)).length;
   await page.locator('.hud-intake__admit').click();
@@ -545,7 +560,7 @@ test('act 6: a bed with no toilet — reachable resident, and what "Not ready" s
   await tab(page, 'zones').click();
   log('act6', `Rooms panel with a bed and no toilet: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   const beforeAdmitTick = await currentTick(page);
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(1500);
@@ -599,9 +614,13 @@ test('act 7: the whole chain end to end, and what the nine status-strip chips ex
   await page.waitForTimeout(1500);
   const furnishedTick = await currentTick(page);
   log('act7', `furnished (bed + toilet) by tick ${furnishedTick}`);
+  // Zones, not Build: `.hud-rooms` is `hud.ts:2505`'s panel, and read from
+  // the Build tab this logged `not laid out` instead of the readiness line
+  // the act asks for. Silent since long before the intake move.
+  await showPanel(page, 'zones', '.hud-rooms');
   log('act7', `Rooms panel once fully furnished (should read ready): ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(1500);
   const admittedTick = await currentTick(page);

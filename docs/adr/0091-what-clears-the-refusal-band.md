@@ -24,7 +24,45 @@
 
 ## Status
 
-**Proposed, 2026-09-02, for decision 2. Not self-approved.** Decision 1 needed no ADR and is already implemented on this branch — it is a correction of an existing, accepted mechanism's own stated test, not a new architectural choice; see below. Nothing under `src/` on this branch depends on decision 2, and nothing should until the owner has read it.
+**Accepted, 2026-09-16, by the repository owner, for decision 2 (option F: a
+decided outcome of the SAME route retires the band).** Decision 1 shipped
+2026-09-02 and needed no ADR.
+
+**The provenance is the weaker of the two kinds this repository
+distinguishes, and it is recorded here rather than left to be inferred.** The
+owner did not type a sentence. They were shown four options in a clickable
+question an agent session had written, priced by the dossier below, and chose
+the one that session recommended -- *"F -- ta sama trasa (zalecane)"*. That is
+the same provenance `CLAUDE.md` flags for the 2026-09-08, -09 and -10
+releases inside reservation 3, and it is weaker than a quoted instruction in
+exactly one way that matters here: **the option's own label is the whole of
+what was agreed.** What was agreed is the RULE -- the band retires on a
+decided outcome of the route the standing refusal names -- and not any of the
+implementation the dossier prices under it. The recommendation the owner
+agreed with also carried its own weakest claim, which they were shown: the
+600 ms yardstick that argues against option D is borrowed from the EVENT
+band's ADR 0084 ruling, and the refusal band has no dwell floor at all today.
+So a reader who later finds that argument unsound has not found a ruling
+unsound; they have found the reason offered for it unsound, and the ruling
+stands until the owner says otherwise.
+
+**The third option they declined is the one to read before re-opening this.**
+It was D again, under a different reading -- that the corner is a last-press
+indicator rather than a message, which would make the measured 2 ms lifetime
+the specification rather than the defect. Declining it is a product position
+about what the corner IS, and it is the position anyone proposing D again has
+to overturn.
+
+**Nothing under `src/` implements decision 2 yet**, and the ruling does not
+by itself change that: it settles which rule is right, not that the rule is
+built. Decision 1 is already implemented — it is a correction of an existing,
+accepted mechanism's own stated test, not a new architectural choice; see
+below.
+
+*The sentence replaced here read "Nothing under `src/` on this branch depends
+on decision 2, and nothing should until the owner has read it." It was true
+for fourteen days and is quoted rather than deleted, because the condition it
+names is the one that just ended.*
 
 ## Context
 
@@ -317,6 +355,254 @@ notes is unreachable from `pnpm test` and would need its own extraction and
 its own tests before it could be verified at all, and — more to the point —
 it changes what "the corner and the list agree" means, which this document
 is not the place to decide unilaterally.
+
+### 2026-09-16 — decision 2 made answerable: re-measured, re-priced, and why it stood thirteen days
+
+**Nothing below decides anything.** The Status block above is untouched, no
+option is chosen, no `src/` file moves, and no sentence is authored. This
+section exists because decision 2 has been `Proposed` since 2026-09-02 — the
+longest-standing open decision on the board — and yesterday's queue census
+found the reason, in its own words
+(`docs/adr/STATUS-QUEUE.md`, the `9b8c8e85` anchor):
+
+> *"Nothing was filed and nothing was deleted: **0091 arrived `Proposed` with
+> no §2 row**, and it is the window's only arrival, so there was no exemption
+> to distinguish from a delinquency this time."*
+
+**Not slowness and not difficulty. No mechanism carried it.** §2 prices
+outstanding decisions; the bookkeeping saw the gap, called it a delinquency
+and filed nothing, four anchors running. What follows is the shape three
+dossiers landed in yesterday (**PR #1242**, *"three decisions that have been
+waiting on the owner"*, whose research note is not yet on `main` and is
+therefore cited by pull request rather than by path): one question, options with **measured** costs, and a
+recommendation.
+
+#### The question, in one sentence
+
+**Does the corner's sentence retire on any decided outcome of a later player
+command, or only on another refusal — and if neither, on what?**
+
+#### Verified first: decision 2 is genuinely unimplemented
+
+Read at `e044a3e8`, not inferred:
+
+- `applySimulationRefusal` (`src/ui/hud/hud.ts:1678-1693`) clears the band on
+  exactly one condition — `notice === undefined`, i.e. the worker stopped
+  publishing a refusal — and otherwise only *replaces* it with a newer one.
+- `clearRefusal` (`:1639-1642`) returns immediately unless
+  `refusalSource === 'host'`, so no success of any kind touches a simulation
+  refusal from the HUD side.
+- The only thing that can make `notice` go `undefined` is
+  `RefusalLog.supersede` (`src/simulation/refusals/refusal-log.ts:152-156`),
+  which returns without acting unless the standing refusal's own key matches —
+  decision 1's narrow key, exactly as shipped.
+- There is **no second, band-only "last decided outcome" state** in `hud.ts`.
+  Option D's cost line above ("real new state") is still true as written.
+
+And the status-quo rule is stated verbatim in the code, twice:
+
+> *"so a host refusal stays until the same action later succeeds, and a
+> simulation refusal **until another replaces it or the session ends**, which
+> are the first moments each sentence stops being true."*
+> — `src/ui/hud/hud.ts:1292-1296`
+
+> *"What clears a simulation refusal is another one, or the session ending;
+> see `applySimulationRefusal`."* — `src/ui/hud/hud.ts:1636-1637`
+
+#### Measured, 2026-09-16, on `e044a3e8`
+
+A throwaway Playwright spec on the `browser` suite, port 45251, real Chromium,
+fresh prison, 1440x900. Git LFS is unprovisioned in this container, so
+`World renderer: InvalidStateError: The source image could not be decoded.`
+appears in every run; every figure here is DOM text and `performance.now()`,
+none of it the canvas. A 20 ms recorder logged every change of
+`.hud__refusal`'s text for the whole run, and a wrapped `Worker` timestamped
+every message in both directions.
+
+**M1 — the status quo, reproduced independently of the cold-start pass.** A
+`RemoveWall` press at tile `(18,19)` with nothing on it put this on the band:
+
+> `Nothing was removed — there is no object on that tile, none being built
+> there, and no finished wall there either.`
+
+Then a single wall drag: **8 `PlaceBuildOrder` commands, all accepted** — the
+Build panel read back `QUEUED / 8 waiting · 0 being built` — and the band was
+**byte-identical after**. The 20 ms recorder logged **exactly two transitions
+in the entire test** (`<hidden>` → the refusal) and never a third. **21
+`simulation/status-counts` publications and 0 `simulation/event` messages
+arrived after the refusal**, so nothing on any channel withdrew it. Repeated
+in a second run, same result.
+
+**M2 — how long the band would live under option D, measured.** The eight
+commands of that one drag were submitted **2 ms apart end to end** (per-command
+gaps `[2,0,0,0,0,0,0]`; 3 ms and `[0,3,0,0,0,0,0]` on the first run). Under D —
+"any subsequent decided outcome retires the band" — a refusal decided at the
+first press of a gesture is retired by the second press **of the same
+gesture**, 2 ms later.
+
+The yardstick is already in the tree and is the owner's own:
+`EVENT_BAND_DWELL_FLOOR_MS = 600` (`src/ui/hud/event-band-dwell.ts`, the ADR
+0084 ruling, *"derived against a measured 625 ms shortest real gap at x4"*).
+**D gives a refusal about 1/300th of the minimum the owner ruled an ordinary
+event needs in order to be readable.** `hud.ts:1292-1293` states the same worry in
+its own words — *"a message that clears itself on a timer is a race against
+how fast the player reads"* — and under D the timer is the player's own next
+press.
+
+**M3 — a removal gesture is one command, not a run.** The same drag with
+removal armed produced **1** command, not 8. So the "drag that refuses eight
+times" case does not exist: refusal-versus-refusal at gesture speed is not
+what is being priced here.
+
+**M4 — what a decided *success* looks like on the main thread today: nothing.**
+Measured over a 22-command session: 22 `simulation/command-result` messages and
+**0** `simulation/event`. And `command-result` is not a decision —
+`handleSubmitCommand` (`src/simulation/worker/state-machine.ts:1122-1151`)
+answers `status: 'queued'` at receipt, which ADR 0003 decision 9 says is
+receipt and not effect, *before* the tick that decides anything. So **no
+existing channel tells the HUD that a command succeeded**, which is the
+measured form of option D's "real new state".
+
+**M5 — what that new signal would cost, measured against the two of its shape
+already in the tree.** The publisher-side watermark pattern is three lines
+each, twice over: `_publishedRefusalSequence` (`state-machine.ts:275`, `:581`,
+`:600`) and `_publishedZoningSequence` (`:290`, `:591`, `:601`). A third would
+be the same three lines plus one member on the counts payload. The counter
+itself needs **no new call sites**: `session-commands.ts` carries **18**
+`refusals.supersede` calls against 18 command types, and its own docblock at
+`:111` states the rule — *"Every branch below also calls `refusals.supersede`
+on its success path"* — so incrementing inside `supersede` and `record`
+(`refusal-log.ts:119`, `:152`) is two lines that reach every success and every
+refusal in the game. **And the route comes free**: the band already knows the
+standing refusal's route, because `REFUSAL_LABEL_KEYS`
+(`src/ui/simulation-alerts.ts:35+`) is keyed by a reason whose own prefix is
+the route (`remove-wall.*`, `build.*`, `admit.*`).
+
+#### The two figures this section did not re-derive, checked rather than assumed
+
+- **ADR 0087 cost 1 reproduces as cited**: *"240 consecutive ticks yields
+  `log.count === 240`, 240 distinct alert row ids … twelve seconds of a
+  stalled queue at the 50 ms tick"*
+  (`docs/adr/0087-whether-a-refusal-is-an-event-or-a-condition.md:264-269`).
+  So re-announcing a standing refusal is priced and the price is 240 rows in
+  12 s.
+- **The constitutional argument for accumulating refusals is closed**, by the
+  owner and not by us. `docs/HUD_PROJECTIONS.md` gap 34 carries the ruling,
+  dated 2026-09-15 and landed in `5e045c3c`: article 6's *ostrzeżenia* governs
+  *"arrears, missing beds, an open incident — the state of the prison — and
+  **not** the decline of a press. That is article 3's odmowa."* So *"Historia
+  zdarzeń pozostaje dostępna"* does not require a refusal to stay on the band,
+  and the measurements that were filed as a constitutional conflict are now
+  the **cost side** of this decision rather than a defect report.
+
+#### The options, each with what it costs, measured
+
+Lettered to match this document's own list above. **B and C stay rejected for
+the reason already given** — they turn the two guarding tests in
+`tests/unit/simulation-refusals.test.ts` red, and those tests are about
+`RefusalLog`, which none of the three live options touches. **E is dropped
+from the live list**: its cost was never measured, it invents a *treatment*
+rather than a rule, and pricing it needs design work no pass has done.
+
+**Option A — leave it. Cost: zero code, and the following, measured.**
+
+The refusal stands until another refusal replaces it or the session ends. What
+that has been measured to mean, on two independent trees eleven days apart:
+
+- **This pass**: survives 8 accepted build orders, 21 counts publications, and
+  every gesture of a wall run, with 2 band transitions logged in the whole
+  session.
+- **The 2026-09-15 cold-start pass** (acts 3-5 of the cold-start record on
+  branch `agent/cold-start-measurement`, **PR #1243** — also not yet on
+  `main`, so cited by pull request rather than by path): a probe refusal survived
+  **24 walls, a zoned Cell, two beds and a toilet, two admits, a hire and
+  eight in-game days** — 5.9 minutes of play — and the alerts list
+  **re-sorts it below each new arrival**, so it ends the run sitting under
+  three dated, dismissible `Info` acknowledgements while carrying **neither a
+  `Day` stamp nor a `Clear this alert`**.
+- **And once, two adjacent grid rows made opposite claims about one press**:
+  the event band said `The order was cancelled. Anything already spent past
+  the point of no return stays spent.` while the refusal band beside it still
+  read `Nothing was removed`, for the same successful press (act 3 step E).
+
+That last item is the whole of A's cost, and it is not a wording problem: the
+sentence is in the present tense about a tile the player has since built on.
+
+**Option D — any decided outcome of any route retires the band (this document's
+own recommendation, now priced).**
+
+- **Fixes**: everything measured under A. The band becomes a true "right now"
+  surface and the alerts list keeps the full record, which is the split
+  `src/ui/simulation-alerts.ts`'s own comment already claims to be making.
+- **Costs, measured**: the band's lifetime becomes **2-3 ms** inside a drag
+  (M2), against the **600 ms** floor the owner ruled an event needs (ADR
+  0084). A player who refuses a press and then does anything at all never
+  reads the sentence. Plus the new signal: three watermark lines, one payload
+  member, two counter lines, and a band rule in `hud.ts` (M4, M5).
+- **Deliberate disagreement**: the band and the list part company in exactly
+  the case this decision is about, as the option's original cost line says.
+
+**Option F — retire the band on a decided outcome of the *same route*.** New
+here, and it is D with one comparison added.
+
+- **Costs the same signal as D** (M5) and **no extra payload**, because the
+  route is already derivable from the standing refusal's own reason prefix
+  (M5, last clause).
+- **Measured lifetime**: in M1's own session the standing refusal is
+  `remove-wall.*` and the 8 commands are `PlaceBuildOrder`, so **F leaves the
+  sentence up through the entire drag** — the band survives unrelated
+  gestures, which is the readability D loses. It is retired by the player's
+  next *removal*, whatever tile it names.
+- **Kills the measured contradiction**: act 3 step E was a **successful
+  `RemoveWall`** while a `remove-wall.nothing-to-remove` refusal stood. Same
+  route, so F retires it — the two bands stop disagreeing about one press.
+- **What it does not fix, stated plainly**: #780's plain different-location
+  case for a route the player never repeats. A `zone.not-enclosed` refusal
+  about a rectangle the player abandons stands until they zone something else
+  or refuse something else.
+- **Cost, the honest one**: F applies to the band the wide, per-namespace
+  reading #492 rejected — but **for the log**. The two guarding tests assert
+  on `RefusalLog` (`tests/unit/simulation-refusals.test.ts:838` and the
+  `build.unowned-land` case beside it), and F touches neither `RefusalLog` nor
+  `supersede`, so both stay green as written. A reader who reads F as
+  overturning #492 is reading a band rule as a log rule.
+
+#### Recommendation — and the ruling it received
+
+**Ruled on 2026-09-16: the owner chose F.** The paragraphs below are left
+exactly as they were written, in the tense they were written in, because a
+recommendation that is silently rewritten into a ruling destroys the only
+evidence of what the ruling was a choice BETWEEN. The Status block at the top
+of this document carries the ruling, its provenance and its limits; this
+section carries the argument that was put.
+
+
+**F.** Not D, which is this document's own earlier recommendation, and the
+reason is one measurement: **D's band lifetime is 2 ms inside an ordinary wall
+drag**, and the owner has already ruled that 600 ms is the floor below which an
+*event* is not readable. A rule that retires a sentence before the same gesture
+finishes is not "newest decided thing wins"; it is the timer `hud.ts:1292-1293`
+declines to have, with the player's own hand as the clock. A is measured to
+produce a screen that contradicts itself about one press, which is the one
+outcome nothing here defends.
+
+F retires the sentence at the moment the player demonstrates, by doing that
+same kind of thing again, that the subject is behind them — and it leaves the
+sentence alone while they are doing something else, which is when they are most
+likely to be reading it. It costs what D costs and no more.
+
+**Weakest claim, named.** That the 600 ms event-band floor is the right
+yardstick for the refusal band. It was ruled for a different band, and the
+refusal band has **no dwell floor at all** today — a second refusal replaces
+the first immediately, at whatever speed they arrive. So the comparison is an
+argument by analogy, not a rule being broken.
+
+**What would change my mind:** a ruling that the corner is a *last-press
+indicator* rather than a *message* — that it is meant to mirror the newest
+press the way a cursor mirrors a pointer. Under that reading 2 ms is not a
+defect, it is the specification, and **D becomes correct immediately**, with F
+the fussier of the two for no gain. That is a product position and not a
+measurement, which is why it is the owner's.
 
 ## What this document does not decide
 

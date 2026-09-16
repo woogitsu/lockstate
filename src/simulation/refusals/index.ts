@@ -30,6 +30,7 @@ export {
   removeObjectSupersessionKey,
   removeWallSupersessionKey,
   sellSupersessionKey,
+  supersessionKeyRoute,
   unzoneSupersessionKey,
   zoneAreaSupersessionKey,
   zoneRefusalSupersessionKey,
