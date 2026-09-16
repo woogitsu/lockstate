@@ -431,24 +431,46 @@ test('#780: how long a zone.not-enclosed refusal about an abandoned rectangle su
   if ((await roomArm.getAttribute('data-armed')) !== 'true') await roomArm.click();
   await expect(roomArm).toHaveAttribute('data-armed', 'true', { timeout: ARM_TIMEOUT_MS });
   /*
-   * (7,14)-(9,16), not (24,24)-(27,27). Tile 24's centre is screen x=1264 at
-   * the camera a new prison starts on, which is under the HUD's right-hand
-   * rail, and tile 27's is 1456 -- off a 1440-wide page entirely. The
-   * rectangle has to be *reachable by a mouse* and *away from the cell this
-   * run will build at 12..17*, and that is both.
+   * (8,15)-(10,17), and the two rectangles this replaces are both measured
+   * failures rather than guesses.
+   *
+   * **(24,24)-(27,27)** -- the first attempt -- is off the page: with the
+   * camera a new prison starts on, calibration measures tile (0,0)'s top-left
+   * at screen (-304,-574), so tile 24's centre is x=1264, under the HUD's
+   * right-hand rail, and tile 27's is x=1456 on a 1440-wide page.
+   *
+   * **(7,14)-(9,16)** is on the canvas by arithmetic and still produced no
+   * pending designation: the drag began at screen (176,354), the Rooms
+   * panel's `.hud-rooms__confirm` stayed `hidden`, and the test spent its
+   * whole 600 s budget waiting for it. The press that *did* work in the first
+   * test of this file was (240,482), so the top-left of the page is not all
+   * canvas -- `openApp` waits for `.save-panel`, which is laid out there. The
+   * rectangle is therefore taken from the quadrant a press is known to reach,
+   * and the panel is asked whether it accepted the drag instead of the click
+   * being fired blind.
    */
-  const abandonedA = centreOf(origin, 7, 14);
-  const abandonedB = centreOf(origin, 9, 16);
-  if (abandonedA.x < 0 || abandonedA.y < 0 || abandonedB.x > 1000 || abandonedB.y > 880) {
-    throw new Error(`the abandoned rectangle is off the canvas: ${JSON.stringify([abandonedA, abandonedB])} (origin ${origin.originX},${origin.originY})`);
+  const abandonedA = centreOf(origin, 8, 15);
+  const abandonedB = centreOf(origin, 10, 17);
+  if (abandonedA.x < 200 || abandonedA.y < 400 || abandonedB.x > 1000 || abandonedB.y > 860) {
+    throw new Error(`the abandoned rectangle is outside the quadrant a press is known to reach: ${JSON.stringify([abandonedA, abandonedB])} (origin ${origin.originX},${origin.originY})`);
   }
-  await drag(page, abandonedA, abandonedB);
+  const confirm = page.locator('.hud-rooms__confirm');
+  let drawn = 0;
+  for (;;) {
+    drawn += 1;
+    await drag(page, abandonedA, abandonedB);
+    if (await confirm.isVisible()) break;
+    log(`drag attempt ${drawn} left the confirm control hidden; rooms panel says ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
+    if (drawn >= 4) throw new Error('the Rooms panel never offered a confirm for the abandoned rectangle');
+    await page.waitForTimeout(1000);
+  }
+  log(`the abandoned rectangle was drawn on attempt ${drawn}`);
   await page.locator('.hud-rooms__confirm').click();
   await page.waitForTimeout(900);
   const stoodAt = await pageNow(page);
   const abandonedTick = await currentTick(page);
   const standing = await bothSurfaces(page);
-  log(`ABANDONED RECTANGLE (7,14)-(9,16) refused at page t=${stoodAt.toFixed(1)}ms, tick ${abandonedTick}`);
+  log(`ABANDONED RECTANGLE (8,15)-(10,17) refused at page t=${stoodAt.toFixed(1)}ms, tick ${abandonedTick}`);
   log(`  band=${JSON.stringify(standing.band)}`);
   log(`  alerts=${JSON.stringify(standing.alerts)}`);
 
