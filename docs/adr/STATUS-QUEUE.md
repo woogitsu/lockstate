@@ -6096,7 +6096,34 @@ the kind nobody reviews -- turns a historical record into a second live anchor
 and fails a gate whose message will talk about anchors rather than about
 wrapping.** Written down because it is exactly the shape of trap this file
 exists to record: a property everything below depends on, held by nothing that
-says so. Four of those five have merged
+says so.
+
+> **THAT PARAGRAPH'S COUNT WAS WRONG BY A FACTOR OF EIGHT AND ITS DIAGNOSIS
+> WAS HALF THE MECHANISM, CORRECTED 2026-09-16 AND KEPT RATHER THAN
+> OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). It says *"the six kept anchor
+> records"*; counted on `36d35998` the file holds **48** of them, and the
+> figure was already stale when it was written rather than having drifted
+> since -- which is what §4 means by a tally being the sentence form that rots
+> first. The *"undocumented load-bearing line break"* it names is real and is
+> only one of two: **36** of the 48 are held out of the scanner by the line
+> break it describes, and a further **12** by the `>` of the blockquote they
+> sit in -- six in the `` @ ``-to-sha gap and six between the sha and the
+> version, a second load-bearing character no note in this file mentioned.
+> Unindenting one blockquote did the same damage as re-flowing one paragraph,
+> and nothing said so.
+>
+> **The trap it names is closed rather than merely re-counted** (#1259). The
+> gate's pattern now treats every gap as whitespace-or-`>`, so it reads all 49
+> spans; a kept record is exempt because it carries the file's own *"It
+> read:"* introduction and not because of where its paragraph wraps. So the
+> paragraph above is now false in the other direction too: re-flowing a kept
+> record no longer turns it into a second live anchor, and the reflow and
+> unindent cases are both fixtures in
+> `tests/foundation/adr-status-queue-anchor-contract.test.ts`. What still
+> fails, correctly, is a span of that shape with no introduction in front of
+> it.
+
+Four of those five have merged
 inside this window and are accounted for below; **#578 is still open**, which
 makes it the only pull request to have been named in two consecutive anchors'
 dispatch notes as outstanding. That is recorded rather than acted on: whether
