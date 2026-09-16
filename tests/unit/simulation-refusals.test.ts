@@ -20,6 +20,24 @@ import {
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
+  admitSupersessionKey,
+  buildSupersessionKey,
+  cancelBuildOrderSupersessionKey,
+  dismissStaffSupersessionKey,
+  editRegimeBlockSupersessionKey,
+  hireSupersessionKey,
+  materialsFundingSupersessionKey,
+  placeObjectSupersessionKey,
+  purchaseCancelSupersessionKey,
+  purchaseSupersessionKey,
+  releaseGuardSupersessionKey,
+  removeObjectSupersessionKey,
+  removeWallSupersessionKey,
+  sellSupersessionKey,
+  supersessionKeyRoute,
+  unzoneSupersessionKey,
+  zoneAreaSupersessionKey,
+  zoneSupersessionKey,
 } from '../../src/simulation/refusals';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
@@ -1024,6 +1042,196 @@ describe('issue #780: a zoning refusal is withdrawn by a different room type suc
  * production route a player press actually takes, and a fixture that called
  * the system directly would not exercise it (#375).
  */
+/**
+ * **ADR 0091 decision 2, option F, ruled by the owner on 2026-09-16: a decided
+ * outcome of the SAME route retires the refusal band.**
+ *
+ * The ruling is a rule about the corner, not about this log, and these cases
+ * are here rather than in a UI file because the *comparison* is here -- the
+ * supersession key is the only thing in the tree that knows which route a
+ * standing refusal came from, and putting a route on the wire beside the
+ * reason would have been a second vocabulary to keep in step.
+ *
+ * So what `RefusalLog` gained is one reported bit, `routeDecidedSince`, and
+ * the two things to hold on to while reading these are what it is *not*:
+ *
+ * - **It is not a withdrawal.** `last` still carries the refusal, `reason` is
+ *   untouched and `count` is untouched. #492's rule -- a refusal is withdrawn
+ *   only by a success at its own target -- decides exactly what it decided
+ *   before, and the two guarding cases in the `#492` block above assert on
+ *   `reason` after a different rectangle and a different tile succeed. Both
+ *   still read the standing refusal, and this block re-asserts that from its
+ *   own side rather than taking it on trust.
+ * - **It is not the wide reading arriving by another door.** The band and the
+ *   alerts list part company here on purpose; that divergence is the whole of
+ *   what option F buys and ADR 0091 prices it in its own Consequences.
+ *
+ * `docs/adr/0091-what-clears-the-refusal-band.md` carries the ruling, the
+ * measurements it was chosen against, and its provenance -- which is the
+ * weaker of the two kinds this repository distinguishes.
+ */
+describe('ADR 0091 decision 2 (option F): the standing refusal reports when its own route decides again', () => {
+  it('derives the route of every supersession key this module builds from the key itself', () => {
+    // Not a fixture supplying both sides (`docs/TESTING.md`): the expected
+    // routes are written out here as the command names a reader would name,
+    // and each key is built by the production function. A route added
+    // tomorrow whose key does not follow `<route>:<target>` fails here rather
+    // than silently never retiring a band -- which is the failure mode that
+    // is invisible from any other test, because a missing retirement looks
+    // exactly like the status quo.
+    const cases: readonly (readonly [string, string])[] = [
+      [admitSupersessionKey(), 'admit'],
+      [buildSupersessionKey('wall-brick', 4, 4, 'north'), 'build'],
+      [cancelBuildOrderSupersessionKey('order-1'), 'cancel-build-order'],
+      [dismissStaffSupersessionKey(7), 'dismiss'],
+      [editRegimeBlockSupersessionKey('group.general', 0), 'edit-regime-block'],
+      [hireSupersessionKey('staff.guard'), 'hire'],
+      [materialsFundingSupersessionKey(), 'materials-funding'],
+      [placeObjectSupersessionKey('object.bed', 4, 4), 'place-object'],
+      [purchaseCancelSupersessionKey('order-2'), 'cancel-purchase'],
+      [purchaseSupersessionKey('material.brick', 10), 'purchase'],
+      [releaseGuardSupersessionKey(3), 'release-guard'],
+      [removeObjectSupersessionKey(4, 4), 'remove-object'],
+      [removeWallSupersessionKey(4, 4, 'north'), 'remove-wall'],
+      [sellSupersessionKey('material.brick', 2), 'sell'],
+      [unzoneSupersessionKey(2, 2, 2, 3), 'unzone'],
+      [zoneSupersessionKey('room.cell', 2, 2, 2, 3), 'zone'],
+      // The one route with two key shapes, and it is deliberate: decision 1
+      // of this same ADR made the `ZoneRoom` success path call `supersede`
+      // with *both*, so a `zone.*` refusal filed under either prefix sees a
+      // decided outcome of its own prefix on every successful zoning anyway.
+      // See `supersessionKeyRoute`.
+      [zoneAreaSupersessionKey(2, 2, 2, 3), 'zone-area'],
+    ];
+    for (const [key, route] of cases) {
+      expect(supersessionKeyRoute(key), `${key} does not name its own route`).toBe(route);
+    }
+  });
+
+  it('marks a standing zoning refusal once a different rectangle is zoned -- without withdrawing it', () => {
+    // Deliberately the *identical* scenario as #492's guarding case "leaves
+    // the line alone when a different rectangle is what got walled and
+    // zoned". That test asserts what the log still says; this one asserts the
+    // one thing that is new beside it, so the two readings of one sequence
+    // sit next to each other rather than being inferred from one another.
+    const runtime = createNewSimulationRuntime(0x91);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+    expect(runtime.refusals.last?.routeDecidedSince, 'nothing has been decided since the refusal itself').toBeUndefined();
+
+    wallRoomPerimeter(runtime.world, { x: 10, y: 10, width: 2, height: 3 });
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 10, y: 10, width: 2, height: 3 }));
+
+    expect(
+      runtime.refusals.last?.reason,
+      '#492 is untouched: a different rectangle succeeding does not make this one enclosed, and the log still says so',
+    ).toBe('zone.not-enclosed');
+    expect(runtime.refusals.last?.sequence, 'the record is the same record').toBe(1);
+    expect(runtime.refusals.count, 'a report is not a withdrawal and not a new refusal').toBe(1);
+    expect(
+      runtime.refusals.last?.routeDecidedSince,
+      'the player has zoned since, so the corner sentence is no longer about anything they are looking at',
+    ).toBe(true);
+  });
+
+  it('leaves a standing refusal of a different route alone, which is the whole of F against D', () => {
+    // ADR 0091's M1, in the simulation: a `remove-wall` refusal standing
+    // through a wall drag. Under option D the eight `PlaceBuildOrder`s of one
+    // drag -- measured 2 ms apart -- would retire it before the gesture
+    // finished; under F they say nothing about it.
+    const runtime = createNewSimulationRuntime(0x91);
+    submit(runtime, 0, packCommand({ type: 'RemoveWall', x: 18, y: 19, edge: 'north' }));
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+
+    for (let index = 0; index < 8; index += 1) {
+      placeWall(runtime, 1 + index, { x: OWNED_TILE.x + index, y: OWNED_TILE.y });
+    }
+
+    expect(runtime.refusals.last?.reason, 'eight accepted build orders refuse nothing').toBe('remove-wall.nothing-to-remove');
+    expect(
+      runtime.refusals.last?.routeDecidedSince,
+      'building a wall is not removing one; the sentence stays up for the player to read',
+    ).toBeUndefined();
+  });
+
+  it('marks a standing removal refusal once the player removes something else -- #780s own recurrence', () => {
+    // #780's `RemoveObject` recurrence, which ADR 0091 decision 1 explicitly
+    // could not reach ("there is no type dimension to split"), on the
+    // `UnzoneRoom` route that shares its sentence. The sequence is the plain
+    // different-target case the two #492 guards protect: the first press is
+    // still exactly as true as it was, and the player has visibly moved on.
+    //
+    // `UnzoneRoom` rather than `RemoveWall` because a successful wall removal
+    // needs a *completed* build order -- `completedOrderClaimingEdge` ignores
+    // an in-flight one -- and driving a queue to completion here would put
+    // the construction system between this assertion and the thing it is
+    // about. The route mechanism is identical: one key prefix, compared.
+    const runtime = createNewSimulationRuntime(0x91);
+    submit(runtime, 0, packCommand({ type: 'UnzoneRoom', x: 20, y: 20, width: 8, height: 8 }));
+    expect(runtime.refusals.last?.reason).toBe('unzone.nothing-to-remove');
+
+    // A real room somewhere else, so the removal below is a real success.
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.yard', x: 2, y: 2, width: 8, height: 8 }));
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard'), 'the yard has to exist or the removal below removes nothing').toHaveLength(1);
+    expect(
+      runtime.refusals.last?.routeDecidedSince,
+      'zoning is not un-zoning: a different route must not mark it',
+    ).toBeUndefined();
+
+    submit(runtime, 2, packCommand({ type: 'UnzoneRoom', x: 2, y: 2, width: 8, height: 8 }));
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard'), 'the removal has to succeed or nothing was decided').toHaveLength(0);
+
+    expect(
+      runtime.refusals.last?.reason,
+      'the record is untouched -- the rectangle at (20,20) still holds no room',
+    ).toBe('unzone.nothing-to-remove');
+    expect(runtime.refusals.count, 'one refusal, still').toBe(1);
+    expect(
+      runtime.refusals.last?.routeDecidedSince,
+      'the player has removed a room since, so the corner must stop naming the one they abandoned',
+    ).toBe(true);
+  });
+
+  it('does not carry the mark across to the refusal that replaces it', () => {
+    // A `record` is a fresh decision, so whatever the record it replaces had
+    // learned about its own route is not this one's. Without this the flag
+    // would be sticky per session rather than per refusal, and the band would
+    // never show the second refusal at all.
+    const log = new RefusalLog();
+    log.record('remove-wall.nothing-to-remove', 3, removeWallSupersessionKey(18, 19, 'north'));
+    log.supersede(removeWallSupersessionKey(4, 4, 'north'));
+    expect(log.last?.routeDecidedSince).toBe(true);
+
+    log.record('remove-wall.nothing-to-remove', 9, removeWallSupersessionKey(20, 20, 'north'));
+    expect(log.last?.routeDecidedSince, 'a refusal decided now has had nothing decided since').toBeUndefined();
+    expect(log.last?.sequence).toBe(2);
+    expect(log.count).toBe(2);
+  });
+
+  it('withdraws rather than marks when the success is at the refusal own target', () => {
+    // The two outcomes are exclusive and the order matters: a same-key call
+    // must take the withdrawal path it always took, not leave a marked record
+    // standing. `last` going `undefined` is the assertion that it did.
+    const log = new RefusalLog();
+    const key = removeWallSupersessionKey(18, 19, 'north');
+    log.record('remove-wall.nothing-to-remove', 3, key);
+    log.supersede(key);
+    expect(log.last, '#492 withdrawal, unchanged').toBeUndefined();
+    expect(log.count).toBe(1);
+  });
+
+  it('leaves a refusal filed under no key alone, whatever succeeds', () => {
+    // `record`'s `key` is optional and the class calls that "the correct,
+    // inert default". Inert has to stay inert: with no key there is no route,
+    // so there is nothing a later success is the same route as.
+    const log = new RefusalLog();
+    log.record('remove-wall.nothing-to-remove', 3);
+    log.supersede(removeWallSupersessionKey(4, 4, 'north'));
+    expect(log.last?.routeDecidedSince).toBeUndefined();
+    expect(log.last?.reason).toBe('remove-wall.nothing-to-remove');
+  });
+});
+
 describe('issue #514: a repeated build order at the same tile and edge is refused, not queued again', () => {
   it('refuses the second identical press while the first order is still standing, under its own wire id', () => {
     const runtime = createNewSimulationRuntime(0x514);

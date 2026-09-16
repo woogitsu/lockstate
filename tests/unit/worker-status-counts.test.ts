@@ -74,7 +74,17 @@ interface Published {
     readonly schemaVersion: number;
     readonly counts: Record<string, number>;
     /** Absent until the session has refused something (#261). */
-    readonly refusal?: { readonly sequence: number; readonly tick: number; readonly reason: string };
+    readonly refusal?: {
+      readonly sequence: number;
+      readonly tick: number;
+      readonly reason: string;
+      /**
+       * Present once the same command route has decided something else since
+       * (ADR 0091 decision 2, option F). `true`-or-absent, exactly as
+       * `SimulationRefusal` declares it.
+       */
+      readonly routeDecidedSince?: true;
+    };
   };
 }
 
@@ -556,6 +566,57 @@ describe('publishing the status counts', () => {
     expect(harness.publications()).toHaveLength(2);
   });
 
+  /**
+   * **ADR 0091 decision 2, option F (ruled by the owner 2026-09-16): the
+   * publication gate has to open on a flag that moves no ordinal.**
+   *
+   * `RefusalLog.supersede` sets `routeDecidedSince` on the *standing* record
+   * when the same route decides something at a different target, so nothing
+   * about that record's `sequence` changes -- and the gate above is a
+   * comparison against `_publishedRefusalSequence`. Without a second
+   * watermark this publication does not happen at all, and the band never
+   * learns it should retire the sentence: the same failure mode #261 names
+   * for a refusal that moves no count, one field over.
+   *
+   * The counts are asserted equal to the previous publication for exactly
+   * that reason -- if a count had moved, the interval gate could have carried
+   * this message anyway and the test would be pinning nothing.
+   */
+  test('publishes again when the standing refusal own route decides elsewhere, though its ordinal never moves (ADR 0091)', () => {
+    const harness = new Harness();
+    harness.run(1);
+    // Refused: outside the one owned chunk.
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    const refused = harness.publications();
+    expect(refused).toHaveLength(2);
+    expect(refused[1]?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+
+    // Accepted: inside it, and a different tile, so #492's key misses and the
+    // refusal is *not* withdrawn. Same route, so option F marks it.
+    submitBuildOrder(harness['machine'], 1, { x: 4, y: 4 }, 1);
+    harness.advance(50);
+
+    const after = harness.publications();
+    expect(after, 'a publication the sequence gate alone would have suppressed').toHaveLength(3);
+    expect(after[2]?.payload.refusal).toEqual({
+      sequence: 1,
+      tick: 0,
+      reason: 'build.out-of-bounds',
+      routeDecidedSince: true,
+    });
+    // Nothing but the flag can have caused this message: the interval gate
+    // returns early unless `eventIsNew`, and only 100 ms of the 500 ms
+    // interval has elapsed. A moved count is not enough to get past it --
+    // which matters here, because the accepted order *does* move the treasury.
+    expect(harness.elapsedMs).toBeLessThan(STATUS_COUNTS_PUBLISH_INTERVAL_MS);
+
+    // And it does not become a new firehose: the flag is monotone per record,
+    // so the gate opens once for it and not once per wake thereafter.
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+    expect(harness.publications()).toHaveLength(3);
+  });
+
   test('replaces the standing refusal when the simulation refuses something else', () => {
     const harness = new Harness();
     harness.run(1);
@@ -588,8 +649,33 @@ describe('publishing the status counts', () => {
     const carrying = harness.publications().filter((publication) => publication.payload.refusal !== undefined);
     expect(carrying.length).toBeGreaterThan(1);
     for (const publication of carrying) {
-      expect(publication.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+      expect(publication.payload.refusal).toMatchObject({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
     }
+
+    /*
+     * **This case asserted the whole object until ADR 0091 decision 2 (option
+     * F, ruled 2026-09-16), and the clause that moved is worth naming rather
+     * than quietly relaxing.** The record really is republished unchanged --
+     * `sequence`, `tick` and `reason` are asserted above on every carrying
+     * publication, which is what this test has always been about. What is new
+     * is a fourth member that is *not* part of the record: the scenario
+     * session's own queued build orders succeed as the clock runs, and a
+     * success on the `build` route marks the standing `build.out-of-bounds`
+     * refusal as no longer being about anything the player is looking at.
+     *
+     * So the property to pin is that the mark is **monotone** -- it appears
+     * once and never comes back off a republication -- because a flag that
+     * flickered would make the band show a retired sentence again. The record
+     * itself is untouched either way, which the `toMatchObject` assertions
+     * above and `refusals.count` in `tests/unit/simulation-refusals.test.ts`
+     * both hold.
+     */
+    const marks = carrying.map((publication) => publication.payload.refusal?.routeDecidedSince === true);
+    expect(marks, 'the scenario builds successfully as it runs, so the mark has to arrive').toContain(true);
+    expect(
+      marks.slice(marks.indexOf(true)).every((mark) => mark),
+      'a route cannot un-decide: once marked, every later republication carries it',
+    ).toBe(true);
   });
 
   test('still projects at most once per interval plus once per refusal', () => {

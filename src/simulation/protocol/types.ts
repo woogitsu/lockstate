@@ -1475,6 +1475,54 @@ const refusalSchema = z
     sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
     tick: tickSchema,
     reason: z.enum(REFUSAL_REASONS),
+    /**
+     * Present once the **same command route** has decided another outcome
+     * since this refusal was recorded (ADR 0091 decision 2, option F, ruled
+     * by the owner 2026-09-16).
+     *
+     * ## What a route is here, and why it is the supersession key's own prefix
+     *
+     * A route is one player command: `zone`, `unzone`, `build`,
+     * `remove-wall`, `hire`, `admit` and the rest. `RefusalLog` already holds
+     * a supersession key for the standing refusal, built by that route's own
+     * `*SupersessionKey` function, and every one of those keys is
+     * `<route>:<target>` or the bare route where there is no target
+     * (`admitSupersessionKey` returns `'admit'`). So the segment before the
+     * first `:` **is** the route, and the comparison needs no second
+     * vocabulary and no table that could drift from the first. It is
+     * deliberately *not* derived from `reason`'s own namespace, which is a
+     * near-miss rather than a match: `construction.materials-unfunded` is
+     * keyed `materials-funding`, and a reason-to-key table would be one more
+     * thing to keep in step.
+     *
+     * ## What sets it, and what it is not
+     *
+     * `RefusalLog.supersede` sets it when the key it is called with names the
+     * same route as the standing refusal's own key but a **different target**
+     * -- a same-target call withdraws the refusal outright, as it always
+     * has. So this field is exactly the case #492 deliberately left standing,
+     * now *reported* rather than acted on: the record itself is untouched,
+     * `last` still carries it, `count` still counts it, and the alerts list
+     * still shows the row. Nothing about `supersede`'s own withdrawal rule
+     * moved, and the two tests in `tests/unit/simulation-refusals.test.ts`
+     * that pin #492's narrow reading assert on `reason`, which this does not
+     * touch.
+     *
+     * ## Why `true`-or-absent rather than a boolean
+     *
+     * The fact is monotone: a route that has decided something since cannot
+     * un-decide it while this refusal is the standing one, and a new `record`
+     * replaces the whole value. `z.literal(true).optional()` makes "present
+     * and false" unrepresentable rather than merely unused, and keeps the
+     * payload's existing convention -- `refusal` and `zoning` beside it are
+     * absent when there is nothing to say rather than present and empty.
+     *
+     * The one consumer is the refusal band (`applySimulationRefusal` in
+     * `src/ui/hud/hud.ts`), which retires the corner on it. The alerts list
+     * ignores it on purpose; that divergence is what option F buys and ADR
+     * 0091 prices.
+     */
+    routeDecidedSince: z.literal(true).optional(),
   })
   .strict();
 

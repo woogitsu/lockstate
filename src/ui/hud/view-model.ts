@@ -1663,6 +1663,26 @@ export interface HudRefusalNoticeViewModel {
   readonly sequence: number;
   /** A message key, never text. */
   readonly labelKey: LocalizationKey;
+  /**
+   * Present once the simulation reports that the **same command route** has
+   * decided another outcome since this refusal was recorded -- the player
+   * zoned something else, removed a wall somewhere else, hired somebody else
+   * (ADR 0091 decision 2, option F, ruled by the owner 2026-09-16).
+   *
+   * **Only the band reads it.** `mountHud`'s `applySimulationRefusal` retires
+   * the corner on it; `hudAlertsFromWorkerMessage` does not look at it, so the
+   * alerts list keeps the row. That divergence is the whole of what option F
+   * buys and it is deliberate: the band is what is happening now, the list is
+   * the record. `src/ui/simulation-alerts.ts` has claimed that split in prose
+   * since #507 and this is the first thing that makes the two surfaces
+   * actually differ.
+   *
+   * It carries no route and no target, exactly as the rest of this interface
+   * carries no coordinates: the comparison is made where the key lives, in
+   * `RefusalLog`, and what crosses the boundary is its answer. See
+   * `SimulationRefusal.routeDecidedSince`.
+   */
+  readonly routeDecidedSince?: true;
 }
 
 /**
