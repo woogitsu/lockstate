@@ -314,3 +314,126 @@ test('act 2 -- what the game says when twenty-four walls go up', async ({ page }
   log('EVERY band sentence this run ever showed:');
   for (const line of await bandLog(page)) log(`  ${line}`);
 });
+
+/**
+ * The control for act 1: the third acknowledgement, `rooms.needs-cleared`,
+ * against the same sealed doorless cell -- does it stay silent until the
+ * prison is actually fixed, and does it arrive when it is?
+ */
+test('act 3 -- what it takes to earn the third acknowledgement', async ({ page }) => {
+  await openApp(page);
+  await recordBands(page);
+  const log = (line: string) => console.log(`[act3] ${line}`);
+
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+  await showPanel(page, 'build', '.hud-build');
+  const origin = await calibrate(page);
+  await buy(page, 'wall-brick', 50);
+  await buy(page, 'bed-wooden', 3);
+  await buy(page, 'toilet-brick', 3);
+  await buy(page, 'door-wooden', 3);
+  await fastForwardToMax(page);
+  await page.waitForTimeout(3000);
+
+  await armBuildable(page, 'wall-brick');
+  const westX = origin.originX + 12 * TILE;
+  const eastX = origin.originX + 18 * TILE;
+  const northY = origin.originY + 12 * TILE;
+  const southY = origin.originY + 18 * TILE;
+  for (const run of [
+    { name: 'north', a: { x: westX + TILE / 2, y: northY }, b: { x: eastX - TILE / 2, y: northY } },
+    { name: 'south', a: { x: westX + TILE / 2, y: southY }, b: { x: eastX - TILE / 2, y: southY } },
+    { name: 'west', a: { x: westX, y: northY + TILE / 2 }, b: { x: westX, y: southY - TILE / 2 } },
+    { name: 'east', a: { x: eastX, y: northY + TILE / 2 }, b: { x: eastX, y: southY - TILE / 2 } },
+  ]) {
+    await drag(page, run.a, run.b);
+  }
+  await waitForQueueEmpty(page);
+
+  let attempts = 0;
+  for (;;) {
+    attempts += 1;
+    await showPanel(page, 'zones', '.hud-rooms');
+    const collapsed = await page.locator('.hud-rooms').getAttribute('data-collapsed');
+    if (collapsed === 'true') await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    const roomRow = page.locator('.hud-rooms__list [data-room="room.cell"]');
+    await roomRow.click();
+    await expect(roomRow).toHaveAttribute('data-selected', 'true', { timeout: ARM_TIMEOUT_MS });
+    const roomArm = page.locator('.hud-rooms__arm');
+    if ((await roomArm.getAttribute('data-armed')) !== 'true') await roomArm.click();
+    await expect(roomArm).toHaveAttribute('data-armed', 'true', { timeout: ARM_TIMEOUT_MS });
+    await drag(page, centreOf(origin, 12, 12), centreOf(origin, 17, 17));
+    await page.locator('.hud-rooms__confirm').click();
+    await page.waitForTimeout(1200);
+    const counts = await latestCounts(page);
+    log(`designate attempt ${attempts}: rooms=${counts?.rooms}`);
+    if ((counts?.rooms ?? 0) > 0) break;
+    if (attempts >= 10) throw new Error('the rectangle was never accepted as a room');
+    await page.waitForTimeout(5000);
+  }
+
+  // Bed, then a doorway cut into the north run, then the toilet last -- so the
+  // shortfall reaches zero on the toilet and nowhere earlier.
+  await showPanel(page, 'build', '.hud-build');
+  await armBuildable(page, 'bed-wooden');
+  await press(page, centreOf(origin, 13, 13).x, centreOf(origin, 13, 13).y);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(1200);
+  await showPanel(page, 'zones', '.hud-rooms');
+  log(`ROOMS with a bed, no toilet, no door: ${JSON.stringify(await panelText(page, '.hud-rooms__needs'))}`);
+  log(`ALERTS at that moment: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+
+  await showPanel(page, 'build', '.hud-build');
+  await page.locator('.hud-build__remove').click();
+  const doorEdge = { x: origin.originX + 14 * TILE + TILE / 2, y: northY };
+  const removed = await press(page, doorEdge.x, doorEdge.y);
+  log(`remove press on the north wall segment above tile (14,12): ${JSON.stringify(removed.map((c) => c['type']))}`);
+  log(`REFUSAL after removing one wall of a designated cell: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
+  log(`EVENT after removing one wall of a designated cell: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  await page.waitForTimeout(1500);
+  await showPanel(page, 'zones', '.hud-rooms');
+  log(`ROOMS with the wall gone: ${JSON.stringify(await panelText(page, '.hud-rooms__needs'))}`);
+
+  await showPanel(page, 'build', '.hud-build');
+  await armBuildable(page, 'door-wooden');
+  const doorCommands = await press(page, doorEdge.x, doorEdge.y);
+  log(`door order: ${JSON.stringify(doorCommands.map((c) => `${String(c['type'])} ${String(c['definitionId'])}`))}`);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(1500);
+  await showPanel(page, 'zones', '.hud-rooms');
+  log(`ROOMS with a door and a bed but no toilet: ${JSON.stringify(await panelText(page, '.hud-rooms__needs'))}`);
+  log(`ALERTS at that moment: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+
+  await showPanel(page, 'build', '.hud-build');
+  await armBuildable(page, 'toilet-brick');
+  await press(page, centreOf(origin, 16, 16).x, centreOf(origin, 16, 16).y);
+  await waitForQueueEmpty(page);
+  await page.waitForTimeout(3000);
+  const clearedAt = await currentTick(page);
+  log(`the last shortfall cleared at tick ${clearedAt}`);
+  log(`EVENT BAND at that moment: ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  log(`ALERTS at that moment: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+
+  // `RoomNeedsClearedNoticeSystem` runs once an in-game day, on its last tick
+  // (`schedule = { intervalTicks: DAY_LENGTH_TICKS, phaseTicks: DAY_LENGTH_TICKS - 1 }`),
+  // so the acknowledgement for a repair cannot arrive before the next boundary.
+  const nextBoundary = Math.floor(clearedAt / 2400) * 2400 + 2399;
+  log(`waiting for the next once-a-day pass at tick ${nextBoundary}`);
+  for (;;) {
+    const tick = await currentTick(page);
+    if (tick >= nextBoundary + 30) break;
+    await page.waitForTimeout(3000);
+  }
+  await page.waitForTimeout(2000);
+  log(`EVENT BAND after the next once-a-day pass (tick ${await currentTick(page)}): ${JSON.stringify(await panelText(page, '.hud__event'))}`);
+  await showPanel(page, 'zones', '.hud-rooms');
+  log(`ROOMS at the end: ${JSON.stringify(await panelText(page, '.hud-rooms__needs'))}`);
+  log(`STRIP at the end: ${(await panelText(page, '.hud-strip')).replace(/\n/g, ' | ')}`);
+  log(`ALERTS at the end: ${JSON.stringify(await panelText(page, '.hud-alerts__list'))}`);
+  log(`counts at the end: ${JSON.stringify(await latestCounts(page))}`);
+
+  log('EVERY band sentence this run ever showed:');
+  for (const line of await bandLog(page)) log(`  ${line}`);
+});
