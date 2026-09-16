@@ -256,21 +256,25 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   // here with a reason, and fails the count below until it is either wired or
   // written down.
   //
-  // **It stopped being empty on 2026-09-14, and the entry below is the first
-  // in this list that is deliberate rather than a gap somebody meant to close
-  // later.** It is written down rather than argued around, which is what the
-  // paragraph above asks for.
-  EditRegimeBlock:
-    'ADR 0113 slice 1 (#1167). The command, its consumer in `session-commands.ts`, its two '
-    + 'refusals and the V6 save section it edits all landed together; the producer did not, '
-    + 'because the Day-plan panel that would send it is stage 3 of the identity-v5 rollout '
-    + '(epic #1155) and `src/ui/` was held by two other agents while this landed -- so a '
-    + 'producer written here would have been written blind against a panel being rewritten. '
-    + 'What is true today: `tests/integration/regime-editing.test.ts` drives it through the '
-    + 'real kernel command path, both refusals reach `RefusalLog` with their own wire ids, and '
-    + '`hud/status-strip` already reports the edited schedule, so the panel has something to '
-    + 'read and something to send. This entry is expected to be deleted by the panel change, '
-    + 'not by a second thought about the command.',
+  // **It stopped being empty on 2026-09-14 and is empty again since
+  // 2026-09-16**, and the entry that stood here for those two days is recorded
+  // rather than only its absence, because it said what it expected to happen
+  // to it and that is what happened. It read: ADR 0113 slice 1 (#1167) landed
+  // the command, its consumer in `session-commands.ts`, its two refusals and
+  // the V6 save section together, and not the producer, because the Day-plan
+  // panel that would send it is stage 3 of the identity-v5 rollout (epic
+  // #1155) and `src/ui/` was held by two other agents -- so "a producer
+  // written here would have been written blind against a panel being
+  // rewritten". It ended: "this entry is expected to be deleted by the panel
+  // change, not by a second thought about the command."
+  //
+  // The panel change is #1167's editor: seven toggles per classification
+  // group under `.hud-regime__editor`, sending the categories the block would
+  // then allow. Nothing about the command was reconsidered, and the three
+  // facts that entry offered an implementer all held -- the integration test
+  // drives the real kernel path, both refusals reach `RefusalLog`, and
+  // `hud/status-strip` already reported the edited schedule, so the panel had
+  // something to read and something to send.
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -530,13 +534,17 @@ describe('every declared simulation command either has a producer or is accounte
     // stay green. Note the denominator moves too, so an eighteenth command
     // added with no producer fails here as well as failing the accounting
     // above.
-    // **One and seventeen since 2026-09-14**, and the streak of zeroes above
-    // ends deliberately: ADR 0113's `EditRegimeBlock` landed with its consumer,
-    // its refusals and its save section and without its panel, for the reason
-    // `AWAITING_PRODUCER` records. Both numbers still move together, which is
+    // **One and seventeen from 2026-09-14 to 2026-09-16**, and the streak of
+    // zeroes above ended deliberately for those two days: ADR 0113's
+    // `EditRegimeBlock` landed with its consumer, its refusals and its save
+    // section and without its panel, for the reason `AWAITING_PRODUCER`
+    // recorded. **Zero and eighteen again since the Regime panel's editor
+    // shipped** (#1167) -- `regime-panel.ts`'s toggle group sends it, `hud.ts`
+    // dispatches it and `src/main.ts` submits it, which is the three-file route
+    // every other command takes. Both numbers still move together, which is
     // what this pair of assertions is for -- a nineteenth command added with no
     // producer fails here as well as failing the accounting above.
-    expect(unproducedTypes.length).toBe(1);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(17);
+    expect(unproducedTypes.length).toBe(0);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(18);
   });
 });

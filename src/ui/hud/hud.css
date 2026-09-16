@@ -2750,6 +2750,25 @@
   gap: var(--space-2);
 }
 
+/* The regime editor (#1167). It has no box of its own: `.ui-section` already
+   draws the header row and the fold, and a second border here would put a line
+   inside the block the rule above already closed with one.
+
+   `display: none` on `[hidden]` is belt and braces rather than a fix for a
+   measured defect: `.ui-section` sets no author `display` today, so the user
+   agent's own `[hidden]` rule already wins, and this keeps that true if one is
+   ever added -- which is exactly what `.hud-regime__blocks` one rule up had to
+   be repaired for. The editor is hidden whenever nothing can receive the
+   command. */
+.hud-regime__editor[hidden] { display: none; }
+
+.hud-regime__editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+}
+
 /* Name left, share right: the shape every readout line in this HUD uses. */
 .hud-regime__block-header {
   display: flex;

@@ -1981,6 +1981,44 @@ export interface HudRegimeBlockViewModel {
   readonly allowedCategoryLabelKeys: readonly LocalizationKey[];
   /** How far through the running block, `0`--`100`, floored. */
   readonly blockProgressPercent: number;
+  /**
+   * The tick of the day the running block starts on --
+   * `RegimeBlockViewModel.blockStartTickOfDay` verbatim.
+   *
+   * **Carried because it is the coordinate `EditRegimeBlock` names a block
+   * by**, and for the reason ADR 0113 §3 gives for the command naming a block
+   * that way rather than by index: an index is not stable across a save/load
+   * round trip, because `RegimeScheduleRegistry` reorders rows into a
+   * canonical order on restore, and a boundary is the one coordinate the
+   * player and the simulation can agree on without agreeing on array order
+   * first. A panel that sent an index would be sending the one number that
+   * can mean a different block after a reload.
+   *
+   * Never derived here from `blockProgressPercent` and the day length, which
+   * would be this layer computing a simulation figure: the projection already
+   * states it.
+   */
+  readonly startTickOfDay: number;
+  /**
+   * The same categories `allowedCategoryLabelKeys` above labels, as the ids
+   * themselves, in the schedule's own order.
+   *
+   * **Both, rather than one derived from the other, and the direction is why.**
+   * A label key is what the panel *renders* and an id is what the panel
+   * *sends*; `deriveSimulationMessageKey` maps an id to a key and nothing maps
+   * a key back, so a panel holding only keys could not name a category to
+   * `EditRegimeBlock` at all, and one holding only ids would have to spell the
+   * key itself -- the second spelling `simulation-regime.ts` already refuses
+   * to write.
+   *
+   * `readonly string[]` and not `ActionCategory[]`: this module imports
+   * nothing from `src/simulation/**` (see the file header), exactly as
+   * `classificationGroupId` above is a bare `string` for the same reason. The
+   * closed vocabulary is enforced where the command is decoded --
+   * `editRegimeBlockSchema`'s `z.enum(ACTION_CATEGORIES)` -- rather than by a
+   * type this layer may not name.
+   */
+  readonly allowedCategoryIds: readonly string[];
 }
 
 export interface HudRegimeViewModel {

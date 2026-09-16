@@ -22,3 +22,4 @@ export * from './segmented-bar';
 export * from './stat-chip';
 export * from './status-badge';
 export * from './tab-button';
+export * from './toggle-group';

@@ -878,3 +878,67 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* ------------------------------------------------------------------ */
+/* Toggle group                                                        */
+/* ------------------------------------------------------------------ */
+
+/* The independent-state sibling of `.ui-choice` above, and it differs in the
+   two places the two questions differ. `.ui-choice__options` is one
+   non-wrapping row of equal cells, which is right for two or three options and
+   wrong for seven -- at 375px those cells are four characters wide. These wrap,
+   and each member is sized by its own label.
+
+   `overflow: hidden` on the row is deliberately absent for the same reason:
+   a wrapped row has no single seam to clip against, so each member carries its
+   own border and its own radius instead of borrowing the group's. That is also
+   why the focus ring here draws outside (the primitive default) rather than
+   inside the way `.ui-choice__option:focus-visible` has to. */
+.ui-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-toggles__legend { color: var(--text-muted); }
+.ui-toggles__reason { color: var(--text-muted); }
+
+.ui-toggles__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-toggles__option {
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  background: var(--surface-overlay);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  color: var(--text-subtle);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-toggles__option:hover:not(:disabled) { background: var(--surface-active); color: var(--text-heading); }
+
+/* On is a background step *and* a colour change, for `.ui-choice__option`'s
+   own recorded reason: the state survives a display that renders the accent
+   hue poorly. */
+.ui-toggles__option[data-active='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* A locked member stays legible rather than fading out of contrast: what it
+   says is still the state of the block, and the sentence under the group is
+   what explains why it cannot be pressed. */
+.ui-toggles__option:disabled { cursor: not-allowed; opacity: 0.75; }
+
+.ui-toggles[hidden] { display: none; }

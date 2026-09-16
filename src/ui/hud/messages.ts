@@ -1448,6 +1448,16 @@ export const HUD_MESSAGE_KEY = {
    * putting "Doing" in front of "Showering" would be a second sentence saying
    * what the first already said.
    *
+   * `regimeEdit` and `regimeEditLastCategory` are the two the regime *editor*
+   * needs (#1167, ADR 0113 slice 1's missing producer), and they are two
+   * rather than one because the second is the only thing standing between a
+   * locked control and the shape the owner's standing directive names -- a
+   * control that does nothing and does not say why. The editor needs no key
+   * for the categories themselves: they are `ACTION_CATEGORIES` members and
+   * `deriveSimulationMessageKey('action-category', id)` already labels every
+   * one of them, which is the same derivation the `Allows {categories}`
+   * sentence above renders.
+   *
    * There is deliberately no key for a need, a threshold or a warning about
    * one. `docs/HUD_PROJECTIONS.md` gap 7: the simulation defines no
    * warning or critical level for any need, so a row that called one low would
@@ -1458,6 +1468,8 @@ export const HUD_MESSAGE_KEY = {
   regimeBlockAllows: 'hud.regime.block-allows',
   regimeBlockProgress: 'hud.regime.block-progress',
   regimeCategorySeparator: 'hud.regime.category-separator',
+  regimeEdit: 'hud.regime.edit',
+  regimeEditLastCategory: 'hud.regime.edit-last-category',
   regimeSentenceRemaining: 'hud.regime.sentence-remaining',
   regimeRoster: 'hud.regime.roster',
   regimeRosterCount: 'hud.regime.roster-count',
