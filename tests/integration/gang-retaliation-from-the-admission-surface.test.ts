@@ -254,5 +254,16 @@ describe('a gang retaliation from the admission the interface actually makes (#9
     expect(runtime.gangs.membersOf('gang.beta')).toEqual([1, 5]);
     expect(runtime.gangs.allGrudges()).toEqual([]);
     expect(incidentsOfType(runtime, 'gang-retaliation')).toEqual([]);
-  });
+    /*
+     * The only test in this file that advances a whole simulated season, and
+     * the only one with no headroom under the root config's 5 s default. It
+     * costs 1,121 ms in this container against 533 ms and 1 ms for its two
+     * siblings; CI's self-hosted runners have been measured at roughly four
+     * times this container's wall clock under load, which puts it over.
+     * It went over on run 35089456268 -- "Test timed out in 5000ms" at this
+     * `it`, in a job whose other 5,359 tests passed and whose diff was one
+     * regex in a foundation test. 30 s is the figure the neighbouring
+     * integration files already use for a run of this length.
+     */
+  }, 30_000);
 });
