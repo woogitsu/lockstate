@@ -1,6 +1,5 @@
 import { test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   calibrate,
   centreOf,
@@ -13,7 +12,9 @@ import {
   panelText,
   press,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
 } from './playtest-harness';
 
 /**
@@ -460,7 +461,7 @@ test('act 1 and 2: a wall, then everything after it, with no procurement press',
   log(act2, `rooms panel: ${JSON.stringify(await panelText(page, '.hud-rooms'))}`);
 
   // Admit. One press, then a second, so the second's outcome is on the record.
-  await tab(page, 'overview').click();
+  await showPanel(page, 'manage', '.hud-intake');
   for (let index = 0; index < 2; index += 1) {
     const started = Date.now();
     await page.locator('.hud-intake__admit').click();
