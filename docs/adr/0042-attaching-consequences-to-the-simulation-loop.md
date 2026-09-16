@@ -209,7 +209,10 @@ the guard count is the second lock on a door that was already locked.
 
 The three sub-findings check out too. `StaffHiringService.hire` accepts any of
 the eight catalogue roles and puts every one of them on the `GuardRoster`
-(`src/simulation/staff/hiring.ts:107-134`), and
+(`src/simulation/staff/hiring.ts:148`, `public hire(request: StaffHireRequest,
+isFreshUnfurnishedPrison = false): StaffHireOutcome {`; the anchor read
+`:107-134`, which spans `staffHireCostMinorUnits` and the class declaration and
+stops fourteen lines short of the method the sentence names), and
 `DeploymentSystem.assignUnassignedGuards` fills the post from
 `unassignedGuardIds()` with no role filter
 (`src/simulation/security/deployment-system.ts:102-113`) — so a warden is riot
@@ -370,7 +373,10 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 > - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
 >   exists, `insolvencyRungs` is registered on the kernel
 >   (`src/simulation/runtime/new-session.ts:1586`), and the save carries
->   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1209`).
+>   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1219`,
+>   `.object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })`;
+>   this branch wrote `:1209` on 2026-09-15 and it was ten lines high by
+>   2026-09-16, when the branch merged `origin/main`).
 >   [ADR 0049](./0049-what-a-prison-that-cannot-make-payroll-owes.md) was
 >   written to answer this document's open question 3.
 > - **Step 4** *(point `needsPressure` at the needs that are actually
@@ -485,10 +491,13 @@ boundary 7 changes needing a version and a migration
 (**Both of those two figures are now wrong, and the prediction they carry came
 true, which is why the sentence is kept — 2026-09-15.** The schema field is
 `balanceMinorUnits: z.number().int().safe()`
-(`src/persistence/save-schema.ts:1146`), and the docblock above it says why in
+(`src/persistence/save-schema.ts:1156`), and the docblock above it says why in
 terms: *"**`.safe()` and not `.nonnegative()` since ADR 0075 decision 2**, and
 the loosening is the point rather than a slip. A balance may now be negative"*
-(`:1092-1094`). `Treasury` no longer validates non-negative anywhere —
+(`:1102-1104`). **Both of those two anchors were written on 2026-09-15 and were
+dead by 2026-09-16**, when this branch merged `origin/main`: they read `:1146`
+and `:1092-1094`, ten lines high in a 1,923-line schema file, and `:1146` had
+landed inside a comment about loans. `Treasury` no longer validates non-negative anywhere —
 `grep -n "nonnegative" src/simulation/economy/treasury.ts` returns nothing. And
 `SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:38`). So the sign
 change this paragraph priced as a version bump is exactly what was paid.) *Determinism:* a day-boundary integer

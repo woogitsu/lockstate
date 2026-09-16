@@ -714,8 +714,10 @@ Two clauses, and they have come apart.
   `hud/prisoner-detail` channel. **Nothing under `src/ui/` asks for that
   channel** — the only prisoner projection the HUD consumes is
   `projectPrisonerPopulationCounts`, through
-  `src/simulation/presentation/status-strip-projection.ts:27` (called at `:752`),
-  and it carries no need. So a prisoner's hunger can sit at 0 for the length of a session with no
+  `src/simulation/presentation/status-strip-projection.ts:27` (called at `:768`,
+  `const population = projectPrisonerPopulationCounts(source.prisoners);`; this
+  branch wrote `:752`, which was a docblock line by the time it merged
+  `origin/main` on 2026-09-16), and it carries no need. So a prisoner's hunger can sit at 0 for the length of a session with no
   surface in the game reporting it.
 
 That is why this went unnoticed for the two merges above: the condition was
@@ -799,15 +801,24 @@ counted an unmet cycle and returned; there was no second candidate. The fallback
 > [ADR 0041](0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md),
 > and they are kept in the past tense rather than deleted because the
 > measurement above them was taken under the rule they describe (2026-09-15).**
-> `beginNextAction` (`src/simulation/prisoners/action-system.ts:1629`) no longer
+> `beginNextAction` (`src/simulation/prisoners/action-system.ts:1616`) no longer
 > takes one action. It walks `rankActions`' whole ordered list —
-> `for (let rank = 0; rank < plan.candidates.length; rank += 1)` (`:1638`) —
-> and `continue`s past any candidate whose target does not resolve (`:1640`),
-> counting `unmetDemandCycles` **once, after every candidate has been tried**
-> (`:1681`) rather than at the first that failed. So a prisoner refused a
-> canteen seat now falls through to `action.eat-in-cell`, which is precisely the
-> fallback this paragraph called unreachable, and `recordSubstitution` (`:1737`)
+> `for (let rank = 0; rank < plan.candidates.length; rank += 1)` (`:1624`) —
+> and `continue`s past any candidate whose target does not resolve (`:1627`,
+> `if (target === undefined) continue;`), counting `unmetDemandCycles` **once,
+> after every candidate has been tried** (`:1669`, the last statement of the
+> method) rather than at the first that failed. So a prisoner refused a canteen
+> seat now falls through to `action.eat-in-cell`, which is precisely the
+> fallback this paragraph called unreachable, and `recordSubstitution` (`:1724`)
 > is a second counter for how often it happens.
+>
+> **Every one of those five anchors was written on 2026-09-15 and was dead by
+> 2026-09-16**, when this branch merged `origin/main`: they read `:1629`,
+> `:1638`, `:1640`, `:1681` and `:1737`, all thirteen or so lines high, and
+> `:1638` had landed on a blank line. `action-system.ts` is 1,838 lines and
+> among the most-edited files in `src/`, which is what makes a bare line number
+> into it the least durable citation this corpus writes
+> (`docs/AGENT_WORKFLOW.md` §4).
 >
 > **This document already names the ADR that did it and did not join the two
 > sentences up.** §*What this changes* below cites ADR 0041 as having *"took
@@ -834,7 +845,9 @@ tick   claims  p0                        p6
 
 Decision 2 puts the claim at arrival, so **a traveller holds nothing and a
 prisoner already standing on the anchor tile holds the `sameTile` fast path**
-(`action-system.ts:1649`, the predicate at `:291`). A winner who finishes a meal stays in the room, and on
+(`action-system.ts:1636`, `const arrivesImmediately = sameTile(currentTile,
+destination);`; the predicate at `:291`. This branch wrote `:1649`, which was a
+bare ` */` by the time it merged `origin/main` on 2026-09-16). A winner who finishes a meal stays in the room, and on
 the next reconsideration takes the seat again without moving, while the loser is
 still walking. Half of every winner's meals are taken that way: of 40 meals
 each, **20 were entered from `idle` on the anchor tile and 20 after travelling**.
