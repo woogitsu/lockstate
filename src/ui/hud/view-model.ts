@@ -220,6 +220,33 @@ export interface HudCountsViewModel {
    */
   readonly roomCapacity?: number;
   /**
+   * **Whether the prison is "fresh, unfurnished"** --
+   * `counts.isFreshUnfurnishedPrison`, straight through: the simulation's own
+   * `RoomInstanceRegistry.totalResidentCapacity === 0` (ADR 0017's
+   * "Amendment, 2026-09-01" §2), not anything derived on this side.
+   *
+   * **It replaces `roomCapacity === 0` as the host's predicate, and the field
+   * above is left standing because it is a different true fact.** Three sites
+   * derived freshness from `roomCapacity` -- `src/ui/hud/projection.ts`,
+   * `build-panel.ts`, `staff-panel.ts` -- and `roomCapacity` is a sub-sum of
+   * the registry figure over the catalogue fan-out
+   * (`docs/HUD_PROJECTIONS.md` gap 15), so it read "fresh" in strictly more
+   * cases than the worker did and judged presses against the shallower
+   * starter rung where the worker used the mature one. Read it through
+   * `freshUnfurnishedPrison` in `src/ui/affordability.ts` rather than off this
+   * field, so the host keeps one definition rather than three.
+   *
+   * **Optional, the same shape as `roomCapacity` above and for its reason**:
+   * every fixture that built a `HudCountsViewModel` before this field existed
+   * stays valid. Absent reads as *not* fresh -- the mature, already-shipped
+   * rung -- which is the reading `roomCapacity`'s own comment above gives for
+   * its `undefined`, and the safe direction: a session that has published
+   * nothing cannot have a `PurchaseMaterials` or `HireStaff` control on screen
+   * to press. It is required on the wire (`statusCountsSchema`), so no real
+   * session reaches a reader without it.
+   */
+  readonly isFreshUnfurnishedPrison?: boolean;
+  /**
    * How many prisoners are standing in a sector on each rung of the guard
    * coverage ladder (issue #588): all the guards it asks for, some of them,
    * none of them.

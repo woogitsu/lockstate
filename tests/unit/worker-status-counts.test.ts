@@ -267,6 +267,16 @@ describe('publishing the status counts', () => {
       // The starting balance, unspent: this scenario buys nothing, so the
       // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
       // rather than as an arbitrary constant (#96).
+      // `false`, and **not** because `roomCapacity: 4` above is nonzero:
+      // this is `RoomInstanceRegistry.totalResidentCapacity === 0`, the
+      // registry's own walk, which the host read as `roomCapacity === 0`
+      // until 2026-09-15 and got a different answer from on any prison holding
+      // a room the content catalogue does not define
+      // (`statusCountsSchema.isFreshUnfurnishedPrison`, and
+      // `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
+      // is the prison where they come apart). This scenario's rooms are all
+      // catalogued, so the two agree here, which is the ordinary case.
+      isFreshUnfurnishedPrison: false,
       treasuryMinorUnits: TREASURY_STARTING_BALANCE_MINOR_UNITS,
       // The facility under it, published since the owner's ruling 18 of
       // 2026-08-31 so the strip can say how much of it is left rather than only
@@ -771,6 +781,14 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // This is what a status-counts
       // payload is, and why it needs no paging.
       //
+      // **22, not 21, since `isFreshUnfurnishedPrison` was published on
+      // 2026-09-15.** ADR 0017's "Amendment, 2026-09-01" §2 defines the
+      // predicate as `RoomInstanceRegistry.totalResidentCapacity === 0`, and
+      // `projectStatusStrip` computed it and dropped it while three host sites
+      // re-derived a different answer from `roomCapacity`. It is an always-present
+      // scalar, so it moves the base count by exactly one -- which is the
+      // visible one-line edit this assertion exists to force.
+      //
       // **21, not 20, since ADR 0087 decision 2 added `conditions`.** Unlike
       // the two conditional keys below it, `conditions` is a third field this
       // object admits as `.optional()` on the wire yet **always** publishes --
@@ -778,7 +796,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // -- so it adds exactly one to the base count for every scenario this
       // test drives, never zero and never a second conditional term.
       expect(Object.keys(counts)).toHaveLength(
-        21 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
+        22 + (counts.activeIncidentType === undefined ? 0 : 1) + (counts.contrabandNameKey === undefined ? 0 : 1),
       );
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
@@ -825,6 +843,17 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
               condition,
             );
           }
+          continue;
+        }
+        // **The first boolean on this channel** (2026-09-15):
+        // `isFreshUnfurnishedPrison`, ADR 0017's amendment §2 predicate,
+        // published so the host stops re-deriving one from `roomCapacity`. A
+        // boolean is a scalar and is exactly what this loop is protecting --
+        // it is named here rather than waved through by loosening the check
+        // below, so a count that started arriving as `0`/`1`, or a second
+        // boolean nobody meant to add, still fails.
+        if (key === 'isFreshUnfurnishedPrison') {
+          expect(typeof value, 'counts.isFreshUnfurnishedPrison is not a boolean').toBe('boolean');
           continue;
         }
         expect(typeof value, `counts.${key} is not a scalar`).toBe('number');
@@ -932,7 +961,22 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // `treasuryOverdraftFloorMinorUnits` shape again: a field's *spelling*
       // moving the bound, not the population or the count of fields. 710 + 18
       // = **728**, the same headroom every previous raise in this file left.
-      expect(JSON.stringify(payload).length).toBeLessThan(728);
+      //
+      // **761 and not 728, and the raise is one new field** --
+      // `isFreshUnfurnishedPrison`, ADR 0017's amendment §2 predicate,
+      // published on 2026-09-15 so the three host sites stop re-deriving it
+      // from `roomCapacity`. Re-measured on this tree at the same worst case
+      // every previous raise used: `payloadJsonBytes=741` at 250 actors and
+      // `743` at 1,000, 2,500 and 5,000 -- still the two-byte digit-count
+      // spread between the tiers rather than growth, which is the property
+      // this bound exists to protect and the one a boolean trivially keeps.
+      // The 33 bytes are arithmetic rather than a measurement to be trusted on
+      // its own: `"isFreshUnfurnishedPrison":false,` is 26 + 1 + 5 + 1, and
+      // `false` is the longer of the two spellings, so this is the worst case
+      // and not a sample of it. 743 + 18 = **761**, the same headroom every
+      // previous raise in this file left, so the next field breaches this one
+      // too and the soft limit goes on being felt one field at a time.
+      expect(JSON.stringify(payload).length).toBeLessThan(761);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(
@@ -1010,6 +1054,9 @@ describe('statusCountsEqual: conditions compares by content, not by array identi
     staffUnassigned: 0,
     rooms: 0,
     roomCapacity: 0,
+    // A prison with nothing registered is fresh on the registry's own reading,
+    // which is the one case where it and `roomCapacity` above cannot disagree.
+    isFreshUnfurnishedPrison: true,
     accommodationCapacity: 0,
     roomOccupants: 0,
     activeIncidents: 0,
