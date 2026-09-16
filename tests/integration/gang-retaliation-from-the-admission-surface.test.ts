@@ -17,8 +17,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * and it admits with **`priorIncidents: 2`** — its own header says that is
  * "the one field that differs" and that the field is what puts an arrival in
  * reach of the high-risk floor at intake. **The game cannot send that value.**
- * `src/main.ts:1177` is `const ADMISSION_REQUEST = { priorIncidents: 0 } as const;`
- * and `:3431` passes `ADMISSION_REQUEST.priorIncidents` into the one
+ * `src/main.ts:1178` is `const ADMISSION_REQUEST = { priorIncidents: 0 } as const;`
+ * and `:3432` passes `ADMISSION_REQUEST.priorIncidents` into the one
  * `AdmitPrisoner` command the interface builds, so every prisoner any player
  * has ever admitted arrived at `0`.
  *

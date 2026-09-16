@@ -7,7 +7,7 @@ import { installTee, openApp, press, sentCommands, tab } from './playtest-harnes
  * about actually zooms.**
  *
  * `WorldScene` has zoomed over `ZOOM_BOUNDS` -- `{ min: 0.2, max: 3 }`,
- * `src/rendering/scene/world-scene.ts:68`, a deliberate fifteen-fold range
+ * `src/rendering/scene/world-scene.ts:71`, a deliberate fifteen-fold range
  * with a docblock naming both ends -- since it was written, reachable on the
  * wheel, on a pinch and on `+`/`-`. **No control anywhere named it.** Measured
  * on the assembled page at 1280x800 on `main` at `bd6fa32` before this landed:

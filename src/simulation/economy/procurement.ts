@@ -250,10 +250,10 @@ export class ProcurementSystem implements SystemRegistration {
    * `tests/determinism/kernel-system-order.test.ts`.
    *
    * **After means later, so a delivery is picked up on the next scheduled
-   * construction tick, not the one it landed on.** `Kernel.register` sorts
-   * ascending (`kernel.ts:113`, `a.order - b.order`) and iterates in that
+   * construction tick, not the one it landed on.** `Kernel.registerSystem`
+   * sorts ascending (`kernel.ts:115`, `a.order - b.order`) and iterates in that
    * order, so construction runs first within a tick. Construction is also on
-   * `intervalTicks: 10` (`construction/system.ts:100`) against this system's
+   * `intervalTicks: 10` (`construction/system.ts:347`) against this system's
    * `1`, so a deposit made at order 110 on tick T is visible to the
    * allocation attempt at T+10 -- measured: a delivery arriving on tick 100
    * leaves `materials-pending` on tick 110.
