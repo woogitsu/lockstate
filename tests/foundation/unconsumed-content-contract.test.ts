@@ -57,13 +57,19 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  *
  * Counting `tests/` is a deliberate weakening. The stricter measure -- no
  * consumer in `src/` outside the catalogs -- is the honest answer to "does
- * the game use this", and it covers 52 of the 62 declared ids. Gating that
- * would mean 52 allowlist entries whose reason is uniformly "the system that
- * would use it is not wired yet", edited on every feature that wires one.
- * (Both figures are computed and asserted in the first case below, because
- * this sentence carried 58 for as long as it did without anything
- * recomputing it -- nine ids already had a `src/` consumer when it was
- * written.)
+ * the game use this", and it covers a large minority of the declared ids.
+ * Gating that would mean one allowlist entry each whose reason is uniformly
+ * "the system that would use it is not wired yet", edited on every feature
+ * that wires one.
+ *
+ * **No figure is written in this paragraph, and the omission is the point.**
+ * It carried 58, then 52, and both were stale against the `toEqual` in the
+ * first case below -- which is in this same file, twenty lines of scrolling
+ * away, and pinned 20 while this sentence said 52. A tally that disagrees
+ * with an assertion in its own file is what `docs/AGENT_WORKFLOW.md` §4
+ * means by reading a file's own sections against each other; no diff finds
+ * it, because neither half changed on the day the other did. The numbers
+ * live in that `toEqual` and nowhere else.
  * `tests/helpers/simulation-enum-source.ts` already argues this trade-off for enum
  * discovery, and its conclusion applies here: "a list nobody reads enforces
  * nothing". So the gate is the narrower set, and the wider number is a

@@ -705,7 +705,13 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  *
  * **That accessor is `residentIdsWithExistingPlace` and this paragraph named
  * `residentIds` until now**, which was true when it was written and stopped
- * being true when issue #585 split the two (`income.ts:405-411`). The cost
+ * being true when issue #585 split the two -- `income.ts`'s
+ * `OccupiedPlaceSource.residentIdsWithExistingPlace` declaration, whose own
+ * docblock names #585 and says what the split cost. **That citation read
+ * `income.ts:405-411` until 2026-09-15**, which by then was a paragraph about
+ * the withheld-need rate's suspension and nothing to do with #585; it is
+ * named by symbol rather than renumbered because a number here has now rotted
+ * once. The cost
  * class is identical -- `O(P log P)` in housed prisoners, one array -- so
  * nothing this note claims about performance moves; what was wrong was the
  * name, and a reader chasing it would have landed on an accessor the income
