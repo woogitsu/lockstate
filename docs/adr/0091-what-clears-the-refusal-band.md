@@ -24,7 +24,45 @@
 
 ## Status
 
-**Proposed, 2026-09-02, for decision 2. Not self-approved.** Decision 1 needed no ADR and is already implemented on this branch — it is a correction of an existing, accepted mechanism's own stated test, not a new architectural choice; see below. Nothing under `src/` on this branch depends on decision 2, and nothing should until the owner has read it.
+**Accepted, 2026-09-16, by the repository owner, for decision 2 (option F: a
+decided outcome of the SAME route retires the band).** Decision 1 shipped
+2026-09-02 and needed no ADR.
+
+**The provenance is the weaker of the two kinds this repository
+distinguishes, and it is recorded here rather than left to be inferred.** The
+owner did not type a sentence. They were shown four options in a clickable
+question an agent session had written, priced by the dossier below, and chose
+the one that session recommended -- *"F -- ta sama trasa (zalecane)"*. That is
+the same provenance `CLAUDE.md` flags for the 2026-09-08, -09 and -10
+releases inside reservation 3, and it is weaker than a quoted instruction in
+exactly one way that matters here: **the option's own label is the whole of
+what was agreed.** What was agreed is the RULE -- the band retires on a
+decided outcome of the route the standing refusal names -- and not any of the
+implementation the dossier prices under it. The recommendation the owner
+agreed with also carried its own weakest claim, which they were shown: the
+600 ms yardstick that argues against option D is borrowed from the EVENT
+band's ADR 0084 ruling, and the refusal band has no dwell floor at all today.
+So a reader who later finds that argument unsound has not found a ruling
+unsound; they have found the reason offered for it unsound, and the ruling
+stands until the owner says otherwise.
+
+**The third option they declined is the one to read before re-opening this.**
+It was D again, under a different reading -- that the corner is a last-press
+indicator rather than a message, which would make the measured 2 ms lifetime
+the specification rather than the defect. Declining it is a product position
+about what the corner IS, and it is the position anyone proposing D again has
+to overturn.
+
+**Nothing under `src/` implements decision 2 yet**, and the ruling does not
+by itself change that: it settles which rule is right, not that the rule is
+built. Decision 1 is already implemented — it is a correction of an existing,
+accepted mechanism's own stated test, not a new architectural choice; see
+below.
+
+*The sentence replaced here read "Nothing under `src/` on this branch depends
+on decision 2, and nothing should until the owner has read it." It was true
+for fourteen days and is quoted rather than deleted, because the condition it
+names is the one that just ended.*
 
 ## Context
 
@@ -529,7 +567,15 @@ here, and it is D with one comparison added.
   `supersede`, so both stay green as written. A reader who reads F as
   overturning #492 is reading a band rule as a log rule.
 
-#### Recommendation
+#### Recommendation — and the ruling it received
+
+**Ruled on 2026-09-16: the owner chose F.** The paragraphs below are left
+exactly as they were written, in the tense they were written in, because a
+recommendation that is silently rewritten into a ruling destroys the only
+evidence of what the ruling was a choice BETWEEN. The Status block at the top
+of this document carries the ruling, its provenance and its limits; this
+section carries the argument that was put.
+
 
 **F.** Not D, which is this document's own earlier recommendation, and the
 reason is one measurement: **D's band lifetime is 2 ms inside an ordinary wall
