@@ -100,6 +100,15 @@ export class GuardRoster {
     // destroys the entity, so the parenthetical above names a real caller
     // rather than a requirement nobody met. A staff index is recycled in an
     // ordinary session from that change onward.
+    //
+    // Re-read end to end on 2026-09-16 and this half of the pair is the one
+    // that held. `ActorIdentityLifecycle`'s docblock in
+    // `src/simulation/identity/actor-identity.ts` had gone on asserting the
+    // opposite -- *"no path in `src/` dismisses a guard, so nothing there has a
+    // release to call yet"* -- for eighteen days; it now carries the correction
+    // and the reason this constructor is still typed `ActorIdentityMinter`
+    // anyway. Named here rather than left implicit so the two sentences are
+    // findable from each other the next time either moves.
     this.identity?.assign('staff', entityId, this.identityRng!());
     this.records.set(entityId, {
       staffRoleId,

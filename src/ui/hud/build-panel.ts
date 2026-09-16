@@ -1,7 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
-import { pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
+import { freshUnfurnishedPrison, pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
@@ -996,7 +996,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * panel's own, which is what it always effectively was.
    */
   let treasuryMinorUnits = 0;
-  let treasuryRoomCapacity: number | undefined;
+  /**
+   * The published predicate, cached beside the balance it is judged with --
+   * not `counts.roomCapacity`, which this panel derived freshness from until
+   * 2026-09-15 and which cannot see a room instance registered under a
+   * room-catalog id the content registry does not define
+   * (`statusCountsSchema.isFreshUnfurnishedPrison`).
+   */
+  let treasuryFreshUnfurnishedPrison = false;
 
   const selectedBuildable = () => model.buildables.find((entry) => entry.definitionId === selectedId);
   const selectedMaterial = () => selectedBuildable()?.material;
@@ -2150,13 +2157,21 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * keeping the press is what keeps it reachable.
      *
      * **Freshness, threaded exactly as `overdraftRemaining` threads it**
-     * (`src/ui/hud/projection.ts`): `treasuryRoomCapacity === 0`, never a
-     * bare `false`, because a fresh, unfurnished prison is judged against the
+     * (`src/ui/hud/projection.ts`): the published predicate, never a bare
+     * `false`, because a fresh, unfurnished prison is judged against the
      * shallower starter rung and a caller that silently answered "not fresh"
      * would reopen the -1,185/-1,250 gap PR #769 and #771's amendment closed
      * (`deliveriesRungFloorMinorUnits`'s own docblock).
+     *
+     * **That sentence read `treasuryRoomCapacity === 0` until 2026-09-15 and
+     * is corrected rather than overwritten, because the reason it gives is
+     * still the reason.** Deriving the predicate from `roomCapacity` was the
+     * host inventing a second definition of "fresh", and it answered
+     * differently from the worker's on any prison holding a room the content
+     * catalogue does not define -- the same defect this paragraph warns about
+     * wearing the opposite sign, and the one that actually shipped.
      */
-    const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
+    const isFreshUnfurnishedPrison = treasuryFreshUnfurnishedPrison;
     const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
     buySubmit.setUnavailable(verdict.refused);
     /*
@@ -3132,7 +3147,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     },
     setTreasury(counts: HudCountsViewModel): void {
       treasuryMinorUnits = counts.treasuryMinorUnits;
-      treasuryRoomCapacity = counts.roomCapacity;
+      treasuryFreshUnfurnishedPrison = freshUnfurnishedPrison(counts);
       // A publication can arrive while the buy row is closed -- most
       // publications do -- and `paintBuyTotal` returns immediately for an
       // undisclosed row (`selectedMaterial()` reads whatever the catalogue

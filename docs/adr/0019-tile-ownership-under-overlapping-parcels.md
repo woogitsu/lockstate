@@ -282,6 +282,31 @@ the old wording is quoted rather than overwritten.*
 (v0.0.121); every `file:line` below was opened on that tree and both counts were
 re-grepped rather than carried over.*
 
+> **Corrected 2026-09-15: kept word for word, advisory, and true only of the
+> tree it names.** `docs/adr/README.md`'s *"A global anchor pin in an ADR is
+> advisory, and does not date what is below it"* — added by pull request #1231,
+> not on `main` as this is written — is the convention. Swept 2026-09-15 by
+> opening each cited line:
+>
+> - **Both counts survived and every anchor under them did not.** `canBuildAt`
+>   still has exactly three production call sites, `registerParcel` still has
+>   exactly one, and `isTileOwnedBy` is still the only definition of tile
+>   ownership — so section 1's finding and section 3's four absences all hold.
+>   Fourteen of the `file:line`s beneath them have drifted, re-aimed at their
+>   own sites below.
+> - **One tally below has broken**, and it is in section 2 rather than in
+>   either of the two this amendment was written to correct: `docs/BENCHMARKING.md`
+>   now lists **four** production navigation scenarios, not three.
+> - **`(v0.0.121)` is the working version string, not the tag.** `package.json`
+>   reads `0.0.121` at `792bf94`; the tag `v0.0.121` is `54418b6`, fifty commits
+>   earlier.
+> - The historical claim about `3f1a144` is **re-checked and exact**:
+>   `git show 3f1a144:src/simulation/rooms/zoning.ts | sed -n '236p'` is still
+>   `if (!canBuildAt(this.world, tile, ZONING_REQUIREMENT).buildable) {`, so
+>   issue #274's row 8 was indeed false at the commit it was verified against.
+>   A claim about a named historical tree is the one kind of sentence here that
+>   does not rot, which is the convention's whole point.
+
 ### 1. Three production callers, not one
 
 §*Reachability* says:
@@ -298,6 +323,16 @@ re-grepped rather than carried over.*
 - `src/simulation/objects/object-placement-service.ts:349` —
   `canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT)`, per placement footprint
   tile.
+
+> **Re-aimed 2026-09-15. The count is unchanged — still exactly three
+> production call sites, and still these three modules — and all three line
+> numbers are history.** Opened rather than offset:
+> `src/simulation/construction/system.ts:587`,
+> `src/simulation/rooms/zoning.ts:555` and
+> `src/simulation/objects/object-placement-service.ts:526`. The declaration is
+> the one anchor in this amendment that has not moved at all: `canBuildAt` is
+> still declared at `src/simulation/world/buildability.ts:16`, which is the
+> anchor issue #274's row 8 cited and got right.
 
 **The sentence was true when this ADR was accepted and stopped being true the
 same day.** `7db3127` accepted it on 2026-08-24 at 13:03 UTC (v0.0.2);
@@ -322,7 +357,19 @@ half of the argument re-verifies exactly — `sparse-world.ts:505` declares it,
 `:740` is the sole call and is inside `fromSnapshot` (`:674`), and
 `createNewSimulationRuntime` still builds `new SparseWorld(32)` with one loaded,
 owned chunk and no parcels (`src/simulation/runtime/new-session.ts:279-281`). So
-"no player can reach the divergence today" survives. What changes is the *stated
+"no player can reach the divergence today" survives.
+
+> **Re-verified 2026-09-15: every structural claim in that sentence still
+> holds, and every number in it has moved.** `registerParcel` is declared at
+> `src/simulation/world/sparse-world.ts:596`, its sole call in `src/` is
+> `src/simulation/world/sparse-world.ts:844`, that call is still inside
+> `fromSnapshot` (`src/simulation/world/sparse-world.ts:771`), and
+> `world = new SparseWorld(32);` is at
+> `src/simulation/runtime/new-session.ts:436`, still followed immediately by the
+> one `load` and the one `setOwned` on `:437-438`. **So the reachability
+> argument is intact in exactly the form this amendment left it**: a parcel is
+> still registered only on a snapshot restore, and a new session still has
+> none. What changes is the *stated
 blast radius* of the ownership answer this ADR settles: it is consulted on a
 build gesture, on every tile of a room-zoning gesture, and on every tile of an
 object placement. The rule is three times as load-bearing as the paragraph
@@ -342,7 +389,21 @@ the same thing about them in the same words. The leading clause is not.
 `new nav.SparseWorld(PRODUCTION_CHUNK_SIZE)` from the real module, loaded through
 `benchmarks/production-modules.mjs`'s `loadNavigationModules` (`:109`), and the
 three `navigation.production.*` scenarios run on them —
-`docs/BENCHMARKING.md:40-41` lists those three as **production**. That landed in
+`docs/BENCHMARKING.md:40-41` lists those three as **production**.
+
+> **Re-aimed and re-counted 2026-09-15, and the count is the part that broke.**
+> The two constructions are at `benchmarks/fixtures/navigation-layouts.mjs:121`
+> and `:239`, and `loadNavigationModules` is at
+> `benchmarks/production-modules.mjs:170`. The `world.chunk-size-*` row this
+> paragraph calls exact is now `docs/BENCHMARKING.md:39` and still says the same
+> thing in the same words. **There are now four `navigation.production.*`
+> scenarios, not three** — `meal-rush` and `lockdown-return`
+> (`docs/BENCHMARKING.md:43`), `single-request-budget` (`:44`) and
+> `yard-crossing` (`:45`), all four labelled **production**. Nothing about this
+> section's finding depends on the number; it is corrected because a tally that
+> nobody edits when the thing it counts grows is the shape
+> `docs/AGENT_WORKFLOW.md` §4 names first, and this amendment is itself a
+> correction of two such tallies. That landed in
 `454c5a5`, *"Drive three benchmark scenarios through the real navigation
 modules"* (#410), which is recent enough that this sentence had been true for
 almost the whole of this ADR's life.
@@ -361,7 +422,25 @@ edited. Recorded together so the next reader can re-run them in one pass:
 parcel outside a snapshot restore; `isTileOwnedBy` is the only definition of tile
 ownership and both `SparseWorld.isTileOwned` (`sparse-world.ts:585`) and
 `WorldRenderView.isTileOwned` (`src/rendering/world/world-view.ts:232`) call it;
-and no module under `src/rendering/` implements an ownership rule of its own. The
+and no module under `src/rendering/` implements an ownership rule of its own.
+
+> **Re-run 2026-09-15, in one pass exactly as this paragraph asks. All four
+> absences hold.** `registerParcel` still has one production call site and it is
+> still inside a snapshot restore; `isTileOwnedBy` is still the only definition,
+> imported once under `src/rendering/` at
+> `src/rendering/world/world-view.ts:6`; and no module under `src/rendering/`
+> computes ownership itself. `world-view.ts` delegates — its own comment at
+> `src/rendering/world/world-view.ts:230-231` reads *"The rule is not
+> implemented here: it is `isTileOwnedBy`, in `src/simulation/world`"* — and
+> `src/rendering/phaser/tile-layer.ts:389-392`, the only other reader, asks
+> `world.isTileOwned(...)` four times and decides nothing of its own.
+>
+> **Both anchors in the sentence have drifted and are re-aimed:**
+> `SparseWorld.isTileOwned` is at `src/simulation/world/sparse-world.ts:680` and
+> `WorldRenderView.isTileOwned` at `src/rendering/world/world-view.ts:253`. The
+> paragraph's closing warning is unchanged and still the thing to watch: the day
+> either of the first two absences stops being true is the day this ADR's
+> reachability section has to be rewritten rather than amended. The
 last of those is the one the Consequences already name as enforced only by a
 test — *"That test is the enforcement mechanism, and it should be treated as
 one"* — and that remains the right reading. The first two are what keep the

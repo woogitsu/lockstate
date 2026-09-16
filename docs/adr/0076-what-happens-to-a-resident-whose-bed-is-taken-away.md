@@ -107,7 +107,34 @@ the state it made legal turns out to be one the treasury pays for.
 
 ### The written invariant the code stopped honouring
 
-`src/simulation/economy/income.ts:112` argues that because
+> **THIS SECTION IS A DIAGNOSIS OF A PARAGRAPH THAT HAS SINCE BEEN CORRECTED
+> IN THE CODE, AND IT IS THE SHARPEST OF THIS DOCUMENT'S STALE CLAIMS BECAUSE
+> IT CALLS ITSELF THAT (dated 2026-09-16, `e044a3e8`).** *"The code is right
+> and the paragraph is false"* was true when it was written. The paragraph is
+> no longer asserted: `src/simulation/economy/income.ts:147-158` now **quotes
+> the sentence below as superseded**, under a heading naming issue #585, and
+> says of it in terms that *"Every clause of that is true at the moment of
+> assignment and none of it survives the bed being taken away afterwards."*
+> The anchor is re-aimed onto that block rather than onto the surviving quote,
+> because the quote is now *inside* a correction and a citation landing on it
+> would read as though the code still claims it.
+>
+> **And this document's decision A(ii) is implemented, which is the other
+> half.** `income.ts:168-189` names ADR 0076 A(ii) as the rule it ships,
+> records that it was reached twice independently, and notes that **A(i)
+> landed too** — `ObjectPlacementService` calls
+> `PrisonerOperationsRuntime.relocateExcessResidentsOf`
+> (`src/simulation/objects/object-placement-service.ts:875`) on both routes
+> that take a standing object out of a room. It also carries a **refinement
+> this document's arithmetic does not reach**: since
+> [ADR 0064](./0064-what-an-unmet-need-costs-a-prison.md) a count cannot
+> answer what a day is worth, so `min(occupancy, residentCapacity)` needs a
+> *which* as well as a *how many*, supplied by
+> `RoomInstanceRegistry.residentIdsWithExistingPlace`. **A reader of A(ii)
+> below should read `income.ts`'s block for the shipped rule; A(ii) is the
+> decision and not the specification.**
+
+`src/simulation/economy/income.ts:147-158` argues that because
 `RoomInstanceRegistry.assign` refuses past `residentCapacity`, the occupancy
 count
 
@@ -150,9 +177,9 @@ un-builds into its materials.
   `object-removal-loop.test.ts` gives the reason in its own comment: *"the plank
   became a bed"*.
 - **`Undo` refunds the plank in full.** `ConstructionSystem.cancelOrder`
-  releases `materialsAllocated` (`src/simulation/construction/system.ts:565`),
+  releases `materialsAllocated` (`src/simulation/construction/system.ts:1016-1020`),
   and nothing clears that field when an order completes — it is written once at
-  allocation (`src/simulation/construction/system.ts:726`) and carried through
+  allocation (`src/simulation/construction/system.ts:1708`) and carried through
   `'completed'`. `cancelOrder` is what `undo()` delegates to, deliberately, so
   that a finished wall can be taken down.
 
@@ -213,7 +240,7 @@ implementation hazardous, and it is what the consequences section is about.
 ### Look one module over: the mechanism a fix needs exists and has one caller
 
 `PrisonerOperationsRuntime.relocateResidentsOutOf`
-(`src/simulation/prisoners/prisoner-operations-runtime.ts:500`) moves every
+(`src/simulation/prisoners/prisoner-operations-runtime.ts:689`) moves every
 resident of named instances into other suitable accommodation. It is
 all-or-nothing — residents are visited in ascending entity id, each offered only
 the target their own classification group prefers, and the moment one has
@@ -423,9 +450,18 @@ pressure. The recycling loop this ADR exists to close runs *through* the
 no-vacancy branch, because a player exploiting it has no spare furnished bed by
 construction.
 
-`src/simulation/economy/income.ts:112`'s paragraph — *"can never exceed the
+`src/simulation/economy/income.ts:147-158`'s paragraph — *"can never exceed the
 capacity the prison has actually furnished"* — becomes true again under A(ii) and
 under nothing else here.
+
+> **RE-READ 2026-09-16 (`e044a3e8`): the prediction held for the behaviour and
+> not for the paragraph.** A(ii) shipped and the leak is closed
+> (`income.ts:168-189`), so the *rule* the sentence describes is true again.
+> The *paragraph* was not left to become true — it was rewritten under issue
+> #585, and now quotes its own old sentence as superseded rather than
+> asserting it. So "becomes true again under A(ii) and under nothing else
+> here" is right about this document's options and was overtaken by a third
+> one it did not have: correcting the prose.
 
 **Not taken: refusing the removal while a resident depends on the object.** For
 #478's reason, already established: a room could become permanently un-editable
@@ -615,7 +651,7 @@ the second ruling draws its line between `assigned` and `in-progress`:
 | `assigned` | a refund |
 | `in-progress` | **nothing** |
 | `completed` | *not addressed — see "What ruling 20 does not decide" below* |
-| `cancelled`, `failed` | terminal; `cancelOrder` throws on both (`src/simulation/construction/system.ts:594`) |
+| `cancelled`, `failed` | terminal; `cancelOrder` throws on both (`src/simulation/construction/system.ts:1006-1008`) |
 
 ### Which part of decision B this supersedes, and which part survives
 
@@ -632,7 +668,7 @@ moment ruling 20 ships that is false for an order in `planned`, `approved`,
 states and puts nothing back into the container.
 
 **Superseded — and this part decision B never contemplated at all.** An
-`in-progress` order holds a live allocation (`system.ts:937` is where it is
+`in-progress` order holds a live allocation (`system.ts:1708` is where it is
 written), and ruling 20 gives it back neither as materials nor as money. That is
 the first place in this repository's money loop where value deliberately leaves
 the economy rather than changing form. It is not a defect and it is the point of
@@ -687,7 +723,7 @@ ruling names, in both orders of operations.
 Materials are just-in-time (ADR 0017 decision 7, ADR 0081,
 `src/simulation/economy/just-in-time-materials.ts`), and that decides what a
 cancellation can honestly hand back. Nothing records what a *single order* cost:
-`procureForPendingOrders` (`just-in-time-materials.ts:416`) buys the
+`procureForPendingOrders` (`just-in-time-materials.ts:606`) buys the
 **deficit** — demand less stock less everything already in flight — so an order
 placed against a full container costs nothing at all, and one placed against an
 empty one costs the catalogue price. The money an order caused to leave the
@@ -695,7 +731,7 @@ treasury is therefore in one of exactly three places, and only two of them can
 be given back:
 
 1. **In a delivery still in flight.** `ProcurementSystem.cancel`
-   (`src/simulation/economy/procurement.ts:226`) refunds the recorded
+   (`src/simulation/economy/procurement.ts:419`) refunds the recorded
    `paidMinorUnits` exactly. This is real money and it is recoverable — and it
    is where the money is in the ordinary case, because a `PlaceBuildOrder`
    press buys at the press and the goods take `PROCUREMENT_DELIVERY_DELAY_TICKS`
@@ -715,10 +751,10 @@ be given back:
    moves the order to `assigned`.
 
 **So a `planned` order refunds nothing, and that is arithmetic rather than
-policy.** `pendingOrderDemand` (`system.ts:1021`) counts `approved` and
+policy.** `pendingOrderDemand` (`system.ts:1827`) counts `approved` and
 `materials-pending` only, so nothing is ever bought for a `planned` order; there
 is no money to give back because none was spent. `submitOrder` writes `approved`
-or `failed` and never leaves an order in `planned` (`system.ts:398`), so the
+or `failed` and never leaves an order in `planned` (`system.ts:540-571`), so the
 state is reachable only from a hand-written save.
 
 ### What ruling 20 does not decide, and is put to the owner rather than settled here
@@ -800,7 +836,7 @@ balance question with the rest of #29. The mechanism takes no position on it.
   penalty than the pre-B behaviour ever had, and it is the owner's ruling
   knowingly.
 - **A player-facing sentence becomes false.**
-  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:1496`, re-anchored)
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:2137`, re-anchored again 2026-09-16)
   promised
   *"One still being built is cancelled and its materials come back"*. Under
   ruling 20 the materials do not come back; money does, and only before the crew
@@ -809,7 +845,7 @@ balance question with the rest of #29. The mechanism takes no position on it.
   key now reads `cancelled and refunds its money — but nothing comes back once
   the crew has started it. A finished one is not refunded.` (verbatim in
   `src/content/default-locale-en.ts`), and that file's own comment block
-  (`:1464-1487`) carries the owner's account of the two days the sentence was
+  (`:2114-2136`) carries the owner's account of the two days the sentence was
   false and the ruling 20 quotes that fixed it.**
   Replacement copy was **not written here** — `AGENTS.md`'s fourth
   exclusion reserves it — and the string is reported to the owner with the
@@ -977,23 +1013,23 @@ measurement above used `Undo`, and so does the recycling loop
 
 **`Undo` on a completed order returns nothing, and still takes the thing down.**
 Reversing the geometry is not the refund and must not go with it:
-`ConstructionSystem.cancelOrder` (`src/simulation/construction/system.ts:653`)
-calls `revertConstruction` (`system.ts:1333`) for a `completed` order, which
+`ConstructionSystem.cancelOrder` (`src/simulation/construction/system.ts:1004`)
+calls `revertConstruction` (`system.ts:1966`) for a `completed` order, which
 un-writes a wall's edge value and, for an object buildable, calls
 `ObjectPlacementService.onOrderReverted`
-(`src/simulation/objects/object-placement-service.ts:702`). All of that stays.
-`isCancellable` (`system.ts:48`) keeps `'completed'` in the set for the reason
+(`src/simulation/objects/object-placement-service.ts:839`). All of that stays.
+`isCancellable` (`system.ts:55`) keeps `'completed'` in the set for the reason
 it always gave -- *"a finished wall that could not be taken down would be
-permanent the moment it was placed"* -- and `undo()` (`system.ts:525`) keeps
-delegating to `cancelOrder` at `system.ts:550` so that the undo stack does not
+permanent the moment it was placed"* -- and `undo()` (`system.ts:797`) keeps
+delegating to `cancelOrder` at `system.ts:826` so that the undo stack does not
 become a lie. **What changes is one branch**: the `hadGeometry` arm at
-`system.ts:674` stops calling `this.materialsProvider.release(allocated)`, and
-`refundSurplusOf` (`system.ts:727`) keeps returning early for `'completed'` as
-it already does. The allocation is still emptied at `system.ts:669`, and it is
+`system.ts:1046` stops calling `this.materialsProvider.release(allocated)`, and
+`refundSurplusOf` (`system.ts:1120`) keeps returning early for `'completed'` as
+it already does. The allocation is still emptied at `system.ts:1020`, and it is
 emptied into nothing.
 
 **`Redo` then rebuilds and pays again, and that is arithmetic rather than a
-second decision.** `redo()` (`system.ts:559`) returns a cancelled order to
+second decision.** `redo()` (`system.ts:848`) returns a cancelled order to
 `'approved'` and does not restore its allocation, so the order becomes demand
 again and the just-in-time pass buys its materials a second time. Under B an
 undo/redo pair was free, because the undo handed the bricks back and the redo
@@ -1039,6 +1075,18 @@ checking and assuming. Three facts establish it, each grepped on `0a53ec70`:
    `cancelOrder`, before any branch decides what to do with what it held.
    Nothing else in the repository can put materials back into that field or take
    them out of it.
+
+   > **The three facts in this list carry their own commit stamp — *"each
+   > grepped on `0a53ec70`"* — so their anchors are left where they point and
+   > are counted as dated rather than re-aimed (checked 2026-09-16,
+   > `e044a3e8`).** That is the citation form
+   > [#1231](https://github.com/woogitsu/lockstate/pull/1231) recommends in
+   > place of a document-wide pin, and it is the only stamped region in this
+   > file. **The claim they establish still holds on the current tree**, at
+   > moved coordinates: the two writes are `system.ts:1708` (fills, at the
+   > `materials-pending` → `assigned` transition) and `system.ts:1020`
+   > (empties, inside `cancelOrder`), plus the snapshot and restore copies at
+   > `system.ts:2060` and `system.ts:2128` that this list already excludes.
 2. **Every refund site reads that field or a delivery, and the `completed`
    branch now reads neither.** The material route is
    `this.materialsProvider.release(...)` at `system.ts:674`; the money route for
@@ -1062,8 +1110,8 @@ checking and assuming. Three facts establish it, each grepped on `0a53ec70`:
 **The inverse hazard is the one that is real, and it is created by this ruling
 rather than by its implementation.** Value can no longer be created; it can now
 be *destroyed without the books recording it*. `RemoveObject` on a standing
-object (`object-placement-service.ts:582`) takes the object out of
-`PlacedObjectRegistry` at line 587 and **never touches the order**: the order
+object (`object-placement-service.ts:646`) takes the object out of
+`PlacedObjectRegistry` at `object-placement-service.ts:651` and **never touches the order**: the order
 stays `completed` and keeps a populated `materialsAllocated` for the rest of the
 session. Today that record is honest, because the plank really is still
 recoverable -- the measurement at the top of this amendment is exactly that,
@@ -1113,8 +1161,8 @@ this order built, while it is still standing"*:
 Nothing moves at completion: the allocation term falls by the order's materials
 and the standing term rises by the same figure, both derived from the same
 catalogue. What moves is destruction, and there are exactly two destruction
-sites in the repository -- `object-placement-service.ts:587` (the *Remove*
-press) and `object-placement-service.ts:710` (`onOrderReverted`, reached only
+sites in the repository -- `object-placement-service.ts:651` (the *Remove*
+press) and `object-placement-service.ts:839` (`onOrderReverted`, reached only
 from `cancelOrder`) -- plus the edge un-write in `revertConstruction`. Each
 must be met by an explicit *deliberately consumed* term raised **by the test
 from the catalogue before the press**, exactly as ruling 20's `in-progress` case
@@ -1160,16 +1208,34 @@ because a list of test names in an ADR rots on the first rename.
   rather than argued as a justification -- the reason for the ruling is the
   inversion, not the exploit.
 - **A player-facing sentence gets *more* true, and none gets less.**
-  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:1496`) already
+  `'hud.build.remove-hint'` (`src/content/default-locale-en.ts:2137`) already
   reads *"a finished one is not refunded"*, which this makes true of every route
   rather than of one. The half of that string ruling 20 falsified --
   *"One still being built is cancelled and its materials come back"* -- is
   untouched by this amendment and is still false and still the owner's; it is
   reported again with this branch rather than rewritten, under `AGENTS.md`'s
   fourth exclusion. **No new string is added and none is edited.**
+
+  > **THIS DOCUMENT CONTRADICTS ITSELF HERE, AND THE OTHER HALF OF THE
+  > CONTRADICTION IS ALREADY IN IT (found 2026-09-16, `e044a3e8`, by reading
+  > this file's own sections against each other rather than by any diff).**
+  > *"Is untouched by this amendment and is still false and still the owner's"*
+  > was true when written. The section *"What this amendment costs"* above
+  > records the repair — **"Re-anchored 2026-09-06 and converted to a
+  > quotation … replacement copy has since been written"** — and this bullet
+  > was never amended with it. The key reads, verbatim at
+  > `src/content/default-locale-en.ts:2137`: *"Press any tile of an object, or
+  > a finished wall, to take it away. One still being built is cancelled and
+  > refunds its money — but nothing comes back once the crew has started it. A
+  > finished one is not refunded."* **There is no false half left in that
+  > string**, so the sentence this bullet hands to the owner asks them to rule
+  > on copy that no longer exists. Both halves are kept rather than merged,
+  > per `docs/AGENT_WORKFLOW.md` §4: a correction that erases what it corrects
+  > is no more durable than the claim it replaced, and this is a correction
+  > that had already been written one section up and did not travel.
 - **No save format moves.** No field is added to `BuildOrder`, and the one field
   involved is already persisted and already validated
-  (`src/persistence/save-schema.ts:218`). A save written before this change
+  (`src/persistence/save-schema.ts:222`). A save written before this change
   restores into it unchanged: a completed order carrying an allocation simply
   never gives it back.
 - **A determinism fingerprint moves for any prison that takes a finished thing

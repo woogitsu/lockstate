@@ -1,6 +1,5 @@
 import { test } from '@playwright/test';
 import {
-  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -15,7 +14,9 @@ import {
   panelText,
   runUntilTick,
   sentCommands,
+  showPanel,
   tab,
+  TILE,
 } from './playtest-harness';
 
 /**
@@ -599,7 +600,7 @@ test.describe('playtest: what the game requires and never says', () => {
     const furnished = await latestCounts(page);
     log(`furnished: ${JSON.stringify(furnished)}`);
 
-    await tab(page, 'overview').click();
+    await showPanel(page, 'manage', '.hud-intake');
     await page.waitForTimeout(800);
     report(log, 'ACT 3a — one cell, one bed, nobody admitted', await hudDump(page));
     log(`.hud-intake verbatim: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);

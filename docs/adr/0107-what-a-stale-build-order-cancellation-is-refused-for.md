@@ -90,13 +90,47 @@ since both were filed) rather than re-investigating from scratch.
 - **ASSERTED** — argued from the above rather than independently re-measured
   by this document, marked every time.
 
+**THE LEGEND ABOVE IS ALSO THIS DOCUMENT'S ANCHOR PIN, AND ITS PLACEMENT IS
+WHY TWO SWEEPS LOOKING FOR ONE CLASSIFIED THIS FILE AS UNPINNED.** Every
+`VERIFIED` below is declared read at `f70efe73` (v0.0.572), which dates every
+anchor under it exactly as [ADR 0038](./0038-what-makes-a-save-compatible.md)'s
+header sentence dates its own — but it says so in a claim-tier legend rather
+than in a header, so the pin is invisible to a reader skimming for one.
+[#1231](https://github.com/woogitsu/lockstate/pull/1231) settles what such a
+pin is worth in this corpus: **advisory**. It does not freeze the code and it
+has not been honoured here.
+
+**RE-READ 2026-09-16 AGAINST `e044a3e8`, AND THE HEADLINE IS THAT THIS
+DOCUMENT'S OWN DECISION HAS SHIPPED.** `expectedRevision` is on
+`cancelBuildOrderSchema` (`src/simulation/protocol/commands.ts:77`);
+`ConstructionSystem.revisionOf` and the private `setState` Decision §3 asks for
+both exist (`src/simulation/construction/system.ts:1440`, `:1458`); the handler
+refuses on a mismatch (`src/simulation/construction/handler.ts:168-171`); the
+row carries the counter
+(`src/simulation/presentation/construction-projection.ts:381`); the per-command
+lead exists as `CANCEL_BUILD_ORDER_LEAD_TICKS`
+(`src/ui/simulation-commands.ts:183`); and Decision §7's candidate sentence
+shipped **verbatim** at `src/content/default-locale-en.ts:886`, with a Polish
+translation at `src/content/locale-pl.ts:694`.
+
+**Three things follow, and the third is the one a reader should hold onto.**
+(1) The `Status` line is **not** moved by this re-read — that is the owner's,
+per `docs/AGENT_WORKFLOW.md` §3 — and nothing below is rewritten to agree with
+the tree. (2) Anchors that still name live code are re-aimed to where they now
+land, each opened rather than offset. (3) **Context §4 and Decision §3 are
+diagnoses of the tree this document's decision replaced**, so they are dated
+in place rather than re-aimed, for the reason
+[ADR 0040](./0040-the-shape-of-the-render-delta-channel.md)'s own stale section
+is: re-aiming a dead diagnosis is the change that looks more impressive and
+reads less honestly.
+
 ## Context
 
 ### 1. What #853 measured, re-checked rather than trusted
 
 A queue row's `Cancel` button advertises what `cancelOrder` would credit the
 treasury right now — the owner's ruling of 2026-09-02 (issue #843) — read by
-`ConstructionSystem.previewCancelRefundMinorUnits` (`src/simulation/construction/system.ts:1165-1225`,
+`ConstructionSystem.previewCancelRefundMinorUnits` (`src/simulation/construction/system.ts:1151-1255`,
 VERIFIED). #853's three browser runs measured a row reading `assigned`,
 `80 back` for roughly 1,050–1,200 ms before dropping to `0` on its own, and a
 press that landed **while the row still read `assigned` and `80 back`** moved
@@ -125,7 +159,7 @@ stock delta: 0
 ```
 
 Proved able to fail rather than assumed: mutating `destroysSpendOnCancel`
-(`system.ts:77-79`, VERIFIED) to also treat `'assigned'` as destroy-on-cancel
+(`system.ts:84-86`, VERIFIED) to also treat `'assigned'` as destroy-on-cancel
 gives `treasury delta: 0` (RED); reverting restores `delta: 80` (GREEN). **So
 the answer is money, correctly and completely, in every state that pays at
 all** — and the issue's own binary ("material or money?") had no slot for the
@@ -133,7 +167,7 @@ actual third outcome the `destroysSpendOnCancel` arm produces: for
 `'in-progress'` and `'completed'`, the allocation is **neither released nor
 paid for**. It is destroyed by ruling 20 (2026-08-31) and the owner's ruling
 of 2026-09-01, and `previewCancelRefundMinorUnits` reads `0` for both
-(`system.ts:1213`, VERIFIED: `if (stateAtCancellation === 'in-progress' ||
+(`system.ts:1221`, VERIFIED: `if (stateAtCancellation === 'in-progress' ||
 stateAtCancellation === 'completed') return 0;`).
 
 This document does not re-measure this. It is settled, and nothing in the
@@ -145,13 +179,13 @@ or `destroysSpendOnCancel`'s own two-state rule.
 Issue #859 (closed, a measurement PR against #853) traced *why* a press
 landing on a row that still read `assigned`/`80 back` paid 0. A browser press
 goes through `SimulationCommandSender.projectExecuteTick`, whose
-`projectFromClock` branch (`src/ui/simulation-commands.ts:246`, name VERIFIED
+`projectFromClock` branch (`src/ui/simulation-commands.ts:319`, name VERIFIED
 by `grep`) returns `lastTick + ceil(elapsed × speed / TICK_MILLISECONDS) +
 leadTicks` while the clock runs. `leadTicks` defaults to `DEFAULT_LEAD_TICKS`,
 documented in the same file as *"one second of real-time tolerance, expressed
-in the kernel's own step"* (`:88-90`, VERIFIED) — **20** ticks at the kernel's
+in the kernel's own step"* (`:87`, VERIFIED) — **20** ticks at the kernel's
 20 Hz. `ConstructionSystem`'s own schedule is `intervalTicks: 10, phaseTicks:
-0` (`system.ts:316`, VERIFIED), so an `'assigned'` order becomes
+0` (`system.ts:347`, VERIFIED), so an `'assigned'` order becomes
 `'in-progress'` at most ten ticks after the tick a row was priced at.
 
 **So the row is priced at tick T, a running-clock command executes at
@@ -169,6 +203,22 @@ This document's design has to say what it does in both regimes, and it does
 
 ### 4. The structural gap in the command itself, re-verified
 
+> **THIS SECTION IS A DIAGNOSIS OF A TREE THIS DOCUMENT'S OWN DECISION HAS
+> SINCE REPLACED, AND IS DATED RATHER THAN RE-AIMED (2026-09-16,
+> `e044a3e8`).** The schema quoted below, and the three claims built on it —
+> *"One field, `.strict()`"*, *"The command has no way to say 'cancel this
+> order as it was when you showed it to me'"*, and *"it does not compare that
+> state to anything the player saw, because there is nothing on the wire to
+> compare it to"* — were all true at `f70efe73` and are all false now.
+> `cancelBuildOrderSchema` is `src/simulation/protocol/commands.ts:63-78` and
+> carries `expectedRevision` at `:77`; the handler reads the order's revision
+> and refuses on a mismatch at
+> `src/simulation/construction/handler.ts:168-171`, **before** `cancelOrder`,
+> exactly as Decision §4 below asks. **The gap is closed, and the block below
+> is kept because it is what the gap looked like** — re-aiming its anchors
+> onto the schema that now has the field would make a sentence about an
+> absence point at the thing that fills it.
+
 `cancelBuildOrderSchema` is, in full, at `src/simulation/protocol/commands.ts:62-65`
 (VERIFIED):
 
@@ -181,21 +231,21 @@ export const cancelBuildOrderSchema = z.object({
 
 One field, `.strict()`. The command has no way to say "cancel this order as it
 was when you showed it to me," and `ConstructionSystem.cancelOrder`
-(`:961-991`, VERIFIED) has no way to notice it is being asked to: it reads
+(`:1004-1053`, VERIFIED) has no way to notice it is being asked to: it reads
 `order.state` fresh at execution time, `isCancellable` says yes for
-`'in-progress'` (`:48-50`), and it proceeds — correctly, by ruling 20's own
+`'in-progress'` (`:55-57`), and it proceeds — correctly, by ruling 20's own
 rule for that state. **Nothing here is a bug in `cancelOrder`.** The bug, if
 it is one, is that the row and the press can disagree about which order this
 is a cancellation *of*, and the protocol gives the worker no way to tell.
 
-`src/simulation/construction/handler.ts:124-155`'s `CancelBuildOrder` branch
+`src/simulation/construction/handler.ts:126-192`'s `CancelBuildOrder` branch
 (VERIFIED) reads the order's state **before** calling `cancelOrder`, purely so
 it can pick the right cancellation-event sentence afterward
-(`recordBuildOrderCancelled(stateAtCancellation, ...)`, `:157`) — it does not
+(`recordBuildOrderCancelled(stateAtCancellation, ...)`, `:183`) — it does not
 compare that state to anything the player saw, because there is nothing on
 the wire to compare it to. And it swallows `cancelOrder`'s throw for an
 unknown or already-terminal id silently, by design: *"cancellation is
-intentionally idempotent at the command boundary"* (`:148-150`). That existing
+intentionally idempotent at the command boundary"* (`:176`). That existing
 idempotency is unrelated to this document and is not touched by it — see
 Decision §4.
 
@@ -203,22 +253,22 @@ Decision §4.
 
 [ADR 0106](./0106-how-a-finished-wall-comes-down-without-a-keyboard.md),
 accepted 2026-09-10, added a sibling command, `RemoveWall`
-(`src/simulation/protocol/commands.ts:497-501`, VERIFIED), and named
+(`src/simulation/protocol/commands.ts:564-569`, VERIFIED), and named
 `destroysSpendOnCancel(state)` as the predicate `cancelOrder` and `undo()`
 both consult for what a cancellation destroys rather than pays for
-(`system.ts:77-79`). Both are already implemented on this tree, not merely
+(`system.ts:84-86`). Both are already implemented on this tree, not merely
 proposed — `RemoveWallRefusalReason`, its mapping in
-`src/simulation/refusals/refusal-log.ts:324-326`, its wire id
-`'remove-wall.nothing-to-remove'` in `src/simulation/protocol/types.ts:1364`,
-and its session-command branch in `src/simulation/runtime/session-commands.ts:871`
+`src/simulation/refusals/refusal-log.ts:325-327`, its wire id
+`'remove-wall.nothing-to-remove'` in `src/simulation/protocol/types.ts:1382`,
+and its session-command branch in `src/simulation/runtime/session-commands.ts:910`
 are all present and VERIFIED.
 
 **`RemoveWall` has no analogue of this document's hazard, and that is worth
 stating precisely rather than assuming.** `ConstructionSystem.completedOrderClaimingEdge`
-(`system.ts:1391-1422`, VERIFIED) is called at the tick the command executes,
+(`system.ts:1496-1506`, VERIFIED) is called at the tick the command executes,
 resolving the edge fresh against whatever the world holds *then* — there is
 no client-held expectation on the wire for it to have gone stale against,
-because `removeWallSchema` (`commands.ts:497-501`) carries a tile and an edge,
+because `removeWallSchema` (`commands.ts:564-569`) carries a tile and an edge,
 not an order id read off a row painted on an earlier tick. A `RemoveWall`
 press cannot be "stale" in #853's sense because it never carries a prediction
 to begin with. So this document's design is additive to `CancelBuildOrder`
@@ -228,7 +278,7 @@ reopen it.
 
 ### 6. `hud.build.remove-hint`, read in full
 
-`src/content/default-locale-en.ts:1781` (VERIFIED):
+`src/content/default-locale-en.ts:2137` (VERIFIED):
 
 > "Press any tile of an object, or a finished wall, to take it away. One
 > still being built is cancelled and refunds its money — but nothing comes
@@ -276,15 +326,15 @@ control than the one that silently did nothing. Decision §7 argues both.
 
 ### 8. The nearest existing precedent, and why it does not transfer whole
 
-`CancelMaterialPurchase` (`commands.ts:192-195`, VERIFIED) has faced a
+`CancelMaterialPurchase` (`commands.ts:206-209`, VERIFIED) has faced a
 version of this question already. Its refusal,
 `PurchaseCancelRefusalReason = 'not-pending'` (`src/simulation/economy/procurement.ts:117`),
 fires when `ProcurementSystem.cancel`'s id lookup fails
-(`procurement.ts:360-364`: `findIndex` returns `-1` because the delivery
+(`procurement.ts:420-421`: `findIndex` returns `-1` because the delivery
 already landed or was never pending), mapped to the wire id
-`'cancel-purchase.not-pending'` (`refusal-log.ts:360`) and surfaced as *"Nothing
+`'cancel-purchase.not-pending'` (`refusal-log.ts:403`) and surfaced as *"Nothing
 was refunded — that delivery is not on its way any more"*
-(`src/content/default-locale-en.ts:690`, VERIFIED).
+(`src/content/default-locale-en.ts:902`, VERIFIED).
 
 **That check is a pure identity check — does this id still name a pending
 record — and it is sufficient there because a delivery's lifecycle has no
@@ -303,9 +353,9 @@ for *what the check compares*.
 
 ### 9. A second, unrelated existing key with the same command name
 
-`hud.refusal.cancel-build-order` (`src/content/default-locale-en.ts:2655`,
+`hud.refusal.cancel-build-order` (`src/content/default-locale-en.ts:3086`,
 VERIFIED) already exists: *"The order is still queued — the request was
-refused."* This is a **main-thread-only** refusal — `hud.ts:521-543`'s own
+refused."* This is a **main-thread-only** refusal — `hud.ts:564-565`'s own
 comment says so in terms, *"the refusal this can paint is about *this thread*
 (no worker, no session)"* — fired when the HUD has no session to dispatch the
 intent to at all, before any command reaches the wire. It is unrelated to
@@ -329,8 +379,8 @@ preference.
 
 **Not the state the row displayed (`'assigned'`).** This was the first
 candidate and it fails on a concrete, VERIFIED path: `ConstructionSystem.redo()`
-(`system.ts:805-828`) restores a `'cancelled'` order to `'approved'` —
-*"We restore it to approved"* (`:815-817`) — from which it can progress
+(`system.ts:848-875`) restores a `'cancelled'` order to `'approved'` —
+*"We restore it to approved"* (`:858-860`) — from which it can progress
 forward through `'materials-pending'` and back into `'assigned'` again for the
 **same order id**. So `'assigned'` is not a state an order visits once; a
 press carrying `expectedState: 'assigned'` could match an order that has
@@ -352,7 +402,7 @@ what the player read, but it is a strictly weaker key than the state: two
 different states can preview the same minor-units figure by coincidence (an
 `'approved'` order and a `'materials-pending'` order with the same allocation
 both preview identically per `previewCancelRefundMinorUnits`'s own two
-branches, `system.ts:1213-1225`), so a figure match proves less than a state
+branches, `system.ts:1221-1230`), so a figure match proves less than a state
 match already fails to prove, and it would additionally require the
 `previewCancelRefundMinorUnits` pricing rule to be re-derivable — or
 duplicated — on whichever side checks it.
@@ -418,7 +468,7 @@ counter that any twelfth site could forget to bump would be worse than no
 counter — a silently-stale key is indistinguishable from a correct one until
 somebody measures it. `destroysSpendOnCancel`'s own docblock argues the
 identical point about its two states: *"A third state joining this set has to
-be told to one place, not remembered in two"* (`system.ts:66-68`). The
+be told to one place, not remembered in two"* (`system.ts:74-75`). The
 implementer therefore owes a single private mutator —
 
 ```ts
@@ -432,6 +482,21 @@ private setState(order: BuildOrder, next: BuildOrder['state']): void {
 assigning `order.state` directly, so a twelfth site that assigns the field
 directly is a `grep` away from being caught in review rather than a defect a
 future #853 has to re-discover.
+
+> **THE CENSUS ABOVE IS DEAD, IN THE DIRECTION IT ASKED FOR, AND IS DATED
+> RATHER THAN RE-AIMED (2026-09-16, `e044a3e8`).** *"Eleven sites write
+> `order.state` today (VERIFIED, exhaustive `grep -n "order\.state ="` against
+> this tree)"* was true at `f70efe73`. That grep now returns **one**
+> assignment, `src/simulation/construction/system.ts:1459`, and it is the body
+> of the private `setState` this section prescribes; the eleven call sites that
+> replace those eleven writes are `this.setState(` — eleven of them, counted by
+> `grep -c`. So every one of the ten line numbers this paragraph gives
+> (`:503,510,520,528`, `:816`, `:970`, `:1598`, `:1614`, `:1634`, `:1655`,
+> `:1671`) now lands on code that no longer assigns the field, and they are
+> left pointing at the tree the census was taken against rather than moved onto
+> the mutator calls, which would turn a count of a hazard into a count of its
+> fix. **The `grep` this section offers as the review check is still the right
+> one and now returns the single line it was designed to leave standing.**
 
 ### 4. What the handler does with the new field
 
@@ -467,7 +532,7 @@ In `createConstructionCommandHandler`'s `CancelBuildOrder` branch
 export type CancelBuildOrderRefusalReason = 'stale-cancellation';
 ```
 
-co-located with `RemoveWallRefusalReason` (`system.ts:309`) for the same
+co-located with `RemoveWallRefusalReason` (`system.ts:316`) for the same
 reason that type is: a table with one entry is what makes a *second* reason a
 compile error at `refusal-log.ts`'s mapping rather than a silent `undefined`
 on the wire. Mapped as:
@@ -480,7 +545,7 @@ export const CANCEL_BUILD_ORDER_REFUSAL_REASONS: Readonly<Record<CancelBuildOrde
 
 added to `REFUSAL_REASONS` in `src/simulation/protocol/types.ts` beside
 `'cancel-purchase.not-pending'` and `'remove-wall.nothing-to-remove'`
-(`:1343`, `:1364`), namespaced apart from both and apart from the existing
+(`:1359`, `:1382`), namespaced apart from both and apart from the existing
 **unrelated** `hud.refusal.cancel-build-order` key (Context §9) for the same
 reason every other collision in `REFUSAL_REASONS` is avoided: a player who
 pressed a queue row's `Cancel` and lost the race must not read a sentence
@@ -512,7 +577,7 @@ claim" for what would force that move.
 
 ### 7. What the row, the wiring, and the paused case do
 
-`BuildQueueOrderViewModel` (`src/simulation/presentation/construction-projection.ts:198-229`)
+`BuildQueueOrderViewModel` (`src/simulation/presentation/construction-projection.ts:210-269`)
 gains one field, read the same way `cancelRefundMinorUnits` already is —
 carried across the worker boundary unchanged, no arithmetic added in the
 projection:
@@ -521,12 +586,12 @@ projection:
 readonly revision: number;
 ```
 
-`BuildOrderSource` (`:120-123`) gains `revisionOf(orderId: string): number`,
+`BuildOrderSource` (`:114-132`) gains `revisionOf(orderId: string): number`,
 implemented by `ConstructionSystem.revisionOf` (Decision §2) exactly as
 `previewCancelRefundMinorUnits` already is. The intent
-(`hud.ts:544`, `{ kind: 'cancel-build-order'; readonly orderId: string }`)
+(`hud.ts:567`, `{ kind: 'cancel-build-order'; readonly orderId: string; readonly revision: number }`)
 gains `revision: number`, read off the row the player pressed
-(`hud.ts:1934`'s `dispatchCommand` call site). `src/main.ts:2498`'s producer
+(`hud.ts:2024`'s `dispatchCommand` call site). `src/main.ts:2757`'s producer
 becomes:
 
 ```ts
@@ -553,6 +618,17 @@ counter's own semantics already collapse to "never stale" when nothing ticks.
 2026-09-04 release gives the choice of words, not the promise, and the
 promise is not true of any code yet, since none of this is implemented):
 
+> **THE PARENTHESIS ABOVE IS FALSE AS OF 2026-09-16 (`e044a3e8`) AND IS KEPT
+> RATHER THAN OVERWRITTEN, BECAUSE THE HALF OF IT THAT MATTERS IS STILL
+> TRUE.** *"Not written into `src/content/default-locale-en.ts` by this
+> document"* holds — this document still writes no string, and that is the
+> reservation-4 point it is making. *"None of this is implemented"* does not:
+> the sentence below shipped **verbatim, every character**, at
+> `src/content/default-locale-en.ts:886`, and is translated at
+> `src/content/locale-pl.ts:694`. So the promise is now true of code, which is
+> the condition reservation 4's release attaches to the wording rather than a
+> licence this document granted itself.
+
 > `'hud.alert.refusal.cancel-build-order.stale-cancellation'`: **"Nothing was
 > refunded — this order moved on before the cancellation reached it. Press
 > Cancel again to see what it pays now."**
@@ -577,14 +653,28 @@ Context §7's ~70% is a property of `DEFAULT_LEAD_TICKS` (20) against
 design — this design does not change how often an order transitions inside
 that window, only what a stale press against one now says. **This document
 does not recommend changing either constant.** `leadTicks` is a
-`SimulationCommandSender`-wide constructor option (`simulation-commands.ts:196-200`,
+`SimulationCommandSender`-wide constructor option (`simulation-commands.ts:74-81`,
 VERIFIED) shared by every command type for a documented reason (tolerance for
 real message latency, scaled by clock speed so a throttled tab does not
 reject every command as "scheduled in the past") — shrinking it for
 `CancelBuildOrder` alone needs a per-command lead, which nothing in
 `SimulationCommandSender.submit` currently supports (`:306`, takes a bare
 `SimulationCommand`), and inventing that is a distinct engineering question
-with its own measurement owed, not a corollary of this one. **Recorded as a
+with its own measurement owed, not a corollary of this one.
+
+> **THAT CLAUSE IS FALSE AS OF 2026-09-16 (`e044a3e8`), AND THIS DOCUMENT
+> ALREADY SAID SO ONE SECTION LOWER WITHOUT AMENDING IT HERE.** *"Nothing in
+> `SimulationCommandSender.submit` currently supports"* a per-command lead:
+> `submit(command, options: { readonly leadTicks?: number } = {})` at
+> `src/ui/simulation-commands.ts:392`, and `CANCEL_BUILD_ORDER_LEAD_TICKS = 12`
+> at `:183` is the constant it was built for, passed by `src/main.ts:2773-2774`.
+> **"Weakest claim" below records that this was built and what it measured**,
+> so the document has carried the fact and its own denial of the fact in the
+> same file; the denial is left standing because it is the premise the
+> follow-up in this section was declined on, and a reader needs to see which
+> premise expired. What it says next — that the per-command lead is a distinct
+> question with its own measurement owed — was right, and the measurement was
+> taken. **Recorded as a
 candidate follow-up rather than decided here**: whether `CancelBuildOrder`
 specifically should carry a smaller lead than the sender's default, once this
 document's refusal exists to measure the *actual* post-fix rate against
@@ -634,6 +724,23 @@ rate near 100% would make the row's own advertised figure close to
 decorative at 1× speed and might argue for revisiting whether `Cancel`
 should be disabled for the ~1-second window rather than pressable and mostly
 refused.
+
+> **THE CROSS-REFERENCE THE NEXT PARAGRAPH OPENS WITH DANGLES, AND IT
+> DANGLED ON THE DAY IT WAS WRITTEN (found 2026-09-16, `e044a3e8`).** It cites
+> *"The owner's ruling of 2026-09-11 (Status, above)"* for a ruling *"fix the
+> lead first, then the refusal"*. **The Status block above records one ruling
+> and it is dated 2026-09-10** — the clickable option *"Odmawiaj
+> nieaktualnego anulowania"* — and says nothing about ordering the lead fix
+> ahead of the refusal. The 2026-09-11 ruling is real but lives in the commit
+> message of `3590705b`, the commit that added the paragraph below, whose own
+> last line reads *"Status and acceptance are untouched"*: so the amendment
+> pointed at a Status block it had deliberately not written to. **This is the
+> shape [#1229](https://github.com/woogitsu/lockstate/pull/1229) found in ADR
+> 0086 — an anchor that was wrong at the commit that wrote it — transposed
+> from a `file:line` onto a section cross-reference**, and it is marked rather
+> than repaired because repairing it means adding an owner's ruling to a
+> `Status` block, which `docs/AGENT_WORKFLOW.md` §3 reserves to the owner. The
+> paragraph's measurements are unaffected; only its provenance pointer is.
 
 **THE FALSIFIER WAS RUN, 2026-09-11, AND IT ANSWERS TOWARD THE SECOND OF
 THOSE TWO READINGS.** The owner's ruling of 2026-09-11 (Status, above) was
