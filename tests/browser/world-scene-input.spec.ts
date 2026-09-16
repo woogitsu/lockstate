@@ -781,7 +781,7 @@ test.describe('the world scene pointer inventory (#209)', () => {
  * All three gestures are covered here, not only the build gesture the issue
  * reproduced by hand: `beginArea`/`extendArea`/`commitArea`/`cancelArea` and
  * `beginObject`/`extendObject`/`commitObject`/`cancelObject` are the same
- * shape as their build counterparts (`world-scene.ts:806-914`), so the harness
+ * shape as their build counterparts (`world-scene.ts:1090-1226`), so the harness
  * now wires a room-tool and an object-tool double beside the existing
  * build-tool one and the specs below drive all three through both triggers --
  * this *is* the independent verification the issue asked for rather than an

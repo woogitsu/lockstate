@@ -916,7 +916,7 @@ describe('issue #780: a zoning refusal is withdrawn by a different room type suc
     // case exactly as it is), but the *same* rectangle, a *different* room
     // type. `room.cell` requires `enclosed`; `room.yard` requires only
     // `outdoors` and never reaches the enclosure check at all
-    // (`RoomZoningService.zone`, `zoning.ts:574`) -- so its success at this
+    // (`RoomZoningService.zone`, `zoning.ts:613`) -- so its success at this
     // rectangle is a direct, positive answer to "is this rectangle enclosed",
     // and the old `zoneSupersessionKey(roomCatalogId, x, y, width, height)`
     // -- which folded the type into every one of `zone.*`'s eight reasons --

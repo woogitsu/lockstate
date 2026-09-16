@@ -106,15 +106,15 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:353`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:587`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:349`,
-`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:423`,
+(`src/simulation/objects/object-placement-service.ts:526`,
+`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
 the third at `6cededc` (#320), so the sentence had been wrong for about a
 hundred releases. The terrain clause below is scoped to `SUBMISSION_REQUIREMENT`
-and does not describe the other two — `zoning.ts:307` records that `canBuildAt`
+and does not describe the other two — `zoning.ts:417` records that `canBuildAt`
 defaults terrain checks **on**.
 
 `ConstructionSystem.submitOrder` refuses a
@@ -135,7 +135,7 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:313`) asks `admits` (`:349`) about the
+(`src/simulation/construction/system.ts:540`) asks `admits` (`:583`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the
@@ -203,10 +203,10 @@ from the first frame. It is **not** taken here, for three reasons:
 - `ownedChunks`: sorted list of owned chunk positions,
 - `chunks`: sorted chunk records with revisions and, each optional, the RLE
   terrain plane and the `topEdge`, `leftEdge` and `zoning` planes
-  (`src/simulation/world/sparse-world.ts:44-54`). **This bullet named only
+  (`src/simulation/world/sparse-world.ts:45-56`). **This bullet named only
   terrain** from `2ef4194` until this correction, through eleven later edits to
   this file, while walls, doors and the zoning plane were all persisted —
-  `docs/NAVIGATION.md:78-80` relies on the opposite,
+  `docs/NAVIGATION.md:83-85` relies on the opposite,
 - `parcels`: sorted registered parcel definitions,
 - `ownedParcels`: sorted list of owned parcel IDs.
 
