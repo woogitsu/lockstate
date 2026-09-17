@@ -27,6 +27,12 @@ import { DEFAULT_PRISONER_CAPACITY } from '../../src/simulation/runtime/new-sess
  * figures with it, to 308 KiB and ~435 KiB. This file is what forced both
  * documents to be rewritten in the same change rather than left behind.
  *
+ * And again with issue #589 (the owner's ruling of 2026-09-17): `injured` is a
+ * **twentieth** persisted per-prisoner array, an every-slot-zero byte array
+ * like `solitarySanctionEndTick`, so the two figures move again -- see the
+ * cases below for what they moved to: **318 KiB (325,372 bytes)** and
+ * **~445 KiB**.
+ *
  * This pins it. Note what it is and is not: the figure is a **counterfactual**,
  * so it cannot be measured through `encodePrisonerComponents`, which writes the
  * allocated prefix and would emit nothing at all for an empty prison. That is
@@ -36,7 +42,7 @@ import { DEFAULT_PRISONER_CAPACITY } from '../../src/simulation/runtime/new-sess
  * to any of them fails, which is what stops the two sentences drifting again.
  */
 
-/** The nineteen arrays, by the names `EncodedPrisonerComponents` declares. */
+/** The twenty arrays, by the names `EncodedPrisonerComponents` declares. */
 const SCALAR_ARRAY_NAMES = [
   'sentenceLengthTicks',
   'priorIncidentsAtIntake',
@@ -45,6 +51,7 @@ const SCALAR_ARRAY_NAMES = [
   'classificationGroupIndex',
   'intakeStage',
   'solitarySanctionEndTick',
+  'injured',
   'actionIndex',
   'actionPhase',
   'phaseStartedAtTick',
@@ -72,20 +79,20 @@ describe('the capacity-shaped payload figure the documentation quotes', () => {
     // Each of these appears in the quoted sentences. A change to any one moves
     // the number, and the failure says which.
     expect(DEFAULT_PRISONER_CAPACITY, 'the quoted figure is for 5,000 slots').toBe(5_000);
-    expect(SCALAR_ARRAY_NAMES.length + NEED_IDS.length, 'the quoted figure is for nineteen arrays').toBe(19);
+    expect(SCALAR_ARRAY_NAMES.length + NEED_IDS.length, 'the quoted figure is for twenty arrays').toBe(20);
     // The *stored* default, not the whole-level one: `encodePrisonerComponents`
     // writes `NeedsComponent.levels` verbatim, so it is this value's digit
     // width that the figure depends on.
     expect(NEED_MAX_SCALED, 'needs default to NEED_MAX_SCALED, and its digit width is part of the figure').toBe(51_000);
   });
 
-  it('measures 308 KiB for an empty prison at capacity, which is the claim both documents make', () => {
+  it('measures 318 KiB for an empty prison at capacity, which is the claim both documents make', () => {
     const bytes = encodedByteSizeAtCapacity(DEFAULT_PRISONER_CAPACITY, (name) =>
       name === 'needs' ? NEED_MAX_SCALED : name === 'actionIndex' ? -1 : 0,
     );
 
-    expect(bytes).toBe(315_360);
-    expect(Math.round(bytes / 1024), 'both documents say ~308 KiB').toBe(308);
+    expect(bytes).toBe(325_372);
+    expect(Math.round(bytes / 1024), 'both documents say ~318 KiB').toBe(318);
   });
 
   it('measures more for a populated prison, which is where the ~300 KiB figure came from', () => {
@@ -101,15 +108,15 @@ describe('the capacity-shaped payload figure the documentation quotes', () => {
             ? 17_400
             : name === 'tileX' || name === 'tileY'
               ? 143
-              : name === 'solitarySanctionEndTick'
+              : name === 'solitarySanctionEndTick' || name === 'injured'
                 ? 0
                 : 3,
     );
 
-    expect(Math.round(bytes / 1024)).toBe(435);
+    expect(Math.round(bytes / 1024)).toBe(445);
     // The load-bearing relationship, independent of the exact scenario: the
     // populated case is strictly worse, so quoting it for the empty-prison
     // claim overstates that claim rather than understating it.
-    expect(bytes).toBeGreaterThan(315_360);
+    expect(bytes).toBeGreaterThan(325_372);
   });
 });
