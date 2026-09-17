@@ -875,7 +875,7 @@ describe('RoomInstanceRegistry', () => {
   describe('loadSnapshot', () => {
     /**
      * **A save is a file the player's browser produced, and the occupancy list
-     * inside it is not a set.** `src/persistence/save-schema.ts:646` validates
+     * inside it is not a set.** `src/persistence/save-schema.ts:503` validates
      * `roomInstanceOccupancy` as
      * `z.array(z.tuple([z.string().min(1), z.array(entityIdSchema)]))` -- there
      * is no uniqueness constraint anywhere on that inner array, so a corrupt or
@@ -892,17 +892,10 @@ describe('RoomInstanceRegistry', () => {
      * MUTATED   [occupancyOf, totalOccupancy] = [1, 2]
      * ```
      *
-     * The divergence is money, not bookkeeping. **This paragraph read
-     * "`StateIncomeSystem` bills the state per in-game day off `totalOccupancy`
-     * (`src/simulation/economy/income.ts:321` and `:325`)" and that is no longer
-     * how the state is billed.** Issue #585 took `totalOccupancy` off
-     * `OccupiedPlaceSource` on purpose -- `income.ts`'s
-     * `OccupiedPlaceSource.residentIdsWithExistingPlace` declaration carries the
-     * reasoning -- so the income line now walks a list of resident ids rather
-     * than reading a count. The defence this test pins is unchanged and the
-     * reason for it is stronger: the restored `Set` is what both the count and
-     * that id list are derived from, so a duplicated id in a save would inflate
-     * whichever of the two the economy happens to read, while `occupancyOf`,
+     * The divergence is money, not bookkeeping. `StateIncomeSystem` bills the
+     * state per in-game day off `totalOccupancy` (`src/simulation/economy/income.ts:321`
+     * and `:325`), so a duplicated id in a save pays the player for a prisoner
+     * who does not exist, for the rest of the session -- while `occupancyOf`,
      * which every capacity gate reads, still says one. The two counts must not
      * be able to disagree.
      */
@@ -954,17 +947,17 @@ describe('RoomInstanceRegistry', () => {
    *
    * `RoomZoningService.unzone` is the *first* line: it checks `claimCountOf`
    * and answers the player `unzone.room-occupied`
-   * (`src/simulation/rooms/zoning.ts:880`), and
+   * (`src/simulation/rooms/zoning.ts:753`), and
    * `tests/unit/rooms-zoning.test.ts` and
    * `tests/integration/room-zoning-loop.test.ts` guard that. The throw below is
    * what stands behind it, for any *other* caller that unregisters without
    * asking first -- and this describe block exists because nothing asserted it.
    * `unregister` is the only method that can destroy a room instance
    * (`grep -rn '\.unregister(' src/` finds one room-instance caller,
-   * `src/simulation/rooms/zoning.ts:908`), a prisoner's
+   * `src/simulation/rooms/zoning.ts:759`), a prisoner's
    * `accommodationInstanceId` is a plain string in cold state with no
    * referential integrity behind it
-   * (`src/simulation/prisoners/components.ts:314`), and a mutation deleting the
+   * (`src/simulation/prisoners/components.ts:274`), and a mutation deleting the
    * guard survived the whole suite.
    *
    * Two claim kinds, one guard, because ADR 0029 made both of them references:

@@ -349,7 +349,7 @@ test.describe('the escape sentence has to survive a frame (#700)', () => {
      * exact* incident from producing the collision on `main` -- that is arm 1
      * above -- but Finding 4 of ADR 0084 also found the collision reachable
      * through two *different* incidents closing on one tick
-     * (`simulation-events.ts:730-737`'s own count of same-tick pairs), which
+     * (`simulation-events.ts:297-304`'s own count of same-tick pairs), which
      * ruling 6's single-incident guard cannot see. `alsoRecordTheAllClear`
      * reconstructs that shape directly, deliberately bypassing ruling 6, so
      * this arm is a test of the band's own defence -- the dwell floor -- and

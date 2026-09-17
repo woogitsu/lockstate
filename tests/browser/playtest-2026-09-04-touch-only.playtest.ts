@@ -1046,11 +1046,7 @@ async function playTheGame(page: Page, client: CDPSession, label: string): Promi
   log(`after one Hire tap: staff=${String((await latestCounts(page))?.staff)}`);
 
   // Admit, by finger.
-  // Manage, not Overview: the Intake panel moved there on 2026-09-14
-  // (`d5137d5d`). Tapped rather than clicked through `showPanel`, because a
-  // file whose whole question is whether the game is playable with fingers
-  // must not reach a control with a mouse.
-  await tapControl(page, '.hud__tabs [data-tab="manage"]');
+  await tapControl(page, '.hud__tabs [data-tab="overview"]');
   await tapControl(page, '.hud-intake__admit');
   await page.waitForTimeout(1500);
   const admitted = await latestCounts(page);

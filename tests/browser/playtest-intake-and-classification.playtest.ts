@@ -7,7 +7,6 @@ import {
   latestCounts,
   openApp,
   panelText,
-  showPanel,
   tab,
 } from './playtest-harness';
 
@@ -73,7 +72,7 @@ test('intake shortage, then classification tones over time (#549, #609, #788)', 
   // contended box (`buildAndPopulate` alone measured 9+ minutes earlier this
   // session; see the research note for that number).
   await buildAndPopulate(page, { beds: 3, admits: 8, guards: 0, label: `${act}.build` });
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   await snapshotIntakeAndStrip(page, act, 'shortage (3 beds, 8 admits) right after build returns');
   await page.waitForTimeout(3000);
   await snapshotIntakeAndStrip(page, act, 'shortage +3s');

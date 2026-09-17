@@ -4,7 +4,6 @@ import {
   buildResilientCell,
 } from './playtest-2026-09-01-the-people.playtest';
 import {
-  countsSeries,
   currentClock,
   currentTick,
   installTee,
@@ -14,8 +13,8 @@ import {
   press,
   reportBoundary,
   runUntilTick,
-  showPanel,
   tab,
+  countsSeries,
 } from './playtest-harness';
 
 /**
@@ -279,7 +278,7 @@ test('act 3: at the moment a day turns, does the player see anything besides the
   const cell = await buildResilientCell(page, 2, act);
   log(act, `cell built: ${JSON.stringify(cell)}`);
 
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(1_500);
   log(act, `after one admission: ${await panelText(page, '.hud-intake')}`);
@@ -417,7 +416,7 @@ test('act 4: every remaining paused gesture, checked for the #774 shape', async 
   );
 
   // ---- AdmitPrisoner while paused ------------------------------------------
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   const rosterBefore = (await latestCounts(page))?.prisoners;
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(400);
@@ -465,7 +464,7 @@ test('act 5: an organic run at x4, watched for close event pairs by tick, not by
 
   const cell = await buildResilientCell(page, 2, act);
   log(act, `cell built: ${JSON.stringify(cell)}`);
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   for (let i = 0; i < 2; i += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(200);
