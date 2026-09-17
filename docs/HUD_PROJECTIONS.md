@@ -2310,3 +2310,11 @@ decision about what to build next.
     > `EVENT_PRESENTATION` row it needs was an owner's ruling exactly as that
     > paragraph says every previous one was. The paragraph is therefore
     > confirmed by the new ruling rather than falsified by it.
+    >
+    > **Re-run once more at `725aad40`**, after #1279 (*"fix(hud): mount the
+    > alerts fold in the rail below 720px (#1201)"*) merged the same day and
+    > added 53 lines to `src/ui/hud/hud.ts` — the file two of these coordinates
+    > point into. **All ten still read back verbatim**, because #1279's hunks
+    > are the layout-tier plumbing and `placeAlertsFold`, none of it above
+    > `applySimulationRefusal`. Stated because a merge touching a cited file is
+    > the case a reader would assume breaks something, and here it did not.
