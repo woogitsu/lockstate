@@ -171,6 +171,53 @@ pull requests — **#1279** (#1201's fold), **#1280** (ADR 0115's split), **#128
 today"* measurement below is therefore still a description of `main` and not
 of history.
 
+> **THAT PARAGRAPH WENT FALSE THE SAME DAY, HOURS AFTER IT WAS WRITTEN, AND IT
+> IS KEPT RATHER THAN EDITED BECAUSE THE INTERVAL IS THE LESSON.** **#1279
+> merged as `725aad40`**, so dossier 1's recommendation is **built on `main`**
+> and §1's *"what the code does today"* is now history rather than a
+> description. #1280 and #1281 are still open, checked at the same moment.
+>
+> **What that costs this document, stated exactly.** #1279 changed
+> `src/ui/hud/hud.css`, so the sentence three paragraphs down — *"No `.css`
+> file under `src/` moved between `e044a3e8` and `33c02a12`"* — is true of
+> `33c02a12` and **false of `main` today**. Re-run against the new tip,
+> `git diff --name-only e044a3e8 <main> -- 'src/**/*.css'` returns
+> `src/ui/hud/hud.css`. Every DOM-geometry figure in §1 therefore no longer
+> stands on an unchanged stylesheet; §2's and §3's do, because #1279's hunks
+> are the 720 px block's alerts-fold rules and `.ui-panel.hud-overview`.
+>
+> **One quoted sentence is not merely repinned but gone.** The 2026-09-16
+> section above quotes `hud.css` at `:4702-4703` as *"On a phone the log is
+> still out of reach; on every viewport above 720px it is not."* — the very
+> claim #1279 exists to falsify. It is **absent from `hud.css` entirely** on
+> the new tip, replaced by a comment beginning *"**So bringing the alerts log
+> to a phone is a mobile LAYOUT job, not a breakpoint edit**"*. This is the
+> durable-citation rule paying out in the direction §4 does not usually
+> advertise: a quoted sentence outlives a coordinate, but when the *code*
+> changes, the quotation is what tells you the claim died rather than moved.
+>
+> **Two coordinates in §1 moved and are repinned here rather than in place**,
+> because §1's measurements are a record of the tree they were taken on:
+> `hud.css:4704` (*"  .hud__corner { display: none; }"*) is **`:4714`**, and
+> `hud.css:4762` (*"  .ui-tab { min-width: calc(64px * var(--ui-scale));
+> padding: var(--space-2); }"*) is **`:4800`**. The `.hud__corner` rule itself
+> **survives** #1279 unchanged, which is the shape of the fix: the fold was
+> moved out of the corner rather than the corner being brought back.
+> `tests/browser/unplaced-surfaces.spec.ts:226` is unmoved.
+>
+> **And #1279 independently confirms this document's own 2026-09-17 correction
+> about the worst-case sentence.** Its commit message reports the real worst
+> case — `MAX_EVENT_ALERT_ROWS` (8) rows of *"the longest sentence this channel
+> ships"* — at **508.31 px at 1440x900 and 667.00 px at 375x812**, against the
+> 360 px this document priced. Both of the reasons given below for expecting a
+> taller fold (the narrower phone column, and the 122-character sentence a
+> same-line sort could not see) are borne out, and the shipped fix pays for it
+> with `flex: 0 1 auto; min-height: 0` and the panel's own `overflow-y: auto`
+> rather than by finding the pixels. **The recommendation survived the
+> measurement being wrong**, which is the honest way to read it: option C was
+> chosen for having measured headroom, the headroom was smaller than measured,
+> and it still fit.
+
 **The one disagreement is dossier 3's, and it is recorded as a disagreement.**
 This document recommended option 4 and argued that option 3 *"charges for them
 somewhere a player looks — … the section names"*. The owner ruled option 3 over
