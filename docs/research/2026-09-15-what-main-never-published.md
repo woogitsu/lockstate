@@ -242,6 +242,45 @@ deletions**; restricted to what ships (`src/`, `public/`, `index.html`) it is
 >   until the next green merge. Nothing in this addendum changes §4 or §6,
 >   which are about the gate.
 
+> **RE-MEASURED 2026-09-17, AND THE 2026-09-16 ADDENDUM'S OWN HEADLINE IS
+> OVERTAKEN IN BOTH DIRECTIONS.** Kept rather than rewritten, per
+> `docs/AGENT_WORKFLOW.md` §4. Read off the Actions API at
+> 2026-09-17T16:55Z, with `main` at **`c9b4a7f7`**:
+>
+> - **The newest Deploy run of any conclusion is `35247331084`, and it is
+>   `queued`.** The newest *successful* one is **`35201968001`**, created
+>   2026-09-17T08:51:40Z, whose `staging` job concluded `success` on runner
+>   **`lockstate-wsl-DOM-NEW-02`** with the step *"Deploy to Cloudflare
+>   (staging)"* finishing at **08:52:08Z**; `production` and `staging-blocked`
+>   both `skipped`. Confirmed by job name and step, as §2.2 requires.
+> - **The live build is `d1f3bf7c` (#1265) and NOT `33c02a12`, which is the run's
+>   own `head_sha`** — so the trap this record states in the paragraph promoted
+>   into `docs/DEPLOYMENT.md` (*"a Deploy run's `head_sha` is not the commit it
+>   published"*) is not hypothetical, and a reader auditing this very question
+>   the obvious way would have got the wrong commit here. Matched by the
+>   triggering run instead: CI `35200179445`, `head_sha` `d1f3bf7c`, concluded
+>   `success` at **08:51:38Z**, two seconds before the Deploy run was created,
+>   and `deploy.yml`'s `staging` job takes `workflow_run.head_sha` for its
+>   `ref:` (`.github/workflows/deploy.yml:172`). `33c02a12` is
+>   `chore(release): v0.0.652`, `main`'s tip at trigger time.
+> - **So `main` is four first-parent commits ahead of what is served again** —
+>   `33c02a12` (v0.0.652), `725aad40` (#1279), `0f4a0b9f` (v0.0.653) and
+>   `c9b4a7f7` (#1230). `git diff --shortstat d1f3bf7c c9b4a7f7` is **10 files,
+>   686 insertions, 17 deletions**; restricted to what ships (`src/`, `public/`,
+>   `index.html`) it is **4 files, 156 insertions, 1 deletion**, all four under
+>   `src/ui/hud/` and all four from #1279.
+> - **None of the four is a cancellation, and that is the point.** The queued
+>   Deploy `35247331084` was created from #1279's CI going green, so the gap is
+>   a **queue**, not a hole: it closes by itself the moment that run reaches a
+>   runner. §3's eleven-row table was a hole; this is not one, and calling both
+>   "unpublished" would flatten the distinction §3.1 exists to draw.
+>
+> **What this says about §3 as a section, rather than about today's number.**
+> Three readings in three days give `c3faf19d`, `54adc87c` and `d1f3bf7c`, and
+> the middle one was *"`main`'s tip"* — a state §3 cannot hold for a day. The
+> durable part of this record is §3.1, §4 and §6; §3 is an instrument reading and
+> should be read with the timestamp attached, never quoted without one.
+
 ### 3.1 Superseded versus unpublished — the distinction the brief asks for
 
 **Sixty-two of the 65 cancelled commits are superseded and cost nothing.** A
