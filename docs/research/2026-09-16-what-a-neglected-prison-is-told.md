@@ -8,30 +8,6 @@ instrument and this record. The status strip confirms the tree from inside the
 running page in every act: acts 1–2 read `v0.0.640 · 778c988` and act 3
 `v0.0.640 · d0ef350`, this branch's own instrument-only commits.
 
-### Re-checked against `origin/main` on 2026-09-16, at `54adc87c` (v0.0.646)
-
-This record was written on `e044a3e8` (v0.0.640) earlier the same day. **Nothing
-measured then is edited away; both directions are marked** per
-`docs/AGENT_WORKFLOW.md` §4 — the original reading keeps its commit and the
-re-check is recorded beneath it with `54adc87c`.
-
-- **Eight of the nine `file:line` citations are alive** at `54adc87c` and were
-  opened again one at a time. **One is dead** —
-  `src/simulation/protocol/types.ts:1769-1797` — and is re-pinned in §5 with the
-  verbatim line at the new coordinate.
-- **The two claims most exposed to §4's "an absence or a count rots first" were
-  re-derived rather than re-read**, and both hold: `SIMULATION_EVENT_TYPES` has
-  **six** `construction.*` members at `54adc87c` and **no member for a build
-  finishing**.
-- **§5's status line for ADR 0116 is overtaken**: the owner ruled it on
-  2026-09-16. Marked in place.
-- **§6's first bullet named an open question and left it open; it is closed
-  here**, by opening the table it names.
-- **ADR 0091 decision 2 was also ruled on 2026-09-16 (option F)** and bears on
-  §6's `#894` bullet. Marked there.
-- Everything else is a 2026-09-16 run on `e044a3e8` and is **not** re-run. A
-  figure with no re-check line beneath it has not been re-measured.
-
 ---
 
 ## The question, and how it was refined
@@ -393,12 +369,7 @@ The queue's own countdown, logged from inside the section:
 ```
 
 **VERIFIED, read — the silence is structural rather than a missed case.**
-`SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1769-1797` —
-**re-pinned 2026-09-16 at `54adc87c`: that coordinate is dead, `:1769` now reads
-`` * sentence ended, a payday failed, a fight broke out -- and the heading above ``
-inside an unrelated docblock. The declaration is at **`:1864`**,
-`` export const SIMULATION_EVENT_TYPES = [ ``, and the array closes at `:1892`,
-`` ] as const; ``**) holds
+`SIMULATION_EVENT_TYPES` (`src/simulation/protocol/types.ts:1769-1797`) holds
 six `construction.*` members — `order-cancelled`,
 `order-cancelled-underway`, `redone`, `undo-refused-newer-action`, `undone`,
 `undone-spend-destroyed` — and **every one of them is a cancellation, an undo
@@ -419,25 +390,6 @@ whole page's clean diff at completion is one text node gained and four lost,
 so the absence is not merely an absence on the events channel — nothing
 anywhere on the screen marks it.
 
-> **Overtaken on 2026-09-16, and only the status line: the owner ruled ADR
-> 0116.** The paragraph above is kept as written because *"Proposed,
-> 2026-09-15, unbuilt"* is what that document said when this act was run. The
-> ruling is **option 2** — a construction-completion event, graded `'info'`,
-> routed `'log-only'`, and **counted rather than repeated**, so twenty-four
-> segments finishing produce one row rather than twenty-four.
->
-> **The measurement itself is untouched and was re-derived at `54adc87c`
-> rather than assumed.** `SIMULATION_EVENT_TYPES` still holds exactly six
-> `construction.*` members and still has no member for a build finishing, so
-> act 2's *"nothing anywhere on the screen marks it"* is still true of the
-> code on the day this was re-checked. What changed is that it is now a
-> **decided and unbuilt** gap rather than an open question — and the routing
-> the ruling chose, `'log-only'`, is the same routing §6 below establishes for
-> the two acknowledgements that never reached the band. `docs/adr/0116-…md`
-> in this tree still opens its Status block *"Proposed, 2026-09-15. Not
-> self-approved, and it implements nothing."*; that file is another agent's
-> surface and is not edited from here.
-
 ---
 
 ## 6. What else the runs produced, and what is already filed
@@ -454,50 +406,12 @@ anywhere on the screen marks it.
   routed `'log-only'`, each by a ruling"* with #1006 findings 3 and 5 named.
   That would make this the intended routing and not a defect; I did not open
   the table to confirm which three, and say so rather than assert it.
-
-  > **Opened on 2026-09-16 at `54adc87c`, and the candidate is confirmed:
-  > this is the intended routing and not a defect.** `EVENT_PRESENTATION` has
-  > exactly **three** `'log-only'` members, and the run's two silent
-  > acknowledgements are two of them:
-  > `` 'rooms.needs-cleared': { labelKey: 'hud.alert.event.rooms.needs-cleared', severity: 'info', surfaces: 'log-only' }, ``
-  > (`src/ui/simulation-events.ts:618`),
-  > `` 'rooms.unzoned': … surfaces: 'log-only' }, `` (`:619`) and
-  > `` 'rooms.zoned': { labelKey: 'hud.alert.event.rooms.zoned', severity: 'info', surfaces: 'log-only' }, ``
-  > (`:623`). The third is `rooms.unzoned`, which no act here fired. The one
-  > acknowledgement the recorder **did** catch on `.hud__event` is the one
-  > routed otherwise: `` 'prisoners.housed': { … surfaces: 'band-and-log', }, ``
-  > (`:603-607`). **So the observation is fully explained by the table and
-  > nothing here is a defect** — three log-only, one band-and-log, and the
-  > recorder saw exactly that. The comment above the pair states the reason in
-  > place (`:613-617`): *"a player who just fixed or removed a room already
-  > knows they did, so the confirmation belongs in the historical record …
-  > rather than interrupting the band"*.
 - **`#894`'s measurement reproduces again, on a third day.** The probe refusal
   from `calibrate`'s first press was still the last row of the alerts column at
   the end of act 1 — `DAY 8`, 4.8 minutes of play — with no `Day` stamp and no
   `Clear this alert`, under five rows that have both. The 2026-09-15 pass
   reproduced this twice on the same tree (v0.0.640, `e044a3e8`); this is a third and fourth independent
   reproduction on the same tree.
-
-  > **Narrowed on 2026-09-16 by a ruling, not by a re-run.** The owner ruled
-  > ADR 0091 decision 2 (option F) that day: *a decided outcome of the same
-  > command route retires the refusal band*, carried on
-  > `SimulationRefusal.routeDecidedSince`
-  > (`src/simulation/protocol/types.ts:1525`,
-  > `` routeDecidedSince: z.literal(true).optional(), ``) and acted on at
-  > `src/ui/hud/hud.ts:1731`,
-  > `` if (notice === undefined || notice.routeDecidedSince === true) { ``.
-  > `calibrate`'s probe refusal is a `remove-wall.nothing-to-remove`, so on
-  > `54adc87c` **any later removal the player makes retires it from the band**
-  > — the docblock at `src/ui/hud/hud.ts:1302-1303` names this exact case,
-  > *"A `remove-wall.nothing-to-remove` refusal is retired by the player's next
-  > removal, whatever tile it names"*. **Act 1 makes no removal after
-  > `calibrate`**, so the reading above is what act 1 would still produce;
-  > **act 3 does**, so its probe refusal would not survive on today's tree.
-  > This is read from the code and from the ruling; no act was re-run for it.
-  > And the narrowing does not reach `#894`'s own subject, which is the alerts
-  > **row**: option F retires the band and leaves the column entry standing,
-  > which is the divergence it was bought for.
 - **The riot is the sharpest thing the run produced and it is not this
   record's subject.** Two riots and three lapsed incidents in a two-prisoner
   prison with no guard, between in-game days 5 and 7. Whether that rate is

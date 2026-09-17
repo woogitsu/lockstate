@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { openApp, panelText, showPanel, tab } from './playtest-harness';
+import { openApp, panelText, tab } from './playtest-harness';
 
 /**
  * **Does the errand happen when a player watches it?**
@@ -693,7 +693,7 @@ test.describe('the errand, watched through the interface', () => {
     log(`rooms panel with the cell furnished: ${(await panelText(page, '.hud-rooms')).replace(/\n/g, ' | ')}`);
 
     // ---- act 4: one prisoner ----------------------------------------------
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(1200);
     log(`intake panel: ${(await panelText(page, '.hud-intake')).replace(/\n/g, ' | ')}`);
