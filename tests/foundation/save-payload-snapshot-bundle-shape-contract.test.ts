@@ -112,6 +112,54 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
  * because a gate whose stricter direction is undocumented gets "fixed" in the
  * dangerous direction by whoever meets it first.
  *
+ * ## Re-checked 2026-09-17 at `33c02a12`, by mutation rather than by reading
+ *
+ * The conclusion that this file is **not** redundant with #1227's
+ * `tests/foundation/save-schema-enum-union-contract.test.ts` was re-derived
+ * rather than inherited, because it is the claim a merge is likeliest to have
+ * quietly settled -- that gate is on `main` now, and "two gates, one seam" is
+ * exactly the shape that gets consolidated away by whoever reads only the
+ * titles.
+ *
+ * Three mutations of `src/persistence/save-schema.ts`, each applied alone and
+ * reverted, on this branch merged with `main` at `33c02a12`:
+ *
+ * 1. **Widen `carryItemJobSchema.state`'s `z.enum` with `'retired'`**
+ *    (`save-schema.ts:681`). **Both red**, which reproduces this docblock's own
+ *    2026-09-16 measurement exactly: `npx tsc -b` reports TS2322 at
+ *    `save-payload-snapshot-bundle-shape-contract.test.ts(373,14)`, printing
+ *    the whole job object on both sides, and #1227's gate reports
+ *    `1 failed | 45 passed` naming `carryItemJobSchema.state`. The overlap is
+ *    real and the warning below about *which red a reader believes* still
+ *    applies unchanged.
+ * 2. **Widen a `z.enum` in a different section** -- `'shredded'` added to the
+ *    contraband `state` at `save-schema.ts:836`. **Both red again**, so the
+ *    overlap is the class of change rather than one leaf.
+ * 3. **Rename a non-enum leaf**: `priority` to `priorityLevel` on the same
+ *    schema (`save-schema.ts:673`). **#1227's gate is GREEN -- `46 passed`,
+ *    every one of them** -- and `tsc` reports three errors: two in this file
+ *    and one at `src/persistence/session/session-controller.ts(48,10)`, the
+ *    `bundleFromSavePayload` conversion this branch declared. On `main`, where
+ *    that line is `as unknown as SessionSnapshotBundle`, the same mutation
+ *    compiles and every gate stays green.
+ *
+ * **So the conclusion survives, and mutation 3 is the whole of the argument.**
+ * A renamed, added or dropped field is the defect #1225 is about, it is
+ * invisible to a gate that matches on `z.enum`, and it is invisible to `tsc`
+ * until the two `as unknown as` assertions are replaced by the declared
+ * conversions this branch adds. Neither gate subsumes the other: #1227 reads
+ * the schema *source* for enum members and never sees a key, this file
+ * compares *keys and leaf types* and never reads the source.
+ *
+ * **What the merge did not falsify.** This branch introduces no `path:N`
+ * citation at all -- every claim it makes about another file is a quoted
+ * sentence, which `docs/AGENT_WORKFLOW.md` §4 names as the most durable form --
+ * and both `docs/PERSISTENCE.md` quotations above were re-opened at
+ * `33c02a12` and read back verbatim (`:75` for *"`payload` is exactly the
+ * union of the existing per-subsystem snapshot"*, `:80` for *"are deliberately
+ * separate, because the simulation may not import"*, `:194` for *"makes every
+ * save that recorded one unreadable, which is a migration."*).
+ *
  * ## Measured, 2026-09-15, before any of this was written
  *
  * The normalised shapes are equal at every section and at every leaf except
