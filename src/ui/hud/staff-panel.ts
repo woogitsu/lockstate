@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
-import { freshUnfurnishedPrison, pressAffordabilityVerdict } from '../affordability';
+import { pressAffordabilityVerdict } from '../affordability';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
 import { describeBy, element, eyebrowText, nextUiId, undescribeBy, valueText } from '../primitives/dom';
@@ -733,13 +733,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * same two variables for the same reason.
    */
   let treasuryMinorUnits = 0;
-  /**
-   * The published predicate, cached beside the balance -- not
-   * `counts.roomCapacity`, which this panel derived freshness from until
-   * 2026-09-15. `BuildPanel`'s own pair is the same two variables for the same
-   * reason (`statusCountsSchema.isFreshUnfurnishedPrison`).
-   */
-  let treasuryFreshUnfurnishedPrison = false;
+  let treasuryRoomCapacity: number | undefined;
 
   // ---- what the prison asks for, against what it has (ADR 0048) --------
   /*
@@ -1092,20 +1086,13 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
      * and keeping the press is what keeps it reachable.
      *
      * **Freshness, threaded exactly as `overdraftRemaining` and
-     * `paintBuyTotal` thread it**: the published predicate, never a bare
+     * `paintBuyTotal` thread it**: `treasuryRoomCapacity === 0`, never a bare
      * `false`, because a fresh, unfurnished prison is judged against the
      * shallower starter rung and a caller that silently answered "not fresh"
      * would reopen the -1,185/-1,250 gap PR #769 and #771's amendment closed
      * (`deliveriesRungFloorMinorUnits`'s own docblock).
-     *
-     * **That sentence read `treasuryRoomCapacity === 0` until 2026-09-15 and
-     * is corrected rather than overwritten**, for the reason
-     * `BuildPanel.paintBuyTotal`'s own copy of it now gives: reading
-     * `roomCapacity` here was a second definition of "fresh", and it answered
-     * differently from the worker's on a prison holding a room the content
-     * catalogue does not define.
      */
-    const isFreshUnfurnishedPrison = treasuryFreshUnfurnishedPrison;
+    const isFreshUnfurnishedPrison = treasuryRoomCapacity === 0;
     const verdict = pressAffordabilityVerdict(
       charge.hireChargeMinorUnits,
       treasuryMinorUnits,
@@ -1772,7 +1759,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     },
     setTreasury(counts: HudCountsViewModel): void {
       treasuryMinorUnits = counts.treasuryMinorUnits;
-      treasuryFreshUnfurnishedPrison = freshUnfurnishedPrison(counts);
+      treasuryRoomCapacity = counts.roomCapacity;
       // Repainted unconditionally, including while the Security tab is not the
       // active one: `setVisible` hides the panel without unmounting it, so a
       // publication that arrived on another tab has to have moved the button

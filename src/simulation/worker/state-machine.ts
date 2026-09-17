@@ -274,24 +274,6 @@ export class SimulationWorkerStateMachine {
    */
   private _publishedRefusalSequence = 0;
   /**
-   * Whether the refusal the main thread was last told about carried
-   * `routeDecidedSince` (ADR 0091 decision 2, option F).
-   *
-   * A second watermark beside the sequence rather than folded into it,
-   * because the flag turns over on a refusal whose `sequence` does not move:
-   * `RefusalLog.supersede` sets it on the *standing* record, and nothing about
-   * that record's ordinal changes. Without this the gate below would read
-   * "same sequence, nothing new" and suppress the one publication the band
-   * needs in order to retire the sentence -- the same failure mode
-   * `_publishedRefusalSequence`'s own comment describes for a refusal that
-   * moves no count, one field over.
-   *
-   * It is a boolean rather than a count because the fact is monotone per
-   * record: `false` -> `true` at most once, and a `record` that replaces the
-   * standing refusal moves `sequence` and opens the gate on its own.
-   */
-  private _publishedRefusalRouteDecided = false;
-  /**
    * The `sequence` of the zoning notice the main thread was last told about,
    * `0` for none.
    *
@@ -596,10 +578,7 @@ export class SimulationWorkerStateMachine {
 
     const refusal = this._runtime.refusals.last;
     const refusalSequence = refusal?.sequence ?? 0;
-    const refusalRouteDecided = refusal?.routeDecidedSince === true;
-    const refusalIsNew =
-      refusalSequence !== this._publishedRefusalSequence ||
-      refusalRouteDecided !== this._publishedRefusalRouteDecided;
+    const refusalIsNew = refusalSequence !== this._publishedRefusalSequence;
     // A newly designated room opens the interval gate for the reason a
     // refusal does, and with the same bound: both are player-initiated
     // events rather than levels, both are a field access to test, and each
@@ -619,7 +598,6 @@ export class SimulationWorkerStateMachine {
     if (!eventIsNew && this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
     this._publishedCounts = counts;
     this._publishedRefusalSequence = refusalSequence;
-    this._publishedRefusalRouteDecided = refusalRouteDecided;
     this._publishedZoningSequence = zoningSequence;
 
     this.post({

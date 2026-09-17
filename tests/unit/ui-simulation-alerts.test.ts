@@ -69,7 +69,7 @@ const COUNTS = {
   treasuryMinorUnits: 25_000,
 } as const;
 
-function publication(refusal?: { sequence: number; tick: number; reason: RefusalReason; routeDecidedSince?: true }): WorkerToMainMessage {
+function publication(refusal?: { sequence: number; tick: number; reason: RefusalReason }): WorkerToMainMessage {
   return {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: 'counts-1',
@@ -86,23 +86,6 @@ function publication(refusal?: { sequence: number; tick: number; reason: Refusal
 describe('a refusal the worker published becomes an alert row', () => {
   it('turns the refusal into one row carrying a message key and a severity', () => {
     expect(rows(publication({ sequence: 1, tick: 12, reason: 'build.unowned-land' }))).toEqual([
-      {
-        id: 'refusal-1',
-        labelKey: 'hud.alert.refusal.build.unowned-land',
-        severity: 'warning',
-      },
-    ]);
-  });
-
-  it('keeps the row when the simulation marks the refusal route as decided since -- the list is the record (ADR 0091)', () => {
-    // The companion to the band's own rule: option F retires the corner and
-    // deliberately leaves the log alone, which is the split
-    // `src/ui/simulation-alerts.ts` has described in prose since #507. A
-    // reader who finds the band empty and the list full has found the ruling,
-    // not a bug.
-    expect(
-      rows(publication({ sequence: 1, tick: 12, reason: 'build.unowned-land', routeDecidedSince: true })),
-    ).toEqual([
       {
         id: 'refusal-1',
         labelKey: 'hud.alert.refusal.build.unowned-land',
@@ -587,39 +570,6 @@ describe('the same refusal is read a second time, for the band that is always la
         payload: { tick: 40, clock: { mode: 'running', speed: 1 } },
       } as WorkerToMainMessage),
     ).toBeUndefined();
-  });
-
-  /**
-   * ADR 0091 decision 2, option F (ruled by the owner 2026-09-16). The
-   * simulation reports that the standing refusal's own command route has
-   * decided something since; **the band retires on it and the list does
-   * not**, and these two cases are the halves of that divergence asserted
-   * separately rather than one inferred from the other.
-   *
-   * This function's job is to forward the fact, not to act on it: the band
-   * rule lives in `mountHud`'s `applySimulationRefusal` and is measured in
-   * `tests/browser/ui-refusal-band-route-retire.spec.ts`, because that is the
-   * only place the production DOM exists.
-   */
-  it('forwards the mark the simulation put on the refusal, without acting on it (ADR 0091)', () => {
-    expect(
-      hudRefusalFromWorkerMessage(
-        publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove', routeDecidedSince: true }),
-      ),
-    ).toEqual({
-      sequence: 3,
-      labelKey: 'hud.alert.refusal.remove-wall.nothing-to-remove',
-      routeDecidedSince: true,
-    });
-  });
-
-  it('leaves the field off entirely while nothing of that route has been decided', () => {
-    // Absent rather than `false`, so a consumer cannot read "not marked" and
-    // "the worker does not report marks" as the same state, and so the shape
-    // matches `SimulationRefusal`'s own `true`-or-absent field.
-    const notice = hudRefusalFromWorkerMessage(publication({ sequence: 3, tick: 8, reason: 'remove-wall.nothing-to-remove' }));
-    expect(notice).toEqual({ sequence: 3, labelKey: 'hud.alert.refusal.remove-wall.nothing-to-remove' });
-    expect(notice === 'none' || notice === undefined ? true : 'routeDecidedSince' in notice).toBe(false);
   });
 
   it('is pure: the same message gives the same answer', () => {
