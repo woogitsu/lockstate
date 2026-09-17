@@ -40,7 +40,17 @@ export type IconId = (typeof ICON_IDS)[number];
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
-const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
+/**
+ * The drawing of every icon, as SVG path data on a 24-unit grid.
+ *
+ * Exported because the shapes carry a contract a reviewer cannot hold in their
+ * head: below 720px the HUD tab bar drops its labels (#1192), so a tab's glyph
+ * is the only carrier of its section, and no two of them may share a
+ * silhouette. `tests/unit/ui-hud-tab-glyph-silhouettes.test.ts` asserts that
+ * against this record. Nothing outside a test should read it -- `createIcon`
+ * is the way to draw one.
+ */
+export const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   prisoners: ['M12 4.75a3.25 3.25 0 1 1 0 6.5 3.25 3.25 0 0 1 0-6.5Z', 'M4.75 19.75a7.25 7.25 0 0 1 14.5 0'],
   staff: [
     'M9.25 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z',
@@ -48,7 +58,20 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
     'M15.75 5.75a2.75 2.75 0 0 1 0 5.5',
     'M17 19.25a6 6 0 0 0-2.75-5.05',
   ],
-  rooms: ['M3.75 4.75h16.5v14.5H3.75z', 'M3.75 12h6.75', 'M10.5 12v7.25'],
+  // The floor plan the Zones tab shows (#1192's icon-only tab bar, and the
+  // silhouette audit that followed it). A stepped footprint -- a square with
+  // a square bite out of its top-right corner -- with one internal wall
+  // continuing the step across, so it reads as two adjoining zones rather
+  // than one room.
+  //
+  // Deliberately NOT the plain rectangle this used to be
+  // (`M3.75 4.75h16.5v14.5H3.75z` plus two interior strokes). Below 720px the
+  // tab bar drops its labels, which makes the glyph the only carrier of the
+  // section's meaning; `build`, `rooms` and `regime` were each a rectangle
+  // with internal lines, so three of the five tabs had one silhouette between
+  // them. Ink alone separated them -- they were distinct pixel sets -- and a
+  // player reads a shape before they read its ink.
+  rooms: ['M4.75 4.75h7v7h7.5v7.5H4.75z', 'M4.75 11.75h7'],
   incident: ['M12 4.5 20.75 19.5H3.25z', 'M12 10v3.75', 'M12 16.75h.01'],
   contraband: ['M8.25 8.25V6.5a3.75 3.75 0 0 1 7.5 0v1.75', 'M4.75 8.25h14.5v11h-14.5z'],
   clock: ['M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z', 'M12 7.75V12l2.75 1.75'],
@@ -58,7 +81,19 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   chevron: ['M6.5 9.75 12 15.25l5.5-5.5'],
   minimap: ['M9 4.75 3.75 7v12.25L9 17l6 2.25 5.25-2.25V4.75L15 7z', 'M9 4.75V17', 'M15 7v12.25'],
   overview: ['M4.25 4.25h6v6h-6z', 'M13.75 4.25h6v6h-6z', 'M4.25 13.75h6v6h-6z', 'M13.75 13.75h6v6h-6z'],
-  build: ['M3.75 5.75h16.5v12.5H3.75z', 'M3.75 12h16.5', 'M9.25 5.75V12', 'M14.75 12v6.25'],
+  // The Build tab and every build-catalogue row: a hammer, head and handle,
+  // on the same 24-unit grid and the same stroke-only rule as the rest.
+  //
+  // Deliberately NOT the divided rectangle this used to be
+  // (`M3.75 5.75h16.5v12.5H3.75z` plus three interior strokes) -- see `rooms`
+  // above for why a rectangle was no longer usable here. A tool is also what
+  // the 2026-09-13 delivery draws for this section: its own `icons.build` is
+  // `m14 3 7 7-4 4-3-3-9 10-3-3 10-9-3-3z`, a struck tool rather than a plan
+  // (`HISTORIA/ZMIANY/05-audyt-i-konstytucja.patch`). That material is the
+  // delivery's own and no ADR 0112 decision reaches it, so it binds nothing
+  // and is not copied; it is cited because moving this glyph to a tool moves
+  // toward the reference rather than away from it.
+  build: ['M13.17 3.91 20.24 10.98 15.43 15.79 8.36 8.72z', 'M9.91 7.16 16.99 14.24', 'M12.6 11.55 5.6 18.55'],
   security: ['M12 3.75 19.75 6.5v5.75c0 4-3.1 6.9-7.75 8.1-4.65-1.2-7.75-4.1-7.75-8.1V6.5z'],
   regime: ['M3.75 6.25h16.5v13.5H3.75z', 'M3.75 10.5h16.5', 'M8.5 3.75v4.5', 'M15.5 3.75v4.5'],
   check: ['M5.25 12.5 10 17.25 18.75 6.75'],
