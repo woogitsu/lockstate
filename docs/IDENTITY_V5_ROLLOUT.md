@@ -498,6 +498,45 @@ question rather than settling it: Plan dnia gains its first write surface under
 [#1167](https://github.com/woogitsu/lockstate/issues/1167), which is a reason to
 answer this after that lands.
 
+### The first owed thing was answered on 2026-09-16, and it was built
+
+The paragraph above is left exactly as it stands, because it is what this
+document argued for two days and because the last clause of it — *"a reason to
+answer this after that lands"* — is the half the owner overruled. They answered
+before #1167 landed, choosing among clickable options the one labelled:
+
+> Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia (zalecane)
+
+("Option 4 — split the panel in code, both halves on Plan dnia (recommended).")
+Option 2, a third panel on the Manage rail, was **declined**. Provenance is the
+weaker of the two kinds `AGENTS.md` distinguishes: the label of an option this
+repository wrote and the owner chose, not a sentence they typed. **The
+placement is ruled and not deferred** — moving the roster to Manage later is a
+fresh ruling, and nothing in the built change prepares one.
+
+**Built the same week.** `src/ui/hud/roster-panel.ts` carries the roster and
+the inspector as `.ui-panel.hud-roster`; `src/ui/hud/regime-panel.ts` keeps the
+timetable; `hud.ts` mounts both in `.hud__side` and shows both on `day-plan`.
+`.ui-panel.hud-regime` is `flex: 0 0 auto` and `.ui-panel.hud-roster` is
+`overflow-y: auto`, the division this stage already recorded for Intake and
+Staff on Manage.
+
+**What it cost, measured on the same fixtures before and after** — the
+timetable, a four-row roster of a prison of nine, and a selected prisoner:
+**63 px** of panel chrome at every viewport, and an arrival scroll of **16 px
+at 375x812 and 46 px at 900x600** where one panel arrived unscrolled. Nothing
+became unreachable, which is this stage's exit criterion. **What it did not buy
+is an independent scroll**, and that refutes the obvious argument for the
+split: the single panel's own overflow was **0 at all five viewports** in that
+same fullest state, so there was never a scroll for the timetable to be carried
+away by. The buys are an independent collapse, an independent height budget and
+a one-line mount. `tests/browser/ui-roster-panel-split.spec.ts` holds them and
+`hud.css`'s `.ui-panel.hud-roster` block carries the table.
+
+**The remaining gap is the delivery's table, not the code.** *osadzeni* sits
+under Zarządzaj in `DOKUMENTACJA/projekt.md`; the owner put the roster on Plan
+dnia. That disagreement is now a ruling rather than an omission.
+
 **The second owed thing — the eleven unplaced surfaces — is discharged as a
 check and produces one question.** Every one is still mounted, and a twelfth
 exists that stage 0 could not have listed: the language picker (#663), inside
