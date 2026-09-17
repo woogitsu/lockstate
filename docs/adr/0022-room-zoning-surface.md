@@ -789,9 +789,12 @@ because "renders no panel" and "unclaimed" are different facts:
 > **Two of those three tab ids no longer exist**, and the list is kept as the
 > record of what was weighed. Under ADR 0112 decision 3 the Staff panel is on
 > `manage` — `staffPanel.setVisible(state.activeTab === 'manage')`
-> (`src/ui/hud/hud.ts:2558`; the anchor read `:2506` when this branch was
+> (`src/ui/hud/hud.ts:2611`; the anchor read `:2506` when this branch was
 > written, and was a bare `*/` by the time it merged `origin/main` on
-> 2026-09-16) — and the schedule on `day-plan`. The
+> 2026-09-16; `:2558` was the re-aim taken that day, and #1279 moved the call
+> again to `:2611` — three coordinates for one unchanged line of code, which is
+> `docs/AGENT_WORKFLOW.md` §4's *"a correction is no more durable than the
+> claim it corrected"* on its third turn here) — and the schedule on `day-plan`. The
 > argument the list makes — that a tab whose label names another feature is an
 > ADR 0011 problem rather than a layout one — is untouched by the rename.
 

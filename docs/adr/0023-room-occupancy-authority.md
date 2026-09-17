@@ -506,17 +506,21 @@ always-visible pixel budget on a local merge of #282 and #283 and found
 **12.2px at 900×600 and 38.2px at 1280×720**, against a `--tap-target` of 44px
 (`src/ui/tokens.css:709`; the anchor read `:150`) — so no always-visible control
 fits at either. This tree carries a smaller number pointing the same way:
-`src/ui/hud/hud.css:3153-3183`
+`src/ui/hud/hud.css:3163-3193`
 (re-anchored 2026-09-06 to `:2770-2815` -- `:786-789` was already an unrelated
 rule, `[data-action-failed]`'s outline, before that window opened -- and
 re-anchored again 2026-09-15, because `:2770-2815` had drifted onto
-`text-transform` and `letter-spacing` declarations in the meantime) records the Build
+`text-transform` and `letter-spacing` declarations in the meantime; `:3153-3183`
+was the 2026-09-16 re-aim and #1279's ten added lines above it moved the block
+to `:3163-3193` on 2026-09-17, which is the fourth coordinate for one unmoved
+comment) records the Build
 panel's short-viewport fix closing a 67.7px shortfall at
 900×600. **Re-anchored further: the figure has since been refined past
 "3.8px to spare" to exactly 0 -- "the panel arrives at 338.1px of content in a
 338.1px slot with nothing scrolled anywhere" -- because a fourth declaration
 was added to recover 4.1px the catalogue's own floor had miscounted
-(`hud.css:3185-3203`; the anchor read `:2799-2809`).** The residual slack, whichever figure,
+(`hud.css:3195-3213`; the anchor read `:2799-2809`, then `:3185-3203` until
+#1279 shifted it ten lines down).** The residual slack, whichever figure,
 is not the always-visible budget, and it is quoted
 here only because it is the figure this tree states about that viewport; ADR
 0022's 12.2px is the budget figure and was measured on a branch merge rather
