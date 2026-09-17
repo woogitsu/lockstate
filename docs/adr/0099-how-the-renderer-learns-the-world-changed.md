@@ -540,7 +540,7 @@ defect, so latency does not decide between them and cost does.
 **Rejected, and the cost is a player-facing sentence per wall segment.**
 `simulation/event` is a closed union and adding to it is deliberately expensive:
 
-`export const SIMULATION_EVENT_TYPES = [ 'construction.order-cancelled', 'construction.order-cancelled-underway', 'construction.redone', 'construction.undo-refused-newer-action', 'construction.undone', 'construction.undone-spend-destroyed',`
+`export const SIMULATION_EVENT_TYPES = [ 'construction.order-cancelled', 'construction.order-cancelled-underway', 'construction.order-completed', 'construction.redone', 'construction.undo-refused-newer-action', 'construction.undone', 'construction.undone-spend-destroyed',`
 (verbatim in `src/simulation/protocol/types.ts`)
 
 **This quotation and the count under it read five members until 2026-09-09, and
@@ -553,6 +553,33 @@ not a change to the build queue
 ([#956](https://github.com/woogitsu/lockstate/issues/956)). It is a **refusal**,
 so the sentence below holds unchanged: still no completion among them, and the
 sixth member arriving did not make a seventh free.
+
+**AND THE MEMBER THIS SECTION REJECTS IS NOW IN THE LIST IT QUOTES, WHICH IS
+WHY THE QUOTATION MOVED A SECOND TIME — 2026-09-17.**
+`'construction.order-completed'` was built under
+[ADR 0116](./0116-whether-a-finished-object-is-an-event.md), the owner's ruling
+of 2026-09-16, and **that does not reverse anything below**: this section
+rejects a completion event *as a way of telling the renderer the world changed*,
+and ADR 0116 adds one *as something to tell the player*. The renderer is still
+woken by `markDrawnWorldChanged()` on the line above the new record, which is
+option 3 as recommended and accepted here.
+
+What ADR 0116 does refute is the arithmetic in the paragraph three below this
+one. *"A twelve-segment wall would put twelve rows in the alerts log"* is false
+of the member that shipped: its payload is the envelope and nothing else, so
+`simulationEventIdentity` collapses a whole programme into **one counted row**
+(ADR 0116 §4d and D4, re-measured against the real member in
+`tests/integration/construction-completion-notice.test.ts`). The sentence is
+kept rather than fixed in place, because the cost it names is the cost of a
+completion event *carrying an order id* — which is exactly the shape ADR 0116
+prices as unaffordable, and exactly what this section would have needed to
+identify a wall segment for a renderer. So the rejection stands on the reason it
+gave; only its figure was about a different payload than the one that landed.
+
+Seven `construction.*` members, and the count under this quotation has now been
+wrong in both directions — five when it should have read six, six when it should
+read seven. It is the tally `docs/AGENT_WORKFLOW.md` §4 warns rots, kept anyway
+because what the paragraph is *about* is what the list did not contain.
 
 Six `construction.*` members and no completion among them — and the reason a
 seventh is not free is stated in the receiver:
