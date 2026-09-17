@@ -1657,6 +1657,25 @@ decision about what to build next.
     incidents only; history is reachable solely through `all()`, which
     materialises every incident ever recorded. An incident-history panel is
     `O(all)` per projection and unbounded over a long session.
+
+    **Half of that sentence stopped being true and the half that did is the
+    cheaper half, which is why the entry is amended rather than closed.**
+    `projectIncidents` used to build a whole `IncidentRowViewModel` for every
+    terminal incident and then hand the array to `pageOf`, which kept `limit`
+    of them and dropped the rest — so a request showing four rows built one
+    per finished incident, each with a bounded-value record, an optional
+    outcome record and a `requiredResponderCount` call on the response source.
+    It now carries a terminal **ordinal** through the same walk and calls
+    `projectRow` only inside the window, which is the shape
+    `projectPrisonerRoster` already used (*"materialise only the ones the
+    window asked for"*). The page is unchanged: same records, same order, same
+    `total`/`offset`/`limit`.
+
+    **What is still open is the walk itself**, and it is the part that needs
+    the index this entry is named for: the aggregate `projectIncidents`
+    reports — `summary`, `countsByState`, `countsByType` — is a fold over
+    every record, so `all()` is still called and still materialises the log.
+    Closing that is a change to `IncidentLog`, not to the projection.
 29. **~~`assault` and `escape-attempt` are declared but never triggered.~~
     Closed by [ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md).**
     `IncidentTriggerSystem` opened only `riot` and `gang-retaliation`, so two
