@@ -2276,3 +2276,37 @@ decision about what to build next.
     > constitution, so *"warning"* in `src/` and *ostrzeżenie* in
     > `konstytucja.md` are now known to be different words. Nothing enforces
     > that distinction; this paragraph is the only place it is written down.
+
+    > **Every coordinate in this section was re-opened on 2026-09-17 against
+    > `main` at `33c02a12`, and none of them moved.** Recorded with the commit
+    > rather than with the date alone, per `docs/AGENT_WORKFLOW.md` §4 — a
+    > "checked recently" with no commit on it is a claim a reader cannot
+    > re-run. The eleven read back, verbatim at the line cited:
+    > `konstytucja.md:35` *"Ostrzeżenia nie znikają dlatego, że przyszło nowsze
+    > zdarzenie."*; `refusal-log.ts:158` *"public record(reason: RefusalReason,
+    > tick: number, key?: string): void {"*; `simulation-alerts.ts:325`
+    > *"const standing = previous.filter((row) =>
+    > !row.id.startsWith(REFUSAL_ROW_PREFIX));"*; `simulation-alerts.ts:452`
+    > *"...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as
+    > const } : {}),"*; `simulation-alerts.ts:262` the `severity` paragraph;
+    > `hud.ts:1731` *"if (notice === undefined || notice.routeDecidedSince ===
+    > true) {"*; `main.ts:2935` *"for (const edge of intent.edges) {"*;
+    > `handler.ts:114` *"refusals.record(BUILD_REFUSAL_REASONS[order.failReason],
+    > context.tick, buildKey);"*; `state-machine.ts:597` *"const refusal =
+    > this._runtime.refusals.last;"*; and `state-machine.ts:407`
+    > *"this.publishStatusCounts(now);"*, inside `onTickLoop` (`:392`).
+    >
+    > **What the re-check was looking for and did not find.** Between the
+    > 2026-09-16 repin above and `33c02a12`, `main` took #1266, #1264, #1276,
+    > #1271, #1269 and #1265, and the owner ruled on ADR 0091 decision 2
+    > (option F, already carried above), ADR 0112 decision 4, ADR 0116 and
+    > ADR 0115. None of those touched a line this section cites, and none of
+    > them touches the refusal channel's retention. **The ruling that could
+    > have is ADR 0116** — a construction-completion event, `'info'`,
+    > `'log-only'`, counted rather than repeated, Accepted on `main` — because
+    > it adds a `SimulationEventType` and so bears on the paragraph above that
+    > prices routing refusals into `SIMULATION_EVENT_TYPES`. It does not
+    > change that price: it is a *completion*, not a refusal, and the
+    > `EVENT_PRESENTATION` row it needs was an owner's ruling exactly as that
+    > paragraph says every previous one was. The paragraph is therefore
+    > confirmed by the new ruling rather than falsified by it.
