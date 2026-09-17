@@ -71,13 +71,8 @@ end of this section was produced by executing the shipped classes.
 - **What became of the four anchors, since a reader who wants the live code
   should not have to re-derive it.** `handleSetClock` still answers a pause with
   the kernel's own tick, now at
-  `src/simulation/worker/state-machine.ts:1108` (`private handleSetClock(`),
-  which posts `tick: this._kernel!.tick` at `:1131`; cited above as
-  `state-machine.ts:827-849`. **The `:1098-1114` this branch wrote on
-  2026-09-15 is narrowed rather than merely moved**: it opened ten lines inside
-  the *previous* method's docblock, which is the drift
-  `documentation-source-anchor-contract.test.ts` cannot see because the span
-  does contain the declaration it names. `ConstructionSystem` still holds the two stacks,
+  `src/simulation/worker/state-machine.ts:1098-1114`, cited above as
+  `state-machine.ts:827-849`. `ConstructionSystem` still holds the two stacks,
   now at `src/simulation/construction/system.ts:363-365`, cited above as
   `system.ts:358-424`. The per-gesture transaction id is minted at
   `src/main.ts:2934` and the docblock recording why the grouping rule is what it

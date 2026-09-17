@@ -22,12 +22,6 @@ const COUNTS = {
   staffUnassigned: 2,
   rooms: 9,
   roomCapacity: 60,
-  // `false` beside a `roomCapacity` of 60: a furnished prison on either
-  // reading, which is the ordinary case. The two are no longer asked the same
-  // question -- the host read `roomCapacity === 0` until 2026-09-15 and got a
-  // different answer from the worker on a prison holding a room the content
-  // catalogue does not define (`statusCountsSchema.isFreshUnfurnishedPrison`).
-  isFreshUnfurnishedPrison: false,
   // Deliberately smaller than `roomCapacity`, and deliberately not a round
   // fraction of it: the two are different sums over the same registry, and a
   // mapping that reached for the wrong one would still look plausible. Read as
@@ -86,7 +80,7 @@ const COUNTS = {
   dailyWageBillMinorUnits: 4_800,
 } as const;
 
-function statusCounts(counts: Record<string, number | string | boolean | undefined> = { ...COUNTS }): WorkerToMainMessage {
+function statusCounts(counts: Record<string, number | string | undefined> = { ...COUNTS }): WorkerToMainMessage {
   return {
     protocolVersion: SIMULATION_PROTOCOL_VERSION,
     messageId: 'counts-1',
@@ -119,9 +113,6 @@ describe('the HUD counts are read from the worker', () => {
       // are different sums over the same registry and why the host's
       // starter-rung pre-flight needs this one.
       roomCapacity: 60,
-      // Straight through, and deliberately not re-derived from the line above:
-      // that derivation is the defect this field closed.
-      isFreshUnfurnishedPrison: false,
       // Straight through, all three: the HUD may not derive a simulation
       // figure, and the rungs are what `SafetyCoverageSystem` counted.
       prisonersCovered: 25,
@@ -249,12 +240,6 @@ describe('the HUD counts are read from the worker', () => {
       ...Object.fromEntries(Object.keys(COUNTS).map((key) => [key, 0])),
       activeIncidentType: undefined,
       contrabandNameKey: undefined,
-      // **The third non-numeric count, and the case above predicted it.** A
-      // prison that has registered nothing has `totalResidentCapacity === 0`,
-      // so it is fresh -- `true` rather than the zero-fill's `0`, which the
-      // wire schema would reject outright
-      // (`statusCountsSchema.isFreshUnfurnishedPrison` is `z.boolean()`).
-      isFreshUnfurnishedPrison: true,
     };
 
     /*
@@ -294,12 +279,6 @@ describe('the HUD counts are read from the worker', () => {
       // `treasuryOverdraftFloorMinorUnits` is, and a running session that has
       // registered nothing publishes a real `0` rather than staying absent.
       roomCapacity: 0,
-      // A fourth, and the first that is not a number. Optional on
-      // `HudCountsViewModel` for `roomCapacity`'s reason and required on the
-      // wire; a running session that has registered nothing publishes a real
-      // `true` rather than staying absent, and absent would read as *not*
-      // fresh, which is a different prison.
-      isFreshUnfurnishedPrison: true,
     });
   });
 
@@ -369,16 +348,6 @@ describe('the HUD counts are read from the worker', () => {
 
     expect(counts).toBeDefined();
     for (const [key, value] of Object.entries(counts ?? {})) {
-      // **The third one, and it is not a string** (2026-09-15):
-      // `isFreshUnfurnishedPrison`, the predicate ADR 0017's amendment of
-      // 2026-09-01 §2 defines and the host now reads instead of re-deriving
-      // one from `roomCapacity`. Named here by name for the reason the comment
-      // above gives, and checked as a boolean rather than waved through, so a
-      // field that started arriving as `0`/`1` would still fail.
-      if (key === 'isFreshUnfurnishedPrison') {
-        expect(typeof value, `counts.${key} is not a boolean`).toBe('boolean');
-        continue;
-      }
       if (key === 'activeIncidentTypeLabelKey' || key === 'contrabandNameKey') {
         expect(typeof value === 'string' || value === undefined, `counts.${key} is not a string or undefined`).toBe(
           true,

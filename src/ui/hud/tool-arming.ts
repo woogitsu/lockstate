@@ -110,12 +110,12 @@ export function toggleRemovalMode(state: HudToolArming): HudToolArming {
  * `armed = (wasRemoving || !armed) && selectedId !== undefined`. That third
  * term is dead code on every path that can reach it: `createActionButton`
  * wires `onActivate` to nothing but the button element's native `click`
- * listener (`src/ui/primitives/action-button.ts:88-90`), a `disabled` button
+ * listener (`src/ui/primitives/action-button.ts:43-44`), a `disabled` button
  * dispatches no `click` event at all (browser behaviour, not this
  * codebase's), and both panels disable this exact button whenever
- * `selectedId === undefined` -- `build-panel.ts:1306` at creation,
- * `rooms-panel.ts:1062` at creation and kept live every repaint at
- * `rooms-panel.ts:1869`'s `armButton.setDisabled(selectedId === undefined)`.
+ * `selectedId === undefined` -- `build-panel.ts:1026` at creation,
+ * `rooms-panel.ts:959` at creation and kept live every repaint at
+ * `rooms-panel.ts:1589`'s `armButton.setDisabled(selectedId === undefined)`.
  * So the handler this reducer replaces cannot run without a selection already
  * held. Neither panel ever sets a `selectedId` that was once defined back to
  * `undefined` -- each assigns it exactly twice in its own file: once from the

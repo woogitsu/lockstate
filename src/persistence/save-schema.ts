@@ -71,17 +71,8 @@ const namedRngStreamStateSchema = z
  * (`tests/perf/persistence-decode-aliasing.perf.ts`).
  *
  * One line, and it closes both trust entry points -- `createSaveEnvelope` and
- * `decodeSaveEnvelope` -- across every payload version and the whole migration
- * chain, because `kernelSnapshotSchema` is shared by all of them: it appears
- * once per version below, and `save-migrations.ts` exports one
- * `migrateSaveEnvelopeV<n>ToV<n+1>` per step.
- *
- * **This read "all three payload versions and the V1 -> V2 -> V3 migration
- * chain" on 2026-09-15, when there were six schemas and five steps** -- and
- * `docs/PERSISTENCE.md` carried the same claim twice, once as "four" and once
- * as "three", in one file. The number is gone rather than set to six because
- * the sentence is about the schema being *shared*, which is true at any count
- * and stops the tally from rotting a fourth time.
+ * `decodeSaveEnvelope` -- across all three payload versions and the V1 -> V2 ->
+ * V3 migration chain, because `kernelSnapshotSchema` is shared by all of them.
  */
 const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredClone(value) as JsonValue);
 
@@ -295,8 +286,8 @@ const entityStoreSnapshotV1Schema = z
      * `decodeSaveEnvelope`, which aborted `PrisonSaveRepository.loadCurrent`'s
      * recovery walk before it could reach the older good generation.
      *
-     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:15`), the
-     * ceiling `EntityStore`'s own constructor enforces at `:103`, so this is
+     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:13`), the
+     * ceiling `EntityStore`'s own constructor enforces at `:83`, so this is
      * not a number invented for a schema. **It narrows nothing that was
      * loadable**: V2's identical bound already refused every such save one
      * step later, as `migration-produced-invalid-output` -- above `0xf_ffff` a
@@ -304,7 +295,7 @@ const entityStoreSnapshotV1Schema = z
      * allocation instead of after) and the label on it.
      *
      * The widest capacity any writer in this repository produces is
-     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:392,597`);
+     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:244,326`);
      * a sweep of every numeric and symbolic `capacity` assignment in `src/`
      * and `tests/` finds nothing above it, and both checked-in V1 fixtures
      * carry 8. ADR 0038 §1 classifies this as a *value* the build cannot
@@ -611,8 +602,7 @@ const objectsSectionSchema = z
  * log. So no migration step is added, and `SAVE_SCHEMA_VERSION` does not move.
  * ADR 0084 predicted this in its Consequences and said to record it so a
  * future implementer does not re-litigate it; this is that record, and it was
- * re-checked against ADR 0038 section 1 and that document's own
- * "Adding an optional field without a version bump" section rather
+ * re-checked against ADR 0038 section 1 and `docs/PERSISTENCE.md:69-92` rather
  * than taken from the ADR.
  *
  * The cost of not bumping is the one `masterSeed` records: an **older** build

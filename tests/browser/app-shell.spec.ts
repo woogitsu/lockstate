@@ -12,7 +12,6 @@ import {
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   rungFloorMinorUnits,
 } from '../../src/simulation/economy';
-import { staffHireCostMinorUnits } from '../../src/simulation/staff';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 
@@ -301,8 +300,6 @@ interface SubmittedCommand {
         readonly transactionId?: string;
         readonly itemId?: string;
         readonly quantity?: number;
-        /** The role a `HireStaff` names (ADR 0025), read by `hiresSent`. */
-        readonly staffRoleId?: string;
         /** The anchor tile a `PlaceObject`, `RemoveObject` or `RemoveWall` names (ADR 0028, ADR 0106). */
         readonly x?: number;
         readonly y?: number;
@@ -316,7 +313,7 @@ interface StatusCountsPublication {
   readonly payload: {
     readonly tick: number;
     readonly schemaVersion: number;
-    readonly counts: Record<string, number | boolean>;
+    readonly counts: Record<string, number>;
   };
 }
 
@@ -349,20 +346,6 @@ const INJECTED_STATUS_COUNTS = {
       staffUnassigned: 1,
       rooms: 12,
       roomCapacity: 48,
-      // The twenty-second count (2026-09-15), and the first boolean on this
-      // channel: `RoomInstanceRegistry.totalResidentCapacity === 0`, ADR 0017's
-      // "Amendment, 2026-09-01" §2. Required for the same `.strict()` reason
-      // as the fields around it.
-      //
-      // **Deliberately `false` against a `roomCapacity` of 48, and the pair is
-      // the fixture's own idiom.** The host derived this predicate from
-      // `roomCapacity === 0` until 2026-09-15, and that derivation cannot see a
-      // room instance registered under a room-catalog id the content registry
-      // does not define -- so a host that reached for `roomCapacity` again
-      // would be visible on the prison where they come apart
-      // (`tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`)
-      // rather than plausible. This prison is furnished on both readings.
-      isFreshUnfurnishedPrison: false,
       // Required, not optional, for the reason the paragraph above and the
       // note on `stateIncomeAccruedTodayMinorUnits` below both give: the
       // counts payload is `.strict()`, so a fixture missing this field is
@@ -690,21 +673,6 @@ async function purchasesSent(page: Page): Promise<readonly { itemId: string; qua
         itemId: message.payload?.command?.data?.itemId ?? '',
         quantity: message.payload?.command?.data?.quantity ?? 0,
       })),
-  );
-}
-
-/**
- * Every `HireStaff` the page has posted, the sibling of `purchasesSent` above
- * and for the same reason: the `hire-staff` pre-flight throws *instead of*
- * submitting, so "nothing left this thread" is a claim only the tee can settle.
- */
-async function hiresSent(page: Page): Promise<readonly string[]> {
-  return page.evaluate(() =>
-    ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
-      .map((message) => message as SubmittedCommand)
-      .filter((message) => message.kind === 'simulation/submit-command')
-      .filter((message) => message.payload?.command?.data?.type === 'HireStaff')
-      .map((message) => message.payload?.command?.data?.staffRoleId ?? ''),
   );
 }
 
@@ -1754,7 +1722,7 @@ async function tabTo(page: Page, description: string, target: FocusTarget): Prom
  *
  * Four of its hops were most of that, because they cross the HUD rather than a
  * form -- and the tab bar is the **last child of `.hud`**
- * (`src/ui/hud/hud.ts:2441`), so forwards from a panel to a tab is nearly a lap
+ * (`src/ui/hud/hud.ts:2228`), so forwards from a panel to a tab is nearly a lap
  * of the page. Both directions, measured at 1280x800 on the same runs:
  *
  * | Hop | `Tab` | `Shift+Tab` |
@@ -2676,7 +2644,7 @@ const INTERACTIVE_SELECTOR =
  * stay here while the four the roster adds do not. **Hiring is not what holds a
  * guard.** `DeploymentSystem.assignUnassignedGuards` is called from that
  * system's `update` and from nowhere else
- * (`src/simulation/security/deployment-system.ts:128`); the sweep pauses the
+ * (`src/simulation/security/deployment-system.ts:130`); the sweep pauses the
  * clock before its viewport loop and never restarts it; and ADR 0051's paused
  * drain dispatches the `HireStaff` command *without* running a tick. So three
  * guards are hired, no system ever looks at them, all three stay `'unassigned'`,
@@ -7385,7 +7353,7 @@ test.describe('the assembled application', () => {
     // ---- the Rooms tab, and what the room is for ----------------------
     // Backwards: `wallRectanglesFromTheKeyboard` left the keyboard on the
     // transport's *Pause*, and the tab bar is the last child of `.hud`
-    // (`src/ui/hud/hud.ts:2441`), so forwards is 24 presses and backwards is 4.
+    // (`src/ui/hud/hud.ts:2228`), so forwards is 24 presses and backwards is 4.
     // `shiftTabTo` carries the table and the argument.
     await hopBack('the Rooms tab', { selector: '.ui-tab[data-tab="zones"]' });
     await page.keyboard.press('Enter');
@@ -9993,301 +9961,6 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-alerts__list')).not.toContainText(
       localeText('hud.alert.refusal.purchase.insufficient-funds'),
     );
-  });
-
-  /**
-   * **The one press that is refused only because the prison is fresh and
-   * unfurnished — the starter rung, measured at its own boundary (#1257).**
-   *
-   * ## What was not covered, and how that was established
-   *
-   * `src/main.ts` judges a purchase against
-   * `pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-   * freshUnfurnishedPrison(counts))`, and that third argument is the whole of
-   * the owner's starter-rung ruling of 2026-09-01 on this thread: a fresh,
-   * unfurnished prison's press meets **-1,185** where a furnished one meets
-   * **-1,250**. Before this test the argument could be replaced with a literal
-   * `false` at both call sites in `src/main.ts` and the entire suite stayed
-   * green — so the rung existed in the tree and nothing measured it where it
-   * decides anything.
-   *
-   * Neither of the two places that look like they cover it does.
-   * `ui-buy-button-affordability.spec.ts` and
-   * `ui-hire-button-affordability.spec.ts` mount `ui-harness.html` and push a
-   * view model through `setHudViewModel`, so `src/main.ts` is never loaded by
-   * them at all; and no unit test can take it, because `vitest.config.ts` is
-   * `environment: 'node'` and `src/main.ts` touches `document` — which is the
-   * stated reason `src/ui/affordability.ts` exists as a separate module.
-   * The three sibling tests here that *do* drive real presses through this
-   * pre-flight work nowhere near either rung: a charge of 13,160 against a
-   * balance of 11,840, and one of 26,280 against 25,000 -- 1,320 and 30 past
-   * the *mature* floor respectively, and the second one is the closest any of
-   * them comes. Every one of them is therefore refused, or accepted, by both
-   * rungs alike.
-   *
-   * ## Why 655 bricks, and why one brick fewer
-   *
-   * The two rungs are 65 minor units apart — one plank, which is
-   * `STARTER_RUNG_MARGIN_MINOR_UNITS`'s own derivation — so a press is
-   * mutation-sensitive only if its total lands **inside that gap**. At 40 a
-   * brick, 655 bricks is 26,200 against 26,185 of starter room and 26,250 of
-   * mature room: the starter rung refuses it by 15 and the mature rung would
-   * accept it by 50. Both bounds are asserted below rather than left to the
-   * reader, so a later move of either constant that closes the gap fails on
-   * the arithmetic instead of quietly returning this test to the
-   * insensitivity it was written to end.
-   *
-   * 654 bricks is then pressed and **accepted**, which is what makes the
-   * refusal above a statement about the boundary rather than about a control
-   * that had latched: one brick either side of one threshold, in one session,
-   * with nothing else changed.
-   *
-   * ## "Fresh, unfurnished" is the worker's answer, not a re-derived one
-   *
-   * This session presses `New prison` and zones nothing, so
-   * `RoomInstanceRegistry.totalResidentCapacity` is `0` for its whole life and
-   * `projectStatusStrip` publishes `isFreshUnfurnishedPrison: true` — which
-   * `freshUnfurnishedPrison` reads straight through. That is asserted from the
-   * page rather than assumed: the FUNDS badge counts room to the same rung
-   * (`overdraftRemaining`, `src/ui/hud/projection.ts`), so after the accepted
-   * press it reads `25 left` — the distance from -1,160 to **-1,185**, and a
-   * figure the mature rung cannot produce.
-   */
-  test('a fresh, unfurnished prison is refused one brick past the starter rung that a furnished one would be sold (#771, #1257)', async ({
-    page,
-  }) => {
-    await installCommandTee(page);
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await openApp(page);
-
-    // A real prison, and no room is ever zoned in it: that is what keeps
-    // `totalResidentCapacity` at 0 and the published predicate `true`.
-    await page.getByRole('button', { name: 'New prison' }).click();
-    await expect(page.locator('.hud-clock__day')).toHaveText('1');
-
-    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-
-    const unitPrice = unitPriceOf('item.brick');
-    // The two rungs, composed from the same function the host and the worker
-    // both compose theirs from, so this moves with the constants rather than
-    // restating them.
-    const starterSpendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
-      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
-    const matureSpendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
-      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
-    // The starter rung is the *shallower* one, so being fresh makes the host
-    // stricter and not more generous. Stated as an assertion because the
-    // direction is the thing a reader gets wrong.
-    expect(starterSpendable).toBeLessThan(matureSpendable);
-
-    const refusedQuantity = Math.floor(starterSpendable / unitPrice) + 1;
-    const acceptedQuantity = refusedQuantity - 1;
-    // **The arithmetic this test is made of.** The refused press must sit
-    // strictly inside the 65-minor-unit gap between the rungs -- past the
-    // starter one and within the mature one -- or it is another press that
-    // both rungs answer the same way, which is the gap this test exists to
-    // close.
-    expect(refusedQuantity * unitPrice).toBeGreaterThan(starterSpendable);
-    expect(refusedQuantity * unitPrice).toBeLessThanOrEqual(matureSpendable);
-    expect(acceptedQuantity * unitPrice).toBeLessThanOrEqual(starterSpendable);
-
-    const refusal = page.locator('.hud__refusal');
-    await expect(refusal).toBeHidden();
-
-    await openBuyRow(page);
-    const buy = page.locator('.hud-build__buy-submit');
-
-    // ---- one brick past the starter rung: refused, and never sent ----------
-    await setBuyQuantity(page, refusedQuantity);
-    // `hud.build.buy-submit` interpolates the count raw and formats only the
-    // total -- the same shape the sibling tests above assert literally.
-    await expect(buy).toHaveText(`Buy ${refusedQuantity} × Brick · ${fundsText(refusedQuantity * unitPrice)}`);
-    await pressBuyExpectingRefusal(page);
-
-    await expect(refusal).toBeVisible();
-    // **This thread refused it, and the assertion is written as the negative
-    // because that is the shape the failure takes.** With the freshness
-    // argument replaced by `false` the pre-flight accepts 26,200, the command
-    // is sent, and the worker -- which reads `totalResidentCapacity === 0`
-    // itself and is therefore never fooled -- refuses it and paints its own
-    // line here with `data-source="simulation"`. A refusal on the band is
-    // then still visible, which is exactly why "visible" is not the claim.
-    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
-    await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
-    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials-past-floor'));
-    // The thrown English never reaches the screen (ADR 0011).
-    await expect(refusal).not.toContainText('cannot cover');
-    await expect(buy).toHaveAttribute('data-action-failed', 'true');
-    // **The load-bearing assertion.** The pre-flight threw instead of
-    // submitting, so nothing left this thread -- which is exactly what stops
-    // being true if the freshness argument is replaced with `false`: the
-    // mature rung accepts 26,200 and this press becomes a command.
-    expect(await purchasesSent(page)).toEqual([]);
-    // And no money moved on the strip either.
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-
-    // ---- one brick fewer: accepted, spent, and the rung is on the badge ----
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - acceptedQuantity * unitPrice;
-    expect(settled).toBeLessThan(0);
-    await setBuyQuantity(page, acceptedQuantity);
-    expect(
-      await readBuyAvailability(page),
-      'the Buy button went on advising against a press the starter rung accepts',
-    ).toEqual({ saysItCannotAct: false, pressable: true });
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
-    await buy.click();
-
-    await expect
-      .poll(async () => funds.textContent(), {
-        message: 'the affordable press was never dispatched, so the balance never moved',
-        timeout: 20_000,
-      })
-      .toBe(fundsText(settled));
-    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity: acceptedQuantity }]);
-
-    // The badge counts room to the rung the press was judged against, so this
-    // is the worker's own `isFreshUnfurnishedPrison` read back off the page:
-    // 25 to the starter floor, where the mature one would say 90.
-    await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
-      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
-    );
-  });
-
-  /**
-   * **The same boundary on the other call site: a hire (#771, #1257).**
-   *
-   * `src/main.ts` has two pre-flights that read the starter rung, and the test
-   * above only presses one of them. This presses the other, and it is not a
-   * copy — a hire has no quantity field, so the boundary cannot be dialled in
-   * on the control. The prison is walked to the balance instead: 654 bricks
-   * settles it at **-1,160**, twenty-five short of the starter rung, and the
-   * cheapest role in `src/content/staff-role-catalog.ts` charges **60** — one
-   * day of `wageBand.minPerDay`, which is what `staffHireCostMinorUnits`
-   * returns. -1,220 is past -1,185 and inside -1,250, so the starter rung
-   * refuses the hire and the mature rung would sell it.
-   *
-   * Both bounds are asserted from the constants rather than written out, and
-   * the role is chosen by price rather than by name for the same reason: a
-   * later change to the catalogue that moves the cheapest hire out of the
-   * 65-unit gap fails here on the arithmetic instead of turning this back into
-   * a press both rungs answer alike.
-   *
-   * **The clock is stopped again before the hire.** ADR 0051 dispatches a
-   * command given against a paused clock at once, so the purchase still
-   * settles — and a running clock past that point is a second thing that could
-   * move the balance the hire is judged against.
-   */
-  test('a fresh, unfurnished prison is refused a hire the starter rung cannot carry and a furnished one could (#771, #1257)', async ({
-    page,
-  }) => {
-    await installCommandTee(page);
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await openApp(page);
-
-    // No room is zoned here either, so `totalResidentCapacity` is 0 and the
-    // published `isFreshUnfurnishedPrison` is `true` for the whole test.
-    await page.getByRole('button', { name: 'New prison' }).click();
-    await expect(page.locator('.hud-clock__day')).toHaveText('1');
-
-    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-
-    const starterFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
-    const matureFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
-    const unitPrice = unitPriceOf('item.brick');
-    // The largest purchase the starter rung allows, which is also the balance
-    // that puts the cheapest hire inside the gap between the two rungs.
-    const quantity = Math.floor((TREASURY_STARTING_BALANCE_MINOR_UNITS - starterFloor) / unitPrice);
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
-
-    /*
-     * **The role is `staff-role.guard` because it is the only one the HUD can
-     * hire**, not because it is the cheapest in the catalogue: `src/main.ts`
-     * projects `HIREABLE_STAFF_ROLE_IDS`, one entry long, into the view model
-     * the Staff panel lists. The catalogue declares eight roles and seven of
-     * them have no control on the page, so choosing by price would pick
-     * `staff-role.kitchen-staff` and press a row that does not exist --
-     * measured, and the reason this comment is here.
-     *
-     * The charge is still read rather than written down:
-     * `staffHireCostMinorUnits` is one day of `wageBand.minPerDay`, which is
-     * 80 for this role.
-     */
-    const staffRoleId = 'staff-role.guard';
-    const hireCharge = staffHireCostMinorUnits(staffRoleId);
-    expect(hireCharge, `${staffRoleId} is not in the staff catalogue, so no hire can be driven`).toBeDefined();
-    // **The arithmetic this test is made of**: the hire must land past the
-    // starter rung and within the mature one, or it is a press both rungs
-    // answer the same way.
-    expect(settled - hireCharge!).toBeLessThan(starterFloor);
-    expect(settled - hireCharge!).toBeGreaterThanOrEqual(matureFloor);
-
-    // ---- walk the prison to -1,160 ----------------------------------------
-    await openBuyRow(page);
-    await setBuyQuantity(page, quantity);
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
-    await page.locator('.hud-build__buy-submit').click();
-    await expect
-      .poll(async () => funds.textContent(), {
-        message: 'the purchase that walks the balance to the rung was never dispatched',
-        timeout: 20_000,
-      })
-      .toBe(fundsText(settled));
-    // Stopped again, so nothing else can move the balance under the hire.
-    await page.locator('.hud-strip__transport [title="Pause"]').click();
-    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
-
-    // ---- the hire: refused here, and never sent ---------------------------
-    await page.locator('.ui-tab[data-tab="manage"]').click();
-    const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
-    await expect(staffMetric).toHaveText('0');
-    // The panel preselects `model.roles[0]`, and this is the one role in it --
-    // so the click is a no-op on the selection and an assertion that the row
-    // the hire below charges for is the row on the page.
-    await expect(page.locator(`[data-staff-role="${staffRoleId}"]`)).toHaveCount(1);
-    await page.locator(`[data-staff-role="${staffRoleId}"]`).click();
-
-    const hire = page.locator('.hud-staff__hire');
-    // The same pair `pressBuyExpectingRefusal` asserts of the Buy button, and
-    // for the same reason (#772, #799): the control has to say it cannot act
-    // and still be pressable, or the sentence that explains the limit is
-    // unreachable.
-    await expect
-      .poll(
-        async () =>
-          page.evaluate(() => {
-            const button = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
-            return {
-              saysItCannotAct: button?.getAttribute('aria-disabled') === 'true',
-              pressable: button !== null && !button.disabled,
-            };
-          }),
-        {
-          message:
-            'before a hire the starter rung refuses, the Hire control must say it cannot act and must still be pressable',
-        },
-      )
-      .toEqual({ saysItCannotAct: true, pressable: true });
-    await hire.click({ force: true });
-
-    const refusal = page.locator('.hud__refusal');
-    await expect(refusal).toBeVisible();
-    // This thread refused it. Under the mutation the pre-flight accepts the
-    // hire, the command is sent, and the worker -- which is never fooled --
-    // refuses it and paints its own line with `data-source="simulation"`.
-    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
-    await expect(refusal).toHaveAttribute('data-action', 'hire-staff');
-    await expect(refusal).toContainText(localeText('hud.refusal.hire-staff-past-floor'));
-    // The thrown English never reaches the screen (ADR 0011).
-    await expect(refusal).not.toContainText('cannot cover');
-    await expect(hire).toHaveAttribute('data-action-failed', 'true');
-    // Nothing left this thread, and nobody reached the payroll.
-    expect(await hiresSent(page)).toEqual([]);
-    await expect(staffMetric).toHaveText('0');
-    await expect(funds).toHaveText(fundsText(settled));
   });
 
   /*

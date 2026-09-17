@@ -77,7 +77,7 @@ export type DeletePress =
  * **This is the guard issue #1142 reports as missing.** `SavePanel.requestDelete`
  * called `controller.deletePrison` the moment a row's Delete button was
  * pressed, and `PrisonSaveRepository.delete` is unconditional by design
- * (`src/persistence/local/repository.ts:637`) -- it takes a prison id and
+ * (`src/persistence/local/repository.ts:467`) -- it takes a prison id and
  * destroys every generation it references plus the slot record, in one
  * transaction, with no argument that could mean "ask first". That is the right
  * shape for the data layer: a confirmation is a fact about the player's

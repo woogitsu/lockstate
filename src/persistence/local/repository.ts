@@ -969,8 +969,7 @@ export class PrisonSaveRepository {
          * **This is affordable because `revision` sits outside the checksum.**
          * `createSaveEnvelope` hashes the payload only --
          * `checksum: computeSaveChecksum(payload as JsonValue)` at
-         * `save-schema.ts:1910`, inside `createSaveEnvelope` -- and puts `revision`
-         * in the metadata beside
+         * `save-schema.ts:1792` -- and puts `revision` in the metadata beside
          * it. So re-stamping it invalidates no checksum, moves no schema
          * version, and leaves `decodeSaveEnvelope` unaffected. ADR 0105 left
          * the choice between "a lock, a queue, or allocating the revision at
