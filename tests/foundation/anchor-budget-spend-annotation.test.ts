@@ -121,6 +121,50 @@ describe('anchor-budget-spend.mjs: computeAnchorSpend', () => {
     expect(computeAnchorSpend(text, '0.0.20', counting(3))).toEqual({ kind: 'multiple-anchors', count: 2 });
   });
 
+  it('reads a kept anchor record as a quotation rather than as a second live anchor, however it is wrapped', () => {
+    // The same defect the gate carried until 2026-09-16, in this second copy
+    // of the pattern. `STATUS-QUEUE.md` quotes every superseded anchor line
+    // verbatim, and until this script could read a wrapped or blockquoted
+    // span it reported `1` only because those quotations happened to wrap --
+    // so re-flowing one kept paragraph turned the annotation into
+    // "multiple-anchors" and the script stopped reporting a spend at all.
+    const wrapped = `**The anchor before this one, kept -- v0.0.640.** It read: *"${anchorLine('29ba8845', '0.0.640').replace('@ `', '@\n`')}."*`;
+    const reflowed = `**The anchor before this one, kept -- v0.0.640.** It read: *"${anchorLine('29ba8845', '0.0.640')}."*`;
+    const blockquoted = `> (\`docs/AGENT_WORKFLOW.md\` §4): it read *"${anchorLine('e5fbe9d9', '0.0.554').replace('` (', '`\n> (')}."*`;
+
+    for (const record of [wrapped, reflowed, blockquoted]) {
+      expect(computeAnchorSpend([anchorLine('36d35998', '0.0.641'), record].join('\n\n'), '0.0.641', counting(3))).toMatchObject({
+        kind: 'ok',
+        anchorSha: '36d35998',
+        anchorVersion: '0.0.641',
+      });
+    }
+  });
+
+  it('still reports "multiple-anchors" for a second span the file does not introduce as a quotation', () => {
+    // The other direction, so the exemption above cannot be read as "anything
+    // further down the file is history". The same record with its "It read:"
+    // removed is a second live anchor and must be reported as one.
+    const unintroduced = `*"${anchorLine('29ba8845', '0.0.640')}."*`;
+    expect(
+      computeAnchorSpend([anchorLine('36d35998', '0.0.641'), unintroduced].join('\n\n'), '0.0.641', counting(3)),
+    ).toEqual({ kind: 'multiple-anchors', count: 2 });
+
+    // And wrapped, which is the case the literal-space pattern could not see
+    // at all: a second live anchor whose sha falls on the next line was read
+    // as no anchor rather than as a second one, so the script reported a spend
+    // against the header while the file carried two.
+    const wrappedAndUnintroduced = unintroduced.replace('@ `', '@\n`');
+    expect(wrappedAndUnintroduced).toContain('@\n');
+    expect(
+      computeAnchorSpend(
+        [anchorLine('36d35998', '0.0.641'), wrappedAndUnintroduced].join('\n\n'),
+        '0.0.641',
+        counting(3),
+      ),
+    ).toEqual({ kind: 'multiple-anchors', count: 2 });
+  });
+
   it('reports "uncountable" rather than a number when the checkout cannot be measured against the anchor', () => {
     expect(computeAnchorSpend(anchorLine('abc1234', '0.0.10'), '0.0.20', uncountable)).toEqual({
       kind: 'uncountable',
