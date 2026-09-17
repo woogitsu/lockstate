@@ -2861,6 +2861,37 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage-unguarded': 'Unguarded',
   'hud.security.coverage-unguarded-hint': 'Nobody is on duty. Hire {count} to cover this population.',
   /*
+   * The `COVERAGE` chip's two sentences for a post nothing can route to
+   * ([ADR 0117](../adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17, option 3).
+   *
+   * Authored under `AGENTS.md`'s fourth reservation as partly released on
+   * 2026-09-04 -- the choice of words is ours, the requirement that each be
+   * true is not -- so both are quoted verbatim in the commit that lands them
+   * and in the pull request, beside the code opened to prove them.
+   * `securityPostUnreachable` in `src/ui/hud/messages.ts` carries the
+   * clause-by-clause reading; in short: the predicate behind them
+   * (`DeploymentSystem.hasUnreachablePost`) requires a failed route **and** a
+   * claimable guard **and** nobody `'on-post'`, and the remedy sentence is
+   * measured in
+   * `tests/integration/security-post-unreachable-condition.test.ts` by
+   * removing one of the four walls through the real `RemoveWall` command.
+   *
+   * **Neither sentence says the prison is fixed, and that is deliberate.**
+   * Option 3 explicitly does not fix it: the guard still cycles, the walls
+   * stay where the player put them, and incident response stays broken (ADR
+   * 0117 §1e). What the player is owed here is knowing, and the action stays
+   * theirs -- so the first sentence states the fact and the second names what
+   * undoes it, and nothing claims it has been undone.
+   *
+   * *"the post"* rather than *"the guard post"*: the chip is labelled
+   * `hud.security.coverage` -- "Guard cover" -- and its icon is the security
+   * one, so the subject is already named by what the sentence is attached to.
+   */
+  'hud.security.post-unreachable': 'Post cut off',
+  'hud.security.post-unreachable-hint':
+    'No guard can reach the post, so nobody is on duty. Taking down a wall beside it opens the way back.',
+  /*
    * The owner's chosen wording of 2026-09-03, verbatim, and it is on the
    * unguarded rung only.
    *
