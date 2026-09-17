@@ -579,6 +579,29 @@ three tiers rather than asserting the phone one is right.
 > **Nothing under `src/` implements this**, and the ruling does not by itself
 > change that.
 >
+> **THAT SENTENCE WAS TRUE FOR ONE DAY AND IS KEPT RATHER THAN DELETED**
+> (`docs/AGENT_WORKFLOW.md` §4, *mark both directions*). #1279 merged as
+> `725aad40` on 2026-09-17 and builds exactly the arrangement the label names
+> and nothing wider: `placeAlertsFold` in `src/ui/hud/hud.ts` appends the one
+> existing `alertsSection.element` to `overviewPanel.foldSlot` below the
+> breakpoint and back to `minimapPanel.body` above it, wired as
+> `createHudLayoutShell`'s `onTierChange`. **One node moved, never a second one
+> built**, which is why `producersOf('DismissAlert')` is still one producer and
+> the pin above survived unedited, as this block said it would.
+> `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over the
+> press. The first entry ever retired from `app-shell.spec.ts`'s
+> `NEVER_LAID_OUT_BELOW_720` is the alerts fold's header, and the spec writes
+> the retired string out rather than deleting it, for the reason this rollout
+> keeps paragraphs: *"the reason it is gone is not the reason the block below
+> predicted would retire all of them"* -- `.hud__corner` is still
+> `display: none` at 720 px, and the three entries around it are still exempt
+> for that mechanical reason.
+>
+> **What is still not settled is the caveat above, not the mount.** The fold's
+> height at 375 px width has still not been measured, so whether Overview's
+> 150.31 px of headroom survives the re-wrap is open exactly as this block left
+> it.
+>
 > **One count in the kept paragraph is stale and is marked rather than
 > edited.** *"One of the seventeen commands"* is **eighteen**: opened on this
 > branch, `simulationCommandSchema` in `src/simulation/protocol/commands.ts`
@@ -768,6 +791,16 @@ the record says so wherever it quotes a number.
   > ruling settles the arrangement and nothing under `src/` implements it, so
   > *"still has no route at 375×812"* is true of the tree today and stays PARTIAL
   > until something ships.
+  >
+  > **Something shipped: #1279, `725aad40`, 2026-09-17.** The clause above is
+  > kept because it was the true reading for a day, and both directions are
+  > marked rather than one overwritten. The fold is mounted in the Overview
+  > rail below 720 px and `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts`
+  > presses the dismiss control there. **The row's verdict is not moved from
+  > PARTIAL here anyway**, and the reason is a rule rather than caution: a
+  > verdict in this table is a measurement, and no one has re-run the Touch row
+  > against the shipped tree. What changed is that the sentence blocking it is
+  > no longer *"nothing implements it"* but *"nobody has re-measured it"*.
 
 **So the closing criterion is six clauses satisfied, one satisfied only
 locally, and one false.** The record's §16 takes it apart clause by clause, and
