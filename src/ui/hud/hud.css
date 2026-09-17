@@ -3027,7 +3027,7 @@
 
 /* The meter's own figure, on screen as of issue #909 -- it was `.ui-sr-only`,
    which told a screen reader the need was at 20% and left a sighted player an
-   unlabelled bar beside a second graded value. `regime-panel.ts`'s
+   unlabelled bar beside a second graded value. `roster-panel.ts`'s
    `RosterRow.needValue` records what that cost. `tabular-nums` so four rows of
    percentages line up in a column the eye can compare, the same treatment
    `.hud-regime__roster-count` gets, and `nowrap` for
@@ -3051,7 +3051,7 @@
 
 /* A row that holds a prisoner is a press target, and this is the whole of what
    that costs the layout: a cursor and a focus ring. No padding, no minimum
-   height and no background -- `PRISONER_ROSTER_ROW_LIMIT` in `regime-panel.ts`
+   height and no background -- `PRISONER_ROSTER_ROW_LIMIT` in `roster-panel.ts`
    measures four rows at 44.7px against the 54.75px its arithmetic allows, and
    the rows are 27.5px when the activity line does not wrap, so a tap-target
    floor of 44px here would push the fourth row out of the panel's fold at

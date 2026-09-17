@@ -2091,7 +2091,7 @@ export interface HudPrisonerRosterViewModel {
    * carried unchanged from `PrisonerRosterPage.everAdmitted` (issue #506).
    * `total: 0` alone cannot say whether nobody has been admitted or whether
    * the whole population has since been discharged, and this is the fact
-   * that tells the two apart -- see `regime-panel.ts`'s roster-empty note
+   * that tells the two apart -- see `roster-panel.ts`'s roster-empty note
    * for what the panel does with it.
    */
   readonly everAdmitted: boolean;
@@ -2156,7 +2156,7 @@ export interface HudPrisonerDetailViewModel {
    *
    * Six today, and the count is the projection's rather than this file's: a
    * consumer that assumed six would be wrong the day a seventh need is
-   * declared, which is why `regime-panel.ts` spells its row budget out with a
+   * declared, which is why `roster-panel.ts` spells its row budget out with a
    * unit test holding it against `NEED_IDS.length`.
    */
   readonly needs: readonly HudPrisonerNeedViewModel[];

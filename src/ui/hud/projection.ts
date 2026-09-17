@@ -157,7 +157,7 @@ export type HudMetricId =
  * that actually matters (that the player sees words rather than a dotted id).
  *
  * The `'high-risk'` id is spelled here for the reason `describePrisonerRow`
- * spells it in `regime-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
+ * spells it in `roster-panel.ts`: `CLASSIFICATION_GROUP_IDS` lives in
  * `src/simulation/prisoners/components.ts` and the HUD may not import the
  * simulation (`AGENTS.md` boundary 1). A wrong id would resolve to nothing and
  * render as the raw key, which `tests/browser/app-shell.spec.ts` asserts
@@ -900,7 +900,7 @@ export function projectStatusMetrics(
        * the population the prison has -- and nobody has set the number at which
        * it becomes one, so a permanent amber chip on a mature prison would be
        * exactly the *"status strip where several things are always amber"*
-       * `coverageTone` refuses. `describePrisonerRow` in `regime-panel.ts`
+       * `coverageTone` refuses. `describePrisonerRow` in `roster-panel.ts`
        * already draws the line for the row badge: *"`warning` for high risk is
        * not a claim that the prisoner is a problem. It is that they are on the
        * restricted timetable"* -- a distinction a per-prisoner badge can carry

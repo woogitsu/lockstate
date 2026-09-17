@@ -5485,7 +5485,7 @@ test.describe('the Rooms panel', () => {
  * What is *not* here is the shape of it. Which word goes in which slot is
  * decided by four pure functions -- `describePrisonerRow`,
  * `formatPrisonerName`, `formatPrisonerActivity` and `formatRegimeAllowsText`
- * -- and every one of them is exported from `regime-panel.ts` precisely so
+ * -- and every one of them is exported from `roster-panel.ts` precisely so
  * `pnpm test` can own that decision at the lowest layer, which
  * `docs/TESTING.md` requires. Restating their answers here would buy nothing
  * and would go stale twice.
@@ -5884,7 +5884,7 @@ test.describe('the Regime panel (issue #451)', () => {
    * page.**
    *
    * `describePrisonerRow`'s own tests own the decision -- that is what
-   * `regime-panel.ts` exports it for -- so what is left for a browser is the
+   * `roster-panel.ts` exports it for -- so what is left for a browser is the
    * half those cannot reach: **whether the tone is a colour**. A tone added to
    * `BadgeTone` with no `.ui-badge[data-tone=...]` rule beside it type-checks,
    * passes every node test, and paints `--badge-neutral-bg` on screen -- which
@@ -5972,7 +5972,7 @@ test.describe('the Regime panel (issue #451)', () => {
     // population is back to
     // zero, and the empty-roster sentence would be false of it. There is
     // no shipped sentence that says the true thing instead (searched
-    // `default-locale-en.ts`; see `regime-panel.ts`'s `paintRoster` comment),
+    // `default-locale-en.ts`; see `roster-panel.ts`'s `paintRoster` comment),
     // so the panel is required to draw *neither* box rather than the wrong
     // one.
     //
@@ -6170,7 +6170,7 @@ test.describe('the Regime panel (issue #451)', () => {
     // Most of what `.hud__side` holds is a catalogue or a fixed set of
     // controls; this block's height tracks the *prisoner population*, bounded
     // by `PRISONER_ROSTER_ROW_LIMIT`. The Staff panel's held-guard list is the
-    // one precedent, and `regime-panel.ts` says outright that this bound was
+    // one precedent, and `roster-panel.ts` says outright that this bound was
     // taken as arithmetic off `HELD_GUARD_ROW_LIMIT`'s 219.0px rather than
     // measured -- three rows carrying a 44px control against four carrying
     // none. This is the measurement that was owed.

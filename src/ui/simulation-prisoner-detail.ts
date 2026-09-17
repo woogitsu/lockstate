@@ -48,7 +48,7 @@ import {
  * ## What it drops, and why each one is a refusal rather than an omission
  *
  * The projection carries more than this view model does, and the three things
- * left behind are left behind for reasons `regime-panel.ts` already wrote down
+ * left behind are left behind for reasons `roster-panel.ts` already wrote down
  * for the roster row:
  *
  * - **`location.tile` and `accommodation`.** `ActionSystem` writes the position
