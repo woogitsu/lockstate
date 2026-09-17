@@ -473,7 +473,7 @@ test.describe('HUD shell', () => {
    * label is taller than the shortest of them rather than a pinned pixel
    * count.
    *
-   * **THE VIEWPORT MOVED FROM 375x812 TO 768x812 ON 2026-09-16, AND THE
+   * **THE VIEWPORT MOVED FROM 375x812 TO 721x420 ON 2026-09-16, AND THE
    * PARAGRAPHS ABOVE ARE KEPT BECAUSE THEY ARE THE MEASUREMENT THE RULE WAS
    * BUILT ON.** The owner ruled that below 721px a tab shows its icon and not
    * its name (#1192), so at 375x812 there is no drawn label left to wrap and
