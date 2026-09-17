@@ -328,11 +328,15 @@ which tile each was on — information the nested shape has no reason to have ke
 #### Against a tile plane. Rejected, and this is the expensive-to-reverse one.
 
 Every world plane today is a `Uint8Array` — `chunkTerrain`, `chunkTopEdge`,
-`chunkLeftEdge`, `chunkZoning` (`src/simulation/world/sparse-world.ts:268-271`)
+`chunkLeftEdge`, `chunkZoning` (`src/simulation/world/sparse-world.ts:284-287`;
+the anchor read `:268-271`, four fields of an unrelated rectangle literal)
 — RLE-encoded per chunk, with a decode contract that validates values against
 the *terrain* registry (`:141-169`). `objectDefinitionSchema` bounds `numericId`
 at 65,535, so an objects plane is a fifth plane, a `Uint16Array`, a new RLE
-contract, and a **`WORLD_SNAPSHOT_VERSION` bump from 1 to 2** (`:30`) — the world
+contract, and a **`WORLD_SNAPSHOT_VERSION` bump from 1 to 2** (`:31`; the anchor
+read `:30`, a blank line one above the constant — the same off-by-one shape ADR
+0029's `:1669` carried on this branch, and it lands on nothing rather than on
+plausible code) — the world
 snapshot that sits inside the save payload. That is the save consequence, and it
 is the largest of the three.
 

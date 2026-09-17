@@ -85,12 +85,56 @@ measurement is the filing issue's, not this document's.
 > reason and was right to. **Read every anchor in this section as of
 > 2026-08-27.**
 
+> **THE OWNER OVERRULED THAT ON 2026-09-16, AND THE PARAGRAPH ABOVE IS KEPT
+> RATHER THAN REWRITTEN BECAUSE IT IS THE DECISION THAT WAS REVERSED.** Asked
+> whether to freeze this file as history on the ADR 0040 precedent or keep
+> maintaining its anchors, the owner chose:
+>
+> > Żywy — przepinajcie dalej
+>
+> ("Live — keep re-pinning.") **The provenance is the weaker of the two kinds
+> this repository distinguishes**: the label of a clickable option an agent
+> session wrote, not a sentence the owner typed. The record of the ruling lives
+> on `agent/2026-09-16-rulings`
+> ([#1275](https://github.com/woogitsu/lockstate/pull/1275)), **which had not
+> merged to `main` when this pass ran** — checked with `git merge-base
+> --is-ancestor`, not assumed. That PR records the ruling and re-pins nothing;
+> it says in terms that *"the 55 anchors are now a re-pinning job somebody
+> owes"*, and names this branch as where it is owed.
+>
+> **What the ruling asks for, and what this pass did (2026-09-17).** An anchor
+> that still names live code is re-aimed; a sentence that is simply false about
+> the tree is marked in both directions rather than left standing under a pin
+> claiming it was read. Re-aimed anchors below carry `(the anchor read `:X`)`,
+> and every new coordinate was opened after the edit.
+>
+> **The sentences are not rewritten, and that is the part to read.** A
+> 2026-08-27 diagnosis that a producer was missing stays a 2026-08-27 diagnosis;
+> only the coordinate under it is brought to today's tree, so this section still
+> reads as the census it was and no longer sends a reader to a blank line or to
+> an unrelated docblock. Where the *claim* has expired as well —
+> `applyRiotRegimeOverride` deleted, `safety` no longer read alone,
+> `SAVE_SCHEMA_VERSION` no longer 5 — the correction was already marked in both
+> directions in place and is left exactly as it stands.
+>
+> **Two claims in this section were found false by the re-pin itself**, because
+> opening a line is how you find out, and they are marked at their own
+> sentences below: `DEFAULT_SECTOR_RISK_POLICY`'s quoted weights and threshold,
+> and *"Two `Treasury.spend` call sites in the whole of `src/`"*.
+>
+> **What this pass did not reach.** The eight anchors the census above records
+> as landing were re-opened and still land. The re-aims below are the ones whose
+> subject could be located by opening the file and reading it; where a subject
+> exists nowhere in the tree, no coordinate was invented for it.
+
 ### #440 — two action categories with no action — **holds, and its persistence
 claim is wrong in a way that matters**
 
-`ACTION_CATEGORIES` has seven members (`src/simulation/prisoners/regime.ts:1`).
+`ACTION_CATEGORIES` has seven members (`src/simulation/prisoners/regime.ts:3`;
+the anchor read `:1`, an `import type` line).
 `DEFAULT_ACTIONS` has eight entries spanning five categories
-(`src/simulation/prisoners/actions.ts:42-75`): `sleep`, `meal` ×2, `hygiene` ×2,
+(`src/simulation/prisoners/actions.ts:85`; the anchor read `:42-75`, a docblock
+about an absent capability): `sleep`, `meal` ×2, `hygiene` ×2,
 `recreation` ×2, `education`. There is no `work` action and no
 `free-association` action. **Half of that is no longer true: decision 1 landed
 on 2026-08-27 and `action.free-association` is now the ninth entry.** The
@@ -103,15 +147,20 @@ version of this sentence:
 grep -o "category: '[a-z-]*'" src/simulation/prisoners/actions.ts | sort -u
 ```
 
-`GENERAL_POPULATION_REGIME` (`src/simulation/prisoners/regime.ts:62-76`) allots
+`GENERAL_POPULATION_REGIME` (`src/simulation/prisoners/regime.ts:104`; the
+anchor read `:62-76`) allots
 1,000 ticks a day to `['work', 'education']` blocks and a further 400 to blocks
 that list `free-association`. `RIOT_ALLOWED_CATEGORIES` is
-`['free-association', 'recreation']` (`src/simulation/incidents/riot-regime.ts:12`)
+`['free-association', 'recreation']` (`src/simulation/incidents/riot-regime.ts:41`;
+the anchor read `:12`)
 and its header comment calls `free-association` *"unstructured milling about"* —
 naming content that was never authored. `beginNextAction` filters
 `DEFAULT_ACTIONS` by the block's categories and, if no candidate resolves,
 increments `unmetDemandCycles` and returns
-(`src/simulation/prisoners/action-system.ts:391`, `:427`). Both recreation
+(`src/simulation/prisoners/action-system.ts:1616`, `:1668`; the anchors read
+`:391` and `:427`, both docblock lines. `:1668` is the same `unmetDemandCycles`
+statement ADR 0029's sweep on this branch had to correct by one line, so the
+two documents now agree). Both recreation
 actions target zoned rooms, so in a prison with no yard and no common room a
 riot leaves every participant with an empty candidate list for the whole day.
 The tick arithmetic in #440 is a static reading of two catalogues, and it
@@ -121,9 +170,11 @@ reads correctly; the per-action counter measurement it asks for is still owed.
 grounds that *"Adding a catalogue action is content data"*, and invites the
 implementer to stop and raise it if that turns out to be false. **It is false.**
 `CurrentActionComponent.actionIndex` is a *positional* index into
-`DEFAULT_ACTIONS` (`src/simulation/prisoners/components.ts:205-211`) and it is
-persisted verbatim (`src/persistence/save-schema.ts:383`,
-`src/simulation/runtime/session-systems.ts:344` and `:390`). Inserting an entry
+`DEFAULT_ACTIONS` (`src/simulation/prisoners/components.ts:245-251`; the anchor
+read `:205-211`, a different component's constructor) and it is
+persisted verbatim (`src/persistence/save-schema.ts:440`; the anchor read `:383`,
+`src/simulation/runtime/session-systems.ts:461` and `:522`; those two anchors read
+`:344` and `:390`). Inserting an entry
 anywhere but the end of that array silently reinterprets every in-flight action
 in every existing save — a prisoner who was showering resumes doing something
 else, with no error and no version mismatch. **Appending is safe; inserting is a
@@ -133,20 +184,24 @@ belongs in whichever commit adds an action.
 ### #441 — a sentence never ends — **holds exactly**
 
 `IntakeSystem` writes the field
-(`src/simulation/prisoners/intake-system.ts:307`). Every reader in `src/`:
+(`src/simulation/prisoners/intake-system.ts:572`; the anchor read `:307`). Every
+reader in `src/`:
 
 ```
 grep -rn "sentenceEndTick" src/
 ```
 
 returns the save schema, the capture/restore pair
-(`src/simulation/runtime/session-systems.ts:111`, `:339`, `:381`), the HUD
-projection (`src/simulation/presentation/prisoner-projection.ts:397`), and
+(`src/simulation/runtime/session-systems.ts:131`, `:455`, `:509`; those three
+anchors read `:111`, `:339` and `:381`), the HUD
+projection (`src/simulation/presentation/prisoner-projection.ts:752`; the anchor
+read `:397`), and
 `classifiedAtTickOf`, which subtracts it from `sentenceLengthTicks` to recover
 *when the prisoner arrived*
 (`src/simulation/prisoners/classification-review-system.ts:57-59`). **Nothing
 compares it against `context.tick`.** `world.setOwned` likewise has exactly one
-call site, at session creation (`src/simulation/runtime/new-session.ts:281`), so
+call site, at session creation (`src/simulation/runtime/new-session.ts:438`; the anchor read
+`:281`), so
 the land is one chunk for the life of the session.
 
 ### #442 — one guard disables the incident system — **holds, and the issue
@@ -154,11 +209,27 @@ names the weaker of its own two gates first**
 
 `DEFAULT_SECTOR_RISK_POLICY` is
 `needsPressureWeight: 0.5, staffingShortfallWeight: 0.3, contrabandPressureWeight: 0.2, hotThreshold: 0.6`
-(`src/simulation/incidents/sector-risk.ts:34-40`).
+(`src/simulation/incidents/sector-risk.ts:154-160`; the anchor read `:34-40`, a
+docblock quoting a design note).
+
+> **The quoted policy is no longer the policy, found by opening that line rather
+> than by re-aiming it, and marked rather than rewritten (2026-09-17).** At
+> `:154-160` today it is `needsPressureWeight: 1, staffingShortfallWeight: 0.3,
+> contrabandPressureWeight: 0.2, hotThreshold: 0.65, sustainedSamplesRequired:
+> 12` — the `needsPressure` weight doubled, the threshold moved, and a sixth
+> field exists that this sentence predates. **So the arithmetic two paragraphs
+> down — "one hire caps the score at 0.5 against a threshold of 0.6" — no longer
+> follows from the numbers in the tree**, though its conclusion may still hold
+> for other reasons. It is left as written because it is what the 2026-08-27
+> census computed and the census is the point; re-deriving it against today's
+> weights is work this pass did not do, and saying so is cheaper than a figure
+> nobody ran.
 `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` is `1`
-(`src/simulation/security/default-sector.ts:99`). `contrabandPressure` is read
+(`src/simulation/security/default-sector.ts:113`; the anchor read `:99`).
+`contrabandPressure` is read
 from `intelligence.forTarget('sector', sectorId)`
-(`src/simulation/runtime/new-session.ts:622`), and the only writer of that
+(`src/simulation/runtime/new-session.ts:1409`; the anchor read `:622`), and the
+only writer of that
 ledger is `IntelligenceLedger.report`, whose one caller in `src/` is
 `reportInformantTip` (`src/simulation/contraband/informants.ts:87`), which has
 no caller at all. So the third term is structurally zero and one hire caps the
@@ -167,7 +238,10 @@ depend on anyone's run.
 
 **The issue's own "more fundamental half" is more fundamental than it says.**
 `resolveSectorOccupants` counts prisoners standing exactly on the sector's
-single post tile (`src/simulation/runtime/new-session.ts:591-604`), and
+single post tile (`src/simulation/security/sector-occupancy.ts:132`; the anchor
+read `src/simulation/runtime/new-session.ts:591-604` — the function moved file,
+which is why no line in the old one could be right, and the correction block
+below had already re-aimed this document's *other* citation of it), and
 `ActionSystem` teleports an arriving prisoner onto their target room's anchor
 tile (`src/simulation/prisoners/action-system.ts:323-324`, commented *"Abstracted
 arrival"*). A housed prisoner is therefore never on the post tile, so
@@ -215,7 +289,8 @@ isFreshUnfurnishedPrison = false): StaffHireOutcome {`; the anchor read
 stops fourteen lines short of the method the sentence names), and
 `DeploymentSystem.assignUnassignedGuards` fills the post from
 `unassignedGuardIds()` with no role filter
-(`src/simulation/security/deployment-system.ts:102-113`) — so a warden is riot
+(`src/simulation/security/deployment-system.ts:180`; the anchor read `:102-113`)
+— so a warden is riot
 police. The default sector has no patrol route, by decision and with the reason
 written down (`src/simulation/security/default-sector.ts:194-198`).
 `applyRiotRegimeOverride` has no caller in `src/`
@@ -230,11 +305,27 @@ written and it is the finding that produced the fix.
 **holds; one clause is understated**
 
 Two `Treasury.spend` call sites in the whole of `src/`
-(`src/simulation/economy/procurement.ts:166`,
-`src/simulation/staff/hiring.ts:132`), both one-off; `wageBand.minPerDay` is
+(`src/simulation/economy/procurement.ts:386`,
+`src/simulation/staff/hiring.ts:217`; those two anchors read `:166` and `:132`),
+both one-off;
+
+> **"Two" is three today, found by re-running this paragraph's own derivation
+> command rather than by trusting it, and marked rather than rewritten
+> (2026-09-17).** `grep -rn "\.spend(" src/` returns
+> `src/simulation/economy/procurement.ts:386`,
+> `src/simulation/economy/payroll.ts:391` and
+> `src/simulation/staff/hiring.ts:217`. The new one is payroll, which is
+> **step 3 of this document's own decision having shipped** — a recurring debit
+> the player cannot decline — so the finding that the economy was monotone is
+> not merely stale, it was acted on. A count is the sentence shape
+> `docs/AGENT_WORKFLOW.md` §4 says rots first, and this paragraph names the
+> command that falsifies it two lines below itself.
+
+ `wageBand.minPerDay` is
 charged once per hire and the module says so in terms
 (`src/simulation/staff/hiring.ts:37-44`). `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`
-is 300 (`src/simulation/economy/income.ts:101`), credited per occupied place per
+is 300 (`src/simulation/economy/income.ts:115`; the anchor read `:101`), credited
+per occupied place per
 in-game day. Derive the debit list rather than trusting this paragraph:
 
 ```
@@ -242,7 +333,8 @@ grep -rn "\.spend(" src/
 ```
 
 The needs table holds. `NEED_IDS` is six
-(`src/simulation/prisoners/needs.ts:9`); the only consumer of a need level
+(`src/simulation/prisoners/needs.ts:11`; the anchor read `:9`); the only consumer
+of a need level
 outside the action table, the utility scorer and the HUD projection is
 `sampleSectorRisk`, and it reads `safety` alone
 (`src/simulation/runtime/new-session.ts:616`). `action.sleep` restores
@@ -283,19 +375,23 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 
 - `IncidentResponseSystem` — the whole `active → notified → responding →
   resolved` pipeline, plus `lapse`, lockdown, responder claims and restore-time
-  re-dispatch (`src/simulation/incidents/response-system.ts:227-249`, registered
-  at `src/simulation/runtime/new-session.ts:662`). Its `update` iterates
+  re-dispatch (`src/simulation/incidents/response-system.ts:473-491`; the anchor
+  read `:227-249`), registered
+  at `src/simulation/runtime/new-session.ts:1598` (the anchor read `:662`). Its `update` iterates
   `this.incidents.openIncidents()` and does nothing when that is empty.
 - `ClassificationReviewSystem` — registered via
   `PrisonerOperationsRuntime.registerOn`
-  (`src/simulation/prisoners/prisoner-operations-runtime.ts:142-147`), folds
+  (`src/simulation/prisoners/prisoner-operations-runtime.ts:540`; the anchor read
+  `:142-147`), folds
   `IncidentLog` terminal records and `ConfiscationLedger` events into a derived
   `DisciplinaryRecord` and rewrites `riskTier` and `classificationGroupIndex`
-  (`src/simulation/prisoners/classification-review-system.ts:229-233`).
+  (`src/simulation/prisoners/classification-review-system.ts:439-443`; the anchor
+  read `:229-233`).
 - The downstream of that rewrite is live in three places:
   `ActionSystem.beginNextAction` resolves the regime schedule from it every
   cycle (`src/simulation/prisoners/action-system.ts:388-390`), the route-context
-  resolver reads `riskTier` (`:419`), and `cell-sharing.ts` scores placement
+  resolver reads `riskTier` (`:1109`; the anchor read `:419`, a bare `*/`), and
+  `cell-sharing.ts` scores placement
   distance on it (`src/simulation/prisoners/cell-sharing.ts:76`).
 - `DISCIPLINARY_POINTS_BY_INCIDENT_TYPE` and `LAPSED_INCIDENT_SURCHARGE_POINTS`
   are authored for all four incident types
@@ -305,7 +401,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 **Built, and with no producer in `src/`:**
 
 - `ContrabandRegistry.introduce` — one definition, no caller
-  (`src/simulation/contraband/item.ts:104`).
+  (`src/simulation/contraband/item.ts:123`; the anchor read `:104`).
 - `SearchSystem.submitOrder` — one definition, no caller
   (`src/simulation/contraband/search-system.ts:190`); the system is registered
   and runs an empty queue. Its confiscation write
@@ -328,7 +424,8 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 - `GangRegistry.register` / `.addMember` / `.addGrudge` — written only by
   `loadSnapshot` (`src/simulation/incidents/gangs.ts:123-124`), so a live
   session's registry is empty and `tryOpenRetaliation`
-  (`src/simulation/incidents/trigger-system.ts:108-137`) iterates nothing.
+  (`src/simulation/incidents/trigger-system.ts:535`; the anchor read `:108-137`)
+  iterates nothing.
 
 **Decided and unbuilt, rather than undecided:**
 
@@ -416,7 +513,9 @@ Two things this decision did not anticipate, both found by implementing it:
   need was met at a tick where none was — `AGENTS.md`'s fourth exclusion in
   miniature. Fixed with the action rather than after it.
 - **Step 2 needs more than a producer.** `ActionSystem` holds its schedules as
-  `private readonly regimeSchedules` (`action-system.ts:106`), handed over once
+  `private readonly regimeSchedules` (`action-system.ts:388`; the anchor read
+`:106`, one of the two this block's own opening paragraph names as added below an
+unchanged pin by `6c7ae159`), handed over once
   at construction (`prisoners/prisoner-operations-runtime.ts:137`), with no
   mutator anywhere in `src/`. Nothing can move a live session onto the riot
   schedule, so an incident producer alone would not reach this action. Step 2's
@@ -459,18 +558,21 @@ already asserted end-to-end in `tests/integration/incident-consequence-loop.test
 against a hand-opened incident. One producer turns all of it on.
 
 *Persistence:* none required. `SectorRiskTracker` already snapshots
-(`src/simulation/incidents/sector-risk.ts:97-104`), and an occupancy resolver is
+(`src/simulation/incidents/sector-risk.ts:217`; the anchor read `:97-104`), and an
+occupancy resolver is
 a derivation over positions the save already carries. *Determinism:* the score
 is a pure weighted sum and the streak is a counter; a spatial or
 room-membership occupancy query must return a sorted list, as the current one
-does (`src/simulation/runtime/new-session.ts:603`). No RNG.
+does (`src/simulation/security/sector-occupancy.ts:132`; the anchor read
+`src/simulation/runtime/new-session.ts:603`, the file the function left). No RNG.
 
 ### 3. One recurring debit, as ADR 0017 decision 8's precondition
 
 Charge something the player cannot decline, on a per-in-game-day pass. Wages are
 the candidate ADR 0017 and the content catalogue both already point at —
 `wageBand.minPerDay` is authored per day and charged per hire
-(`src/content/staff-role-catalog.ts:52`, `src/simulation/staff/hiring.ts:131`).
+(`src/content/staff-role-catalog.ts:73`, `src/simulation/staff/hiring.ts:121`;
+those two anchors read `:52` and `:131`).
 
 *Depends on:* step 2, weakly but really. The last rung of ADR 0017's authored
 degradation ladder is *"staff unpaid with the morale and incident consequences
@@ -480,7 +582,9 @@ revisited to connect it.
 
 *Persistence:* **this is the step with a save-format cost, and it is the reason
 it is not first.** `Treasury` validates non-negative in four places
-(`src/simulation/economy/treasury.ts:73`, `:83`, `:120`, `:134`) and the save
+(`src/simulation/economy/treasury.ts:707`, `:790`, `:840`, `:864`; those four
+anchors read `:73`, `:83`, `:120` and `:134`, all docblock lines in what is now a
+900-line file) and the save
 schema pins it: `balanceMinorUnits: z.number().int().nonnegative().safe()`
 (`src/persistence/save-schema.ts:954`). A debt state is either a sign change on
 a persisted field or a new persisted arrears field, and both are `AGENTS.md`
@@ -517,7 +621,8 @@ already happen, and this is what makes them cost something.
 
 *Persistence:* none — a different read of levels the save already carries.
 *Determinism:* the sum must iterate `NEED_IDS` in its declared order
-(`src/simulation/prisoners/needs.ts:9`), as `NeedsComponent` already does
+(`src/simulation/prisoners/needs.ts:11`; the anchor read `:9`), as
+`NeedsComponent` already does
 everywhere; no RNG.
 
 ### 5. Release, once ADR 0026's questions are answered
@@ -577,9 +682,21 @@ constrained by it identically:
   throws for an unregistered name (`src/simulation/rng/streams.ts:20-24`), and a
   session registers its streams up front from
   `deriveXoshiroState(masterSeed, name)`
-  (`src/simulation/runtime/new-session.ts:288-293`) — today
+  (`src/simulation/runtime/new-session.ts:446`, `:483-487`; the anchor read
+  `:288-293`) — today
   `prisoners.classification`, `contraband.detection`,
-  `contraband.intelligence` and `identity.actor-name`. A new stream is the
+  `contraband.intelligence` and `identity.actor-name`.
+
+  > **That list is four and the registration is six, found by opening the new
+  > coordinate rather than merely re-aiming to it (2026-09-17).** `:483-487`
+  > registers `prisoners.sentence` and `contraband.introduction` beside the
+  > three named here, with `prisoners.classification` at `:446`. The sentence is
+  > left as the 2026-08-27 census wrote it and the count is marked here, because
+  > the claim it supports — that a new stream is the correct mechanism and is
+  > cheap — is unaffected by how many exist, and two more having been added
+  > since is evidence for it rather than against.
+
+  A new stream is the
   correct mechanism and it is **cheap**: [ADR 0038](./0038-what-makes-a-save-compatible.md)
   decision 2 makes a missing named stream an *absence* seeded from
   `(masterSeed, streamName)`, because `Kernel.restoreState` merges rather than
@@ -591,10 +708,12 @@ constrained by it identically:
   no persisted state. Step 3 adds some and must carry a version and a migration
   before release (`AGENTS.md` boundary 7). Step 5's is ADR 0026's to specify.
 - **No step may reorder an existing iteration.** `resolveSectorOccupants` sorts
-  (`src/simulation/runtime/new-session.ts:603`),
+  (`src/simulation/security/sector-occupancy.ts:132`; the anchor read
+  `src/simulation/runtime/new-session.ts:603`),
   `IncidentTriggerSystem.update` sorts its sector ids
-  (`src/simulation/incidents/trigger-system.ts:63`), and
-  `SectorRiskTracker.getSnapshot` sorts (`src/simulation/incidents/sector-risk.ts:97-99`).
+  (`src/simulation/incidents/trigger-system.ts:308`; the anchor read `:63`), and
+  `SectorRiskTracker.getSnapshot` sorts
+  (`src/simulation/incidents/sector-risk.ts:217`; the anchor read `:97-99`).
   A richer occupancy model replaces the *contents* of that list, never its
   ordering discipline.
 - **`supabase/migrations/` is not touched by any step.** A save-format change in

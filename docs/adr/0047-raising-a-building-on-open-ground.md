@@ -237,7 +237,8 @@ blank line and the first three lines of `serializedChunkStateSchema`'s
 
 (**One word of that sentence is a re-aim rather than a line move, 2026-09-15.**
 The four planes are no longer "allocated together" at a single `ensureStorage`
-call the way the old `:770` anchor read: `ensureStorage` still exists (`:378`)
+call the way the old `:770` anchor read: `ensureStorage` still exists (`:874`;
+the anchor read `:378`)
 and materialises the chunk, while each plane's array is created lazily by
 `ensureStorageMap` on the first write to it. Four planes, same four names, same
 RLE serialization; only the moment of allocation moved.)
