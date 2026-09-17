@@ -1103,53 +1103,6 @@ export const statusCountsSchema = z
      */
     treasuryOverdraftFloorMinorUnits: z.number().int().safe().max(0).optional(),
     /**
-     * **Whether this prison is "fresh, unfurnished"** -- ADR 0017's
-     * "Amendment, 2026-09-01: a starter rung for a fresh, unfurnished prison"
-     * §2, in that section's own words: *"Defined as
-     * `RoomInstanceRegistry.totalResidentCapacity === 0` -- the summed
-     * `residentCapacity` of every registered room instance, whatever its
-     * room-catalog id"*. The predicate `Treasury.floorFor` selects the starter
-     * deliveries/hiring rung on, published so the host judges a press against
-     * the floor the command handler will actually enforce.
-     *
-     * **It exists because the host had been re-deriving it and getting a
-     * different answer.** `src/ui/hud/projection.ts`, `build-panel.ts` and
-     * `staff-panel.ts` each computed `counts.roomCapacity === 0`, and
-     * `roomCapacity` is accumulated over `collectRoomInstances`, a fan-out
-     * over the *content* room registry's catalogue ids
-     * (`docs/HUD_PROJECTIONS.md` gap 15). It is therefore a **sub-sum** of
-     * `totalResidentCapacity` over non-negative terms, so
-     * `roomCapacity === 0` is implied by `totalResidentCapacity === 0` and
-     * does not imply it: the host called a prison fresh in strictly more cases
-     * than the simulation did, and used the shallower starter floor where the
-     * worker used the mature one. Measured on a restored session carrying one
-     * off-catalogue room instance with a bed in it: registry 1, published
-     * `roomCapacity` 0, and at a balance of -1,200 the FUNDS badge read
-     * `0 left` while the same 40-minor-unit press through
-     * `createSessionCommandHandler` was accepted and landed at -1,240.
-     * `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`
-     * is that prison, and is the gate.
-     *
-     * `roomCapacity` above is **not** withdrawn and is not this: it is the
-     * Rooms readout's total, a different true fact, and the two are no longer
-     * asked the same question.
-     *
-     * **Required rather than optional**, unlike
-     * `treasuryOverdraftFloorMinorUnits` above, and the difference is what
-     * absence would mean. An absent *floor* says "no facility is known", which
-     * is a real state a badge can render. An absent *predicate* has no honest
-     * reading: the host would have to guess a floor, and either guess is a
-     * wrong answer to a question the payload was supposed to have settled.
-     * `.strict()` then does the work the optional field forgoes -- a
-     * projection that stopped publishing it is rejected as `invalid-payload`
-     * rather than quietly falling back.
-     *
-     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
-     * reason spelled out on `treasuryMinorUnits` above: one constant covers
-     * every projection in `src/simulation/presentation/`.
-     */
-    isFreshUnfurnishedPrison: z.boolean(),
-    /**
      * What the in-game day in progress has earned so far, in the same minor
      * units (#29, ADR 0017 decision 3).
      *
@@ -1475,54 +1428,6 @@ const refusalSchema = z
     sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
     tick: tickSchema,
     reason: z.enum(REFUSAL_REASONS),
-    /**
-     * Present once the **same command route** has decided another outcome
-     * since this refusal was recorded (ADR 0091 decision 2, option F, ruled
-     * by the owner 2026-09-16).
-     *
-     * ## What a route is here, and why it is the supersession key's own prefix
-     *
-     * A route is one player command: `zone`, `unzone`, `build`,
-     * `remove-wall`, `hire`, `admit` and the rest. `RefusalLog` already holds
-     * a supersession key for the standing refusal, built by that route's own
-     * `*SupersessionKey` function, and every one of those keys is
-     * `<route>:<target>` or the bare route where there is no target
-     * (`admitSupersessionKey` returns `'admit'`). So the segment before the
-     * first `:` **is** the route, and the comparison needs no second
-     * vocabulary and no table that could drift from the first. It is
-     * deliberately *not* derived from `reason`'s own namespace, which is a
-     * near-miss rather than a match: `construction.materials-unfunded` is
-     * keyed `materials-funding`, and a reason-to-key table would be one more
-     * thing to keep in step.
-     *
-     * ## What sets it, and what it is not
-     *
-     * `RefusalLog.supersede` sets it when the key it is called with names the
-     * same route as the standing refusal's own key but a **different target**
-     * -- a same-target call withdraws the refusal outright, as it always
-     * has. So this field is exactly the case #492 deliberately left standing,
-     * now *reported* rather than acted on: the record itself is untouched,
-     * `last` still carries it, `count` still counts it, and the alerts list
-     * still shows the row. Nothing about `supersede`'s own withdrawal rule
-     * moved, and the two tests in `tests/unit/simulation-refusals.test.ts`
-     * that pin #492's narrow reading assert on `reason`, which this does not
-     * touch.
-     *
-     * ## Why `true`-or-absent rather than a boolean
-     *
-     * The fact is monotone: a route that has decided something since cannot
-     * un-decide it while this refusal is the standing one, and a new `record`
-     * replaces the whole value. `z.literal(true).optional()` makes "present
-     * and false" unrepresentable rather than merely unused, and keeps the
-     * payload's existing convention -- `refusal` and `zoning` beside it are
-     * absent when there is nothing to say rather than present and empty.
-     *
-     * The one consumer is the refusal band (`applySimulationRefusal` in
-     * `src/ui/hud/hud.ts`), which retires the corner on it. The alerts list
-     * ignores it on purpose; that divergence is what option F buys and ADR
-     * 0091 prices.
-     */
-    routeDecidedSince: z.literal(true).optional(),
   })
   .strict();
 

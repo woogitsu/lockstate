@@ -13,7 +13,6 @@ import {
   press,
   runUntilTick,
   sentCommands,
-  showPanel,
   tab,
   waitForQueueEmpty,
 } from './playtest-harness';
@@ -189,7 +188,7 @@ test('a fresh, unfurnished prison presses itself to the starter rung, is refused
   console.log(`[bed settled] queue: ${await panelText(page, '.hud-build__queue')}`);
 
   // Admit, and let a day of income land.
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   await page.locator('.hud-intake__admit').click();
   await page.waitForTimeout(1500);
   console.log(`[admitted] intake panel: ${await panelText(page, '.hud-intake')}`);

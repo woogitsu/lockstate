@@ -18,7 +18,7 @@ import './ui-harness-api';
  * ## And why the geometry is asserted rather than the text alone
  *
  * `.hud-strip__metrics` is `overflow-x: auto` with `scrollbar-width: none`
- * (`src/ui/hud/hud.css:217-218`). A chip that does not fit is therefore
+ * (`src/ui/hud/hud.css:155-165`). A chip that does not fit is therefore
  * scrolled out of sight **with no scrollbar to say so** -- present in the
  * DOM, reachable by `innerText`, and visible to nobody. Issue #629 is a
  * standing owner directive that information which exists and reaches nobody

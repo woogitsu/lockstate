@@ -144,38 +144,8 @@ export const WARNING_REMAINING_THRESHOLD = 3;
  * live re-anchoring line. Anchored on the words "Re-anchored at" for the same
  * reason that test gives: so this cannot start matching some other sentence
  * that happens to hold a sha and a version.
- *
- * Widened with that gate on 2026-09-16, and the reason is the whole of why
- * this copy could not be left alone. Every gap here was a literal space, and
- * `STATUS-QUEUE.md` keeps 48 verbatim quotations of superseded anchor lines
- * inside hand-wrapped prose and blockquotes -- so this read **1** span where
- * the file holds **49**, and read `1` only because the other 48 happened to
- * wrap. Re-flowing one kept paragraph made this script report
- * `multiple-anchors` and stop annotating, for a formatting edit. Gaps are
- * `[\s>]+` now: whitespace because the prose re-wraps, `>` because it is
- * quoted inside blockquotes.
  */
-const ANCHOR_LINE =
-  /Re-anchored[\s>]+at[\s>]+`main`[\s>]+@[\s>]*`([0-9a-f]{7,40})`[\s>]*\(\*{0,2}v(\d+\.\d+\.\d+)\*{0,2}\)/g;
-
-/**
- * What tells a kept record from the live anchor, now that the pattern above
- * can see both: the file saying it is quoting.
- *
- * A second copy of `KEPT_ANCHOR_RECORD` in
- * `adr-status-queue-anchor-contract.test.ts`, duplicated for the reason the
- * module header gives for duplicating everything else here, and matched
- * against the text *preceding* a span so the anchor line itself stays
- * byte-identical whether it is live or kept. Every one of the 48 records
- * carries the verb `read` immediately before it, with a colon in 37 and
- * without one in 11, and nothing but quoting punctuation in between.
- */
-const KEPT_ANCHOR_RECORD = /\bread:?[*"'\s>]*$/iu;
-
-/** See `KEPT_RECORD_LOOKBEHIND` in the gate: the longest introduction in the
- *  file is eleven characters and the `$` anchor means a longer window can only
- *  ever match the same eleven. */
-const KEPT_RECORD_LOOKBEHIND = 64;
+const ANCHOR_LINE = /Re-anchored at `main` @ `([0-9a-f]{7,40})`\s*\(\*{0,2}v(\d+\.\d+\.\d+)\*{0,2}\)/g;
 
 /**
  * The subject `.github/workflows/version.yml` writes for its bump commit, and
@@ -279,12 +249,7 @@ export function countLandingsSince(anchorSha, repositoryRoot, until = 'HEAD') {
  * @returns {AnchorSpendResult}
  */
 export function computeAnchorSpend(statusQueueText, packageVersion, countLandings) {
-  const anchors = [...statusQueueText.matchAll(ANCHOR_LINE)].filter(
-    (match) =>
-      !KEPT_ANCHOR_RECORD.test(
-        statusQueueText.slice(Math.max(0, match.index - KEPT_RECORD_LOOKBEHIND), match.index),
-      ),
-  );
+  const anchors = [...statusQueueText.matchAll(ANCHOR_LINE)];
 
   if (anchors.length === 0) return { kind: 'no-anchor' };
   if (anchors.length > 1) return { kind: 'multiple-anchors', count: anchors.length };
