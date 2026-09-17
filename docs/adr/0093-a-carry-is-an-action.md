@@ -311,13 +311,15 @@ checked rather than asserted:
   destination anchor after the walk has already stepped there.
 - `src/simulation/prisoners/prisoner-operations-runtime.ts:420` — the
   `writeTile` closure `LocomotionSystem` advances a walk through.
-- `src/simulation/prisoners/prisoner-operations-runtime.ts:959` — admission,
-  placing a new prisoner on the origin tile before intake.
+- `src/simulation/prisoners/prisoner-operations-runtime.ts:1053-1054` — admission,
+  placing a new prisoner on the origin tile before intake (the anchor read
+  `:959`, a blank line).
 - `job-worker-adapter.ts:43` (in the file this decision **deletes**) — the job system's
   write, and the one that is *external* to the action path.
 
 And every caller of `LocomotionStore.cancelWalk` on a prisoner:
-`action-system.ts:631` (a room un-zoned mid-journey) and
+`action-system.ts:992` (a room un-zoned mid-journey; the anchor read `:631`, a
+bare `}`) and
 `job-worker-adapter.ts:42`; the third caller, `security/guard-roster.ts:203`,
 is the guard population. So ADR 0059's *"There is one such write outside
 `prisoners/`"* is still exactly true at `1547c7f6`, and it names the seam this
@@ -475,7 +477,8 @@ two carriers set off for one crate — which is exactly what
 exist, are total, and are tested: `failJob` and `cancel` through
 `compensateHeldStock` ([ADR 0037](./0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md)).
 So the four travel-failure exits in `ActionSystem.continueTravelling`
-(`src/simulation/prisoners/action-system.ts:611`) — no path request, a failed
+(`src/simulation/prisoners/action-system.ts:950`; the anchor read `:611`, a bare
+`}`) — no path request, a failed
 route, a target that stopped existing, and `loadSnapshot`'s drop-to-idle — gain
 one line each for the carry kind: fail the job, which compensates the goods.
 The leak ADR 0029 feared is closed by the same shape that closes it for the
@@ -485,10 +488,12 @@ job system today, not by four careful release calls written fresh.
 currentActionTargetInstanceId` (`src/simulation/prisoners/components.ts:315`)
 stays a room-instance id and is **not written** for a carry.
 `projectPrisonerDetail` publishes that map as `targetRoomInstanceId`
-(`src/simulation/presentation/prisoner-projection.ts:694`) and resolves it
+(`src/simulation/presentation/prisoner-projection.ts:723`; the anchor read
+`:694`) and resolves it
 through the room registry; a job id in that field would be a lie in a field
 name, and the save's `coldState.currentActionTargetInstanceId` array
-(`src/persistence/save-schema.ts:639`) would carry it. The prisoner → job link
+(`src/persistence/save-schema.ts:651`; the anchor read `:639`, a bare `})`) would
+carry it. The prisoner → job link
 is the job's own `assignedWorkerId`, read the other way round through a
 `JobBoard.activeJobFor(entityId)` accessor backed by a `Map<EntityId, string>`
 the board maintains on assignment and on every terminal transition and rebuilds
