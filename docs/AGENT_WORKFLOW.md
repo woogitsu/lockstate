@@ -1386,6 +1386,57 @@ a document about method should say how to write one that lasts.
   pass that reports a clean intersection has reported on the spans its regex
   found, which is a smaller statement than it reads as.
 
+- **A kept record and the live state in one place will be read as the live
+  state, and the longer one wins.** This is a cost of the "mark both
+  directions" rule above rather than an argument against it: the record is
+  written at the top of the thing it corrects, it grows with every pass, and
+  the live data ends up as the last few lines of a long comment. The nearest
+  shape §4 already names is the first of the three blind ones — *a live
+  coordinate in a section nothing asks anyone to read*. This is its mirror: a
+  live value in the place everyone does read, sitting behind history they read
+  first.
+  Measured 2026-09-17 in `tests/foundation/unconsumed-command-contract.test.ts`,
+  whose `AWAITING_PRODUCER` table opens with a kept record whose first words
+  are *"**Empty, and that is a first.** Every command this repository declares
+  can now be constructed by the application."* Some thirty lines of history
+  follow, one sentence at the end reverses it — *"**It stopped being empty on
+  2026-09-14, and the entry below is the first in this list that is deliberate
+  rather than a gap somebody meant to close later.**"* — and then the live
+  entry, `EditRegimeBlock`, the sole member of a table that is not empty.
+  **Two readers in one session read the opening and concluded the table was
+  empty.** One was a subagent, which reported to its caller that a pull
+  request's whole premise was stale; the other was that caller, who read a
+  twenty-five-line window of the file with `sed`, saw only the record, and
+  believed it until it read further.
+  **Nothing failed, and nothing could**, because the gate reads the object and
+  not the comment. That is what makes this worse in an executable file than in
+  prose: a rotted document is eventually contradicted by a gate, and a
+  correctly gated table with a misleading preamble never is. There is no test
+  to add here — the code is right, and only its readers were wrong.
+  **The two layouts that prevent it are already practised in this repository
+  and neither needs inventing.**
+  - **Bind a record to the entry it is about, not to the table.**
+    `tests/foundation/room-routing-contract.test.ts`'s `UNROUTED` keeps two
+    falsified reasons in full, for `room.delivery-bay` and `room.storage-room`,
+    and each sits immediately above the key it belongs to rather than at the
+    head of the table — so the first live key is a few lines under the opening
+    brace and no record can be mistaken for the table's contents. A record
+    *about the table* — that it is empty, that something left it — has no
+    entry to attach to, which is exactly the case that went wrong above. Write
+    that one **after** the entries, not before them.
+  - **State the live value first and introduce the history with a fixed
+    opening.** `docs/adr/STATUS-QUEUE.md`'s anchor chain gives the current
+    anchor, then each superseded one under *"**The anchor before this one,
+    kept — v0.0.641 (`ca82e946`).** It read: ..."*. That marker is
+    load-bearing rather than decorative:
+    `tests/foundation/anchor-budget-spend-annotation.test.ts` pins that a span
+    introduced this way is read as a quotation, **and** that the same span with
+    its *"It read:"* removed is read as a second live anchor — so *"anything
+    further down the file is history"* is refused in both directions by a test.
+  The instance above is left exactly as it stands. Reordering a live gate's
+  record is a change to that gate, and belongs to whoever next moves
+  `EditRegimeBlock` in or out.
+
 ---
 
 ## 5. Reporting
