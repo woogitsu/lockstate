@@ -99,6 +99,20 @@ export const OVERVIEW_ROWS: readonly {
 export interface OverviewPanel {
   readonly element: HTMLElement;
   /**
+   * The host's box at the foot of this panel, for a surface the rail carries
+   * only at some viewports (issue #1201).
+   *
+   * The same arrangement `HudHandle.asideSlot` and `HudLayoutShell.preferencesSlot`
+   * are, and for the same reason: *what* goes here is a decision about the whole
+   * HUD, and this file has no business knowing that an alerts log exists. What it
+   * owns is the box, and the box is the last thing in the panel's body so that
+   * nothing this panel paints can be pushed under a fold by it.
+   *
+   * Empty it has no box at all (`.hud-overview__fold:empty` in `hud.css`), so a
+   * viewport that mounts nothing here renders exactly as it did before.
+   */
+  readonly foldSlot: HTMLElement;
+  /**
    * What the prison last reported, or `undefined` because none has.
    *
    * `undefined` is the state the sentinel sentence exists for, and it arrives
@@ -180,7 +194,14 @@ export function createOverviewPanel(options: OverviewPanelOptions): OverviewPane
       },
     },
   });
-  panel.body.append(figures, none);
+  /*
+   * The host's slot (see `OverviewPanel.foldSlot`). After both of the two
+   * states `paint` chooses between, because a section mounted between them
+   * would sit above the sentence in one state and above the figures in the
+   * other.
+   */
+  const foldSlot = element('div', { className: 'hud-overview__fold' });
+  panel.body.append(figures, none, foldSlot);
   /*
    * The single authority on which of the two has a box, run once here rather
    * than by an initial `hidden` on either element: a second assignment would be
@@ -190,6 +211,7 @@ export function createOverviewPanel(options: OverviewPanelOptions): OverviewPane
 
   return {
     element: panel.element,
+    foldSlot,
     setReadout(next: HudOverviewViewModel | undefined): void {
       readout = next;
       paint();

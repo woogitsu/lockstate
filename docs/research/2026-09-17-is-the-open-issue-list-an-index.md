@@ -305,6 +305,48 @@ absolute terms, about **18 of the 120, and anywhere from 1 to 38.** The interval
 is embarrassingly wide and that is the honest output of n = 20; halving it needs
 roughly n = 80, which is four times this record's cost.
 
+> **THE INTERVAL IS THE WRONG ONE, AND IT IS WRONG IN THE DIRECTION THAT
+> FLATTERS THE RESULT.** Kept and corrected rather than overwritten
+> (`docs/AGENT_WORKFLOW.md` §4, *mark both directions*). Recomputed:
+>
+> | x/n | Wilson 95 % | Wilson, continuity-corrected | Clopper–Pearson exact |
+> |---|---|---|---|
+> | 2/20 | 2.8 %–30.1 % | 1.8 %–33.1 % | **1.2 %–31.7 %** |
+> | 3/20 | **5.2 %–36.0 %** | 4.0 %–38.9 % | 3.2 %–37.9 % |
+>
+> The printed *"1.2 %–32.0 %"* is not the Wilson interval for 3/20 by either
+> formula; it is the **exact (Clopper–Pearson) interval for 2/20**, one
+> success lower. **The Wilson interval for the 3/20 actually observed is
+> 5.2 %–36.0 %**, or about **6 to 43 of the 120** rather than 1 to 38. The point
+> estimate, the *"about 18 of the 120"* and every sentence resting on them are
+> unaffected; what moves is the floor, and it moves **up** — so the verified
+> floor of 11 below is no longer the only thing ruling out "almost none of the
+> list is dead", and the two now agree rather than one rescuing the other.
+
+> **RE-CHECKED AT `1ad064f9` (2026-09-17, later the same day), AND THE SAMPLE
+> HAS MOVED.** Two of the fifteen LIVE rows were completed and closed between
+> `57cffa10` and now, both by merges GitHub records as closing them:
+>
+> - **#1201** — closed `completed` 2026-09-17T15:27:44Z by **#1279**, which
+>   mounts the alerts fold in the Overview rail below 720 px. Verified in the
+>   tree rather than from the closure alone: `placeAlertsFold` in
+>   `src/ui/hud/hud.ts` and `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts`.
+> - **#1257** — closed `completed` 2026-09-17T07:15:04Z by **#1271**, the
+>   rung-boundary press.
+>
+> **So at `1ad064f9` the buckets are DEAD 5, LIVE 13, RECORD 2** — 25 %,
+> Wilson 95 % **11.2 %–46.9 %**. The open list is **107** rather than 120
+> (GitHub API, same reading), so that is about **27 of 107, between 12 and 50**.
+> The RECORD title scan still finds the same **13** issues and all 13 are still
+> open, which is **12.1 %** of 107.
+>
+> **The instructive part is not the new number.** Both movements are the
+> *good* kind — work shipped and the issue closed the same day — and neither is
+> the failure mode this record is about, which is finished work nobody closed.
+> A sample of the open list ages in two directions at once, and a bucket count
+> without the commit beside it is unreadable within hours. Every figure in this
+> section now carries one.
+
 Two figures constrain it from the ends, and both are worth more than the point
 estimate:
 
