@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
+  TILE,
   calibrate,
   centreOf,
   currentClock,
@@ -11,9 +12,7 @@ import {
   panelText,
   press,
   sentCommands,
-  showPanel,
   tab,
-  TILE,
 } from './playtest-harness';
 
 /**
@@ -396,7 +395,7 @@ test.describe('the misplay', () => {
     console.log(`[${L}] 2c worker ${before2c.worker} -> ${after2c.worker}`);
 
     // --- 2d. Admit, twice, with no cell ---
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     const admit = page.locator('.hud-intake__admit');
     console.log(`[${L}] 2d Admit control disabled=${await admit.getAttribute('disabled')} text=${JSON.stringify((await admit.innerText()).trim())}`);
     const before2d = await latestCounts(page);
@@ -894,7 +893,7 @@ test.describe('the misplay', () => {
       await page.waitForTimeout(1000);
     }
 
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     const beforeAdmit = await latestCounts(page);
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(1500);

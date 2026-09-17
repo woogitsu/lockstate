@@ -315,7 +315,7 @@ export const HUD_MESSAGE_KEY = {
    * The camera zoom control in the bottom-left corner (issue #1023).
    *
    * The capability was finished, deliberate and documented -- `ZOOM_BOUNDS`
-   * in `src/rendering/scene/world-scene.ts:71` is `{ min: 0.2, max: 3 }`, a
+   * in `src/rendering/scene/world-scene.ts:68` is `{ min: 0.2, max: 3 }`, a
    * fifteen-fold range reachable on the wheel, on a pinch and on `+`/`-` --
    * and no control named it anywhere. Measured on the assembled page at
    * 1280x800 before this landed: the substring `zoom` appeared **nowhere** in
@@ -1432,8 +1432,7 @@ export const HUD_MESSAGE_KEY = {
    * words with no verb in front of it does not say whether they are what the
    * group *may* do or what it is doing. `regimeCategorySeparator` is what
    * joins them: a list separator is locale vocabulary (`، ` in Arabic, `、` in
-   * Japanese) and `joinScopeLabels` (`src/ui/save-panel.ts:340`) hard-codes
-   * `', '` for the same
+   * Japanese) and `src/ui/save-panel.ts:217` hard-codes `', '` for the same
    * job, which is the one place in the tree that does.
    *
    * `regimeRosterName` exists because the *order* of a person's two names is a

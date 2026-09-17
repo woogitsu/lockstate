@@ -1,5 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
+  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -13,9 +14,7 @@ import {
   panelText,
   press,
   sentCommands,
-  showPanel,
   tab,
-  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -334,7 +333,7 @@ async function buildSealedCell(page: Page, label: string): Promise<SealedCellRes
 }
 
 async function admit(page: Page, count: number, act: string): Promise<number> {
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   let pressed = 0;
   for (let index = 0; index < count; index += 1) {
     if ((await page.locator('.hud-intake__admit').getAttribute('disabled')) !== null) {

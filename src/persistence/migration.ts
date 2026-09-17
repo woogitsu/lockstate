@@ -16,10 +16,10 @@
  * written.** It is marked rather than deleted because #105 corrected this
  * docblock *into* that reading and a reader arriving from it needs to see the
  * turn. Since #106 the save schema wraps the pass-through in a `.transform`
- * that `structuredClone`s -- `detachedJsonValueSchema`, `save-schema.ts:77` --
- * and applies it at `queuedCommandSchema.payload` (`save-schema.ts:84`), which
+ * that `structuredClone`s -- `detachedJsonValueSchema`, `save-schema.ts:75` --
+ * and applies it at `queuedCommandSchema.payload` (`save-schema.ts:82`), which
  * every version schema registered in `saveMigrationChain`
- * (`save-schema.ts:1615-1620`) reaches through the shared
+ * (`save-schema.ts:1503-1507`) reaches through the shared
  * `kernelSnapshotSchema`. So a save's queued command payloads are
  * detached at parse, on every version, and no longer alias the caller's input.
  * `save-schema.ts:55-75` records why the clone sits at that field instead of

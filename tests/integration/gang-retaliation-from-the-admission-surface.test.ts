@@ -17,8 +17,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * and it admits with **`priorIncidents: 2`** — its own header says that is
  * "the one field that differs" and that the field is what puts an arrival in
  * reach of the high-risk floor at intake. **The game cannot send that value.**
- * `src/main.ts:1178` is `const ADMISSION_REQUEST = { priorIncidents: 0 } as const;`
- * and `:3432` passes `ADMISSION_REQUEST.priorIncidents` into the one
+ * `src/main.ts:1177` is `const ADMISSION_REQUEST = { priorIncidents: 0 } as const;`
+ * and `:3431` passes `ADMISSION_REQUEST.priorIncidents` into the one
  * `AdmitPrisoner` command the interface builds, so every prisoner any player
  * has ever admitted arrived at `0`.
  *
@@ -108,42 +108,6 @@ function buildPrison(seed: number): SimulationRuntime {
   return runtime;
 }
 
-/**
- * **The prison of a given seed, carried forward to a given tick, built once.**
- *
- * Two of the three cases below want seed `0x0cc0` at
- * `FIRST_RETALIATION_TICK + 1`: the chain case walks there through its
- * checkpoints, and the alerts-channel case walked there again from nothing.
- * That second walk is 54,700 ticks of the same simulation for a reading --
- * the order of two entries in an append-only event log -- that the first
- * walk's runtime already holds. Measured on this tree, this file alone on an
- * idle four-core container, two runs each way: the alerts case **219ms /
- * 223ms before, 1ms after**, and the file's test time **1.24s / 1.22s before,
- * 1.02s / 1.04s after**.
- *
- * **It is a cache, not a coupling, and the `kernel.tick > tick` branch is what
- * makes that true.** Every caller states the tick it needs and gets a runtime
- * at exactly that tick. A caller that asks for an *earlier* tick than the
- * cached runtime has reached cannot be served by it -- a stepped kernel does
- * not go back -- so it gets a freshly built one instead. So each case still
- * passes on its own with `-t`, and still passes if the cases are reordered:
- * the chain case's checkpoint assertions at 48,000 cannot silently read a
- * runtime some other case had already carried past them. Checked rather than
- * argued: three runs under `--sequence.shuffle.tests`, all three orderings
- * green, including the two that put the alerts case ahead of the chain case.
- */
-const PRISONS = new Map<number, SimulationRuntime>();
-
-function advanced(seed: number, tick: number): SimulationRuntime {
-  let runtime = PRISONS.get(seed);
-  if (runtime === undefined || runtime.kernel.tick > tick) {
-    runtime = buildPrison(seed);
-    PRISONS.set(seed, runtime);
-  }
-  stepTo(runtime, tick);
-  return runtime;
-}
-
 function incidentsOfType(runtime: SimulationRuntime, type: string): readonly { readonly startedAtTick: number; readonly severity: number; readonly participantIds: readonly number[] }[] {
   return runtime.incidents
     .all()
@@ -165,7 +129,7 @@ describe('a gang retaliation from the admission the interface actually makes (#9
    * 55,700.
    */
   it('reaches a gang retaliation at priorIncidents: 0, and the incident the sentence describes is not empty', () => {
-    const runtime = advanced(0x0cc0, 1_000);
+    const runtime = buildPrison(0x0cc0);
 
     // The two gangs exist from session creation and nobody is in one.
     expect(runtime.gangs.all().map((gang) => gang.id)).toEqual(['gang.alpha', 'gang.beta']);
@@ -214,7 +178,8 @@ describe('a gang retaliation from the admission the interface actually makes (#9
   });
 
   it('puts it on the alerts channel, after the assault it came from', () => {
-    const runtime = advanced(0x0cc0, FIRST_RETALIATION_TICK + 1);
+    const runtime = buildPrison(0x0cc0);
+    stepTo(runtime, FIRST_RETALIATION_TICK + 1);
 
     const types = runtime.events.getSnapshot().records.map((record) => record.type);
     const assaultAt = types.indexOf('incidents.assault-opened');
@@ -244,7 +209,8 @@ describe('a gang retaliation from the admission the interface actually makes (#9
    * membership rule has to come past it.
    */
   it('produces none at all when the one pair that fights shares a gang, however long it runs', () => {
-    const runtime = advanced(0x0cc3, 1_000 + 90 * DAY);
+    const runtime = buildPrison(0x0cc3);
+    stepTo(runtime, 1_000 + 90 * DAY);
 
     const assaults = incidentsOfType(runtime, 'assault');
     expect(assaults.length).toBe(85);

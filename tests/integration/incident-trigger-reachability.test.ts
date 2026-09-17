@@ -208,49 +208,6 @@ function run(plan: PrisonPlan): SimulationRuntime {
 }
 
 /**
- * **`run`, memoised on the plan, for the plans two cases ask for identically.**
- *
- * Three plans in this file are each built twice by two different cases, from
- * the same `PrisonPlan` and this file's own seed, and the second build cannot
- * observe anything the first did not: `run` returns a runtime already carried
- * to `RUN_TICKS`, and every case that takes one only *reads* incidents,
- * coverage, scores and occupancy off it. Nothing steps a runtime `run`
- * returned, so there is no order in which a shared one differs from a fresh
- * one.
- *
- * Measured on this tree, this file alone on an idle four-core container, three
- * runs each way: **17.41s / 17.97s / 17.64s of test time before, 17.22s /
- * 17.08s / 16.16s after** -- three 30,000-tick simulations, worth about 0.6s
- * of a 17.6s file. The three cases that now take the cached runtime report
- * **1ms, 3ms and 1ms**, against 209ms, 173ms and 173ms before.
- *
- * **Said plainly, because it is the useful part: this is a small saving and it
- * does not touch either case CI timed out on.** `stays clear for twelve
- * in-game days` and `stops rioting on every seed tried` both build plans
- * nothing else in the file builds, and both are still the full cost they
- * were. What is removed here is duplication, not their cost, and their cost
- * is inherent.
- *
- * **Deliberately not applied to the two cases that are about repetition
- * itself.** `is deterministic: the same seed and the same commands produce the
- * same riots twice` builds its two runtimes with `run` on both halves, and the
- * three seed sweeps below call `runOnSeed`; handing any of those a cached
- * runtime would make the assertion compare an object with itself, which is the
- * one way a saved simulation here would buy a false green. The memo is keyed
- * on the plan alone and `runOnSeed` never touches it.
- */
-const CACHED_RUNS = new Map<string, SimulationRuntime>();
-
-function cachedRun(plan: PrisonPlan): SimulationRuntime {
-  const key = JSON.stringify(Object.entries(plan).sort(([a], [b]) => (a < b ? -1 : 1)));
-  const cached = CACHED_RUNS.get(key);
-  if (cached !== undefined) return cached;
-  const runtime = run(plan);
-  CACHED_RUNS.set(key, runtime);
-  return runtime;
-}
-
-/**
  * The same run on a seed other than this file's own.
  *
  * Added for ADR 0102, and for one claim only: **that the riots stopping is a
@@ -309,7 +266,7 @@ describe('a prison that meets its prisoners’ needs does not riot, however it i
     // get wrong: a trigger that fires here would make every prison riot and the
     // incident chip would be permanently red.
     for (const guards of [1, 0]) {
-      const runtime = cachedRun({ ...WELL_RUN, guards });
+      const runtime = run({ ...WELL_RUN, guards });
       expect(incidentsOfType(runtime, 'riot'), `guards: ${String(guards)}`).toEqual([]);
       expect(runtime.incidentTriggerSystem.getMetrics().riotsTriggered).toBe(0);
     }
@@ -329,7 +286,7 @@ describe('a prison that meets its prisoners’ needs does not riot, however it i
    * asserting a comfort rather than a measurement.
    */
   it('has no assaults either, once a single guard is on post', () => {
-    const runtime = cachedRun({ ...WELL_RUN, guards: 1 });
+    const runtime = run({ ...WELL_RUN, guards: 1 });
     expect(incidentsOfType(runtime, 'assault')).toEqual([]);
     expect(incidentsOfType(runtime, 'escape-attempt')).toEqual([]);
 
@@ -357,7 +314,7 @@ describe('a prison with beds and nothing else is one guard away from rioting', (
   });
 
   it('does not riot, once a single guard is hired — which is the whole of the difference', () => {
-    const runtime = cachedRun({ ...BED_ONLY, guards: 1 });
+    const runtime = run({ ...BED_ONLY, guards: 1 });
     expect(incidentsOfType(runtime, 'riot')).toEqual([]);
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
       { sectorId: 'security-sector.prison', required: 1, assigned: 1, shortage: 0 },
@@ -386,7 +343,7 @@ describe('a prison with beds and nothing else is one guard away from rioting', (
    * of.
    */
   it('but it does have assaults, which is what neglect costs a staffed prison', () => {
-    const runtime = cachedRun({ ...BED_ONLY, guards: 1 });
+    const runtime = run({ ...BED_ONLY, guards: 1 });
 
     const assaults = incidentsOfType(runtime, 'assault');
     expect(assaults.length).toBeGreaterThan(0);
@@ -465,7 +422,7 @@ describe('a prison outgrows its staffing, and the coverage report says so before
   });
 
   it('stops rioting once the second guard is hired, without a single cell being built', () => {
-    const runtime = cachedRun({ ...OVERCROWDED, guards: 2 });
+    const runtime = run({ ...OVERCROWDED, guards: 2 });
     expect(runtime.deploymentSystem.getCoverageReport(runtime.kernel.tick)).toEqual([
       { sectorId: 'security-sector.prison', required: 2, assigned: 2, shortage: 0 },
     ]);
@@ -514,7 +471,7 @@ describe('a prison outgrows its staffing, and the coverage report says so before
    * `19482be6` above landed, and the reason the mean fell then.
    */
   it('and the prisoners it never housed produce assaults the sector score cannot see', () => {
-    const runtime = cachedRun({ ...OVERCROWDED, guards: 2 });
+    const runtime = run({ ...OVERCROWDED, guards: 2 });
 
     expect(incidentsOfType(runtime, 'assault').length).toBeGreaterThan(0);
     // The sector is calm by its own measure, throughout: `getScore` is the last

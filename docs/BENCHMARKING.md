@@ -55,9 +55,9 @@ checksum bit-identical. Measured on the smoke profile:
 
 | mutation of `src/` | `production.meal-rush` | `production.lockdown-return` | `production.single-request-budget` |
 | --- | --- | --- | --- |
-| `heuristic()` returns `0` (`local-search.ts:107`) | `totalExpansions` 24,195 > 16,900 | 27,672 > 20,900 | `expansionsForGuidedRequest` 2,077 > 70 |
+| `heuristic()` returns `0` (`local-search.ts:99`) | `totalExpansions` 24,195 > 16,900 | 27,672 > 20,900 | `expansionsForGuidedRequest` 2,077 > 70 |
 | region-Dijkstra early exit removed (`region-dijkstra.ts:81`) | 19,415 > 16,900 | 21,472 > 20,900 | passes, structurally |
-| `workBudgetPerTick` 2,000 → 8,000 (`new-session.ts:118`) | `maxExpansionsInOneTick` 8,035 > 2,400 | 8,063 > 2,400 | `workBudgetPerTick` 8,000 ≠ 2,000 |
+| `workBudgetPerTick` 2,000 → 8,000 (`new-session.ts:66`) | `maxExpansionsInOneTick` 8,035 > 2,400 | 8,063 > 2,400 | `workBudgetPerTick` 8,000 ≠ 2,000 |
 
 `navigation.production.single-request-budget` answers two of the three, and the
 third is a property of its layout rather than a gap in its bounds: it builds a
