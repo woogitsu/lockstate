@@ -2439,7 +2439,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
-  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.',
+  /*
+   * **The tail of this sentence was rewritten for issue #961** -- it read
+   * *"an arrival with none waits until a bed is free"* and that stopped being
+   * true the moment a room type could author a resident ceiling (the owner's
+   * ruling of 2026-09-17). In a cell holding `maxResidents: 2` with four beds
+   * standing in it, a bed **is** free and the arrival still waits, so the old
+   * clause promised a remedy the code does not keep -- `AGENTS.md`'s fourth
+   * reservation, whose wording has been ours since 2026-09-04 and whose truth
+   * has not.
+   *
+   * What replaces it is the condition `IntakeSystem` actually retries on:
+   * `findBestAvailable` answers an instance only where
+   * `occupancyOf(instance) < instance.residentCapacity`
+   * (`src/simulation/prisoners/room-instance-registry.ts:1104`), and
+   * `residentCapacity` is now `min(sleep surfaces, the room type's ceiling)`
+   * (`src/simulation/objects/room-capacity.ts`). "Room for them" is true of
+   * both halves of that `min`, where "a free bed" is true of only one.
+   *
+   * The first clause is untouched and is still true: a prison with no free bed
+   * can still admit, and the arrival waits rather than being refused.
+   */
+  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until there is room for them.',
   // The warning beside the control, and the only toned figure on this panel.
   // "no bed" and not "no cell": a zoned cell with nothing in it houses nobody,
   // because `deriveRoomCapacity` credits residency to sleep surfaces and not to

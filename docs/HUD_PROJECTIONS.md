@@ -504,7 +504,10 @@ Two things deliberately do **not** cross:
   did. `deriveRoomCapacity` (`src/simulation/objects/room-capacity.ts`) credits
   `residentCapacity` only for an object whose capabilities include
   `'sleep-surface'`; a bench, a dining table and a shower head declare none, so
-  a 40-seat canteen adds 0. The *conclusion* was right for the reason the
+  a 40-seat canteen adds 0. **Since issue #961 that sum is also capped** at the
+  room type's authored `maxResidents` where it declares one -- `room.cell` 2,
+  `room.solitary-cell` 1 -- so a cell with four beds in it contributes 2 rather
+  than 4. The *conclusion* was right for the reason the
   bullet's own last clause named: `object.medical-bed` declares
   `'sleep-surface'` too, so `roomCapacity` counts a furnished infirmary's beds
   while `IntakeSystem` will never house anybody in one.

@@ -74,8 +74,32 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 const SEED = 0x0b1ec7;
 const PRISONERS = 24;
 
-/** One dormitory: 24 beds make its resident capacity 24, and 24 toilets make `sanitation` unscarce. */
-const DORM = { x: 0, y: 0, width: 12, height: 6 } as const;
+/**
+ * **Twelve cells, not one dormitory, since issue #961** (the owner's ruling of
+ * 2026-09-17: a resident ceiling per room type in the catalogue). `room.cell`
+ * authors `maxResidents: 2`, so the 12x6 single room this fixture used to zone
+ * would now house two prisoners out of 24 and the file's subject -- 24
+ * prisoners contending for a room -- would quietly stop existing.
+ *
+ * The **origin and the object count are unchanged**: twelve 2x3 cells,
+ * `room.cell`'s own authored minimum, tile the same corner of the world with
+ * the same 24 beds and 24 toilets and the same bill. What is new is the
+ * interior walls and a door per cell.
+ *
+ * The two rows are separated by an open corridor at `y = 3` rather than being
+ * stacked against each other, so that **every cell's door opens onto open
+ * ground**. Stacked, the upper row's only way out was through the cell below
+ * it, and 24 prisoners routing to two shower heads through another prisoner's
+ * cell left one of them at hygiene 0.0 -- which is the exact floor the case
+ * below exists to say nobody reaches. The rectangle is therefore 12x7 where
+ * the dormitory was 12x6; nothing else about the prison moved.
+ */
+const CELL_RECTS = [0, 4].flatMap((y) => [0, 2, 4, 6, 8, 10].map((x) => ({ x, y, width: 2, height: 3 } as const)));
+
+/** Two beds and two toilets per cell -- 24 and 24, the same objects and the same bill as the dormitory carried. */
+const BED_TILES = CELL_RECTS.flatMap((rect) => [{ x: rect.x, y: rect.y }, { x: rect.x + 1, y: rect.y }]);
+const TOILET_TILES = CELL_RECTS.flatMap((rect) => [{ x: rect.x, y: rect.y + 2 }, { x: rect.x + 1, y: rect.y + 2 }]);
+
 /** Wide enough for nine `3x2` dining tables, so the control differs from the contended arm by seven `PlaceObject` commands and by nothing else. */
 const CANTEEN = { x: 16, y: 0, width: 12, height: 8 } as const;
 const CANTEEN_ID = 'room.canteen:16:0';
@@ -114,27 +138,20 @@ function prison(tables: number): SimulationRuntime {
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: PLANKS }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: BRICKS }));
 
-  const rooms = tables === 0
-    ? ([['dorm', DORM, 'room.cell']] as const)
-    : ([['dorm', DORM, 'room.cell'], ['canteen', CANTEEN, 'room.canteen']] as const);
-  for (const [id, rect, roomCatalogId] of rooms) {
+  for (const [index, rect] of CELL_RECTS.entries()) {
     wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
-    submit(runtime, `zone-${id}`, packCommand({ type: 'ZoneRoom', roomId: roomCatalogId, ...rect }));
+    submit(runtime, `zone-cell-${index}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect }));
+  }
+  if (tables > 0) {
+    wallRoomPerimeter(runtime.world, CANTEEN, { doors: runtime.navigation.doors });
+    submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN }));
   }
 
-  let placed = 0;
-  for (const y of [0, 2]) {
-    for (let x = 0; x < 12; x += 1) {
-      submit(runtime, `bed-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-bed-${placed}`, definitionId: 'bed-wooden', x, y }));
-      placed += 1;
-    }
+  for (const [placed, tile] of BED_TILES.entries()) {
+    submit(runtime, `bed-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-bed-${placed}`, definitionId: 'bed-wooden', ...tile }));
   }
-  placed = 0;
-  for (const y of [4, 5]) {
-    for (let x = 0; x < 12; x += 1) {
-      submit(runtime, `toilet-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-toilet-${placed}`, definitionId: 'toilet-brick', x, y }));
-      placed += 1;
-    }
+  for (const [placed, tile] of TOILET_TILES.entries()) {
+    submit(runtime, `toilet-${placed}`, packCommand({ type: 'PlaceObject', orderId: `o-toilet-${placed}`, definitionId: 'toilet-brick', ...tile }));
   }
   for (let table = 0; table < tables; table += 1) {
     const x = 17 + (table % 3) * 3;
@@ -290,7 +307,27 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * and no equivalent applies to dining claims. Whether it should is not this
      * issue's to decide.
      */
-    expect(run.canteenEntries).toEqual([...repeated(11, 6), ...repeated(9, 6), ...repeated(0, 12)]);
+    /*
+     * **Re-measured for issue #961, and the caste this paragraph describes is
+     * GONE -- which is a finding about the ruling and not about this file.**
+     * The owner's ruling of 2026-09-17 gives `room.cell` `maxResidents: 2`, so
+     * the one 24-bed dormitory these prisoners lived in is now twelve cells of
+     * two (see `CELL_RECTS`). The perfect blocks below -- six on eleven meals,
+     * six on nine, twelve on none -- **were a property of that dormitory**:
+     * 24 prisoners standing in one room have identical travel, so the scan's
+     * entity-index tie-break decided the whole outcome and the answer came out
+     * in index order. Housed two to a cell they no longer share a route, and
+     * the same 24 prisoners take
+     * `[11, 2, 2, 11, 10, 12, 0, 0, 8, 10, 9, 8, 0, 5, 5, 0, 0, 9, 0, 4, 4, 10, 9, 9]`
+     * canteen meals: 130 in total against 120, six still shut out, and which
+     * six is no longer a function of when they arrived.
+     *
+     * The array read `[...repeated(11, 6), ...repeated(9, 6), ...repeated(0, 12)]`
+     * before it, `8 / 6 / 3` before issue #588. **What the assertions under it
+     * are for is unchanged**, and one of them had to be re-derived rather than
+     * re-baselined; see the note on the separation below.
+     */
+    expect(run.canteenEntries).toEqual([11, 2, 2, 11, 10, 12, 0, 0, 8, 10, 9, 8, 0, 5, 5, 0, 0, 9, 0, 4, 4, 10, 9, 9]);
 
     /*
      * **And what the production counter sees, with no watcher at all: the same
@@ -299,8 +336,12 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * -- and prisoners 12 to 23 carry six or seven of them each against one or
      * three for the twelve who eat more often.
      */
-    // 3 / 1 / 7 / 6 until issue #588, for the reason the array above gives.
-    expect(run.contendedSubstitutionCycles).toEqual([...repeated(0, 6), ...repeated(1, 6), ...repeated(11, 12)]);
+    // `[...repeated(0, 6), ...repeated(1, 6), ...repeated(11, 12)]` until issue
+    // #961 split the dormitory into twelve cells; 3 / 1 / 7 / 6 until issue
+    // #588, for the reason the array above gives. **Every prisoner is now
+    // refused at least eight times** -- nobody sits in the canteen unopposed
+    // any more, because nobody is first to the door on every single block.
+    expect(run.contendedSubstitutionCycles).toEqual([9, 18, 18, 9, 10, 8, 11, 11, 12, 10, 11, 12, 20, 15, 15, 20, 20, 11, 20, 16, 16, 10, 11, 11]);
 
     /*
      * The claim stated as a *separation* rather than as the literal above, so
@@ -313,7 +354,25 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     const mostRefused = [...run.contendedSubstitutionCycles.keys()]
       .sort((a, b) => run.contendedSubstitutionCycles[b]! - run.contendedSubstitutionCycles[a]! || a - b)
       .slice(0, 12);
-    expect([...leastFed].sort((a, b) => a - b)).toEqual([...mostRefused].sort((a, b) => a - b));
+    /*
+     * **This line asserted set equality and no longer can, which is recorded
+     * rather than relaxed.** In the dormitory prison the twelve who ate least
+     * *were* the twelve refused most, exactly. In the twelve-cell prison the
+     * two lists agree on **ten of twelve**: prisoners 6 and 7 eat in the
+     * canteen not once and are refused 11 times each, while 8 and 11 eat eight
+     * times and are refused 12 -- a prisoner who falls back to
+     * `action.eat-in-cell` early accrues fewer refusals than one who keeps
+     * trying and keeps losing, and with individual cells the two behaviours
+     * stop coinciding.
+     *
+     * Pinned as the exact overlap rather than as "at least", so it fails in
+     * **both** directions: a change that restored the perfect correlation
+     * fails here and so does one that dissolved it. The claim the file is
+     * actually for -- that the counter separates the losers from the winners
+     * -- is the strict inequality on the next assertion, and that one is
+     * unchanged and still passes.
+     */
+    expect(leastFed.filter((n) => mostRefused.includes(n))).toHaveLength(10);
     expect(Math.min(...mostRefused.map((n) => run.contendedSubstitutionCycles[n]!))).toBeGreaterThan(
       Math.max(...[...run.contendedSubstitutionCycles.keys()].filter((n) => !mostRefused.includes(n)).map((n) => run.contendedSubstitutionCycles[n]!)),
     );
@@ -326,8 +385,8 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     const metrics = run.runtime.prisoners.actionSystem.getMetrics();
     expect(metrics.substitutionCycles).toBe(run.substitutionCycles.reduce((total, count) => total + count, 0));
     expect(metrics.contendedSubstitutionCycles).toBe(run.contendedSubstitutionCycles.reduce((total, count) => total + count, 0));
-    // 4,782 / 102 until issue #588.
-    expect(metrics).toMatchObject({ substitutionCycles: 4_818, contendedSubstitutionCycles: 138, routeFailures: 0 });
+    // 4,818 / 138 until issue #961's twelve cells; 4,782 / 102 until issue #588.
+    expect(metrics).toMatchObject({ substitutionCycles: 5_080, contendedSubstitutionCycles: 324, routeFailures: 0 });
     expect(metrics.substitutionsCountedSinceTick, 'never restored, so the window is the whole session').toBe(0);
 
     /*
@@ -341,8 +400,9 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * choosing, and what a downgrade *costs* is a need level, which the save
      * already carries.
      */
-    // 197 / 194 / 203 until issue #588.
-    expect(run.substitutionCycles).toEqual([...repeated(194, 6), ...repeated(197, 6), ...repeated(206, 12)]);
+    // `[...repeated(194, 6), ...repeated(197, 6), ...repeated(206, 12)]` until
+    // issue #961's twelve cells; 197 / 194 / 203 until issue #588.
+    expect(run.substitutionCycles).toEqual([193, 216, 216, 203, 194, 213, 214, 214, 207, 215, 207, 207, 219, 215, 215, 219, 219, 207, 219, 215, 215, 215, 216, 207]);
     /*
      * **12,100 / 3,500 / 4,300 until the hire, and the claim under it has
      * inverted.** The line here used to read *"the contended canteen genuinely
@@ -360,11 +420,26 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * visible in the hunger floor as well as in the seat count -- rather than
      * being deleted or relaxed to a bound that would pass for anything.
      */
-    expect(run.lowestHunger).toEqual([...repeated(27_500, 12), ...repeated(27_300, 12)]);
+    /*
+     * **`[...repeated(27_500, 12), ...repeated(27_300, 12)]` until issue #961's
+     * twelve cells**, and the pair of literals that followed it -- prisoner 0
+     * against prisoner 23, 200 units apart -- went with the caste. The hunger
+     * floor is now read off the two prisoners the array itself names as worst
+     * served, which is the same claim asked of the run rather than of the
+     * arrival order: **the hungriest prisoners in this prison are among those
+     * the canteen shuts out**, and the gap to the best-fed one is real.
+     */
+    expect(run.lowestHunger).toEqual([
+      35_300, 35_300, 35_300, 35_700, 36_100, 35_100, 27_500, 27_500, 34_900, 35_100, 34_700, 34_900,
+      35_300, 34_700, 34_700, 35_300, 35_300, 34_700, 35_300, 34_700, 34_700, 35_500, 35_500, 34_700,
+    ]);
+    const hungriest = [...run.lowestHunger.keys()].sort((a, b) => run.lowestHunger[a]! - run.lowestHunger[b]! || a - b).slice(0, 2);
+    expect(hungriest, 'the two hungriest prisoners').toEqual([6, 7]);
+    expect(hungriest.map((n) => run.canteenEntries[n]), 'and neither of them ever sat down in the canteen').toEqual([0, 0]);
     expect(
-      run.lowestHunger[0]! - run.lowestHunger[PRISONERS - 1]!,
-      'the twelve who never sit down still finish measurably hungrier than the twelve who do',
-    ).toBe(200);
+      Math.max(...run.lowestHunger) - Math.min(...run.lowestHunger),
+      'the prisoners the canteen shuts out still finish measurably hungrier than the best-fed one',
+    ).toBe(8_600);
   });
 
   it('reads exactly zero the moment the canteen seats everybody, so it is counting refusals and not meals', () => {
@@ -388,8 +463,10 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     // Still downgraded constantly -- for the recreation and education blocks
     // this prison has no room for -- which is what makes the zero above a
     // statement about *contention* rather than about the counter being asleep.
-    // 174 until issue #588.
-    expect(control.substitutionCycles).toEqual(repeated(185, PRISONERS));
+    // `repeated(185, PRISONERS)` until issue #961's twelve cells -- one
+    // dormitory gave every prisoner the same walk and therefore the same
+    // count; 174 until issue #588.
+    expect(control.substitutionCycles).toEqual([185, 190, 190, 195, 185, 205, 190, 190, 190, 205, 195, 190, 190, 195, 195, 190, 190, 195, 190, 195, 195, 205, 205, 195]);
   });
 
   it('separates a room that is full from a room nobody built, which `unmetDemandCycles` reads as 0 either way', () => {
@@ -404,19 +481,23 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * canteen is chosen and refused every time -- and **none of it is
      * contention**, because there is no canteen to be refused by.
      */
-    // 261 until issue #588.
-    expect(unbuilt.substitutionCycles).toEqual(repeated(268, PRISONERS));
+    // `repeated(268, PRISONERS)` until issue #961's twelve cells, which give
+    // four of the 24 one extra downgrade apiece; 261 until issue #588.
+    expect(unbuilt.substitutionCycles).toEqual([
+      268, 268, 268, 268, 268, 269, 268, 268, 268, 269, 268, 268,
+      268, 268, 268, 268, 268, 268, 268, 268, 268, 269, 269, 268,
+    ]);
     expect(unbuilt.contendedSubstitutionCycles).toEqual(repeated(0, PRISONERS));
 
     /*
-     * **And this is the blindness the issue is about, in one line.** 6,264
+     * **And this is the blindness the issue is about, in one line.** 6,436
      * downgrades, and the metric that existed before this change is 0 -- the
      * same 0 the nine-table prison above reports, where nobody was downgraded
      * for a meal at all.
      */
     expect(unbuilt.runtime.prisoners.actionSystem.getMetrics()).toMatchObject({
-      // 6,264 until the hire (see `admitAll`).
-      substitutionCycles: 6_432,
+      // 6,432 until issue #961's twelve cells; 6,264 until the hire (see `admitAll`).
+      substitutionCycles: 6_436,
       contendedSubstitutionCycles: 0,
       unmetDemandCycles: 0,
     });

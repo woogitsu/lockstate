@@ -978,8 +978,14 @@ const plMessages: Readonly<Record<string, string>> = {
   // A control's label -- the operator acting on the institution -- so
   // *osadzonego* under the owner's ruling.
   'hud.intake.admit': 'Przyjmij osadzonego',
+  // **The tail was rewritten for issue #961**, with the English original's: it
+  // read *"czeka, aż któreś się zwolni"* ("waits until one of them frees up",
+  // of the beds), and a resident ceiling makes a free bed insufficient -- a
+  // cell holding `maxResidents: 2` with four beds leaves an arrival waiting
+  // beside two empty ones. *Miejsce* is the place rather than the bed, which is
+  // what `residentCapacity` counts.
   'hud.intake.hint':
-    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż któreś się zwolni.',
+    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż znajdzie się dla niego miejsce.',
   // Reshaped: the numeral moves out of the verb's way entirely.
   'hud.intake.no-place': 'Bez łóżka do spania: {count}',
   'hud.intake.pipeline': 'W przyjęciach',
