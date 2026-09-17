@@ -472,9 +472,33 @@ test.describe('HUD shell', () => {
    * Every other tab's label box is 13.2px here, so the assertion is that no
    * label is taller than the shortest of them rather than a pinned pixel
    * count.
+   *
+   * **THE VIEWPORT MOVED FROM 375x812 TO 768x812 ON 2026-09-16, AND THE
+   * PARAGRAPHS ABOVE ARE KEPT BECAUSE THEY ARE THE MEASUREMENT THE RULE WAS
+   * BUILT ON.** The owner ruled that below 721px a tab shows its icon and not
+   * its name (#1192), so at 375x812 there is no drawn label left to wrap and
+   * this test would have been **vacuously green**: every label is a 1px
+   * `.ui-sr-only` box there. A wrap is still a defect wherever the name *is*
+   * drawn, which is every viewport above the break, so the test follows the
+   * label rather than being deleted with it. 721x420 is the narrowest width
+   * above the break, with a height short enough to keep the five sections in a
+   * horizontal bar rather than the column `navigationPlacement` gives them
+   * wherever one fits (it is a fit test on the height, not a breakpoint).
+   *
+   * **MEASURED 2026-09-16, AND IT IS A WEAKNESS THIS TEST NOW HAS TO DECLARE:
+   * MUTATING `white-space: nowrap` IN `primitives.css` NO LONGER TURNS THIS
+   * TEST RED.** With the label hidden below 721px, the only widths where the bar
+   * squeezed a tab below its own `min-width` are widths where the name is not
+   * drawn at all; above the break the bar is `fit-content` and settles at its
+   * max-content 387.16px from 414px up, so no label is ever compressed there.
+   * The declaration is kept because it is what makes the claim true, not because
+   * anything reaches it -- and this test is kept because *a wrap is still a
+   * defect wherever the name is drawn*, which is what it asserts. It is a
+   * regression gate on the layout, not a mutation gate on that one declaration,
+   * and saying so here is cheaper than the next reader re-deriving it.
    */
-  test('no section name wraps to a second line at 375x812', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+  test('no section name wraps to a second line at 721x420', async ({ page }) => {
+    await page.setViewportSize({ width: 721, height: 420 });
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
     const labels = await page.evaluate(() =>
@@ -495,6 +519,109 @@ test.describe('HUD shell', () => {
       'these section names wrap, and every line they wrap to comes off the rail',
     ).toEqual([]);
     expect(labels.every((label) => label.lineBoxes === 1)).toBe(true);
+  });
+
+  /**
+   * ICON-ONLY TABS BELOW THE BREAK -- the owner's ruling of 2026-09-16 on
+   * #1192, recorded in `docs/VISUAL_IDENTITY.md` item 5.
+   *
+   * Three claims, and they fail in three different ways, which is why they are
+   * three tests. The bar can fit and announce nothing; it can announce
+   * everything and overflow; and either can be bought by taking the names off
+   * the screen at widths the ruling did not reach.
+   *
+   * **The second is the one worth stating plainly**: the ruling's own record
+   * says *"an icon-only control still needs the section's name to reach a
+   * screen reader"*, and a tab a screen reader announces as nothing at all
+   * would be a worse defect than the overflow being fixed. It is asserted off
+   * the **accessibility tree** (`toHaveAccessibleName`), not off the
+   * stylesheet, so it stays true however the hiding is spelled -- and goes red
+   * on the one spelling that is wrong, `display: none`.
+   */
+  test.describe('icon-only tabs below the break (#1192)', () => {
+    const SECTION_NAMES = [
+      ['overview', 'Overview'],
+      ['build', 'Build'],
+      ['zones', 'Zones'],
+      ['manage', 'Manage'],
+      ['day-plan', 'Schedule'],
+    ] as const;
+
+    test('the five tabs fit at 375x812', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const bar = await page.evaluate(() => {
+        const round = (value: number): number => Math.round(value * 100) / 100;
+        const inner = document.querySelector<HTMLElement>('.hud-tabs__inner')!.getBoundingClientRect();
+        const tabs = [...document.querySelectorAll<HTMLElement>('.hud__tabs [data-tab]')];
+        const boxes = tabs.map((tab) => tab.getBoundingClientRect());
+        return {
+          count: tabs.length,
+          rows: new Set(boxes.map((box) => round(box.top))).size,
+          left: round(inner.left),
+          right: round(inner.right),
+          narrowestTab: round(Math.min(...boxes.map((box) => box.width))),
+          // `.hud-tabs__inner` is `overflow: hidden` for its rounded corners,
+          // so a tab that does not fit is clipped away in silence -- the
+          // failure that element's own comment in `hud.css` describes. A tab
+          // outside its box is the thing to count, not the bar's own width.
+          outsideTheBar: boxes.filter((box) => box.left < inner.left - 0.5 || box.right > inner.right + 0.5).length,
+        };
+      });
+
+      // Not vacuous: five tabs, laid out, on one row.
+      expect(bar.count, 'the five sections were not found').toBe(5);
+      expect(bar.rows, 'the bar wrapped into rows at the default interface scale').toBe(1);
+      expect(bar.left, 'the tab bar starts off the left edge').toBeGreaterThanOrEqual(0);
+      expect(bar.right, 'the tab bar runs past the right edge of a 375px viewport').toBeLessThanOrEqual(375);
+      expect(bar.outsideTheBar, 'a tab is clipped by the bar it sits in, which happens silently').toBe(0);
+      // Constitution article 16's floor, and `--tap-target`'s own value: a tab
+      // narrower than this is a control a thumb cannot reliably hit.
+      expect(bar.narrowestTab, 'a tab is narrower than the 44px tap target').toBeGreaterThanOrEqual(44);
+    });
+
+    test('every tab still has an accessible name at 375x812', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      for (const [id, name] of SECTION_NAMES) {
+        const tab = page.locator(`.hud__tabs .ui-tab[data-tab="${id}"]`);
+        await expect(tab, `the ${id} tab is not on screen`).toBeVisible();
+        await expect(tab, `the ${id} tab reaches a screen reader as nothing`).toHaveAccessibleName(name);
+      }
+
+      // And the name is genuinely off the screen, or this test would be
+      // asserting the accessibility tree of a bar that never changed.
+      const drawn = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map(
+          (label) => Math.round(label.getBoundingClientRect().width * 100) / 100,
+        ),
+      );
+      expect(drawn, 'the section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1]);
+    });
+
+    test('the section names are still drawn above the break', async ({ page }) => {
+      // 721px: the first width the ruling does not reach, so the labels are
+      // back. The ruling is about a range and this is its edge.
+      await page.setViewportSize({ width: 721, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      const labels = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud__tabs .ui-tab__label')].map((label) => ({
+          text: (label.textContent ?? '').trim(),
+          width: Math.round(label.getBoundingClientRect().width * 100) / 100,
+          position: getComputedStyle(label).position,
+        })),
+      );
+
+      expect(labels.map((label) => label.text)).toEqual(SECTION_NAMES.map(([, name]) => name));
+      expect(
+        labels.filter((label) => label.width < 20),
+        'these section names are laid out at a screen-reader size above the break, where they should be drawn',
+      ).toEqual([]);
+      expect(labels.every((label) => label.position === 'static')).toBe(true);
+    });
   });
 
   test('transport controls report a clock intent without changing the clock themselves', async ({ page }) => {
