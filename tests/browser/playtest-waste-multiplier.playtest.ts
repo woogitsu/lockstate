@@ -102,12 +102,12 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import {
+  TILE,
   armBuildable,
   calibrate,
   centreOf,
-  type CountsSample,
-  countsSeries,
   currentTick,
+  countsSeries,
   drag,
   fastForwardToMax,
   installTee,
@@ -117,10 +117,9 @@ import {
   press,
   runUntilTick,
   sentCommands,
-  showPanel,
   tab,
-  TILE,
   waitForQueueEmpty,
+  type CountsSample,
 } from './playtest-harness';
 
 /**
@@ -545,7 +544,7 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     await waitForQueueEmpty(page);
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     await session.press('admit one prisoner', 'free', async () => {
       await page.locator('.hud-intake__admit').click();
       return `intake ${JSON.stringify((await panelText(page, '.hud-intake')).replace(/\n/g, ' / '))}`;
@@ -627,7 +626,7 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     await waitForQueueEmpty(page);
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     await session.press('admit one prisoner', 'free', async () => {
       await page.locator('.hud-intake__admit').click();
       return `intake ${JSON.stringify((await panelText(page, '.hud-intake')).replace(/\n/g, ' / '))}`;
@@ -788,7 +787,7 @@ test.describe('playtest: the waste multiplier', () => {
     });
 
     await waitForQueueEmpty(page);
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     await session.press('admit one prisoner', 'free', async () => {
       await page.locator('.hud-intake__admit').click();
       return `intake ${JSON.stringify((await panelText(page, '.hud-intake')).replace(/\n/g, ' / '))}`;

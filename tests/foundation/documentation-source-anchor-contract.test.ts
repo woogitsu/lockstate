@@ -169,44 +169,14 @@ function lineCount(path: string): number {
   return lines.length;
 }
 
-/**
- * How long a cited file is, or `null` when it is not there -- computed once per
- * distinct path rather than once per anchor.
- *
- * This is a memo and nothing else: every anchor is still checked, against the
- * same number it would have been checked against, so the assertions below are
- * unchanged in what they can catch. It is here because the corpus made the
- * difference large. The 789 rooted anchors the docblock above counted are 4017
- * today and point at 479 distinct files, so reading the target per anchor read
- * **387 MB** where the distinct set is **15 MB** -- a 25-fold multiplier paid
- * entirely for re-reading `kernel.ts` a hundred times. Measured on this branch,
- * that multiplier is the whole of this file's runtime: the two checking tests
- * cost 791-1081 ms and 528-543 ms before the memo and 45-48 ms and 14-15 ms
- * after, over three runs each on an idle container, so the file
- * stopped sitting on the root config's 5 s `testTimeout` under container load,
- * which is what made it go red on a loaded machine and green on an idle one.
- *
- * `null` for an absent file is cached too: `existsSync` on a path cited 40
- * times is 40 syscalls for one answer that cannot change mid-run.
- */
-const lineCounts = new Map<string, number | null>();
-
-function lineCountOf(path: string): number | null {
-  const cached = lineCounts.get(path);
-  if (cached !== undefined) return cached;
-  const target = join(ROOT, path);
-  const count = existsSync(target) ? lineCount(target) : null;
-  lineCounts.set(path, count);
-  return count;
-}
-
 /** The complaint an anchor earns, or `undefined` if it resolves. */
 function faultOf(anchor: Anchor): string | undefined {
-  const lines = lineCountOf(anchor.path);
-  if (lines === null) return `${anchor.source} -> ${anchor.token}: no such file`;
+  const target = join(ROOT, anchor.path);
+  if (!existsSync(target)) return `${anchor.source} -> ${anchor.token}: no such file`;
   if (anchor.first < 1 || anchor.last < anchor.first) {
     return `${anchor.source} -> ${anchor.token}: not a line range`;
   }
+  const lines = lineCount(target);
   if (anchor.last > lines) {
     return `${anchor.source} -> ${anchor.token}: out of range, ${anchor.path} has ${lines} lines`;
   }
