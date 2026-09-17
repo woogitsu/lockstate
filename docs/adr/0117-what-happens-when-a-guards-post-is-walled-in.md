@@ -41,8 +41,7 @@ they did not take it by default.
 be done about `hud.security.coverage-met` while the condition stands, and §4
 says explicitly that *"whether it is suppressed, or `assigned` stops counting
 a guard that has never arrived, is a second decision that belongs to whoever
-builds this"*; what was built is recorded by the commit that builds it, in a
-§7 that commit adds. It settles nothing
+builds this"*; what was built is recorded in **§7** below. It settles nothing
 about option 2: the prison stays broken, by the ruling's own words, and
 whether it is ever repaired is still open.
 
@@ -568,13 +567,155 @@ fixture. The direction is not in doubt — `response-system.ts:498` routes every
 responder to the same tile — but "0 resolved instead of 1" is one run, not a
 distribution.
 
+## 7. What was built, 2026-09-17 — and the four corrections building it forced
+
+Added by the commit that implements the ruling. Everything below was run on
+this tree; nothing here is an estimate.
+
+### 7a. The predicate, which §3 deliberately left open
+
+`DeploymentSystem.hasUnreachablePost(tick)`, four conjuncts, each one
+mutation-tested by
+`tests/integration/security-post-unreachable-condition.test.ts` (the mutation
+outputs are in that commit's message):
+
+1. the sector's requirement at this tick is non-zero;
+2. its **most recent** deployment route request failed and nothing has
+   succeeded since — a `Set<string>` level on `DeploymentSystem`, added on the
+   `ok: false` branch this document's §4 names and removed on every branch
+   where a route to the post turns out to exist;
+3. no guard of the sector is `'on-post'`;
+4. the roster holds at least one post-eligible guard.
+
+`deploymentFailures` is not read, exactly as §3 requires.
+
+### 7b. §3's shape for conjunct 4 does not work, and the measurement says why
+
+§3 proposes *"at least one **claimable** guard"*. Written that way the
+condition answered `true` on **100 of 200 consecutive ticks** (seed `0x396`,
+post sealed) — because the one guard is claimed on one deployment cadence and
+released on the next, which is **the same alternation §1b measures for
+`shortage`**, reproduced inside the condition written to stop it. The chip
+would have read *"Post cut off"* and *"Covered"* in turn, twice a second.
+Counting hired post-eligible guards instead — a fact about the roster rather
+than about where the cadence happens to be — holds it at **200 of 200**.
+
+### 7c. §3's price 1 is right in substance and its grep is wrong
+
+§3 states *"grepped, `conditions` does not appear in
+`src/persistence/save-schema.ts` at all"*. It appears **three times**
+(`:195`, `:824`, `:862`) — every one of them the English word in a comment,
+none of them a field. So the price holds: no persisted field is added,
+`SAVE_SCHEMA_VERSION` does not move, and the member reaches an existing save
+on its first publication. The sentence that was checkable was the one that was
+wrong, which is §4 of `docs/AGENT_WORKFLOW.md`'s point about absence claims.
+
+(`SAVE_SCHEMA_VERSION` is **6**, not the 5 quoted in §3's option 2 from ADR
+0092's older text. Nothing in this ruling moves it either way.)
+
+### 7d. The renderer §3 assumes already exists does not exist
+
+§3 says the member is *"rendered by whatever renders the four members already
+there"*. **Nothing renders them.** `statusCountsSchema.conditions` has had no
+reader under `src/ui/` since ADR 0087 decision 2 built it, and issue #930's
+re-measurement of 2026-09-15 recommends *not* building one, because all four
+members are painted elsewhere in other words with a figure a set of names
+could never carry. Re-measured 2026-09-17: still none.
+
+So "say it" needed a reader as well as a member. The one built is the
+narrowest that satisfies the ruling: `src/ui/simulation-conditions.ts`, an
+exhaustive `Record` over `PrisonCondition` in which the four existing members
+are `'painted-elsewhere'` with their surfaces named and the fifth is
+`'coverage-chip'`. That is also the `AWAITING_PRODUCER`-shaped obligation §3
+prices — a sixth member fails to compile until somebody says where it is
+painted — and it is the shape
+`tests/unit/simulation-message-keys.test.ts`'s own exemption for
+`PRISON_CONDITIONS` demanded in advance, in its own words: *"when a panel
+reads this field directly, the labelling takes the same
+`Record`-over-closed-union shape those two entries argue for, or this
+exemption is removed rather than kept out of habit."*
+
+### 7e. §4's second decision, settled — and the strip lies too, not only the panel
+
+§4 obliges a decision about `hud.security.coverage-met` while the condition
+stands, and names the Staff panel. **The always-visible status strip is worse
+and §1b did not measure it.** The `COVERAGE` chip's badge comes off
+`coverageBadge`, which reads `prisonersUnguarded` / `prisonersUnderstaffed`
+from `SafetyCoverageSystem` — and those flicker in step with `shortage`:
+measured over 200 consecutive ticks on seed `0x396` with the post sealed,
+**100 ticks** report nobody unguarded, so the chip paints the green
+`hud.security.coverage-met` badge — *"Covered"* — over a prison no guard is
+standing in, on a surface laid out on all five tabs and needing no panel
+opened.
+
+Settled by **displacement, not annotation**: while the condition stands the
+chip takes the `danger` tone and the badge reads the new
+`hud.security.post-unreachable`, with the sentence on the chip's
+`description` (its `title` and screen-reader text). The rung is displaced
+rather than annotated precisely because a badge added *beside* "Covered"
+would have left the false word standing. The Staff panel's own
+`coverage-met` is untouched and is a separate surface; that half of §4's
+question is still open.
+
+### 7f. The two sentences
+
+Authored under `AGENTS.md`'s fourth reservation as partly released on
+2026-09-04 — the choice of words is ours, the requirement that each be true is
+not — and quoted verbatim in the implementing commit and in the pull request
+beside the code opened to prove them.
+
+> **Post cut off**
+>
+> **No guard can reach the post, so nobody is on duty. Taking down a wall
+> beside it opens the way back.**
+
+Polish: *"Posterunek odcięty"* / *"Żaden strażnik nie dotrze na posterunek,
+więc nikt nie pełni służby. Rozebranie ściany obok otwiera drogę z
+powrotem."*
+
+**Neither says the prison is fixed**, which is the ruling's own last clause.
+The first sentence is the fact; the second names what undoes it and claims
+nothing about it having been undone. The remedy clause is measured rather
+than assumed: with all four bounding edges built by real `PlaceBuildOrder`
+presses, removing **one** of them through the real `RemoveWall` command puts
+the guard back `'on-post'` and clears the condition.
+
+### 7g. What is still true of §1e, and is not fixed
+
+Incident response still dies with the post. Nothing in this change routes a
+responder anywhere new. A player who reads the sentence and does nothing still
+has an unguarded prison whose riots cannot be answered — which is what the
+ruling chose, in its own words.
+
+### 7h. The residue
+
+The condition is a level over route outcomes, so between the wall coming down
+and the next `assignUnassignedGuards` pass nothing has yet learned the wall is
+gone: **one deployment cadence**, measured at 10 ticks. Clearing it earlier
+would take a re-derivation triggered by a world change, which is option 2's
+machinery and a reversal of ADR 0036 decision 4. An earlier draft cleared the
+level only on arrival at the post and measured **74** ticks; clearing it on
+the successful route branch as well is what took it to 10.
+
 ## Consequences
 
 - **Nothing is built by this document.** No `src/` file changes, no test is
   added, `SAVE_SCHEMA_VERSION` does not move, no locale key is added and no
   string is authored.
+
+  > **That was true of this document for the day it was `Proposed` and is no
+  > longer true of the repository. It is kept rather than rewritten, per
+  > `docs/AGENT_WORKFLOW.md` §4's rule about marking both directions.** The
+  > owner ruled on 2026-09-17 and the option they took was built the same day;
+  > §7 above is the record. `SAVE_SCHEMA_VERSION` still does not move, which is
+  > the one clause of this bullet that survived intact.
 - **ADR 0036 open question 1 stays open** until the owner rules, and this
   document is where the pricing lives.
+
+  > **Ruled 2026-09-17, and it is closed in one direction only.** The
+  > interface no longer asserts the opposite of the prison's state; the prison
+  > is still broken, and ADR 0036's question of *what should happen* to a
+  > stranded post — options 1 and 2 — is untouched by this ruling.
 - **ADR 0036's own text is not edited.** Its open question 1 is wrong in the four
   ways §1 records; the corrections live here rather than in that file, on this
   repository's standing habit of marking a claim where the correction was found
@@ -585,6 +726,11 @@ distribution.
   but a reader pricing it should use §1b's figure.
 - **If option 3 is chosen**, a second decision falls out immediately and is named
   in §4: what `hud.security.coverage-met` says while the condition stands.
+
+  > **It was, and §7e records what was decided**: the status strip's coverage
+  > badge is displaced while the condition stands. The Staff panel's own
+  > `coverage-met` is a different surface and is untouched, so half of this
+  > consequence is discharged and half is still owed.
 - **`docs/adr/STATUS-QUEUE.md` is owed an entry and does not have one.** The
   brief this was written under names that file as anchored and not to be touched,
   so the debt is recorded here and reported back rather than paid — the same

@@ -265,6 +265,41 @@ export interface HudCountsViewModel {
   readonly prisonersUnderstaffed: number;
   readonly prisonersUnguarded: number;
   /**
+   * **Whether a sector's guard post currently cannot be reached**, so the
+   * post is never manned however many guards the prison has hired
+   * ([ADR 0117](../../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+   * accepted by the owner on 2026-09-17).
+   *
+   * Published, never derived here, for `prisonerCapacity`'s reason above: it
+   * is `PrisonCondition`'s `'security.post-unreachable'` member on
+   * `counts.conditions`, read through `isPostUnreachable`
+   * (`src/ui/simulation-conditions.ts`) rather than compared to a literal
+   * here, and produced by `DeploymentSystem.hasUnreachablePost` -- which is
+   * the same object `assignUnassignedGuards` draws its claimable guards from,
+   * so the readout and the deployment cadence cannot come to disagree about
+   * whether anybody could take the post.
+   *
+   * **It is what stops the chip beside it saying something false.** The three
+   * coverage counts above flicker between *covered* and *unguarded* on a
+   * ten-tick cadence while a post is stranded -- measured over 200 consecutive
+   * ticks on seed `0x396`, exactly 100 each -- because `SafetyCoverageSystem`
+   * follows an assignment that is made and lost every deployment pair. So for
+   * half of all ticks `coverageBadge` reads **"Covered"** over a prison no
+   * guard is standing in. `projectStatusMetrics` gives this field precedence
+   * over that ladder for that reason, and ADR 0117 §4 names the choice as one
+   * that falls to whoever builds the condition.
+   *
+   * **Optional, the same shape as `roomCapacity` above and for its reason**:
+   * every fixture that built a `HudCountsViewModel` before this field existed
+   * stays valid, and absent reads as "no prison has said a post is stranded"
+   * -- which is the safe direction, since it leaves the coverage ladder
+   * exactly as it was.
+   *
+   * `false` is a real state and not "unknown": it is every prison whose posts
+   * can be walked to, which is every prison that has not walled one in.
+   */
+  readonly postUnreachable?: boolean;
+  /**
    * How many prisoners are on the high-risk regime (issue #703, the owner's
    * fourth ruling of 2026-08-31).
    *

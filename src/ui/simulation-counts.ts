@@ -1,4 +1,5 @@
 import { deriveSimulationMessageKey } from '../content/simulation-message-keys';
+import { isPostUnreachable } from './simulation-conditions';
 import type { WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudCountsViewModel, HudOverviewViewModel } from './hud/view-model';
 
@@ -124,6 +125,31 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         // the HUD may not derive a simulation figure, and these are the rungs
         // `SafetyCoverageSystem` counted the population onto on the same walk
         // that provisioned its `safety` (issue #588).
+        /**
+         * Straight through the one reader `statusCountsSchema.conditions` has
+         * ([ADR 0117](../../docs/adr/0117-what-happens-when-a-guards-post-is-walled-in.md),
+         * accepted by the owner on 2026-09-17).
+         *
+         * `isPostUnreachable` rather than
+         * `counts.conditions?.includes('security.post-unreachable')`: the
+         * exhaustive `Record` behind it is what makes a sixth
+         * `PrisonCondition` fail to compile until somebody has decided where
+         * it is painted, which is the whole price ADR 0117 §3 itemises for
+         * this change. Comparing to a literal here would buy nothing and
+         * would leave the id spelled in two places.
+         *
+         * **This is the first line in `src/ui/` ever to read `conditions`.**
+         * The field has been on the wire since ADR 0087 decision 2 and issue
+         * #930's re-measurement of 2026-09-15 recommended leaving it
+         * unread, because all four members were already painted elsewhere
+         * with a figure a set of names could never carry. The fifth is not
+         * painted anywhere else, which is what changed.
+         *
+         * Content-namespace composition at most, never derivation: this
+         * reads a published set and answers a boolean about it, the same
+         * distinction `activeIncidentTypeLabelKey` below draws.
+         */
+        postUnreachable: isPostUnreachable(counts.conditions),
         prisonersCovered: counts.prisonersCovered,
         prisonersUnderstaffed: counts.prisonersUnderstaffed,
         prisonersUnguarded: counts.prisonersUnguarded,
