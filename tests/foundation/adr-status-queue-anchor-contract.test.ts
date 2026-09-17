@@ -474,117 +474,8 @@ function git(args: readonly string[]): string {
  * some other sentence that happens to hold a sha and a version, and written to
  * tolerate the emphasis the file puts on the version (`**v0.0.76**`), because
  * requiring bare text would make a formatting edit look like a missing anchor.
- *
- * ## Every gap in it was a literal space until 2026-09-16, and that is what
- * made the assertion below come out at one
- *
- * `STATUS-QUEUE.md` keeps every superseded anchor as a quoted record, and the
- * quotation is verbatim — *"It read: 'Re-anchored at `main` @ …'"*. So the
- * file holds **49** spans of this shape and the gate required exactly **one**,
- * which coexisted only because 48 of them were unreadable to the pattern.
- * Measured on `36d35998`, each widening applied alone to the old pattern:
- *
- * | pattern | spans read |
- * | --- | --- |
- * | as it stood | **1** |
- * | the `` @ ``-to-sha gap widened to `\s+` | **37** |
- * | the sha-to-version gap widened to `[\s>]*` | **7** |
- * | both, as now | **43** |
- * | every gap widened to `[\s>]+`, as now | **49** |
- *
- * **Every one of those 48 was held out by typography and not by meaning**: 36
- * by where their paragraph happens to wrap, 6 more by the `>` of a blockquote
- * in the `` @ ``-to-sha gap and 6 by a `>` in the sha-to-version gap. Re-flowing
- * one kept quotation onto a single line, or unindenting one blockquote — a
- * formatting edit, the kind nobody reviews — turned a historical record into a
- * second live anchor and failed this gate with a message about anchors.
- * Reproduced both ways before the repair: joining the `58220f7` (v0.0.284)
- * record onto one line, and joining the blockquoted `e5fbe9d9` (v0.0.554)
- * record's version onto its sha, each gave *"expected […] to have a length of
- * 1 but got 2"*.
- *
- * **This file had already written that rule down twice and not applied it
- * here.** `NEXT_FREE_RESTATEMENT` below is `\s`-tolerant *"because this file's
- * paragraphs are hand-wrapped"*, `VERIFIED_AT` above was widened for the same
- * reason on 2026-09-09 after it had hidden eighteen live claims, and
- * `adr-quotation-verbatim-contract.test.ts` states the general form: *"a
- * pattern that matches prose must treat every gap as whitespace"*.
- *
- * So the gap is `[\s>]+` throughout — whitespace because the prose re-wraps,
- * `>` because the prose is quoted inside blockquotes, and nothing else, so the
- * pattern still cannot wander onto another sentence.
- *
- * ## And widening it is only half a repair, because the count is then 49
- *
- * The number that was doing the work was never "how many spans of this shape
- * exist"; it was "how many of them are the file speaking rather than the file
- * quoting itself". That distinction now has to be **stated** rather than
- * inherited from a line break — which is the same move this file already makes
- * for `VERIFIED_AT` with `HISTORICAL_CLAIM`, and is why that pattern is the
- * model for `KEPT_ANCHOR_RECORD` below rather than a new idea.
  */
-const ANCHOR_LINE =
-  /Re-anchored[\s>]+at[\s>]+`main`[\s>]+@[\s>]*`([0-9a-f]{7,40})`[\s>]*\(\*{0,2}v(\d+\.\d+\.\d+)\*{0,2}\)/g;
-
-/**
- * What introduces a *kept* anchor record: the file saying it is quoting.
- *
- * Every one of the 48 superseded records in `STATUS-QUEUE.md` opens the same
- * way and the shape is not incidental — it is how a reader tells them apart
- * too. Most open *"**The anchor before this one, kept — v0.0.484.** It read:"*
- * on the line before the quotation; the blockquoted ones in §5 open
- * *"(`docs/AGENT_WORKFLOW.md` §4): it read"* with the quotation indented under
- * them; one opens *"**The previous anchor is kept below and it read:**"*.
- *
- * What all 48 share, immediately before the quoted anchor and with nothing but
- * quoting punctuation in between, is the verb **`read`** — with a colon in
- * **37** and without one in the other **11**. The colon is optional here for
- * that reason and not for tidiness: the blockquote fixture below went red on a
- * classifier that required it, which is the whole of why this docblock can
- * state the split rather than assume it.
- *
- * Matched against the text *preceding* a span rather than against the span, so
- * the anchor line itself stays byte-identical whether it is live or kept —
- * which is the property that makes a kept record a verbatim record at all. The
- * trailing class is only the punctuation a quotation opens with (`*` for the
- * italics, `"`, `>` for the blockquote) plus whitespace, so a sentence that
- * merely contains the word "read" earlier cannot reach across prose to exempt
- * a live anchor.
- *
- * **This is a semantic classifier where the old behaviour had a typographic
- * accident, and the difference is the whole point of the change.** Before it,
- * a kept record was invisible because of where its paragraph wrapped; after
- * it, a kept record is exempt because the file says it is a quotation. A
- * record that stops saying so becomes a second live anchor and fails the gate,
- * which is the correct direction: the failure then means "this file now
- * declares two anchors", not "somebody re-flowed a paragraph".
- */
-const KEPT_ANCHOR_RECORD = /\bread:?[*"'\s>]*$/iu;
-
-/** How far back of a span's preceding text `KEPT_ANCHOR_RECORD` is offered.
- *  The longest introduction in the file is `read:**\n\n> `, eleven characters;
- *  64 is generous without being unbounded, and the `$` anchor means a longer
- *  window can only ever match the same eleven. */
-const KEPT_RECORD_LOOKBEHIND = 64;
-
-/**
- * Split every span of the anchor shape into the one the file declares and the
- * ones it quotes.
- *
- * A pure function over text so the fixtures below can put a re-flowed kept
- * record, an unindented one and a genuine second live anchor through exactly
- * the classifier the assertions use, rather than through a re-implementation
- * of it that would agree with itself.
- */
-function anchorSpans(text: string): { sha: string; version: string; text: string; line: number; kept: boolean }[] {
-  return [...text.matchAll(ANCHOR_LINE)].map((match) => ({
-    sha: match[1]!,
-    version: match[2]!,
-    text: match[0],
-    line: lineOf(text, match.index!),
-    kept: KEPT_ANCHOR_RECORD.test(text.slice(Math.max(0, match.index! - KEPT_RECORD_LOOKBEHIND), match.index!)),
-  }));
-}
+const ANCHOR_LINE = /Re-anchored at `main` @ `([0-9a-f]{7,40})`\s*\(\*{0,2}v(\d+\.\d+\.\d+)\*{0,2}\)/g;
 
 /**
  * A sentence claiming something was checked at a commit.
@@ -621,16 +512,7 @@ function anchorSpans(text: string): { sha: string; version: string; text: string
  * *"(`ANCHOR_LINE` above tolerates the same thing for the same reason; it is
  * not a coincidence that both patterns need it, since both read paragraphs a
  * human keeps re-wrapping)"*. Two of this file's three patterns had learned
- * it.
- *
- * **THAT LAST SENTENCE WAS WRONG WHEN IT WAS WRITTEN AND IS CORRECTED HERE
- * RATHER THAN OVERWRITTEN, 2026-09-16.** One of the three had learned it, not
- * two: the parenthesis it quotes was **false about `ANCHOR_LINE`**, which
- * spelled both of its inter-word gaps as literal spaces until 2026-09-16 and
- * was hiding 48 spans by exactly the mechanism this paragraph is about. So
- * this docblock did not merely fail to check a sibling pattern — it cited a
- * false claim about that sibling as evidence that the sibling was fine. **The
- * corroboration was the defect.** `adr-quotation-verbatim-contract.test.ts` records the identical failure
+ * it. `adr-quotation-verbatim-contract.test.ts` records the identical failure
  * in its own `ATTRIBUTION` and `TRAILING_QUOTE` and states the general rule
  * this change is an application of: *"a pattern that matches prose must treat
  * every gap as whitespace"*.
@@ -723,19 +605,6 @@ const PASS_MARKER = /at `([0-9a-f]{7,40})`\s*\(\*{0,2}v(\d+\.\d+\.\d+)\*{0,2}\)/
  * the opposite of what this test is for. (`ANCHOR_LINE` above tolerates the
  * same thing for the same reason; it is not a coincidence that both patterns
  * need it, since both read paragraphs a human keeps re-wrapping.)
- *
- * **THE PARENTHESIS ABOVE WAS FALSE FROM THE DAY IT WAS WRITTEN UNTIL
- * 2026-09-16, AND IT IS KEPT RATHER THAN DELETED** (`docs/AGENT_WORKFLOW.md`
- * §4, mark both directions) **because it is the sentence that would have
- * stopped the next reader from checking, and it did.** `ANCHOR_LINE` did not
- * tolerate the same thing: its only `\s` sat before the version paren, and
- * both of its inter-word gaps — `` @ `` to sha, and the words before them —
- * were literal spaces. This docblock asserted the opposite, `VERIFIED_AT`'s
- * docblock quoted this one as evidence that *"two of this file's three
- * patterns had learned it"*, and on the strength of that nobody opened
- * `ANCHOR_LINE` for a week. It is true now, which is why the tense changed
- * rather than the claim being dropped: see `ANCHOR_LINE`'s own docblock for
- * what the 48 unread spans were and what replaced the accident.
  */
 const NEXT_FREE_RESTATEMENT = /Next\s+free\s+number:?\s*\*{0,2}(\d{4})/gi;
 
@@ -868,9 +737,7 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
   const statusQueue = readFileSync(STATUS_QUEUE_PATH, 'utf8');
   const packageVersion = (JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8')) as { version: string }).version;
 
-  const spans = anchorSpans(statusQueue);
-  const anchors = spans.filter((span) => !span.kept);
-  const keptRecords = spans.filter((span) => span.kept);
+  const anchors = [...statusQueue.matchAll(ANCHOR_LINE)];
 
   // Resolved once, used by both budgets: they measure the same window in two
   // units and must not be able to disagree about where it ends.
@@ -881,28 +748,13 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
     // past this pattern and every assertion below would otherwise pass by
     // reading nothing, which is the shape of gate this repository refuses.
     expect(
-      anchors.map((span) => `:${String(span.line)} ${span.sha} (v${span.version})`),
-      'STATUS-QUEUE.md must open with exactly one "Re-anchored at `main` @ `<sha>` (v<version>)" line that is not introduced as a quotation; that line is what warrants every claim below it. A superseded anchor kept as a record is exempt and must carry the file\'s own "It read:" introduction -- a span of this shape with no such introduction is a second live anchor',
+      anchors.map((match) => `${match[1]!} (v${match[2]!})`),
+      'STATUS-QUEUE.md must open with exactly one "Re-anchored at `main` @ `<sha>` (v<version>)" line; that line is what warrants every claim below it',
     ).toHaveLength(1);
   });
 
-  it('keeps superseded anchors as records this gate can see and exempts them deliberately', () => {
-    // The other half of the assertion above, and the half that was missing
-    // until 2026-09-16. Until then the kept records were not exempted, they
-    // were unreadable -- `ANCHOR_LINE` spelled every gap as a literal space
-    // and `STATUS-QUEUE.md` wraps its paragraphs, so 48 verbatim quotations of
-    // the anchor line went uncounted for typographic reasons. A green
-    // "exactly one" above said nothing about those 48; this says what it says
-    // now, which is that the classifier reaches them and calls them
-    // quotations.
-    expect(
-      keptRecords.length,
-      'STATUS-QUEUE.md keeps every superseded anchor as a verbatim quotation, and this gate tells them from the live one by their "It read:" introduction rather than by where the paragraph wraps. Zero of them means either the records are gone or the introduction was reworded past KEPT_ANCHOR_RECORD -- in which case the exemption above is unreachable and "exactly one" is passing by construction',
-    ).toBeGreaterThan(0);
-  });
-
   it('names one commit throughout, so no entry is warranted by a different anchor than the header', () => {
-    const anchorSha = anchors[0]!.sha;
+    const anchorSha = anchors[0]![1]!;
 
     const historicalSpans = [...statusQueue.matchAll(HISTORICAL_CLAIM)].map((match) => [
       match.index!,
@@ -921,8 +773,8 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
   });
 
   it('has not fallen more than the staleness budget behind the history that has landed', () => {
-    const anchorSha = anchors[0]!.sha;
-    const anchorVersion = anchors[0]!.version;
+    const anchorSha = anchors[0]![1]!;
+    const anchorVersion = anchors[0]![2]!;
 
     // Same precondition, same wording and same reason as the commit budget
     // below: a checkout that cannot see the anchor cannot be measured against
@@ -972,7 +824,7 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
   });
 
   it('has not fallen more than the staleness budget behind in commits either, which is the unit a release does not track', () => {
-    const anchorSha = anchors[0]!.sha;
+    const anchorSha = anchors[0]![1]!;
 
     // Resolved rather than assumed present: the anchor names a commit on
     // `main`, and a tree that cannot see it cannot be measured against it.
@@ -1005,7 +857,7 @@ describe('docs/adr/STATUS-QUEUE.md: the anchor it declares', () => {
   });
 
   it('is not anchored ahead of the tree, which would mean it cites a commit that does not exist here', () => {
-    const anchorVersion = anchors[0]!.version;
+    const anchorVersion = anchors[0]![2]!;
     expect(
       patchReleasesBetween(anchorVersion, packageVersion),
       `STATUS-QUEUE.md claims to be anchored at v${anchorVersion} while package.json ships ${packageVersion}`,
@@ -1091,7 +943,7 @@ describe('docs/adr/STATUS-QUEUE.md: the next free number it restates', () => {
   const statusQueue = readFileSync(STATUS_QUEUE_PATH, 'utf8');
   const index = readFileSync(INDEX_PATH, 'utf8');
 
-  const anchorSha = anchorSpans(statusQueue).find((span) => !span.kept)?.sha;
+  const anchorSha = [...statusQueue.matchAll(ANCHOR_LINE)][0]?.[1];
   const ownPassMarkers = anchorSha === undefined
     ? []
     : [...statusQueue.matchAll(PASS_MARKER)].filter(
@@ -1154,105 +1006,5 @@ describe('docs/adr/STATUS-QUEUE.md: the next free number it restates', () => {
       historicalDisagreements.length,
       'no kept restatement differs from the current Next free number, so this run cannot show the historical exemption is doing anything rather than merely being unreachable',
     ).toBeGreaterThan(0);
-  });
-});
-
-/**
- * The controls for `ANCHOR_LINE` and `KEPT_ANCHOR_RECORD`, on fixtures rather
- * than on the file.
- *
- * ## Why fixtures at all, when every other assertion here reads the real file
- *
- * Because the property that broke is a property of edits that have not been
- * made yet. The gate read `1` on every tree it ever ran on and would have gone
- * red on the first re-flow of a kept paragraph — so nothing that reads only
- * today's bytes could have caught it, and nothing that reads only today's
- * bytes can show it is fixed. These write the edit down instead.
- *
- * The fixtures are the file's real shapes, taken off `36d35998`: the live
- * header's opening, a `It read: *"…"*` record, and a blockquoted record. The
- * shas in them are real commits this file already names, because
- * `documentation-commit-citation-contract` reads shas out of test sources and
- * an invented one fails it.
- */
-describe('docs/adr/STATUS-QUEUE.md: telling the live anchor from the kept records', () => {
-  const live = [
-    'this one.',
-    '',
-    'Re-anchored at `main` @ `36d35998` (**v0.0.641**) by the delta method,',
-    'from `29ba8845`.',
-  ].join('\n');
-
-  const wrappedRecord = [
-    '**The anchor before this one, kept — v0.0.640.** It read: *"Re-anchored at `main` @',
-    '`29ba8845` (**v0.0.640**) by the delta method, from `1aef04b1`."*',
-  ].join('\n');
-
-  const blockquotedRecord = [
-    '> **The v0.0.554 anchor\'s own opening, kept rather than overwritten**',
-    '> (`docs/AGENT_WORKFLOW.md` §4): it read *"Re-anchored at `main` @ `e5fbe9d9`',
-    '> (**v0.0.554**) by the delta method this header describes."*',
-  ].join('\n');
-
-  it('reads every span of the anchor shape, wrapped, blockquoted or neither', () => {
-    // The measurement the old pattern could not make. Under it this fixture
-    // read 1 span and the two records were invisible; the assertion "exactly
-    // one" was therefore true of the bytes and false about the file.
-    expect(
-      anchorSpans([live, wrappedRecord, blockquotedRecord].join('\n\n')).map((span) => span.sha),
-    ).toEqual(['36d35998', '29ba8845', 'e5fbe9d9']);
-  });
-
-  it('still reports one live anchor when a kept record is re-flowed onto a single line', () => {
-    // THE CONTROL THIS WHOLE CHANGE EXISTS FOR. Re-flowing a kept quotation is
-    // a formatting edit; on the old pattern it turned that record into a
-    // second live anchor and failed the gate with a message about anchors.
-    // Here the record stays a record, because what makes it one is the "It
-    // read:" in front of it and not the line break inside it.
-    const reflowed = wrappedRecord.replace('@\n`29ba8845`', '@ `29ba8845`');
-    expect(reflowed).not.toContain('@\n');
-
-    const spans = anchorSpans([live, reflowed].join('\n\n'));
-    expect(spans.filter((span) => !span.kept).map((span) => span.sha)).toEqual(['36d35998']);
-    expect(spans.filter((span) => span.kept).map((span) => span.sha)).toEqual(['29ba8845']);
-  });
-
-  it('still reports one live anchor when a kept record is unindented out of its blockquote', () => {
-    // The second control, and the one the older notes in STATUS-QUEUE.md never
-    // had: the `>` was load-bearing too, in the sha-to-version gap, and
-    // nothing in the repository said so. Unindenting is the same class of
-    // edit as re-flowing.
-    const unindented = blockquotedRecord.replace(/^> /gmu, '').replace('`e5fbe9d9`\n(', '`e5fbe9d9` (');
-    expect(unindented).not.toContain('>');
-
-    const spans = anchorSpans([live, unindented].join('\n\n'));
-    expect(spans.filter((span) => !span.kept).map((span) => span.sha)).toEqual(['36d35998']);
-    expect(spans.filter((span) => span.kept).map((span) => span.sha)).toEqual(['e5fbe9d9']);
-  });
-
-  it('reports a second anchor that is not introduced as a quotation, however it is wrapped', () => {
-    // The other direction, and the reason the exemption is a classifier rather
-    // than a wide regex: a real second live anchor must still fire. Each of
-    // these is the kept record with its "It read:" introduction removed --
-    // the same bytes in the anchor line itself, and the only difference is
-    // that the file has stopped saying it is quoting.
-    const unintroduced = wrappedRecord.replace('**The anchor before this one, kept — v0.0.640.** It read: *"', '');
-    expect(anchorSpans([live, unintroduced].join('\n\n')).filter((span) => !span.kept).map((span) => span.sha)).toEqual([
-      '36d35998',
-      '29ba8845',
-    ]);
-
-    const unintroducedAndReflowed = unintroduced.replace('@\n`29ba8845`', '@ `29ba8845`');
-    expect(
-      anchorSpans([live, unintroducedAndReflowed].join('\n\n')).filter((span) => !span.kept).map((span) => span.sha),
-    ).toEqual(['36d35998', '29ba8845']);
-  });
-
-  it('does not let the word "read" elsewhere in a sentence exempt a live anchor', () => {
-    // KEPT_ANCHOR_RECORD is anchored at the end of the preceding text and its
-    // trailing class is only quoting punctuation, so prose that merely
-    // mentions reading cannot reach across itself to exempt the next anchor.
-    const prose = 'A reader who read the header and then went looking would find:\n\nRe-anchored at `main` @ `36d35998` (**v0.0.641**)';
-    expect(anchorSpans(prose).map((span) => span.kept)).toEqual([false]);
   });
 });

@@ -653,28 +653,6 @@ written to fix is still right and only the number moved, twice, which is §6's
 recommendation 1 demonstrated on the sentence that exists to correct an
 attribution. The durable form is the quotation already beside it.
 
-**AND IT IS WRONG BY MORE AGAIN AT `fa783381` — THIRD READING, THIRD VALUE, AND
-THE COORDINATE WAS ALREADY FALSE BEFORE THIS WINDOW OPENED.** This is a repin
-rather than a discovery, and saying so is the point: the number was **1266** at
-`ca82e946`, the previous anchor, so it was **sixty-one** lines stale before the
-window this pass reads even began. `docs/AGENT_WORKFLOW.md` is a member of this
-window — #1264 — and the edit moved it a further thirty-seven lines. Read off
-the tree rather than offset:
-`grep -n 'Propose an ADR rather than deciding' docs/AGENT_WORKFLOW.md` answers
-**1303** and `grep -n 'never self-approve' docs/AGENT_WORKFLOW.md` answers
-**1304**, the two lines of one bullet. **The live coordinate is
-`docs/AGENT_WORKFLOW.md:1303`** for the sentence this clause quotes, and `:1205`
-now reads *"  `docs/TESTING.md` lists the forms this takes here."* — a bullet
-about test forms, in a section about something else, which is the
-lands-on-plausible-neighbouring-prose failure this file calls the costly one.
-**The `:1205` above is not rewritten**, because its own sentence dates itself to
-`3399b1f9` and a dated coordinate is a record: at that commit
-`grep -n 'never self-approve'` really did answer 1205, the second line of the
-bullet whose first line is the quotation. The two greps beside it still hold at
-this anchor, re-run rather than carried: `grep -c 'never self-approve'
-AGENTS.md` returns **0**, and `AGENTS.md:93` still reads *"an implementing agent
-does not approve its own work"*.
-
 **#639 supplied exactly that for 0051** by naming the ADR as *"a decision
 the code already keeps, waiting on a signature"*; nothing has yet supplied it
 for the other two.
@@ -792,40 +770,15 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `fa783381` (**v0.0.647**) by the delta method,
-from `ca82e946`. This is #1264's merge commit, the last merge on `main`;
-`package.json` ships **0.0.647** at it, and all **six** of the window's release
-commits sit *inside* it — the highest, `7bc6afd8` (`chore(release): v0.0.647`),
-one commit below the tip — so the anchor's version and `HEAD`'s are the same
-string and the release assertion reads 647 − 647 = **zero** for the fourth
-anchor running. It is the merge rather than a release commit for the reason
-every anchor in this chain gives: a `chore(release)` commit starts no CI run
-and a reader who followed one out would have nothing to verify against.
-
-**THE TWO UNITS AGREE TO WITHIN ONE FOR THE FIRST TIME IN FOUR ANCHORS, WHICH
-IS WORTH RECORDING BECAUSE THE THREE BEFORE IT WERE CHOSEN AS DIVERGENCES.**
-The window below is **7 merges against 6 release numbers**, against
-8-against-0 at the previous anchor, 9-against-1 before that and 11-against-7
-before that. A gate still counting releases would have read **6 of 10** where
-this one reads **7 of 10** — the ordinary case, where a merge and a bump are
-the same decision one commit apart, and the case the 2026-09-15 unit change
-says it does not disturb. It is the first window on this chain since
-2026-09-15 that argues for neither unit over the other. The commit budget read
-**32 of 100**. Three merges of margin is why the pass was raised now rather
-than waited for, and the reason it was raised at all is that nothing in the
-window is production code: **fourteen changed paths, none of them under
-`src/`** — the first such window this chain has read.
-
-**The anchor before this one, kept — v0.0.641 (`ca82e946`).** It read: *"Re-anchored at `main` @
-`ca82e946` (**v0.0.641**) by the delta method, from `36d35998`. This is #1248's merge commit, the last merge on `main`;
+Re-anchored at `main` @ `ca82e946` (**v0.0.641**) by the delta method,
+from `36d35998`. This is #1248's merge commit, the last merge on `main`;
 `package.json` ships **0.0.641** at it, and **no release commit sits anywhere
 in this window** — `git log --first-parent 36d35998..ca82e946` carries no
 `chore(release)` subject at all — so the anchor's version and `HEAD`'s are the
 same string and the release assertion reads 641 − 641 = **zero** for the third
-anchor running."*
-
-**That anchor's own commentary is kept unchanged rather than folded into the
-quotation above** (`docs/AGENT_WORKFLOW.md` §4), and it read:
+anchor running. It is the merge rather than a release commit for the reason
+every anchor in this chain gives: a `chore(release)` commit starts no CI run
+and a reader who followed one out would have nothing to verify against.
 
 **THE UNIT CHANGE'S LIMIT CASE, NOT ITS WIDEST MARGIN — AND IT IS A DIFFERENT
 OBSERVATION FROM THE PREVIOUS ANCHOR'S.** The window below is **8 merges
@@ -6143,34 +6096,7 @@ the kind nobody reviews -- turns a historical record into a second live anchor
 and fails a gate whose message will talk about anchors rather than about
 wrapping.** Written down because it is exactly the shape of trap this file
 exists to record: a property everything below depends on, held by nothing that
-says so.
-
-> **THAT PARAGRAPH'S COUNT WAS WRONG BY A FACTOR OF EIGHT AND ITS DIAGNOSIS
-> WAS HALF THE MECHANISM, CORRECTED 2026-09-16 AND KEPT RATHER THAN
-> OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). It says *"the six kept anchor
-> records"*; counted on `36d35998` the file holds **48** of them, and the
-> figure was already stale when it was written rather than having drifted
-> since -- which is what §4 means by a tally being the sentence form that rots
-> first. The *"undocumented load-bearing line break"* it names is real and is
-> only one of two: **36** of the 48 are held out of the scanner by the line
-> break it describes, and a further **12** by the `>` of the blockquote they
-> sit in -- six in the `` @ ``-to-sha gap and six between the sha and the
-> version, a second load-bearing character no note in this file mentioned.
-> Unindenting one blockquote did the same damage as re-flowing one paragraph,
-> and nothing said so.
->
-> **The trap it names is closed rather than merely re-counted** (#1259). The
-> gate's pattern now treats every gap as whitespace-or-`>`, so it reads all 49
-> spans; a kept record is exempt because it carries the file's own *"It
-> read:"* introduction and not because of where its paragraph wraps. So the
-> paragraph above is now false in the other direction too: re-flowing a kept
-> record no longer turns it into a second live anchor, and the reflow and
-> unindent cases are both fixtures in
-> `tests/foundation/adr-status-queue-anchor-contract.test.ts`. What still
-> fails, correctly, is a span of that shape with no introduction in front of
-> it.
-
-Four of those five have merged
+says so. Four of those five have merged
 inside this window and are accounted for below; **#578 is still open**, which
 makes it the only pull request to have been named in two consecutive anchors'
 dispatch notes as outstanding. That is recorded rather than acted on: whether
@@ -15142,19 +15068,6 @@ happened to agree.
   `AGENTS.md:93` still reads *"an implementing agent does not approve its own
   work"*, `grep -c 'never self-approve' AGENTS.md` still returns **0** at both
   ends, and the rule really is at `docs/AGENT_WORKFLOW.md:1205`.
-  **REPINNED AT `fa783381`, AND THE COORDINATE WAS ALREADY FALSE WHEN THIS
-  BULLET CERTIFIED IT.** The clause above is dated to `3399b1f9`/`e5fbe9d9` and
-  is left standing as the record of what that pass read; what it should not be
-  read as is a live coordinate, which is how it reads to anyone who stops at the
-  words *"the rule really is at"*. At the anchor of that very pass
-  `grep -n 'never self-approve' docs/AGENT_WORKFLOW.md` already answered a
-  number in the 1250s, not 1205 — the header's own correction two thousand lines
-  above says so with both greps — so this bullet re-certified an inherited
-  error rather than re-running it, and the word *"really"* is the tell. **Live
-  at this anchor: `docs/AGENT_WORKFLOW.md:1303`**, from
-  `grep -n 'Propose an ADR rather than deciding' docs/AGENT_WORKFLOW.md`, with
-  *"and never self-approve one"* on `:1304`. The two `AGENTS.md` greps beside it
-  were re-run here and both still hold.
 - **`src/simulation/protocol/types.ts` — thirteen citations across four
   coordinates, ALL HELD, and all thirteen kept history.** `:7`, `:12`, `:168`
   and `:173` are byte-identical; the file's three hunks start at old `:1716`,
@@ -17592,18 +17505,7 @@ re-run.
   `environment-art.ts`'s discharge triple, `src/main.ts`'s challenges quartet,
   the two bare `docs/TRUSTED_SERVICES.md` numbers, ADR 0015's span,
   `docs/AGENT_WORKFLOW.md:1205`, §2's four `action-system.ts` numbers and §2's
-  four ADR 0093 numbers. **`docs/AGENT_WORKFLOW.md:1205` IS STILL THE
-  NUMBER THIS LIST NAMES AND IS DELIBERATELY NOT REPOINTED**: this list is a
-  record of coordinates that did not land in the `d57b97ba..7e9c3043` window,
-  and repointing a member of it would destroy the record rather than repair it
-  (§6 recommendation 1's own rule, and the same judgement §2 makes about
-  `staff-panel.ts:526`). **Where it now lands is stated instead, at
-  `fa783381`: the rule is at `docs/AGENT_WORKFLOW.md:1303`**, ninety-eight lines
-  past the cited one — **sixty-one** of them already spent before the
-  2026-09-16 (fourth) window opened, and thirty-seven added inside it by
-  #1264. Three of this file's four citations of `:1205` are dated records like
-  this one; the fourth, in the delta-read bullet above, was written in the
-  present tense and is corrected there. **Four of them land on plausible neighbouring prose**
+  four ADR 0093 numbers. **Four of them land on plausible neighbouring prose**
   — `default-gangs.ts:186` is a docblock sentence, `zoning.ts:448` is a
   different field's declaration, `view-model.ts:1954` is a field of a different
   interface, and `0015-actor-identity-allocation.md:159` is a blank line — which
@@ -18141,36 +18043,6 @@ anchor's intersection and the largest this chain has recorded since 2026-09-11.
   seventh consecutive anchor.
 - **`src/ui/hud/hud.ts:271` and `:444-449` hold, and `src/ui/hud/staff-panel.ts:526`
   holds**, all three on files the window changed *below* them.
-
-  **THAT BULLET IS FALSE IN ALL THREE OF ITS CLAIMS AND IS KEPT RATHER THAN
-  REWRITTEN** (`docs/AGENT_WORKFLOW.md` §4), **because it is the shape this
-  file's own §3 warns about, committed by a §3 pass.** What "holds" means for a
-  citation is that it still points at the construct its sentence names. None of
-  the three does, and this file says so about each of them somewhere else:
-  `export type HudIntent =` is at **`:365`**, not `hud.ts:271`;
-  `'arm-build-tool'` is at **`:524`**, not `hud.ts:444-449`; and
-  `grep -n 'decides nothing' src/ui/hud/staff-panel.ts` answers **`:690`**, not
-  `:526`. All three greps run at `fa783381`. The three numbers are **dated
-  decoys** — attached in their own sentences to `bb3a01e`, `cfab558` and the
-  v0.0.402 anchor — and this file has twice ruled that a dated coordinate is a
-  record and must not be moved: *"Neither points where it says any more, and
-  neither should be moved"*, and §2's *"`src/ui/hud/staff-panel.ts:526`, three
-  anchors stale and inside a dated pass account, correctly does not"*. **So the
-  three are still not repointed; what is corrected is the certificate.** The
-  failure is the one the same passage names in the same breath — *"the
-  extract-open-print check flags a decoy exactly as loudly as a mover, and the
-  discriminator is the sentence around the number, never the number"* — run
-  with the sentences unread, so an unchanged line was reported as a landing
-  citation. **A diff could not have found this, and the delta method
-  delivered it and was not believed**: both files *are* members of the
-  `36d35998..ca82e946` window, so the intersection put all three coordinates in
-  front of that pass, which opened them, saw unchanged lines and wrote
-  "hold" — the bullet's own clause *"on files the window changed *below* them"*
-  is the offset reasoning the method forbids, applied to numbers that were
-  never aimed at this tree in the first place. Neither file is in the
-  2026-09-16 (fourth) window — it touches nothing under `src/` — so no
-  intersection would ever raise them again. It was found by reading this file's
-  §3 against its own §2 and §5.
 - **`docs/adr/README.md`'s cited spans `:44-52`, `:97`, `:100`, `:102-106`,
   `:103-110` and `:108` all hold** — the file's one changed line is `:264`, ADR
   0091's row — and the index still reads **Next free number: 0117** at `:289`.
@@ -18275,249 +18147,6 @@ the way the third was to the last one**, and nothing here bounds how many
 remain. The honest form of the result is: nine coordinates moved, every one of
 them opened at both ends, and the population they were drawn from is not known
 to be the population that exists.
-
-## 3. What the anchor pass of 2026-09-16 (fourth) opened with the gate GREEN at seven of ten against six release numbers — the first ordinary window since the unit changed: seven merges, 32 commits, fourteen changed paths and not one of them under `src/`, three repins of one long-false coordinate, and two live certificates found false that were written by the previous two passes rather than by any window
-
-**SEVEN at `fa783381` (v0.0.647), six release numbers later.** The window is
-`ca82e946..fa783381`: **32 commits**, **7 merges** that are not
-`chore(release)` bumps, **6** release numbers, **14 changed paths**. The gate
-read **7 of 10** on merges and **32 of 100** on commits, and
-`tooling/anchor-budget-spend.mjs` — which counts releases and not merges, and
-says so — printed *"7 of 10 merges since `ca82e946` (anchored v0.0.641, now
-v0.0.647) -- 3 merges remain before it is exceeded"* before this pass began.
-Both units agree to within one for the first time in four anchors; the three
-before this were each recorded here because they diverged, so an ordinary
-window is worth naming as such.
-
-**The seven merges, in order off `git log --first-parent`:** #1262
-(`agent/status-queue-reanchor-v4`, the previous anchor's own pass), #1226
-(`agent/0112-authority`), #1234 (`agent/visual-identity-rung-classification`),
-#1217 (`agent/0096-restored-rate`), #1227 (`agent/save-schema-union-gate`),
-#1266 (`agent/anchor-line-whitespace`) and #1264
-(`agent/workflow-hazards`), which is the anchor.
-
-**THE WINDOW IS THE FIRST THIS CHAIN HAS READ WITH NO `src/` FILE IN IT AT
-ALL**, and that is the whole shape of the pass. The fourteen paths are six
-documents (`docs/AGENT_WORKFLOW.md`, `docs/IDENTITY_V5_ROLLOUT.md`,
-`docs/ISSUE_BACKLOG.md`, `docs/VISUAL_IDENTITY.md`, ADR 0096, ADR 0112), this
-file, `package.json`, five test files and `tooling/anchor-budget-spend.mjs`.
-**Three of the fourteen carry a `file:line` citation here** — this file (two,
-both dated history), `docs/AGENT_WORKFLOW.md` (three, all of the same
-coordinate) and `tests/foundation/adr-status-queue-anchor-contract.test.ts`
-(two, both dated history naming a constant that no longer exists). So the delta
-intersection for this anchor hands a reader **one live citation**, and
-everything else below was found by reading this file against itself or against
-the corpus.
-
-### The three repins of `docs/AGENT_WORKFLOW.md:1205`, and the part that is not drift
-
-This file cites `docs/AGENT_WORKFLOW.md:1205` in **three** places — `:633`,
-`:15144` and `:17581` before this commit — for *"Propose an ADR rather than
-deciding architecture inside implementation code, and never self-approve one"*.
-**All three are repinned in the marked-both-directions form rather than
-rewritten**, because each sits in a sentence that dates itself, and the file's
-own §6 recommendation 1 says a dated coordinate is a record.
-
-**The live coordinate, read at this anchor rather than offset:**
-`grep -n 'Propose an ADR rather than deciding' docs/AGENT_WORKFLOW.md` answers
-
-    1303:- **Propose an ADR rather than deciding architecture inside implementation code,
-
-with *"and never self-approve one** outside a recorded delegation from the
-owner."* on `:1304`; and `:1205` reads
-
-    1205:  `docs/TESTING.md` lists the forms this takes here.
-
-— a bullet about test forms. **That is the lands-on-plausible-neighbouring-prose
-failure**, the one this file calls costlier than a citation that lands on a
-blank line, because the reader gets a sentence rather than an obvious miss.
-
-**IT WAS NOT DRIFT FROM THIS WINDOW, AND PRESENTING IT AS SUCH WOULD BE THE
-ERROR.** The same grep at `ca82e946` — the previous anchor — answers **1266**,
-so the coordinate was **sixty-one lines stale before this window opened**.
-#1264, which is this window's anchor merge and the window's only edit to that
-file, added a further **thirty-seven**. Two thirds inherited, one third earned:
-the fifth consecutive anchor at which the largest correction of the pass was
-already wrong when the previous pass certified the window it went wrong in.
-
-**The one thing `:1205` was ever right about is kept.** At `3399b1f9`,
-`grep -n 'never self-approve' docs/AGENT_WORKFLOW.md` really did answer 1205 —
-the second line of the same two-line bullet — which is why the §1 clause that
-introduced it is a record and not a mistake. What made it a mistake is that it
-was repeated, in the present tense, by a later pass (*"and the rule really is
-at `docs/AGENT_WORKFLOW.md:1205`"*) at an anchor where it was already fifty
-lines out. The two greps standing beside it were re-run here rather than
-inherited: `grep -c 'never self-approve' AGENTS.md` returns **0**, and
-`AGENTS.md:93` still reads *"an implementing agent does not approve its own
-work"*.
-
-### What held, opened rather than rested on an absence
-
-- **§2's four `action-system.ts` coordinates hold for the second anchor
-  running**, and this is the first time this bullet has had nothing to correct
-  twice in a row. `src/simulation/prisoners/action-system.ts` is in none of the
-  seven merges and all four were opened anyway: `grep -n 'roomInstances\.'`
-  puts `claimUse` at **`:1306`**, `hasPlaceForUse` at **`:1761`** and
-  `findAvailableForUse` at **`:1799`**, exactly **three** production call
-  sites, and `if (action.target.kind !== 'room-catalog-id') return true;` is
-  verbatim at **`:1295`**.
-- **§2's ADR 0093 quartet holds, all four, for the first time.**
-  `export interface HudPrisonerDetailViewModel {` is **`:2131`** in
-  `src/ui/hud/view-model.ts`, `const prisonerDetailReader = …` is **`:1665`**
-  in `src/main.ts`, `src/ui/simulation-prisoner-detail.ts:212` is the
-  `hud/prisoner-detail` request and `src/ui/hud/regime-panel.ts:743` is the
-  repaint comment. The verbatim quotations needed no edit for the **seventh**
-  consecutive anchor.
-- **§5's four live coordinates hold**, opened one at a time:
-  `docs/PERSISTENCE.md:2733-2734` is the refusal string and its *"reached only
-  after the one retry below has been tried and refused"* clause,
-  `:2738-2740` is the writer-whose-session-is-gone bullet,
-  `session-controller.ts:997` is
-  `if (first.stale.durableRevision !== session.revision) return first;` and
-  `:1045-1054` is `saveNow`'s failed `SaveResult`. Neither file is in this
-  window.
-- **§4's evidence holds and is read in §4 itself**, where the fifth of its
-  `docs/DEPLOYMENT.md` coordinates is also found to have been aimed at the
-  wrong table row for four consecutive anchors. That finding is written where
-  the citation lives rather than here.
-- **§5's `simulation/status-counts` entry still stands and its subject did not
-  move.** `routeDecidedSince` is still absent from
-  `docs/adr/0003-simulation-worker-protocol.md` (`grep -c` returns **0**) and
-  that ADR still carries exactly **four** `## Amendment` headings, so the
-  question the entry puts to the owner — whether ADR 0003 owes an amendment
-  when the payload it specifies grows — is unchanged and is asked for the
-  second window running. `zoningNoticeSchema` is still declared `.strict()` and
-  optional in `src/simulation/protocol/types.ts`.
-
-### The census holds; the tally beside it does not, and only one of the two is a path a scan could reach
-
-- **2026-09-16 (fourth) census at the anchor `fa783381`: 43 Proposed, 66
-  Accepted across 109 ADR documents**, agreeing with the index on its status
-  column, compared **document by document rather than by totals — zero
-  disagreements, and 109 index rows against 109 documents on disk**. Unmoved
-  from `ca82e946` in every term. Five of the Proposed documents carry a §2 row
-  (0056, 0059, 0071, 0074, 0077) and all five still read `Proposed`, so
-  forty-three minus five is **THIRTY-EIGHT outstanding decisions with no entry
-  giving the owner the evidence**. **No ADR arrived and none moved status**:
-  two ADR documents are members of this window — 0096 (#1217) and 0112 (#1226)
-  — and neither edit touched a `Status` line, which is why both figures stand.
-  The derivation was validated before being trusted: run over the `ca82e946`
-  tree it reproduces **43 / 66 / 109** exactly.
-  **The document-side count is worth one warning.** A first pass took each
-  document's status as the first `Proposed`/`Accepted` word in the file and got
-  43 / 66 as well — by two errors cancelling: 0081 read `Accepted` off prose
-  above its `## Status` block, and 0103 read `Proposed` off its kept
-  pre-acceptance line at `:169`. The figure above is taken from the `## Status`
-  section alone, and the two cancelling errors are recorded because a total
-  that agrees for the wrong reasons is indistinguishable from one that agrees.
-- **§6's `Amendment`/`Addendum` tally MOVED, 52 across 31 → 53 across 32**, run
-  as `grep -RniE '^#{2,6}\s+[*_\`]*(Amendment|Addendum)\b' docs/adr/*.md` at both
-  ends of the window rather than carried. The one new heading is ADR 0112's
-  *"## Amendment, 2026-09-16: decision 4's amendment of article 8 carries all
-  three of its numbers"*, from `e8c4bf60`/#1226. **This is the glob-scoped
-  blind spot paying out for the second anchor running**, and the previous
-  payout was the census while this one is its neighbour: the bullet's own
-  backticked spans are `src/simulation/economy/income.ts` and a grep, neither
-  of which is in any window, and the thing that moved it —
-  `docs/adr/0112-…md` — **is** a member of this window but is not named in the
-  bullet at all. A path-scan intersection returns the file and never the claim.
-
-### The two live certificates this pass falsified, both written by a pass rather than by a window
-
-**Both are of the same family and neither is reachable by any diff**, which is
-the fifth consecutive anchor at which the sharpest finding of the pass was
-already wrong when the previous pass closed.
-
-1. **The previous pass certified three dated decoys as holding.** Its bullet
-   *"`src/ui/hud/hud.ts:271` and `:444-449` hold, and
-   `src/ui/hud/staff-panel.ts:526` holds"* is false in all three clauses:
-   `export type HudIntent =` is at **`:365`**, `'arm-build-tool'` at
-   **`:524`** and `grep -n 'decides nothing' src/ui/hud/staff-panel.ts` answers
-   **`:690`**. All three are numbers this file has twice ruled must **not** be
-   moved because their sentences date them — and the same passage that rules
-   it also warns that *"the extract-open-print check flags a decoy exactly as
-   loudly as a mover, and the discriminator is the sentence around the number,
-   never the number"*. The check was run and the discriminator was not. The
-   correction is written beside the bullet, and the three numbers stay.
-2. **§4's fifth `docs/DEPLOYMENT.md` coordinate has been aimed at the wrong row
-   for four consecutive readings.** *"The on-every-merge row at `:207`"* is the
-   **patch version bump** row; the migrations row this section's whole risk
-   rests on is **`:205`**. `docs/DEPLOYMENT.md` has not changed since
-   2026-09-04, so the number was wrong when it was first written and at each of
-   the three repetitions. Written up in §4, where the citation lives.
-
-**What this pass did NOT find, said plainly.** Nothing in §§2, 5 or 6 moved
-that this pass could detect, and the two findings above are both in §§3-4. The
-`docs/adr/README.md` index reads **Next free number: 0117** at `:289`,
-re-derived here rather than carried, and no numbered ADR was added or deleted
-in the window. One sub-line imprecision is recorded rather than corrected: §2's
-ADR 0088 confirmation says *"`guard-roster.ts:52` names this ADR by number and
-calls it 'completing the required `canCross` socket'"* — the quoted phrase is
-on `:52` and the words *"ADR 0088"* are on `:51`, one line above, inside the
-same docblock. The citation lands; the sentence attributes two things to one
-line.
-
-### The seven rulings of 2026-09-16, checked against `origin/main` one at a time
-
-The owner ruled seven times on 2026-09-16, every one of them with the weaker
-provenance kind — the label of a clickable option a session wrote, not a
-sentence they typed, which is the same disclosure `AGENTS.md` makes for its own
-2026-09-08, -09 and -10 releases. **Four are on `main` at this anchor and three
-are not, and the split is the reason this list is here**: a queue entry
-asserting an unmerged state is the defect this file exists to catch.
-
-**On `main` at `fa783381`, and assertable:**
-
-- **ADR 0091 decision 2 → option F** (a decided outcome of the same route
-  retires the refusal band). `docs/adr/0091-what-clears-the-refusal-band.md`
-  reads *"**Accepted, 2026-09-16, by the repository owner, for decision 2
-  (option F: a decided outcome of the SAME route retires the band).**"*,
-  landed in `b0356b66`/#1253 and built in `b289599e`/#1261 — both **below**
-  this window, inside the previous anchor's.
-- **ADR 0112 / constitution article 8 → the decision-4 amendment carries all
-  three numbers.** `docs/adr/0112-…md` carries
-  *"## Amendment, 2026-09-16: decision 4's amendment of article 8 carries all
-  three of its numbers"*, and states *"Constitution article 8 now reads **15 /
-  13 / 11**"*. This landed **inside** this window, `e8c4bf60`/#1226, and is the
-  one heading that moved §6's tally.
-- **The `RemoveWall` object arm → leave the behaviour, file an issue.**
-  [#1270](https://github.com/woogitsu/lockstate/issues/1270) is open and titled
-  *"`RemoveWall`'s object arm supersedes under a different route, so option F
-  leaves the measured band contradiction standing"*. It is an issue rather than
-  a repository state, and it is **not** filed as a §2 row, which is correct:
-  the owner ruled, so nothing is outstanding.
-- **ADR 0042 → live, keep repinning.** `docs/adr/0042-…md` still reads
-  *"**Proposed. Not accepted, and deliberately not self-approved.**"* on
-  `main`, which is what the ruling leaves it at.
-
-**NOT on `main` at `fa783381`, and deliberately not asserted anywhere in this
-file:**
-
-- **ADR 0116 → option 2** (a construction-completion event, `'info'`,
-  `'log-only'`, counted rather than repeated). ADR 0116's Status on `main`
-  reads *"**Proposed, 2026-09-15. Not self-approved, and it implements
-  nothing.**"* The record of the ruling is on the unmerged branch
-  `agent/0116-dossier` (PR #1265). **Nothing here says 0116 is Accepted**, and
-  `tests/foundation/adr-status-reference-contract.test.ts` is the gate that
-  would say so if it did.
-- **#1201 → mount the alerts fold in the rail on Overview below 720 px**, and
-  **#1192 → icon-only tabs below the break.** Both are recorded on the unmerged
-  branch `agent/2026-09-16-rulings` (PR #1275); `grep -c '1201'` over
-  `docs/VISUAL_IDENTITY.md` and `docs/IDENTITY_V5_ROLLOUT.md` on `main`
-  returns **0** for each file.
-- **ADR 0115 → option 4**, both halves on Plan dnia, with the Status moved to
-  Accepted. On `main` ADR 0115 still reads *"**Proposed.** Nothing here is
-  decided and no code implements it."*; the Accepted block —
-  *"**Accepted, 2026-09-16, by the repository owner: option 4 — split the panel
-  in code, and both halves stay on the Plan dnia (Regime) tab.**"* — exists
-  only on that same unmerged branch. **So the census above counts 0115 among
-  the 43 Proposed, and it will fall to 42 the moment #1275 merges** — stated
-  here so the next pass reads a moved count as a merge rather than as an error.
-
-**Three rulings on two unmerged branches is the largest such gap this file has
-recorded**, and the useful consequence is for the next anchor rather than this
-one: when #1265 and #1275 land, three of the four census terms move in one
-window, and the bullet that would show it is the one no path scan returns.
 
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
@@ -18713,56 +18342,8 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
-**RE-VERIFIED AT `fa783381`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
-FOURTEEN — AND FOR THE SIXTH ANCHOR RUNNING THIS SECTION HAS NOTHING TO CORRECT
-IN ITS OWN LIVE TEXT, WHICH IS NOT THE SAME AS HAVING NOTHING TO CORRECT.**
-`git diff --name-only ca82e946..fa783381 -- .github/ docs/DEPLOYMENT.md`
-returns **nothing at all**: neither half of this section's evidence is a member
-of this window's seven merges, for the fourteenth anchor running. **All five
-`migrate-database.yml` coordinates were opened anyway** and land unmoved —
-`:20` is the ADR 0016 §2 comment (*"target and must never be repointed at
-production (ADR 0016 §2, Accepted;"*), `:33` is `on:`, `:34` is
-`workflow_dispatch:`, `:41` is `confirm_project_ref:`, `:65` is `environment:`
-— and `grep -c '^\s*push:'` over the file still returns **0**. Into
-`docs/DEPLOYMENT.md`, the table header holds at `:200`, the
-*"`migrate-database.yml` has three runs in its entire history"* paragraph at
-`:219`, the *"Read that row as 'on every merge'"* paragraph at `:221`, and
-*"What currently serves lockstate.io"* at `:255`. `docs/DEPLOYMENT.md` has
-still not changed since `5954af75` (2026-09-04) — **twelve days**, the same
-figure the previous three readings give, because those three and this one all
-fall on 2026-09-16. **Nothing about the risk this section names has moved**:
-migrations still reach hosted staging on every merge with gating *"none"*, ADR
-0016 §2 is still binding at `0016-migration-delivery-mechanism.md:108` —
-*"Recorded as a constraint precisely because nothing enforces it
-mechanically."* — and nothing in `tests/` can see the dashboard setting that
-would break it.
-
-**THE FIFTH COORDINATE IS THE ONE THIS READING DOES NOT REPEAT, BECAUSE IT HAS
-BEEN AIMED AT THE WRONG ROW FOR FOUR CONSECUTIVE ANCHORS AND NO WINDOW COULD
-EVER HAVE RAISED IT.** The four readings below each say *"the on-every-merge
-row at `:207`"*, and the risk this whole section exists for is the **migrations**
-row — *"Migrations → Supabase **staging** | automatically, on every merge to
-`main`, through Supabase's own GitHub integration | none"* — which is
-**`docs/DEPLOYMENT.md:205`**. `:207` is the row below the row below it: *"Patch
-version bump + `v0.0.N` tag on `main` | automatically, on every merge to `main`,
-from `version.yml` | none"*. **It is wrong in the way this file calls the costly
-one rather than the loud one**: `:207` also says "on every merge" and also says
-gate "none", so a reader who follows the number finds a row that answers to the
-description and concludes the citation landed. Opened here row by row — `:200`
-header, `:201` separator, `:202`-`:207` the six rows — and `docs/DEPLOYMENT.md`
-has not changed since 2026-09-04, so the number was already wrong at the anchor
-that first wrote it and at each of the three that repeated it. **No delta method
-could reach it**: the file has been absent from every window for twelve days,
-which is exactly the absence the readings below rest on. It was found by reading
-this section's citation against the table it cites, and by nothing else. The
-four readings below are **not** repointed — each dates itself to a named commit
-— and the live coordinate is stated here instead: the row is `:205`, and the
-durable form, as §6 recommendation 1 has said for a dozen anchors, is the row's
-own text rather than its number.
-
-**The reading below is kept as the record of a superseded anchor, and it
-said:** **RE-VERIFIED AT `ca82e946`, AND THE RUN OF ABSENCE-BASED READINGS WAS
-THEN AT THIRTEEN — AND FOR THE FIFTH ANCHOR RUNNING THIS SECTION HAS NOTHING TO
+**RE-VERIFIED AT `ca82e946`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+THIRTEEN — AND FOR THE FIFTH ANCHOR RUNNING THIS SECTION HAS NOTHING TO
 CORRECT.** `git diff --name-only 36d35998..ca82e946 -- .github/
 docs/DEPLOYMENT.md` returns **nothing at all**: neither half of this section's
 evidence is a member of this window's eight merges, for the thirteenth anchor
