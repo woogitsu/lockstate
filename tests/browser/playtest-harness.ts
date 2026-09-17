@@ -767,6 +767,13 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
  * closed by the new one in a single run, and what is left is that the redraw
  * did not happen, which is the mutation.
  *
+ * **Re-verified once more at `725aad40`**, after #1279 merged the same day.
+ * All six coordinates above still read back verbatim; #1279 touches
+ * `src/ui/hud/hud.css`, `hud.ts`, `layout-shell.ts` and `overview-panel.ts`,
+ * and the two panels this helper presses are not among them. **The two
+ * playtest runs were not repeated against that tip** -- they were run against
+ * `33c02a12` -- which is said rather than implied.
+ *
  * ### What it does and does not skip
  *
  * `force: true` skips Playwright's actionability checks **wholesale** --
