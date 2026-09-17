@@ -114,7 +114,9 @@ schema-version tally), the comparator is total, and
 every client restoring the same bundle dispatches in the same order. It is the
 *documented* ordering that is wrong, and the sentence is load-bearing — the
 overdue-drain fix in `bb8a57e` (#422) quotes exactly this sentence as its
-authority, at `kernel.ts:176-179`, and
+authority, at `kernel.ts:233-238` (the anchor read `:176-179`, which is the
+`dispatchDueCommands` docblock and carries no quotation of this sentence at
+all), and
 `tests/determinism/kernel-system-order.test.ts` already names the real key in a
 case title: *"orders the pending command queue by (tick, sequence)"*.
 
@@ -182,19 +184,24 @@ The third Positive consequence reads:
 The figure appears nowhere in this repository except in that sentence — no
 result file, no fixture, no commit message. The scenario it can only have come
 from is `benchmarks/scenarios/kernel-throughput.mjs`, whose `full` profile is
-`operationsPerIteration: 5000, // 5000 synthetic systems` (`:110-114`), and which
+`operationsPerIteration: 5000, // 5000 synthetic systems` (`:124-128`; the
+anchor read `:110-114`, which is the end of the scenario function and the head
+of the exported object), and which
 was added in `aae2fbc` — this ADR's own commit.
 
 That scenario does not run the kernel. Its own comment says so:
 *"Minimal standalone implementation of Kernel logic for benchmark (since we can't
-easily import TS directly here)"* (`:33`). Since #410 the repository classifies
+easily import TS directly here)"* (`:47`; the anchor read `:33`, a line of the
+seeded-RNG mixer). Since #410 the repository classifies
 scenarios explicitly, and `docs/BENCHMARKING.md:41` (the anchor read `:38`) lists this one as
 **"modelled — mock systems"**, under a rule stating that a modelled scenario's
 numbers *"hold for any implementation — including one this repository does not
 have"* and that such a scenario *"can never be a gate"*. The model has since
 drifted from the thing it models in a way this ADR is entitled to care about: its
 drain loop is `while (_commands.length > 0 && _commands[0].executeAtTick === _tick)`
-(`:74`), the strict-equality form the production kernel abandoned in `bb8a57e`
+(`:90`; the anchor read `:74`, which is `const TICKS = 100;` — the very line
+the next paragraph cites for a different claim), the strict-equality form the
+production kernel abandoned in `bb8a57e`
 because it wedged the queue.
 
 Re-run at `792bf94` (v0.0.121) in the container this amendment was written in,
@@ -203,7 +210,8 @@ reports `kernel.throughput.benchmark@1 (full): 4.204 ms mean, 10.306 ms p95,
 1189467 ops/s, checksum 0x39a821e7`. That is not evidence the old number was
 wrong — a different machine is a different number, which is the point — but the
 profile measures **100 ticks** of 5,000 systems per iteration (`TICKS = 100`,
-`:61`), so "1.6 ms to process 5,000 active systems" does not name which of the
+`:74`; the anchor read `:61`, a `phaseTicks` expression inside the system
+builder), so "1.6 ms to process 5,000 active systems" does not name which of the
 two quantities it is, and neither reading can be reproduced from what the
 sentence carries.
 

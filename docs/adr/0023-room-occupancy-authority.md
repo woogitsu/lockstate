@@ -388,7 +388,9 @@ the room type decides what kind of room it is.**
 ### 1. Occupancy is resolved at the room-instance registration site
 
 A resolver runs where a `RoomInstance` is constructed —
-`zoning.ts:252-261` today, and the restore path
+`zoning.ts:626-653` today (the anchor read `:252-261`, a docblock about the
+zoning plane; §*Context* above had already re-aimed the sibling citation of the
+same site to `:650` and this one was left behind), and the restore path
 (`prisoners.roomInstanceDefinitions`, per
 `room-instance-registry.ts:111-120`) alongside it. It resolves in this order:
 

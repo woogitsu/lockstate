@@ -292,7 +292,10 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > §4). `HUD_TAB_IDS` is `['overview', 'build', 'zones', 'manage', 'day-plan']`
 > (`src/ui/hud/hud-state.ts:77`), five members, and the Staff panel this
 > decision placed is mounted on `manage`:
-> `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:2506`).
+> `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:2558`;
+> the anchor read `:2506`, a bare `*/`. [ADR 0022](./0022-room-zoning-surface.md)'s
+> copy of this same claim was re-aimed to `:2558` and this one was not — the same
+> sentence cited twice, corrected once).
 > What moved it is [ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)
 > decision 3, ruled by the owner on 2026-09-13 and merged as `919d6b15` on
 > 2026-09-14 — whose own text names the rename in this direction: *"Moving staff
