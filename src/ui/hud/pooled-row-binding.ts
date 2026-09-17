@@ -12,10 +12,29 @@
  * item would grow that group without bound over a session and keep every dead
  * control in it.
  *
- * Every one of those blocks binds `rows[i]` to `items[i]`. A queue advances by
+ * Every one of those blocks bound `rows[i]` to `items[i]`. A queue advances by
  * losing its head, so **one completion re-points every row in the pool at a
  * different item** -- and the row's control then acts on whatever landed in it,
  * which is not what the label said when the player read it.
+ *
+ * **Past tense, and the date is the point.** The queue was the first to be
+ * fixed (#860, 2026-09-03) and the Staff panel's roster the second (#877, the
+ * same day). The other two blocks that issue named -- `paintDeliveries` and
+ * `paintHeld` -- were left index-bound when it closed, and its own last section
+ * says why: *"`paintHeld` and `paintDeliveries` are **not yet measured** -- the
+ * pass was cut off by a transient API overload before reaching them."* They
+ * were substituted on 2026-09-17, by an audit of this whole shape rather than
+ * by a second measuring pass, and gated in
+ * `tests/browser/ui-pooled-rows-aim.spec.ts`. **So this function now has four
+ * callers and no block in the HUD binds a destructive control by position.**
+ * That is a sentence about a count, which `docs/AGENT_WORKFLOW.md` §4 says rots
+ * first: a fifth pooled list added later is exactly what it will not notice.
+ *
+ * The two later substitutions differ from the first two in what re-points the
+ * list, and that difference is why neither needed a press from the player to be
+ * exposed. A queue and a payroll change when the player or the crew acts; a
+ * **delivery** leaves its window by landing, on the procurement clock, and a
+ * **hold** ends when the search or incident response that owns the guard does.
  *
  * Measured in a browser on 2026-09-03 (#860, and #859's instrument before it):
  * with the clock at 4x and a queue deeper than the three rows shown, a press
