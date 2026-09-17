@@ -490,10 +490,8 @@ yet to decide, not a property of there being one sector.
 runs, per sector, in this order: bail out if any incident is open in the sector
 at all; try a riot; try an escape attempt; try an assault; and only then, last,
 `this.tryOpenRetaliation(sectorId, context.tick);`
-(`src/simulation/incidents/trigger-system.ts:345`; the anchor read `:333`, a
-blank line). The system's cadence is
-`intervalTicks: 50` (`src/simulation/incidents/trigger-system.ts:244`; the anchor
-read `:232`).
+(`src/simulation/incidents/trigger-system.ts:333`). The system's cadence is
+`intervalTicks: 50` (`src/simulation/incidents/trigger-system.ts:232`).
 
 **REASONED, from those gates**: in a prison hot enough to be producing
 assaults, a retaliation can only open in the trough *after* one — the assault
@@ -560,19 +558,7 @@ This is not hypothetical. An existing unit test registers two gangs with **no
 members at all**, adds a grudge, and asserts an incident opens
 (`tests/unit/incident-trigger.test.ts:278-297`); a second registers one member
 on one side only and replays it for determinism
-(`tests/unit/incident-trigger.test.ts:289-321`; the anchor read `:301-315`).
-
-> **Both the anchor and the conclusion it carried are dead, and the second is
-> the finding (2026-09-17).** That spec's title today is *"refuses a
-> retaliation nobody is in, on either side, and opens one the moment both sides
-> have a member"* — the opposite of what this sentence concluded. The guard
-> that closed it is `src/simulation/incidents/trigger-system.ts:561-563`, which
-> this document already cites in *Decision 6*'s own landing note; the two
-> passages disagreed with each other inside one file, which is the check
-> `docs/AGENT_WORKFLOW.md` §4 says no diff performs. The sentence is kept
-> because it is the defect that produced the guard.
-
-So the code **as this section read it** would open a
+(`tests/unit/incident-trigger.test.ts:301-315`). So today's code will open a
 prison-wide, severity-≥6, "Two gangs are settling a score." incident involving
 **nobody**.
 
@@ -623,8 +609,7 @@ position at v0.0.467).
 ### 8. Everything downstream is built and persisted, including the grudges — VERIFIED, read
 
 The incident type is in the persisted enum
-(`src/persistence/save-schema.ts:951`; the anchor read `:939`), the protocol
-event is registered
+(`src/persistence/save-schema.ts:939`), the protocol event is registered
 (`src/simulation/protocol/types.ts:1729`, payload schema at `:2032`), the
 message census carries a label (`src/content/simulation-message-keys.ts:268`),
 and both projections enumerate all four types
@@ -685,12 +670,10 @@ of signature rather than a different design.
 
 `grep -c "rng" src/simulation/incidents/*.ts` returns **0** for all ten files
 on this tree, exactly as the issue says. Six named RNG streams are registered
-in a new session (`src/simulation/runtime/new-session.ts:446-487`; the
-constants are at `:83`, `:86`, `:88`, `:109`,
+in a new session (`src/simulation/runtime/new-session.ts:440-483`; the
+constants are at `:78`, `:81`, `:83`, `:104`,
 `src/simulation/prisoners/sentence.ts:47` and
-`src/simulation/identity/actor-identity.ts:210`; those six anchors read
-`:440-483`, `:78`, `:81`, `:83`, `:104` and `:188`, and `sentence.ts:47` is the
-one of the seven that never moved). A seventh would be a
+`src/simulation/identity/actor-identity.ts:188`). A seventh would be a
 save-compatibility question that `src/simulation/runtime/new-session.ts:471-478`
 sets out in full. **This document proposes no new stream** (Decision §5).
 
@@ -884,8 +867,7 @@ happened and is never told who was in it.**
 
 **(c) The adjudication — the moment the ruling names — is announced by
 nothing.** `SIMULATION_EVENT_TYPES`
-(`src/simulation/protocol/types.ts:1864-1892`; the anchor read `:1713-1735`) is
-the closed list of everything
+(`src/simulation/protocol/types.ts:1713-1735`) is the closed list of everything
 the prison can say, and **no member of it is a sanction, a finding, a solitary
 term or an adjudication** — a count is deliberately not given, because the
 durable claim is about the subject and a tally beside a closed list is the

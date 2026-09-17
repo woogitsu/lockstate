@@ -112,12 +112,8 @@ Read on `317f487` (v0.0.124). Every line below was opened.
   they are written in. Re-aiming a citation inside a dead diagnosis makes the
   diagnosis read as current, which is the error pull request #1229 avoided in
   ADR 0040 and named. The live coordinates a reader actually needs are three:
-  the paused drain at `src/simulation/worker/state-machine.ts:1261-1263`
-  (`if (this._kernel.dispatchDueCommands() > 0) {`; this branch wrote
-  `:1237-1242` on 2026-09-15, which is the *docblock about* the drain rather
-  than the drain, and by 2026-09-16 — when the branch merged `origin/main` —
-  even that had slipped), the baseline publication at
-  `src/simulation/worker/state-machine.ts:1064-1071`
+  the paused drain at `src/simulation/worker/state-machine.ts:1237-1242`, the
+  baseline publication at `src/simulation/worker/state-machine.ts:1064-1071`
   (the subject of *"Publish a baseline on state entry"* below, which is still
   true and whose own anchor has drifted), and the projection at
   `src/ui/simulation-commands.ts:290`, which ADR 0056 has since floored.
@@ -126,9 +122,7 @@ Read on `317f487` (v0.0.124). Every line below was opened.
   document.** It reads *"Re-anchored 2026-09-06: the union is 21 members today,
   three more than this paragraph counts"*. `HudIntent` has **22** members, at
   `src/ui/hud/hud.ts:365-738`, and the twenty-second is `sell-materials` —
-  a command-submitter (`src/main.ts:3310`, `case 'sell-materials':`; this
-  branch wrote `:3297` and it was a comment line by the time the branch merged
-  `origin/main` on 2026-09-16) and therefore a **fourteenth**
+  a command-submitter (`src/main.ts:3297`) and therefore a **fourteenth**
   against the *"Thirteen submit a command"* tally below, not a fourth piece of
   chrome. The count is left where it stands and corrected here, because the
   paragraph's subject is the drift and overwriting it would erase the record of

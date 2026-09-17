@@ -1,5 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
+  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -13,9 +14,7 @@ import {
   panelText,
   press,
   sentCommands,
-  showPanel,
   tab,
-  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -493,7 +492,7 @@ async function buildSealedCell(
 }
 
 async function admit(page: Page, count: number, act: string): Promise<number> {
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   let pressed = 0;
   for (let index = 0; index < count; index += 1) {
     if ((await page.locator('.hud-intake__admit').getAttribute('disabled')) !== null) {
@@ -781,7 +780,7 @@ test('act 2: what a Medium badge says when it arrives at intake, before the earl
   // ---- phase 1: what Admit does on a prison with no cell ----------------
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   log(act, `refusal band before any press: ${JSON.stringify(await panelText(page, '.hud__refusal'))}`);
   const admitBox = await page.locator('.hud-intake__admit').boundingBox();
   if (admitBox !== null) {

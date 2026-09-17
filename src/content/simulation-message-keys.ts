@@ -644,8 +644,7 @@ export const SIMULATION_ENUM_GROUPS = [
     // labels changed to match it -- not the other way round.** Three reasons,
     // in order of force:
     //
-    //  1. It is the family with a consumer. `buildableCategory`
-    //     (`src/main.ts:845`) renders
+    //  1. It is the family with a consumer. `src/main.ts:461` renders
     //     `OBJECT_CATEGORY_NAME_KEYS[category]` in the Build panel's category
     //     filter. Nothing anywhere calls
     //     `deriveSimulationMessageKey('object-category', …)` -- the string
