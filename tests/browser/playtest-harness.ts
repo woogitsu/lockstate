@@ -713,67 +713,6 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
  * So the harness, not the panel, is what was wrong: a helper modelling a
  * player must press what a player can press.
  *
- * ### Re-checked at `33c02a12`, 2026-09-17, after merging `origin/main`
- *
- * Every claim above is a claim about a *file*, which a merge can falsify
- * without touching this one. All five were re-opened rather than carried:
- *
- * - `buySubmit.setUnavailable(verdict.refused);` is at
- *   `src/ui/hud/build-panel.ts:2176`.
- * - `setUnavailable` is declared at `src/ui/primitives/action-button.ts:72`
- *   and implemented at `:100`, and `:108` is the line that writes the
- *   attribute: `button.setAttribute('aria-disabled', unavailable ? 'true' :
- *   'false');`. It still does not touch the `disabled` property.
- * - `src/ui/primitives/async-action.ts:242` still reads `control.disabled =
- *   busy;`, so the narrowing below -- press a `disabled` control the ordinary
- *   way -- is still aimed at the in-flight gate and nothing else.
- * - `hire.setUnavailable(verdict.refused);` is at
- *   `src/ui/hud/staff-panel.ts:1114`.
- * - `@playwright/test` is still **1.56.1**, read off the installed package
- *   rather than off `package.json`.
- * - `playtest-771-starter-rung.playtest.ts:110` still reads
- *   `await buy(page, 'wall-brick', 656);`, and `:96` still reads
- *   `test.setTimeout(240_000);` against the config's own `timeout: 600_000`
- *   (`tests/browser/playwright.playtest.config.ts:59`) -- which is the
- *   distinction the 2026-09-15 entry above draws and the reason it says
- *   *"whatever test budget it had"* rather than naming one.
- *
- * **Both halves were re-run rather than asserted, and the second playtest the
- * `buy` comment names was re-run too**: `playtest-intake-and-classification`
- * passes on the merge in **2.5 m**. Green:
- * `playtest-771-starter-rung` passes on the merge in **1.8 m**, the 656-brick
- * press reaching *"Nothing was bought — deliveries are refused until the
- * prison earns the money."* instead of waiting out the budget. Red: the
- * mutation named in `buy` below -- `paintCatalogue()` commented out of the
- * catalogue row's `onActivate` (`src/ui/hud/build-panel.ts:1162`) -- fails that
- * same playtest in **42.3 s**, and the stack names
- * `at buy (tests/browser/playtest-harness.ts)` -- the `buy` frame, not the
- * `armBuildable` one -- which is the whole of that comment's claim. The frame
- * is named rather than pinned to a line, because adding this paragraph moved
- * the line it was measured at. The message it printed is the
- * one this change exists for:
- *
- * ```
- * the catalogue when the wait gave up: {"rowsInTheList":21,"matchingRows":1,
- *   "selectedRows":["wall-brick"],"wantedHidden":false,"wantedBoxes":1,
- *   "wantedDisabled":false,"categoryFilter":"*","panelHidden":false,
- *   "panelCollapsed":"false"} | last catalogue click the page saw:
- *   {"buildableId":"bed-wooden","removing":false,...}
- * ```
- *
- * Read it against the bare message it replaces: the row exists, is not hidden,
- * lays out a box, is not disabled, is not filtered away, the panel is open --
- * and the page *saw* the click. Every hypothesis the old message left open is
- * closed by the new one in a single run, and what is left is that the redraw
- * did not happen, which is the mutation.
- *
- * **Re-verified once more at `725aad40`**, after #1279 merged the same day.
- * All six coordinates above still read back verbatim; #1279 touches
- * `src/ui/hud/hud.css`, `hud.ts`, `layout-shell.ts` and `overview-panel.ts`,
- * and the two panels this helper presses are not among them. **The two
- * playtest runs were not repeated against that tip** -- they were run against
- * `33c02a12` -- which is said rather than implied.
- *
  * ### What it does and does not skip
  *
  * `force: true` skips Playwright's actionability checks **wholesale** --
@@ -839,23 +778,11 @@ export async function pressAdvisedControl(
 export async function buy(page: Page, buildableId: string, quantity: number): Promise<readonly Record<string, unknown>[]> {
   const row = page.locator(`.hud-build__list [data-buildable="${buildableId}"]`);
   await row.click();
-  // The same wait `armBuildable` makes, on the same locator, attribute and
-  // budget -- so it gets the same diagnostic, for the reason `describeCatalogue`
-  // exists at all. Measured 2026-09-16: mutating `paintCatalogue()` out of the
-  // catalogue row's `onActivate` in `src/ui/hud/build-panel.ts` reds
-  // `playtest-771-starter-rung` and `playtest-intake-and-classification` HERE
-  // and not in `armBuildable`, because both reach `buy` first. The diagnostic
-  // added on the other copy alone would have been unreachable for the exact
-  // mutation it was written for.
-  try {
-    await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
-      'data-selected',
-      'true',
-      { timeout: ARM_TIMEOUT_MS },
-    );
-  } catch (failure) {
-    throw new Error(`${failure instanceof Error ? failure.message : String(failure)}\n${await describeCatalogue(page, buildableId)}`);
-  }
+  await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
+    'data-selected',
+    'true',
+    { timeout: ARM_TIMEOUT_MS },
+  );
 
   const before = (await sentCommands(page)).length;
   const buyRow = page.locator('.hud-build__buy');

@@ -5,7 +5,6 @@ import {
   buy,
   calibrate,
   centreOf,
-  type CountsSample,
   countsSeries,
   currentClock,
   currentTick,
@@ -17,10 +16,10 @@ import {
   panelText,
   press,
   sentCommands,
-  showPanel,
   tab,
   TILE,
   waitForQueueEmpty,
+  type CountsSample,
 } from './playtest-harness';
 
 /**
@@ -156,7 +155,7 @@ async function runAndWatch(
 
 /** Presses Admit until the control refuses to be pressed, and says what stopped it. */
 async function admitAsManyAsPossible(page: Page, label: string, limit: number): Promise<number> {
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   let admitted = 0;
   for (let index = 0; index < limit; index += 1) {
     const control = page.locator('.hud-intake__admit');
@@ -415,10 +414,6 @@ test.describe('Can this prison fail', () => {
     logScreen(label, 'FOUR MORE DAYS', await readScreen(page, startedAt));
     await tab(page, 'build').click();
     note(`[${label}] the wall ordered at the floor: queue=${JSON.stringify(await panelText(page, '.hud-build__queue'))}`);
-    // Manage, not Build: `.hud-staff` is `hud.ts:2506`'s panel and has been
-    // since #74. Read from Build this printed `not laid out`, so the act's
-    // closing staff reading was never taken.
-    await showPanel(page, 'manage', '.hud-staff');
     note(`[${label}] staff panel at the end: ${JSON.stringify(await panelText(page, '.hud-staff'))}`);
 
     note(`[${label}] ===== every status-counts publication =====`);

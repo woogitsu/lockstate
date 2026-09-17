@@ -38,7 +38,7 @@ import type { HudBuildOrder } from '../../src/ui/hud';
  * So the third option: leave both, and make the drift fail. This file is that,
  * and it can import both because a test is bound by no manifest -- the same
  * shape as `tests/unit/segment-fill-agreement.test.ts` and the
- * `HUD_BUILD_EDGES` pin at `tests/unit/ui-hud-build-panel.test.ts:47`.
+ * `HUD_BUILD_EDGES` pin at `tests/unit/ui-hud-build-panel.test.ts:22`.
  *
  * ## The pair is not symmetric, which the mutation pass is what showed
  *

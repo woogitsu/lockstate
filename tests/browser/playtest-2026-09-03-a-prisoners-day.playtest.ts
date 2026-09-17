@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import {
+  TILE,
   armBuildable,
   buildAndPopulate,
   buy,
@@ -16,9 +17,7 @@ import {
   panelText,
   press,
   sentCommands,
-  showPanel,
   tab,
-  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -732,7 +731,7 @@ test.describe('a prisoner’s day', () => {
     log(`counts: ${JSON.stringify(await latestCounts(page))}`);
 
     // ---- somebody to carry ---------------------------------------------------
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(3000);
     log(`intake after one admission: ${await panelText(page, '.hud-intake')}`);

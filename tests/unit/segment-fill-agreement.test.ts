@@ -17,7 +17,7 @@ import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/se
  *
  * This is the same shape as `HUD_BUILD_EDGES`, the one deliberate
  * re-declaration in this repository that is already pinned
- * (`tests/unit/ui-hud-build-panel.test.ts:47`). #123 item 1 is the version of
+ * (`tests/unit/ui-hud-build-panel.test.ts:22`). #123 item 1 is the version of
  * that shape *without* the pin, and this file is the pin.
  *
  * ## What was actually wrong
