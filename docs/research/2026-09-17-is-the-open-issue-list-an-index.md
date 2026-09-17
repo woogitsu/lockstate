@@ -196,10 +196,22 @@ same change, so it no longer claims what undo falsifies:
 
 ### #794 — the brief is wrong
 
-**Not fixed.** Panning is still unclamped: `grep -n "clamp" src/rendering/scene/world-scene.ts`
-returns nothing, and the only bound in the file is
+**Not fixed.** Panning is still unclamped, and the only bound in the file is
 `const ZOOM_BOUNDS = { min: 0.2, max: 3 } as const;` (`:71`) — exactly what the
-issue reported. What landed since is the minimap (#793), which *navigates* but
+issue reported.
+
+> **The sentence above first read *"`grep -n \"clamp\" …` returns nothing"*, and
+> that was false. It returns **five** lines, and they are kept here rather than
+> replaced by the corrected claim because which five is the whole point: `:879`
+> is a comment about *the clamp to `ZOOM_BOUNDS`*, and `:1448`–`:1451` are the
+> minimap's `clampedX`/`clampedY`, which clamp a **fractional click coordinate
+> into the prison's tile bounds** before jumping the camera — not the camera's
+> own position afterwards. So the file does clamp things, and clamps nothing
+> that stops a player panning into empty space. An absence claim resting on a
+> zero-hit grep is exactly the sentence shape `docs/AGENT_WORKFLOW.md` section 4
+> says rots first, and this one was wrong on the day it was written; the finding
+> it supports survives the correction, which is why the correction is worth
+> making rather than quietly dropping.** What landed since is the minimap (#793), which *navigates* but
 **draws no map**: the string a player reads is
 `'hud.minimap.navigable': 'No map is drawn here yet — press to jump the camera there'`
 (`default-locale-en.ts:695`), and `src/ui/hud/hud.ts:1801` says in its own words
