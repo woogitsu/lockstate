@@ -88,6 +88,23 @@
  *    geometry rather than by binding. Only the trailing run of empty rows gives
  *    its boxes up, and giving those up moves nothing.
  *
+ * **Neither half is about a pixel, and one measurement says that is a gap
+ * rather than a simplification (#1294, 2026-09-17).** `.hud__side` carries
+ * `margin-top: auto`, so the rail this function's four callers all live in is
+ * anchored to the **bottom** of the viewport: a block that changes height moves
+ * its own rows rather than the space below them. Measured in a browser at
+ * 1280x800 on the Staff panel's held-guards block, one held guard whose hold
+ * ends as another guard is claimed: the Release box sat at y=690 before the
+ * publication, and after it the freed place sat at y=635 with the **arriving
+ * guard's** Release at y=690 -- the pixel the departed guard's was on. The same
+ * anchoring moves three rows by 3-5px when a held row's two-line sentence is
+ * blanked and the row gets shorter. The Build panel's two lists do not show it
+ * (a one-line label shorter than its 44px control changes no height, and
+ * `ui-pending-deliveries.spec.ts` asserts the surviving boxes to the pixel), so
+ * this is the half of the invariant none of the four fixes reaches rather than
+ * a defect any of them introduced. #1294 carries the measurement and what a fix
+ * would have to decide.
+ *
  * `settleMs` is the caller's figure -- `BUILD_QUEUE_ROW_SETTLE_MS` in
  * `build-panel.ts` carries it and what bounds it from below. It is the weakest
  * number in this design: it is a claim about how long a person takes, and only

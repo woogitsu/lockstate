@@ -1254,10 +1254,25 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       // Every pooled row emptied as well as hidden, so a press that somehow
       // reached a hidden button cannot name a guard from the last publication.
       for (const row of heldRows) {
-        // `freedAtMs` stamped on the transition, as both branches below stamp
-        // it: the block going away does not entitle the next publication to put
-        // a fresh label straight back under a pointer.
-        if (row.guardId !== undefined) row.freedAtMs = performance.now();
+        /*
+         * **The settle window is forgotten here rather than stamped**, which is
+         * `emptyRosterRow`'s `forgetSettle` one block below and `paintQueue`'s
+         * correction one panel over, not a third decision. `src/main.ts:2542`
+         * calls `applyHeldGuards(undefined)` every time the player leaves the
+         * Staff tab -- *"leaving takes the block off, because from here on
+         * nothing is refreshing it"* -- so a stamp here puts every place inside
+         * its settle window and the publication that arrives when the player
+         * returns is refused by all of them. A held guard's list moves only
+         * when the simulation says so, so there may be no later publication to
+         * unstick it. Measured on this branch before the correction: three held
+         * guards, the block published away and published back, and
+         * `staffProbe().held.rows` is `[]`.
+         *
+         * A place with no box carries no settle window: the window exists so
+         * that a label the player may have read is not replaced under their
+         * pointer, and a place with no box had no label to read.
+         */
+        row.freedAtMs = undefined;
         row.guardId = undefined;
         row.element.hidden = true;
         row.release.setDisabled(true);

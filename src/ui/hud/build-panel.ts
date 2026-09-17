@@ -2326,10 +2326,26 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     deliveriesBlock.hidden = shown === undefined;
     if (shown === undefined) {
       for (const row of deliveryRows) {
-        // `freedAtMs` stamped on the transition, exactly as the two branches
-        // below stamp it: the block going away does not entitle the next
-        // publication to put a fresh label straight back under a pointer.
-        if (row.orderId !== undefined) row.freedAtMs = performance.now();
+        /*
+         * **The settle window is forgotten here rather than stamped, and that
+         * is `paintQueue`'s correction one block over rather than a new
+         * decision.** This branch is *"nothing has asked"* and *"nothing is on
+         * the way"*, and `src/main.ts:2538` reaches it every time the player
+         * leaves the Build tab, because nothing refreshes this list from
+         * another tab. Stamping here is what #860's first version shipped for
+         * the queue: every place came back inside its window, **refused the
+         * publication that arrives when the player returns**, and -- with
+         * nothing further to publish until a delivery lands -- left the block
+         * drawing no rows at all. Measured on this branch before the
+         * correction: three purchases out, tab away, tab back, and
+         * `probe().rows` is `[]`.
+         *
+         * The rule is `pooled-row-binding.ts`': a place with **no box** carries
+         * no settle window, because the window exists so that a label the
+         * player may have read is not replaced under their pointer, and a place
+         * with no box had no label to read.
+         */
+        row.freedAtMs = undefined;
         row.element.hidden = true;
         row.orderId = undefined;
         row.cancel.setUnavailable(true);
