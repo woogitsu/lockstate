@@ -79,6 +79,43 @@ They came from a shared tree and from shared ADR *numbers*.
   started, and when a port is busy pick another rather than clearing the
   machine.** The only reason this one was diagnosable at all is that the agent
   it hit reported the failures instead of writing them off as flaky.
+- **`git stash` is shared too, and its failure mode is worse than the process
+  table's because nothing about it is visible to either party.** `refs/stash`
+  is **one stack for the whole repository**. Worktrees get their own `HEAD`,
+  their own `refs/bisect` and their own `refs/worktree`; the stash is not on
+  that list. From a worktree whose git dir is `.git/worktrees/<name>`,
+  `git rev-parse --git-path refs/stash` answers
+  `/workspace/lockstate/.git/refs/stash` — the common dir — and
+  `git stash list` in any worktree prints every agent's entries interleaved.
+  **Reproduced 2026-09-16 in a throwaway repository, because the mechanism is
+  cheaper to demonstrate than to argue about.** Agent A stashes; agent B
+  stashes seconds later in its own worktree; agent A then runs `git stash pop`
+  with no argument and gets **B's** file into A's tree while A's own work stays
+  on the stack. The pop **exits 0**, prints an ordinary diffstat and names
+  nobody: `stash@{0}` means "the most recent push by anyone", and neither agent
+  is told. A tells itself its edit vanished; B finds a file it never touched.
+  **The incident that found this is a near-miss, and it is written as one.** An
+  agent taking before/after timing measurements on 2026-09-16 used stash/pop
+  repeatedly, got its own work back intact every time, and encountered a
+  foreign stash from another session — which it correctly left alone. That
+  stash was the integrator's, from a careless `git stash -q` in the main
+  workspace. Measured against `main` at `ca82e946`: it holds **64** files,
+  **51** of them byte-identical to `main` because the work had since merged,
+  and each of the remaining **13** blobs is reachable from a commit on another
+  ref (`git log --all --find-object=<blob>`). **Nothing was lost. Nothing about
+  the mechanism made that the likely outcome** — the agent was careful, and the
+  loss window was open the whole time either way.
+  **So: do not use the stash for a before/after comparison.** Cut a second
+  worktree at the unmodified commit — the same instruction the baseline bullet
+  further down already gives for browser runs — or `git diff > patch` and
+  `git apply` it back. Both are per-tree; the stash is not.
+  **`scripts/wip-sweep.sh` is not a contender here, and why is worth naming
+  rather than assuming.** Its one stash call is `git stash create`
+  (`scripts/wip-sweep.sh:59`), which writes a commit object and never writes
+  `refs/stash` at all. That is the same property the "Nothing may exist
+  only in the container" section below relies on for the index and the working
+  tree, and it extends to the stack: the sweep running beside you cannot move
+  it. The hazard is another agent's `git stash`, not the sweep.
 - **Assign ADR numbers centrally, after the drafts come back.** Two agents took
   `0034` within an hour, each having correctly enumerated the open pull requests
   first — the number is not reserved until it is in `docs/adr/README.md`. Have
@@ -1300,6 +1337,54 @@ a document about method should say how to write one that lasts.
   opened**, and to a document contradicting itself. Reading a file's own
   headings against each other is a different check from any diff, it takes a
   minute, and it has caught what diffs could not.
+- **A delta pass is blind to three further shapes, all found within two days of
+  each other, none of them found by the method.** Each was reached by reading
+  prose, by accident. The family is the finding and it is structural: every
+  pass builds its "cited set" with a regex over backticked `path:N` spans, and
+  all three are invisible to that regex **by construction** rather than by bad
+  luck.
+  - **A live coordinate in a section nothing asks anyone to read.**
+    `docs/adr/STATUS-QUEUE.md` §2 carries live `file:line` coordinates; the
+    gate's own failure message says *"Re-read §§3-6"*
+    (`tests/foundation/adr-status-queue-anchor-contract.test.ts`), and the
+    intersection every pass computes is against **§§4-6's** cited set. §2's
+    three coordinates for `RoomInstanceRegistry`'s production call sites in
+    `src/simulation/prisoners/action-system.ts` were false across **two
+    consecutive windows**: the pair read `:1698` and `:1736` went stale at
+    `490df767` (#1235) inside one window and moved again at `b97baf14` (#1233)
+    inside the next, **and the file was a member of the diff both times.** The
+    method reached the file and never read the line. It paid out once more the
+    window after, on `src/ui/hud/view-model.ts`, whose live coordinate is in §2
+    as well: the reading a §2 entry had just corrected to `:2049` is `:2131` on
+    `main` at `ca82e946`, re-derived with
+    `grep -n 'export interface HudPrisonerDetailViewModel'` rather than
+    offset from anything.
+  - **A count scoped by a glob rather than a path.** §6's census of
+    `Amendment`/`Addendum` headings cites `docs/adr/*.md`. A glob can never
+    appear in an intersection computed over backticked *paths*, however many
+    ADR documents a window contains, so no width of window reaches it. The
+    recorded figure is 32 headings across 18 documents; re-run at `ca82e946`,
+    `grep -RniE '^#{2,6}\s+[*_\`]*(Amendment|Addendum)\b' docs/adr/*.md` returns
+    **52 across 31**.
+  - **A live claim whose subject is a message kind or a schema rather than a
+    file.** ADR 0003's amendment headed *"Amendment, 2026-08-24:
+    `simulation/status-counts` also carries the last refusal"* enumerates the
+    wire payload as `{ sequence, tick, reason }`. `563ed7fc` (#1261,
+    2026-09-16) added a **fourth** member, `routeDecidedSince`, to
+    `refusalSchema` in `src/simulation/protocol/types.ts`, and updated
+    `docs/HUD_PROJECTIONS.md`'s copy of the same enumeration in that same
+    commit; ADR 0003's copy was not touched and is false. The falsifying file
+    was inside the window and the ADR was not, so the citing entry's backticked
+    paths could not raise it — what the window falsified is a **quoted
+    enumeration of a shape, named in prose**, which has no coordinate to
+    intersect on at all.
+
+  **What none of this bounds is how many remain, and that is the sentence to
+  carry rather than the three.** The third was invisible to the pass before it
+  in exactly the way a fourth is invisible now, and the method has no step that
+  distinguishes *"no such claim exists"* from *"the regex cannot see it"*. A
+  pass that reports a clean intersection has reported on the spans its regex
+  found, which is a smaller statement than it reads as.
 
 ---
 
