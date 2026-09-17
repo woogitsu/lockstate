@@ -78,6 +78,15 @@ import {
  * every merge is the fact, and a pin that stopped moving would be the thing to
  * distrust.
  *
+ * **Re-derived a fourth time, at `1ad064f9` (2026-09-17), after four further
+ * merges including #1230's 184 lines into `docs/HUD_PROJECTIONS.md` and
+ * #1282's into `docs/AGENT_WORKFLOW.md` -- both files that carry a resolving
+ * enumeration: 20 enumerations, of which 6 resolve.** Unchanged, and the first
+ * re-derivation that did not move. That is not evidence the derivation has
+ * stopped working, because `RESOLVED_ENUMERATIONS` below is asserted exactly
+ * and would fail on a lost row; it is the ordinary case the three moves above
+ * make look unusual.
+ *
  * `RESOLVED_ENUMERATIONS` below is not that table. It is the *output* of the
  * derivation, pinned, so that a resolution which stops happening -- a renamed
  * field, a reworded sentence, a regex that quietly stops matching -- fails
