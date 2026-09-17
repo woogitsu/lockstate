@@ -80,6 +80,136 @@ still holds.
   `src/`, and where the ADR names a socket, the socket was opened and found
   unsupplied.
 
+## Second correction, 2026-09-17: the count moved by one again, to 42, exactly as the correction above predicted
+
+**Re-run at `33c02a12`** — `main`, 2026-09-17, `chore(release): v0.0.652` — with
+the same replicated `statusStatement` extractor over `docs/adr/`:
+
+```
+TOTAL 109  accepted 67  proposed 42  other 0
+```
+
+**The set difference was computed rather than read off a diff**, by extracting
+`docs/adr/` at both commits (`git archive <sha> docs/adr | tar -x -C <dir>`) and
+diffing the two `Proposed` lists: the single member that left is **ADR 0116**,
+and nothing entered. So the correction above — *"When that branch merges the
+count goes to 42 and bucket 3 to five"* — is **confirmed**, by the arithmetic
+rather than by having said it. `agent/0116-dossier` merged as `d1f3bf7c`
+(#1265) and `docs/adr/0116-whether-a-finished-object-is-an-event.md:19` now
+reads:
+
+> **Accepted, 2026-09-16, by the repository owner: option 2 — a
+> construction-completion event, graded `'info'`, routed `'log-only'`.**
+
+**Three counts, three commits, and none of them is true without its commit:**
+
+| commit | date | `Proposed` | `Accepted` | buckets |
+| --- | --- | --- | --- | --- |
+| `e044a3e8` | 2026-09-15 | **44** | 65 | 30 / 8 / 6 / 0 |
+| `54adc87c` | 2026-09-16 | **43** | 66 | 30 / 7 / 6 / 0 |
+| `33c02a12` | 2026-09-17 | **42** | 67 | 30 / 7 / 5 / 0 |
+
+Bucket 1 has not moved across any of the three. Bucket 4 is still empty, and
+that is still a result rather than an unchecked box.
+
+**Two of the 2026-09-16 rulings did NOT move a `Status` line, which a reader
+would otherwise assume, so both are stated as absences with the commit that
+establishes them.**
+
+- **ADR 0115 is still `Proposed` at `33c02a12`**, and is still inside the 42.
+  It reads *"**Proposed.** Nothing here is decided and no code implements
+  it."* at `docs/adr/0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md:14`.
+  The owner ruled option 4 on 2026-09-16 and the record moving `Status` to
+  `Accepted` is held by **PR #1275**, which was **open and conflicting**
+  (`mergeable_state: dirty`) when this was checked on 2026-09-17. Bucket 3's
+  row for 0115 therefore stands unchanged as a count and is refuted as a
+  *question*: it is answered and unrecorded, which is a different state from
+  the one bucket 3 is named for.
+- **ADR 0042's `Status` deliberately does not move.** The 2026-09-16 ruling on
+  it was about how the document is *treated* — it is live, and a below-the-pin
+  anchor naming live code is re-aimed rather than frozen — not about accepting
+  it. It reads *"**Proposed. Not accepted, and deliberately not
+  self-approved.**"* at `docs/adr/0042-attaching-consequences-to-the-simulation-loop.md:5`. A ruling
+  that leaves a status word alone is invisible to this census's extractor by
+  construction, which is the shape `docs/AGENT_WORKFLOW.md` §4 warns about:
+  the pass sees the keyword, not the decision.
+
+**Eleven of the census's 66 `path:N` spans were dead, and every one of them
+died before this merge rather than because of it.** All 66 were re-opened at
+`33c02a12` and read against what the census says they show; 55 hold.
+
+**How the eleven were found is the part worth carrying, because two cheaper
+checks each missed most of them.** Diffing each cited line between the
+branch's own last commit and `33c02a12` flagged **one**, because a coordinate
+that was already dead on the branch is identical on both sides and therefore
+invisible to a diff. Scanning for anchors that now land on a blank line flagged
+the **same one**, because a stale coordinate usually lands on some other real
+line rather than on nothing. What found all eleven was re-reading each line
+against **`e044a3e8`, the commit the census was taken at** — the only baseline
+at which every one of these coordinates was, by construction, correct. A
+citation check needs the commit the citation was written at, not the last
+commit the document was touched at.
+
+| cited | verbatim at `e044a3e8` | live at `33c02a12` |
+| --- | --- | --- |
+| `docs/HUD_PROJECTIONS.md:534` | *"- **And what makes the main thread ask is the clock heartbeat, not the counts.**"* | **`:559`** |
+| `src/persistence/save-schema.ts:404` | *"    sentenceLengthTicks: z.array(uint32Schema),"* | **`:413`** |
+| `src/persistence/save-schema.ts:449` | *"    check('sentenceLengthTicks', value.sentenceLengthTicks);"* | **`:458`** |
+| `src/persistence/save-schema.ts:507` | *"\* [ADR 0074](../../docs/adr/0074-what-a-restored-room-that-recorded-no-rectangle-is.md)"* | **`:516`** |
+| `src/persistence/save-schema.ts:1410` | *"\*   and the restore reads the rectangle back off it (ADR 0074). The field stays"* | **`:1420`** |
+| `src/persistence/save-schema.ts:1274` | *"\* ADR 0054 exists to rule out. It is a shape defect either way -- nothing"* | **`:1284`** |
+| `src/ui/hud/build-panel.ts:2432` | *"     \* The revision (ADR 0107) this row's last publication read for \`orderId\`"* | **`:2447`** |
+| `src/ui/hud/build-panel.ts:2872` | *"     \* \"what the queue still needs, whole\". ADR 0081 decision 2 funds one whole"* | **`:2887`** |
+| `src/ui/hud/projection.ts:928` | the line ending *"since ADR 0064 the state withholds part of the"* | **`:939`** |
+| `src/ui/hud/projection.ts:1233-1235` | *"\* (#703 ruling A, ADR 0083 §2), so a purchase this thread refuses on money has"* | **`:1244-1246`** |
+| `src/ui/hud/view-model.ts:347` | the ADR 0083 link line of the `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` doc comment, whose line above reads *"(\`TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS\`, #703 ruling A of 2026-08-31,"* | **`:374`** |
+| `src/ui/hud/view-model.ts:833` | *"   \* This order's revision as of this publication (ADR 0107), carried"* | **`:860`** |
+| `src/ui/hud/view-model.ts:1848` | the ADR 0048 link line opening that doc comment's citation | **`:1895`** |
+
+(Thirteen rows for eleven spans: two of the spans name two coordinates each.)
+
+**Every row is a coordinate move and not a finding move.** In each case the
+sentence or symbol the census cites still exists, unchanged, at the new line —
+re-derived by `grep -n` on the quoted text rather than by offsetting from
+anything. No bucket, no tier and no count in this document changes because of
+them. Each is marked in place beside the original number rather than
+overwritten (`docs/AGENT_WORKFLOW.md` §4).
+
+**The one with a name attached** is bucket 1's row for **ADR 0086**, whose
+`docs/HUD_PROJECTIONS.md:534` is singled out below because its killer is a
+commit this census already talks about.
+
+- **It was live when the census was taken.** At `e044a3e8` and at the census's
+  own commit `bd396861`, line 534 of that file reads
+  *"- **And what makes the main thread ask is the clock heartbeat, not the
+  counts.**"*.
+- **It died at `563ed7fc`** — *"feat(hud): the refusal band retires on a decided
+  outcome of the same route (ADR 0091 decision 2, option F)"*, the same commit
+  the first correction above credits with refuting two of this census's
+  sentences. It inserted 25 lines above the anchor, so the sentence is
+  unchanged and only its coordinate moved.
+- **It is `docs/HUD_PROJECTIONS.md:559` at `33c02a12`**, verbatim:
+
+  > - **And what makes the main thread ask is the clock heartbeat, not the counts.**
+
+- **The row is marked rather than rewritten** (`docs/AGENT_WORKFLOW.md` §4),
+  so a reader can see that the finding it supports — ADR 0086 option E shipped,
+  tier VERIFIED — never depended on the number.
+
+**What this cost, and why it is worth stating.** The first correction, written
+on 2026-09-16, re-derived the *count* against `563ed7fc`'s merge and did not
+re-open the *coordinates*. The same commit had broken one. A count check and an
+anchor check are two passes, and running one is not evidence about the other —
+which is the same shape as §4's *"a delta pass is blind to a claim that was
+already false when its window opened"*, one level in.
+
+**What this second correction is evidence of, beyond its own number.** The
+first correction was written on 2026-09-16 and predicted a number for a merge
+that had not happened; the merge happened and the number is right. A census
+that names the commit it was taken at and states what will move it is
+re-runnable by the next reader in one command — which is the whole difference
+between this and a tally.
+
 ## How the 44 were derived
 
 The status word was re-derived by replicating `statusStatement` from
@@ -128,35 +258,35 @@ in this corpus does not mean "not built". It means "not signed".
 | ADR | evidence | tier |
 | --- | --- | --- |
 | 0043 Account session states | `AccountSessionState` union, `src/ui/account/account-session.ts:53-62`; decision 1 cited at `:156`, decision 4 at `src/ui/account/cloud-slot-availability.ts:25` | VERIFIED |
-| 0048 What a sector's occupants are | 29 files under `src/` cite it; `src/ui/hud/view-model.ts:1848`, `src/ui/hud/messages.ts:883,897`, `src/ui/hud/staff-panel.ts:51` (*"Since ADR 0048, a …"*) | REFERENCE |
+| 0048 What a sector's occupants are | 29 files under `src/` cite it; `src/ui/hud/view-model.ts:1848` (**dead; live at `:1895`**), `src/ui/hud/messages.ts:883,897`, `src/ui/hud/staff-panel.ts:51` (*"Since ADR 0048, a …"*) | REFERENCE |
 | 0049 What a prison that cannot make payroll owes | arrears carried as history, `src/simulation/runtime/session-systems.ts:429,981`; `src/simulation/presentation/status-strip-projection.ts:135` | REFERENCE |
 | 0050 When a sentence ends | decision 2 at `src/simulation/prisoners/room-instance-registry.ts:1245` and `src/simulation/runtime/new-session.ts:528`; decision 4 at `src/simulation/prisoners/discharge-system.ts:79`, `new-session.ts:1495` | REFERENCE |
 | 0052 Drawing the world with the source-art sheets | decision 2's typed manifest is `src/rendering/assets/environment-sprites.ts`; the painter is `src/rendering/world/environment-art.ts`, whose `:63` records that *"ADR-0052's own consequence 'Adding art for a new object is a row in a data module' … is now true"* | VERIFIED |
 | 0053 Who may stand a security post | `src/content/staff-role-catalog.ts:12,42,123`; the post refusal at `src/simulation/protocol/commands.ts:648` | REFERENCE |
-| 0054 What a prisoner's day is made of | decision 1's room-gating read back by `src/simulation/incidents/sector-risk.ts:62`; `src/persistence/save-schema.ts:1274`; `src/simulation/protocol/commands.ts:763` | REFERENCE |
+| 0054 What a prisoner's day is made of | decision 1's room-gating read back by `src/simulation/incidents/sector-risk.ts:62`; `src/persistence/save-schema.ts:1274` (**dead; live at `:1284`**); `src/simulation/protocol/commands.ts:763` | REFERENCE |
 | 0056 Keeping a player's orders in order | `src/ui/simulation-commands.ts:50,218`; `:567` — *"would only reopen the inversion ADR 0056 closed"* | REFERENCE |
 | 0057 What a riot does to a prisoner's day | `src/simulation/runtime/new-session.ts:614`; `src/simulation/incidents/trigger-system.ts:430`; `src/simulation/incidents/incident.ts:285` | REFERENCE |
 | 0059 How an actor gets from one tile to the next | the locomotion store and its render feed: `src/rendering/feed/actor-extrapolation.ts:21`, `actors-from-delta.ts:35`, `actors-from-snapshot.ts:74`; 20 files under `src/` | REFERENCE |
 | 0061 What the prison produces on its own | `incidents.escape-attempt-opened` producer and its alert entry, `src/ui/simulation-events.ts:570,1299`; 20 files under `src/` | VERIFIED |
 | 0062 Who gets the room when more want it than it seats | the three-pass ordering, `src/simulation/prisoners/action-system.ts:526` (*"Pass 3 — the idle, by descending `needUrgency`"*), with `:82` and `:637` | VERIFIED |
 | 0063 What a refused restore says | `'unsupported-by-this-build'` decided at the check and handled at the boundary: `src/persistence/session/session-controller.ts:623,820`, `src/persistence/local/repository.ts:131` | VERIFIED |
-| 0064 What an unmet need costs a prison | `src/ui/hud/projection.ts:468,928`, `src/ui/hud/messages.ts:87` — *"since ADR 0064 the state withholds part of the prisoner-day grant per unmet need"* | REFERENCE |
+| 0064 What an unmet need costs a prison | `src/ui/hud/projection.ts:468,928` (**`:928` dead; live at `:939`**), `src/ui/hud/messages.ts:87` — *"since ADR 0064 the state withholds part of the prisoner-day grant per unmet need"* | REFERENCE |
 | 0065 What happens to a save this build cannot read | `quarantineGeneration` / `releaseQuarantinedGeneration`; `src/persistence/local/generation-policy.ts:18,29` states decision 2 by number | VERIFIED |
 | 0067 What an assault costs its instigator | `src/simulation/prisoners/sanction-system.ts:12`, wired at `prisoner-operations-runtime.ts:276` | VERIFIED |
 | 0068 Classifying a pending room's enclosure on the client | the synchronous host query the decision names: `classifyArea` at `src/ui/hud/rooms-panel.ts:206`, asked once per rectangle at `:918`, with `pendingEnclosure` at `:1385` | VERIFIED |
-| 0069 How long a prisoner is held for | `sentenceLengthTicks` as a per-prisoner array in the save envelope, `src/persistence/save-schema.ts:404,449`; read at `src/simulation/presentation/prisoner-projection.ts:751` | VERIFIED |
+| 0069 How long a prisoner is held for | `sentenceLengthTicks` as a per-prisoner array in the save envelope, `src/persistence/save-schema.ts:404,449` (**dead; live at `:413,458`**); read at `src/simulation/presentation/prisoner-projection.ts:751` | VERIFIED |
 | 0070 Dismissing a staff member | `DismissStaff` consumed at `src/simulation/runtime/session-commands.ts:1025`, keyed by `dismissStaffSupersessionKey` at `:1060`; the roster reader at `src/ui/simulation-staff-roster.ts:19` | VERIFIED |
 | 0071 What bounds a room whose activity consumes no object | `concurrentUseCapacityFor` in `src/simulation/objects/room-capacity.ts`; decision 4's import ban stated at `src/content/room-catalog.ts:74` | VERIFIED |
 | 0073 Who orders a contraband search | `SearchSystem` wired at `src/simulation/runtime/new-session.ts:1153,1181` and `session-systems.ts:1061`. **The ADR's own Status block already says so**: *"Implemented, 2026-08-29, on `agent/552-contraband-search` — Part 1 and Part 2 Option A, on the owner's instruction to implement under this document."* | VERIFIED |
-| 0074 What a restored room that recorded no rectangle is | `src/persistence/save-schema.ts:507,1410` (*"the restore reads the rectangle back off it (ADR 0074)"*), `src/persistence/save-migrations.ts:271` | REFERENCE |
+| 0074 What a restored room that recorded no rectangle is | `src/persistence/save-schema.ts:507,1410` (**dead; live at `:516,1420`**) (*"the restore reads the rectangle back off it (ADR 0074)"*), `src/persistence/save-migrations.ts:271` | REFERENCE |
 | 0077 When a route stops being valid | the `canCross` socket the decision requires: `src/simulation/locomotion/locomotion.ts`, `src/simulation/security/guard-locomotion.ts:8`, `src/simulation/navigation/traversal.ts:80` | VERIFIED |
 | 0078 What keeps a prisoner safe | `safety` is a member of `NEED_IDS` (`src/simulation/prisoners/needs.ts:11`) with the decided decay recorded at `:53-57` | VERIFIED |
 | 0079 A sentence long enough to be a history | `src/simulation/runtime/new-session.ts:466`, `src/simulation/prisoners/needs.ts:78`, `src/simulation/contraband/introduction.ts:120` | REFERENCE |
-| 0081 Whether a purchase may be partly filled | decision 2 (per order) at `src/simulation/presentation/construction-projection.ts:174` — *"ADR 0081 decision 2 funds one whole order at a time"* — and `src/ui/hud/build-panel.ts:2872` | REFERENCE |
-| 0083 What opens the negative balance | `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (`src/ui/hud/view-model.ts:347`, `messages.ts:1488`) and `escalatedDiversionRateBasisPoints` (`src/simulation/economy/loans.ts`) | VERIFIED |
-| 0086 What refreshes a pulled HUD readout | Option E (recommended) shipped: `tests/foundation/hud-refresh-cadence-contract.test.ts` exists and owns the sentence, and `docs/HUD_PROJECTIONS.md:534` states it — *"And what makes the main thread ask is the clock heartbeat, not the counts."* | VERIFIED |
+| 0081 Whether a purchase may be partly filled | decision 2 (per order) at `src/simulation/presentation/construction-projection.ts:174` — *"ADR 0081 decision 2 funds one whole order at a time"* — and `src/ui/hud/build-panel.ts:2872` (**dead; live at `:2887`**) | REFERENCE |
+| 0083 What opens the negative balance | `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS` (`src/ui/hud/view-model.ts:347` (**dead; live at `:374`**), `messages.ts:1488`) and `escalatedDiversionRateBasisPoints` (`src/simulation/economy/loans.ts`) | VERIFIED |
+| 0086 What refreshes a pulled HUD readout | Option E (recommended) shipped: `tests/foundation/hud-refresh-cadence-contract.test.ts` exists and owns the sentence, and `docs/HUD_PROJECTIONS.md:534` states it (**dead since `563ed7fc`; live at `docs/HUD_PROJECTIONS.md:559`** — see the repin note under the second correction) — *"And what makes the main thread ask is the clock heartbeat, not the counts."* | VERIFIED |
 | 0090 Medium as a warning, not a skipped step | `src/simulation/prisoners/classification-early-warning-system.ts` exists, with `EARLY_WARNING_TIER_CEILING` at `src/simulation/prisoners/classification.ts:249` | VERIFIED |
-| 0107 What a stale build-order cancellation is refused for | the revision counter the decision invents: `BuildOrderSource.revisionOf` at `src/simulation/presentation/construction-projection.ts:131`, carried per publication at `src/ui/hud/view-model.ts:833` and read at `src/ui/hud/build-panel.ts:2432` | VERIFIED |
+| 0107 What a stale build-order cancellation is refused for | the revision counter the decision invents: `BuildOrderSource.revisionOf` at `src/simulation/presentation/construction-projection.ts:131`, carried per publication at `src/ui/hud/view-model.ts:833` (**dead; live at `:860`**) and read at `src/ui/hud/build-panel.ts:2432` (**dead; live at `:2447`**) | VERIFIED |
 
 ## Bucket 2 — overtaken in part
 
@@ -172,7 +302,7 @@ decisions rather than a list of documents.
 | 0047 Raising a building on open ground | decision 6 only | decisions 1–5 | The ADR says so in place: *"**Landed as slice 0, issue #448.** This decision — and only this decision — is implemented."* Confirmed at `src/simulation/construction/system.ts:499` and `tests/integration/edge-of-owned-land-room.test.ts:11`. |
 | 0085 The HUD corner and the status strip | decision 1 | decision 2 | `src/ui/hud/hud.css:400,429,660,669,676,694` implement decision 1 **and record a deliberate deviation from its literal text**. No chip-priority or wrap mechanism exists for decision 2; the ADR's own text says *"neither ships with this ADR"*. |
 | 0087 Whether a refusal is an event or a condition | decision 2 | decisions 1, 3, 4 | `PrisonCondition`, `computeStandingPrisonConditions` (`src/simulation/presentation/status-strip-projection.ts`) and `InsolvencyRungSystem` (`src/simulation/economy/insolvency-rung-system.ts`) all exist. Decision 2 alone carries an owner ruling (#767, 2026-09-01). |
-| 0089 How a host refusal names its reason | nothing of the recommendation | Option 2 | **The clearest "problem dissolved" case on the board.** The H4 example the whole document argues from was fixed on 2026-09-03 in the shape the ADR argues *against*: `HostRefusalReason` gained `'no-room-to-hold-anybody'` (`src/ui/host-refusal.ts:69`) and `refusalMessageKey` a second `if` (`src/ui/hud/projection.ts:1233-1235`), with the sentence at `src/content/default-locale-en.ts:2369`. The ADR's own Status block records this. What survives is only the class argument for a `Record`. |
+| 0089 How a host refusal names its reason | nothing of the recommendation | Option 2 | **The clearest "problem dissolved" case on the board.** The H4 example the whole document argues from was fixed on 2026-09-03 in the shape the ADR argues *against*: `HostRefusalReason` gained `'no-room-to-hold-anybody'` (`src/ui/host-refusal.ts:69`) and `refusalMessageKey` a second `if` (`src/ui/hud/projection.ts:1233-1235` (**dead; live at `:1244-1246`**)), with the sentence at `src/content/default-locale-en.ts:2369`. The ADR's own Status block records this. What survives is only the class argument for a `Record`. |
 | 0091 What clears the refusal band | decision 1 | decision 2 | See the section below. |
 | 0092 Who decides where a guard stands | decision 3 of 8 | the other 7 | The ADR's own Status: *"**Decision 3 landed on `main` in `4a53d292` (pull request #825).** … it is the only one that has been built. Nothing else here has a line of code behind it: no command, no `SetSectorPost`, no control a player can press."* |
 
