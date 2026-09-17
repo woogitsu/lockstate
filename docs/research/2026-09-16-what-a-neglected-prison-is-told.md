@@ -24,7 +24,10 @@ re-check is recorded beneath it with `54adc87c`.
   **six** `construction.*` members at `54adc87c` and **no member for a build
   finishing**.
 - **§5's status line for ADR 0116 is overtaken**: the owner ruled it on
-  2026-09-16. Marked in place.
+  2026-09-16. Marked in place. **And overtaken once more on 2026-09-17**, in
+  the other half: the ruling reached `main` in `d1f3bf7c` (#1265), so the
+  addendum's *"that file still opens its Status block Proposed"* is false as
+  well. Both are marked at §5 rather than here.
 - **§6's first bullet named an open question and left it open; it is closed
   here**, by opening the table it names.
 - **ADR 0091 decision 2 was also ruled on 2026-09-16 (option F)** and bears on
@@ -437,6 +440,24 @@ anywhere on the screen marks it.
 > in this tree still opens its Status block *"Proposed, 2026-09-15. Not
 > self-approved, and it implements nothing."*; that file is another agent's
 > surface and is not edited from here.
+>
+> **That last sentence stopped being true on 2026-09-17 and is kept rather than
+> rewritten** (`docs/AGENT_WORKFLOW.md` §4, *mark both directions*). The
+> branch holding the ruling merged as `d1f3bf7c` (#1265), and
+> `docs/adr/0116-whether-a-finished-object-is-an-event.md:19` on `main` at
+> `c9b4a7f7` now opens:
+>
+> > **Accepted, 2026-09-16, by the repository owner: option 2 — a
+> > construction-completion event, graded `'info'`, routed `'log-only'`.**
+>
+> So the gap is decided **and recorded**, where on 2026-09-16 it was decided
+> and unrecorded. **The measurement is unaffected and was re-derived at
+> `c9b4a7f7` rather than carried over**: `SIMULATION_EVENT_TYPES` is still
+> **27** members holding still exactly **six** `construction.*` ones —
+> `order-cancelled`, `order-cancelled-underway`, `redone`,
+> `undo-refused-newer-action`, `undone`, `undone-spend-destroyed` — and
+> still no member for a build finishing. The ADR's `Status` moved; nothing
+> under `src/` did, which is what the ruling's own text says of itself.
 
 ---
 
