@@ -115,11 +115,6 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         // host's starter-rung pre-flight needs the unfiltered sum and the
         // occupancy bar needs the accommodation-scoped one.
         roomCapacity: counts.roomCapacity,
-        // Straight through, and deliberately not re-derived from the line
-        // above: `roomCapacity === 0` was the host's own second definition of
-        // "fresh, unfurnished" and answered differently from the worker's
-        // (`statusCountsSchema.isFreshUnfurnishedPrison`).
-        isFreshUnfurnishedPrison: counts.isFreshUnfurnishedPrison,
         // Straight through, all three, for `accommodationCapacity`'s reason:
         // the HUD may not derive a simulation figure, and these are the rungs
         // `SafetyCoverageSystem` counted the population onto on the same walk

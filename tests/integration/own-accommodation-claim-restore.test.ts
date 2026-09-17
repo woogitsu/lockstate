@@ -55,7 +55,7 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * the moment the player saves is the ordinary case, not a contrived one -- which
  * is why this is driven through `ZoneRoom`/`PlaceObject`/`AdmitPrisoner` and
  * `PrisonerOperationsRuntime.loadSnapshot`, the same method
- * `src/simulation/runtime/session-systems.ts:913` calls on a real restore.
+ * `src/simulation/runtime/session-systems.ts:663` calls on a real restore.
  */
 
 const SEED = 0x0b1ec7;

@@ -474,7 +474,7 @@ export interface BrowserGlobalAccess {
  * `tests/unit/services-layer-boundaries.test.ts` requires one.
  *
  * **`globalThis.<global>`, with or without a following member access.** This
- * second shape is not symmetry for its own sake: `src/input/storage.ts:167`
+ * second shape is not symmetry for its own sake: `src/input/storage.ts:111`
  * writes `const store = globalThis.localStorage;` and then calls `getItem` on
  * the *binding*, so the first rule alone sees nothing at all -- neither the
  * `.` before `localStorage` (excluded by the lookbehind) nor a member access

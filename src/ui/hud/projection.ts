@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
-import { deliveriesRungFloorMinorUnits, freshUnfurnishedPrison } from '../affordability';
+import { deliveriesRungFloorMinorUnits } from '../affordability';
 import type { HostRefusalReason } from '../host-refusal';
 import type { IconId } from '../primitives/icon';
 import type { BadgeTone } from '../primitives/status-badge';
@@ -551,17 +551,6 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
  * are computed from the one boolean rather than two things that can drift
  * apart.
  *
- * **`counts.roomCapacity === 0` was itself the wrong reading, and the clause
- * above is kept rather than rewritten because its *argument* is what survived
- * and its *source* is what did not (2026-09-15).** One boolean shared with the
- * press is still the property; the boolean is now
- * `counts.isFreshUnfurnishedPrison`, the registry figure the worker judges
- * with, read through `freshUnfurnishedPrison`. `roomCapacity` is a sub-sum of
- * that figure over the catalogue fan-out (`docs/HUD_PROJECTIONS.md` gap 15),
- * so it answered "fresh" in strictly more cases than the worker did -- and on
- * a restored prison holding an off-catalogue room this badge read `0 left` at
- * -1,200 while the worker went on accepting presses to -1,250.
- *
  * The rung comes through `deliveriesRungFloorMinorUnits` in
  * `src/ui/affordability.ts` rather than from `rungFloorMinorUnits` directly,
  * because `src/ui/hud/` may not import the simulation -- `AGENTS.md` boundary 1,
@@ -601,7 +590,7 @@ function coverageBadge(counts: HudCountsViewModel): HudMetricBadge {
 function overdraftRemaining(counts: HudCountsViewModel): number | undefined {
   const floor = counts.treasuryOverdraftFloorMinorUnits;
   if (floor === undefined || floor >= 0) return undefined;
-  const isFreshUnfurnishedPrison = freshUnfurnishedPrison(counts);
+  const isFreshUnfurnishedPrison = counts.roomCapacity === 0;
   return Math.max(0, counts.treasuryMinorUnits - deliveriesRungFloorMinorUnits(floor, isFreshUnfurnishedPrison));
 }
 

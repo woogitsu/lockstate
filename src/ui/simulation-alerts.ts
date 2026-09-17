@@ -442,15 +442,7 @@ export function hudRefusalFromWorkerMessage(
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
       if (refusal === undefined) return 'none';
-      // `routeDecidedSince` is forwarded rather than acted on here: this
-      // function serves the band, and the band's rule is `hud.ts`'s to state.
-      // Spread rather than passed as `undefined`, because
-      // `exactOptionalPropertyTypes` is on and the field is `true`-or-absent.
-      return {
-        sequence: refusal.sequence,
-        labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
-        ...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as const } : {}),
-      };
+      return { sequence: refusal.sequence, labelKey: REFUSAL_LABEL_KEYS[refusal.reason] };
     }
 
     // The session is over, so the band empties -- the same thing the list

@@ -354,15 +354,6 @@ that reached a bounded in-worker window and stopped there.
   one that was never sent, and its length would grow with the session, which
   is exactly what contract 5 forbids on a cadence. `RefusalLog`
   (`src/simulation/refusals/`) argues this in full.
-  **A fourth member joined it on 2026-09-16 and the three above are kept as
-  written, because they are still the whole of the *record*.**
-  `routeDecidedSince` is `true`-or-absent and is not part of the refusal: it
-  says whether the **same command route** has decided another outcome since,
-  which is a fact about the session rather than about the refusal. Only the
-  band reads it (ADR 0091 decision 2, option F, ruled by the owner); the
-  alerts list ignores it, and the row is unchanged. It carries no target and
-  no coordinates, so the "nothing here grows and nothing here locates" rule
-  is untouched.
 - **A stable id, never a sentence** (ADR 0011).
   `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) maps each
   reason onto a `hud.alert.refusal.*` message key through a `Record` over the
@@ -380,22 +371,6 @@ that reached a bounded in-worker window and stopped there.
   succeeds — a wall built at the tile it was refused for, a room zoned over
   the rectangle it was refused for. Recorded as gap 34 below, amended rather
   than invented here.
-
-  **That sentence is still true of the alerts list and is no longer the whole
-  truth about the band, and it is kept rather than rewritten because the band
-  is what moved.** ADR 0091 decision 2 was ruled by the owner on 2026-09-16 as
-  **option F**: `.hud__refusal` also retires on a **decided outcome of the
-  same route** — the player zones something else, removes something else,
-  hires somebody else. The refusal itself is *not* withdrawn (that is #492's
-  rule and it decides exactly what it decided before), the alerts list keeps
-  the row, and the two surfaces therefore disagree here **on purpose**. That
-  divergence is the cost the ruling bought, and it is the split
-  `src/ui/simulation-alerts.ts` has claimed in prose since #507 without
-  anything making it true. Options D (any route retires it) and B/C (widening
-  `supersede` itself) were rejected, the second pair because they turn #492's
-  two guarding tests red. The provenance of the ruling is the weaker kind —
-  the label of a clickable option, not a typed sentence — and the ADR's Status
-  block says so.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
 
 #### The zoning notice it also carries (ADR 0022, amended)
@@ -561,16 +536,14 @@ Four properties are worth stating because each is a decision:
   *"the counts cadence"*, and six sentences in this section said so; the
   composition root's nine comments said it with a number, *"up to 500ms for the
   next counts publication"*. **All of them were false the day they were
-  written.** `src/main.ts:2164` opens **one** listener for every worker-to-main
-  message, and its early return (`src/main.ts:2244-2253`) fires only when all
+  written.** `src/main.ts:1781` opens **one** listener for every worker-to-main
+  message, and its early return (`src/main.ts:1822-1830`) fires only when all
   six of its translators say nothing. `hudClockFromWorkerMessage`
   (`src/ui/simulation-clock.ts:22-57`) has no "nothing changed" arm — it
   returns a view model for *every* `simulation/clock-state` — so every one of
-  those falls through to the refresh block at `src/main.ts:2355-2364`, which
-  calls ten refreshers. (**Those three citations read `1702`, `1735-1740` and
-  `1795-1804` until 2026-09-02 and `1781`, `1822-1830` and `1886-1894` until
-  2026-09-15, and the block this sentence called "nine-call" at both of those
-  readings now makes ten calls** — every one of them had rotted; the quoted
+  those falls through to the nine-call refresh block at
+  `src/main.ts:1886-1894`. (**Those three citations read `1702`, `1735-1740`
+  and `1795-1804` until 2026-09-02** and all three had rotted; the quoted
   sentences are unchanged, which is why the quotations are the durable half and
   the line numbers are not.) `publishClockState` posts one at most every 250 ms
   and only when the tick has moved
@@ -872,7 +845,7 @@ one are `hud/security`, `hud/contraband`,
 `hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
 last of which is worth naming rather than assumed read, because the world is
 plainly on screen: `SimulationSnapshotFeed` reaches it through
-`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:450`)
+`simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:383`)
 and not through this channel at all, which is why it has a cadence of its own
 and why that cadence is the only worked precedent this repository has for
 [ADR 0086](./adr/0086-what-refreshes-a-pulled-hud-readout.md)'s question.
@@ -2065,25 +2038,6 @@ decision about what to build next.
     open question this gap always named, and still needs a decision about how
     the HUD would render it (highlight the tile? move the camera?).
 
-    **Amended again, 2026-09-16, and the clause about the key is narrowed
-    rather than withdrawn.** ADR 0091 decision 2 was ruled by the owner as
-    option F: **the band** — not the log, and not the alerts list — retires its
-    sentence on a **decided outcome of the same command route**. The key is
-    still purely in-worker and still never reaches `src/ui/`; what does reach
-    it is one boolean derived from the key's route prefix,
-    `SimulationRefusal.routeDecidedSince`, which names a command and not a
-    place. So the *where* this gap is about is exactly as absent as it was, and
-    that is also the reason the ruling was needed: a corner that cannot say
-    where it is about cannot be read beside a room the player has just
-    successfully zoned. The measured form of that was two adjacent grid rows
-    making opposite claims about one press.
-
-    **What this does not close.** #780's plain different-location case for a
-    route the player never repeats: a `zone.not-enclosed` refusal about a
-    rectangle they abandon stands until they zone or refuse something else. And
-    there is still no player gesture — a refusal is a level, not an occurrence
-    run, and ADR 0084's `×` deliberately does not reach it.
-
     **The placement half of this gap is closed, and this is the answer it
     named.** It used to record that the alerts section starts *folded*
     (`INITIAL_HUD_SHELL_STATE`) and that `hud.css` drops `.hud__corner` — the
@@ -2154,7 +2108,7 @@ decision about what to build next.
     assertions and their output are in the report that accompanies this
     change):
 
-    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:158-166`).
+    - `RefusalLog.record` replaces (`src/simulation/refusals/refusal-log.ts:119-123`).
       Two refusals leave `count === 2` and `last` holding only the second; the
       first is unreachable from the object.
     - The alerts list keeps exactly one refusal row, keyed by ordinal, and
@@ -2163,47 +2117,10 @@ decision about what to build next.
       `place-object.tile-occupied` then `purchase.insufficient-funds`, the list
       is `[{"id":"refusal-2", …}]` — length 1.
     - The band carries the newest ordinal and nothing else
-      (`src/ui/simulation-alerts.ts:449-453`, `src/ui/hud/hud.ts:1730-1745`).
+      (`src/ui/simulation-alerts.ts:440-448`, `src/ui/hud/hud.ts:1678-1692`).
     - Neither surface shows the count. The row literal carries `id`,
       `labelKey` and `severity` only, and `sequence` reaches a player only as
       an opaque row id.
-
-    **Four of the five code coordinates above were repinned on 2026-09-16, and
-    one of the four sentences is now false. Both are #1261's doing** — ADR 0091
-    decision 2, option F, ruled by the owner on 2026-09-16 — and the sentence is
-    kept rather than rewritten (`docs/AGENT_WORKFLOW.md` §4: mark both
-    directions).
-
-    - **The repins are citation maintenance and change no finding.** `record`
-      is `refusal-log.ts:158-166`, `supersessionKeyRoute` having been added
-      above it; the band's notice is built at `simulation-alerts.ts:449-453`;
-      the band's rule is `hud.ts:1730-1745`; and the publisher's single read of
-      `refusals.last` is `state-machine.ts:597`, called from `onTickLoop` at
-      `:407`. Each measurement re-reads the same at its new coordinate.
-    - **"The band carries the newest ordinal and nothing else" is false in both
-      directions since #1261.** It carries one thing *more*: the notice now
-      forwards `routeDecidedSince` as well
-      (`src/ui/simulation-alerts.ts:452`). And on that flag it carries *less*
-      than the newest ordinal — a notice marked `routeDecidedSince` is treated
-      as no notice at all, so the corner is cleared while the refusal still
-      stands in `RefusalLog` and still holds its row in the alerts list
-      (`src/ui/hud/hud.ts:1731-1735`). The band is therefore no longer even a
-      lossy copy of the newest refusal; it is a copy that retires itself when
-      the same command route decides something else.
-    - **What that does not touch is the retention finding this section is
-      about.** Option F makes the band hold *less* of the history, never more,
-      so a refusal a player never saw is if anything less retained after #1261
-      than before it. The other three bullets are unchanged and were re-read at
-      their new coordinates: `record` still replaces, the alerts list still
-      keeps exactly one refusal row keyed by ordinal, and neither surface shows
-      the count. So is the twelve-refusal measurement below — `supersede` on a
-      *different* target now marks the standing record instead of doing nothing
-      at all, but a `record` on a failed order still replaces outright, which is
-      the reduction that measurement is about.
-    - **And #1261 is not this section's question being answered by the back
-      door.** It moved `src/` for ADR 0091 decision 2 — when the *band* retires
-      a sentence — not for article 6, which the owner answered separately below
-      on 2026-09-15 by ruling that article 6 does not reach a refusal at all.
 
     **Eleven of twelve refusals from one gesture never cross the worker
     boundary at all**, which is stronger than "overwritten fast". One build
@@ -2211,8 +2128,8 @@ decision about what to build next.
     the handler records one refusal per failed order
     (`src/simulation/construction/handler.ts:113-115`); the publisher reads
     `this._runtime.refusals.last` once per wake
-    (`src/simulation/worker/state-machine.ts:597`, called from `onTickLoop` at
-    `:407`), so a burst decided inside one dispatch pass is reduced to its last
+    (`src/simulation/worker/state-machine.ts:579`, called from `onTickLoop` at
+    `:389`), so a burst decided inside one dispatch pass is reduced to its last
     member before anything is posted. Probe: twelve recorded refusals across
     three reasons leave one row, `refusal-12`, `build.out-of-bounds`; the
     `build.water-blocked` and `build.unowned-land` sentences are gone from both
@@ -2276,45 +2193,3 @@ decision about what to build next.
     > constitution, so *"warning"* in `src/` and *ostrzeżenie* in
     > `konstytucja.md` are now known to be different words. Nothing enforces
     > that distinction; this paragraph is the only place it is written down.
-
-    > **Every coordinate in this section was re-opened on 2026-09-17 against
-    > `main` at `33c02a12`, and none of them moved.** Recorded with the commit
-    > rather than with the date alone, per `docs/AGENT_WORKFLOW.md` §4 — a
-    > "checked recently" with no commit on it is a claim a reader cannot
-    > re-run. The eleven read back, verbatim at the line cited:
-    > `konstytucja.md:35` *"Ostrzeżenia nie znikają dlatego, że przyszło nowsze
-    > zdarzenie."*; `refusal-log.ts:158` *"public record(reason: RefusalReason,
-    > tick: number, key?: string): void {"*; `simulation-alerts.ts:325`
-    > *"const standing = previous.filter((row) =>
-    > !row.id.startsWith(REFUSAL_ROW_PREFIX));"*; `simulation-alerts.ts:452`
-    > *"...(refusal.routeDecidedSince === true ? { routeDecidedSince: true as
-    > const } : {}),"*; `simulation-alerts.ts:262` the `severity` paragraph;
-    > `hud.ts:1731` *"if (notice === undefined || notice.routeDecidedSince ===
-    > true) {"*; `main.ts:2935` *"for (const edge of intent.edges) {"*;
-    > `handler.ts:114` *"refusals.record(BUILD_REFUSAL_REASONS[order.failReason],
-    > context.tick, buildKey);"*; `state-machine.ts:597` *"const refusal =
-    > this._runtime.refusals.last;"*; and `state-machine.ts:407`
-    > *"this.publishStatusCounts(now);"*, inside `onTickLoop` (`:392`).
-    >
-    > **What the re-check was looking for and did not find.** Between the
-    > 2026-09-16 repin above and `33c02a12`, `main` took #1266, #1264, #1276,
-    > #1271, #1269 and #1265, and the owner ruled on ADR 0091 decision 2
-    > (option F, already carried above), ADR 0112 decision 4, ADR 0116 and
-    > ADR 0115. None of those touched a line this section cites, and none of
-    > them touches the refusal channel's retention. **The ruling that could
-    > have is ADR 0116** — a construction-completion event, `'info'`,
-    > `'log-only'`, counted rather than repeated, Accepted on `main` — because
-    > it adds a `SimulationEventType` and so bears on the paragraph above that
-    > prices routing refusals into `SIMULATION_EVENT_TYPES`. It does not
-    > change that price: it is a *completion*, not a refusal, and the
-    > `EVENT_PRESENTATION` row it needs was an owner's ruling exactly as that
-    > paragraph says every previous one was. The paragraph is therefore
-    > confirmed by the new ruling rather than falsified by it.
-    >
-    > **Re-run once more at `725aad40`**, after #1279 (*"fix(hud): mount the
-    > alerts fold in the rail below 720px (#1201)"*) merged the same day and
-    > added 53 lines to `src/ui/hud/hud.ts` — the file two of these coordinates
-    > point into. **All ten still read back verbatim**, because #1279's hunks
-    > are the layout-tier plumbing and `placeAlertsFold`, none of it above
-    > `applySimulationRefusal`. Stated because a merge touching a cited file is
-    > the case a reader would assume breaks something, and here it did not.
