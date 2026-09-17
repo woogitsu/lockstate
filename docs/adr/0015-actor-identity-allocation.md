@@ -204,11 +204,6 @@ no decision recorded here.
   today. Whichever change first does must call `release`, or reuse
   `reconcile` as a safety net; a retained entry eventually misnames a
   recycled slot.
-  **Superseded 2026-09-15 in its second sentence and met in its third:** both
-  destroy paths exist now and both call `release`. The bullet is left as
-  written because it is the requirement that was placed on them, and the
-  amendment of 2026-08-27 below carries the measurement under *"Nothing
-  destroys a prisoner or a guard today"*.
 - **The stream is claimed.** `identity.actor-name` is drawn from by this
   module and nothing else. `tests/unit/actor-identity.test.ts` runs the same
   seeded session with and without naming and requires the classification
@@ -255,30 +250,6 @@ amendment and ADR 0034 §9's: the old wording is quoted rather than overwritten.
 *Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
 (v0.0.121); every line cited below, old and new, was opened on that tree.*
 
-> **Corrected 2026-09-15. The pin is kept word for word and is advisory: the
-> "new" column of the table below has itself gone stale, which is the sharpest
-> demonstration in this corpus of what `docs/adr/README.md`'s *"A global anchor
-> pin in an ADR is advisory, and does not date what is below it"* — added by
-> pull request #1231, not on `main` as this is written — is about.** A section
-> whose entire subject is re-anchoring, written to fix eight drifted anchors,
-> drifted on all eight of its own replacements inside three weeks. The
-> corrections are set beside the table rather than written into it, so that the
-> record of what this document said at `792bf94` survives.
->
-> **One of the replacements is worse than stale and is the reason the "no
-> offsets" rule exists.** `new-session.ts:496` is cited in the table as
-> `new GuardRoster(...)`. Today `src/simulation/runtime/new-session.ts:496` is
-> `const actorIdentity = new ActorIdentityRegistry();` — a different line of
-> this ADR's own wiring, which reads correct to anyone checking the file name
-> and the neighbourhood rather than the sentence.
->
-> **Two claims in "What was re-verified and is intact" are not anchor problems
-> and have gone flatly false.** Both are corrected at their own bullets below,
-> and both are about things this ADR calls open that have since closed.
->
-> `(v0.0.121)` is checked and kept: `package.json` reads `0.0.121` at `792bf94`.
-> It is not the tag — `v0.0.121` is `54418b6`, fifty commits earlier.
-
 ### The citations, and what is at each of them now
 
 `docs/AGENT_WORKFLOW.md` §4 rates a `file:line` into code as the *durable* kind
@@ -295,24 +266,6 @@ grep. Nobody had, and every one of these was wrong:
 | `new-session.ts:196` — constructs the registry | a doc comment on staffing requirements | `:301` |
 | `new-session.ts:198` — passes it to `PrisonerOperationsRuntime` | the same comment block | `:325` |
 | `new-session.ts:248` — constructs `GuardRoster` | `const DEFAULT_GUARD_CAPACITY = 500;` | `:496` |
-
-**Re-swept 2026-09-15, by opening each line rather than by applying an offset.**
-Every entry in the right-hand column above is now history. Where each subject is
-on `main`:
-
-| subject | the table's column | 2026-09-15 |
-| --- | --- | --- |
-| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1227` |
-| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1361` |
-| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1391` |
-| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1034` |
-| registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
-| constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
-| passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |
-| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1029` |
-
-The seven-key list is still exactly the seven keys, at
-`src/persistence/save-schema.ts:1232-1238`.
 
 Two of those are worse than an offset. **`sessionSystemsSchemaFor` does not
 exist**: `grep -rn "sessionSystemsSchemaFor" src/ tests/` is empty. It was
@@ -347,21 +300,6 @@ the `simulation` section they share.* Named by symbol rather than by line, and
 by "every version" rather than by a list, because both of those survive the next
 schema bump and neither of the current forms did.
 
-> **2026-09-15: the prescription above survived the next schema bump. This
-> section's own heading did not, and it is left standing because that is the
-> whole point of it.** The heading says *"`identity` is in three payload
-> versions rather than two"*. It is in **four**: `savePayloadV6Schema` carries
-> `identity: actorIdentitySnapshotSchema.optional()` at
-> `src/persistence/save-schema.ts:1497`, beside V3's `src/persistence/save-schema.ts:1361`, V4's `:1391` and
-> V5's `src/persistence/save-schema.ts:1460`. A section written to condemn *"both the V3 and the V4"* as a
-> rotting enumeration replaced it with a different tally in its own title, and
-> that tally rotted in nineteen days — which is `docs/AGENT_WORKFLOW.md` §4's
-> *"a correction is no more durable than the claim it corrected"* arriving on
-> the shortest possible schedule. **Neither the heading nor the paragraph above
-> is rewritten**: the durable sentence is already written out above, in the
-> paragraph beginning *"What these passages should say"*, and it needed no
-> edit.
-
 ### What was re-verified and is intact
 
 Every claim the decision rests on holds, and each was re-run rather than
@@ -379,59 +317,16 @@ inherited:
   to accept is still genuinely open rather than quietly settled by shipping.
 - **"Nothing destroys a prisoner or a guard today"** — still true. Every
   `.destroy(` in `src/` is a Phaser display object under `src/rendering/`.
-
-  > **False as of 2026-09-15, in both halves, and this is the finding of this
-  > pass.** `.destroy(` in `src/` no longer lives only under `src/rendering/`:
-  > it is also `src/ui/hud/`'s four display-object teardowns and, decisively,
-  > **two entity destructions in `src/simulation/`** —
-  > `entityStore.destroy(entityId);` in `releasePrisoner`
-  > (`src/simulation/prisoners/release.ts:216`) and
-  > `this.entityStore.destroy(entityId);` in `GuardRoster.forget`
-  > (`src/simulation/security/guard-roster.ts:147`). Both populations this ADR
-  > names are destroyed in an ordinary session now.
-  >
-  > **The obligation the Consequences bullet states is met on both paths, and
-  > that was checked rather than assumed.** `releasePrisoner` calls
-  > `surfaces.identity?.release('prisoner', entityId);`
-  > (`src/simulation/prisoners/release.ts:210`) before the destroy on `:216`.
-  > `GuardRoster.forget` itself does not release — it is reached through
-  > `dismissStaff` (`src/simulation/staff/dismissal.ts:297`), whose own step 6
-  > is *"**The name is given back.**"* and which releases the staff identity
-  > first. So no retained entry is waiting to misname a recycled slot, and the
-  > *"or reuse `reconcile` as a safety net"* half was not needed.
-  >
-  > **One thing is left standing that this document cannot fix, and is recorded
-  > rather than repaired here.** `src/simulation/identity/actor-identity.ts`
-  > still says of `ActorIdentityLifecycle` that *"`GuardRoster` still takes the
-  > minter alone, which is honest: no path in `src/` dismisses a guard, so
-  > nothing there has a release to call yet"*, while
-  > `src/simulation/security/guard-roster.ts` says twelve lines above its own
-  > destroy that *"**That destroy path now exists** (issue #533)"*. Two files in
-  > one directory contradicting each other about the same fact — the shape
-  > `docs/AGENT_WORKFLOW.md` §4 says no diff finds. Naming it is all this ADR
-  > can do; the edit is `src/`'s.
 - **"`identity.actor-name` is drawn from by this module and nothing else"** —
   still true. The two `kernel.rng.get(ACTOR_IDENTITY_RNG_STREAM)` sites are
   `new-session.ts:496` and `src/simulation/prisoners/intake-system.ts:293`, and
   both hand the stream to the registry rather than drawing from it themselves
   (`:293` is `this.identity.assign('prisoner', entityId,
   context.rng.get(this.identityRngStreamName))`).
-
-  > **Re-verified 2026-09-15: the claim holds and both anchors have moved.**
-  > There are still exactly two draw sites and both still hand the stream
-  > straight to the registry. They are `src/simulation/runtime/new-session.ts:1029`
-  > (the `GuardRoster` construction) and
-  > `src/simulation/prisoners/intake-system.ts:517`, which is still
-  > `this.identity.assign('prisoner', entityId, context.rng.get(this.identityRngStreamName));` (verbatim in `src/simulation/prisoners/intake-system.ts`).
 - **"`PLACEHOLDER_ACTOR_NAME_POOL` (32 given × 32 family names)"** — counted:
   32 and 32.
 - **The disjointness assertion exists**, at
   `tests/unit/actor-identity.test.ts:278`, against `defaultLocaleEnCatalog`.
-  **Re-aimed 2026-09-15 to `tests/unit/actor-identity.test.ts:290`**, the case
-  titled *"shares no entry with the default locale catalog, so a name can never
-  read as a translation (ADR 0011)"*; it is unchanged in substance, and `:278`
-  now falls on the `describe('actor name pool', ...)` that opens the block
-  containing it.
 - **"No names; label rows by entity id … what the HUD does today"** — still true,
   and it is the one worth a reader's attention. `grep -rn "givenName" src/ui/` is
   **empty**. Four projections carry the name —
@@ -441,35 +336,3 @@ inherited:
   carried in state, written to the save and projected across the worker boundary,
   and no player has ever seen one. The gap this ADR opens with — *"a roster row
   has nothing to label itself with"* — is still open, one consumer short.
-
-  > **False as of 2026-09-15, and it is the closing of this ADR's opening
-  > sentence.** `grep -rn "givenName" src/ui/` is not empty. The consumer
-  > exists: `src/ui/hud/regime-panel.ts:672` renders a roster row as
-  > `t(HUD_MESSAGE_KEY.regimeRosterName, { given: name.givenName, family: name.familyName })`
-  > — a message key with the two parts passed separately, which is the shape
-  > §"The name is not localizable content" asks for (*"The projections expose
-  > `givenName` and `familyName` separately rather than one composed string"*),
-  > reaching the player through the localizer rather than as a composed string
-  > from the simulation. `src/ui/simulation-events.ts:1498-1502`,
-  > `src/ui/simulation-prisoner-detail.ts:128` and
-  > `src/ui/simulation-prisoner-roster.ts:204` carry it the rest of the way.
-  >
-  > **The projection anchors moved and their shape changed with them**, so they
-  > are re-stated by subject rather than re-numbered: the three projections
-  > compose the field through `toActorNameViewModel` —
-  > `src/simulation/presentation/prisoner-projection.ts:331`,
-  > `src/simulation/presentation/staff-projection.ts:189` and
-  > `src/simulation/presentation/guard-release-projection.ts:199` — and the
-  > view-model type they build is
-  > `src/simulation/presentation/view-model.ts:235`. The old *"Four
-  > projections"* is left above as history; a count of projections is exactly
-  > the sentence `docs/AGENT_WORKFLOW.md` §4 says to avoid, and it is not
-  > replaced with another one.
-  >
-  > **What this does to the document.** The Alternatives bullet *"No names;
-  > label rows by entity id. — Honest, and what the HUD does today"* is now a
-  > description of a tree that no longer exists, and it is kept there as the
-  > record of a rejected option rather than corrected in place. Nothing in the
-  > Decision moves: names are still allocated, still keyed by
-  > `(actorKind, entityId)`, still snapshotted. What has gone is the last
-  > sentence of this bullet — a player has seen one.

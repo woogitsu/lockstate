@@ -60,20 +60,6 @@ intermediate step is inside the ruling rather than outside it, provided the step
 is recorded with its reason. What is not open is the direction: smaller than the
 delivery's 16/14/12, larger than today's 13/11.
 
-**A SIXTH RULING LANDED ON 2026-09-16, AND IT IS NOT A SIXTH DECISION.** It
-settles the SCOPE of decision 4's amendment of constitution article 8 — the
-amendment carries all three of the article's numbers, so article 8 now reads
-**15 / 13 / 11** — and it is written at the foot of this file, in
-§*Amendment, 2026-09-16: decision 4's amendment of article 8 carries all three
-of its numbers*. **Neither the Accepted state above nor the count of five moves:
-five decisions were put to the owner on 2026-09-13 and five were ruled on**,
-and this answers a question `docs/VISUAL_IDENTITY.md` raised afterwards about
-what one of those five already covers. It deliberately adds no
-`### Decision` heading, because
-`tests/foundation/identity-reading-classification-contract.test.ts` reads those
-headings as the list of rulings the repository's reading must account for, and
-a scope ruling is not a new decision to account for.
-
 ---
 
 **Proposed, 2026-09-13. Not self-approved.** *(The state of this document before
@@ -211,15 +197,6 @@ marks as a naming proposal rather than a module move. That much is ours.
 > was vendored to be. Everything else in article 8 — contrast, visible focus,
 > 200 % text, a status carrying a label and an icon as well as a colour — is
 > untouched.
->
-> **AMENDED 2026-09-16, ON THE SCOPE OF THAT SECOND RULING: "amended to 15 px"
-> carries all three of the article's numbers.** The sentence above names one
-> number and article 8's type sentence has three, so whether the other two moved
-> with it was left open here; `docs/VISUAL_IDENTITY.md` asked it rather than
-> guessing, and the owner ruled. **Article 8 reads 15 / 13 / 11.** The
-> "everything else in article 8" list immediately above is unchanged and is
-> still exhaustive of what did not move. See §*Amendment, 2026-09-16* at the
-> foot of this file.
 
 The honest risk is that some panels do not have the room, and the honest outcome
 may be that a few keep a denser step with the reason written down. Saying that
@@ -267,60 +244,6 @@ absence of browser QA cannot be checked at all. Nothing in this ADR depends on
 either — the delivery is treated as a *direction*, whose value does not rest on
 its mock's test results — but an agent quoting *"9/9 PASS"* as evidence about
 anything in this repository would be quoting a claim nobody here has checked.
-
-## Amendment, 2026-09-16: decision 4's amendment of article 8 carries all three of its numbers
-
-**Ruled by the repository owner on 2026-09-16.** Constitution article 8 now
-reads **15 / 13 / 11** — body, regular labels, metadata — rather than 15 px with
-the article's other two numbers left standing at 14 and 12.
-
-**The question, as it was put, and it is not this document's.** Article 8's type
-sentence carries three numbers — *"Tekst podstawowy: 16 px, regularne etykiety:
-14 px, metadane: 12 px."* — decision 4 above amends the article *"to 15 px"*,
-and decision 4's own enumeration of what in article 8 is untouched (*"contrast,
-visible focus, 200 % text, a status carrying a label and an icon as well as a
-colour"*) names neither of the other two. Read strictly, the amended article
-said 15 / 14 / 12 while the code shipped 15 / 13 / 11. The gap was found by the
-classification pass that `docs/ISSUE_BACKLOG.md`'s 2026-09-15 rung forced on
-`docs/VISUAL_IDENTITY.md`, and that document stated it as a question rather than
-answering it, on the ground that it was the owner's to settle. It was.
-
-**The provenance is the weaker of the two kinds this repository distinguishes,
-and it is recorded here rather than left to be inferred.** The owner did not
-type a sentence. They were shown three options in a clickable question an agent
-session had written and chose the one labelled *"Poprawka niesie wszystkie
-trzy"* ("the amendment carries all three"). That is the same provenance the
-Status block above discloses for four of the five rulings of 2026-09-13, that
-`CLAUDE.md` flags for the 2026-09-08, -09 and -10 releases inside reservation 3,
-and that ADR 0091's Status block of 2026-09-16 sets out at length; this entry
-follows that block's form. **The option's label is the whole of what was
-agreed**, and what it agreed is a *reading of article 8's scope*.
-
-**What was not agreed, because nothing about it was open.** The ramp's values.
-15 / 13 / 11 was ruled on 2026-09-13 by decision 4 itself, was built on
-2026-09-14 (#1158), and is pinned today by `tests/unit/ui-design-tokens.test.ts`
-— `--type-body` 15, `--type-secondary` 13, `--type-label` 11, asserted there
-under *"carries the three sizes the owner ruled on, by the names that spend
-them"*, re-opened and confirmed on 2026-09-16 before this entry was written.
-**So this ruling moves no value, changes no line under `src/`, and turns no test
-red or green.** It removes a disagreement between two documents and the code,
-and the disagreement was the documents'.
-
-**Which makes it the cheapest kind of ruling and the easiest to over-read.** A
-reader who finds it and infers that article 8's other requirements moved would
-be wrong: contrast, visible focus, 200 % text and the status-carries-a-label-
-and-an-icon rule are untouched here, exactly as decision 4 left them. A reader
-who infers that the delivery was edited would also be wrong — decision 4's rule
-holds unchanged, that the amendment is written here and in
-`docs/VISUAL_IDENTITY.md` and **never** in
-`docs/design/2026-09-13-identity-v5/`, whose copy of article 8 still reads
-16 / 14 / 12 and is the evidence of what the owner asked for on 2026-09-13.
-
-**Restated in `docs/VISUAL_IDENTITY.md`**, beneath both passages that raised the
-question — §"How to read a sentence in this document" and §"The constitution" —
-which are kept as they stood rather than rewritten, per `docs/AGENT_WORKFLOW.md`
-§4's rule about marking both directions. The record of a question having been
-open for three days is what makes the answer legible.
 
 ## References
 

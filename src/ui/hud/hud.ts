@@ -1294,19 +1294,6 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * acknowledge it -- so a host refusal stays until the same action later
    * succeeds, and a simulation refusal until another replaces it or the
    * session ends, which are the first moments each sentence stops being true.
-   *
-   * **The last clause was the whole of the rule until 2026-09-16 and is now
-   * one of three, and it is kept rather than rewritten because it is the rule
-   * that moved.** ADR 0091 decision 2 added a fourth moment and the owner
-   * ruled it: a **decided outcome of the same command route**. A
-   * `remove-wall.nothing-to-remove` refusal is retired by the player's next
-   * removal, whatever tile it names; it is left alone by a wall drag, a hire
-   * or an admission. That is not the timer this paragraph declines -- nothing
-   * here runs on a clock, and a player who refuses a press and then does
-   * something unrelated still reads the sentence. See
-   * `applySimulationRefusal` for the measurement that separates "same route"
-   * from "any route", and `SimulationRefusal.routeDecidedSince` for where the
-   * comparison is made, which is in the simulation and not here.
    */
   const refusalId = nextUiId('hud-refusal');
   const refusalText = element('span', { className: 'hud-refusal__text' });
@@ -1647,10 +1634,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * says nothing about a refusal the simulation decided -- that command was
    * accepted too, and was refused on its content several ticks later -- so a
    * later success may not clear it. What clears a simulation refusal is
-   * another one, the session ending, or -- since ADR 0091 decision 2 was
-   * ruled on 2026-09-16 -- a decided outcome of the *same simulation route*,
-   * which the simulation reports on the record and this thread never infers;
-   * see `applySimulationRefusal`.
+   * another one, or the session ending; see `applySimulationRefusal`.
    */
   const clearRefusal = (actionId: string): void => {
     if (refusalSource !== 'host' || refusedAction !== actionId) return;
@@ -1690,45 +1674,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    *     with no memory of what it last painted -- so the two surfaces
    *     disagreed about the identical fact until this. See
    *     `docs/adr/0091-what-clears-the-refusal-band.md`.
-   *
-   * ## The band retires on a decided outcome of the same route (ADR 0091
-   * decision 2, option F, ruled by the owner 2026-09-16)
-   *
-   * The first case above has a second door into it, and the whole of option F
-   * is that door: a notice carrying `routeDecidedSince` is treated exactly as
-   * no notice at all. The player refused a wall removal and has since removed
-   * a wall somewhere else; refused a rectangle and has since zoned another.
-   * The sentence in the corner is still *true* -- #492's rule, untouched, and
-   * the reason the simulation has not withdrawn the record -- but it is no
-   * longer about anything the player is looking at, and the corner names no
-   * location, so a player reading it beside the thing they just did has no way
-   * to tell the two apart. ADR 0091's own measurement of that is a screen
-   * contradicting itself about one press: the event band reading "The order
-   * was cancelled" while this line still read "Nothing was removed".
-   *
-   * **Same route, not any route.** Option D -- any decided outcome retires it
-   * -- was measured at a band lifetime of 2 ms, because the eight commands of
-   * one wall drag are submitted 2 ms apart, against the 600 ms floor
-   * `EVENT_BAND_DWELL_FLOOR_MS` records as the minimum an event needs to be
-   * readable. That is the timer the paragraph in `mountHud`'s refusal element
-   * declines to have, with the player's hand as the clock. Under F an
-   * unrelated gesture leaves the sentence alone, which is when it is most
-   * likely to be read.
-   *
-   * **The list does not do this.** `hudAlertsFromWorkerMessage` never reads
-   * the flag, so the refusal keeps its row. The band and the list therefore
-   * disagree here on purpose, which is the split
-   * `src/ui/simulation-alerts.ts` has described in prose since #507 without
-   * anything making it true.
-   *
-   * **Nothing is restored.** `simulationRefusalSequence` is cleared with the
-   * line, exactly as it is when the worker withdraws a refusal outright, so
-   * the next *new* ordinal takes the band normally. The flag is monotone per
-   * record -- a route cannot un-decide -- so a retired sentence never comes
-   * back on a later republication of the same refusal.
    */
   const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => {
-    if (notice === undefined || notice.routeDecidedSince === true) {
+    if (notice === undefined) {
       simulationRefusalSequence = undefined;
       if (refusalSource === 'simulation') clearRefusalLine();
       return;
@@ -1896,24 +1844,6 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
   minimapPanel.body.append(minimapSurface, alertsSection.element);
-
-  /**
-   * Puts the alerts fold where the current tier can show it (issue #1201).
-   *
-   * Above 720 px it is the last thing in the minimap panel, where it has been
-   * since the corner was built; at 720 px and below it is the last thing in
-   * the Overview panel, which is the rail slot the owner's ruling names. The
-   * element is the same in both, so this is a move and never a copy -- see the
-   * `onTierChange` handler's own block below for what that buys.
-   *
-   * Passed to `createHudLayoutShell` as `onTierChange`, which calls it once
-   * during construction with the tier it resolved, so there is no separate
-   * initial placement to keep in step with this one. It therefore may not
-   * close over `layout`, which does not exist yet when it first runs.
-   */
-  function placeAlertsFold(phone: boolean): void {
-    (phone ? overviewPanel.foldSlot : minimapPanel.body).append(alertsSection.element);
-  }
 
   /*
    * ---- the camera zoom, on screen (issue #1023) ----------------------
@@ -2534,41 +2464,6 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onChange: (next) => {
       options.onLayoutChange?.(next);
     },
-    /*
-     * THE ALERTS FOLD'S HOME, WHICH IS A FUNCTION OF THE TIER (issue #1201).
-     *
-     * `.hud__corner` is `display: none` at 720 px and below -- `hud.css` says
-     * so under #1117, three times, with the measurement -- and the alerts log
-     * is the only surface that issues `DismissAlert`. So on a phone the game
-     * offered a command the player could not press: measured at 375x812 on
-     * `57cffa10`, the dismiss control on a row with a run of occurrences had
-     * **0 client rects**.
-     *
-     * The owner ruled on 2026-09-16 that the fold moves into the rail on the
-     * Overview tab at that breakpoint and no other. The provenance is the
-     * weaker of the two kinds this repository distinguishes -- the label of a
-     * clickable option this session wrote, *"Zamontuj fold w szynie poniżej
-     * 720 px (zalecane)"*, rather than a sentence the owner typed -- and
-     * `docs/IDENTITY_V5_ROLLOUT.md` §"Stage 5" is the durable record.
-     *
-     * **One node, moved, rather than a second one built**, and that is the
-     * whole reason this is a callback and not markup: a second alerts list
-     * would be a second issuing site for `DismissAlert`, and
-     * `tests/foundation/unconsumed-command-contract.test.ts`'s
-     * `producersOf('DismissAlert')` pin survives this change unedited because
-     * there is still exactly one. It also means the fold's collapsed state,
-     * its scroll position and every row in it cross the breakpoint intact --
-     * they are the same elements.
-     *
-     * **Why Overview and not "wherever the player is", measured rather than
-     * reasoned.** The rail's sheet is capped at `--hud-inspector-height` below
-     * this breakpoint, and on Zones and Manage the panels there are already at
-     * that ceiling -- the dossier that priced this measured the same stub
-     * taking the Rooms panel from 457.13 to 144.00 px and the Staff panel from
-     * 307.38 to 2.00. Overview is the one tab with room, which is why the
-     * ruling names it.
-     */
-    onTierChange: placeAlertsFold,
   });
   strip.layoutSlot.append(layout.menu);
 
