@@ -2527,16 +2527,6 @@
 
 .hud-overview__figures[hidden] { display: none; }
 
-/*
- * The host's box at the foot of the panel (`OverviewPanel.foldSlot`, #1201).
- *
- * `:empty` is what makes it free above 720 px: the alerts fold is in
- * `.hud__corner` there and this box has no child, so it has no box either and
- * the panel is byte-for-byte the panel it was. The same shape `.hud__aside:empty`
- * already carries one file up, for the same reason.
- */
-.hud-overview__fold:empty { display: none; }
-
 .hud-overview__row {
   display: flex;
   align-items: baseline;
@@ -4766,34 +4756,6 @@
   /* And the Overview panel, on the same slot on the first tab, for the same
      specificity reason. */
   .ui-panel.hud-overview { width: 100%; }
-
-  /*
-   * AND IT IS THE ONE PANEL HERE THAT HAS TO BE ABLE TO SHRINK, BECAUSE BELOW
-   * THIS BREAKPOINT IT CARRIES THE ALERTS FOLD (issue #1201).
-   *
-   * `flex: 0 0 auto` arrived on 2026-09-14 so that two panels sharing the
-   * Manage rail could not steal each other's height, and this panel is alone on
-   * its own tab -- but it is no longer a fixed height, because `hud.ts` moves
-   * the alerts fold into `.hud-overview__fold` at this breakpoint and the log
-   * grows with the prison. `.hud__side` is `max-height: var(--hud-inspector-height)`
-   * (the phone sheet's ceiling, at the foot of this file) and `.hud__rail` is
-   * `overflow: hidden`, so an unshrinkable panel taller than the ceiling is a
-   * panel whose bottom rows are clipped by the rail with no gesture that brings
-   * them back -- which is the same class of defect as the one this mount is
-   * fixing.
-   *
-   * `flex: 0 1 auto` with `min-height: 0` lets the sheet's ceiling reach the
-   * panel, and the panel's own `overflow-y: auto` (above, outside this block)
-   * is then what the excess lands in. One scroll container and not two: the
-   * nested `min-height: 0` chain `.hud-minimap` carries for the same list is
-   * what bounds it *inside* the fold on a desktop, and on a phone the whole
-   * panel scrolling is the better of the two -- a finger on a 375 px column
-   * should not have to find the inner box.
-   *
-   * Two classes, matching every rule above it here, for the same specificity
-   * reason.
-   */
-  .ui-panel.hud-overview { flex: 0 1 auto; min-height: 0; }
 
   /* And the Regime panel, which shares the same rail slot on the fifth tab:
      two classes for the same specificity reason, or it would stay 264px in a

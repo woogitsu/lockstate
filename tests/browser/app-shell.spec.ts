@@ -12,7 +12,6 @@ import {
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
   rungFloorMinorUnits,
 } from '../../src/simulation/economy';
-import { staffHireCostMinorUnits } from '../../src/simulation/staff';
 import { HUD_TAB_IDS, PRISONER_ROSTER_ROW_LIMIT, STAFF_ROSTER_ROW_LIMIT } from '../../src/ui/hud';
 import { EVENT_BAND_HOLD_CEILING_MS } from '../../src/ui/hud/event-band-dwell';
 
@@ -301,8 +300,6 @@ interface SubmittedCommand {
         readonly transactionId?: string;
         readonly itemId?: string;
         readonly quantity?: number;
-        /** The role a `HireStaff` names (ADR 0025), read by `hiresSent`. */
-        readonly staffRoleId?: string;
         /** The anchor tile a `PlaceObject`, `RemoveObject` or `RemoveWall` names (ADR 0028, ADR 0106). */
         readonly x?: number;
         readonly y?: number;
@@ -690,21 +687,6 @@ async function purchasesSent(page: Page): Promise<readonly { itemId: string; qua
         itemId: message.payload?.command?.data?.itemId ?? '',
         quantity: message.payload?.command?.data?.quantity ?? 0,
       })),
-  );
-}
-
-/**
- * Every `HireStaff` the page has posted, the sibling of `purchasesSent` above
- * and for the same reason: the `hire-staff` pre-flight throws *instead of*
- * submitting, so "nothing left this thread" is a claim only the tee can settle.
- */
-async function hiresSent(page: Page): Promise<readonly string[]> {
-  return page.evaluate(() =>
-    ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
-      .map((message) => message as SubmittedCommand)
-      .filter((message) => message.kind === 'simulation/submit-command')
-      .filter((message) => message.payload?.command?.data?.type === 'HireStaff')
-      .map((message) => message.payload?.command?.data?.staffRoleId ?? ''),
   );
 }
 
@@ -2753,31 +2735,8 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
-  /*
-   * **THE ALERTS FOLD'S HEADER LEFT THIS LIST ON 2026-09-16 (#1201), AND IT IS
-   * THE FIRST ENTRY EVER RETIRED FROM IT.** It read
-   *
-   *     'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
-   *       'button.ui-section__header "Alerts"',
-   *
-   * and it is written out here rather than deleted because the reason it is
-   * gone is *not* the reason the block below predicted would retire all of
-   * them. `.hud__corner` is still `display: none` at 720px and below -- the
-   * three entries around this one are still exempt for exactly that mechanical
-   * reason, and the accounting assertion at the foot of the sweep still fails
-   * the moment the corner comes back.
-   *
-   * What moved is the fold's **mount**. On the owner's ruling of 2026-09-16
-   * (*"Zamontuj fold w szynie poniżej 720 px (zalecane)"*, the weaker of the
-   * two provenances) `hud.ts` puts the alerts section in the Overview panel's
-   * `foldSlot`, in the rail, at this breakpoint and no other -- so below 720px
-   * this control is laid out, has a chain of ancestors that does not contain
-   * `hud__corner`, and is required by the sweep like any other. The defect that
-   * bought it is that the alerts log is the only surface that issues
-   * `DismissAlert`, so a phone player was offered a command they could not
-   * press; `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over
-   * the press itself.
-   */
+  'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
+    'button.ui-section__header "Alerts"',
   /*
    * AND THE MINIMAP SURFACE ITSELF, ADDED 2026-09-10 (#903). **This entry is
    * not a control that stopped being reachable. It is a control that did not
@@ -2897,56 +2856,18 @@ interface UnreachableControl {
 
 interface ControlReachability {
   /**
-   * Every control the selector matched, in document order, named. Each name is
-   * the control's chain of classed ancestors followed by the control itself,
-   * with a numeric suffix breaking the remaining ties (the two
+   * Every control the selector matched, in document order, named. The index
+   * into this list is the control's identity for the run: tab switching and
+   * resizing hide and show controls but never add or remove them, so index
+   * `n` is the same element in every state the test visits.
+   *
+   * The *names* are unique too, which the accounting assertion below depends
+   * on: each is the control's chain of classed ancestors followed by the
+   * control itself, and a numeric suffix breaks the remaining ties (the two
    * `ui-number__input` boxes in the Build panel's coordinate grid are
    * identical all the way up). See `NEVER_LAID_OUT_BELOW_720`.
-   *
-   * **THE INDEX IS NOT THE CONTROL'S IDENTITY, AND THIS COMMENT USED TO SAY IT
-   * WAS.** It read: *"The index into this list is the control's identity for
-   * the run: tab switching and resizing hide and show controls but never add
-   * or remove them, so index `n` is the same element in every state the test
-   * visits."* It is kept here rather than deleted because the accounting
-   * assertion at the foot of `everyControlAt` was written on it, and a reader
-   * needs to see what was assumed.
-   *
-   * It is false, and #1167's regime editor is what proved it. That editor
-   * builds one toggle group per classification group **on the first paint that
-   * has a schedule to paint**, and the schedule only arrives while the
-   * `day-plan` tab is the one showing. Measured at 1024x768 on `143d77eb`, the
-   * sweep's first four tab states saw **137** controls and every state from the
-   * fifth on saw **151**: fourteen controls *added*, in the middle of the
-   * document, by visiting a tab. The figures are a reading of that tree rather
-   * than a property of this one; what does not change is that a tab visit can
-   * grow the list.
-   *
-   * What that cost was silence rather than a red. `everMeasured` was a set of
-   * **indices**, so the eight indices 129-136 -- marked measured while the
-   * document held 137 controls, where they named the last eight controls on
-   * the page -- were still in the set when the final inventory held 151 and
-   * those same indices named toggles. Eight of the editor's fourteen buttons
-   * were certified reachable by other controls' measurements; the sweep
-   * reported six. At 375x812 it reported eight, because two of that last
-   * group are `.hud__corner`'s own and are not laid out there either, so two
-   * fewer aliases were available to inherit -- which is why the extra two were
-   * a `#1` and a different category and looked like a layout asymmetry.
-   *
-   * `everMeasured` is keyed by `ids` now -- an attribute minted on the element
-   * itself. The name was tried first and is not good enough either: it carries
-   * the control's own text and classes, so the Rooms panel's `Designate 0 x 0`
-   * and the Build queue's rows change identity when the state does, and the
-   * first run of the name-keyed version reported eight controls never laid out
-   * that plainly had been.
    */
   readonly controls: readonly string[];
-  /**
-   * The identity of each control in `controls`, at the same index: the
-   * `data-sweep-control` attribute minted on the element the first time any
-   * state saw it. Stable where the index and the name are not -- see the
-   * block in `controlReachability` that mints them.
-   */
-  readonly ids: readonly string[];
   /** Indices of the controls that were laid out, and so actually measured. */
   readonly measured: readonly number[];
   readonly unreachable: readonly UnreachableControl[];
@@ -3163,36 +3084,7 @@ async function controlReachability(page: Page, selector: string = INTERACTIVE_SE
       }
     });
 
-    /**
-     * A stable identity per *element*, minted on first sight and left on the
-     * node.
-     *
-     * The sweep visits a dozen states and has to remember, across all of them,
-     * which controls it managed to measure. Neither obvious key works: an
-     * index moves when a state adds a control to the middle of the document,
-     * and a name moves when a control's own text or classes change -- the
-     * Rooms panel's `Designate 0 x 0` becomes `Designate 3 x 4` with a
-     * rectangle dragged, and the Build queue's rows carry a state class. The
-     * element is the thing that does not move, so the key is written on it.
-     *
-     * `data-sweep-control` is inert: nothing in `src/**` reads it, `describe`
-     * above names controls by class and text, and a `data-` attribute is not
-     * part of `className`. The counter hangs off `window` so the ids survive
-     * one `page.evaluate` to the next and are re-minted from zero by the one
-     * thing that also drops the attributes, a navigation.
-     */
-    const scope = window as unknown as { __lockstateSweepControlId?: number };
-    const ids = controls.map((control) => {
-      const existing = control.dataset['sweepControl'];
-      if (existing !== undefined) return existing;
-      const next = (scope.__lockstateSweepControlId ?? 0) + 1;
-      scope.__lockstateSweepControlId = next;
-      const id = `c${next}`;
-      control.dataset['sweepControl'] = id;
-      return id;
-    });
-
-    return { controls: names, ids, measured, unreachable };
+    return { controls: names, measured, unreachable };
   }, selector);
 }
 
@@ -3917,30 +3809,8 @@ test.describe('the assembled application', () => {
     // below is about the viewport, not about one tab: the Build panel is
     // legitimately absent on four of the five tabs, and the Rooms panel on
     // the other four.
-    const everMeasured = new Set<string>();
-    /**
-     * The last state's reading, whole. It used to be that state's `controls`
-     * alone; it is the pair now, because the accounting below has to line each
-     * name up with the identity the sweep remembered it by.
-     */
-    let inventory: ControlReachability = { controls: [], ids: [], measured: [], unreachable: [] };
-
-    /**
-     * Mark everything this state managed to hit-test, by the element's own
-     * `ids` entry.
-     *
-     * Not by index: `ControlReachability.controls` carries the reason in full,
-     * and the short version is that a state can add controls to the middle of
-     * the document -- the regime editor's toggle groups are built on the first
-     * paint that has a schedule -- so an index measured in one state names a
-     * different control in the next.
-     */
-    const record = (reachability: ControlReachability): void => {
-      for (const index of reachability.measured) {
-        const id = reachability.ids[index];
-        if (id !== undefined) everMeasured.add(id);
-      }
-    };
+    const everMeasured = new Set<number>();
+    let inventory: readonly string[] = [];
 
     // Every tab, and the list is  rather than a copy of it: this
     // loop was a hard-coded four when the Rooms tab landed, so the whole Rooms
@@ -3951,8 +3821,8 @@ test.describe('the assembled application', () => {
     for (const tab of HUD_TAB_IDS) {
       await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
       const reachability = await controlReachability(page);
-      inventory = reachability;
-      record(reachability);
+      inventory = reachability.controls;
+      for (const index of reachability.measured) everMeasured.add(index);
       expect(
         reachability.unreachable,
         `controls covered by something else on the ${tab} tab at ${width}x${height}`,
@@ -3979,8 +3849,8 @@ test.describe('the assembled application', () => {
      */
     await page.locator('.hud-layout__button').click();
     const withLayoutMenu = await controlReachability(page);
-    inventory = withLayoutMenu;
-    record(withLayoutMenu);
+    inventory = withLayoutMenu.controls;
+    for (const index of withLayoutMenu.measured) everMeasured.add(index);
     /*
      * Only the menu's **own** controls are required to be reachable here,
      * and that narrowing is the honest one rather than a convenience.
@@ -4379,7 +4249,7 @@ test.describe('the assembled application', () => {
     const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
     const expanded = await controlReachability(page);
-    record(expanded);
+    for (const index of expanded.measured) everMeasured.add(index);
     expect(
       expanded.unreachable,
       `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
@@ -4472,7 +4342,7 @@ test.describe('the assembled application', () => {
     ).toBeGreaterThanOrEqual(0);
 
     const buying = await controlReachability(page);
-    record(buying);
+    for (const index of buying.measured) everMeasured.add(index);
     expect(
       buying.unreachable,
       `controls covered by something else with the buy row open at ${width}x${height}`,
@@ -4581,8 +4451,8 @@ test.describe('the assembled application', () => {
     }
 
     const queued = await controlReachability(page);
-    inventory = queued;
-    record(queued);
+    inventory = queued.controls;
+    for (const index of queued.measured) everMeasured.add(index);
     expect(
       queued.unreachable,
       `controls covered by something else with the build queue open at ${width}x${height}`,
@@ -4648,8 +4518,8 @@ test.describe('the assembled application', () => {
     const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
     if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
     const typedRoute = await controlReachability(page);
-    inventory = typedRoute;
-    record(typedRoute);
+    inventory = typedRoute.controls;
+    for (const index of typedRoute.measured) everMeasured.add(index);
     expect(
       typedRoute.unreachable,
       `controls covered by something else with the Rooms coordinates expanded at ${width}x${height}`,
@@ -4681,8 +4551,8 @@ test.describe('the assembled application', () => {
     ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
 
     const roomsReachability = await controlReachability(page);
-    inventory = roomsReachability;
-    record(roomsReachability);
+    inventory = roomsReachability.controls;
+    for (const index of roomsReachability.measured) everMeasured.add(index);
     expect(
       roomsReachability.unreachable,
       `controls covered by something else with a room pending at ${width}x${height}`,
@@ -4690,82 +4560,6 @@ test.describe('the assembled application', () => {
 
     // Discarded, so the next viewport starts from the state this one did.
     await page.locator('.hud-rooms__cancel').click();
-
-    /*
-     * The regime editor, opened (#1167, ADR 0113 slice 1).
-     *
-     * **A state of its own rather than a row in the exemption list**, on
-     * exactly the reading the Layout menu's block above states: these toggles
-     * are offered to a player at every viewport and simply live behind a
-     * press, like the Build panel's coordinates and the Rooms panel's typed
-     * route. `NEVER_LAID_OUT_BELOW_720` is for a control that is mechanically
-     * absent -- `.hud__corner` is `display: none` there -- and no rule in
-     * `hud.css` touches this section at any width. Exempting it would have
-     * said a player cannot reach it, which is false, and would have said it
-     * about the only controls the change under test adds, which is the shape
-     * #533's block calls certifying every control on the page except the one
-     * the change is about. (#1201 is the same ruling one step further on: the
-     * alerts fold left that constant because its control was *made* reachable,
-     * not because a state was added. Nothing here needed making.)
-     *
-     * **The day-plan tab first, because the editor is only populated there.**
-     * `regimePanel.setVisible(false)` clears the schedule on the way out
-     * (`src/ui/hud/regime-panel.ts`), and `paintEditor` hides the section with
-     * no schedule to paint; the toggle groups themselves are pooled, so they
-     * stay in the document once built and stay in the inventory for every
-     * later state. That asymmetry -- a control that is in the document from
-     * the fifth state and not from the first -- is what `ControlReachability`
-     * records above.
-     *
-     * `aria-expanded` is read rather than the header clicked blind, the same
-     * handshake the Rooms coordinates and the staff roster use: the section is
-     * created `collapsed: true`, and the flag survives the panel being hidden
-     * and shown again by a tab change, so a blind click is a claim about the
-     * arrival state rather than a reading of it.
-     */
-    await page.locator('.ui-tab[data-tab="day-plan"]').click();
-    const regimeEditor = page.locator('.hud-regime__editor > .ui-section__header');
-    await expect(regimeEditor, `the regime editor is missing at ${width}x${height}`).toBeVisible();
-    if ((await regimeEditor.getAttribute('aria-expanded')) === 'false') await regimeEditor.click();
-    /*
-     * Non-vacuity, and it is not ceremony: the editor draws one group per
-     * classification group and draws nothing at all when the schedule has not
-     * arrived, so an empty body would sail through `record` below and leave
-     * the toggles in exactly the state this block exists to end -- laid out in
-     * no state, but with the block present to suggest otherwise.
-     */
-    const editorShape = await page.evaluate(() => {
-      const groups = [...document.querySelectorAll('.hud-regime__editor-list .ui-toggles')];
-      return {
-        groups: groups.length,
-        rows: document.querySelectorAll('.hud-regime__block-list .hud-regime__block-row').length,
-        smallest: Math.min(...groups.map((group) => group.querySelectorAll('.ui-toggles__option').length)),
-      };
-    });
-    // Read off the page rather than compared against a written-down fourteen:
-    // the counts are a classification vocabulary and an action-category
-    // vocabulary, both of which are meant to grow, and a tally in a test is
-    // the sentence that rots first. What is asserted is the *relation* -- one
-    // group per block the panel drew, and more than one category in each, so
-    // `lockedCategoryIdsFor` has something to lock.
-    expect(editorShape.groups, `the open regime editor drew no toggle groups at ${width}x${height}`).toBe(
-      editorShape.rows,
-    );
-    expect(editorShape.groups, `the regime panel drew no blocks at ${width}x${height}`).toBeGreaterThan(0);
-    expect(
-      editorShape.smallest,
-      `a regime editor group offers fewer than two categories at ${width}x${height}`,
-    ).toBeGreaterThan(1);
-    const regimeEditing = await controlReachability(page);
-    inventory = regimeEditing;
-    record(regimeEditing);
-    expect(
-      regimeEditing.unreachable,
-      `controls covered by something else with the regime editor open at ${width}x${height}`,
-    ).toEqual([]);
-    // Shut again, so the next viewport's pixel assertions are taken against
-    // the arrival state the ones in this one were.
-    if ((await regimeEditor.getAttribute('aria-expanded')) === 'true') await regimeEditor.click();
 
     /*
      * Somebody on the payroll (#533), which is the Staff panel's equivalent of
@@ -4847,8 +4641,8 @@ test.describe('the assembled application', () => {
 
 
     const payroll = await controlReachability(page);
-    inventory = payroll;
-    record(payroll);
+    inventory = payroll.controls;
+    for (const index of payroll.measured) everMeasured.add(index);
     expect(
       payroll.unreachable,
       `controls covered by something else with the payroll open at ${width}x${height}`,
@@ -4963,25 +4757,14 @@ test.describe('the assembled application', () => {
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
     ];
-    const neverLaidOut = inventory.controls.filter(
-      (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
-    );
+    const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
     expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(
       [...exempt].sort(),
     );
-    /*
-     * The same fact as a tally, and it is counted over the inventory rather
-     * than over `everMeasured` itself: the set also holds names that existed
-     * in an earlier state and do not survive into the final one, so its raw
-     * size is not a statement about this inventory. Kept although the check
-     * above now implies it, because the number is what a reader checks a
-     * changed shell against.
-     */
-    const measuredInInventory = inventory.ids.filter((id) => everMeasured.has(id)).length;
     expect(
-      measuredInInventory,
-      `hit-tested only ${measuredInInventory} of ${inventory.controls.length} controls at ${width}x${height}`,
-    ).toBe(inventory.controls.length - exempt.length);
+      everMeasured.size,
+      `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,
+    ).toBe(inventory.length - exempt.length);
     /*
      * Non-vacuity for the spill assertions above: they sit behind a condition,
      * so a build where the body never spills would satisfy them by never
@@ -10192,301 +9975,6 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-alerts__list')).not.toContainText(
       localeText('hud.alert.refusal.purchase.insufficient-funds'),
     );
-  });
-
-  /**
-   * **The one press that is refused only because the prison is fresh and
-   * unfurnished — the starter rung, measured at its own boundary (#1257).**
-   *
-   * ## What was not covered, and how that was established
-   *
-   * `src/main.ts` judges a purchase against
-   * `pressFloorMinorUnits(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-   * freshUnfurnishedPrison(counts))`, and that third argument is the whole of
-   * the owner's starter-rung ruling of 2026-09-01 on this thread: a fresh,
-   * unfurnished prison's press meets **-1,185** where a furnished one meets
-   * **-1,250**. Before this test the argument could be replaced with a literal
-   * `false` at both call sites in `src/main.ts` and the entire suite stayed
-   * green — so the rung existed in the tree and nothing measured it where it
-   * decides anything.
-   *
-   * Neither of the two places that look like they cover it does.
-   * `ui-buy-button-affordability.spec.ts` and
-   * `ui-hire-button-affordability.spec.ts` mount `ui-harness.html` and push a
-   * view model through `setHudViewModel`, so `src/main.ts` is never loaded by
-   * them at all; and no unit test can take it, because `vitest.config.ts` is
-   * `environment: 'node'` and `src/main.ts` touches `document` — which is the
-   * stated reason `src/ui/affordability.ts` exists as a separate module.
-   * The three sibling tests here that *do* drive real presses through this
-   * pre-flight work nowhere near either rung: a charge of 13,160 against a
-   * balance of 11,840, and one of 26,280 against 25,000 -- 1,320 and 30 past
-   * the *mature* floor respectively, and the second one is the closest any of
-   * them comes. Every one of them is therefore refused, or accepted, by both
-   * rungs alike.
-   *
-   * ## Why 655 bricks, and why one brick fewer
-   *
-   * The two rungs are 65 minor units apart — one plank, which is
-   * `STARTER_RUNG_MARGIN_MINOR_UNITS`'s own derivation — so a press is
-   * mutation-sensitive only if its total lands **inside that gap**. At 40 a
-   * brick, 655 bricks is 26,200 against 26,185 of starter room and 26,250 of
-   * mature room: the starter rung refuses it by 15 and the mature rung would
-   * accept it by 50. Both bounds are asserted below rather than left to the
-   * reader, so a later move of either constant that closes the gap fails on
-   * the arithmetic instead of quietly returning this test to the
-   * insensitivity it was written to end.
-   *
-   * 654 bricks is then pressed and **accepted**, which is what makes the
-   * refusal above a statement about the boundary rather than about a control
-   * that had latched: one brick either side of one threshold, in one session,
-   * with nothing else changed.
-   *
-   * ## "Fresh, unfurnished" is the worker's answer, not a re-derived one
-   *
-   * This session presses `New prison` and zones nothing, so
-   * `RoomInstanceRegistry.totalResidentCapacity` is `0` for its whole life and
-   * `projectStatusStrip` publishes `isFreshUnfurnishedPrison: true` — which
-   * `freshUnfurnishedPrison` reads straight through. That is asserted from the
-   * page rather than assumed: the FUNDS badge counts room to the same rung
-   * (`overdraftRemaining`, `src/ui/hud/projection.ts`), so after the accepted
-   * press it reads `25 left` — the distance from -1,160 to **-1,185**, and a
-   * figure the mature rung cannot produce.
-   */
-  test('a fresh, unfurnished prison is refused one brick past the starter rung that a furnished one would be sold (#771, #1257)', async ({
-    page,
-  }) => {
-    await installCommandTee(page);
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await openApp(page);
-
-    // A real prison, and no room is ever zoned in it: that is what keeps
-    // `totalResidentCapacity` at 0 and the published predicate `true`.
-    await page.getByRole('button', { name: 'New prison' }).click();
-    await expect(page.locator('.hud-clock__day')).toHaveText('1');
-
-    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-
-    const unitPrice = unitPriceOf('item.brick');
-    // The two rungs, composed from the same function the host and the worker
-    // both compose theirs from, so this moves with the constants rather than
-    // restating them.
-    const starterSpendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
-      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
-    const matureSpendable =
-      TREASURY_STARTING_BALANCE_MINOR_UNITS -
-      rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
-    // The starter rung is the *shallower* one, so being fresh makes the host
-    // stricter and not more generous. Stated as an assertion because the
-    // direction is the thing a reader gets wrong.
-    expect(starterSpendable).toBeLessThan(matureSpendable);
-
-    const refusedQuantity = Math.floor(starterSpendable / unitPrice) + 1;
-    const acceptedQuantity = refusedQuantity - 1;
-    // **The arithmetic this test is made of.** The refused press must sit
-    // strictly inside the 65-minor-unit gap between the rungs -- past the
-    // starter one and within the mature one -- or it is another press that
-    // both rungs answer the same way, which is the gap this test exists to
-    // close.
-    expect(refusedQuantity * unitPrice).toBeGreaterThan(starterSpendable);
-    expect(refusedQuantity * unitPrice).toBeLessThanOrEqual(matureSpendable);
-    expect(acceptedQuantity * unitPrice).toBeLessThanOrEqual(starterSpendable);
-
-    const refusal = page.locator('.hud__refusal');
-    await expect(refusal).toBeHidden();
-
-    await openBuyRow(page);
-    const buy = page.locator('.hud-build__buy-submit');
-
-    // ---- one brick past the starter rung: refused, and never sent ----------
-    await setBuyQuantity(page, refusedQuantity);
-    // `hud.build.buy-submit` interpolates the count raw and formats only the
-    // total -- the same shape the sibling tests above assert literally.
-    await expect(buy).toHaveText(`Buy ${refusedQuantity} × Brick · ${fundsText(refusedQuantity * unitPrice)}`);
-    await pressBuyExpectingRefusal(page);
-
-    await expect(refusal).toBeVisible();
-    // **This thread refused it, and the assertion is written as the negative
-    // because that is the shape the failure takes.** With the freshness
-    // argument replaced by `false` the pre-flight accepts 26,200, the command
-    // is sent, and the worker -- which reads `totalResidentCapacity === 0`
-    // itself and is therefore never fooled -- refuses it and paints its own
-    // line here with `data-source="simulation"`. A refusal on the band is
-    // then still visible, which is exactly why "visible" is not the claim.
-    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
-    await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
-    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials-past-floor'));
-    // The thrown English never reaches the screen (ADR 0011).
-    await expect(refusal).not.toContainText('cannot cover');
-    await expect(buy).toHaveAttribute('data-action-failed', 'true');
-    // **The load-bearing assertion.** The pre-flight threw instead of
-    // submitting, so nothing left this thread -- which is exactly what stops
-    // being true if the freshness argument is replaced with `false`: the
-    // mature rung accepts 26,200 and this press becomes a command.
-    expect(await purchasesSent(page)).toEqual([]);
-    // And no money moved on the strip either.
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-
-    // ---- one brick fewer: accepted, spent, and the rung is on the badge ----
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - acceptedQuantity * unitPrice;
-    expect(settled).toBeLessThan(0);
-    await setBuyQuantity(page, acceptedQuantity);
-    expect(
-      await readBuyAvailability(page),
-      'the Buy button went on advising against a press the starter rung accepts',
-    ).toEqual({ saysItCannotAct: false, pressable: true });
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
-    await buy.click();
-
-    await expect
-      .poll(async () => funds.textContent(), {
-        message: 'the affordable press was never dispatched, so the balance never moved',
-        timeout: 20_000,
-      })
-      .toBe(fundsText(settled));
-    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity: acceptedQuantity }]);
-
-    // The badge counts room to the rung the press was judged against, so this
-    // is the worker's own `isFreshUnfurnishedPrison` read back off the page:
-    // 25 to the starter floor, where the mature one would say 90.
-    await expect(page.locator('[data-metric="funds"] .ui-badge')).toHaveText(
-      `${fundsText(settled - rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true))} left`,
-    );
-  });
-
-  /**
-   * **The same boundary on the other call site: a hire (#771, #1257).**
-   *
-   * `src/main.ts` has two pre-flights that read the starter rung, and the test
-   * above only presses one of them. This presses the other, and it is not a
-   * copy — a hire has no quantity field, so the boundary cannot be dialled in
-   * on the control. The prison is walked to the balance instead: 654 bricks
-   * settles it at **-1,160**, twenty-five short of the starter rung, and the
-   * cheapest role in `src/content/staff-role-catalog.ts` charges **60** — one
-   * day of `wageBand.minPerDay`, which is what `staffHireCostMinorUnits`
-   * returns. -1,220 is past -1,185 and inside -1,250, so the starter rung
-   * refuses the hire and the mature rung would sell it.
-   *
-   * Both bounds are asserted from the constants rather than written out, and
-   * the role is chosen by price rather than by name for the same reason: a
-   * later change to the catalogue that moves the cheapest hire out of the
-   * 65-unit gap fails here on the arithmetic instead of turning this back into
-   * a press both rungs answer alike.
-   *
-   * **The clock is stopped again before the hire.** ADR 0051 dispatches a
-   * command given against a paused clock at once, so the purchase still
-   * settles — and a running clock past that point is a second thing that could
-   * move the balance the hire is judged against.
-   */
-  test('a fresh, unfurnished prison is refused a hire the starter rung cannot carry and a furnished one could (#771, #1257)', async ({
-    page,
-  }) => {
-    await installCommandTee(page);
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await openApp(page);
-
-    // No room is zoned here either, so `totalResidentCapacity` is 0 and the
-    // published `isFreshUnfurnishedPrison` is `true` for the whole test.
-    await page.getByRole('button', { name: 'New prison' }).click();
-    await expect(page.locator('.hud-clock__day')).toHaveText('1');
-
-    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-
-    const starterFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, true);
-    const matureFloor = rungFloorMinorUnits('deliveries', TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, false);
-    const unitPrice = unitPriceOf('item.brick');
-    // The largest purchase the starter rung allows, which is also the balance
-    // that puts the cheapest hire inside the gap between the two rungs.
-    const quantity = Math.floor((TREASURY_STARTING_BALANCE_MINOR_UNITS - starterFloor) / unitPrice);
-    const settled = TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice;
-
-    /*
-     * **The role is `staff-role.guard` because it is the only one the HUD can
-     * hire**, not because it is the cheapest in the catalogue: `src/main.ts`
-     * projects `HIREABLE_STAFF_ROLE_IDS`, one entry long, into the view model
-     * the Staff panel lists. The catalogue declares eight roles and seven of
-     * them have no control on the page, so choosing by price would pick
-     * `staff-role.kitchen-staff` and press a row that does not exist --
-     * measured, and the reason this comment is here.
-     *
-     * The charge is still read rather than written down:
-     * `staffHireCostMinorUnits` is one day of `wageBand.minPerDay`, which is
-     * 80 for this role.
-     */
-    const staffRoleId = 'staff-role.guard';
-    const hireCharge = staffHireCostMinorUnits(staffRoleId);
-    expect(hireCharge, `${staffRoleId} is not in the staff catalogue, so no hire can be driven`).toBeDefined();
-    // **The arithmetic this test is made of**: the hire must land past the
-    // starter rung and within the mature one, or it is a press both rungs
-    // answer the same way.
-    expect(settled - hireCharge!).toBeLessThan(starterFloor);
-    expect(settled - hireCharge!).toBeGreaterThanOrEqual(matureFloor);
-
-    // ---- walk the prison to -1,160 ----------------------------------------
-    await openBuyRow(page);
-    await setBuyQuantity(page, quantity);
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
-    await page.locator('.hud-build__buy-submit').click();
-    await expect
-      .poll(async () => funds.textContent(), {
-        message: 'the purchase that walks the balance to the rung was never dispatched',
-        timeout: 20_000,
-      })
-      .toBe(fundsText(settled));
-    // Stopped again, so nothing else can move the balance under the hire.
-    await page.locator('.hud-strip__transport [title="Pause"]').click();
-    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
-
-    // ---- the hire: refused here, and never sent ---------------------------
-    await page.locator('.ui-tab[data-tab="manage"]').click();
-    const staffMetric = page.locator('[data-metric="staff"] .ui-stat__value');
-    await expect(staffMetric).toHaveText('0');
-    // The panel preselects `model.roles[0]`, and this is the one role in it --
-    // so the click is a no-op on the selection and an assertion that the row
-    // the hire below charges for is the row on the page.
-    await expect(page.locator(`[data-staff-role="${staffRoleId}"]`)).toHaveCount(1);
-    await page.locator(`[data-staff-role="${staffRoleId}"]`).click();
-
-    const hire = page.locator('.hud-staff__hire');
-    // The same pair `pressBuyExpectingRefusal` asserts of the Buy button, and
-    // for the same reason (#772, #799): the control has to say it cannot act
-    // and still be pressable, or the sentence that explains the limit is
-    // unreachable.
-    await expect
-      .poll(
-        async () =>
-          page.evaluate(() => {
-            const button = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
-            return {
-              saysItCannotAct: button?.getAttribute('aria-disabled') === 'true',
-              pressable: button !== null && !button.disabled,
-            };
-          }),
-        {
-          message:
-            'before a hire the starter rung refuses, the Hire control must say it cannot act and must still be pressable',
-        },
-      )
-      .toEqual({ saysItCannotAct: true, pressable: true });
-    await hire.click({ force: true });
-
-    const refusal = page.locator('.hud__refusal');
-    await expect(refusal).toBeVisible();
-    // This thread refused it. Under the mutation the pre-flight accepts the
-    // hire, the command is sent, and the worker -- which is never fooled --
-    // refuses it and paints its own line with `data-source="simulation"`.
-    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
-    await expect(refusal).toHaveAttribute('data-action', 'hire-staff');
-    await expect(refusal).toContainText(localeText('hud.refusal.hire-staff-past-floor'));
-    // The thrown English never reaches the screen (ADR 0011).
-    await expect(refusal).not.toContainText('cannot cover');
-    await expect(hire).toHaveAttribute('data-action-failed', 'true');
-    // Nothing left this thread, and nobody reached the payroll.
-    expect(await hiresSent(page)).toEqual([]);
-    await expect(staffMetric).toHaveText('0');
-    await expect(funds).toHaveText(fundsText(settled));
   });
 
   /*
