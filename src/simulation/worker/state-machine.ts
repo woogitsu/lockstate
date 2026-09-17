@@ -896,6 +896,66 @@ export class SimulationWorkerStateMachine {
     });
   }
 
+  /**
+   * Refuses a request that arrived after `simulation/shutdown`, with the fault
+   * code the vocabulary has carried for exactly this since it was closed.
+   * Answers `true` when it refused, so a handler reads
+   * `if (this.refusedBecauseShuttingDown(msg.messageId)) return;`.
+   *
+   * ## What this replaces, measured rather than described
+   *
+   * Issue #444 drove five request kinds through a shut-down state machine and
+   * got five different answers, *"none of them using the fault code named for
+   * it"*: `submit-command` got **no reply at all** and the caller waited out
+   * `WorkerSessionHost`'s 15-second timeout; `request-snapshot` got **a full
+   * session bundle, handed out during shutdown**; `request-projection` got a
+   * projection; `set-clock` got a refusal under the generic `'invalid-state'`;
+   * `ping` got a pong. Three of those are this method's callers and the fourth
+   * is the code change beside it.
+   *
+   * `'ping'` is deliberately not a caller. It is a liveness probe -- *"is this
+   * worker still answering"* -- and a worker mid-shutdown is, so a pong is the
+   * true answer rather than a gap. (Nothing in `src/` sends one either;
+   * `tests/foundation/message-kind-reachability-contract.test.ts` records that
+   * and records that whether to keep it is the owner's open decision on #274.)
+   *
+   * ## Why this is not a new decision
+   *
+   * [ADR 0024](../../../docs/adr/0024-protocol-fault-recoverability.md) §1 is
+   * accepted and settles the shape: a request that reached no simulation state
+   * *"must not end the session -- but it must be reported to the player, and
+   * the two are one decision rather than two."* Its own Context names this
+   * path's symptom in the same breath -- *"`handleSubmitCommand` returns
+   * **without replying at all**"* and *"a pending request waits out its 15 s
+   * timeout before reporting the wrong cause"*. So the refusal is
+   * `recoverable`, for the reason `RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND`
+   * states at the `not-initialized` guards: a request refused at the first
+   * line of its handler has touched nothing, and `fault()` therefore leaves
+   * `_state` where it is. **The worker stays `shutting-down` and this method
+   * changes no session's lifetime** -- which is what separates it from issue
+   * #444 item 2, the `recoverable` flag on the four *premature* guards, an
+   * amendment this does not make and does not need.
+   *
+   * ## What it is worth to a player
+   *
+   * `src/ui/simulation-alerts.ts` has mapped `'shutting-down'` to
+   * `hud.alert.fault.shutting-down` since that table was written, and
+   * `src/content/default-locale-en.ts` ships the sentence. Nothing could
+   * produce the code, so the sentence was a string the game could never say.
+   * A correlated `protocol/error` rejects the pending request the moment it
+   * arrives (`WorkerSessionHost.settle`), so a save or a command sent into a
+   * closing session is reported for what it is instead of resolving fifteen
+   * seconds later as a worker that did not reply.
+   */
+  private refusedBecauseShuttingDown(requestMessageId: string): boolean {
+    if (this._state !== 'shutting-down') return false;
+    this.fault('shutting-down', 'The session is shutting down; this request was not served.', {
+      replyTo: requestMessageId,
+      recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
+    });
+    return true;
+  }
+
   public handleMessage(msg: MainToWorkerMessage): void {
     try {
       switch (msg.kind) {
@@ -1106,6 +1166,12 @@ export class SimulationWorkerStateMachine {
   }
 
   private handleSetClock(msg: Extract<MainToWorkerMessage, { kind: 'simulation/set-clock' }>): void {
+    // Before the generic guard below, which would otherwise answer a shut-down
+    // session under `'invalid-state'` -- *"the simulation cannot do that right
+    // now"*, true but the least specific true thing available. Same refusal,
+    // same `recoverable: true`, same terminal state untouched; only the code
+    // and the sentence the player is shown change.
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
     if (this._state !== 'paused' && this._state !== 'running') {
       // Recoverable, for the reason stated once at the three `not-initialized`
       // guards and applying unchanged here: no clock was set, so no simulation
@@ -1143,8 +1209,15 @@ export class SimulationWorkerStateMachine {
         recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
       });
     }
-    if (this._state === 'shutting-down' || this._state === 'faulted') {
-      return; // Ignore commands during shutdown
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
+    if (this._state === 'faulted') {
+      // Unchanged, and deliberately not folded into the refusal above. A
+      // faulted worker has *already* posted the `protocol/error` that says so,
+      // and the vocabulary has no code meaning "this worker is faulted" to
+      // post a second one with. Whether a silent drop is right here at all is
+      // the other half of issue #444 item 2, and it is not answered by giving
+      // `shutting-down` the emitter it never had.
+      return;
     }
 
     let accepted = false;
@@ -1286,6 +1359,15 @@ export class SimulationWorkerStateMachine {
         recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
       });
     }
+    // After the kernel guard and before the capture, because the capture is
+    // the thing being refused: issue #444 measured this handler answering a
+    // post-shutdown request with **a full session bundle**. A shut-down
+    // session is not a state a save may be taken of. The main-thread path that
+    // can arrive here is named in `SessionController.closeSession`: autosave's
+    // `dispose()` cancels pending timers and *"does not await a capture
+    // already past its `state = 'saving'` line"* (issue #582 FINAL-004), so a
+    // capture in flight when the shutdown is sent can land after it.
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
 
     const bundle = captureSessionSnapshot(this._runtime);
     this.post({
@@ -1377,6 +1459,14 @@ export class SimulationWorkerStateMachine {
         recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
       });
     }
+
+    // The reachable one of the three, and the reason this guard is here rather
+    // than only on the two above. A panel's readouts are registered once at
+    // boot over `SimulationMessageChannel` and *"have to keep working across a
+    // worker swap without knowing one happened"* (#149,
+    // `src/ui/simulation-projections.ts`), so an open panel goes on asking a
+    // worker that the session layer has already told to shut down.
+    if (this.refusedBecauseShuttingDown(msg.messageId)) return;
 
     const { projectionId, offset, limit, target } = msg.payload;
     const entry = PROJECTION_CATALOG[projectionId];
