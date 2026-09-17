@@ -208,6 +208,21 @@ is **unchanged at 109 / 67 / 42**, and all thirteen repinned coordinates above
 still read back verbatim. #1279 touches `src/ui/hud/hud.css`, `hud.ts`,
 `layout-shell.ts` and `overview-panel.ts`, none of which this census cites.
 
+**And once more at `c9b4a7f7`** — `main`, 2026-09-17, after #1230 merged: the
+count is **still 109 / 67 / 42**, re-derived the same way
+(`git archive c9b4a7f7 docs/adr | tar -x -C <dir>`, then the replicated
+`statusStatement` extractor over `<dir>/docs/adr`), and all thirteen
+coordinates still read back verbatim. #1230 is the one merge since this census
+was taken that touches a file it cites: it added 184 lines to
+`docs/HUD_PROJECTIONS.md`, **all of them below `:559`**, so ADR 0086's row
+keeps the coordinate the second correction gave it —
+
+> - **And what makes the main thread ask is the clock heartbeat, not the counts.**
+
+That is a near miss rather than a clean bill: the same file, the same
+document-under-active-edit shape that killed `:534` in the first place, and the
+only reason the number held is where the insertion landed.
+
 **What this second correction is evidence of, beyond its own number.** The
 first correction was written on 2026-09-16 and predicted a number for a merge
 that had not happened; the merge happened and the number is right. A census
