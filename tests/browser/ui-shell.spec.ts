@@ -486,8 +486,11 @@ test.describe('HUD shell', () => {
       })),
     );
 
-    // Not vacuous: five tabs, each with a label that was actually found.
-    expect(labels).toHaveLength(5);
+    // Not vacuous: six tabs, each with a label that was actually found. Six
+    // since 2026-09-17 -- the fifth section of the 2026-09-13 delivery's
+    // navigation, added for the four projections that had a route out of the
+    // worker and no painter.
+    expect(labels).toHaveLength(6);
     const shortest = Math.min(...labels.map((label) => label.height));
     expect(shortest, 'no tab label was laid out at all').toBeGreaterThan(0);
     expect(

@@ -74,7 +74,25 @@
  * player who had `security` open yesterday gets the reducer's initial tab
  * today, exactly as they do on every page load.
  */
-export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan'] as const;
+/**
+ * **A SIXTH SECTION LANDED ON 2026-09-17, AND EVERY PARAGRAPH ABOVE IS KEPT.**
+ * They are a true record of why the bar held five and of what each slot was
+ * for; what changed is that four catalogued read models had a route out of the
+ * worker and no painter, and the owner ruled -- provenance the weaker kind, the
+ * label of a clickable option this session wrote -- *"Piata sekcja w nawigacji
+ * -- wlasna zakladka (zalecane)"* ("a fifth section in the navigation -- its
+ * own tab (recommended)"). It is a *sixth* tab and the delivery's *fifth*
+ * section, which is why the option says fifth: the delivery names five and this
+ * is the one beside them.
+ *
+ * **The "sixth tab is foreclosed" measurement above is the one that had to be
+ * re-taken, and it no longer holds.** ADR 0022 measured it against a bar of
+ * five *labelled* tabs, and #1192's ruling of 2026-09-16 took the labels off
+ * the screen below 721px -- so the bar at 375x812 is six icons rather than six
+ * names. Re-measured on the assembled page, not inferred: see the
+ * `six sections` case in `tests/browser/ui-shell.spec.ts`.
+ */
+export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];
 
 export const HUD_PANEL_IDS = ['minimap', 'alerts'] as const;

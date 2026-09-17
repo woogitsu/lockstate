@@ -496,6 +496,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.tab.zones': 'Zones',
   'hud.tab.manage': 'Manage',
   'hud.tab.day-plan': 'Schedule',
+  /*
+   * The sixth section (2026-09-17). `Security` is the word the three read
+   * models behind it already use for themselves -- `projectSecurity`'s sectors
+   * and their access policy, `projectIncidents`, and `projectContraband`'s
+   * searches -- and it is eight characters, the same width as `Schedule`, which
+   * is what the phone bar was measured against.
+   *
+   * It is true of the section rather than aspirational: the panel behind it
+   * shows what the prison's sectors are staffed at, what has gone wrong and
+   * what has been found. It issues no command, which is why the word is a noun
+   * for a subject and not a verb for an action, unlike `Build` and `Manage`.
+   */
+  'hud.tab.security': 'Security',
 
   /*
    * The Layout menu and the three collapse arrows (#1159, stage 3).

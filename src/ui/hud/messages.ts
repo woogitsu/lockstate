@@ -276,6 +276,15 @@ export const HUD_MESSAGE_KEY = {
   tabZones: 'hud.tab.zones',
   tabManage: 'hud.tab.manage',
   tabDayPlan: 'hud.tab.day-plan',
+  /*
+   * The sixth, added 2026-09-17 for the four projections that had a route out
+   * of the worker and no painter. `hud.tab.security` is a *new* key rather than
+   * the `hud.tab.security` that #1192's predecessor retired: that one was
+   * deleted with its section, so nothing carries a stale reading of it, and
+   * `tests/foundation/second-locale-contract.test.ts`'s `unknown-key` audit is
+   * what would say otherwise.
+   */
+  tabSecurity: 'hud.tab.security',
 
   /**
    * The Layout menu and the three collapse arrows beside it (#1159, stage 3

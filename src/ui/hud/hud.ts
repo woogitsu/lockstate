@@ -97,6 +97,11 @@ export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'zones', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabZones },
   { id: 'manage', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabManage },
   { id: 'day-plan', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabDayPlan },
+  // The sixth section (2026-09-17). `incident` rather than `security`, which
+  // the `manage` tab above already draws: the glyph is a drawing's name and two
+  // sections wearing one silhouette is the defect #1283 is fixing elsewhere in
+  // this array, not one to add to.
+  { id: 'security', icon: 'incident', labelKey: HUD_MESSAGE_KEY.tabSecurity },
 ];
 
 /**

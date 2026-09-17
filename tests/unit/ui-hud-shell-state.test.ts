@@ -38,9 +38,14 @@ describe('initial shell state', () => {
     for (const panel of HUD_PANEL_IDS) expect(isPanelCollapsed(INITIAL_HUD_SHELL_STATE, panel)).toBe(false);
   });
 
-  it('exposes five tabs and the panels the shell owns', () => {
-    // Five, and the bar is now full: ADR 0022 measured a sixth as foreclosed at
-    // 375x812, where the five-tab bar already leaves 1.8px of margin per side.
+  it('exposes six tabs and the panels the shell owns', () => {
+    // SIX as of 2026-09-17, and the paragraph below is kept because it is the
+    // measurement that was overturned rather than a mistake. ADR 0022 measured
+    // a sixth tab as foreclosed at 375x812 against a bar of five *labelled*
+    // tabs; #1192's ruling of 2026-09-16 takes the labels off the screen below
+    // 721px, so the bar there is six icons. Re-measured on the assembled page
+    // at 375x812: six 56px buttons span 19.5..355.5 inside a 338px bar, where
+    // six labelled ones spanned -4.5..379.5 in a 351px one.
     // `zones` sits after `build` rather than at the end because the order is the
     // order a player reaches for them -- look, build the walls, say what the
     // rooms inside them are for.
@@ -52,7 +57,7 @@ describe('initial shell state', () => {
     // `tests/unit/ui-hud-messages.test.ts`'s `HUD_TABS` assertion are the only
     // two places that name the array verbatim, and either one going stale
     // without the other is what they exist to catch.
-    expect([...HUD_TAB_IDS]).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan']);
+    expect([...HUD_TAB_IDS]).toEqual(['overview', 'build', 'zones', 'manage', 'day-plan', 'security']);
     expect([...HUD_PANEL_IDS]).toEqual(['minimap', 'alerts']);
   });
 });

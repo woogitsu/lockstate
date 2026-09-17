@@ -645,6 +645,10 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.tab.zones': 'Strefy',
   'hud.tab.manage': 'Zarządzaj',
   'hud.tab.day-plan': 'Plan dnia',
+  // 'Ochrona' rather than 'Bezpieczeństwo': seven characters against fifteen,
+  // on the bar this locale is the widest in, and it is the word for the service
+  // that runs sectors and searches rather than for the abstract property.
+  'hud.tab.security': 'Ochrona',
 
   'hud.minimap.title': 'Minimapa',
   'hud.minimap.placeholder': 'Nie ma tu jeszcze mapy — naciśnięcie może przesunąć kamerę',
