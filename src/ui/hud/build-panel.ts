@@ -2340,7 +2340,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
          * correction: three purchases out, tab away, tab back, and
          * `probe().rows` is `[]`.
          *
-         * The rule is `pooled-row-binding.ts`': a place with **no box** carries
+         * The rule is `pooled-row-binding.ts`'s: a place with **no box** carries
          * no settle window, because the window exists so that a label the
          * player may have read is not replaced under their pointer, and a place
          * with no box had no label to read.

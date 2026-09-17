@@ -544,7 +544,7 @@ test.describe('the Build panel deliveries block', () => {
      * *"never laid out in any state"* at 900x600 and at 375x812, which is
      * twenty-six minutes of CI to say what these four lines say in a second.
      *
-     * The rule is `pooled-row-binding.ts`': a place with **no box** carries no
+     * The rule is `pooled-row-binding.ts`'s: a place with **no box** carries no
      * settle window, because the window exists so that a label a player may
      * have read is not replaced under their pointer, and a place with no box
      * had no label to read.
