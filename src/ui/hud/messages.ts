@@ -22,10 +22,10 @@ export const HUD_MESSAGE_KEY = {
    * (issue #609).
    *
    * **The wording is the owner's and was signed off before it was built**:
-   * *"N with no bed"*. It counts what is **missing** rather than what is
+   * *"N with no place"*. It counts what is **missing** rather than what is
    * fine -- "N housed" was the rejected alternative -- and it deliberately
    * echoes the Intake panel's existing sentence, `hud.intake.no-place`
-   * (*"{count} waiting with no bed to sleep in"*), so a player meets the same
+   * (*"{count} waiting with no place to sleep"*), so a player meets the same
    * fact in the same words in two places and connects them.
    *
    * The two counts are siblings rather than the same number, and the shorter
@@ -38,7 +38,7 @@ export const HUD_MESSAGE_KEY = {
    *
    * **Not rendered when it is zero**, which is why it is a badge that comes
    * and goes rather than a permanent chip: `coverageTone` records the reason
-   * and it applies to a "0 with no bed" as much as to a green badge -- *"a
+   * and it applies to a "0 with no place" as much as to a green badge -- *"a
    * status strip where several things are always amber teaches players to
    * ignore amber"*.
    */

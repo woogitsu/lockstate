@@ -133,7 +133,8 @@ export interface HudCountsViewModel {
   /**
    * How many prisoners are holding a residency place **that currently
    * exists** -- the count the state pays on, and the one the `PRISONERS`
-   * chip's *"N with no bed"* badge is subtracted from (issue #609).
+   * chip's *"N with no place"* badge is subtracted from (issue #609; the noun
+   * moved from "bed" to "place" with issue #961's resident ceiling).
    *
    * Published, never derived here: it is `counts.occupiedPlaces`
    * (`src/ui/simulation-counts.ts`), which the projection fills from

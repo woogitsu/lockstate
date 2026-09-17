@@ -323,7 +323,7 @@ test.describe('the contraband chip names what was found (#703 ruling 3)', () => 
      *
      * So the row was already 8px past its client width *before* this change,
      * driven by an existing state-driven badge -- the Prisoners chip's "11
-     * with no bed" (issue #609). The assertion was false of `main`, not of the
+     * with no place" (issue #609). The assertion was false of `main`, not of the
      * badge. **That is a finding about the strip at desktop width and it is
      * handed over rather than fixed here**: eight chips plus their badges do
      * not fit 1280x800, and nothing in the repository measured that until this

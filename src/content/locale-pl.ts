@@ -494,8 +494,14 @@ const plMessages: Readonly<Record<string, string>> = {
   // Label, so *Osadzeni* under the owner's ruling.
   'hud.status.prisoners': 'Osadzeni',
   // *bez* takes the genitive singular and never changes with the count, so
-  // this one counted message needs no reshape at all.
-  'hud.status.prisoners-without-bed': '{count} bez łóżka',
+  // this one counted message needs no reshape at all -- *bez miejsca* declines
+  // exactly as *bez łóżka* did.
+  //
+  // **It read *"{count} bez łóżka"* until issue #961**, with the English
+  // original's: the badge is `prisoners - occupiedPlaces`, and a room type's
+  // authored `maxResidents` now caps residency places below the bed count, so
+  // it could say "bez łóżka" of somebody standing beside an empty one.
+  'hud.status.prisoners-without-bed': '{count} bez miejsca',
   'hud.status.staff': 'Personel',
   'hud.status.rooms': 'Pomieszczenia',
   // Reshaped. "{count} niegotowych" is right for 5 and wrong for 2 (*2
@@ -507,11 +513,11 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.status.funds': 'Środki',
   'hud.status.funds-remaining': 'Zostało {remaining}',
   'hud.status.funds-before-deliveries-stop':
-    'Do wstrzymania dostaw zostało {remaining} — poniżej tego progu nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają łóżko.',
+    'Do wstrzymania dostaw zostało {remaining} — poniżej tego progu nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają miejsce do spania.',
   'hud.status.funds-deliveries-stopped':
-    'Dostawy wstrzymane — nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają łóżko.',
+    'Dostawy wstrzymane — nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają miejsce do spania.',
   'hud.status.funds-treasury-floor-exhausted':
-    'Skarbiec jest na dnie — niczego nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają łóżko, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
+    'Skarbiec jest na dnie — niczego nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają miejsce do spania, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
   'hud.status.earned-today': 'Zarobione dziś',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
@@ -987,7 +993,12 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.intake.hint':
     'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż znajdzie się dla niego miejsce.',
   // Reshaped: the numeral moves out of the verb's way entirely.
-  'hud.intake.no-place': 'Bez łóżka do spania: {count}',
+  //
+  // **It read *"Bez łóżka do spania: {count}"* until issue #961**, with the
+  // English original's and with the badge above: the count is of free
+  // *places*, which a room type's authored `maxResidents` now caps below the
+  // bed count.
+  'hud.intake.no-place': 'Bez miejsca do spania: {count}',
   'hud.intake.pipeline': 'W przyjęciach',
   'hud.intake.pipeline-count': '{waiting} z {total}',
   // Reshaped: "at {stage}" is *na etapie* plus the locative (*na etapie

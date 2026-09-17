@@ -235,7 +235,7 @@ describe('twelve admissions into a one-bed cell (issue #549)', () => {
     const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
       parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
     expect(formatIntakeWithoutPlaceText(t, pipeline)).toBe(
-      '11 waiting with no bed to sleep in',
+      '11 waiting with no place to sleep',
     );
 
     // And the standing note no longer denies that this can happen. The sentence

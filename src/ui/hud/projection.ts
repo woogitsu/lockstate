@@ -200,7 +200,8 @@ export interface HudMetricText {
    * **The field this replaced took `MessageParameters` and rendered through
    * `String()`,** which is `interpolate`'s fallback: `hud.status.funds-remaining`
    * under a chip reading `-100` would have said `2400 left` where the chip said
-   * `-100`, and `{count} with no bed` said `1240` under a chip reading `1,240`.
+   * `-100`, and `{count} with no bed` -- the badge's text before issue #961 --
+   * said `1240` under a chip reading `1,240`.
    * Identical below a thousand in `en`, which is why the older of the two ran
    * for two issues without anybody seeing it. The old field is gone rather than
    * kept beside this one: after issue #703's ruling 21 shortened the coverage
@@ -333,7 +334,7 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
  * and nothing at all when everybody does (issue #609).
  *
- * **`undefined` rather than a badge reading "0 with no bed"**, which is
+ * **`undefined` rather than a badge reading "0 with no place"**, which is
  * `coverageTone`'s reasoning applied to a chip that has been badge-less until
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent

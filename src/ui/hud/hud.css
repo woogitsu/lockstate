@@ -4520,7 +4520,11 @@
  * at all. With every badge the *content* can produce, each carrying the widest
  * word its own namespace authors:
  *
- *   prisoners   "36 with no bed"                  104.4px
+ *   prisoners   "36 with no bed"                  104.4px   (the badge's
+ *                                                             text until #961;
+ *                                                             "36 with no place"
+ *                                                             is one character
+ *                                                             wider)
  *   coverage    "42 understaffed · 36 unguarded"   204.9px
  *   incidents   "Gang Retaliation"                 114.7px  (`Active` is 52.7)
  *   contraband  "Currency"                          69.1px  (nothing, before)
