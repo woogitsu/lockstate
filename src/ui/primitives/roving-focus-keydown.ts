@@ -17,7 +17,7 @@ import { rovingFocusMove } from './roving-focus';
  * default action for the key -- page scroll on an arrow -- it does not stop
  * the event bubbling on to whatever else is listening. `WorldScene` binds its
  * own camera controls on `window`, in the bubble phase
- * (`src/rendering/scene/world-scene.ts:561-562`), gated only by
+ * (`src/rendering/scene/world-scene.ts:364-365`), gated only by
  * `isTextEntryFocused()` (`src/input/focus.ts`) -- which is deliberately not
  * about *this*: a focused `<button role="radio">` is not a text field, was
  * never meant to be treated as one, and the same keystroke that moves the

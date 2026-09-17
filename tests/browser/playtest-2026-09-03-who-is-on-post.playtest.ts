@@ -8,7 +8,6 @@ import {
   openApp,
   panelText,
   sentCommands,
-  showPanel,
   tab,
 } from './playtest-harness';
 
@@ -388,7 +387,7 @@ test.describe('who is on post', () => {
     // Unpause: the sector requirement is occupancy-scaled and the census is a
     // ten-tick walk, so a paused prison never recomputes either.
     await page.locator('.hud-strip__transport button').nth(1).click();
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     for (let index = 0; index < 3; index += 1) {
       await page.locator('.hud-intake__admit').click();
       await page.waitForTimeout(250);

@@ -51,7 +51,7 @@ import {
  * type. `save-panel-messages.ts` is the sixth and names none: it is a frozen
  * registry of message keys. Two of the five, `build-tool.ts`
  * and `simulation-commands.ts`, are the orchestration modules the issue meant,
- * and `build-tool.ts:16-85` explains at length why it is the one module allowed
+ * and `build-tool.ts:9-15` explains at length why it is the one module allowed
  * to know both halves.) So "must not import the simulation" would be false
  * here, and asserting a false rule with five exemptions produces the list
  * nobody reads that `tests/helpers/simulation-enum-source.ts` argues against.

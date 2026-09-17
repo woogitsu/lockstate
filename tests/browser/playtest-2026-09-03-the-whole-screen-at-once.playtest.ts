@@ -8,7 +8,6 @@ import {
   latestCounts,
   openApp,
   panelText,
-  showPanel,
   tab,
 } from './playtest-harness';
 
@@ -491,28 +490,22 @@ test.describe('the whole screen at once', () => {
     const beforeAdmit = await readCurrentView(page);
     log(`===== ACT 3 / event 1: six admissions into a two-bed prison, while looking at BUILD =====`);
     log(`   view before (Build tab):\n${beforeAdmit.split('\n').map((l) => `       | ${l}`).join('\n')}`);
-    const admitFromManage = async (times: number): Promise<void> => {
-      await showPanel(page, 'manage', '.hud-intake');
+    const admitFromOverview = async (times: number): Promise<void> => {
+      await tab(page, 'overview').click();
       for (let i = 0; i < times; i += 1) {
         await page.locator('.hud-intake__admit').click();
         await page.waitForTimeout(200);
       }
       await tab(page, 'build').click();
     };
-    await admitFromManage(6);
+    await admitFromOverview(6);
     await page.waitForTimeout(12_000);
     const afterAdmit = await readCurrentView(page);
     const d1 = diffLines(beforeAdmit, afterAdmit);
     log(`   lines that ARRIVED on the Build tab when six prisoners had nowhere to sleep: ${d1.arrived.length}`);
     for (const line of d1.arrived) log(`   ARRIVED | ${line}`);
     for (const line of d1.gone) log(`   GONE    | ${line}`);
-    // Read from the section the Intake panel is on. It is NOT the section
-    // this act is looking at -- the act's whole question is what the Build tab
-    // says -- so the switch happens after every reading above has been taken,
-    // and `.hud-intake` is named rather than "the Overview tab" because the
-    // panel moved to Manage on 2026-09-14 (`d5137d5d`).
-    await showPanel(page, 'manage', '.hud-intake');
-    log(`   what the Intake panel says now: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
+    log(`   what the Overview tab says now: ${JSON.stringify(await panelText(page, '.hud-intake'))}`);
     log(`   counts: ${JSON.stringify(await latestCounts(page))}`);
 
     /*
@@ -607,7 +600,7 @@ test.describe('the whole screen at once', () => {
     await page.waitForTimeout(4000);
     // Admit until somebody is unguarded, which is the rung the chip's word
     // changes on.
-    await showPanel(page, 'manage', '.hud-intake');
+    await tab(page, 'overview').click();
     for (let i = 0; i < 8; i += 1) {
       await page.locator('.hud-intake__admit').click();
       await page.waitForTimeout(200);

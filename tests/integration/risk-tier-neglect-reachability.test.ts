@@ -12,10 +12,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *
  * `priorIncidents` — the one field `AdmitPrisoner` carries that
  * `classifyPrisoner` scores — is hard-coded to `0` at every call site under
- * `src/` (`src/main.ts:1178`), and grepping every write to
+ * `src/` (`src/main.ts:918`), and grepping every write to
  * `PrisonerRecordComponent.priorIncidentsAtIntake` under `src/` finds exactly
  * one: `IntakeSystem` at classification time, from that same constant
- * (`src/simulation/prisoners/intake-system.ts:340`). Nothing revises it after.
+ * (`src/simulation/prisoners/intake-system.ts:274`). Nothing revises it after.
  * So the front door #788 measured is real and permanent, and settles that one
  * question without a run: `priorIncidents` never moves.
  *

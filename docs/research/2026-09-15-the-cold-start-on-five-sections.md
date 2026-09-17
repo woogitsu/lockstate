@@ -9,26 +9,6 @@ running page in every act: acts 1–3 read `v0.0.640 · e044a3e`, act 4 reads
 `v0.0.640 · 105a1ea` and act 5 `v0.0.640 · 029e68b` — this branch's own
 instrument-only checkpoints, taken as the acts were written.
 
-### Re-checked against `origin/main` on 2026-09-16, at `54adc87c` (v0.0.646)
-
-**Nothing measured on 2026-09-15 is edited away. Both directions are marked
-where a figure moved**, per `docs/AGENT_WORKFLOW.md` §4: the original reading
-keeps its commit (`e044a3e8`, v0.0.640) and the new one is recorded beneath it
-with `54adc87c`.
-
-- **§4's headline is the one that moved**, because the owner ruled ADR 0091
-  decision 2 (option F) on 2026-09-16 and `routeDecidedSince` landed with it.
-  The addendum is at the end of §4, with a re-run of act 3 on the merged tree.
-- **§5's census of 27 still reads 27** at `54adc87c`, re-derived by the same
-  command. **§5a's *"twenty-four completed walls gain no sentence anywhere on
-  the page"* is still true of the code and is no longer an open question** —
-  ADR 0116 was ruled on 2026-09-16. Addendum at the end of §5a.
-- **Six `file:line` citations were re-pinned**; five were dead. Each is marked
-  in place with the verbatim line now at the new coordinate.
-- Every other measurement in this record was taken on `e044a3e8` and is not
-  re-taken here. A figure without a re-check line below it has not been
-  re-measured, and should be read as history at v0.0.640.
-
 ---
 
 ## The question, and why it is not the one the brief handed over
@@ -153,14 +133,7 @@ The five sections read, in order:
 | `day-plan` | `SCHEDULE` | `.hud-regime` | two regime blocks, then `PRISONERS 0 of 0 / No prisoners yet. Build a cell with a bed to take somebody in.` |
 
 The landing section is `overview` (`INITIAL_HUD_SHELL_STATE`,
-`src/ui/hud/hud-state.ts:124` — **VERIFIED, read** on `e044a3e8`).
-
-> **Re-pinned 2026-09-16 against `origin/main` at `54adc87c` (v0.0.646).**
-> `:124` is dead — it now reads
-> `` * `rooms-panel.ts:1520`, `src/ui/simulation-zoning.ts:26`, `` inside an
-> unrelated docblock. The declaration is at **`src/ui/hud/hud-state.ts:154-155`**:
-> `export const INITIAL_HUD_SHELL_STATE: HudShellState = {` / `  activeTab: 'overview',`.
-> The fact is unchanged; only the coordinate moved.
+`src/ui/hud/hud-state.ts:124` — **VERIFIED, read**).
 
 ---
 
@@ -193,12 +166,7 @@ hint and the deliveries block:
 
 **VERIFIED, read:** `src/ui/hud/build-panel.ts:1567` constructs it as
 `.hud-build__note.hud-build__order-note` and `:1578` sets `orderNote.hidden =
-true` — *"Hidden until `paintQueue` says otherwise"*. (**Re-pinned 2026-09-16,
-`54adc87c`: both coordinates are dead. The construction is at `:1574` —
-`` const orderNote = eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note hud-build__order-note'); ``
-— and the hide at `:1588` — `` orderNote.hidden = true; `` — with the
-*"Hidden until `paintQueue` says otherwise"* comment immediately above it at
-`:1576`. The sentence they support is unchanged.**) So it appears at the
+true` — *"Hidden until `paintQueue` says otherwise"*. So it appears at the
 moment there is a queue to explain and not before, which is why act 1's arrival
 screen does not carry it and act 2's does.
 
@@ -332,9 +300,7 @@ different ways.**
 
 **VERIFIED, read.** All of it is the documented design, and the document is
 `docs/adr/0091-what-clears-the-refusal-band.md` by way of
-`src/ui/hud/hud.ts:1631-1642` (**re-pinned 2026-09-16, `54adc87c`: the docblock
-is now `:1643-1654`, and its text changed — see the addendum at the end of this
-section**):
+`src/ui/hud/hud.ts:1631-1642`:
 
 > The refusal stops being true the moment the same action succeeds.
 >
@@ -345,22 +311,14 @@ section**):
 
 `remove-wall.nothing-to-remove` is a **simulation** refusal
 (`hud.alert.refusal.*`, applied through `applySimulationRefusal` at
-`src/ui/hud/hud.ts:1679-1693` — **re-pinned 2026-09-16, `54adc87c`: `:1679` is
-now a `#777` docblock line (`` *     #777's fix is the second half of this case**: an unchanged ordinal ``);
-the function is declared at **`:1730`**,
-`` const applySimulationRefusal = (notice: HudRefusalNoticeViewModel | undefined): void => { ``,
-and its body runs to `:1745`**), so by that rule nothing in act 3 could have
+`src/ui/hud/hud.ts:1679-1693`), so by that rule nothing in act 3 could have
 cleared it: no second simulation refusal occurred, and the session did not end.
 
 **So the measurement is not that the code misbehaves. It is that the band's own
 docblock one screen earlier asserts something the band does not deliver.**
 `src/ui/hud/hud.ts:1286-1295` says a refusal stands *"until the same action
 later succeeds, when a newer refusal replaces it, when the session ends, which
-are the **first moments** each sentence stops being true"*. (**Re-pinned
-2026-09-16, `54adc87c`: the sentence is intact but ends one line lower, at
-`:1296` — `` * session ends, which are the first moments each sentence stops being true. `` —
-so the range is `:1286-1296`. It is no longer the end of the docblock: `:1298-1309`
-now carry an explicit correction to it; see the addendum below.**) Act 3 step C is an
+are the **first moments** each sentence stops being true"*. Act 3 step C is an
 earlier moment than any of the three: the sentence stops being true when
 something is built on the tile it is about, and that is neither the same action
 succeeding nor a new refusal.
@@ -375,74 +333,6 @@ tile of the press this sentence is about" reads it as past-tense reportage and
 is not misled. **JUDGEMENT: that reading is not available to a player**, who
 pressed on one tile, got one sentence, then built on that tile and still has the
 sentence.
-
-### Addendum, 2026-09-16 — the owner ruled on this, and the step-E half is overtaken
-
-**MEASURED on `origin/main` at `54adc87c` (v0.0.646), act 3 re-run unchanged,
-twice.** The 2026-09-15 reading above is kept exactly as it was taken; this is
-what the same instrument says on the merged tree.
-
-**What the owner decided.** ADR 0091 decision 2 was ruled on **2026-09-16**,
-option F: *a decided outcome of the same command route retires the refusal
-band*. `SimulationRefusal.routeDecidedSince` carries it across the worker
-boundary (`src/simulation/protocol/types.ts:1525`,
-`` routeDecidedSince: z.literal(true).optional(), ``, added to `refusalSchema`
-by #1261); `RefusalLog.noteRouteDecided` sets it
-(`src/simulation/refusals/refusal-log.ts:235-242`,
-`` private noteRouteDecided(key: string): void { ``); and the band retires on it
-(`src/ui/hud/hud.ts:1731`,
-`` if (notice === undefined || notice.routeDecidedSince === true) { ``).
-
-**The docblock this section quoted has been rewritten in exactly the place this
-section said it was wrong, and it says so out loud.** `src/ui/hud/hud.ts:1298-1303`
-now reads:
-
-> `**The last clause was the whole of the rule until 2026-09-16 and is now one
-> of three, and it is kept rather than rewritten because it is the rule that
-> moved.** ADR 0091 decision 2 added a fourth moment and the owner ruled it: a
-> **decided outcome of the same command route**. A
-> `remove-wall.nothing-to-remove` refusal is retired by the player's next
-> removal, whatever tile it names`
-
-— which is this record's own step-E case, named.
-
-**What the re-run measured.** Act 3 was run twice at `54adc87c` on ports 45913
-and 45914, instrument untouched. Steps A-D reproduced byte-identically both
-times, including the step-D collision between `none being built there` and
-`1 being built`. **Step E is timing-dependent and only one of the two runs
-reached a successful removal** — on the other the wall was still in flight and
-E recorded a fresh refusal instead, with no cancellation event at all. On the
-run where E did succeed, the 120 ms recorder logged:
-
-```
-[act3]   +  21077ms refusal: "<hidden>"
-[act3]   +  21077ms event: "The order was cancelled. Anything already spent past the point of no return stays spent."
-[act3]   +  21169ms alerts: "Nothing was removed — … \nWarning\nThe order was cancelled. … Day 1\nWarning\nClear this alert"
-```
-
-**So on the merged tree the band is withdrawn in the same 120 ms sample that
-carries the cancellation, and the alerts list keeps the entry** — which is the
-divergence option F was bought for. **Finding 2 of §4 — the two bands
-disagreeing about whether anything was removed — does not reproduce at
-`54adc87c`.** Findings 1 and 3 do: the step-D word collision and the
-untileable sentence at B are untouched by option F, which retires on a
-*decided outcome*, and neither a wall drag (a different route) nor a second
-refusal is one.
-
-**The attribution is not established and is deliberately not claimed.** A
-matched control was attempted: act 3 was run **three times on `e044a3e8`
-itself**, in a detached worktree with this same instrument copied in, and step
-E failed to reach a success on all three — so there is no v0.0.640 run of the
-succeeding shape to set beside the `54adc87c` one, and this pass has **one
-sample each**. What it therefore reports is the observation, not a cause: *the
-band retired at `54adc87c` on the run where E succeeded, and did not on
-2026-09-15's run of the same shape.* Ruling out the alternative — that the
-2026-09-15 reading was itself a timing artefact of a recorder sampling before
-the worker's next publication — needs a run of the succeeding shape on the old
-tree, which this pass did not obtain.
-
-**§8's *"what would change my mind"* about §4 is therefore partly spent**: see
-the addendum there.
 
 ### What is already filed, and what is not
 
@@ -626,19 +516,6 @@ the gap in the acknowledgement set as it stands: `rooms.zoned` speaks,
 **And one thing the zoning moment gains is the best guidance in the game**, so
 it is recorded even though a section switch is in the same diff:
 
-**Addendum, 2026-09-16: the owner ruled on exactly this gap, and it is now
-decided-but-unbuilt rather than open.** ADR 0116 was ruled on **2026-09-16**,
-option 2 — *a construction-completion event, graded `'info'`, routed
-`'log-only'`, counted rather than repeated*. **The measurement above still
-holds at `54adc87c`**: `SIMULATION_EVENT_TYPES` was re-derived by the census's
-own command and still returns **27**, with no `construction.completed` member,
-so nothing yet marks twenty-four finished walls. What changed is the status of
-the gap, not the code — and §8 should not be read as leaving this one open.
-`docs/adr/0116-whether-a-finished-object-is-an-event.md` in this tree still
-opens its Status block *"Proposed, 2026-09-15. Not self-approved, and it
-implements nothing."*; that file is another
-agent's surface and is not edited from here.
-
 > `Cell at 12, 12 is missing` · `a door — nobody can get in` ·
 > `Walled in — not a door check` · `Not ready` · `Needs 1 × Bed` ·
 > `Needs 1 × Toilet`
@@ -660,10 +537,7 @@ Three things are worth separating, because only one of them is a defect
 candidate and it is the least obvious one.
 
 - **`0 COVERAGE / Covered` on an empty prison is correct and is defended in
-  place.** **VERIFIED, read**, `src/ui/hud/projection.ts:451-459` (**re-checked
-2026-09-16, `54adc87c`: alive, and the quoted sentence is exactly `:457-459` —
-`` * disagree about what a rung is called. "Covered" is also what an *empty* `` —
-so the tighter pin is `:457-459`**): *"'Covered'
+  place.** **VERIFIED, read**, `src/ui/hud/projection.ts:451-459`: *"'Covered'
   is also what an empty prison reads, which is correct for the same reason it
   is correct on the panel: a prison with nobody in a sector has all the
   coverage it needs."* Not a finding; recorded so the next pass does not file
@@ -808,17 +682,3 @@ merely unchanged at act 3 steps C–E, the contradiction would evaporate. It is
 not — `panelText` answers `"not laid out"` for a hidden node and never did in
 that act, and the 120 ms recorder logged no `<hidden>` transition. A second
 container reproducing that is a ten-minute check.
-
-> **That check was run on 2026-09-16 and it half-changed my mind, which is
-> recorded here rather than in place of the paragraph above.** On
-> `origin/main` at `54adc87c` the recorder **did** log a `<hidden>` transition
-> at step E, in the same 120 ms sample as the cancellation event — so for step
-> E the contradiction does evaporate, exactly as the paragraph said it would.
-> Steps C and D still show no such transition and the paragraph stands for
-> them. Two things stop this from being a clean refutation and both are stated
-> in §4's addendum: ADR 0091 decision 2 was **ruled between the two runs**, so
-> the trees are not the same tree, and three control runs on `e044a3e8` never
-> reached a successful step E, so there is no matched pair. **What would
-> change my mind the rest of the way** is a run of the succeeding shape on
-> `e044a3e8` showing the band hidden there too, which would make the
-> 2026-09-15 reading a sampling artefact rather than a behaviour.

@@ -1383,7 +1383,7 @@ UI/save-file integration (a session
 UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- and it
 surfaces the status strip's population counts and, since `a613d04` (#383), the
 Intake panel's six stage counts and two group counts, which
-`src/ui/simulation-intake.ts:168` reads from the `hud/prisoner-population`
+`src/ui/simulation-intake.ts:162` reads from the `hud/prisoner-population`
 projection -- no roster, no needs, no actions and no cell assignment reaches a
 panel, matching #19/#22's precedent of shipping the system before the
 surface; the save-file half was closed later,

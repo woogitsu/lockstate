@@ -74,52 +74,25 @@ halves."* This is that document.
 
 ## Context
 
-### What the code does today — the tree this decision replaced, dated 2026-08-31
-
-> **Everything under this heading is a diagnosis of the tree ADR 0082 removed,
-> so it is dated rather than re-aimed** (`docs/AGENT_WORKFLOW.md` §4, mark both
-> directions). The decision below was accepted on 2026-08-31 and implemented in
-> #722; `ConstructionSystem.orderedOrders()` has sorted on
-> `compareBuildOrderExecution` — `(placementSequence ?? -1, id)` — ever since,
-> at `src/simulation/construction/system.ts:1534-1535`, with the comparator
-> itself in `src/simulation/construction/build-order.ts`. Re-pointing this
-> section's anchors at today's lines would make a dead diagnosis read as a
-> current one, which is the more impressive-looking and less honest change.
-> They are demoted to bare basenames instead — this corpus's form for an anchor
-> quoted as history rather than offered as current, in
-> [ADR 0023](./0023-room-occupancy-authority.md)'s words.
->
-> **The sentence this section quotes out of the code is no longer in the code,
-> and the code itself records its removal.** `system.ts:1719-1726`, inside
-> `update()`'s `'assigned'` branch, now says that the comment *"used to end
-> 'always the first eligible id and never the first submission' -- which was
-> true and was the defect"*, and that the walk is placement order today. The
-> quotation is kept below because it is what this section measured, not because
-> a reader will find it by grep.
->
-> **The four places named in the last paragraph all went with the decision.**
-> Each still records the old order, in the past tense and beside the new one:
-> `system.ts:1508-1536` (`orderedOrders`' own docblock),
-> `materials-procurement.ts:254-272`, `construction-projection.ts:319-345` and
-> `just-in-time-materials.ts:597-599`. *"What is missing is a decision, not an
-> observation"* is the sentence that expired; the observation outlived it.
+### What the code does today
 
 `ConstructionSystem.orderedOrders()` sorts every order ascending by its **id**
-in code-unit order (`system.ts`), and that
-sequence is the build schedule: `update()` reads it once, decides crew
-occupancy once, and the first eligible order is the one that allocates
-materials and the one that takes the crew. The system says so itself — *"because
-the walk is by ascending id, the one that starts is always the first eligible id
-and never the first submission."*
+in code-unit order (`src/simulation/construction/system.ts:769-773`), and that
+sequence is the build schedule: `update()` reads it once
+(`system.ts:842-843`), decides crew occupancy once (`:847`), and the first
+eligible order is the one that allocates materials (`:935`) and the one that
+takes the crew (`:948`). The system says so itself at `:948-951` — *"because the
+walk is by ascending id, the one that starts is always the first eligible id and
+never the first submission."*
 
 A real session mints those ids as `order-${crypto.randomUUID()}`
-(`src/main.ts`, for a wall drag and for a purchase). **So build orders
+(`src/main.ts:2600` for a wall drag, `:2878` for a purchase). **So build orders
 are carried out in an order that is a uniformly random permutation of the order
 the player placed them in**, and nothing in the code or the interface says so.
 
 The repository already knows this and records it in four places rather than
-none — `system.ts`, `materials-procurement.ts`,
-`construction-projection.ts` and `just-in-time-materials.ts`. What
+none — `system.ts:655-658`, `materials-procurement.ts:86-90`,
+`construction-projection.ts:225-234` and `just-in-time-materials.ts:17,41`. What
 is missing is a decision, not an observation.
 
 ### Measured, and the numbers correct two claims that were in circulation
@@ -200,12 +173,12 @@ measurement.
 
 ### Where the player actually meets it, which is a control and not a cosmetic list
 
-`BUILD_QUEUE_ROW_LIMIT` is **3** (`build-panel.ts`) and the
+`BUILD_QUEUE_ROW_LIMIT` is **3** (`src/ui/hud/build-panel.ts:545`) and the
 Queued fold lays out the first three rows of `projectBuildQueue`, which is
-ascending id (`construction-projection.ts`). Those rows are *Cancel*
+ascending id (`construction-projection.ts:236-266`). Those rows are *Cancel*
 buttons. So a player standing in the locked position with thirteen orders
 pending is offered **three of them to cancel, chosen at random relative to the
-order they drew them in** — and `tests/browser/playtest-into-the-lock.playtest.ts`
+order they drew them in** — and `tests/browser/playtest-into-the-lock.playtest.ts:525`
 already says so in its own words: *"rows are ordered by ascending order id,
 which is a uuid"*. The escape from the lock is thirteen `Cancel` presses
 (`docs/research/2026-08-30-pricing-the-way-out.md` §7 counts them), taken three
@@ -213,52 +186,16 @@ at a time, and the player cannot tell which segment each press is about to
 take away except by reading its tile. This is the part of the defect that is
 not a projection detail: it is a destructive control aimed by a hidden number.
 
-> **Both numbers in that paragraph have since moved, and both moved away from
-> it — so the paragraph is dated rather than rewritten.** `BUILD_QUEUE_ROW_LIMIT`
-> is **64** today (`src/ui/hud/build-panel.ts:740`), not three, and
-> `build-panel.ts:2445-2455` records the change in its own words — *"which was
-> free while the limit was three and is not free at sixty-four"*. And the order
-> the fold lays out is no longer ascending id: `projectBuildQueue` sorts the
-> pending orders with `compareBuildOrderExecution`
-> (`src/simulation/presentation/construction-projection.ts:358-360`), which is
-> this ADR's own decision, shipped. So the *"three of them to cancel, chosen at
-> random"* shape is gone twice over — the window is wider and the window is
-> ordered.
->
-> **The quoted playtest sentence is gone too, and the anchor was wrong before
-> it went.** `playtest-into-the-lock.playtest.ts:525` is
-> `const beforeWaiting = descent.treasury;` today, and
-> `grep -n "rows are ordered by ascending order id"` over `tests/` returns
-> nothing. The quotation is kept because it is what was read; it is not
-> something a reader will find.
->
-> **What survives is the last sentence and it survives unweakened.** A row in
-> that fold is still a *Cancel* button and a player still aims a destructive
-> control at a place in a list — `BUILD_QUEUE_ROW_SETTLE_MS`
-> (`build-panel.ts:787`, docblock from `:742`) exists for precisely that, and
-> records *"Two presses of three still cancelled a different wall"* as a
-> measurement. What
-> this ADR removed is the hidden number, not the aiming problem.
-
 ### The determinism question, which is what makes this affordable
 
 **The id is minted on the main thread and crosses the protocol as an opaque
 string.** `placeBuildOrderSchema` types it `orderId: z.string()`
-(`src/simulation/protocol/commands.ts:53-60`) — deliberately looser than
+(`src/simulation/protocol/commands.ts:52-60`) — deliberately looser than
 `PurchaseMaterials.orderId`, and `:145-149` says why. The handler passes it
-straight into `createBuildOrder` (`src/simulation/construction/handler.ts:87-96`)
+straight into `createBuildOrder` (`src/simulation/construction/handler.ts:42-51`)
 and nothing in `src/simulation/` parses, slices or derives anything from it: its
-only two uses are as the `Map` key (`system.ts:349`) and as the sort key
-(`system.ts:1534-1535`).
-
-> **Those four anchors were re-aimed on 2026-09-16 and the sentence they carry
-> is unchanged**, which is why this section is re-aimed where the two above are
-> dated: it is a claim about the *id*, and the id scheme is what decision 3
-> refused to change. One thing did move beside them and it is worth naming:
-> `createBuildOrder` is now handed a fifth argument, `command.sequence`
-> (`handler.ts:95`), so the handler passes the id straight through *and* stamps
-> an ordinal. That is decision 2, not a counter-example to this paragraph —
-> nothing derives the ordinal from the id.
+only two uses are as the `Map` key (`system.ts:399`) and as the sort key
+(`system.ts:769-773`).
 
 So **order of execution is already not a determinism property derived from
 simulation state.** It is a property of a value the main thread chose, and today
@@ -271,20 +208,9 @@ field keeps that guarantee exactly.** This is why the fix is cheap.
 
 ### The save-format cost
 
-`SAVE_SCHEMA_VERSION` is `5` (`src/persistence/save-schema.ts`). A
-`BuildOrder` persists through `buildOrderSchema` (`:158-226`), which is
-`.strict()`.
-
-> **`SAVE_SCHEMA_VERSION` reads `6` today (`save-schema.ts:38`), and this
-> paragraph is dated rather than renumbered, because the whole section is an
-> argument that the number did not have to move for *this* field.** It did not:
-> `placementSequence` is declared at `save-schema.ts:210` as
-> `z.number().int().min(0).optional()`, inside `buildOrderSchema`, and the three
-> conditions `docs/PERSISTENCE.md` sets are worked through in its own docblock
-> at `save-schema.ts:176-209` rather than only here. What moved the version to
-> `6` is a later and unrelated change — `d60e9938`, the regime timetable command
-> (#1167). Reading `5` as today's value is the error this note exists to stop;
-> reading it as what the cost was measured against is what it is for. Measured, through the real `createSaveEnvelope`:
+`SAVE_SCHEMA_VERSION` is `5` (`src/persistence/save-schema.ts:34`). A
+`BuildOrder` persists through `buildOrderSchema` (`:154-187`), which is
+`.strict()`. Measured, through the real `createSaveEnvelope`:
 
 ```
 construction section as it stands : ACCEPTED
@@ -354,11 +280,11 @@ does today.
 `src/main.ts` keeps minting `order-${crypto.randomUUID()}`. Making the *id*
 sortable was the obvious alternative and it is refused, for a reason that is
 measured rather than aesthetic: `submitOrder` **throws** on a duplicate id
-(`system.ts:540-542`) and the handler does not catch (`handler.ts:97`), so a
+(`system.ts:368-370`) and the handler does not catch (`handler.ts:52`), so a
 main-thread counter that restarts after a reload faults the worker. Seeding it
 from the restored order book is not available to the main thread — the build
 queue projection carries only *pending* orders
-(`construction-projection.ts:358-359`), so a derived maximum is a lower bound,
+(`construction-projection.ts:240-241`), so a derived maximum is a lower bound,
 which is precisely the defect `docs/DETERMINISM.md` records for
 `IntelligenceLedger`. And it would not order the orders in saves that already
 exist.
@@ -367,33 +293,19 @@ exist.
 
 Nothing in this decision adds a sentence to the screen: the Build panel already
 lists the queue *"in the order the crew will reach them"*
-(`construction-projection.ts:320`) and this makes that sentence true. If the
+(`construction-projection.ts:216`) and this makes that sentence true. If the
 owner wants the list to say it is placement-ordered, the copy is theirs —
 `AGENTS.md`'s fourth exclusion.
 
 ## Consequences
 
 **`withdrawOrdersAwaitingMaterial` stops taking a segment at random.** It
-withdraws the *greatest* id today, and `system.ts` argues at length that
+withdraws the *greatest* id today, and `system.ts:650-687` argues at length that
 this cannot be "the one the player drew last" because *"nothing on `BuildOrder`
 … records when or in what order it was placed"* and *"what would change it is a
 persisted field and therefore a save-format decision, not a better sort."* This
 is that field, and #693's own doubt — the withdrawn segment can be the tile the
 player drew **first** — is closed by it.
-
-> **The word *today* in that paragraph expired on 2026-08-31 with the rest of
-> the decision, and the docblock it quotes has been rewritten around the
-> change** — so the anchor is demoted rather than re-aimed and the live state is
-> given here. `system.ts:1289-1341` is that argument now, under its own heading
-> *"Which order goes"*, and it opens *"Since ADR 0082 (#722) that is the segment
-> the player drew last"* (`:1299-1302`) with *"Until 2026-08-31 it was the
-> greatest id"* (`:1308`) kept beside it. The first of the two sentences quoted
-> above — *"nothing on `BuildOrder` … records when or in what order it was
-> placed"* — is **gone from the file**, which is the point: the field exists.
-> The second survives, at `:1328-1329`, rewritten to say so. And the closing
-> claim is not merely asserted any more: `:1338-1341` records that an order book
-> carrying no ordinals still withdraws the greatest id, so both halves are in
-> the code.
 
 **The blast radius is 16 tests in 8 files, measured rather than grepped, and
 every one of them is a contract change rather than a weakened test.** The sort
@@ -450,16 +362,8 @@ sentence is what this ADR changes, and re-pinning it is the change rather than a
 casualty of it. It now reads *"which is placement order and not ascending id"*. `tests/determinism/canonical-iteration-contract.test.ts` needs no
 change at all and did not fail: it requires the enumeration to reach *a* sort,
 and it still does. Four docblocks state the old order in prose and go with it:
-`system.ts:1508-1536`, `materials-procurement.ts:254-272`,
-`construction-projection.ts:319-345` and `src/ui/simulation-build-queue.ts:79`.
-
-> **Re-aimed 2026-09-16, and the sentence is now a record rather than a plan —
-> all four went with it and none was overwritten.** Each keeps the old order in
-> the past tense beside the new one, which is why the anchors moved so far:
-> every one of these docblocks grew a paragraph rather than losing one.
-> `src/ui/simulation-build-queue.ts:79` is the single anchor in this document
-> that still lands where it was written. A fifth place this sentence never named
-> went with them too — `just-in-time-materials.ts:597-599`.
+`system.ts:655-658`, `materials-procurement.ts:86-90`,
+`construction-projection.ts:225-234` and `src/ui/simulation-build-queue.ts:79`.
 
 **The mutation was reverted and nothing in `src/` is changed by this commit.**
 (That was true of the commit that added this document. The commit that carries
@@ -510,18 +414,16 @@ stated order to fund them in until this is decided.
 **Derive the ordinal from the undo history, and persist nothing new.**
 `undoStack` and `currentTransaction` are already in the snapshot and already in
 `buildOrderSchema`'s sibling `constructionSnapshotSchema`
-(`save-schema.ts:228-251`), and they are a record of placement order. Measured
+(`save-schema.ts:189-214`), and they are a record of placement order. Measured
 on a four-drag perimeter: `undoStack` held `2+2+3` and `currentTransaction` 3,
 and the flattened list was **identical to placement order**, and identical again
 after a snapshot→restore round trip. It is the cheapest fix that exists and it
 is still refused, for three reasons: `redo()` pushes a revived gesture onto the
 **top** of the stack (`system.ts:559-577`), so redoing an old gesture silently
-moves its place in the build queue (`system.ts:848-875`, the push at `:866`);
-an order registered with no transaction id
+moves its place in the build queue; an order registered with no transaction id
 has no ordinal at all, which is every fixture in `tests/` and any future
 producer that forgets; and flattening the whole history inside a comparator runs
-on every scheduled construction tick, twice a second, forever (the walk is
-`system.ts:1606-1790`). Worth recording
+on every scheduled construction tick, twice a second, forever. Worth recording
 because if the owner rejects the persisted field, this is the fallback that
 works.
 
@@ -530,18 +432,8 @@ works.
 `definitionId`, `location`, `edge`, `state`, `progress`, `materialsAllocated`,
 `assignedWorkerId` and `failReason`. No tick, no sequence, no gesture index.
 
-> **That anchor still lands on `interface BuildOrder` and the sentence under it
-> is now false — which is this decision working, not this document rotting.**
-> `build-order.ts:139-143` declares `placementSequence`, with
-> `compareBuildOrderExecution` named as the one place that reads it, so there
-> *is* an existing field to sort by and it is the one decision 2 added. The
-> paragraph is kept because an alternative is only refusable against the tree it
-> was refused in, and it is marked because a reader arriving at *"there is
-> none"* in 2026 would otherwise take it for a fact about today.
-
 **Change allocation order only and leave construction order alone.** Allocation
-and the crew handover are the *same walk* (`system.ts:1606-1790`), so this
-means
+and the crew handover are the *same walk* (`system.ts:842-966`), so this means
 two passes with two different comparators over one list — two canonical orders
 where `docs/DETERMINISM.md` asks for one, for no gain a player can name.
 

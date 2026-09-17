@@ -197,7 +197,7 @@ const SUBMISSION_REQUIREMENT: BuildabilityRequirement = {
  * The two vocabularies really are different and this is not ceremony:
  * `buildability.ts` uses `unowned_land` with an underscore, every member of
  * `BUILD_ORDER_FAIL_REASONS` is hyphenated, and `failReason` is persisted --
- * `save-schema.ts:224` and `:676` carry it into the save. Letting an
+ * `save-schema.ts:176` and `:402` carry it into the save. Letting an
  * underscore reach a save because two modules disagreed about a separator
  * would be a format decision made by accident.
  *

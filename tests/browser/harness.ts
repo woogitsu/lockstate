@@ -9,7 +9,7 @@ import { SessionController } from '../../src/persistence/session/session-control
 import { WorkerPerSessionHost } from '../../src/persistence/session/worker-per-session-host';
 import { SimulationClient } from '../../src/simulation/worker/client';
 // `?worker` is Vite's statically-analyzable worker import, exactly as
-// `src/main.ts:31` takes it. ADR 0109's falsifier is explicit that its
+// `src/main.ts:17` takes it. ADR 0109's falsifier is explicit that its
 // measurement must use the worker host rather than the in-process one.
 import SimulationWorker from '../../src/simulation/worker/worker.ts?worker';
 import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-channel';

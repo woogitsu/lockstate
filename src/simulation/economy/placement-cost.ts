@@ -17,8 +17,8 @@ import type { MaterialRequirement } from '../construction/definition';
  * *"the cost the simulation reports rather than one the panel computed"*.
  *
  * So the arithmetic lives beside the system that charges for it. `unitPrice x
- * quantity` is the same expression `ProcurementSystem.purchase` runs to decide
- * `paidMinorUnits`, and a placement's charge is
+ * quantity` is the same expression `ProcurementSystem.purchase` runs at
+ * `procurement.ts:358` to decide `paidMinorUnits`, and a placement's charge is
  * that expression once per requirement -- which is what
  * `JustInTimeMaterialsService.procureForPendingOrders` buys at the press
  * (#640, `a87b0d3`: a build order buys what it needs at the press, from the
@@ -53,19 +53,6 @@ import type { MaterialRequirement } from '../construction/definition';
  * `{buildable} · {total}` and `hud.build.catalogue-row-price-segment` renders
  * `{buildable} · {total} per segment`, both of which state a price rather than
  * promise a debit.
- *
- * **This paragraph cited `procurement.ts:358` for that expression until
- * 2026-09-15, and there is no longer an expression there to cite.** It read
- * `const paidMinorUnits = material.unitPriceMinorUnits * quantity` when the
- * sentence was written; `purchase` now calls `purchaseChargeMinorUnits`
- * (`src/simulation/economy/procurement.ts`), whose own docblock says this file
- * is where the second instance of the multiply went. The sentence above is
- * kept because it is still true -- the two really do compute the same thing --
- * but "the same expression" is now the weaker of the two available claims:
- * there is a named function on the purchase side, and the loop below still
- * multiplies by hand. Whether this file should call it is a question about
- * this file, not a stale number, and it is left open here rather than decided
- * in a citation sweep.
  *
  * Minor units and integers throughout, for the reason `ProcurableMaterial`
  * states at its own declaration: this arithmetic reaches simulation state a
