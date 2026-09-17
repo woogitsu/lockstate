@@ -4765,11 +4765,12 @@
    *
    * The floor is `--tap-target` plus a little, not the 64px this line used to
    * carry: with the name gone the button holds one 20px glyph, so 64px was
-   * sizing a box around text that is no longer drawn. 56px keeps the five-tab
-   * bar comfortably wider than the 44px tap-target floor on each button and
-   * takes the bar to 280px at 375x812 -- and, unlike every tracked-label
-   * candidate #1192 priced, it still fits the 320px viewport (296px of inner
-   * bar) that the tracking fix below was measured running out at.
+   * sizing a box around text that is no longer drawn. 56px keeps each button
+   * clear of the 44px tap-target floor and takes the whole bar to 282px at
+   * 375x812 (351px before) -- and, unlike every tracked-label candidate #1192
+   * priced, it still fits the **320px** viewport, 282px in 296px of room,
+   * where the tracking fix this block used to carry was measured running out
+   * at a 4.08px overlap with two tabs clipped away.
    */
   .ui-tab { min-width: calc(56px * var(--ui-scale)); padding: var(--space-2); }
 
