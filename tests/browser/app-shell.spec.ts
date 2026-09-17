@@ -2735,8 +2735,31 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
-  'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
-    'button.ui-section__header "Alerts"',
+  /*
+   * **THE ALERTS FOLD'S HEADER LEFT THIS LIST ON 2026-09-16 (#1201), AND IT IS
+   * THE FIRST ENTRY EVER RETIRED FROM IT.** It read
+   *
+   *     'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
+   *       'button.ui-section__header "Alerts"',
+   *
+   * and it is written out here rather than deleted because the reason it is
+   * gone is *not* the reason the block below predicted would retire all of
+   * them. `.hud__corner` is still `display: none` at 720px and below -- the
+   * three entries around this one are still exempt for exactly that mechanical
+   * reason, and the accounting assertion at the foot of the sweep still fails
+   * the moment the corner comes back.
+   *
+   * What moved is the fold's **mount**. On the owner's ruling of 2026-09-16
+   * (*"Zamontuj fold w szynie poniżej 720 px (zalecane)"*, the weaker of the
+   * two provenances) `hud.ts` puts the alerts section in the Overview panel's
+   * `foldSlot`, in the rail, at this breakpoint and no other -- so below 720px
+   * this control is laid out, has a chain of ancestors that does not contain
+   * `hud__corner`, and is required by the sweep like any other. The defect that
+   * bought it is that the alerts log is the only surface that issues
+   * `DismissAlert`, so a phone player was offered a command they could not
+   * press; `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over
+   * the press itself.
+   */
   /*
    * AND THE MINIMAP SURFACE ITSELF, ADDED 2026-09-10 (#903). **This entry is
    * not a control that stopped being reachable. It is a control that did not
