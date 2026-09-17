@@ -112,7 +112,7 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
  * because a gate whose stricter direction is undocumented gets "fixed" in the
  * dangerous direction by whoever meets it first.
  *
- * ## Re-checked 2026-09-17 at `33c02a12`, by mutation rather than by reading
+ * ## Re-checked 2026-09-17 at `33c02a12` and again at `725aad40`, by mutation
  *
  * The conclusion that this file is **not** redundant with #1227's
  * `tests/foundation/save-schema-enum-union-contract.test.ts` was re-derived
@@ -159,6 +159,11 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
  * union of the existing per-subsystem snapshot"*, `:80` for *"are deliberately
  * separate, because the simulation may not import"*, `:194` for *"makes every
  * save that recorded one unreadable, which is a migration."*).
+ *
+ * **Re-gated at `725aad40`** after #1279 merged the same day: `npx tsc -b`
+ * clean, `tests/foundation/` **64 files / 641 passed**. That merge touches
+ * `src/ui/hud/`, which neither side of this seam reaches, so the three
+ * mutations above were not re-run against it.
  *
  * ## Measured, 2026-09-15, before any of this was written
  *
