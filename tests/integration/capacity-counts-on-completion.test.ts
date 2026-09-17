@@ -33,10 +33,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *    submits a `BuildOrder` and writes **no** `PlacedObject`.
  * 2. The only call that writes one is `onOrderCompleted`
  *    (`:798`), whose only caller is `ConstructionSystem.finalizeConstruction`
- *    (`src/simulation/construction/system.ts:1917`), reached from
- *    `this.setState(order, 'completed')` on the adjacent line (`:1746-1747`) --
- *    that call read `order.state = 'completed'` when this chain was written.
- * 3. `RoomCapacityResolver.deriveFor` (`src/simulation/objects/room-capacity.ts:314`)
+ *    (`src/simulation/construction/system.ts:1593`), reached from
+ *    `order.state = 'completed'` on the adjacent line (`:1423-1424`).
+ * 3. `RoomCapacityResolver.deriveFor` (`src/simulation/objects/room-capacity.ts:291`)
  *    derives every capacity from `PlacedObjectRegistry.inRect`, and
  *    `deriveRoomCapacity` (`:172`) reads nothing else -- no order book, no
  *    construction phase.
@@ -94,7 +93,7 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
  * ordered into it, one press each.
  *
  * **No `PurchaseMaterials`.** A player does not buy the plank; the press does
- * (`src/simulation/runtime/session-commands.ts:809`, the just-in-time purchase
+ * (`src/simulation/runtime/session-commands.ts:700`, the just-in-time purchase
  * #627 added), and going the long way round here would make the fixture's
  * timings something other than the ones a player gets.
  */
@@ -202,8 +201,8 @@ describe('a capacity counts an object on completion and never before it', () => 
     // "somewhere" has to be pinned or it is a sentence with no test behind it.
     //
     // `projectBuildQueue` is what the Build panel's queue block draws from
-    // (`src/ui/simulation-build-queue.ts:202`), and the block is drawn while
-    // `queue.total > 0` (`src/ui/hud/build-panel.ts:2656`). So the invariant is
+    // (`src/ui/simulation-build-queue.ts:119`), and the block is drawn while
+    // `queue.total > 0` (`src/ui/hud/build-panel.ts:585`). So the invariant is
     // that the two sets partition the four presses at *every* tick: a bed is
     // either standing in the room's capacity or named in the queue, never
     // neither.

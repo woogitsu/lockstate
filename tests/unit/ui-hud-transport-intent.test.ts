@@ -3,7 +3,7 @@ import { transportIntent } from '../../src/ui/hud/hud';
 import { EMPTY_HUD_VIEW_MODEL, type HudSpeed, type HudViewModel } from '../../src/ui/hud/view-model';
 
 /**
- * `transportIntent` (`src/ui/hud/hud.ts:2923-2938`) had no test anywhere in
+ * `transportIntent` (`src/ui/hud/hud.ts:2149-2166`) had no test anywhere in
  * this repository before this file -- confirmed by `grep -rl
  * "transportIntent" tests/` returning nothing else -- despite being the one
  * function that decides what pressing Pause, Play or Fast-forward actually

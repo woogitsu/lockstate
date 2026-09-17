@@ -142,24 +142,6 @@ export interface HudLayoutShellOptions {
    */
   readonly onChange: (settings: LayoutSettings) => void;
   /**
-   * The device tier, reported when it is first resolved and again whenever it
-   * changes (issue #1201).
-   *
-   * This shell already owns the answer -- `resolveHudLayout` reads
-   * `PHONE_MAX_WIDTH_PX`, which is `hud.css`'s own `@media (max-width: 720px)`
-   * boundary and not a second opinion about where a phone starts -- and it
-   * already acts on a change, by rebuilding the inspector's separator against
-   * the new drag axis. A caller that needs to *move a node* across the same
-   * boundary cannot do it in a stylesheet, so it gets told rather than adding
-   * a second `matchMedia` or a second `resize` listener that could disagree
-   * with this one about which side of 720 px the page is on.
-   *
-   * Called during construction, before `createHudLayoutShell` returns, so a
-   * caller never has to ask what the tier was before the first change.
-   * It is therefore **not** safe for the handler to close over the shell.
-   */
-  readonly onTierChange?: (phone: boolean) => void;
-  /**
    * The viewport, injected. Defaults to the window.
    *
    * A parameter for the reason `applyUiScale` takes its root element as one: a
@@ -644,9 +626,6 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     if (persist) options.onChange(settings);
   }
 
-  /** Which tier `onTierChange` has last been told about; `undefined` until the first `refresh`. */
-  let announcedTier: boolean | undefined;
-
   function refresh(): void {
     const viewport = measureViewport();
     const previousPhone = geometry.phone;
@@ -706,27 +685,6 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
       !geometry.inspector.collapsed,
     );
     mapOnly.setAttribute('aria-pressed', isMapOnly(settings) ? 'true' : 'false');
-
-    /*
-     * LAST IN THIS FUNCTION, AND ONLY ON A CHANGE.
-     *
-     * Last, because the handler is outside this shell and may move nodes: it
-     * must see the page this pass produced rather than a half-applied one, and
-     * `root.dataset['layoutTier']` above is the attribute that says the same
-     * thing to a stylesheet, so nothing here reads back what the handler did.
-     *
-     * Only on a change, because `refresh` runs on every `resize` event -- a
-     * handler that reparents a node would otherwise move it many times a second
-     * through a window drag, taking focus out of anything inside it each time.
-     *
-     * `announcedTier` rather than the `previousPhone` above: that one is seeded
-     * from the geometry this pass is replacing, so it says "unchanged" on the
-     * very first run, which is the run a caller most needs to hear about.
-     */
-    if (geometry.phone !== announcedTier) {
-      announcedTier = geometry.phone;
-      options.onTierChange?.(geometry.phone);
-    }
   }
 
   const onWindowResize = (): void => {

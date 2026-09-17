@@ -71,7 +71,7 @@ set -euo pipefail
 # `open_heads` would leave every open pull request's head branch unprotected,
 # the same catastrophe the `curl` guard further down refuses to risk. **So
 # this check adds no safety. It adds a sentence**: without it the run dies on
-# a bare `python3: command not found` at line 143 of a script whose visible
+# a bare `python3: command not found` at line 107 of a script whose visible
 # purpose is deleting branches, and the operator has to read the script to
 # learn what was actually missing.
 if ! command -v python3 >/dev/null 2>&1; then
