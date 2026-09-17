@@ -1873,6 +1873,33 @@ const snapshotMessageSchema = z
  * `deliveriesRestoredEventSchema`'s own docblock for what the sentence may and
  * may not claim on the way back up.
  *
+ * ## `construction.order-completed` is the 28th member, and the first success
+ * on this channel that no press causes (ADR 0116, ruled 2026-09-16)
+ *
+ * The five `construction.*` members the heading above widens for are the
+ * prison carrying out an instruction the player just gave; this one is the
+ * prison finishing a job it was given some time ago, from inside
+ * `ConstructionSystem.update` on its own schedule. So it belongs to the first
+ * paragraph's class -- something the prison did on its own -- while being an
+ * acknowledgement rather than bad news, which is `rooms.zoned`'s class. It is
+ * the first member in both at once.
+ *
+ * **It restores the claim the five falsified**, rather than falsifying it
+ * again: `MAX_EVENT_ALERT_ROWS`'s docblock argues a *burst* is impossible
+ * because every producer is a scheduled system emitting at most once per
+ * pass, and the paragraph above records that the five are not. This one is.
+ * `ConstructionSystem` serialises its one crew -- `crewBusy` is read once
+ * before the walk and set by the first order to start -- so at most one order
+ * is `'in-progress'` on any tick and therefore at most one can complete per
+ * scheduled pass (ADR 0116 §4d).
+ *
+ * **What bounds it instead is duration, and that is why it is `'log-only'`.**
+ * A wall is 50 ticks of work, which is 2.5 s at x1 and 625 ms at x4 -- 25 ms
+ * above `EVENT_BAND_DWELL_FLOOR_MS`, so the band's dwell floor coalesces none
+ * of it and a player building continuously at x4 would hold the band with
+ * completions. ADR 0116 declines that in its option 4; `EVENT_PRESENTATION`
+ * is where the routing is stated.
+ *
  * **`prisoners.housed` is the housing mirror of `prisoners.relocated`
  * above**: that one moves an already-housed resident when their place is taken
  * away; this one houses an arrival for the first time, at `IntakeSystem`'s
@@ -1882,6 +1909,7 @@ const snapshotMessageSchema = z
 export const SIMULATION_EVENT_TYPES = [
   'construction.order-cancelled',
   'construction.order-cancelled-underway',
+  'construction.order-completed',
   'construction.redone',
   'construction.undo-refused-newer-action',
   'construction.undone',
@@ -2808,6 +2836,49 @@ const buildOrderCancelledUnderwayEventSchema = z
   .strict();
 
 /**
+ * A build order reached `'completed'` and what it builds was written into the
+ * world ([ADR 0116](../../../docs/adr/0116-whether-a-finished-object-is-an-event.md),
+ * the owner's ruling of 2026-09-16, option 2).
+ *
+ * **The envelope and nothing else, and that emptiness is the decision rather
+ * than a payload nobody got round to.** ADR 0116 §4d measures what the payload
+ * costs the alerts list: `simulationEventIdentity` drops `sequence` and `tick`
+ * and canonicalises the rest, so two records that differ in no other field are
+ * *one counted row*. A twenty-four-wall programme is therefore one row reading
+ * `24x` rather than twenty-four rows, and that is the whole of what the owner
+ * ruled -- *"jeden zliczany wiersz"*, one counted row. **Any field added here
+ * that varies between two completions -- an order id, a tile, a progress
+ * figure, a count -- spends a row per distinct value and silently loses the
+ * overflow past `MAX_EVENT_ALERT_ROWS = 8`**, which ADR 0116 D4 measured at
+ * eight rows and sixteen statements a player never sees. So the emptiness is
+ * load-bearing and a later amendment that "makes it useful" is a change to the
+ * ruling, not to this schema.
+ *
+ * **Not even `definitionId`**, which option 3 offered and the ruling declined.
+ * The cost is not the field: it is that resolving a content id to a word needs
+ * `buildableLabelKey` in `src/main.ts`, which `vitest.config.ts`'s
+ * `environment: 'node'` cannot reach (ADR 0116 §4c, `docs/HUD_PROJECTIONS.md`
+ * gap 32). The row can say how many things finished and not what, and ADR 0116
+ * §6 names that as option 2's own weakness rather than hiding it.
+ *
+ * **What the sentence beside this may claim**, per ADR 0116 §6's truth
+ * conditions: that at least one build order reached `'completed'` at the tick
+ * reported. It may **not** claim the queue is empty -- that is option 4's
+ * different event, explicitly not proposed -- and it may not name what was
+ * built, there being no field to name it with.
+ *
+ * The counterpart of `buildOrderCancelledUnderwayEventSchema` above, which
+ * covers the same order taken back down, and `SimulationEventLog`'s
+ * `recordBuildOrderCompleted` carries the producer's own argument.
+ */
+const buildOrderCompletedEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('construction.order-completed'),
+  })
+  .strict();
+
+/**
  * The build history was walked back one transaction (#749).
  *
  * **Carries no count, and that is the owner's ruling rather than a limitation
@@ -2992,6 +3063,7 @@ const deliveryCancelledEventSchema = z
 export const simulationEventSchema = z.discriminatedUnion('type', [
   buildOrderCancelledEventSchema,
   buildOrderCancelledUnderwayEventSchema,
+  buildOrderCompletedEventSchema,
   constructionUndoneEventSchema,
   constructionUndoneSpendDestroyedEventSchema,
   constructionUndoRefusedNewerActionEventSchema,
