@@ -2707,6 +2707,101 @@
      `tests/browser/app-shell.spec.ts` asserts. */
   box-sizing: border-box;
   overflow-x: hidden;
+  background: var(--surface-raised);
+  /*
+   * **`flex: 0 0 auto` where this rule said `overflow-y: auto` until ADR 0115's
+   * split, and the swap is the whole point of the split.**
+   *
+   * The paragraph above described one panel holding the timetable *and* the
+   * roster, and it gave the right reason for the wrong panel: "this panel's
+   * height grows with the population" was true of the roster half only. Now
+   * that the roster is `.ui-panel.hud-roster` below, what is left here is
+   * bounded by the classification-group catalogue -- two rows today, and a
+   * closed vocabulary rather than a prison -- so this is the panel that keeps
+   * its natural height and the one below is the panel that absorbs a short
+   * rail.
+   *
+   * That is the division `.ui-panel.hud-intake` and `.ui-panel.hud-staff`
+   * already record for the pair on the Manage tab, taken for the same measured
+   * reason: two panels in one bottom-anchored flex column share a height that
+   * used to be one panel's, and *which of them gives way* is a decision rather
+   * than a default.
+   *
+   * **What that is worth today is nothing, and the measurement says so.** One
+   * panel *could* have carried the timetable out of view while a player
+   * scrolled for the last roster row -- but it never had to: measured on
+   * `a3a9e7f3` with the browser suite's own full-roster fixture and a prisoner
+   * selected, the single panel's `scrollHeight - clientHeight` was **0 at all
+   * five viewports** that suite visits (456.8px of box at 375x812, 487.1px at
+   * the other four), so there was no scroll for the timetable to be carried by.
+   * What this rule buys is therefore a *property* rather than a repair: the
+   * timetable cannot be scrolled away by a roster that grows, whatever a later
+   * `PRISONER_ROSTER_ROW_LIMIT` or a taller inspector does to the panel below.
+   * `tests/browser/ui-roster-panel-split.spec.ts` is what holds it.
+   */
+  flex: 0 0 auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Prisoners panel (Plan dnia tab, ADR 0115)                           */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The other half of what was one panel until the owner's ruling of 2026-09-16:
+ * the roster and the inspector under it, on the same tab as the timetable
+ * above and laid out with it.
+ *
+ * Written `.ui-panel.hud-roster` rather than `.hud-roster` for the reason
+ * `.ui-panel.hud-staff` and `.ui-panel.hud-build` are: `.ui-panel` sets
+ * `overflow: hidden` and this overrides it on one axis, and two single-class
+ * selectors would leave the winner to the order `styles.css` happens to import
+ * the two files in (issue #143).
+ *
+ * `overflow-y: auto` because this is the panel whose height grows with the
+ * *population* -- `PRISONER_ROSTER_ROW_LIMIT` bounds the rows, so it grows to a
+ * ceiling and stops -- and whatever the rail cannot give it is its own to
+ * scroll rather than the rail's to hang off its edge.
+ *
+ * **What the second panel costs, measured rather than estimated**, with the
+ * browser suite's `ROSTER` fixture, `TIMETABLE` and a prisoner selected -- the
+ * fullest state this tab can draw. One panel read on `a3a9e7f3`, two on this
+ * tree, same fixtures, same command:
+ *
+ * | viewport | one panel | two panels | content grew by | arrival scroll, before -> after |
+ * | --- | --- | --- | --- | --- |
+ * | 1440x900 | 487.1 | 169.8 + 380.4 = 550.1 | 63.0 | 0 -> 0 |
+ * | 1280x720 | 487.1 | 169.8 + 380.4 = 550.1 | 63.0 | 0 -> 0 |
+ * | 1024x768 | 487.1 | 169.8 + 380.4 = 550.1 | 63.0 | 0 -> 0 |
+ * | 375x812 | 456.8 | 156.6 + 347.4 = 504.0 | 63.3 | 0 -> **16** |
+ * | 900x600 | 487.1 | 169.8 + 333.6 = 503.3 | 63.0 | 0 -> **46** |
+ *
+ * All in CSS px. The 63px is this panel's header, its border pair and the
+ * column gap -- chrome rather than content, and it is what a second panel
+ * costs anywhere in this rail.
+ *
+ * **Two of the five now scroll on arrival where nothing did before, and that
+ * is a cost rather than the affordance this rule's `overflow-y` describes.**
+ * At 375x812 and 900x600 the rail cannot afford the extra header, so 16px and
+ * 46px of this panel's content sit below its fold and `revealDetail` scrolls
+ * to the inspector rather than finding it already in view (`scrollTop` 8 and
+ * 38 respectively). Nothing is unreachable -- every row, the "and N more"
+ * line and all six need lines are laid out and scrollable, which is stage
+ * 5's exit criterion and what `ui-shell.spec.ts`'s two fold assertions
+ * measure -- and the arrival state *without* a prisoner selected still
+ * overflows by 0 at every viewport, which is the state those assertions pin.
+ *
+ * The honest summary is in `roster-panel.ts`'s header: the split buys an
+ * independent collapse, an independent height budget and a one-line mount,
+ * and it does not today buy an independent scroll, because the one panel it
+ * replaced never scrolled.
+ */
+.ui-panel.hud-roster {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  /* `border-box`, for `.ui-panel.hud-regime`'s stated reason: the rail's
+     one-width invariant. */
+  box-sizing: border-box;
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
 }
@@ -4742,6 +4837,12 @@
      two classes for the same specificity reason, or it would stay 264px in a
      343px rail. */
   .ui-panel.hud-regime { width: 100%; }
+
+  /* And the Prisoners panel beside it (ADR 0115). It is laid out *with* the
+     Regime panel rather than instead of it, so this is not merely the same
+     specificity argument: two panels in one stretched rail at two different
+     widths would be visibly ragged rather than merely narrow. */
+  .ui-panel.hud-roster { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;

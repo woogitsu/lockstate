@@ -842,10 +842,25 @@ export interface RegimePrisonerDetailProbe {
 export interface RegimeProbe {
   /**
    * `offsetParent`, which is null for a `hidden` element or one inside a
-   * `hidden` ancestor. The rail question: this panel is the fifth occupant of
-   * `.hud__side` and exactly one of the five may have a box.
+   * `hidden` ancestor. The rail question, asked of `.ui-panel.hud-regime`: the
+   * timetable's panel.
+   *
+   * **It stopped being "exactly one of five may have a box" at ADR 0115**,
+   * which split this surface into two panels laid out together on the Plan
+   * dnia tab -- the second pair in `.hud__side`, after Intake and Staff on
+   * Manage. `rosterPanelLaidOut` below is the other half, and the sweep in
+   * `ui-shell.spec.ts` (*"never shares the rail slot ..."*) reads both.
    */
   readonly laidOut: boolean;
+  /**
+   * The same question asked of `.ui-panel.hud-roster`, the roster and
+   * inspector's own panel (ADR 0115).
+   *
+   * Separate from `laidOut` rather than folded into it, because "both halves
+   * of Plan dnia are on screen together" is the thing the owner's ruling
+   * decided and is therefore the thing a test has to be able to fail on.
+   */
+  readonly rosterPanelLaidOut: boolean;
   /** Whether the timetable block was drawn at all -- `false` until a reply arrives, by design. */
   readonly blocksLaidOut: boolean;
   /** Every timetable line the browser drew, in the order it drew them. */
@@ -882,23 +897,56 @@ export interface RegimeProbe {
   readonly moreLaidOut: boolean;
   readonly moreText: string;
   /**
-   * `innerText` of the whole panel: what the browser rendered, with the pooled
-   * rows it did not draw left out.
+   * `innerText` of **both** panels, joined: what the browser rendered, with the
+   * pooled rows it did not draw left out.
    *
    * `textContent` is the wrong read here twice over -- it carries the hidden
    * rows' stale words, and it is identical on a panel that was never painted.
+   *
+   * Both, since ADR 0115, because every assertion that reads this field is
+   * asking *what is on the Plan dnia tab* -- the panel title, the empty-prison
+   * sentence, an unresolved message key -- and that question has two boxes as
+   * its answer now. Reading one would make every such assertion quietly
+   * half-blind.
    */
   readonly text: string;
   /**
-   * The bottom of the panel's *client* box -- where its content starts being
-   * clipped, unaffected by scrolling. The fold, in the shape
+   * The bottom of the roster panel's *client* box -- where its content starts
+   * being clipped, unaffected by scrolling. The fold, in the shape
    * `StaffProbe.panelVisibleBottom` and `RoomsLayoutProbe.panelVisibleBottom`
    * report it.
+   *
+   * **`.ui-panel.hud-roster`, not `.ui-panel.hud-regime`**, since ADR 0115:
+   * every assertion built on this field pairs it with `lastLineBottom` or the
+   * inspector's box, and both of those are inside the roster's panel now. The
+   * timetable's own panel is `scheduleBox` below, and it is not a scroll
+   * container at all.
    */
   readonly panelVisibleBottom: number;
-  /** `scrollHeight - clientHeight` on the panel: 0 when the panel itself does not scroll. */
+  /** `scrollHeight - clientHeight` on the roster panel: 0 when the panel itself does not scroll. */
   readonly panelOverflow: number;
   readonly panelScrollTop: number;
+  /**
+   * The timetable panel's border box, and how far its own content overflows it
+   * (ADR 0115).
+   *
+   * `scheduleOverflow` is expected to be 0 forever rather than usually:
+   * `.ui-panel.hud-regime` is `flex: 0 0 auto` and is not a scroll container,
+   * so a timetable taller than its box would be *clipped* rather than
+   * scrollable -- the failure a screenshot does show and this field localises.
+   */
+  readonly scheduleBox: LayoutBox | null;
+  readonly scheduleOverflow: number;
+  /**
+   * Where the timetable's last line ends, against `scheduleBox`.
+   *
+   * The measurement the split exists to make true: with one panel, scrolling
+   * to the last roster row carried the timetable off the top of the shared
+   * box, so what the day allows was unreachable while a player read who was in
+   * it. Two panels cannot do that to each other, and this is the number that
+   * says so at a viewport rather than in a comment.
+   */
+  readonly scheduleLastLineBottom: number;
   /**
    * The bottom edge of the lowest thing the panel drew: the last roster row,
    * the "and N more" line, or the empty sentence, whichever is furthest down.

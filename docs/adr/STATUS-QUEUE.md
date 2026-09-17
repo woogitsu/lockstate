@@ -2520,10 +2520,16 @@ MINUTES AFTER IT WAS WRITTEN, and six anchors have passed over it.** §2's ADR
 rather than inferred."* That grep returns **seventeen** hits in six files here,
 and one of them is a reader: `src/ui/simulation-prisoner-detail.ts` requests
 `hud/prisoner-detail` at `:192`, `src/main.ts:1429` constructs the
-`PrisonerDetailReader` that does it, and `src/ui/hud/regime-panel.ts:738`
+`PrisonerDetailReader` that does it, and `src/ui/hud/roster-panel.ts:653`
 repaints an inspector from the reply (**this read `:730` from `6261cc89`
 through seven anchors and moved by eight at #993, v0.0.481; the declaration it
-introduces went `:745` to `:753` in the same hunk**). Dated rather than merely reported: the
+introduces went `:745` to `:753` in the same hunk; and it changed *file* at ADR
+0115, 2026-09-16, when the owner's ruling split the Regime panel's roster half
+out into `src/ui/hud/roster-panel.ts` and the coordinate was re-derived with
+`grep -n 'Repaint the inspector from a fresh'` rather than offset. Every
+`regime-panel.ts` anchor elsewhere in this file is history and is written as a
+bare basename from that date, per this file's own convention for an anchor
+whose subject is a number that is no longer current**). Dated rather than merely reported: the
 sentence was written at `6261cc89` (the v0.0.417 anchor, #883, 2026-09-03 12:58
 UTC), where `git grep -c prisoner-detail 6261cc89 -- src/ui src/main.ts` returns
 nothing, so it was **true when written**; it went false at `ce742c80`, #895's
@@ -9340,7 +9346,7 @@ settled, items 2 and 3 as still owed.
    **seventeen** hits in six files on this tree, and one of them is a reader —
    `src/ui/simulation-prisoner-detail.ts` requests `hud/prisoner-detail` at
    `:192`, `src/main.ts:1495` constructs the `PrisonerDetailReader` that does
-   it, and `src/ui/hud/regime-panel.ts:738` repaints an inspector from the
+   it, and `regime-panel.ts:738` repaints an inspector from the
    reply (**this read `:730` from `6261cc89` through seven anchors and moved by
    eight at #993, v0.0.481**).
 
@@ -9356,7 +9362,7 @@ settled, items 2 and 3 as still owed.
    commits — and `:1954` now lands on `readonly classificationGroupId?:
    string;`, a field of a *different* interface);
    `src/ui/simulation-prisoner-detail.ts:203` → **`:212`** and
-   `src/ui/hud/regime-panel.ts:738` → **`:741`**, **both identical at
+   `regime-panel.ts:738` → **`:741`**, **both identical at
    `d57b97ba` and both on files this window did not touch**, falsified together
    at `a173fd2f` (2026-09-12) three anchors before anybody read them. **So this
    entry now carries one instance of each of the two failure shapes it has
@@ -9378,7 +9384,9 @@ settled, items 2 and 3 as still owed.
    condemns.** Every number in that chain is real and was opened; the line it
    follows is
    `setRoster(roster: HudPrisonerRosterViewModel | undefined): void;`
-   (verbatim in `src/ui/hud/regime-panel.ts`), the member standing two lines
+   (verbatim in `src/ui/hud/roster-panel.ts`) — that file since ADR 0115's
+   split of 2026-09-16, and `regime-panel.ts` when this entry was written —
+   the member standing two lines
    *beside* the one this sentence names. The subject is the inspector repaint,
    and `grep -n 'Repaint the inspector from a fresh'` puts it at **730** at
    `9e68f100`, **738** at `f4239950` and **743** at `a173fd2f`, `7e9c3043` and
@@ -9421,7 +9429,7 @@ settled, items 2 and 3 as still owed.
    `src/main.ts` is a member of this window — the file's four hunks all sit at
    `:121` (a same-size import replacement) and below `:3212`, so nothing this
    window added crosses this coordinate.
-   `src/ui/simulation-prisoner-detail.ts:212` and `src/ui/hud/regime-panel.ts:743`
+   `src/ui/simulation-prisoner-detail.ts:212` and `regime-panel.ts:743`
    hold on files the window did not touch, opened anyway.
    **The verbatim quotations needed no edit for the sixth consecutive anchor**,
    and the number beside one of them has now moved at five of the six.
@@ -9476,7 +9484,7 @@ settled, items 2 and 3 as still owed.
    — which `tests/foundation/adr-quotation-verbatim-contract.test.ts` binds, so
    the next reader is told when the *code* changes rather than when a line
    count does. `src/ui/simulation-prisoner-detail.ts:192` and
-   `src/ui/hud/regime-panel.ts:738` were both re-opened at this anchor and both
+   `regime-panel.ts:738` were both re-opened at this anchor and both
    hold, on files this window did not touch, and the grep's own figures still
    read **seventeen** hits in **six** files.
 
@@ -12393,7 +12401,7 @@ src/main.ts` returns nothing, which the integrator ran rather than inferred."*
 That grep returns **seventeen** hits in six files here, and one of them is a
 reader: `src/ui/simulation-prisoner-detail.ts` requests the route at `:192`,
 `src/main.ts:1429` constructs the `PrisonerDetailReader`, and
-`src/ui/hud/regime-panel.ts:730` repaints an inspector from the reply. The
+`regime-panel.ts:730` repaints an inspector from the reply. The
 sentence was **true when written**, at `6261cc89` (the v0.0.417 anchor, #883,
 2026-09-03 12:58 UTC, where the same grep returns nothing), and went false at
 `ce742c80` — #895 — at 18:44 UTC the same day, **five hours and forty-six
@@ -17539,7 +17547,7 @@ re-run.
   is the failure this file names as the costly one, arriving four times in one
   pass.
 - **AND ONE OF THEM WAS NEVER RIGHT, WHICH NO OFFSET PASS COULD HAVE SAID.**
-  `src/ui/hud/regime-panel.ts:738` is recorded in §2 as `:730` *"moved by eight
+  `regime-panel.ts:738` is recorded in §2 as `:730` *"moved by eight
   at #993"*; the file's own history goes **728** → **736** → **741** and never
   passes through 738, so the eight was applied to a coordinate already two out.
   An offset applied to a wrong number returns a wrong number.
@@ -18098,7 +18106,7 @@ the entry is about**: `export interface HudPrisonerDetailViewModel {` in
 coordinate this repository holds into that file is in §2, and it went stale in a
 window whose headline change was that file. The other three held —
 `src/main.ts:1665`, `src/ui/simulation-prisoner-detail.ts:212`,
-`src/ui/hud/regime-panel.ts:743` — as did §2's four `action-system.ts`
+`regime-panel.ts:743` — as did §2's four `action-system.ts`
 coordinates (`:1306`, `:1761`, `:1799`, guard at `:1295`), which is the first
 anchor at which that bullet has had nothing to correct. **Two consecutive payouts
 make this the method's shape rather than an anecdote.**

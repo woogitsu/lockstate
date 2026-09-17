@@ -1872,7 +1872,7 @@ test.describe('HUD shell', () => {
       expect(probe.hint.startsWith('hud.')).toBe(false);
     });
 
-    test('never shares the rail slot with the Overview, Build, Rooms or Regime panel', async ({ page }) => {
+    test('never shares the rail slot with the Overview, Build, Rooms, Regime or Prisoners panel', async ({ page }) => {
       // The whole reason this panel costs the measured budget nothing. If any
       // two were ever laid out together, one panel's height would have to pay
       // for the other's, which is the overflow ADR 0022 refused. All five
@@ -1892,18 +1892,22 @@ test.describe('HUD shell', () => {
         rooms: (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut,
         staff: (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible,
         regime: (await page.evaluate(() => window.lockstateUiHarness.regimeProbe())).laidOut,
+        // The sixth occupant, and the second of a pair (ADR 0115). The comment
+        // above about the list having been wrong once is why it is here from
+        // the commit that adds the panel rather than afterwards.
+        roster: (await page.evaluate(() => window.lockstateUiHarness.regimeProbe())).rosterPanelLaidOut,
       });
 
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       // Overview is the default tab, and since 2026-09-14 what it holds is the
       // readout rather than the Intake panel (issue #1183).
-      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false, roster: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
-      expect(await rail()).toEqual({ overview: false, intake: false, build: true, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: true, rooms: false, staff: false, regime: false, roster: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('zones'));
-      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: true, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: true, staff: false, regime: false, roster: false });
 
       /*
        * **Manage is the one tab that lays out two panels**, and that is the
@@ -1914,17 +1918,21 @@ test.describe('HUD shell', () => {
        * exactly what this line stops.
        */
       await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
-      expect(await rail()).toEqual({ overview: false, intake: true, build: false, rooms: false, staff: true, regime: false });
+      expect(await rail()).toEqual({ overview: false, intake: true, build: false, rooms: false, staff: true, regime: false, roster: false });
 
-      // And the fifth tab is the Regime panel's, alone. This assertion used to
-      // read "And none is laid out on the one tab that still owns no panel",
-      // and pinned that emptiness deliberately; issue #451 spent it, so what is
-      // pinned now is that spending it bought exactly one panel.
+      // And the fifth tab is the Regime panel's -- and, since the owner's
+      // ruling of 2026-09-16 on ADR 0115, the Prisoners panel's beside it.
+      // This assertion used to read "And none is laid out on the one tab that
+      // still owns no panel", and pinned that emptiness deliberately; issue
+      // #451 spent it, and the ruling split what it bought into two panels
+      // that must be laid out **together** -- the roster's placement is what
+      // the ruling decided, so `roster: true` here is the ruling and
+      // `roster: false` on the Manage lines is the option that was declined.
       await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'));
-      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: false, staff: false, regime: true });
+      expect(await rail()).toEqual({ overview: false, intake: false, build: false, rooms: false, staff: false, regime: true, roster: true });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
-      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false });
+      expect(await rail()).toEqual({ overview: true, intake: false, build: false, rooms: false, staff: false, regime: false, roster: false });
     });
 
     /**
@@ -6739,7 +6747,12 @@ test.describe('the Regime panel (issue #451)', () => {
         await sentence.scrollIntoViewIfNeeded();
         await expect(sentence).toBeVisible();
         const readout = await sentence.evaluate((node) => {
-          const panel = node.closest('.hud-regime')!;
+          // `.ui-panel` rather than `.hud-regime`: ADR 0115 split the roster
+          // and its inspector into `.ui-panel.hud-roster`, so the panel this
+          // sentence has to fit inside is the one it is *in* rather than one
+          // named here. The generic class is also the more durable subject --
+          // the claim is "inside its panel's box", not "inside that panel".
+          const panel = node.closest('.ui-panel')!;
           const panelBox = panel.getBoundingClientRect();
           const range = document.createRange();
           range.selectNodeContents(node);

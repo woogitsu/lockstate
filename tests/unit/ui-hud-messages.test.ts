@@ -75,6 +75,7 @@ const HUD_MODULE_NAMES = [
   'projection.ts',
   'regime-panel.ts',
   'rooms-panel.ts',
+  'roster-panel.ts',
   'staff-panel.ts',
   'status-strip.ts',
   'tool-arming.ts',

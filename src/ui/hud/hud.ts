@@ -19,6 +19,7 @@ import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './buil
 import { type IntakePanel, createIntakePanel } from './intake-panel';
 import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
+import { type RosterPanel, createRosterPanel } from './roster-panel';
 import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
 import {
   HUD_PANEL_IDS,
@@ -2295,7 +2296,30 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * busy group. `runReported` rather than `dispatchCommand` is what says so
    * below, exactly as it does for the two arming intents.
    */
-  const regimePanel: RegimePanel = createRegimePanel({
+  const regimePanel: RegimePanel = createRegimePanel({ localizer });
+
+  // ---- bottom-right roster panel (Plan dnia tab) --------------------
+  /*
+   * The sixth occupant of `.hud__side`, and the second panel laid out on the
+   * Plan dnia tab -- the owner's ruling of 2026-09-16 on ADR 0115, which split
+   * the Regime panel in code and kept **both halves on that tab**. The option
+   * that moved the roster to the Manage rail was declined, so this mount is the
+   * decision rather than a step towards one.
+   *
+   * Appended **after** `regimePanel` and so laid out under it, which is the
+   * reading order the one panel had: what the day allows, then who is in it.
+   * `hud.css` gives the schedule panel `flex: 0 0 auto` and this one
+   * `overflow-y: auto`, the same division of labour the Intake and Staff panels
+   * have made on the Manage tab since 2026-09-14 -- the panel bounded by a
+   * closed catalogue keeps its natural height and the panel that grows with the
+   * population absorbs a short rail.
+   *
+   * It issues no command, so it joins no busy group: it takes one selection --
+   * which prisoner the inspector is about -- and that selection is *chrome*,
+   * which `runReported` rather than `dispatchCommand` is what says so, exactly
+   * as it does for the two arming intents.
+   */
+  const rosterPanel: RosterPanel = createRosterPanel({
     localizer,
     onSelectPrisoner: (prisonerId) => {
       runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
@@ -2311,6 +2335,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       roomsPanel.element,
       staffPanel.element,
       regimePanel.element,
+      rosterPanel.element,
     ],
   });
 
@@ -2565,6 +2590,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
     // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
     regimePanel.setVisible(state.activeTab === 'day-plan');
+    // And its other half, on the same tab and by the same condition (ADR 0115).
+    // Two panels and one tab, so the two are laid out together or neither is --
+    // the pairing the Manage tab already makes with Intake and Staff.
+    rosterPanel.setVisible(state.activeTab === 'day-plan');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
@@ -2853,7 +2882,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // terms. Every word on a row is a message key the projection's ids were
     // turned into; the total is the projection's own count of the live
     // population, not the length of the window; this line decides nothing.
-    regimePanel.setRoster(next.prisonerRoster);
+    rosterPanel.setRoster(next.prisonerRoster);
     // And the one prisoner the player selected, on identical terms (issue #895).
     // The projection read the six needs off the store it owns and computed
     // which of them the state is withholding grant over; the panel decides the
@@ -2862,7 +2891,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // After the roster deliberately, so that a snapshot carrying both leaves the
     // checked row and the block below it agreeing about the same prisoner rather
     // than one tick apart.
-    regimePanel.setPrisonerDetail(next.prisonerDetail, next.clock.dayLengthTicks);
+    rosterPanel.setPrisonerDetail(next.prisonerDetail, next.clock.dayLengthTicks);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);
@@ -2884,7 +2913,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
-    clearPrisonerSelection: () => regimePanel.clearPrisonerSelection(),
+    clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
     getState: () => state,
     getLayout: () => layout.getSettings(),
     refreshLayout: () => {
