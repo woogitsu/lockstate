@@ -951,7 +951,7 @@ export class SimulationWorkerStateMachine {
     if (this._state !== 'shutting-down') return false;
     this.fault('shutting-down', 'The session is shutting down; this request was not served.', {
       replyTo: requestMessageId,
-      recoverable: RECOVERABLE_BECAUSE_THERE_IS_NOTHING_TO_SPEND,
+      recoverable: false, // MUTATION 2
     });
     return true;
   }
