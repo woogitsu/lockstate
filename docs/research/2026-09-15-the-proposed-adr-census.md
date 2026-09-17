@@ -203,6 +203,11 @@ anchor check are two passes, and running one is not evidence about the other —
 which is the same shape as §4's *"a delta pass is blind to a claim that was
 already false when its window opened"*, one level in.
 
+**Re-run once more at `725aad40`**, after #1279 merged the same day: the count
+is **unchanged at 109 / 67 / 42**, and all thirteen repinned coordinates above
+still read back verbatim. #1279 touches `src/ui/hud/hud.css`, `hud.ts`,
+`layout-shell.ts` and `overview-panel.ts`, none of which this census cites.
+
 **What this second correction is evidence of, beyond its own number.** The
 first correction was written on 2026-09-16 and predicted a number for a merge
 that had not happened; the merge happened and the number is right. A census
