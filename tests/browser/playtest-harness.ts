@@ -713,6 +713,60 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
  * So the harness, not the panel, is what was wrong: a helper modelling a
  * player must press what a player can press.
  *
+ * ### Re-checked at `33c02a12`, 2026-09-17, after merging `origin/main`
+ *
+ * Every claim above is a claim about a *file*, which a merge can falsify
+ * without touching this one. All five were re-opened rather than carried:
+ *
+ * - `buySubmit.setUnavailable(verdict.refused);` is at
+ *   `src/ui/hud/build-panel.ts:2176`.
+ * - `setUnavailable` is declared at `src/ui/primitives/action-button.ts:72`
+ *   and implemented at `:100`, and `:108` is the line that writes the
+ *   attribute: `button.setAttribute('aria-disabled', unavailable ? 'true' :
+ *   'false');`. It still does not touch the `disabled` property.
+ * - `src/ui/primitives/async-action.ts:242` still reads `control.disabled =
+ *   busy;`, so the narrowing below -- press a `disabled` control the ordinary
+ *   way -- is still aimed at the in-flight gate and nothing else.
+ * - `hire.setUnavailable(verdict.refused);` is at
+ *   `src/ui/hud/staff-panel.ts:1114`.
+ * - `@playwright/test` is still **1.56.1**, read off the installed package
+ *   rather than off `package.json`.
+ * - `playtest-771-starter-rung.playtest.ts:110` still reads
+ *   `await buy(page, 'wall-brick', 656);`, and `:96` still reads
+ *   `test.setTimeout(240_000);` against the config's own `timeout: 600_000`
+ *   (`tests/browser/playwright.playtest.config.ts:59`) -- which is the
+ *   distinction the 2026-09-15 entry above draws and the reason it says
+ *   *"whatever test budget it had"* rather than naming one.
+ *
+ * **Both halves were re-run rather than asserted, and the second playtest the
+ * `buy` comment names was re-run too**: `playtest-intake-and-classification`
+ * passes on the merge in **2.5 m**. Green:
+ * `playtest-771-starter-rung` passes on the merge in **1.8 m**, the 656-brick
+ * press reaching *"Nothing was bought — deliveries are refused until the
+ * prison earns the money."* instead of waiting out the budget. Red: the
+ * mutation named in `buy` below -- `paintCatalogue()` commented out of the
+ * catalogue row's `onActivate` (`src/ui/hud/build-panel.ts:1162`) -- fails that
+ * same playtest in **42.3 s**, and the stack names
+ * `at buy (tests/browser/playtest-harness.ts)` -- the `buy` frame, not the
+ * `armBuildable` one -- which is the whole of that comment's claim. The frame
+ * is named rather than pinned to a line, because adding this paragraph moved
+ * the line it was measured at. The message it printed is the
+ * one this change exists for:
+ *
+ * ```
+ * the catalogue when the wait gave up: {"rowsInTheList":21,"matchingRows":1,
+ *   "selectedRows":["wall-brick"],"wantedHidden":false,"wantedBoxes":1,
+ *   "wantedDisabled":false,"categoryFilter":"*","panelHidden":false,
+ *   "panelCollapsed":"false"} | last catalogue click the page saw:
+ *   {"buildableId":"bed-wooden","removing":false,...}
+ * ```
+ *
+ * Read it against the bare message it replaces: the row exists, is not hidden,
+ * lays out a box, is not disabled, is not filtered away, the panel is open --
+ * and the page *saw* the click. Every hypothesis the old message left open is
+ * closed by the new one in a single run, and what is left is that the redraw
+ * did not happen, which is the mutation.
+ *
  * ### What it does and does not skip
  *
  * `force: true` skips Playwright's actionability checks **wholesale** --
