@@ -5687,7 +5687,22 @@
    * **781px is the arithmetic rather than a round number**: 274 + 396 is 670px
    * of furniture, the strip is 80.7px, and 670 + 80.7 + one `--space-3` of air
    * rounds to 761 -- so every viewport at least 781px tall clears it with room
-   * to spare at the default interface scale. Above that scale both terms grow
+   * to spare at the default interface scale.
+   *
+   * **837px SINCE 2026-09-17, AND THE PARAGRAPH ABOVE IS KEPT BECAUSE IT IS AN
+   * ARITHMETIC AND NOT A ROUND NUMBER: a sixth tab moves a term in it.** The
+   * column is one `.ui-tab` taller -- measured on the assembled page at
+   * 1280x800, `.hud-tabs__inner` spans y=93..421 -- so the furniture is
+   * 328 + 396 = 724px, and 724 + 80.7 + one `--space-3` rounds to 817. The same
+   * 20px of slack the 781 carried makes it **837**.
+   *
+   * **What it cost before it was re-derived, measured rather than reasoned
+   * about:** at 1280x800 the corner kept its old left edge, the column ran to
+   * y=421 and `.hud-zoom__in` sits at y=417..461, so that button's own centre
+   * hit-tested to the navigation's icon -- `hud-zoom-control.spec.ts:160`
+   * reported *"a press meant for `.hud-zoom__in` would land on BUTTON.ui-tab
+   * instead"*. The band this moves the corner in is 781..836px tall; of the
+   * viewports this repository measures, only 1280x800 is in it. Above that scale both terms grow
    * and the query cannot ask about `--ui-scale`, so the *shift* is what a
    * taller column falls back to: `navigationPlacement` has already sent the
    * navigation to the bottom bar by the time the column would be tall enough
@@ -5706,7 +5721,7 @@
     margin-left: calc(var(--hud-navigation-width) + var(--space-3));
   }
 
-  @media (min-height: 781px) {
+  @media (min-height: 837px) {
     .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
   }
 
