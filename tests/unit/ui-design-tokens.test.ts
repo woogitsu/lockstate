@@ -631,16 +631,7 @@ describe.each(THEMES)("badge tone contrast in the %s theme (issue #788, the owne
  * justified it fails here rather than passing quietly.
  */
 describe('the type ramp', () => {
-  /**
-   * The delivery's own scale, smallest first.
-   *
-   * From `DOKUMENTACJA/projekt.md` -- the line beginning *"Hierarchia
-   * docelowa"* -- and not from `02-SYSTEM-WIZUALNY.md`, which this comment used
-   * to cite: that file's §"Typografia i ikony" gives three numbers, *"tekst
-   * podstawowy 16 px, etykiety 14 px, metadane 12 px"*, and never the upper
-   * three. `docs/VISUAL_IDENTITY.md` §"Typography, shape and motion" carries the
-   * same correction.
-   */
+  /** The delivery's own scale, `DOKUMENTACJA/02-SYSTEM-WIZUALNY.md`, smallest first. */
   const DELIVERY_RAMP = [12, 14, 16, 20, 24, 32] as const;
   /** The ramp's step names, smallest first, as `tokens.css` declares them. */
   const RAMP = ['--type-label', '--type-secondary', '--type-body', '--type-section', '--type-title', '--type-display'] as const;
@@ -706,14 +697,8 @@ describe('the type ramp', () => {
   });
 
   /**
-   * The surfaces stage 2 measured as not having the room, pinned as a set
-   * rather than as separate facts.
-   *
-   * **This docblock said "two" and the assertion below has named four since
-   * `aa7675e1`**, *"docs: the keeps are four, not two, and one of them is a
-   * recording (#1158)"*, which corrected the prose and left the comment. The
-   * count is deliberately not repeated in this sentence now; the assertion is
-   * the tally and it is one line down.
+   * The two surfaces stage 2 measured as not having the room, pinned as a set
+   * rather than as two facts.
    *
    * A *set* because both failure directions matter and only one of them is
    * obvious. Dropping a keep is caught by the browser suite -- that is what
