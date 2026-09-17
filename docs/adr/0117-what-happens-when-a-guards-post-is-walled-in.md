@@ -2,7 +2,54 @@
 
 ## Status
 
-**Proposed, 2026-09-17. Not self-approved, and it implements nothing.** No file
+**Accepted by the owner on 2026-09-17: option 3, "say it".** The `Proposed`
+paragraph below is kept rather than replaced, on the precedent
+[ADR 0112](./0112-what-the-2026-09-13-identity-delivery-decides.md)'s Status
+block sets and for the reason it gives -- `docs/AGENT_WORKFLOW.md` §4's rule is
+to mark both directions, and what a decision looked like before it was answered
+is the part a later reader needs in order to judge the answer.
+
+**The provenance is the weaker kind, and is disclosed here exactly as the
+2026-09-08, 2026-09-09 and 2026-09-10 entries in `AGENTS.md` disclose their
+own.** The ruling is *the label of a clickable option this session wrote and
+the owner chose*, not a sentence they typed. The label, verbatim:
+
+> Option 3 — say it (recommended)
+
+and the description shown beside it, which is the text they were choosing
+against, also verbatim:
+
+> A fifth PRISON_CONDITIONS member, security.post-unreachable, computed from
+> state already in hand. Save format zero, determinism zero, no new
+> projection. Fixes existing saves because it is computed, not stored. Does
+> NOT fix the prison — it stops the HUD lying and leaves the cure (take the
+> wall down, measured as working) with the player. This is the ADR's own
+> recommendation.
+
+**What it was chosen against, which is the part that makes it a ruling rather
+than an acclamation.** Three alternatives were live and named: **option 2**
+(move the post to the nearest routable tile — the only option that repairs
+existing saves without a press, and §5 says outright that a reader who weighs
+*"the game must not stay broken"* above *"the game must not lie"* has a
+coherent argument for it), **option 1** (refuse the build), and a **sequenced
+"3 then 2"**. §5 recommends option 3 and the owner took the recommendation;
+they did not take it by default.
+
+**What Accepted does and does not settle.** It settles that the fifth
+`PrisonCondition` member is built and that the prison is told. It settles
+§4's second decision by consequence rather than by ruling — something had to
+be done about `hud.security.coverage-met` while the condition stands, and §4
+says explicitly that *"whether it is suppressed, or `assigned` stops counting
+a guard that has never arrived, is a second decision that belongs to whoever
+builds this"*; what was built is recorded by the commit that builds it, in a
+§7 that commit adds. It settles nothing
+about option 2: the prison stays broken, by the ruling's own words, and
+whether it is ever repaired is still open.
+
+---
+
+**Proposed, 2026-09-17. Not self-approved, and it implements nothing.** *(The
+state of this document before the ruling above.)* No file
 under `src/` changes in the commit that lands this document, no test is added,
 no player-visible sentence is authored, and no option below is built. The
 ruling is the owner's.
