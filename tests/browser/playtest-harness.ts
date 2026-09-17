@@ -553,6 +553,40 @@ export const centreOf = (o: { originX: number; originY: number }, tx: number, ty
 export const ARM_TIMEOUT_MS = 10_000;
 
 /**
+ * What the Build catalogue actually looks like, for the one message that needs
+ * it: `armBuildable`'s wait giving up.
+ *
+ * Every line of this is a hypothesis someone has already spent a run on --
+ * which row the panel thinks is selected, whether the row asked for is
+ * filtered away by the category `<select>` (ADR 0035 hides a filtered row with
+ * `hidden`, so it lays out no box), whether the panel or its section is folded,
+ * and what the page recorded as the last catalogue click (`installTee`'s
+ * capture-phase listener, so it sees the click whoever made it). A message
+ * that answers them costs one `evaluate` on a path that is already failing.
+ */
+async function describeCatalogue(page: Page, wanted: string): Promise<string> {
+  const state = await page.evaluate((id) => {
+    const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
+    const row = rows.find((element) => element.dataset['buildable'] === id);
+    const panel = document.querySelector<HTMLElement>('.hud-build');
+    const filter = document.querySelector<HTMLSelectElement>('.hud-build__category');
+    return {
+      rowsInTheList: rows.length,
+      matchingRows: rows.filter((element) => element.dataset['buildable'] === id).length,
+      selectedRows: rows.filter((element) => element.dataset['selected'] === 'true').map((element) => element.dataset['buildable']),
+      wantedHidden: row === undefined ? 'no such row' : row.hidden,
+      wantedBoxes: row === undefined ? 'no such row' : row.getClientRects().length,
+      wantedDisabled: row === undefined ? 'no such row' : (row as Partial<HTMLButtonElement>).disabled === true,
+      categoryFilter: filter === null ? 'no filter drawn' : filter.value,
+      panelHidden: panel === null ? 'no .hud-build' : panel.hidden,
+      panelCollapsed: panel === null ? 'no .hud-build' : panel.dataset['collapsed'],
+    };
+  }, wanted);
+  const intent = await buildIntent(page);
+  return `the catalogue when the wait gave up: ${JSON.stringify(state)} | last catalogue click the page saw: ${JSON.stringify(intent)}`;
+}
+
+/**
  * Selects a buildable in the Build catalogue and leaves the world tool armed
  * with it -- **or throws.** Issue #1017.
  *
@@ -603,11 +637,19 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
   const row = page.locator(`.hud-build__list [data-buildable="${id}"]`);
   await row.click();
 
-  await expect(row, `the Build panel never redrew with ${JSON.stringify(id)} selected`).toHaveAttribute(
-    'data-selected',
-    'true',
-    { timeout: timeoutMs },
-  );
+  try {
+    await expect(row, `the Build panel never redrew with ${JSON.stringify(id)} selected`).toHaveAttribute(
+      'data-selected',
+      'true',
+      { timeout: timeoutMs },
+    );
+  } catch (failure) {
+    // `showPanel`'s lesson (#1211), one panel along: the bare message names
+    // the row and says nothing about the catalogue around it, and three
+    // measurement passes have now been spent re-deriving that state by hand.
+    // So the state is read here, once, at the moment the wait gave up.
+    throw new Error(`${failure instanceof Error ? failure.message : String(failure)}\n${await describeCatalogue(page, id)}`);
+  }
   await expect(
     page.locator('.hud-build__list [data-buildable][data-selected="true"]'),
     `more than one catalogue row claimed to be selected while arming ${JSON.stringify(id)}`,
@@ -635,6 +677,137 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
 }
 
 /**
+ * Presses a control the interface may have marked **advised against** -- the
+ * way a player can, because a player can.
+ *
+ * ### The defect this is the fix for, measured 2026-09-15
+ *
+ * `playtest-771-starter-rung.playtest.ts:110` buys 656 bricks on a fresh
+ * prison *on purpose*: the whole file is about watching the starter rung
+ * refuse that press and the prison recover. On `origin/main` at `e044a3e8` it
+ * never got there. `buy` pressed `.hud-build__buy-submit` with a bare
+ * `.click()`, and the run died on whatever test budget it had -- 180 s in the
+ * reproduction transcribed below, 240 s in the file itself -- with
+ *
+ * ```
+ * locator resolved to <button ... aria-disabled="true" class="ui-action hud-build__buy-submit">
+ *   2 x waiting for element to be visible, enabled and stable
+ *     - element is not enabled
+ *   120 x waiting for element to be visible, enabled and stable
+ *     - element is not enabled
+ * ```
+ *
+ * **Neither side of that is a defect in its own terms, and that is why it had
+ * to be found by playing.** `build-panel.ts`'s `paintBuyTotal` calls
+ * `buySubmit.setUnavailable(verdict.refused)`, and `setUnavailable` in
+ * `src/ui/primitives/action-button.ts` writes `aria-disabled` and *not* the
+ * `disabled` property -- deliberately, at length, since #772's narrowing of
+ * 2026-09-02: `disabled` would remove the press, and the press is the only
+ * producer of `hud.refusal.purchase-materials-past-floor`, the one sentence a
+ * player is ever given for this refusal. The button is pressable in a real
+ * browser and the refusal band is what answers. Playwright, meanwhile, counts
+ * `aria-disabled="true"` as *not enabled* in its actionability check
+ * (`@playwright/test` 1.56.1, measured), and waits for a state the panel has
+ * no intention of entering.
+ *
+ * So the harness, not the panel, is what was wrong: a helper modelling a
+ * player must press what a player can press.
+ *
+ * ### Re-checked at `33c02a12`, 2026-09-17, after merging `origin/main`
+ *
+ * Every claim above is a claim about a *file*, which a merge can falsify
+ * without touching this one. All five were re-opened rather than carried:
+ *
+ * - `buySubmit.setUnavailable(verdict.refused);` is at
+ *   `src/ui/hud/build-panel.ts:2176`.
+ * - `setUnavailable` is declared at `src/ui/primitives/action-button.ts:72`
+ *   and implemented at `:100`, and `:108` is the line that writes the
+ *   attribute: `button.setAttribute('aria-disabled', unavailable ? 'true' :
+ *   'false');`. It still does not touch the `disabled` property.
+ * - `src/ui/primitives/async-action.ts:242` still reads `control.disabled =
+ *   busy;`, so the narrowing below -- press a `disabled` control the ordinary
+ *   way -- is still aimed at the in-flight gate and nothing else.
+ * - `hire.setUnavailable(verdict.refused);` is at
+ *   `src/ui/hud/staff-panel.ts:1114`.
+ * - `@playwright/test` is still **1.56.1**, read off the installed package
+ *   rather than off `package.json`.
+ * - `playtest-771-starter-rung.playtest.ts:110` still reads
+ *   `await buy(page, 'wall-brick', 656);`, and `:96` still reads
+ *   `test.setTimeout(240_000);` against the config's own `timeout: 600_000`
+ *   (`tests/browser/playwright.playtest.config.ts:59`) -- which is the
+ *   distinction the 2026-09-15 entry above draws and the reason it says
+ *   *"whatever test budget it had"* rather than naming one.
+ *
+ * **Both halves were re-run rather than asserted, and the second playtest the
+ * `buy` comment names was re-run too**: `playtest-intake-and-classification`
+ * passes on the merge in **2.5 m**. Green:
+ * `playtest-771-starter-rung` passes on the merge in **1.8 m**, the 656-brick
+ * press reaching *"Nothing was bought — deliveries are refused until the
+ * prison earns the money."* instead of waiting out the budget. Red: the
+ * mutation named in `buy` below -- `paintCatalogue()` commented out of the
+ * catalogue row's `onActivate` (`src/ui/hud/build-panel.ts:1162`) -- fails that
+ * same playtest in **42.3 s**, and the stack names
+ * `at buy (tests/browser/playtest-harness.ts)` -- the `buy` frame, not the
+ * `armBuildable` one -- which is the whole of that comment's claim. The frame
+ * is named rather than pinned to a line, because adding this paragraph moved
+ * the line it was measured at. The message it printed is the
+ * one this change exists for:
+ *
+ * ```
+ * the catalogue when the wait gave up: {"rowsInTheList":21,"matchingRows":1,
+ *   "selectedRows":["wall-brick"],"wantedHidden":false,"wantedBoxes":1,
+ *   "wantedDisabled":false,"categoryFilter":"*","panelHidden":false,
+ *   "panelCollapsed":"false"} | last catalogue click the page saw:
+ *   {"buildableId":"bed-wooden","removing":false,...}
+ * ```
+ *
+ * Read it against the bare message it replaces: the row exists, is not hidden,
+ * lays out a box, is not disabled, is not filtered away, the panel is open --
+ * and the page *saw* the click. Every hypothesis the old message left open is
+ * closed by the new one in a single run, and what is left is that the redraw
+ * did not happen, which is the mutation.
+ *
+ * **Re-verified once more at `725aad40`**, after #1279 merged the same day.
+ * All six coordinates above still read back verbatim; #1279 touches
+ * `src/ui/hud/hud.css`, `hud.ts`, `layout-shell.ts` and `overview-panel.ts`,
+ * and the two panels this helper presses are not among them. **The two
+ * playtest runs were not repeated against that tip** -- they were run against
+ * `33c02a12` -- which is said rather than implied.
+ *
+ * ### What it does and does not skip
+ *
+ * `force: true` skips Playwright's actionability checks **wholesale** --
+ * visibility and stability with them -- so this asserts visibility itself
+ * first, by hand, and that assertion is not redundant. The bypass is also
+ * narrowed to the one state it is for: a control carrying the `disabled`
+ * *property* is pressed through the ordinary waiting `.click()`, because that
+ * one is `createBusyGroup`'s in-flight gate (`src/ui/primitives/async-action.ts`
+ * assigns `control.disabled = busy` to every member) and waiting it out is
+ * correct.
+ *
+ * Answers which of the two it was, so a caller that wants to say "the control
+ * was advising against this press" can, and so the log of a playtest that
+ * pressed one records it.
+ */
+export async function pressAdvisedControl(
+  page: Page,
+  selector: string,
+  timeoutMs = ARM_TIMEOUT_MS,
+): Promise<'available' | 'advised-against'> {
+  const control = page.locator(selector);
+  await expect(
+    control,
+    `${selector} is not laid out -- has the panel it lives on moved, or is the control hidden?`,
+  ).toBeVisible({ timeout: timeoutMs });
+  const advisedAgainst =
+    (await control.getAttribute('aria-disabled')) === 'true' &&
+    !(await control.evaluate((node) => (node as Partial<HTMLButtonElement>).disabled === true));
+  if (advisedAgainst) await control.click({ force: true });
+  else await control.click();
+  return advisedAgainst ? 'advised-against' : 'available';
+}
+
+/**
  * Buys `quantity` of the material the given buildable is made of.
  *
  * **It has the same race `armBuildable` had, and #1017's fifth question is what
@@ -654,21 +827,41 @@ export async function armBuildable(page: Page, id: string, timeoutMs = ARM_TIMEO
  * outcome that several playtests here provoke on purpose, and the commands are
  * returned so a caller that cares can say so itself. What was silent was
  * *which* material, not whether one was bought.
+ *
+ * **And until 2026-09-15 it could not reach that outcome at all**, which is
+ * the sentence above being false about the one case it exists for. The submit
+ * goes through `pressAdvisedControl` for the reason that helper's own docblock
+ * states: `buySubmit.setUnavailable(verdict.refused)` marks a refused purchase
+ * with `aria-disabled="true"` and Playwright reads that as *not enabled*, so a
+ * bare `.click()` waited out the whole test budget on the press this function
+ * promises to make.
  */
 export async function buy(page: Page, buildableId: string, quantity: number): Promise<readonly Record<string, unknown>[]> {
   const row = page.locator(`.hud-build__list [data-buildable="${buildableId}"]`);
   await row.click();
-  await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
-    'data-selected',
-    'true',
-    { timeout: ARM_TIMEOUT_MS },
-  );
+  // The same wait `armBuildable` makes, on the same locator, attribute and
+  // budget -- so it gets the same diagnostic, for the reason `describeCatalogue`
+  // exists at all. Measured 2026-09-16: mutating `paintCatalogue()` out of the
+  // catalogue row's `onActivate` in `src/ui/hud/build-panel.ts` reds
+  // `playtest-771-starter-rung` and `playtest-intake-and-classification` HERE
+  // and not in `armBuildable`, because both reach `buy` first. The diagnostic
+  // added on the other copy alone would have been unreachable for the exact
+  // mutation it was written for.
+  try {
+    await expect(row, `the Build panel never redrew with ${JSON.stringify(buildableId)} selected before buying`).toHaveAttribute(
+      'data-selected',
+      'true',
+      { timeout: ARM_TIMEOUT_MS },
+    );
+  } catch (failure) {
+    throw new Error(`${failure instanceof Error ? failure.message : String(failure)}\n${await describeCatalogue(page, buildableId)}`);
+  }
 
   const before = (await sentCommands(page)).length;
   const buyRow = page.locator('.hud-build__buy');
   if (await buyRow.isHidden()) await page.locator('.hud-build__buy-toggle').click();
   await page.locator('.hud-build__buy .ui-number__input').fill(String(quantity));
-  await page.locator('.hud-build__buy-submit').click();
+  await pressAdvisedControl(page, '.hud-build__buy-submit');
   await page.waitForTimeout(200);
   return (await sentCommands(page)).slice(before);
 }
@@ -903,7 +1096,12 @@ export async function buildAndPopulate(page: Page, options: PrisonOptions): Prom
     else log(`no [data-staff-role] rows: ${JSON.stringify(await panelText(page, '.hud-staff__list'))}`);
     log(`hire control reads: ${JSON.stringify((await page.locator('.hud-staff__hire').innerText()).trim())}`);
     for (let index = 0; index < options.guards; index += 1) {
-      await page.locator('.hud-staff__hire').click();
+      // Same shape as the Buy submit, one panel along and for the same reason:
+      // `staff-panel.ts`'s `hire.setUnavailable(verdict.refused)` marks a hire
+      // the treasury cannot cover with `aria-disabled`, keeping the press --
+      // and a bare `.click()` would wait that press out instead of making it.
+      const verdict = await pressAdvisedControl(page, '.hud-staff__hire');
+      if (verdict === 'advised-against') log(`hire ${index + 1} was pressed against an aria-disabled control`);
       await page.waitForTimeout(300);
     }
     await page.waitForTimeout(1500);
