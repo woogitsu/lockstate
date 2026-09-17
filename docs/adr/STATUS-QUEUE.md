@@ -18448,7 +18448,7 @@ already wrong when the previous pass closed.
 
 **What this pass did NOT find, said plainly.** Nothing in §§2, 5 or 6 moved
 that this pass could detect, and the two findings above are both in §§3-4. The
-`docs/adr/README.md` index reads **Next free number: 0117** at `:289`,
+`docs/adr/README.md` index reads **Next free number: 0118** at `:290`,
 re-derived here rather than carried, and no numbered ADR was added or deleted
 in the window. One sub-line imprecision is recorded rather than corrected: §2's
 ADR 0088 confirmation says *"`guard-roster.ts:52` names this ADR by number and
