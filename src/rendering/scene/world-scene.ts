@@ -12,7 +12,7 @@ import { AtlasLibrary } from '../assets/atlas-library';
 import { planEnvironmentAtlas } from '../assets/environment-atlas-plan';
 import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
 import { SourceArtCatalog } from '../assets/source-art-catalog';
-import { type CameraState, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
+import { type CameraState, type HomeIndicator, type WorldBounds, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
 import {
   type BuildToolPort,
   type EdgeTarget,
@@ -38,6 +38,7 @@ import {
   type RoomToolPort,
   type TileRect,
 } from '../build/area-picking';
+import { HomeIndicatorLayer } from '../phaser/home-indicator-layer';
 import { RoomLabelLayer } from '../phaser/room-label-layer';
 import { TileLayer } from '../phaser/tile-layer';
 import { TILE_SIZE_PX, tileToWorld, visibleTileRange, type TileBounds, type TileRange } from '../tile-metrics';
@@ -311,6 +312,12 @@ export class WorldScene extends Phaser.Scene {
   private objectRect: TileRect | undefined;
   private hoveredObjectTile: TileRect | undefined;
   private objectOverlay: AreaOverlay | undefined;
+  /**
+   * The edge marker that points at the prison when the prison is off screen
+   * (issue #794). Created with the other presentation layers and cleared with
+   * them, because it is one of them.
+   */
+  private homeIndicator: HomeIndicatorLayer | undefined;
   private framedOnWorld = false;
   /**
    * The most recent frame's `frame.world.loadedBounds` (issue #793).
@@ -376,6 +383,7 @@ export class WorldScene extends Phaser.Scene {
     this.buildOverlay = new BuildOverlay(this);
     this.areaOverlay = new AreaOverlay(this);
     this.objectOverlay = new AreaOverlay(this);
+    this.homeIndicator = new HomeIndicatorLayer(this);
 
     // Phaser tracks exactly one touch pointer unless told otherwise, so a
     // second finger was never delivered and `TouchGestureTracker` could not
@@ -694,12 +702,14 @@ export class WorldScene extends Phaser.Scene {
       this.buildOverlay?.destroy();
       this.areaOverlay?.destroy();
       this.objectOverlay?.destroy();
+      this.homeIndicator?.destroy();
       this.tiles = undefined;
       this.roomLabels = undefined;
       this.actors = undefined;
       this.buildOverlay = undefined;
       this.areaOverlay = undefined;
       this.objectOverlay = undefined;
+      this.homeIndicator = undefined;
     });
 
     // Art is not correctness: a batch that fails to load must leave a playable,
@@ -761,6 +771,40 @@ export class WorldScene extends Phaser.Scene {
     // request to the worker, because this reference was already being read for
     // the repaint above.
     this.roomTool?.setWorld?.(frame.world);
+    // Last, and after the camera has been moved by this frame's pan poll above,
+    // so the marker answers for the view the player is about to see rather than
+    // the one they just left (issue #794).
+    this.homeIndicator?.update(this.cameraState(), this.loadedWorldBounds());
+  }
+
+  /**
+   * `lastLoadedBounds` in world units -- the rectangle the home marker points
+   * at (issue #794).
+   *
+   * **This is what "the prison" means as a bound here, and it is read rather
+   * than chosen.** `WorldRenderView.loadedBounds` is the one definition of "how
+   * big is the world" this codebase has, and it already has two production
+   * readers: `frameCameraOnFirstWorld`, which is where a session's camera is
+   * pointed on first sight of a world, and `navigateToMinimapPoint`, which is
+   * what a minimap press means. A third definition here -- the *owned* chunks,
+   * or the bounding box of placed geometry -- would disagree with both: owned
+   * chunks exclude the unowned-but-loaded ground the frontier reaches and the
+   * scene already draws, and placed geometry does not exist as a rectangle
+   * anywhere in this tree. So the marker points at the same place the camera
+   * was first pointed, which is also the place the minimap's centre goes.
+   *
+   * The half-open convention is `tileToWorld`'s: `maxTileX` is the last tile
+   * *in* the world, so its far edge is `maxTileX + 1`.
+   */
+  private loadedWorldBounds(): WorldBounds | undefined {
+    const bounds = this.lastLoadedBounds;
+    if (bounds === undefined) return undefined;
+    return {
+      left: tileToWorld(bounds.minTileX),
+      top: tileToWorld(bounds.minTileY),
+      right: tileToWorld(bounds.maxTileX + 1),
+      bottom: tileToWorld(bounds.maxTileY + 1),
+    };
   }
 
 
@@ -1365,6 +1409,20 @@ export class WorldScene extends Phaser.Scene {
   private paintBuildPreview(): void {
     this.buildOverlay?.update(this.buildSegments);
     this.buildTool?.target?.(this.buildSegments);
+  }
+
+  /**
+   * The home marker as it was last drawn, or `undefined` when none was
+   * (issue #794) -- a diagnostics read in the same class as `rendererStats`.
+   *
+   * It exists because the marker is the one thing this scene draws that a
+   * browser spec cannot read back off the canvas: a `Graphics` path is not
+   * queryable, and a spec that recomputed the mark from a camera it had read
+   * would be checking `offscreenHomeIndicator` against itself rather than
+   * checking that this scene feeds it the right rectangle.
+   */
+  public get homeIndicatorMark(): HomeIndicator | undefined {
+    return this.homeIndicator?.mark;
   }
 
   /** Sprite and layer counts, for a diagnostics overlay or a manual budget check. */

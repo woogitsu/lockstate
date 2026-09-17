@@ -95,6 +95,16 @@ export interface PointerCensus {
   readonly configuredActivePointers: number;
 }
 
+/**
+ * `WorldScene.homeIndicatorMark`, flattened so it crosses `page.evaluate`
+ * (issue #794).
+ */
+export interface HarnessHomeIndicator {
+  readonly x: number;
+  readonly y: number;
+  readonly angleRadians: number;
+}
+
 export interface LockstateWorldSceneHarness {
   /** Resolves once `WorldScene.create` has run and its listeners are registered. */
   readonly ready: Promise<void>;
@@ -245,6 +255,17 @@ export interface LockstateWorldSceneHarness {
    * carry no bug this file's subject has.
    */
   displaceCamera(scrollX: number, scrollY: number): void;
+  /**
+   * The edge marker as the scene last drew it, or `undefined` when it drew
+   * none (issue #794).
+   *
+   * Read off the scene rather than recomputed here, for the reason
+   * `WorldScene.homeIndicatorMark`'s own docblock gives: a harness that called
+   * `offscreenHomeIndicator` itself would agree with a scene that handed it
+   * the wrong rectangle, which is the half of this feature the pure unit test
+   * cannot reach.
+   */
+  homeIndicator(): HarnessHomeIndicator | undefined;
 }
 
 declare global {
