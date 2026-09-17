@@ -128,6 +128,129 @@ finds all four accounted for rather than three.
 
 ---
 
+## Read after 2026-09-17: ALL THREE were ruled, and the pricing below still stands unrewritten
+
+**The section above says *"None of the four rulings of 2026-09-16 is a ruling on
+any of these three"*, and the table further down says all three are still open.
+Both were true of what that pass could see, and both are FALSE.** They are kept
+rather than corrected in place (`docs/AGENT_WORKFLOW.md` §4), because the
+mistake is instructive and is not about the rulings: **2026-09-16 carried eight
+rulings, not four.** The pass that wrote the section above found four, checked
+them honestly against all three dossiers, and reported an absence — the sentence
+form §4 says rots first, and this one was already false when it was written.
+
+**Nothing below this section is rewritten into the past tense.** The pricing is
+the record of what the owner was shown before choosing, which is worth more than
+a dossier rewritten to agree with the outcome. Each ruling is recorded beside
+the recommendation it answers.
+
+| dossier | recommended here | **ruled 2026-09-16** | agrees? |
+| --- | --- | --- | --- |
+| 1 — `DismissAlert` on a phone (#1201) | **option C**, mounted on Overview only below 720 px | *"The alerts fold gets a route below 720 px: it is mounted in the rail, on the Overview tab, at that breakpoint and no other."* | **yes, exactly** |
+| 2 — ADR 0115, where the roster lives | **option 4**, split in code, both halves on Plan dnia | *"The panel is split in code and **both halves stay on Plan dnia**; the roster does not move to Manage."* | **yes, exactly** |
+| 3 — the tab bar at 375x812 (#1192) | **option 4** (shrink inside the existing `@media (max-width: 720px)` block) | *"Opcja 3 — zakładki tylko z ikonami poniżej progu"* ("Option 3 — icon-only tabs below the threshold.") | **no — option 3, which this dossier declined** |
+
+**The provenance of all three is the weaker kind**, the same as the four in the
+table above: the owner chose a clickable option whose label an agent session had
+written, rather than typing a sentence. ADR 0115's label is quoted in the record
+as *"Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia (zalecane)"*.
+
+**Where the records live, and why none of them is on `main` yet.** All three are
+carried by **PR #1275**, which was **open and conflicting** (`mergeable_state:
+dirty`) when this was checked on 2026-09-17: #1201's in
+`docs/IDENTITY_V5_ROLLOUT.md` §Stage 5, #1192's in `docs/VISUAL_IDENTITY.md`
+item 5, ADR 0115's in its own Status block. So **ADR 0115 still reads
+`Proposed`** at `33c02a12` — `docs/adr/0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md:14`,
+verbatim *"**Proposed.** Nothing here is decided and no code implements it."* —
+and the "Still owed" table below is right about the **tree** and wrong about the
+**owner**, which is a distinction worth keeping rather than collapsing.
+
+**Nor is any of the three built on `main`.** The implementations exist as open
+pull requests — **#1279** (#1201's fold), **#1280** (ADR 0115's split), **#1281**
+(#1192's icon-only tabs) — all open on 2026-09-17. Every *"what the code does
+today"* measurement below is therefore still a description of `main` and not
+of history.
+
+**The one disagreement is dossier 3's, and it is recorded as a disagreement.**
+This document recommended option 4 and argued that option 3 *"charges for them
+somewhere a player looks — … the section names"*. The owner ruled option 3 over
+that objection. **What is NOT claimed here is that the objection was refuted**:
+#1275's own record states that option 3 had been mispriced in #1192 as work to
+author five icons that already exist (`src/ui/primitives/tab-button.ts:49`
+reads *"      createIcon(options.icon, 'lg'),"*, and `src/ui/hud/hud.ts:90`
+reads *"  { id: 'overview', icon: 'overview', labelKey: HUD_MESSAGE_KEY.tabOverview },"*),
+so the owner was choosing between correctly priced options — but whether five
+glyphs read as their sections **without names** is still unmeasured, by this
+dossier and by that record. That is dossier 3's objection, unanswered, and it is
+a playtest rather than an argument.
+
+### One superlative in the 2026-09-16 section is FALSE, and it was already false when written
+
+The section above re-checks dossier 1's worst case and reports that sorting
+every `'hud.alert.refusal.*'` value by length *"puts it first at 114
+characters"*. **`hud.alert.refusal.zone.not-enclosed` is third of 48, not
+first.** Re-derived at `33c02a12` over `src/content/default-locale-en.ts`:
+
+| rank | key | characters |
+| --- | --- | --- |
+| 1 | `hud.alert.refusal.cancel-build-order.stale-cancellation` | **122** |
+| 2 | `hud.alert.refusal.remove-wall.nothing-to-remove` | **113** |
+| 3 | `hud.alert.refusal.zone.not-enclosed` | 109 |
+| 4 | `hud.alert.refusal.hire.no-duty-for-role` | 104 |
+
+**Why the re-check missed them, which is the reusable part.** Both longer
+entries are written with the key on one line and the value on the next —
+`src/content/default-locale-en.ts:885` is *"  'hud.alert.refusal.cancel-build-order.stale-cancellation':"*
+and `:1110` is *"  'hud.alert.refusal.remove-wall.nothing-to-remove':"* — so a
+sort built on a same-line `'key': 'value'` pattern cannot see them **by
+construction**, exactly the shape `docs/AGENT_WORKFLOW.md` §4 names when it says
+a pass reporting a clean result *"has reported on the spans its regex found,
+which is a smaller statement than it reads as."* Nothing changed in the
+namespace: it held **48** keys at `e044a3e8` and holds 48 at `33c02a12`,
+including both of these. No window could have raised it.
+
+**What it does to the conclusion: it strengthens it, in the same direction the
+weakest-claim section already points.** The 360 px four-row fold was measured
+with a 109-character sentence; the real worst case is 122, 12% longer, and a
+longer sentence wraps to more line boxes rather than fewer. So the fold's worst
+case is **taller than 360 px** for a second, independent reason — the first
+being the narrower phone column. Neither reason reverses option C, which was
+recommended because it is the only option with measured headroom; both make the
+headroom smaller than this document claims, and that is stated rather than left
+for a reader to derive.
+
+### ADR 0116's Status has moved, and the sentence above that pins it is now false
+
+The 2026-09-16 section says of ADR 0116 that *"its own Status block still reads
+`Proposed, 2026-09-15` in this tree — so a reader who takes the ruling from this
+table and the status from the ADR will find them disagreeing, and the ADR is the
+one to fix."* **The ADR was fixed.** `agent/0116-dossier` merged as `d1f3bf7c`
+(#1265), and `docs/adr/0116-whether-a-finished-object-is-an-event.md:19` at
+`33c02a12` reads:
+
+> **Accepted, 2026-09-16, by the repository owner: option 2 — a
+> construction-completion event, graded `'info'`, routed `'log-only'`.**
+
+The finding that paragraph supports is untouched: the ruled event still lands
+`'log-only'`, still on the alerts log, and that is still the surface dossier 1
+measured at zero client rects at 375x812.
+
+### What was re-checked and did not move
+
+- **Every `path:N` span this document introduces — 21 of them — was re-opened at
+  `33c02a12` and compared against the branch's own last commit. None moved.**
+- **No `.css` file under `src/` moved between `e044a3e8` and `33c02a12`**, re-run
+  as `git diff --name-only e044a3e8 33c02a12 -- 'src/**/*.css' 'src/*.css'`,
+  which returns nothing. Every DOM-geometry figure in all three dossiers still
+  stands on an unchanged stylesheet — the same evidence, and the same admitted
+  weakness, as the 2026-09-16 pass recorded.
+- **`tests/foundation/unconsumed-command-contract.test.ts:364`** still reads
+  *"    expect(producersOf('DismissAlert')).toEqual(['src/main.ts']);"*, so
+  option C's claim that nothing in `src/main.ts` moves is still checkable
+  against the gate that would catch it.
+
+---
+
 ## 1. `DismissAlert` has no route on a phone (#1201)
 
 ### The question, in one sentence
