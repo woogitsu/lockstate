@@ -831,7 +831,7 @@ export interface RegimePrisonerDetailProbe {
  * The Regime panel on the fifth tab (issue #451): the timetable, the roster,
  * and where the browser put the bottom of it.
  *
- * Nothing here restates a decision `regime-panel.ts` makes headlessly.
+ * Nothing here restates a decision `regime-panel.ts` or `roster-panel.ts` makes headlessly.
  * `describePrisonerRow`, `formatPrisonerName`, `formatPrisonerActivity` and
  * `formatRegimeAllowsText` are pure and exported precisely so `pnpm test` can
  * own which word goes in which slot; what this reports is the half `pnpm test`
@@ -1635,7 +1635,7 @@ export interface LockstateUiHarness {
    * roster with `total: 0` draws the sentence about an empty prison only when
    * `everAdmitted` is also false. A `total: 0` roster with `everAdmitted: true`
    * -- everybody admitted has since left -- draws neither sentence (issue
-   * #506; see `regime-panel.ts`'s `paintRoster`).
+   * #506; see `roster-panel.ts`'s `paintRoster`).
    */
   reportRegime(
     regime: HudRegimeViewModel | undefined,

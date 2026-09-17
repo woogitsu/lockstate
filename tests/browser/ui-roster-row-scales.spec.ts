@@ -44,7 +44,7 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * headless can call `createRegimePanel` at all -- and a fake DOM could not
  * settle it either, because "on the same line" is a fact about two
  * `getBoundingClientRect`s and about a `flex-wrap` that behaves differently at
- * different widths. `regime-panel.ts`'s own row-height table records that the
+ * different widths. `roster-panel.ts`'s own row-height table records that the
  * activity line wraps at the four desktop viewports and not at 375x812, so the
  * five viewports below are the five different compositions of this row that
  * actually ship.
@@ -98,7 +98,7 @@ const HARNESS_URL = '/tests/browser/ui-harness.html';
 /**
  * The tallest a roster row may be before four of them stop fitting.
  *
- * `PRISONER_ROSTER_ROW_LIMIT`'s own derivation in `regime-panel.ts` divides the
+ * `PRISONER_ROSTER_ROW_LIMIT`'s own derivation in `roster-panel.ts` divides the
  * 219.0px the Staff panel's held-guard list was measured at by four, and this
  * change spent 5.7px of the margin that arithmetic left -- rows went from
  * 44.7px to 50.4px when the pill moved onto the name's line. So the number is

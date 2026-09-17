@@ -372,7 +372,7 @@ export const PRISONER_DETAIL_NEED_ROW_LIMIT = 6;
  *
  * Pure and exported for the reason `describeStaffCoverage` is: the default
  * Vitest environment is `node` (`docs/TESTING.md`), so nothing headless can
- * call `createRegimePanel`, and *which of three things the panel says about a
+ * call `createRosterPanel`, and *which of three things the panel says about a
  * prisoner's standing* is the decision this change adds. A rule that only ran
  * inside a DOM builder would be unreachable from `pnpm test` rather than merely
  * untested.
@@ -563,7 +563,7 @@ export const NEED_BAR_MAX_PERMILLE = 1000;
  * Pure and exported for `describePrisonerRow`'s reason, which is the whole
  * reason this function exists rather than four lines inside `paintRoster`:
  * `vitest.config.ts` is `environment: 'node'` with no jsdom, so nothing
- * headless can call `createRegimePanel`, and a tone rule written inside the DOM
+ * headless can call `createRosterPanel`, and a tone rule written inside the DOM
  * builder would be unreachable from `pnpm test` rather than merely untested --
  * a mutation there survives because nothing can observe it.
  *

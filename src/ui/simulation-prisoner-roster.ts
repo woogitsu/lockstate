@@ -66,7 +66,7 @@ import {
  *   with no locale key, and a roster cell reading it would be raw dotted text.
  *   See `simulation-prisoner-detail.ts`, which carries the same correction.
  * - `lowestNeed` **was** dropped here for a different reason, which belonged to
- *   the panel: gap 7, no threshold. See `regime-panel.ts`. It is forwarded as
+ *   the panel: gap 7, no threshold. See `roster-panel.ts`. It is forwarded as
  *   of issue #535 decision 6, and the bullet is amended rather than deleted
  *   because the reason it gave was real and is only half spent: the *level* was
  *   always renderable and what was missing was a line to read it against. #488
