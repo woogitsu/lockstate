@@ -67,6 +67,17 @@ import {
  * `docs/AGENT_WORKFLOW.md` section 4: the movement between them is the
  * evidence that the pin below is derived and not hand-kept.
  *
+ * **Re-measured a third time, two merges later: 20 enumerations, of which 6
+ * resolve.** The sixth is in `docs/AGENT_WORKFLOW.md` itself -- #1264 added a
+ * section 4 bullet naming *"a live claim whose subject is a message kind or a
+ * schema rather than a file"*, and illustrated it by quoting this very
+ * enumeration. So the method document that describes the blind spot is now
+ * inside the gate that closes it, which is the strongest evidence available
+ * that the derivation is reading documents rather than a list someone typed.
+ * Three figures, three commits, none overwritten: that the set moves on almost
+ * every merge is the fact, and a pin that stopped moving would be the thing to
+ * distrust.
+ *
  * `RESOLVED_ENUMERATIONS` below is not that table. It is the *output* of the
  * derivation, pinned, so that a resolution which stops happening -- a renamed
  * field, a reworded sentence, a regex that quietly stops matching -- fails
@@ -93,6 +104,7 @@ const RESOLVED_ENUMERATIONS: readonly string[] = [
   'docs/adr/0003-simulation-worker-protocol.md {reason, sequence, tick} -> refusal',
   'docs/adr/STATUS-QUEUE.md {reason, sequence, tick} -> refusal',
   'docs/adr/STATUS-QUEUE.md {reason, sequence, tick} -> refusal',
+  'docs/AGENT_WORKFLOW.md {reason, sequence, tick} -> refusal',
 ];
 
 /**
