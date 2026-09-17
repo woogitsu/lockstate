@@ -5,6 +5,7 @@ import {
 } from '../../src/simulation/economy/treasury';
 import { installBandRecorder, readBandRecording } from './alert-dwell';
 import {
+  TILE,
   armBuildable,
   buy,
   calibrate,
@@ -17,9 +18,7 @@ import {
   panelText,
   press,
   sentCommands,
-  showPanel,
   tab,
-  TILE,
   waitForQueueEmpty,
 } from './playtest-harness';
 
@@ -265,7 +264,7 @@ export async function buildResilientCell(
 
 async function admitAndHire(page: Page, admits: number, guards: number, label: string): Promise<void> {
   const log = (line: string) => console.log(`[${label}] ${line}`);
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   for (let i = 0; i < admits; i += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(150);
@@ -485,7 +484,7 @@ test('act 2: coverage states, a held guard says why it is held, and a contraband
   log(act, `coverage with 0 guards hired: ${JSON.stringify(await readCoverage(page))}`);
 
   // ---- admit twelve, hire three (two posted, one spare to search) ------
-  await showPanel(page, 'manage', '.hud-intake');
+  await tab(page, 'overview').click();
   for (let i = 0; i < 12; i += 1) {
     await page.locator('.hud-intake__admit').click();
     await page.waitForTimeout(150);

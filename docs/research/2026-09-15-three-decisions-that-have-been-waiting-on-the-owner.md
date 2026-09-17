@@ -19,285 +19,6 @@ than here. None of the three turned out already fixed.
 
 ---
 
-## Read after 2026-09-16: two rulings landed, and this document is not rewritten
-
-**Nothing above or below this section has been rewritten into the past tense,
-and that is deliberate.** `docs/AGENT_WORKFLOW.md` §4 says to mark both
-directions rather than overwrite, and a dossier that priced a decision is not
-made worthless by the decision being made — it becomes the record of *what the
-owner was shown before choosing*, which a past-tense rewrite would destroy. The
-pricing below stands as written and as measured on `e044a3e8`. What the owner
-ruled is recorded here, beside it.
-
-**Four rulings were made on 2026-09-16. Two touch this document; two do not,
-and saying which is half the value.**
-
-| ruling, 2026-09-16 | touches | where |
-|---|---|---|
-| **ADR 0091 decision 2 → option F** — a decided outcome of the SAME route retires the refusal band | **dossier 1** | the worst-case fold row |
-| **ADR 0116 → option 2** — a construction-completion event, `'info'`, `'log-only'`, counted | **dossier 1** | what the unreachable log will carry |
-| **Constitution article 8** — ADR 0112 decision 4's amendment carries all three numbers, 15 / 13 / 11 | **none of the three** | see below |
-| **`RemoveWall`'s object arm** — leave the behaviour, file an issue ([#1270](https://github.com/woogitsu/lockstate/issues/1270)) | **none of the three** | see below |
-
-**The provenance of all four is the weaker of the two kinds this repository
-distinguishes, and none of them is upgraded here into a quotation.** The owner
-did not type a sentence for any of them; they were shown clickable options an
-agent session had written and chose one — ADR 0091's option label reads *"F —
-ta sama trasa (zalecane)"*, and that label is the whole of what was agreed.
-This is the same provenance `CLAUDE.md` flags for the 2026-09-08, -09 and -10
-releases inside reservation 3, and `docs/adr/0091-what-clears-the-refusal-band.md`'s
-own Status block states it in those terms. **Read the ADRs' Status blocks
-rather than this table**, which is a paraphrase and will rot the way paraphrases
-here do.
-
-### What ADR 0091 option F does to dossier 1's fold figures — nothing, and here is why that is checkable
-
-Dossier 1 prices the alerts fold's worst case off
-`hud.alert.refusal.zone.not-enclosed`, *"the longest sentence in the refusal
-namespace"*. That superlative was re-checked on the merge commit rather than
-carried: sorting every `'hud.alert.refusal.*'` value in
-`src/content/default-locale-en.ts` by length puts it first at 114 characters
-(`src/content/default-locale-en.ts:1215`), ahead of
-`hud.alert.refusal.hire.no-duty-for-role` at 109. Option F changes **when the
-band retires**, not what any row says and not how tall the fold is — and #1261,
-which implemented it, is one line of behaviour in `src/ui/hud/hud.ts`
-(`if (notice === undefined || notice.routeDecidedSince === true)`, at
-`src/ui/hud/hud.ts:1731`) plus an optional `routeDecidedSince` on the schema
-(`src/simulation/protocol/types.ts:1525`). **No file under `src/` with a `.css`
-extension moved between `e044a3e8` and this merge** — checked with
-`git diff --name-only e044a3e8..HEAD -- 'src/**/*.css'`, which returns nothing —
-so every DOM-geometry figure in all three dossiers stands on the tree it was
-taken on.
-
-**What option F does change is dossier 1's stakes, in the direction of its
-recommendation rather than against it.** A refusal that retires on its own route
-is a row that leaves the *band* sooner; `hud.css`'s own prose already records
-that the **log** is what a phone cannot reach -- *"On a phone the log is still
-out of reach; on every viewport above 720px it is not."*, read at
-`src/ui/hud/hud.css:4702-4703` (**#1201's body cites `:4701-4702` for this
-sentence and is one line early**; it is quoted here rather than only pinned,
-per §4's rule that a quoted sentence is the most durable citation). So the band
-getting quieter moves weight onto the log, and the log is the surface with no
-phone route.
-
-### What ADR 0116 option 2 does to dossier 1 — it adds rows to the surface dossier 1 says is unreachable
-
-The owner ruled for a construction-completion event graded `'info'` and routed
-`'log-only'`, counted rather than repeated, so twenty-four finished walls are
-one row with a count of 24. `'log-only'` is not a quieter band — it is the
-alerts **log** and nothing else, which `src/ui/simulation-events.ts:55-58`
-states in its own words:
-
-> `'log-only'` means the log and nothing else. It is not silence and it is not
-> a lower severity -- there is no grade below `'info'` and inventing a fourth
-> tone was never the question; it is the same sentence, on the surface that
-> keeps it rather than the surface that interrupts with it.
-
-The routing type is `readonly surfaces: 'band-and-log' | 'log-only'`, at
-`src/ui/simulation-events.ts:474`.
-
-**So the ruled event lands, by construction, on the one surface dossier 1
-measured as having zero client rects at 375x812.** That does not decide dossier
-1 and nothing here treats it as doing so. It does mean the phone log is about to
-carry a class of row the player did not have before, which is an argument
-against option A (accept the carve-out) that did not exist when option A was
-priced. **The RULE is settled; ADR 0116's payload shape is not**, and its own
-Status block still reads `Proposed, 2026-09-15` in this tree — so a reader who
-takes the ruling from this table and the status from the ADR will find them
-disagreeing, and the ADR is the one to fix, not this paragraph.
-
-### The two rulings that touch nothing here, stated plainly rather than omitted
-
-**Constitution article 8 → 15 / 13 / 11 touches none of the three dossiers.**
-None of them quotes article 8; dossier 1 quotes articles 6, 7, 12 and 13, and
-ADR 0115's added section quotes article 7. The reason to check anyway is that
-article 8 is the *type scale*, and dossier 3 is five text labels measured to two
-decimal places — a body/label/metadata ramp moving from 16 / 14 / 12 to
-15 / 13 / 11 would move every label width in it. **It does not, because the code
-already shipped 15 / 13 / 11 and the ruling moved the constitution to the code
-rather than the code to the constitution** — which is exactly what
-`docs/adr/0112-what-the-2026-09-13-identity-delivery-decides.md`'s amendment
-section says it is doing (*"said 15 / 14 / 12 while the code shipped
-15 / 13 / 11"*). Dossier 3's figures were taken on that code. Nothing moves.
-
-**The `RemoveWall` object-arm ruling touches none of the three either.** It is
-about which route a supersession key resolves to, it changes no layout and no
-string, and none of these dossiers mentions `RemoveWall`. It is recorded in this
-table only so that a reader checking the 2026-09-16 rulings against this file
-finds all four accounted for rather than three.
-
----
-
-## Read after 2026-09-17: ALL THREE were ruled, and the pricing below still stands unrewritten
-
-**The section above says *"None of the four rulings of 2026-09-16 is a ruling on
-any of these three"*, and the table further down says all three are still open.
-Both were true of what that pass could see, and both are FALSE.** They are kept
-rather than corrected in place (`docs/AGENT_WORKFLOW.md` §4), because the
-mistake is instructive and is not about the rulings: **2026-09-16 carried eight
-rulings, not four.** The pass that wrote the section above found four, checked
-them honestly against all three dossiers, and reported an absence — the sentence
-form §4 says rots first, and this one was already false when it was written.
-
-**Nothing below this section is rewritten into the past tense.** The pricing is
-the record of what the owner was shown before choosing, which is worth more than
-a dossier rewritten to agree with the outcome. Each ruling is recorded beside
-the recommendation it answers.
-
-| dossier | recommended here | **ruled 2026-09-16** | agrees? |
-| --- | --- | --- | --- |
-| 1 — `DismissAlert` on a phone (#1201) | **option C**, mounted on Overview only below 720 px | *"The alerts fold gets a route below 720 px: it is mounted in the rail, on the Overview tab, at that breakpoint and no other."* | **yes, exactly** |
-| 2 — ADR 0115, where the roster lives | **option 4**, split in code, both halves on Plan dnia | *"The panel is split in code and **both halves stay on Plan dnia**; the roster does not move to Manage."* | **yes, exactly** |
-| 3 — the tab bar at 375x812 (#1192) | **option 4** (shrink inside the existing `@media (max-width: 720px)` block) | *"Opcja 3 — zakładki tylko z ikonami poniżej progu"* ("Option 3 — icon-only tabs below the threshold.") | **no — option 3, which this dossier declined** |
-
-**The provenance of all three is the weaker kind**, the same as the four in the
-table above: the owner chose a clickable option whose label an agent session had
-written, rather than typing a sentence. ADR 0115's label is quoted in the record
-as *"Opcja 4 — rozbij panel w kodzie, obie połowy na Plan dnia (zalecane)"*.
-
-**Where the records live, and why none of them is on `main` yet.** All three are
-carried by **PR #1275**, which was **open and conflicting** (`mergeable_state:
-dirty`) when this was checked on 2026-09-17: #1201's in
-`docs/IDENTITY_V5_ROLLOUT.md` §Stage 5, #1192's in `docs/VISUAL_IDENTITY.md`
-item 5, ADR 0115's in its own Status block. So **ADR 0115 still reads
-`Proposed`** at `33c02a12` — `docs/adr/0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md:14`,
-verbatim *"**Proposed.** Nothing here is decided and no code implements it."* —
-and the "Still owed" table below is right about the **tree** and wrong about the
-**owner**, which is a distinction worth keeping rather than collapsing.
-
-**Nor is any of the three built on `main`.** The implementations exist as open
-pull requests — **#1279** (#1201's fold), **#1280** (ADR 0115's split), **#1281**
-(#1192's icon-only tabs) — all open on 2026-09-17. Every *"what the code does
-today"* measurement below is therefore still a description of `main` and not
-of history.
-
-> **THAT PARAGRAPH WENT FALSE THE SAME DAY, HOURS AFTER IT WAS WRITTEN, AND IT
-> IS KEPT RATHER THAN EDITED BECAUSE THE INTERVAL IS THE LESSON.** **#1279
-> merged as `725aad40`**, so dossier 1's recommendation is **built on `main`**
-> and §1's *"what the code does today"* is now history rather than a
-> description. #1280 and #1281 are still open, checked at the same moment.
->
-> **What that costs this document, stated exactly.** #1279 changed
-> `src/ui/hud/hud.css`, so the sentence three paragraphs down — *"No `.css`
-> file under `src/` moved between `e044a3e8` and `33c02a12`"* — is true of
-> `33c02a12` and **false of `main` today**. Re-run against the new tip,
-> `git diff --name-only e044a3e8 <main> -- 'src/**/*.css'` returns
-> `src/ui/hud/hud.css`. Every DOM-geometry figure in §1 therefore no longer
-> stands on an unchanged stylesheet; §2's and §3's do, because #1279's hunks
-> are the 720 px block's alerts-fold rules and `.ui-panel.hud-overview`.
->
-> **One quoted sentence is not merely repinned but gone.** The 2026-09-16
-> section above quotes `hud.css` at `:4702-4703` as *"On a phone the log is
-> still out of reach; on every viewport above 720px it is not."* — the very
-> claim #1279 exists to falsify. It is **absent from `hud.css` entirely** on
-> the new tip, replaced by a comment beginning *"**So bringing the alerts log
-> to a phone is a mobile LAYOUT job, not a breakpoint edit**"*. This is the
-> durable-citation rule paying out in the direction §4 does not usually
-> advertise: a quoted sentence outlives a coordinate, but when the *code*
-> changes, the quotation is what tells you the claim died rather than moved.
->
-> **Two coordinates in §1 moved and are repinned here rather than in place**,
-> because §1's measurements are a record of the tree they were taken on:
-> `hud.css:4704` (*"  .hud__corner { display: none; }"*) is **`:4714`**, and
-> `hud.css:4762` (*"  .ui-tab { min-width: calc(64px * var(--ui-scale));
-> padding: var(--space-2); }"*) is **`:4800`**. The `.hud__corner` rule itself
-> **survives** #1279 unchanged, which is the shape of the fix: the fold was
-> moved out of the corner rather than the corner being brought back.
-> `tests/browser/unplaced-surfaces.spec.ts:226` is unmoved.
->
-> **And #1279 independently confirms this document's own 2026-09-17 correction
-> about the worst-case sentence.** Its commit message reports the real worst
-> case — `MAX_EVENT_ALERT_ROWS` (8) rows of *"the longest sentence this channel
-> ships"* — at **508.31 px at 1440x900 and 667.00 px at 375x812**, against the
-> 360 px this document priced. Both of the reasons given below for expecting a
-> taller fold (the narrower phone column, and the 122-character sentence a
-> same-line sort could not see) are borne out, and the shipped fix pays for it
-> with `flex: 0 1 auto; min-height: 0` and the panel's own `overflow-y: auto`
-> rather than by finding the pixels. **The recommendation survived the
-> measurement being wrong**, which is the honest way to read it: option C was
-> chosen for having measured headroom, the headroom was smaller than measured,
-> and it still fit.
-
-**The one disagreement is dossier 3's, and it is recorded as a disagreement.**
-This document recommended option 4 and argued that option 3 *"charges for them
-somewhere a player looks — … the section names"*. The owner ruled option 3 over
-that objection. **What is NOT claimed here is that the objection was refuted**:
-#1275's own record states that option 3 had been mispriced in #1192 as work to
-author five icons that already exist (`src/ui/primitives/tab-button.ts:49`
-reads *"      createIcon(options.icon, 'lg'),"*, and `src/ui/hud/hud.ts:90`
-reads *"  { id: 'overview', icon: 'overview', labelKey: HUD_MESSAGE_KEY.tabOverview },"*),
-so the owner was choosing between correctly priced options — but whether five
-glyphs read as their sections **without names** is still unmeasured, by this
-dossier and by that record. That is dossier 3's objection, unanswered, and it is
-a playtest rather than an argument.
-
-### One superlative in the 2026-09-16 section is FALSE, and it was already false when written
-
-The section above re-checks dossier 1's worst case and reports that sorting
-every `'hud.alert.refusal.*'` value by length *"puts it first at 114
-characters"*. **`hud.alert.refusal.zone.not-enclosed` is third of 48, not
-first.** Re-derived at `33c02a12` over `src/content/default-locale-en.ts`:
-
-| rank | key | characters |
-| --- | --- | --- |
-| 1 | `hud.alert.refusal.cancel-build-order.stale-cancellation` | **122** |
-| 2 | `hud.alert.refusal.remove-wall.nothing-to-remove` | **113** |
-| 3 | `hud.alert.refusal.zone.not-enclosed` | 109 |
-| 4 | `hud.alert.refusal.hire.no-duty-for-role` | 104 |
-
-**Why the re-check missed them, which is the reusable part.** Both longer
-entries are written with the key on one line and the value on the next —
-`src/content/default-locale-en.ts:885` is *"  'hud.alert.refusal.cancel-build-order.stale-cancellation':"*
-and `:1110` is *"  'hud.alert.refusal.remove-wall.nothing-to-remove':"* — so a
-sort built on a same-line `'key': 'value'` pattern cannot see them **by
-construction**, exactly the shape `docs/AGENT_WORKFLOW.md` §4 names when it says
-a pass reporting a clean result *"has reported on the spans its regex found,
-which is a smaller statement than it reads as."* Nothing changed in the
-namespace: it held **48** keys at `e044a3e8` and holds 48 at `33c02a12`,
-including both of these. No window could have raised it.
-
-**What it does to the conclusion: it strengthens it, in the same direction the
-weakest-claim section already points.** The 360 px four-row fold was measured
-with a 109-character sentence; the real worst case is 122, 12% longer, and a
-longer sentence wraps to more line boxes rather than fewer. So the fold's worst
-case is **taller than 360 px** for a second, independent reason — the first
-being the narrower phone column. Neither reason reverses option C, which was
-recommended because it is the only option with measured headroom; both make the
-headroom smaller than this document claims, and that is stated rather than left
-for a reader to derive.
-
-### ADR 0116's Status has moved, and the sentence above that pins it is now false
-
-The 2026-09-16 section says of ADR 0116 that *"its own Status block still reads
-`Proposed, 2026-09-15` in this tree — so a reader who takes the ruling from this
-table and the status from the ADR will find them disagreeing, and the ADR is the
-one to fix."* **The ADR was fixed.** `agent/0116-dossier` merged as `d1f3bf7c`
-(#1265), and `docs/adr/0116-whether-a-finished-object-is-an-event.md:19` at
-`33c02a12` reads:
-
-> **Accepted, 2026-09-16, by the repository owner: option 2 — a
-> construction-completion event, graded `'info'`, routed `'log-only'`.**
-
-The finding that paragraph supports is untouched: the ruled event still lands
-`'log-only'`, still on the alerts log, and that is still the surface dossier 1
-measured at zero client rects at 375x812.
-
-### What was re-checked and did not move
-
-- **Every `path:N` span this document introduces — 21 of them — was re-opened at
-  `33c02a12` and compared against the branch's own last commit. None moved.**
-- **No `.css` file under `src/` moved between `e044a3e8` and `33c02a12`**, re-run
-  as `git diff --name-only e044a3e8 33c02a12 -- 'src/**/*.css' 'src/*.css'`,
-  which returns nothing. Every DOM-geometry figure in all three dossiers still
-  stands on an unchanged stylesheet — the same evidence, and the same admitted
-  weakness, as the 2026-09-16 pass recorded.
-- **`tests/foundation/unconsumed-command-contract.test.ts:364`** still reads
-  *"    expect(producersOf('DismissAlert')).toEqual(['src/main.ts']);"*, so
-  option C's claim that nothing in `src/main.ts` moves is still checkable
-  against the gate that would catch it.
-
----
-
 ## 1. `DismissAlert` has no route on a phone (#1201)
 
 ### The question, in one sentence
@@ -316,21 +37,6 @@ it?**
   `:1846` (`minimapPanel.body.append(minimapSurface, alertsSection.element)`),
   `:1920` (`element('div', { className: 'hud__corner', children: [zoomControl,
   minimapPanel.element] })`).
-
-  > **Those three line numbers were right on `e044a3e8` and are dead on the
-  > merge commit; both are kept rather than the old ones overwritten, because
-  > the pair is what shows how fast a `file:line` into `hud.ts` rots.** #1261
-  > added 52 lines above them. Re-read and quoted verbatim at the new
-  > coordinates:
-  >
-  > - `src/ui/hud/hud.ts:1879` — `  alertsSection.body.append(alertList, alertsNone);`
-  > - `src/ui/hud/hud.ts:1898` — `  minimapPanel.body.append(minimapSurface, alertsSection.element);`
-  > - `src/ui/hud/hud.ts:1972` — `  const corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });`
-  >
-  > The three lines themselves are byte-identical to what they were; only the
-  > numbers moved. The four anchors this dossier carries into `hud.css`,
-  > `main.ts`, `commands.ts` and the two spec files were opened at the same time
-  > and are all live.
 - The alert row's own control is the only issuer: `src/main.ts:2900`
   (`case 'dismiss-alert':`) → `:2910`
   (`commands?.submit({ type: 'DismissAlert', ...dismissal })`). Pinned:
@@ -382,14 +88,9 @@ rollout's closing criterion *"Każda obecna akcja ma osiągalną drogę"* acquir
 phone exception, article 6's second sentence is recorded as knowingly unmet at
 one of the three tiers the delivery itself names
 (`DOKUMENTACJA/03-INTERAKCJE-I-URZADZENIA.md:44`: 390x844, 1024x768, 1440x900),
-and `tests/browser/unplaced-surfaces.spec.ts:226` — the test whose title is
-*"the map corner drops at 720px and below, which is where three unplaced
-surfaces go"*, and which asserts the string
-`'desktop: flex / tablet: flex / phone: none'` **at `:253`, not at `:226`**
-(`    expect(readings.join(' / ')).toBe('desktop: flex / tablet: flex / phone: none');`)
-— becomes an **endorsed** assertion rather than a recorded one. `:226` is kept
-because it is what #1201's body cites and it does open the right test; `:253` is
-added because it is the line the sentence is about. It is reachable in code now; nothing is
+and `tests/browser/unplaced-surfaces.spec.ts:226` — which today asserts the
+string `'desktop: flex / tablet: flex / phone: none'` — becomes an **endorsed**
+assertion rather than a recorded one. It is reachable in code now; nothing is
 written.
 
 **Option B — put the alerts fold in the Layout menu.** Reachable today:
@@ -566,30 +267,6 @@ because `.ui-tab`'s `min-width: calc(64px * var(--ui-scale))`
 in a 294 px client box. A 360x800 Android viewport — the commonest there is —
 holds by **0.19 px**.
 
-> **THE NUMBER IS RIGHT AND THE ANCHOR IS WRONG, AND BOTH ARE KEPT, BECAUSE
-> WHICH HALF FAILED IS THE PART THAT MATTERS.** Opened on the merge commit,
-> `src/ui/primitives/primitives.css:434` reads
-> `  min-width: calc(72px * var(--ui-scale));` — **72 px, not 64** — and it has
-> read 72 since `2a00f98e` (2026-08-29, #579), 17 days before this dossier was
-> written. It was 72 on `e044a3e8` too, so this is **not drift**: the citation
-> was already wrong when the measurement window opened, which is the failure
-> `docs/AGENT_WORKFLOW.md` §4 says a delta pass is blind to.
->
-> **The 64 px is real and lives one file away, inside the very breakpoint this
-> dossier is measuring.** `src/ui/hud/hud.css:4762`, inside the
-> `@media (max-width: 720px)` block opened at `:4642`, read verbatim:
->
-> ```
->   .ui-tab { min-width: calc(64px * var(--ui-scale)); padding: var(--space-2); }
-> ```
->
-> So the measured saturation, the 320 px sum and the break point at 359 px all
-> stand exactly as reported — the phone override is what floors the buttons —
-> and only the pointer moves: **`hud.css:4762` for the phone rule,
-> `primitives.css:434` for the 72 px it overrides.** #1192's own body quotes
-> `calc(72px * var(--ui-scale))` correctly, so the two documents disagreed and
-> the issue was the one that was right.
-
 **How much slack in label length.** Appending characters to all five labels at
 375x812, tightest pair:
 
@@ -633,31 +310,6 @@ fits. Cost: five icons have to be authored and drawn (none exists —
 the section name — the thing the navigation move worked to settle — stops being
 on screen, which is tie-break rung 4, *"Spójność nazewnictwa i zachowania."*
 
-> **THE PARENTHESIS IS FALSE AND OPTION 3 IS THEREFORE CHEAPER THAN IT IS
-> PRICED ABOVE. The wrong sentence is kept rather than deleted**, because it is
-> an **absence** claim — *"none exists"* — and §4 names that as the sentence
-> form that rots first; deleting it would hide the example.
->
-> `src/ui/primitives/tab-button.ts:50` is indeed the label span
-> (`      element('span', { className: 'ui-tab__label', text: options.label }),`),
-> but it is **not the button's only child**. The line immediately above it,
-> `src/ui/primitives/tab-button.ts:49`, reads
-> `      createIcon(options.icon, 'lg'),` — and `icon` is a required `IconId` on
-> the options type (`src/ui/primitives/tab-button.ts:26`). **All five sections
-> already name a distinct icon**, at `src/ui/hud/hud.ts:90-99`: `overview`,
-> `build`, `rooms`, `security`, `regime` — and all five are drawn as path lists
-> in `src/ui/primitives/icon.ts` (`:60`, `:61`, `:62`, `:63` and `:51`).
->
-> **This was also already true on `e044a3e8`** (checked with
-> `git show e044a3e8:src/ui/primitives/tab-button.ts`), so again it is not
-> drift — it was false when written. **What survives is the second half of the
-> cost**, which is the one that is a product argument rather than a work
-> estimate: an icon-only bar takes the section name off the screen, and that is
-> tie-break rung 4. The authoring cost is zero. Whether the existing icons read
-> as their sections *without* the name is unmeasured and is a playtest, not a
-> ruler — the same shape of gap this dossier already names for option 4's
-> discoverability.
-
 **Option 4 — a horizontally scrolling tab bar.** Measured with
 `.hud-tabs__inner { overflow-x: auto; flex-wrap: nowrap }` and
 `.ui-tab { flex: 0 0 auto }`: **no pair overlaps at any width — the tightest gap
@@ -678,8 +330,6 @@ is +17.00 px at 320, 358, 360 and 375 alike** — and the bar height does not mo
 > different surface — #1192 says so itself.
 
 **Option 5 — lower `.ui-tab`'s `min-width` from 64 px to 56 px, labels kept.**
-(Read with the repin above: the declaration that would move is
-`src/ui/hud/hud.css:4762`, the phone override, **not** `primitives.css:434`.)
 Measured: **+4.78 px at 358** and **+5.45 px at 360** where today gives −0.47 and
 +0.19 — so it moves the break point from 359 px to roughly 350 px — and
 **−7.70 px at 320**, where today gives −4.08. It makes the middle better and the
@@ -716,31 +366,6 @@ anybody would find the fifth section.
 
 ---
 
-## Still owed by the owner, checked 2026-09-16 rather than assumed
-
-**All three are still open, and the three dossiers have been delivered.** The
-distinction matters: what is owed is the *ruling*, not the write-up.
-
-| decision | state, read off GitHub and off the tree on 2026-09-16 |
-|---|---|
-| **#1201** — `DismissAlert` has no phone route | **open.** Dossier 1 is posted on it as a comment (2026-09-15T21:22:01Z), naming this file §1 as the durable copy. No reply, no ruling |
-| **ADR 0115** — where the prisoner roster lives | **still `Proposed`.** Its Status block reads *"**Proposed.** Nothing here is decided and no code implements it."* — unchanged by this PR, which only added measurements under it |
-| **#1192 follow-up** — the tab bar's remaining slack | **open.** Dossier 3 is posted on it as a comment (2026-09-15T21:22:27Z), naming this file §3. No reply, no ruling |
-
-**None of the four rulings of 2026-09-16 is a ruling on any of these three.**
-Two of them change what the three are worth deciding — see the section near the
-top — and none of them answers one. A reader who sees "the owner ruled on
-2026-09-16" and infers that this file is spent would be wrong.
-
-**The `RemoveWall` ruling is the one to read as a shape rather than as content**,
-because it is the outcome none of the three option lists here offers: *leave the
-behaviour, file an issue* ([#1270](https://github.com/woogitsu/lockstate/issues/1270)).
-Dossier 1's option A and dossier 3's option 1 are each the do-nothing, but each
-is priced as *accept and write it down*; "leave it and track it" is a third
-position, cheaper than writing a carve-out into ADR 0112 and more honest than
-silence. It is not added to the option lists above, because adding an option
-after the dossier was delivered would change the question the owner is holding.
-
 ## What this pass did not reach
 
 - **No option was implemented and no layout, behaviour or ADR `Status` moved.**
@@ -754,16 +379,6 @@ after the dossier was delivered would change the question the owner is holding.
   width; see the weakest claim below.
 - **Dossier 3's option 4 was measured for geometry only.** Discoverability was
   not measured and is named above as the weak point.
-- **Every `file:line` this document introduces was re-opened on the merge
-  commit and read, rather than sampled.** Three moved (`hud.ts:1827`, `:1846`,
-  `:1920`), one was mis-pinned from the start (`primitives.css:434`) and one
-  named the test rather than the assertion (`unplaced-surfaces.spec.ts:226`);
-  all five are marked in place above with the verbatim line at the new
-  coordinate. **No figure taken from the DOM was re-measured in a browser**, and
-  it is not claimed to have been: what was checked instead is that no `.css`
-  file under `src/ui/` moved between `e044a3e8` and the merge, which makes the
-  geometry stand on an unchanged stylesheet but is weaker evidence than a second
-  run.
 - **The 200 % page-zoom debt (#1202, 29 of 36) is untouched here.** Dossier 3's
   option 2 and option 3 both move the bar height, which is one of the three
   things `docs/VISUAL_IDENTITY.md` item 6 says closing that debt needs, so the

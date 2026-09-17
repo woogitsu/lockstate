@@ -47,14 +47,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * registry's own map. They coincide here because every instance this fixture
  * registers is a `room.cell`. **So this file does not gate the divergence**:
  * both assertions below read `0`, on a prison that is fresh under either
- * definition, which is the one case where they cannot disagree. The gate that
- * would notice was described in ADR 0017's "Amendment, 2026-09-01" §2 and is
- * now built:
- * `tests/integration/economy-fresh-unfurnished-prison-definition.test.ts`,
- * which registers a room instance under an id this build's catalogue does not
- * define. This file is unchanged by that fix and is meant to be -- it is the
- * shipped-catalogue case, where the two definitions coincide, and the `0`
- * below still comes off the same live wire message. `docs/TESTING.md`'s rule against a fixture supplying both sides
+ * definition, which is the one case where they cannot disagree. A gate that
+ * would notice is described in ADR 0017's "Amendment, 2026-09-01" §2, under
+ * the correction of 2026-09-15. `docs/TESTING.md`'s rule against a fixture supplying both sides
  * of a comparison holds here for the same reason it holds in
  * `tests/integration/construction-just-in-time-materials.test.ts`, whose own
  * `-1,160` this file's setup is drawn from (`654 bricks, not 656 ... 25,000 -

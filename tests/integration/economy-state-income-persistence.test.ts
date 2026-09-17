@@ -158,7 +158,7 @@ const ONE_DAY_PAYMENT = STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * OCCUPIED_PLA
  * ADR 0042 step 3.
  *
  * `buildDeterminismScenario` hires five guards straight onto the roster
- * (`tests/helpers/determinism-scenario.ts:180`) rather than through
+ * (`tests/helpers/determinism-scenario.ts:160`) rather than through
  * `StaffHiringService`, so no engagement charge is taken -- but `PayrollSystem`
  * reads the roster and bills all five at the catalogue's 80 a day on the same
  * boundary tick this file's income lands on. **Both figures are written out
