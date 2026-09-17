@@ -43,9 +43,15 @@ describe('initial shell state', () => {
     // measurement that was overturned rather than a mistake. ADR 0022 measured
     // a sixth tab as foreclosed at 375x812 against a bar of five *labelled*
     // tabs; #1192's ruling of 2026-09-16 takes the labels off the screen below
-    // 721px, so the bar there is six icons. Re-measured on the assembled page
-    // at 375x812: six 56px buttons span 19.5..355.5 inside a 338px bar, where
-    // six labelled ones spanned -4.5..379.5 in a 351px one.
+    // 721px, which is what makes room for a sixth.
+    //
+    // **That ruling is recorded and not yet implemented** -- #1275 records it
+    // and touches nothing under `src/`, and PR #1281 is the open branch that
+    // ships the CSS -- so both numbers belong here rather than one. Measured on
+    // the assembled page in `playtest-2026-09-17-six-tabs.playtest.ts` at
+    // 375x812: six *labelled* buttons, which is what this tree renders today,
+    // span -4.5..379.5 in a 351px bar; the same page with #1192's rule injected
+    // gives six 56px buttons spanning 19.5..355.5 in a 338px one.
     // `zones` sits after `build` rather than at the end because the order is the
     // order a player reaches for them -- look, build the walls, say what the
     // rooms inside them are for.

@@ -4,9 +4,21 @@ import { expect, test } from './network-changed-fixture';
  * Does a sixth section fit the phone bar? (2026-09-17)
  *
  * Not a gate. ADR 0022 measured a *sixth tab foreclosed* at 375x812 against a
- * bar of five labelled tabs, and #1192's ruling of 2026-09-16 took the labels
+ * bar of five labelled tabs, and #1192's ruling of 2026-09-16 takes the labels
  * off the screen below 721px -- so the premise moved and the number has to be
  * re-taken before a panel is written. The log is the deliverable.
+ *
+ * **The ruling is recorded and not yet implemented, which is why this file has
+ * two arms rather than one.** #1275 records it and states that nothing under
+ * `src/` is touched; PR #1281 is the open branch that ships the CSS. So the
+ * default arm measures what this tree actually renders -- six *labelled* tabs
+ * -- and `ICON_ONLY=1` injects the ruled rule to measure what the section is
+ * designed for. Read together they say that the sixth tab fits once #1281
+ * lands and overhangs the bar by 16.5px a side until it does, and that at
+ * 320x640 two of the six are unreachable without it.
+ *
+ *     ICON_ONLY=1 npx playwright test --config tests/browser/playwright.playtest.config.ts \
+ *       playtest-2026-09-17-six-tabs
  */
 const APP_URL = '/index.html';
 

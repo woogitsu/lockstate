@@ -497,6 +497,33 @@ sentence.
    delivery puts them under Zarządzaj; and the eleven surfaces the direction
    does not place are still unplaced.
 
+   > **A SIXTH SECTION LANDED ON 2026-09-17 AND THE READING ABOVE IS KEPT
+   > RATHER THAN OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4, both directions).
+   > `HUD_TAB_IDS` is
+   > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security']` today:
+   > the direction's five, in the direction's order, **plus** a `security`
+   > section that paints the four HUD read models that had a route out of the
+   > worker and no painter (`hud/security`, `hud/incidents`,
+   > `hud/incident-detail`, `hud/contraband`). **This is a reading of the code
+   > and binds nothing**, and it takes nothing away from §"Navigation" above,
+   > which is a restatement and does bind: the five titles are unchanged, none
+   > was renamed, and none was dropped. What is *not* settled here is whether
+   > the direction's navigation may carry a section it does not name — the
+   > ruling behind the sixth tab is recorded in
+   > `src/ui/hud/hud-state.ts`'s docblock, with its provenance marked as the
+   > weaker kind, and nowhere else in this repository.
+   >
+   > **It depends on a second ruling that is recorded and not yet
+   > implemented.** #1192's icon-only tabs below 720px (ruled 2026-09-16,
+   > recorded by #1275, shipped by open PR #1281) are what make room for a
+   > sixth button on a phone. Measured on the assembled page at 375x812 with
+   > six *labelled* tabs, which is what the tree renders until #1281 lands:
+   > 384px of button in a 351px bar, the first and last overhanging by 16.5px
+   > each; and at 320x640 `overview` and `security` fall outside the viewport
+   > and hit-test to something else. With #1192's rule applied, six 56px
+   > buttons span 19.5..355.5 in a 338px bar and all six are reachable at 320
+   > as well.
+
    **The Polish name wrapped anyway, and the fix is a layout one** (#1192,
    2026-09-14). `Plan dnia` has a space in it too, so at 375x812 it laid out in
    **two line boxes** -- 26.38px against every other label's 13.19 -- in the

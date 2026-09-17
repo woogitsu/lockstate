@@ -305,7 +305,13 @@ test.describe('the Security section', () => {
     expect(await page.evaluate(() => window.lockstateUiHarness.laidOut('.hud-security__detail'))).toBe(true);
     const text = await sectionText(page);
     expect(text).toContain('Severity 8 of 10');
-    expect(text).toContain('Response asks for 2 guards');
+    // `Responders needed: 2`, not the `Response asks for 2 guards` this line
+    // asserted until 2026-09-17. The string was reworded in
+    // `default-locale-en.ts` before it shipped -- the first draft renders
+    // *"1 guards"* for the commonest severity band, and the HUD's `t` is
+    // `Localizer.format` rather than `formatPlural` -- and this assertion was
+    // the one site that did not move with it.
+    expect(text).toContain('Responders needed: 2');
     expect(text).toContain('at tick 128');
     expect(text).not.toContain('damage 0 of 10');
   });

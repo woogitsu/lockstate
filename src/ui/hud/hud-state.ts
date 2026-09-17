@@ -85,12 +85,35 @@
  * section, which is why the option says fifth: the delivery names five and this
  * is the one beside them.
  *
- * **The "sixth tab is foreclosed" measurement above is the one that had to be
- * re-taken, and it no longer holds.** ADR 0022 measured it against a bar of
- * five *labelled* tabs, and #1192's ruling of 2026-09-16 took the labels off
- * the screen below 721px -- so the bar at 375x812 is six icons rather than six
- * names. Re-measured on the assembled page, not inferred: see the
- * `six sections` case in `tests/browser/ui-shell.spec.ts`.
+ * **The "sixth tab is foreclosed" measurement above had to be re-taken, and
+ * what the re-take says is CONDITIONAL rather than settled.** ADR 0022 measured
+ * it against a bar of five *labelled* tabs. The owner ruled on 2026-09-16
+ * (#1192) that the tabs go icon-only below the break, which is what makes room
+ * for a sixth -- but that ruling is **recorded and not yet implemented**: #1275
+ * records it and states in its own body that nothing under `src/` is touched,
+ * and PR #1281 is the open branch that ships the CSS. Neither is on `main` as
+ * this lands.
+ *
+ * **So the numbers, both of them, measured on the assembled page at 375x812 in
+ * `tests/browser/playtest-2026-09-17-six-tabs.playtest.ts` rather than
+ * inferred** (an earlier version of this paragraph quoted only the second and
+ * presented it as this tree's, which it is not):
+ *
+ * - **This tree, six labelled tabs:** six 64px buttons span `-4.5..379.5`
+ *   inside a 351px bar that runs `12..363` -- 384px of button in 351px of bar,
+ *   so the first and last overhang it by 16.5px each. At 320x640 the same
+ *   layout puts `overview` and `security` outside the viewport and
+ *   `elementFromPoint` at their own centres returns something else:
+ *   **two of the six sections are unreachable there**, where five labelled
+ *   tabs at 320 were all reachable on `main`.
+ * - **The same page with #1192's icon-only rule applied** (the playtest's
+ *   `ICON_ONLY=1` arm injects it, which is the only way this tree can see it):
+ *   six 56px buttons span `19.5..355.5` inside a 338px bar, and all six are
+ *   reachable at 320x640 too.
+ *
+ * **The second is the state this section is designed for and the first is the
+ * state it ships into until #1281 merges.** That ordering is the one thing
+ * about this array a reader must not take on trust.
  */
 export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];
