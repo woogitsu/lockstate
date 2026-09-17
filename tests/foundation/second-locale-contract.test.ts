@@ -234,6 +234,43 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.rooms.needs-item-more',
   'hud.rooms.needs-object',
   'hud.rooms.requires-object',
+  /*
+   * The Security section's six, 2026-09-17, and they are listed as one group
+   * because they are all in `hud.alert.occurrences`' class rather than in
+   * `save.list.item`'s: every one of them is a **formula** whose counting is
+   * carried by a colon, a preposition or an adjective rather than by
+   * grammatical number, so no form of any of them inflects in English or in
+   * Polish.
+   *
+   *   `{label}: {count}`          count-row
+   *   `{count} taking part`       incident-people   (PL: `Bierze udział: {count}`)
+   *   `Responders needed: {count}` incident-responders
+   *   `{done} of {count} searched` search-progress
+   *   `{count} open here`         sector-open-incidents
+   *   `{count} short`             sector-short
+   *
+   * **One of them was reworded rather than listed**, which is the check this
+   * list is for working: `incident-responders` read `Response asks for {count}
+   * guards` and rendered *"1 guards"*, so it became a label and a figure. The
+   * other five were each read the same way and none of them has a noun after
+   * the number.
+   *
+   * **And the paragraph above this list is now half wrong, marked rather than
+   * rewritten** (`docs/AGENT_WORKFLOW.md` §4). It says authoring English
+   * `one`/`other` text is *"player-visible copy and the owner's (`AGENTS.md`,
+   * exclusion 4)"*. That was true when it was written and stopped being true on
+   * 2026-09-04, when the owner released the CHOICE of wording. What still
+   * blocks a plural entry is mechanical rather than reserved: the HUD's `t` is
+   * `Localizer.format`, not `formatPlural`, so forms authored for a HUD key
+   * would be forms nothing selects between --
+   * `hud.status.rooms-not-ready` already says exactly this, one entry up.
+   */
+  'hud.security-section.count-row',
+  'hud.security-section.incident-people',
+  'hud.security-section.incident-responders',
+  'hud.security-section.search-progress',
+  'hud.security-section.sector-open-incidents',
+  'hud.security-section.sector-short',
   'hud.security.coverage-short-hint',
   'hud.security.coverage-unguarded-hint',
   'hud.security.held-more',

@@ -54,7 +54,11 @@ import {
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
+  type HudContrabandViewModel,
+  type HudIncidentDetailViewModel,
+  type HudIncidentsViewModel,
   type HudPrisonerDetailViewModel,
+  type HudSecurityViewModel,
   type HudPrisonerRosterViewModel,
   type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
@@ -77,7 +81,10 @@ import {
 import { hudCountsFromWorkerMessage, hudOverviewFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
+import { ContrabandReader } from './ui/simulation-contraband';
+import { IncidentsReader } from './ui/simulation-incidents';
 import { IntakePipelineReader } from './ui/simulation-intake';
+import { SecurityReader } from './ui/simulation-security';
 import { HeldGuardsReader } from './ui/simulation-held-guards';
 import { StaffRosterReader } from './ui/simulation-staff-roster';
 import { StaffCoverageReader } from './ui/simulation-staff-coverage';
@@ -1617,6 +1624,25 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * content name for the composition root to resolve.
    */
   const staffCoverageReader = client === undefined ? undefined : new StaffCoverageReader(client);
+  /*
+   * The Security section's three readers (2026-09-17), and they are the last
+   * three on #104's channel: with them, one of the fifteen catalogued read
+   * models is left with a route and no reader, and it is `world/render-snapshot`
+   * -- which ADR 0040's open question 4 defers to its own slice rather than
+   * leaving unexplained.
+   *
+   * All three are pulls on the same three terms as the readouts above: a pull
+   * because nobody reads a sector's staffing from the Build tab, the refresh
+   * cadence corrected in `roomNeedsReader`'s header, and **only while the
+   * Security tab is showing**. None of them takes a lookup from this file,
+   * unlike the delivery, guard and staff readers: every word they carry is
+   * either a derived enum key or a content `nameKey` the projection already
+   * resolved, so there is no content name left for the composition root to
+   * look up.
+   */
+  const securityReader = client === undefined ? undefined : new SecurityReader(client);
+  const incidentsReader = client === undefined ? undefined : new IncidentsReader(client);
+  const contrabandReader = client === undefined ? undefined : new ContrabandReader(client);
 
   /**
    * The seventh and eighth readers on #104's channel, and the first two whose
@@ -1677,6 +1703,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * only this side can discover that the prisoner is gone.
    */
   let selectedPrisonerId: number | undefined;
+  /**
+   * Which incident the Security section's inspector is about (2026-09-17).
+   *
+   * A string rather than a number, because `projectIncidentDetail` takes a
+   * string id and `projectionTargetSchema` declares the two target kinds
+   * separately rather than making one carry the other as text. Held here for
+   * `selectedPrisonerId`'s reason: the panel owns the selection as chrome, and
+   * this is the copy that decides what the host asks the worker.
+   */
+  let selectedIncidentId: string | undefined;
 
   /**
    * Puts a readout on the view model, or takes it off.
@@ -2018,6 +2054,145 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       .catch(() => applyPrisonerDetail(undefined));
   };
 
+  /**
+   * The Security section's four readouts, on the terms every readout above is
+   * on (2026-09-17).
+   *
+   * The same absent-property dance, and for the sharpest version of the same
+   * reason: "nothing has asked" and "this prison has no open incident" are
+   * different facts, and only the second is a statement about the prison. A
+   * security panel that renders them alike is `konstytucja.md` article 5's
+   * third named anti-pattern in the one section whose subject is things going
+   * wrong.
+   */
+  const applySecurity = (next: HudSecurityViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.security === undefined) return;
+      const { security: _cleared, ...withoutSecurity } = viewModel;
+      viewModel = withoutSecurity;
+    } else {
+      viewModel = { ...viewModel, security: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const applyIncidents = (next: HudIncidentsViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.incidents === undefined) return;
+      const { incidents: _cleared, ...withoutIncidents } = viewModel;
+      viewModel = withoutIncidents;
+    } else {
+      viewModel = { ...viewModel, incidents: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const applyIncidentDetail = (next: HudIncidentDetailViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.incidentDetail === undefined) return;
+      const { incidentDetail: _cleared, ...withoutDetail } = viewModel;
+      viewModel = withoutDetail;
+    } else {
+      viewModel = { ...viewModel, incidentDetail: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const applyContraband = (next: HudContrabandViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.contraband === undefined) return;
+      const { contraband: _cleared, ...withoutContraband } = viewModel;
+      viewModel = withoutContraband;
+    } else {
+      viewModel = { ...viewModel, contraband: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshSecurity = (): void => {
+    if (securityReader === undefined || activeTab !== 'security') return;
+    void securityReader
+      .read()
+      .then((next) => {
+        // "A read was already in flight" is not an answer, so it leaves what is
+        // on screen alone rather than blanking it.
+        if (next !== undefined) applySecurity(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // rather than staying, with the same sharper edge `applyStaffCoverage`'s
+      // catch has: a sector row reading "2 of 2 guards assigned" left standing
+      // over a prison that stopped reporting is the class of lie this layer
+      // exists to avoid.
+      .catch(() => applySecurity(undefined));
+  };
+
+  const refreshIncidents = (): void => {
+    if (incidentsReader === undefined || activeTab !== 'security') return;
+    void incidentsReader
+      .read()
+      .then((next) => {
+        if (next !== undefined) applyIncidents(next);
+      })
+      .catch(() => applyIncidents(undefined));
+  };
+
+  /**
+   * Asks about the incident the player selected, and stops when there is none.
+   *
+   * Three guards rather than two, exactly as `refreshPrisonerDetail` has:
+   * no reader, not on the Security tab, **and nothing selected**. The last is
+   * what makes this readout cost the worker nothing in the ordinary case -- a
+   * player on this tab who has pressed no row sends no message at all.
+   */
+  const refreshIncidentDetail = (): void => {
+    const incidentId = selectedIncidentId;
+    if (incidentsReader === undefined || activeTab !== 'security' || incidentId === undefined) return;
+    void incidentsReader
+      .readDetail(incidentId)
+      .then((answer) => {
+        if (answer === undefined) return;
+        if (answer === 'gone') {
+          /*
+           * The worker holds no such incident, which is the one answer that
+           * makes the player's own selection false. `IncidentLog` never deletes
+           * a record, so this is reachable only for an id that was never minted
+           * -- but both copies of the selection are dropped anyway, because the
+           * alternative is a panel asking for ever about something that does
+           * not exist.
+           *
+           * The block leaves **without a sentence**, for
+           * `refreshPrisonerDetail`'s reason: what would go there is a claim
+           * about an incident, and there is no true one to make.
+           */
+          selectedIncidentId = undefined;
+          applyIncidentDetail(undefined);
+          hud?.clearIncidentSelection();
+          return;
+        }
+        // A late answer about an incident the player has since moved off is
+        // dropped here as well as in the panel. Two guards for one race, on
+        // purpose: this one stops a stale reply reaching the view model at all,
+        // and the panel's `incidentId` check is what makes the *painted* block
+        // provably about the checked row.
+        if (answer.incidentId !== selectedIncidentId) return;
+        applyIncidentDetail(answer);
+      })
+      // The block comes off and the selection stays: an incident nothing is
+      // currently answering for is still the incident the player chose, and the
+      // next refresh asks again.
+      .catch(() => applyIncidentDetail(undefined));
+  };
+
+  const refreshContraband = (): void => {
+    if (contrabandReader === undefined || activeTab !== 'security') return;
+    void contrabandReader
+      .read()
+      .then((next) => {
+        if (next !== undefined) applyContraband(next);
+      })
+      .catch(() => applyContraband(undefined));
+  };
+
   /*
    * **Asked for on every tab, and that changed on 2026-09-05**
    * ([#1006](https://github.com/matmaxalez/lockstate/issues/1006) finding 1).
@@ -2351,6 +2526,21 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       selectedPrisonerId = undefined;
       applyPrisonerDetail(undefined);
       hud?.clearPrisonerSelection();
+      applySecurity(undefined);
+      applyIncidents(undefined);
+      applyContraband(undefined);
+      /*
+       * And the incident selection, for the prisoner selection's reason one
+       * paragraph up, with one difference worth stating rather than glossing:
+       * an incident id is minted by `IncidentLog` within a session and the next
+       * session's log starts empty and mints its own from the same counter, so
+       * keeping the id across a stop would mean asking a new prison about a
+       * string that once meant an assault. That is the same failure mode as the
+       * entity id's and arrives by a different route.
+       */
+      selectedIncidentId = undefined;
+      applyIncidentDetail(undefined);
+      hud?.clearIncidentSelection();
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
@@ -2362,6 +2552,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       refreshRegime();
       refreshPrisonerRoster();
       refreshPrisonerDetail();
+      refreshSecurity();
+      refreshIncidents();
+      refreshIncidentDetail();
+      refreshContraband();
     }
   });
 
@@ -2585,6 +2779,25 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // the row again (issue #895).
           if (activeTab === 'day-plan') refreshPrisonerDetail();
           else applyPrisonerDetail(undefined);
+          // And the four readouts on the sixth tab, on the same terms as every
+          // one above (2026-09-17). Arriving asks at once rather than waiting
+          // up to ~300ms in a browser for the next clock heartbeat (255ms is
+          // the harness figure; see roomNeedsReader's header, #765), because
+          // this is the tab a player opens when they suspect something has gone
+          // wrong and an empty panel is indistinguishable from a quiet prison.
+          if (activeTab === 'security') refreshSecurity();
+          else applySecurity(undefined);
+          if (activeTab === 'security') refreshIncidents();
+          else applyIncidents(undefined);
+          // The detail on the same terms with one difference, exactly as the
+          // prisoner inspector has: it asks only if the player has selected an
+          // incident, so arriving with nothing selected sends no message. The
+          // selection itself survives the trip -- it is the panel's chrome --
+          // so coming back resumes the same question.
+          if (activeTab === 'security') refreshIncidentDetail();
+          else applyIncidentDetail(undefined);
+          if (activeTab === 'security') refreshContraband();
+          else applyContraband(undefined);
           return;
         }
 
@@ -2609,6 +2822,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           selectedPrisonerId = intent.prisonerId;
           if (selectedPrisonerId === undefined) applyPrisonerDetail(undefined);
           else refreshPrisonerDetail();
+          return;
+
+        // The same arrangement one section over, and the same two directions
+        // (2026-09-17).
+        case 'select-incident':
+          selectedIncidentId = intent.incidentId;
+          if (selectedIncidentId === undefined) applyIncidentDetail(undefined);
+          else refreshIncidentDetail();
           return;
 
         case 'arm-build-tool': {

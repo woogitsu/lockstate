@@ -494,9 +494,24 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // two unreachable counts exist to record. So the two unreachable counts
       // below are #532's numbers less #533's namespace and its four labels:
       // 31 - 1 and 118 - 4.
-      namespacesWithACallSite: 12,
-      namespacesWithoutACallSite: 30,
-      labelsWithoutACallSite: 114,
+      // 16 on 2026-09-17, and it is the largest move this census has recorded:
+      // the Security section gave FOUR namespaces their first call site at
+      // once -- `sector-control-state` (3 labels),
+      // `incident-state` (5), `search-scope` (4) and `search-order-state` (3)
+      // -- through `src/ui/simulation-security.ts`,
+      // `src/ui/simulation-incidents.ts` and
+      // `src/ui/simulation-contraband.ts`. `incident-type` already had one,
+      // which is why four namespaces and fifteen labels move rather than five
+      // and nineteen. No namespace and no label was added, so `namespaces` and
+      // `labels` do not move: these vocabularies simply stop waiting for a
+      // panel, which is exactly the direction these two counts exist to record
+      // and the fourth demonstration of the census's own finding -- the labels
+      // were written before the panel that renders them, years of ticks before
+      // in the case of `search-order-state`, whose `'queued'` member exists
+      // because a projection needed to label an order no job record covers.
+      namespacesWithACallSite: 16,
+      namespacesWithoutACallSite: 26,
+      labelsWithoutACallSite: 99,
     });
   });
 
@@ -518,10 +533,24 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // needs the second and must not reach for the first.
       'deployment-phase',
       'guard-claim',
+      // The Security section's four, 2026-09-17. `incident-state` beside
+      // `incident-type` is the same two-vocabularies-for-one-thing pair the
+      // comment above draws between a claim and a phase: a type says what
+      // happened and a state says how far through its lifecycle it is, and the
+      // row prints both because neither implies the other -- a riot and a
+      // lapsed riot are the same type.
+      'incident-state',
       'incident-type',
       'intake-stage',
       'need',
       'risk-tier',
+      // `search-order-state` rather than the search system's own job-state
+      // union, and that is why the namespace exists: an order accepted and not
+      // yet assigned a guard has no job record, so `'queued'` is a state a row
+      // must be able to say and no `SearchJobState` covers it.
+      'search-order-state',
+      'search-scope',
+      'sector-control-state',
     ]);
   });
 

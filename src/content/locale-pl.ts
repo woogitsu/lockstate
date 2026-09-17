@@ -666,6 +666,46 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.alert.occurrences': '{count}×',
   'hud.panel.collapse': 'Zwiń',
   'hud.panel.expand': 'Rozwiń',
+  /*
+   * Sekcja Ochrona (2026-09-17). Thirty strings, the Polish of the
+   * English authored in `default-locale-en.ts`, where each one's verification
+   * -- which field decides it and in which state it is painted -- is recorded.
+   * Read that file for why each says what it says; this one is the translation.
+   */
+  'hud.security-section.title': 'Ochrona',
+  'hud.security-section.waiting': 'Żadne więzienie nie raportuje.',
+
+  'hud.security-section.sectors': 'Sektory',
+  'hud.security-section.sectors-empty': 'Na tym terenie nie wyznaczono jeszcze sektora.',
+  'hud.security-section.sector-staffing': 'Przydzielono {assigned} z {required} strażników',
+  'hud.security-section.sector-short': 'Brakuje {count}',
+  'hud.security-section.sector-open-incidents': 'Otwartych tutaj: {count}',
+  'hud.security-section.lockdown': 'Blokada',
+
+  'hud.security-section.incidents': 'Incydenty',
+  'hud.security-section.incidents-none': 'Nic jeszcze nie zapisano.',
+  'hud.security-section.incidents-closed': 'Nic nie jest otwarte. Zapisano do tej pory: {total}.',
+  'hud.security-section.incidents-summary': 'Otwartych {open} z {total} zapisanych',
+  'hud.security-section.incidents-toll': 'Rannych: {injured}, uciekło: {escapes}',
+  'hud.security-section.incident-row': '{type} w sektorze {sector}',
+  'hud.security-section.incident-severity': 'Waga {severity} z {max}',
+  'hud.security-section.incident-people': 'Bierze udział: {count}',
+  'hud.security-section.incident-timeline': 'Przebieg',
+  'hud.security-section.incident-timeline-row': '{state} w ticku {tick}',
+  'hud.security-section.incident-responders': 'Potrzebni funkcjonariusze: {count}',
+  'hud.security-section.incident-outcome': 'Rannych: {injured}, zniszczenia {damage} z {max}',
+  'hud.security-section.incident-escaped': 'Ktoś się wydostał.',
+  'hud.security-section.incidents-by-type': 'Według rodzaju',
+  'hud.security-section.count-row': '{label}: {count}',
+
+  'hud.security-section.contraband': 'Kontrabanda',
+  'hud.security-section.searches-none': 'Żadne przeszukanie nie trwa.',
+  'hud.security-section.search-row': 'Przeszukanie: {scope} - {state}',
+  'hud.security-section.search-progress': 'Przeszukano {done} z {count}',
+  'hud.security-section.found': 'Skonfiskowano',
+  'hud.security-section.found-none': 'Nic nie skonfiskowano.',
+  'hud.security-section.search-tally': 'Znaleziono: {found}, pominięto: {missed}',
+
   'hud.severity.info': 'Informacja',
   'hud.severity.warning': 'Ostrzeżenie',
   // *Alarm*, not *Krytyczne*: the other two are nouns.

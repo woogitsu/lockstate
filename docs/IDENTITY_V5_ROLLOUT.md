@@ -464,7 +464,13 @@ check found, and it is a record rather than a re-plan.
 
 **Nothing was lost.** All seventeen commands are still issued and all seventeen
 still from `src/main.ts`; ten of the fifteen projections still have a reader and
-the same five do not; every operational control on Manage and on Build is laid
+the same five do not — **which stopped being true on 2026-09-17, and the
+sentence is corrected here rather than overwritten because the check it records
+really did find that on 2026-09-14.** The owner ruled that day that the four
+unpainted HUD read models get a sixth navigation section, `Security`, and
+`src/ui/hud/security-panel.ts` paints all four; fourteen of the fifteen now have
+a reader and the one that does not is `world/render-snapshot`, whose reuse ADR
+0040 open question 4 defers to its own slice; every operational control on Manage and on Build is laid
 out, enabled and pressable at 1440x900, 1024x768, 900x600 and 375x812. Two new
 gates carry the measurements rather than this document quoting them:
 `tests/browser/operations-reachability.spec.ts` (14 specs) and

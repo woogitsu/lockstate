@@ -61,27 +61,36 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * missing -- so the entry is gone and the assertion that replaced it runs the
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
- * of it. It still does not claim that every projection is painted; **five of the
- * fifteen catalogued read models have a route and no reader.**
+ * of it. It still does not claim that every projection is painted; **one of the
+ * fifteen catalogued read models has a route and no reader.**
  *
  * That number is stated with the way to re-derive it, because it is a tally and
  * this file's whole subject is claims that rot. `PROJECTION_IDS`
  * (`src/simulation/protocol/types.ts`, the tuple `PROJECTION_IDS`) has fifteen
  * members; grepping all fifteen as string literals across `src/ui/` and
- * `src/rendering/` returns **ten**, so fifteen minus ten is five. The ten
- * are `hud/room-list` and `hud/room-detail` (`simulation-room-needs.ts`),
- * `hud/held-guards` (`simulation-held-guards.ts`), `hud/pending-deliveries`
- * (`simulation-pending-deliveries.ts`), `hud/prisoner-population`
- * (`simulation-intake.ts`), `hud/build-queue` (`simulation-build-queue.ts`),
- * `hud/staff` (`simulation-staff-coverage.ts`), `hud/prisoner-roster`
- * (`simulation-prisoner-roster.ts`), `hud/prisoner-detail`
- * (`simulation-prisoner-detail.ts`) and `hud/status-strip`
- * (`simulation-regime.ts`). `src/rendering/` matches none. The five with a
- * route and nobody on it are `hud/security`, `hud/contraband`,
- * `hud/incidents`, `hud/incident-detail` and `world/render-snapshot`.
+ * `src/rendering/` returns **fourteen**, so fifteen minus fourteen is one. The
+ * fourteen are `hud/room-list` and `hud/room-detail`
+ * (`simulation-room-needs.ts`), `hud/held-guards` (`simulation-held-guards.ts`),
+ * `hud/pending-deliveries` (`simulation-pending-deliveries.ts`),
+ * `hud/prisoner-population` (`simulation-intake.ts`), `hud/build-queue`
+ * (`simulation-build-queue.ts`), `hud/staff` (`simulation-staff-coverage.ts`),
+ * `hud/prisoner-roster` (`simulation-prisoner-roster.ts`),
+ * `hud/prisoner-detail` (`simulation-prisoner-detail.ts`), `hud/status-strip`
+ * (`simulation-regime.ts`), `hud/security` (`simulation-security.ts`),
+ * `hud/incidents` and `hud/incident-detail` (`simulation-incidents.ts`) and
+ * `hud/contraband` (`simulation-contraband.ts`). `src/rendering/` matches none.
+ * The one with a route and nobody on it is `world/render-snapshot`.
  *
- * **This paragraph said "nine" and "six" until issue #895, and both were right
- * when written.** `src/ui/simulation-prisoner-detail.ts` is the tenth reader
+ * **This paragraph said "five" and "ten" until 2026-09-17, and before that
+ * "nine" and "six" until issue #895, and every one of them was right when
+ * written.** The 2026-09-17 move is the largest this tally has made: the
+ * Security section landed three reader modules at once, and they carry *four*
+ * ids between them because `simulation-incidents.ts` reads the incidents pair.
+ * So the two counts moved by three and by four in the same change, which is the
+ * amendment below this one stated as arithmetic rather than as a warning.
+ *
+ * **The earlier movement, kept because its reasoning is the one a reader
+ * needs.** `src/ui/simulation-prisoner-detail.ts` is the tenth reader
  * and `hud/prisoner-detail` is the read model that moved between the two lists
  * -- the *first* of the five that #157 found waiting on a selection model to
  * get one. The pair still moves together only by coincidence, for the reason
@@ -294,7 +303,17 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
  */
 const PAINTERS = [
   'simulation-build-queue.ts',
+  // 2026-09-17, the Security section. Three readers landing at once, which has
+  // not happened on this channel before: `hud/contraband`, `hud/incidents`
+  // *with* `hud/incident-detail`, and `hud/security`. Named individually for
+  // the reason this list gives -- and with a sharper edge for the middle one,
+  // because `simulation-incidents.ts` is the only reader of two ids whose
+  // second id is quoted nowhere else in `src/ui/`, so a rename that moved it
+  // out of this tree would take the last reader of `hud/incident-detail` with
+  // it and the per-id check below would report that route unpainted again.
+  'simulation-contraband.ts',
   'simulation-held-guards.ts',
+  'simulation-incidents.ts',
   'simulation-intake.ts',
   'simulation-pending-deliveries.ts',
   // Issue #895. The first reader on this channel whose request names **one**
@@ -308,6 +327,7 @@ const PAINTERS = [
   'simulation-prisoner-roster.ts',
   'simulation-regime.ts',
   'simulation-room-needs.ts',
+  'simulation-security.ts',
   'simulation-staff-coverage.ts',
   // Issue #533. The **second** reader of `hud/staff`, beside
   // `simulation-staff-coverage.ts` above, and it is named here for the reason
@@ -361,18 +381,46 @@ const readersOf = (id: string): readonly string[] => READER_SURFACE.filter((file
  * today, with a citation, and must not merely restate a plan.
  */
 const UNPAINTED_PROJECTION_IDS: Readonly<Partial<Record<ProjectionId, string>>> = {
-  'hud/incident-detail':
-    "No reader. The `-detail` half of the incidents pair, and it waits on the *list* half rather than on a selection model: `hud/incidents` below has no reader and no panel, so there is no row for a player to press. **This entry said it \"waits on the same blocker as `hud/prisoner-detail`\" and that sentence is spent** -- issue #895 gave that route a reader by making the Regime panel's roster rows selectable, which is a per-panel selection rather than the world-pointer `selection.primary` both entries used to point at, and the shape it took is the one an incidents panel would copy: a row carrying the id, `role=\"radio\"` on the row, and a detail block beneath. `docs/research/audit-2026-08-26/10-product-roadmap.md:327` still names the generic inspector panel this family was expected to arrive with.",
-  'hud/incidents':
-    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` names the panel this waits on, "Incident notification + response controls," and it is not built. Separately, `projectIncidents` (`src/simulation/presentation/incident-projection.ts`) calls `IncidentLog.all()` and pages in memory, so each request costs `O(all incidents ever recorded)` regardless of the requested window -- tracked at `docs/HUD_PROJECTIONS.md:1613-1616` as a gap this route does not yet have a panel to hit.',
-  'hud/contraband':
-    'No reader. `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists this as unbuilt, after the incidents panel ("then hud/contraband and hud/security"). `ConfiscationLedger.all()` (`src/simulation/contraband/confiscation.ts`) is unbounded over a session for the reason `docs/HUD_PROJECTIONS.md:1600-1603` gives, and `drain()` still has no caller anywhere in `src/` or `tests/`.',
-  'hud/security':
-    'No reader. `docs/adr/0036-a-derived-default-security-sector.md:508` says plainly "no panel reads `hud/security` at all," and `docs/research/audit-2026-08-26/10-product-roadmap.md:328` lists it as the last of this family\'s unbuilt panels.',
   'world/render-snapshot':
     "No reader. `decodeRenderLayer` (`src/simulation/presentation/world-projection.ts`) has no caller outside its own module and `tests/`; the render path gets world chunks through `src/rendering/feed/simulation-snapshot-feed.ts`'s session-snapshot bundle instead of pulling this projection. ADR 0040 open question 4 (`docs/adr/0040-the-shape-of-the-render-delta-channel.md:522`) leaves reuse-versus-delete to slice 4 and deliberately does not decide it here.",
 };
 
+/*
+ * **FOUR ENTRIES LEFT THIS LIST ON 2026-09-17, AND THE ONE THAT IS LEFT IS THE
+ * ONLY ONE WHOSE BLOCKER WAS NEVER A PANEL.** `hud/incidents`,
+ * `hud/incident-detail`, `hud/contraband` and `hud/security` were deleted from
+ * it by the Security section -- `src/ui/hud/security-panel.ts` and the three
+ * readers `src/ui/simulation-security.ts`, `src/ui/simulation-incidents.ts` and
+ * `src/ui/simulation-contraband.ts` -- which the owner ruled on that date
+ * (provenance the weaker kind: the label of a clickable option, not a sentence
+ * they typed).
+ *
+ * The entries are gone rather than rewritten, which is the rule this list is
+ * built on and the direction that killed the single `UNPAINTED_ROUTE` entry at
+ * #331: a record of an absence must go when the absence does, or the next
+ * reader down the list learns nothing from something that is already false.
+ * Each of the four is quoted in the commit that deleted it, beside the reader
+ * that refuted it.
+ *
+ * What they said, in one line each, because the pattern in them is worth more
+ * than the fact that they are gone. Three of the four blamed the same thing --
+ * an unbuilt panel, each citing
+ * `docs/research/audit-2026-08-26/10-product-roadmap.md:328` -- and the fourth,
+ * `hud/incident-detail`, blamed the absence of the third: *"it waits on the
+ * LIST half rather than on a selection model ... there is no row for a player
+ * to press."* That is why one section and one panel deletes four entries, and
+ * why building four panels would have been the wrong reading of a list of four
+ * ids.
+ *
+ * The two cost gaps those entries also carried are **not** thereby closed, and
+ * neither is claimed to be: `projectIncidents` still pages `IncidentLog.all()`
+ * in memory so `resolved.total` costs `O(allIncidentsEverRecorded)`
+ * (`docs/HUD_PROJECTIONS.md:1613-1616`), and `ConfiscationLedger.all()` is
+ * still unbounded over a session (`:1600-1603`). The readers ask both with
+ * `limit: 0` -- totals and no rows -- which avoids *building* rows nobody
+ * renders and does nothing about the scan behind the total. Each reader's
+ * header says so.
+ */
 describe('every projection the worker can produce has a route out of it', () => {
   it('scans the read-model layer it means to, and really finds projections in it', () => {
     // Vacuity guard, both halves. An empty directory listing or a regex that

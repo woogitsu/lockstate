@@ -92,3 +92,59 @@ test.describe('six sections, Polish', () => {
     await measure(page, 'pl');
   });
 });
+
+/**
+ * The rail on the Security tab, on the assembled page (2026-09-17).
+ *
+ * The harness measurement in `ui-security-section.spec.ts` has no save panel in
+ * `.hud__aside`, and `.hud__aside:empty { display: none }` then hands the panel
+ * rail the save panel never gives it -- the surface #174 proved cannot
+ * reproduce this class of defect. So the numbers a record should carry are
+ * these, with a prison in the list.
+ */
+test.describe('the Security rail on the assembled page', () => {
+  test('measured at four viewports', async ({ page }) => {
+    await page.goto(APP_URL);
+    await page.waitForSelector('.hud');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.waitForSelector('.save-panel__item-label');
+    await page.locator('.ui-tab[data-tab="security"]').click();
+    await page.waitForSelector('.hud-security');
+
+    for (const [width, height] of [[375, 812], [900, 600], [1024, 768], [1440, 900]] as const) {
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(400);
+      const measured = await page.evaluate(() => {
+        const box = (selector: string): Record<string, number> | null => {
+          const node = document.querySelector(selector) as HTMLElement | null;
+          if (node === null) return null;
+          const rect = node.getBoundingClientRect();
+          return {
+            top: Math.round(rect.top * 10) / 10,
+            bottom: Math.round(rect.bottom * 10) / 10,
+            left: Math.round(rect.left * 10) / 10,
+            right: Math.round(rect.right * 10) / 10,
+            height: Math.round(rect.height * 10) / 10,
+            scrollHeight: (node as HTMLElement).scrollHeight,
+            clientHeight: (node as HTMLElement).clientHeight,
+          };
+        };
+        const controls = [...document.querySelectorAll<HTMLElement>('.hud-security button, .hud-security [role="radio"]')].map(
+          (node) => {
+            const rect = node.getBoundingClientRect();
+            const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            return {
+              name: node.innerText.trim() || node.className,
+              reachable: hit !== null && (node.contains(hit) || hit.contains(node)),
+              top: Math.round(rect.top * 10) / 10,
+              bottom: Math.round(rect.bottom * 10) / 10,
+            };
+          },
+        );
+        return { rail: box('.hud__side'), panel: box('.hud-security'), save: box('.save-panel'), controls };
+      });
+      console.log(`\n### rail ${width}x${height}`);
+      console.log(JSON.stringify(measured, null, 1));
+    }
+  });
+});

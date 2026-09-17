@@ -3098,6 +3098,248 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Security panel (Security tab, 2026-09-17)                           */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Written `.ui-panel.hud-security` rather than `.hud-security` for the reason
+ * `.ui-panel.hud-regime` above is: `.ui-panel` sets `overflow: hidden` and this
+ * overrides it on one axis, and two single-class selectors would leave the
+ * winner to the order `styles.css` happens to import the two files in
+ * (issue #143).
+ *
+ * `overflow-y: auto` for the same reason too, and it matters more here than on
+ * any other panel in the rail: this is the only one whose height grows with
+ * three separate things at once -- the sector registry, the open-incident
+ * window and the search queue -- and the timeline under a selected incident
+ * grows with how many states that incident has passed through. Every one of
+ * those is bounded, and their sum is not bounded by anything this stylesheet
+ * knows, so whatever the rail cannot give it is its own to scroll rather than
+ * the rail's to hang off its edge.
+ */
+.ui-panel.hud-security {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  /* `border-box`, so this panel and the save panel above it render at exactly
+     the same width from the same token -- the rail's one-width invariant that
+     `tests/browser/app-shell.spec.ts` asserts. */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--surface-raised);
+}
+
+/* Sentences, not labels: an eyebrow's uppercase single-line treatment is undone
+   here exactly as `.hud-regime__note` above undoes it. */
+.hud-security__note { white-space: normal; text-transform: none; letter-spacing: 0; }
+
+/* And `display: none` when the attribute says so, which the rule above cannot
+   be relied on to leave alone -- the guard `.hud-regime__note[hidden]` carries,
+   for the identical reason: the `@media (max-height: 700px)` block at the foot
+   of this file gives this class an author `display: -webkit-box`, and an author
+   `display` beats the user agent's `[hidden] { display: none }`. Without it
+   every empty sentence in this panel would be laid out beside the list it
+   describes at every viewport 700px tall or shorter -- and in this panel that
+   is the sentence "Nothing has been recorded yet." sitting under four open
+   incidents, which is the exact failure `AGENTS.md`'s fourth reservation is
+   about rather than a cosmetic one. */
+.hud-security__note[hidden] { display: none; }
+
+/* An eyebrow that heads a sub-list inside a block, rather than a block. It
+   keeps the shared uppercase treatment and only needs the hidden guard, for
+   the reason above. */
+.hud-security__eyebrow[hidden] { display: none; }
+
+.hud-security__sectors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.hud-security__sectors[hidden] { display: none; }
+
+.hud-security__sector-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* One sector: a headline with its control-state badge, then the staffing lines
+   under it. A column rather than the roster's row-with-a-side, because nothing
+   here is a second scale competing with the first -- issue #909's finding is
+   about two graded values sharing a line, and these are a word and some
+   counts. */
+.hud-security__sector-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Name left, badge right, and the badge never shrinks: a control state is the
+   one thing in the row a player must be able to read at any width. */
+.hud-security__sector-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-security__sector-header > .ui-badge { flex: 0 0 auto; }
+
+/* `overflow-wrap: anywhere` for `.hud-regime__roster-name`'s reason: a grade
+   name is content, a sector id is a stable id, and neither is guaranteed to
+   contain a break opportunity. `min-width: 0` is what lets the wrap happen
+   instead of pushing the badge out of the panel. */
+.hud-security__sector-name {
+  color: var(--text-heading);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hud-security__sector-staffing { font-variant-numeric: tabular-nums; }
+
+.hud-security__incident-list:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.hud-security__incident-row:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.hud-security__incident-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-security__incident-top > .ui-badge { flex: 0 0 auto; }
+
+.hud-security__incident-headline {
+  color: var(--text-heading);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The rank, its bar and the headcount share one line and wrap together when the
+   rail is too narrow for them -- the arrangement `.hud-regime__roster-need`
+   uses, and for its reason: three short runs stacked would make every row three
+   lines deep and `OPEN_INCIDENT_ROW_LIMIT`'s derivation has no headroom for
+   that. */
+.hud-security__incident-bottom {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.hud-security__incident-bottom > .ui-bar { flex: 0 0 auto; }
+
+.hud-security__incident-severity { font-variant-numeric: tabular-nums; }
+.hud-security__incident-people { font-variant-numeric: tabular-nums; }
+
+/* `cursor: pointer` only while the row *is* a control: `role` is written by
+   `paintIncidents` and removed by `clearIncidentRow`, so a vacated pooled row
+   keeps the plain cursor and cannot advertise a press that reaches nothing. */
+.hud-security__incident-row[role='radio'] { cursor: pointer; }
+
+/* The selected row: a background step and nothing else, for
+   `.hud-regime__roster-row[aria-checked='true']`'s reason --
+   `tests/unit/ui-design-tokens.test.ts` allows separation from a hairline and a
+   background step and from nothing else, the row already carries a badge whose
+   tone is the incident's state, and a background costs no geometry. `outline`
+   is left for focus, one rule down. */
+.hud-security__incident-row[aria-checked='true'] { background: var(--surface-sunken); }
+
+/* The keyboard's route has to be visible, and this row is not one of the
+   `.ui-*` primitives `primitives.css` gives the shared ring to -- it is a `div`
+   carrying `role="radio"`, for the reason `clearIncidentRow` records. The
+   offset is turned **inward** because `.ui-panel.hud-security` is
+   `overflow-x: hidden`, so a ring drawn 2px outside a full-width row would be
+   clipped on both sides. */
+.hud-security__incident-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.hud-security__incident-summary { font-variant-numeric: tabular-nums; }
+
+/* The inspector under the list, with the same gutter and hairline treatment the
+   Regime panel's gives its own, so the blocks of one panel do not read as
+   several designs.
+
+   `display: none` on `[hidden]` for `.hud-regime__detail`'s reason: an author
+   `display` beats the user agent's, and nothing selected is the arrival state
+   of this section for every player. */
+.hud-security__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-security__detail[hidden] { display: none; }
+
+.hud-security__detail-heading {
+  color: var(--text-heading);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hud-security__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Sentences with a tick count in them: the same un-eyebrowing the notes get,
+   plus tabular figures so a column of ticks lines up. */
+.hud-security__timeline-row {
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-security__count-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.hud-security__count-row {
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-security__search-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.hud-security__search-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.hud-security__search-name {
+  color: var(--text-heading);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hud-security__search-tally { font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------------ */
 /* Bottom-centre tab bar                                               */
 /* ------------------------------------------------------------------ */
 
@@ -3457,6 +3699,20 @@
      block is competing with the timetable above it for the panel's box. The
      text node stays in the DOM in full, clipped rather than replaced. */
   .hud-regime__note {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+  }
+
+  /* The Security panel's notes, on the same terms and for a reason that is
+     sharper here than on either panel above: this panel holds five sentences
+     that can wrap -- the waiting sentence, two empty-incident sentences and two
+     empty-contraband ones -- and it is the panel whose subject is things going
+     wrong, so a sentence that grows the block pushes the open-incident rows
+     off a short viewport. The text node stays in the DOM in full, clipped
+     rather than replaced. */
+  .hud-security__note {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
@@ -4780,6 +5036,11 @@
      two classes for the same specificity reason, or it would stay 264px in a
      343px rail. */
   .ui-panel.hud-regime { width: 100%; }
+
+  /* And the Security panel, which shares the same rail slot on the sixth tab:
+     two classes for the same specificity reason, or it would stay 264px in a
+     343px rail. */
+  .ui-panel.hud-security { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;

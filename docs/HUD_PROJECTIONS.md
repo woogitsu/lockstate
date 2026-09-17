@@ -832,8 +832,8 @@ so a prison with one sector over-staffed and another short still reports a
 shortage. What stops being answerable then is *which* sector is short, which is a
 breakdown to add on the day a player can draw one.
 
-**Five** of the fifteen catalogued read models still have a route and nobody on
-the end of it: **ten are read, by ten modules.** Both numbers are stated
+**One** of the fifteen catalogued read models still has a route and nobody on
+the end of it: **fourteen are read, by thirteen modules.** Both numbers are stated
 because the difference between them is what made an earlier sentence wrong.
 An older one said ten, having counted reader *modules* rather than read models —
 `src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
@@ -863,14 +863,26 @@ answered two of those three. There is still no highlight: nothing in
 `src/rendering/` marks the selected prisoner in the world, and nothing anywhere
 maps a world position to an entity.
 
-The ten with a reader are `hud/status-strip`, `hud/build-queue`,
+**And it read "**Five** … **ten are read, by ten modules**" until 2026-09-17,
+overtaken by the Security section — which is the largest single move this tally
+has made and the first where the two counts move by different amounts.** The
+owner ruled that day that the four remaining HUD read models get a navigation
+section of their own, and `src/ui/hud/security-panel.ts` paints them through
+three readers: `src/ui/simulation-security.ts` (`hud/security`),
+`src/ui/simulation-incidents.ts` (`hud/incidents` **and**
+`hud/incident-detail`, the pair) and `src/ui/simulation-contraband.ts`
+(`hud/contraband`). So read models moved +4 and reader modules +3, and the
+coincidence the two paragraphs above depend on — that the counts happen to stay
+equal — ended here rather than being restated. The direction is marked rather
+than overwritten for the reason those corrections give.
+
+The fourteen with a reader are `hud/status-strip`, `hud/build-queue`,
 `hud/pending-deliveries`, `hud/held-guards`, `hud/prisoner-population`,
-`hud/prisoner-roster`, `hud/prisoner-detail`, `hud/room-list`, `hud/room-detail`
-and `hud/staff`; a
-`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The five without
-one are `hud/security`, `hud/contraband`,
-`hud/incidents`, `hud/incident-detail` and **`world/render-snapshot`** — the
-last of which is worth naming rather than assumed read, because the world is
+`hud/prisoner-roster`, `hud/prisoner-detail`, `hud/room-list`, `hud/room-detail`,
+`hud/staff`, `hud/security`, `hud/incidents`, `hud/incident-detail` and
+`hud/contraband`; a
+`grep -rl "'hud/<id>'" src/ui/` per id is the whole derivation. The one without
+one is **`world/render-snapshot`** — which is worth naming rather than assumed read, because the world is
 plainly on screen: `SimulationSnapshotFeed` reaches it through
 `simulation/request-snapshot` (`src/rendering/feed/simulation-snapshot-feed.ts:450`)
 and not through this channel at all, which is why it has a cadence of its own
