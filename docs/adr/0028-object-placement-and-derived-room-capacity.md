@@ -1490,13 +1490,21 @@ balance decision with no measurement behind it and it stays unauthored.
   premise the ruling was priced on therefore survives, and it was checked
   against the schema rather than assumed.
 - **A save whose cell is over the new ceiling: the state ADR 0076 already
-  prices.** The excess residents are exactly `residentsWithoutExistingPlace`,
-  the state stops paying for them, and
-  `PrisonerOperationsRuntime.relocateExcessResidentsOf` moves them where it can,
-  announcing it with the sentence the owner approved on 2026-08-30
-  (`hud.alert.event.prisoners.relocated`). A twelve-bed cell restored under this
-  build is indistinguishable, to every one of those paths, from a twelve-bed
-  cell with ten beds taken out.
+  prices, and one half of the remedy it does not reach.** The excess residents
+  are exactly `residentsWithoutExistingPlace` and the state stops paying for
+  them, so a twelve-bed cell restored under this build is indistinguishable, on
+  those paths, from a twelve-bed cell with ten beds taken out. **Relocation is
+  the exception, and it was measured rather than assumed**
+  (`tests/integration/a-save-whose-cell-is-over-the-ceiling.test.ts`):
+  `relocateExcessResidentsOf` has exactly one production caller,
+  `ObjectPlacementService.relocateResidentsLeftWithoutAPlace`, reached from a
+  removal and an undo -- because ADR 0076 was written about a bed being *taken
+  away*. A restore fires no such event, so the excess sit where they are,
+  unpaid, until the player touches the room; a single `RemoveObject` on a
+  surplus bed then moves them next door and announces it with the sentence the
+  owner approved on 2026-08-30 (`hud.alert.event.prisoners.relocated`).
+  **Whether a restore should relocate is left open here** rather than decided
+  in implementation code: it is ADR 0076's subject, not this amendment's.
 - **One player-visible sentence became false and was rewritten.**
   `hud.intake.hint` promised that *"an arrival with none waits until a bed is
   free"*, and with a ceiling a bed can be free while the arrival waits. Wording

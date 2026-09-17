@@ -187,11 +187,21 @@ export function roomInstanceContaining(
  * already made legal and
  * [ADR 0076](../../../docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md)
  * already priced: the excess residents are exactly
- * `residentsWithoutExistingPlace`, the state stops paying for them, and
- * `PrisonerOperationsRuntime.relocateExcessResidentsOf` moves them if it can.
- * A twelve-bed cell restored under this build is indistinguishable, to every
- * one of those paths, from a twelve-bed cell with ten beds removed -- which is
- * why no save format moves.
+ * `residentsWithoutExistingPlace` and the state stops paying for them. A
+ * twelve-bed cell restored under this build is indistinguishable, to every one
+ * of those paths, from a twelve-bed cell with ten beds removed -- which is why
+ * no save format moves.
+ *
+ * **Except in one respect, measured rather than reasoned about**
+ * (`tests/integration/a-save-whose-cell-is-over-the-ceiling.test.ts`): ADR
+ * 0076's *relocation* is fired by the removal event and by nothing else --
+ * `relocateExcessResidentsOf` has one production caller,
+ * `ObjectPlacementService.relocateResidentsLeftWithoutAPlace`
+ * (`src/simulation/objects/object-placement-service.ts:873`) -- so a restore
+ * reaches the state without reaching the remedy. The excess stay where they
+ * are, unpaid, until the player touches that room; one `RemoveObject` on a
+ * surplus bed then moves them. Recorded here rather than fixed: making a
+ * restore relocate is a behaviour change ADR 0076 did not decide.
  *
  * An object naming a catalogue id this build does not declare contributes
  * nothing, rather than throwing: the row can only come from a save, and one
