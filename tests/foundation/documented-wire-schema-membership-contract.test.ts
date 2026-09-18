@@ -87,6 +87,16 @@ import {
  * and would fail on a lost row; it is the ordinary case the three moves above
  * make look unusual.
  *
+ * **Re-derived a fifth time, at `eeda2e53` (2026-09-18), across a 53-commit
+ * top-up that included #1293's re-anchor pass over `docs/adr/STATUS-QUEUE.md`
+ * -- one of the two documents carrying a resolving enumeration: 20
+ * enumerations, of which 6 resolve.** Unchanged again, and the re-anchor is
+ * the interesting half: #1293 added 375 lines to that file and removed 5, and
+ * both quotations of the ADR 0003 amendment came through it untouched --
+ * which is what the `file:line`-versus-quotation rule in
+ * `docs/AGENT_WORKFLOW.md` section 4 predicts, and what this pin measures
+ * rather than assumes.
+ *
  * `RESOLVED_ENUMERATIONS` below is not that table. It is the *output* of the
  * derivation, pinned, so that a resolution which stops happening -- a renamed
  * field, a reworded sentence, a regex that quietly stops matching -- fails
