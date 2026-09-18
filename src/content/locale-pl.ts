@@ -784,6 +784,7 @@ const plMessages: Readonly<Record<string, string>> = {
   // ones.
   // =====================================================================
   'hud.alert.event.construction.order-cancelled': 'Zlecenie anulowano — pieniądze, które kosztowało, wracają.',
+  'hud.alert.event.construction.order-completed': 'Zlecenie ukończono.',
   'hud.alert.event.construction.order-cancelled-underway':
     'Zlecenie anulowano. Co wydano po przekroczeniu punktu bez odwrotu, zostaje wydane.',
   'hud.alert.event.construction.undone': 'Cofnięto ostatnią zmianę w kolejce budowy.',
