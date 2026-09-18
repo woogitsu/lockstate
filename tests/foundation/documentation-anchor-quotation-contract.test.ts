@@ -447,6 +447,42 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
  * police is unchanged: a document absent from the table still has a ceiling of
  * zero, and the next unquoted anchor added to any of the fourteen is red.
  *
+ *
+ * **Re-derived a second time on `origin/main` @ `23374859` (2026-09-18), and
+ * the ten anchors it moves split into two different things, which is why they
+ * are not summarised as one number.** Nine of the ten are anchors that
+ * *verified* at `eeda2e53` and stopped verifying without their documents being
+ * touched at all: `adad4f08` (#1291, the #961 resident ceiling) inserted
+ * comment blocks into `src/content/default-locale-en.ts`,
+ * `src/content/room-catalog.ts` and `src/simulation/objects/room-capacity.ts`,
+ * and every anchor below them slid off its line. That is a *regression in
+ * checkability*, not the grandfathered population, so the ratchet should not
+ * absorb it and mostly does not:
+ *
+ * - `docs/LOCALIZATION.md` and `docs/adr/0110-...md` are **repaired in this
+ *   commit rather than budgeted**, by re-deriving the coordinate with
+ *   `grep -n`. Their rows stay at 2 and 6. The code moved verbatim in both
+ *   cases -- `'hud.status.prisoners-without-bed'` 167 -> 203, and
+ *   `room.security-office`'s catalogue entry 159-163 -> 219-223.
+ * - `docs/adr/STATUS-QUEUE.md`, 277 -> **283**, is the one raise of the nine
+ *   and it is a raise only because this branch must not write that file:
+ *   a re-anchor pass is running on it as this lands. The six are
+ *   `src/content/room-catalog.ts:93` and `:94`, and
+ *   `src/simulation/objects/room-capacity.ts:176-201` cited four times. All
+ *   six now land on docblock prose *about the right subject* -- `:176-201` is
+ *   the amended resident-ceiling comment, not `residentCapacity` -- which is
+ *   the plausible-drift shape this gate was written for, caught by it, one day
+ *   old. **The repair belongs to that pass and will lower this row**; raising
+ *   it here buys nothing but the ordering.
+ *
+ * The tenth is the ordinary kind: `docs/adr/0028-...md`, 16 -> **17**, for
+ * `tests/browser/ui-staff-wage.spec.ts:377`, written into that ADR on `main`
+ * by the same #961 work and never verifying, because the sentence quotes no
+ * symbol beside it at all. Same grandfathered population as the 1206.
+ *
+ * **What is not re-derived is the rest of the table**, deliberately: a blanket
+ * regeneration at each new base would have absorbed all nine silently, and the
+ * point of naming them one at a time is that eight of them have an owner.
  * The largest mover is `docs/adr/STATUS-QUEUE.md`, 260 -> 277, and it is worth
  * naming because the seventeen are **not drift**: they came from #1293's
  * re-anchor pass, which re-derived each coordinate with `grep -n` and recorded
@@ -471,7 +507,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0023-room-occupancy-authority.md': 6,
   'docs/adr/0025-guard-hiring-surface.md': 10,
   'docs/adr/0026-entity-id-lifetime.md': 3,
-  'docs/adr/0028-object-placement-and-derived-room-capacity.md': 16,
+  'docs/adr/0028-object-placement-and-derived-room-capacity.md': 17,
   'docs/adr/0029-concurrent-room-use-claims.md': 9,
   'docs/adr/0031-build-queue-cancellation-surface.md': 1,
   'docs/adr/0034-releasing-a-claimed-guard.md': 6,
@@ -533,7 +569,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/drafts/how-a-language-change-reaches-a-running-page.md': 5,
   'docs/adr/drafts/what-a-second-tab-follows.md': 6,
   'docs/adr/README.md': 13,
-  'docs/adr/STATUS-QUEUE.md': 277,
+  'docs/adr/STATUS-QUEUE.md': 283,
   'docs/AGENT_WORKFLOW.md': 2,
   'docs/HANDOVER-2026-08-26.md': 3,
   'docs/HANDOVER-2026-09-15.md': 2,
