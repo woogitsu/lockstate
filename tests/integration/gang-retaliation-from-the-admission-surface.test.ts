@@ -278,6 +278,36 @@ describe('a gang retaliation from the admission the interface actually makes (#9
      * the cost is the 90 simulated days themselves, and the 5 s it exceeds is
      * a global default in `vitest.config.ts` chosen for tests that do not
      * advance a clock at all.
+     *
+     * **That pair did not span `adad4f08` (#1291, the #961 resident ceiling),
+     * and re-measured across it the two are *not* the same number** -- which
+     * is recorded here rather than left under the sentence above, because the
+     * sentence above was true of the window it measured and is not true of
+     * this one. Three alternating pairs, `eeda2e53` against the tree merged
+     * with `23374859`, same container, same order, load average 28 because
+     * nine other agents were running suites in it: 3372/2620/2831 ms before
+     * against 4223/3972/3190 ms after -- means of 2941 and 3795, and the
+     * later tree is the slower one in all three pairs.
+     *
+     * **That is a measurement and not a diagnosis.** The ceiling makes
+     * `residentCapacity` a `min(sum, ceiling)` over every room and moves who
+     * is housed, so more work per admitted prisoner is what the feature is;
+     * nothing here establishes it as a defect, and the conclusion this comment
+     * draws does not depend on which it is. What it depends on is that the
+     * test does the same 90 simulated days it always did, and that at load
+     * this container reports it at 2.6-4.2 s against a 5 s budget -- a
+     * coin-flip rather than a margin. Measured the same afternoon on the same
+     * container, five unrelated tests that also advance a clock lost that
+     * coin-flip on `Test timed out in 5000ms` --
+     * `tests/determinism/contended-scan-order.test.ts`,
+     * `tests/integration/canteen-shape-hunger-comparison.test.ts`,
+     * `tests/integration/contraband-search-duty.test.ts`,
+     * `tests/integration/incident-trigger-reachability.test.ts` and
+     * `tests/integration/risk-tier-neglect-reachability.test.ts` -- on a tree
+     * that carries none of this branch's change, and passed when the load fell.
+     * This file is one instance of that class; the class is the 5 s default,
+     * and widening it is a decision about `vitest.config.ts` rather than about
+     * this test.
      */
   }, 30_000);
 });
