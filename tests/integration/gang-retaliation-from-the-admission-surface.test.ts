@@ -263,7 +263,21 @@ describe('a gang retaliation from the admission the interface actually makes (#9
      * It went over on run 35089456268 -- "Test timed out in 5000ms" at this
      * `it`, in a job whose other 5,359 tests passed and whose diff was one
      * regex in a foundation test. 30 s is the figure the neighbouring
-     * integration files already use for a run of this length.
+     * integration files already use for a run of this length --
+     * `contended-shower-fairness.test.ts` and `economy-loan-recovery.test.ts`
+     * carry `}, 30_000)`, and the runs that advance further carry 60_000,
+     * 120_000 and 300_000.
+     *
+     * **Re-measured 2026-09-18 after a top-up merge of `origin/main`, because
+     * raising a budget is the wrong fix for a test that got slower rather than
+     * one that was always long.** Three alternating runs of this test at the
+     * branch's original base `54adc87c` and at the merged tree, same
+     * container, same order: 1129/942/787 ms at the base against 965/988/796
+     * ms merged. The two are the same measurement inside the container's own
+     * noise, across some sixty intervening commits, so nothing regressed --
+     * the cost is the 90 simulated days themselves, and the 5 s it exceeds is
+     * a global default in `vitest.config.ts` chosen for tests that do not
+     * advance a clock at all.
      */
   }, 30_000);
 });
