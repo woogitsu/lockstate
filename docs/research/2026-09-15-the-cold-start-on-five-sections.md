@@ -639,6 +639,22 @@ opens its Status block *"Proposed, 2026-09-15. Not self-approved, and it
 implements nothing."*; that file is another
 agent's surface and is not edited from here.
 
+**Second addendum, 2026-09-18 — it is now built, and the sentence above is
+kept rather than overwritten.** Topping this branch up to `origin/main`
+`eeda2e53` (v0.0.661) brought #1284 in. ADR 0116's Status block now opens
+*"Accepted, 2026-09-16, by the repository owner: option 2 — a"*, and keeps the
+superseded wording under its own *"The paragraph replaced here read"* marker;
+`SIMULATION_EVENT_TYPES` re-derived by the census's own command returns **28**,
+and the new member is `'construction.order-completed'` — not
+`construction.completed`, which is the name the addendum above guessed at and
+is the reason a grep for it would still come back empty. **So the measurement
+is now history in both halves**: the *"GAINED when the twenty-four walls
+finished: nothing"* run and the *"27, no such member"* re-check both stand as
+what was true on the dates they name, and neither is edited, per
+`docs/research/README.md` — a record here becomes older, not wrong. What a
+player is told when a wall finishes on `eeda2e53` is **not measured here**; it
+would need the harness run again, which this branch does not do.
+
 > `Cell at 12, 12 is missing` · `a door — nobody can get in` ·
 > `Walled in — not a door check` · `Not ready` · `Needs 1 × Bed` ·
 > `Needs 1 × Toilet`
