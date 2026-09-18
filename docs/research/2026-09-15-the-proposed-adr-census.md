@@ -108,6 +108,41 @@ reads:
 | `e044a3e8` | 2026-09-15 | **44** | 65 | 30 / 8 / 6 / 0 |
 | `54adc87c` | 2026-09-16 | **43** | 66 | 30 / 7 / 6 / 0 |
 | `33c02a12` | 2026-09-17 | **42** | 67 | 30 / 7 / 5 / 0 |
+| `eeda2e53` | 2026-09-18 | **42** | 67 | 30 / 7 / 5 / 0 |
+
+> **Third correction, 2026-09-18: the fourth re-derivation is the first that
+> does not move, and the row above is kept in the same table rather than given
+> a section of its own.** Re-run at `eeda2e53` (`main`, `chore(release):
+> v0.0.661`) with the same replicated `statusStatement` extractor, over an
+> extraction of the commit rather than a working tree
+> (`git archive eeda2e53 docs/adr | tar -x -C <dir>`): `TOTAL 109 accepted 67
+> proposed 42 other 0`. The two `Proposed` sets were diffed member by member
+> and are **identical** — nothing left and nothing entered across 53 commits.
+>
+> **A count that stopped moving is the weaker reading and the check that makes
+> it the stronger one is named here**: an extractor that silently stopped
+> matching would also return the previous number. The set diff is what rules
+> that out, because it would have returned 42 members on one side and 0 on the
+> other rather than 42 against 42.
+>
+> **Both absences in the two bullets below were re-opened at `eeda2e53` rather
+> than carried from `33c02a12`, and both coordinates still hold**:
+> `docs/adr/0115-…:14` still reads *"**Proposed.** Nothing here is decided and
+> no code implements it."*, and `docs/adr/0042-…:5` still reads
+> *"**Proposed. Not accepted, and deliberately not self-approved.**"* PR #1275,
+> which carries ADR 0115's acceptance, is **still open** as this is written,
+> so the census's 42 and its bucket-3 count of five are both true of `main`
+> today; what a reader must not do is infer from the ruling that the count has
+> already moved.
+>
+> **One sentence immediately below this block is a tally and the row above
+> made it wrong by one.** *"Bucket 1 has not moved across any of the three"*
+> was written against a three-row table and the table now has four rows. It is
+> left as it stands and corrected here rather than edited, because it is the
+> §4 example this document keeps walking into: **bucket 1 has not moved across
+> any of the four**, and the sentence saying so will need this note again the
+> next time a row is added. A subject would have survived where the tally did
+> not — *bucket 1 has not moved since the census was taken*.
 
 Bucket 1 has not moved across any of the three. Bucket 4 is still empty, and
 that is still a result rather than an unchecked box.
