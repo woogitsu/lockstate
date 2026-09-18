@@ -504,7 +504,10 @@ Two things deliberately do **not** cross:
   did. `deriveRoomCapacity` (`src/simulation/objects/room-capacity.ts`) credits
   `residentCapacity` only for an object whose capabilities include
   `'sleep-surface'`; a bench, a dining table and a shower head declare none, so
-  a 40-seat canteen adds 0. The *conclusion* was right for the reason the
+  a 40-seat canteen adds 0. **Since issue #961 that sum is also capped** at the
+  room type's authored `maxResidents` where it declares one -- `room.cell` 2,
+  `room.solitary-cell` 1 -- so a cell with four beds in it contributes 2 rather
+  than 4. The *conclusion* was right for the reason the
   bullet's own last clause named: `object.medical-bed` declares
   `'sleep-surface'` too, so `roomCapacity` counts a furnished infirmary's beds
   while `IntakeSystem` will never house anybody in one.
@@ -1657,6 +1660,25 @@ decision about what to build next.
     incidents only; history is reachable solely through `all()`, which
     materialises every incident ever recorded. An incident-history panel is
     `O(all)` per projection and unbounded over a long session.
+
+    **Half of that sentence stopped being true and the half that did is the
+    cheaper half, which is why the entry is amended rather than closed.**
+    `projectIncidents` used to build a whole `IncidentRowViewModel` for every
+    terminal incident and then hand the array to `pageOf`, which kept `limit`
+    of them and dropped the rest — so a request showing four rows built one
+    per finished incident, each with a bounded-value record, an optional
+    outcome record and a `requiredResponderCount` call on the response source.
+    It now carries a terminal **ordinal** through the same walk and calls
+    `projectRow` only inside the window, which is the shape
+    `projectPrisonerRoster` already used (*"materialise only the ones the
+    window asked for"*). The page is unchanged: same records, same order, same
+    `total`/`offset`/`limit`.
+
+    **What is still open is the walk itself**, and it is the part that needs
+    the index this entry is named for: the aggregate `projectIncidents`
+    reports — `summary`, `countsByState`, `countsByType` — is a fold over
+    every record, so `all()` is still called and still materialises the log.
+    Closing that is a change to `IncidentLog`, not to the projection.
 29. **~~`assault` and `escape-attempt` are declared but never triggered.~~
     Closed by [ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md).**
     `IncidentTriggerSystem` opened only `riot` and `gang-retaliation`, so two

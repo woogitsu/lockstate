@@ -4,6 +4,7 @@ import { defaultLocaleEnCatalog } from '../../src/content/default-locale-en';
 import { canonicalJson } from '../../src/simulation/determinism/canonical';
 import { NEED_IDS, NEED_MAX } from '../../src/simulation/prisoners/needs';
 import { classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import { IncidentLog } from '../../src/simulation/incidents/incident';
 import {
   BOUNDED_VALUE_SEGMENTS,
   projectContraband,
@@ -1400,5 +1401,80 @@ describe('incidents', () => {
   it('returns undefined for an unknown incident id', () => {
     const runtime = runScenario();
     expect(projectIncidentDetail({ incidents: runtime.incidents }, 'incident.nope', runtime.kernel.tick)).toBeUndefined();
+  });
+
+  /**
+   * A real `IncidentLog` rather than `runScenario`'s, and the reason is the
+   * subject rather than convenience: the scenario finishes **one** incident,
+   * and a window is only observable over a list longer than the window. Every
+   * record below is still opened and transitioned through the real lifecycle,
+   * so an illegal transition throws here exactly as it does in the other
+   * cases above.
+   */
+  function logWithTerminalIncidents(count: number): IncidentLog {
+    const log = new IncidentLog();
+    for (let index = 0; index < count; index += 1) {
+      const id = `incident.past.${String(index).padStart(3, '0')}`;
+      log.open({ id, type: 'assault', sectorId: 'sector-a', participantIds: [index + 1], severity: 3, causeFactors: [] }, index);
+      log.transition(id, 'notified', index);
+      log.transition(id, 'responding', index);
+      log.transition(id, 'resolved', index, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+    }
+    log.open({ id: 'incident.open', type: 'riot', sectorId: 'sector-a', participantIds: [1], severity: 4, causeFactors: [] }, count);
+    return log;
+  }
+
+  it('builds a row only for the terminal incidents the window asked for', () => {
+    // `projectRow` is module-private, so what is counted is the one call it
+    // makes on a collaborator: `requiredResponderCount`, once per row it
+    // builds and nowhere else in the projection. That makes "how many rows
+    // were materialised" observable from outside without exporting anything
+    // for the test's benefit.
+    //
+    // This is the assertion the change is for. Before it, every terminal
+    // incident ever recorded got a row and `pageOf` threw all but `limit` of
+    // them away -- so this counter read 41 for a request that shows four.
+    let rowsBuilt = 0;
+    const response = {
+      getMetrics: () => ({ incidentsResolved: 0, incidentsLapsed: 0, respondersDispatched: 0, routeFailures: 0 }),
+      requiredResponderCount: (severity: number) => {
+        rowsBuilt += 1;
+        return severity;
+      },
+    };
+
+    const incidents = projectIncidents({ incidents: logWithTerminalIncidents(40), response }, 1_000, { offset: 10, limit: 4 });
+
+    // Four terminal rows inside the window, plus the one open incident, which
+    // `active` reports in full and unpaged by design.
+    expect(rowsBuilt).toBe(5);
+    expect(incidents.active.map((incident) => incident.incidentId)).toEqual(['incident.open']);
+  });
+
+  it('pages the terminal incidents exactly where the discarded slice used to', () => {
+    // The page itself, asserted separately from the cost above: same records,
+    // same order, same `total`/`offset`/`limit`, so the change is invisible to
+    // a caller. `all()` is ascending by id and the ordinal counts in that
+    // order, so the window starting at 10 is `past.010` onwards.
+    const incidents = projectIncidents({ incidents: logWithTerminalIncidents(40) }, 1_000, { offset: 10, limit: 4 });
+
+    expect(incidents.resolved.rows.map((incident) => incident.incidentId)).toEqual([
+      'incident.past.010',
+      'incident.past.011',
+      'incident.past.012',
+      'incident.past.013',
+    ]);
+    expect(incidents.resolved).toMatchObject({ total: 40, offset: 10, limit: 4 });
+    expect(incidents.summary).toMatchObject({ total: 41, stillOpen: 1, resolved: 40, lapsed: 0 });
+  });
+
+  it('reports an empty window rather than a first page when the offset is past the end', () => {
+    // The edge `slice(offset, offset + limit)` answered by construction and
+    // the ordinal has to answer by arithmetic: an offset beyond the last
+    // terminal record is an empty page whose `total` is still the whole count.
+    const incidents = projectIncidents({ incidents: logWithTerminalIncidents(3) }, 1_000, { offset: 9, limit: 4 });
+
+    expect(incidents.resolved.rows).toEqual([]);
+    expect(incidents.resolved).toMatchObject({ total: 3, offset: 9, limit: 4 });
   });
 });
