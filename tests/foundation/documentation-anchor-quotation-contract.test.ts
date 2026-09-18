@@ -430,10 +430,31 @@ function unverifiedByDocument(): ReadonlyMap<string, number> {
 /**
  * The most unverified `src/`/`tests/` anchors each document may carry.
  *
- * Derived on `origin/main` @ `54adc87c` by the procedure above -- 1146 anchors
- * over 89 documents, out of 1910 in scope. A document absent from this table
- * has a budget of zero, which is the whole point: a document written after this
- * gate quotes its anchors or does not cite them.
+ * First derived on `origin/main` @ `54adc87c` by the procedure above -- 1146
+ * anchors over 89 documents, out of 1910 in scope. A document absent from this
+ * table has a budget of zero, which is the whole point: a document written
+ * after this gate quotes its anchors or does not cite them.
+ *
+ * **Re-derived on `origin/main` @ `eeda2e53` (2026-09-18), and the reason is
+ * the one the block above demands in writing.** This branch sat unmerged for
+ * two days while some sixty commits landed on `main`, and a budget pinned to a
+ * merge base is a measurement of that base, not of this branch. Fourteen rows
+ * rose, by 61 anchors in total, to 1206 over the same 89 documents out of 1980
+ * in scope; no row fell, none was spent, and no document joined or left the
+ * table. Every one of the 61 was written on `main` *before* this gate existed,
+ * so it belongs to the same grandfathered population as the original 1146 --
+ * the ratchet cannot police commits that merged before it did. What it does
+ * police is unchanged: a document absent from the table still has a ceiling of
+ * zero, and the next unquoted anchor added to any of the fourteen is red.
+ *
+ * The largest mover is `docs/adr/STATUS-QUEUE.md`, 260 -> 277, and it is worth
+ * naming because the seventeen are **not drift**: they came from #1293's
+ * re-anchor pass, which re-derived each coordinate with `grep -n` and recorded
+ * the evidence. They fail here for the reason this gate exists to state --
+ * `src/ui/hud/view-model.ts:2131` is right, and is written with no fragment
+ * quoted beside it, so nothing but a human opening the file can tell. Being
+ * *correct* and being *checkable* are different properties, and this gate
+ * measures the second.
  */
 const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0003-simulation-worker-protocol.md': 9,
@@ -442,7 +463,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0008-trusted-service-boundary.md': 1,
   'docs/adr/0012-derived-identifier-reproducibility.md': 1,
   'docs/adr/0013-free-tier-cloud-save-capacity.md': 1,
-  'docs/adr/0015-actor-identity-allocation.md': 20,
+  'docs/adr/0015-actor-identity-allocation.md': 23,
   'docs/adr/0017-money-primary-resource-model.md': 5,
   'docs/adr/0019-tile-ownership-under-overlapping-parcels.md': 8,
   'docs/adr/0020-deterministic-kernel.md': 15,
@@ -454,7 +475,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0029-concurrent-room-use-claims.md': 9,
   'docs/adr/0031-build-queue-cancellation-surface.md': 1,
   'docs/adr/0034-releasing-a-claimed-guard.md': 6,
-  'docs/adr/0038-what-makes-a-save-compatible.md': 15,
+  'docs/adr/0038-what-makes-a-save-compatible.md': 16,
   'docs/adr/0039-a-keyboard-route-to-room-zoning.md': 3,
   'docs/adr/0040-the-shape-of-the-render-delta-channel.md': 22,
   'docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md': 1,
@@ -465,10 +486,10 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0047-raising-a-building-on-open-ground.md': 34,
   'docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md': 3,
   'docs/adr/0050-when-a-sentence-ends.md': 4,
-  'docs/adr/0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md': 9,
+  'docs/adr/0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md': 12,
   'docs/adr/0053-who-may-stand-a-security-post.md': 2,
   'docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md': 5,
-  'docs/adr/0056-keeping-a-players-orders-in-the-order-they-gave-them.md': 3,
+  'docs/adr/0056-keeping-a-players-orders-in-the-order-they-gave-them.md': 7,
   'docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md': 4,
   'docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md': 5,
   'docs/adr/0061-what-the-prison-produces-on-its-own.md': 1,
@@ -478,10 +499,10 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0071-what-bounds-a-room-whose-activity-consumes-no-object.md': 1,
   'docs/adr/0073-who-orders-a-contraband-search.md': 3,
   'docs/adr/0075-what-a-prison-that-cannot-afford-its-first-bed-is-owed.md': 6,
-  'docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md': 11,
+  'docs/adr/0076-what-happens-to-a-resident-whose-bed-is-taken-away.md': 16,
   'docs/adr/0080-when-the-prison-asks-what-a-prisoner-is-carrying.md': 6,
   'docs/adr/0081-whether-a-purchase-may-be-partly-filled.md': 5,
-  'docs/adr/0082-what-order-build-orders-are-carried-out-in.md': 2,
+  'docs/adr/0082-what-order-build-orders-are-carried-out-in.md': 3,
   'docs/adr/0083-what-opens-the-negative-balance-and-what-bounds-it.md': 11,
   'docs/adr/0084-what-the-alerts-channel-owes-a-player.md': 8,
   'docs/adr/0085-what-the-hud-corner-is-for-and-what-the-strip-may-drop.md': 5,
@@ -491,9 +512,9 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0090-medium-as-a-warning-not-a-skipped-step.md': 1,
   'docs/adr/0091-what-clears-the-refusal-band.md': 9,
   'docs/adr/0092-who-decides-where-a-guard-stands.md': 14,
-  'docs/adr/0093-a-carry-is-an-action.md': 27,
+  'docs/adr/0093-a-carry-is-an-action.md': 36,
   'docs/adr/0094-which-names-a-prison-draws-from.md': 7,
-  'docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md': 8,
+  'docs/adr/0096-what-a-way-back-is-and-what-guarantees-one.md': 9,
   'docs/adr/0097-what-the-world-view-is-required-to-communicate.md': 18,
   'docs/adr/0098-what-says-which-room-this-is.md': 4,
   'docs/adr/0100-whether-a-rendered-object-sprite-can-be-published-art.md': 1,
@@ -502,21 +523,21 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0104-what-undo-takes-back.md': 12,
   'docs/adr/0105-what-makes-a-local-save-the-newest-one.md': 4,
   'docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md': 4,
-  'docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md': 15,
+  'docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md': 17,
   'docs/adr/0108-what-nobody-can-get-in-should-mean.md': 9,
   'docs/adr/0109-what-a-stale-local-save-is-refused-for.md': 10,
   'docs/adr/0110-what-security-sector-a-room-is-in.md': 6,
   'docs/adr/0111-how-a-room-instances-rectangle-reaches-the-render-side.md': 6,
   'docs/adr/0114-what-a-deleted-prisons-undo-copy-holds-and-when-it-closes.md': 6,
-  'docs/adr/0116-whether-a-finished-object-is-an-event.md': 14,
+  'docs/adr/0116-whether-a-finished-object-is-an-event.md': 20,
   'docs/adr/drafts/how-a-language-change-reaches-a-running-page.md': 5,
   'docs/adr/drafts/what-a-second-tab-follows.md': 6,
-  'docs/adr/README.md': 12,
-  'docs/adr/STATUS-QUEUE.md': 260,
+  'docs/adr/README.md': 13,
+  'docs/adr/STATUS-QUEUE.md': 277,
   'docs/AGENT_WORKFLOW.md': 2,
   'docs/HANDOVER-2026-08-26.md': 3,
   'docs/HANDOVER-2026-09-15.md': 2,
-  'docs/HUD_PROJECTIONS.md': 3,
+  'docs/HUD_PROJECTIONS.md': 9,
   'docs/IDENTITY_V5_ROLLOUT.md': 3,
   'docs/INPUT.md': 1,
   'docs/LOCALIZATION.md': 2,
@@ -524,7 +545,7 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/PLAYER_STRINGS.md': 175,
   'docs/TESTING.md': 3,
   'docs/VISUAL_IDENTITY.md': 5,
-  'docs/WORLD.md': 1,
+  'docs/WORLD.md': 2,
 };
 
 describe('rooted src/ and tests/ anchors in the documentation carry a checkable quoted fragment', () => {
@@ -576,10 +597,24 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
      * - `src/main.ts:621` in ADR 0092 is `: {`, the opening of a conditional
      *   spread of `roomTool`; the sentence says `HireStaff`. The sentence also
      *   contains the word *re-anchored*.
-     * - `src/simulation/runtime/new-session.ts:1400` in ADR 0093 is
-     *   `const occupants = resolveOccupants(sectorId);`; the sentence says
-     *   `JobSystem` is registered there.
-     * - `src/simulation/identity/actor-identity.ts:188` in ADR 0103 is blank.
+     * - `src/simulation/runtime/new-session.ts:1400` in ADR 0093 was
+     *   `const occupants = resolveOccupants(sectorId);` at `54adc87c`; the
+     *   sentence says `JobSystem` is registered there. Re-opened at `eeda2e53`
+     *   the line is **blank** -- the file moved under the anchor and the
+     *   anchor is wronger than it was, which is the defect deepening rather
+     *   than a different one.
+     * - `src/simulation/identity/actor-identity.ts:210` in ADR 0103.
+     *   **This row is a repaired one and is kept to show what repair looks
+     *   like here.** Until `8149ca33` it read `:188`, which was blank, and it
+     *   was pinned as the clearest of the five. That commit re-aimed it to
+     *   `:210`, `export const ACTOR_IDENTITY_RNG_STREAM = ...`, which is the
+     *   right line. It is still listed among the five that must not verify,
+     *   and for a reason the block above predicted only two of three outcomes
+     *   for: the anchor did not become verifying, because ADR 0103 cites it
+     *   inside a parenthesis of seven bare coordinates -- `:440-483`, `:78`,
+     *   `:81`, `:83`, `:104`, `:188` -- with no symbol quoted beside any of
+     *   them. A right anchor nobody can check still fails this gate, and that
+     *   is the gate's whole claim rather than a false positive in it.
      * - `src/simulation/construction/system.ts:266` in ADR 0019 is cited as
      *   *"-- `submitOrder`, the one named"* in a list of `canBuildAt` call
      *   sites. That line is prose inside `DoorConstructionService`'s docblock.
@@ -592,6 +627,15 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
      * If a future commit fixes one of the five, this control goes red naming
      * it -- move that row up into the verifying group and lower the document's
      * budget. That is the control working, not failing.
+     *
+     * **It fired on 2026-09-18 and neither branch of that sentence was the
+     * right one**, which is recorded here rather than smoothed over. `8149ca33`
+     * repaired `actor-identity.ts:188` by *re-aiming* it, so the control did
+     * not report a verifying anchor -- it reported `the scan no longer finds
+     * this anchor`, the third outcome, which `found.length === 0` returns as a
+     * string precisely so that a control can never pass by having its subject
+     * vanish. The row was re-pointed at the repaired coordinate and stayed a
+     * negative, for the reason its own bullet gives.
      */
     const control = (source: string, token: string): boolean | string => {
       const found = citations.filter(
@@ -607,7 +651,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
       'save-schema.ts:36': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:36'),
       'main.ts:621': control('docs/adr/0092-who-decides-where-a-guard-stands.md', 'src/main.ts:621'),
       'new-session.ts:1400': control('docs/adr/0093-a-carry-is-an-action.md', 'src/simulation/runtime/new-session.ts:1400'),
-      'actor-identity.ts:188': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/identity/actor-identity.ts:188'),
+      'actor-identity.ts:210': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/identity/actor-identity.ts:210'),
       'system.ts:266': control('docs/adr/0019-tile-ownership-under-overlapping-parcels.md', 'src/simulation/construction/system.ts:266'),
       'refusal-log.ts:325-327': control('docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md', 'src/simulation/refusals/refusal-log.ts:325-327'),
     }).toEqual({
@@ -616,7 +660,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
       'save-schema.ts:36': true,
       'main.ts:621': false,
       'new-session.ts:1400': false,
-      'actor-identity.ts:188': false,
+      'actor-identity.ts:210': false,
       'system.ts:266': false,
       'refusal-log.ts:325-327': false,
     });
