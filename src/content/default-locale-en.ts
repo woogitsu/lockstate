@@ -156,15 +156,51 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
-  // How many prisoners have no bed (#609). The owner's wording, approved
-  // before it was built, and it counts what is missing rather than what is
-  // fine: "9 housed" was the rejected alternative, because a player reads
-  // past a number that is already fine. It is the short form of the Intake
-  // panel's `hud.intake.no-place` below -- "{count} waiting with no bed to
-  // sleep in" -- on purpose, so the same fact reads the same way in both
-  // places; the strip's is the wider count of the two, since a prisoner whose
-  // bed was removed under them is not waiting for anything.
-  'hud.status.prisoners-without-bed': '{count} with no bed',
+  // How many prisoners hold no residency place (#609). The owner approved
+  // *"{count} with no bed"* before it was built, and what is kept from that
+  // approval is its **shape** -- it counts what is missing rather than what is
+  // fine, "9 housed" having been the rejected alternative, because a player
+  // reads past a number that is already fine.
+  //
+  // **It said "bed" until issue #961 and was then false**, which is the
+  // reservation-4 half the ceiling broke rather than a wording preference.
+  // This badge is `prisoners - occupiedPlaces` (`prisonersWithoutBed`,
+  // `src/ui/hud/projection.ts`), and `occupiedPlaces` is
+  // `residentIdsWithExistingPlace()`, which spends `instance.residentCapacity`
+  // (`src/simulation/presentation/status-strip-projection.ts:820`). Since a
+  // room type may author `maxResidents` (`src/content/room-catalog.ts`), that
+  // capacity is `min(sleep surfaces, the ceiling)` -- so a cell holding two
+  // with four beds in it drew "2 with no bed" beside two empty beds.
+  //
+  // **"Not housed" rather than "with no place", and the difference is 10px of
+  // a row that is already over its width.** The first rewording for #961 said
+  // *"{count} with no place"* and claimed, in this comment, that it "stays the
+  // same length as the word it replaces". That is false -- "bed" is three
+  // characters and "place" is five -- and the strip is where it was paid for:
+  // `tests/browser/ui-contraband-name.spec.ts` records this row at
+  // `scrollWidth` 1264 against `clientWidth` 1256 at 1280x800 **driven by this
+  // badge**, so the row was already 8px over before #961 and a wider badge
+  // makes a measured overflow worse. `{count} not housed` is shorter than
+  // either, so the row is narrower than it was on `main`.
+  //
+  // **And it is true in this repository's own established sense of the word.**
+  // `hud.alert.event.prisoners.housed` below is *"{name} has a place in
+  // {room}."* and `hud.intake.pipeline-failed` is *"{count} cannot be housed
+  // at all"*, so "housed" already means "holds a place" in two player-facing
+  // sentences, and "not housed" is the negation of the quantity this badge
+  // subtracts. It is also true of the member "with no bed" was wrong about: a
+  // resident whose bed was taken away, or who is over the ceiling, is in a
+  // room and is still not housed.
+  //
+  // **What was given up, recorded rather than quietly dropped.** #609 made
+  // this the short form of the Intake panel's `hud.intake.no-place` below --
+  // *"{count} waiting with no place to sleep"* -- so that the same fact read
+  // in the same words in two places. The two now report the same fact in
+  // different words, because the strip has 8px less room than it needs and the
+  // panel has room to spare. The strip's is still the wider count of the two,
+  // since a prisoner whose bed was removed under them is not waiting for
+  // anything.
+  'hud.status.prisoners-without-bed': '{count} not housed',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
   /*
@@ -288,7 +324,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * right word instead of "anything".
    */
   'hud.status.funds-before-deliveries-stop':
-    '{remaining} left before deliveries stop — past that, no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a bed.',
+    '{remaining} left before deliveries stop — past that, no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a place to sleep.',
   /*
    * The same sentence once the remainder is nothing, in the tense that is then
    * true. `overdraftTone` paints the chip red at exactly this point and
@@ -307,7 +343,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * what earning takes.
    */
   'hud.status.funds-deliveries-stopped':
-    'Deliveries have stopped — no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a bed.',
+    'Deliveries have stopped — no materials can be ordered until the prison earns the money. The state pays at the end of each day, for prisoners who have a place to sleep.',
   /*
    * The chip's tooltip at the treasury floor itself -- `critical`, the ruling
    * on issue #768's third tone, one step past everything the sentence above
@@ -342,16 +378,26 @@ const authoredMessages: Readonly<Record<string, string>> = {
    *    rather than income (`src/simulation/economy/income.ts`). `LoanBook`
    *    exists and is not wired -- nothing in `src/` passes `loanTerms` -- so
    *    there is no borrowing to name either.
-   *  - *"at the end of each day and only for prisoners who have a bed"*: the
-   *    day is paid on its last tick (`schedule.phaseTicks = DAY_LENGTH_TICKS
-   *    - 1`), and `stateIncomeForOccupiedPlaces` folds over
+   *  - *"at the end of each day and only for prisoners who have a place to
+   *    sleep"*: the day is paid on its last tick (`schedule.phaseTicks =
+   *    DAY_LENGTH_TICKS - 1`), and `stateIncomeForOccupiedPlaces` folds over
    *    `residentIdsWithExistingPlace()`, which is a prisoner holding a unit of
-   *    residency capacity **that currently exists**. Residency capacity comes
-   *    only from an object declaring `'sleep-surface'` -- `object.bed` and
-   *    `object.medical-bed` (`src/simulation/objects/room-capacity.ts`) -- so
-   *    "has a bed" is the rule and not a paraphrase of it: an arrival still in
+   *    residency capacity **that currently exists**. So an arrival still in
    *    intake, a resident whose bed was taken away, and the second of two
    *    residents over one bed are each unpaid.
+   *
+   *    **This clause read *"who have a bed"* until issue #961, and the
+   *    sentence under it was the argument that the two were the same thing:**
+   *    *"residency capacity comes only from an object declaring
+   *    `'sleep-surface'` ... so 'has a bed' is the rule and not a paraphrase
+   *    of it."* That stopped being true when a room type gained an authored
+   *    `maxResidents` (`src/content/room-catalog.ts`), which makes
+   *    `residentCapacity` `min(sleep surfaces, the ceiling)`
+   *    (`src/simulation/objects/room-capacity.ts`). A player who puts four
+   *    beds in one cell has four beds and two paid places, so the old clause
+   *    promised money a bed no longer earns. *"A place to sleep"* names the
+   *    unit the fold actually counts, and is the rule rather than a
+   *    paraphrase of it for the same reason the old clause was.
    *  - *"a prison housing nobody earns nothing"*: `update` returns without
    *    crediting when the fold is zero, which is the state act A measured for
    *    ten days with twenty-four prisoners in intake.
@@ -375,7 +421,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * open to a unifying pass; the facts above are not.
    */
   'hud.status.funds-treasury-floor-exhausted':
-    'The treasury is at its floor — nothing can be spent at all until the prison earns the money. The state pays at the end of each day and only for prisoners who have a bed, so a prison housing nobody earns nothing.',
+    'The treasury is at its floor — nothing can be spent at all until the prison earns the money. The state pays at the end of each day and only for prisoners who have a place to sleep, so a prison housing nobody earns nothing.',
   // What this in-game day has earned so far (#29). The state pays per
   // prisoner-day at the end of the day, so this is the day's accrual and the
   // wording says so: "Earned today", never "Income" -- there is no rate, no
@@ -2506,15 +2552,55 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
-  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until a bed is free.',
+  /*
+   * **The tail of this sentence was rewritten for issue #961** -- it read
+   * *"an arrival with none waits until a bed is free"* and that stopped being
+   * true the moment a room type could author a resident ceiling (the owner's
+   * ruling of 2026-09-17). In a cell holding `maxResidents: 2` with four beds
+   * standing in it, a bed **is** free and the arrival still waits, so the old
+   * clause promised a remedy the code does not keep -- `AGENTS.md`'s fourth
+   * reservation, whose wording has been ours since 2026-09-04 and whose truth
+   * has not.
+   *
+   * What replaces it is the condition `IntakeSystem` actually retries on:
+   * `findBestAvailable` answers an instance only where
+   * `occupancyOf(instance) < instance.residentCapacity`
+   * (`src/simulation/prisoners/room-instance-registry.ts:1104`), and
+   * `residentCapacity` is now `min(sleep surfaces, the room type's ceiling)`
+   * (`src/simulation/objects/room-capacity.ts`). "A place" is true of both
+   * halves of that `min`, where "a free bed" is true of only one.
+   *
+   * **It said *"waits until there is room for them"* first, and that cost a
+   * measured line of a panel.** The clause was nine characters longer than the
+   * one it replaced, the sentence wrapped to an extra line, and the Staff
+   * panel's payroll figure was pushed below its own fold --
+   * `tests/browser/ui-staff-wage.spec.ts:377` ("states the standing daily bill
+   * on the payroll header, with the fold still shut") went red on it and green
+   * again on this wording, with nothing else changed. *"Waits for a place"* is
+   * the same claim in fewer characters than even the pre-#961 tail, so the
+   * block it sits in is shorter than it was on `main`.
+   *
+   * The first clause is untouched and is still true: a prison with no free bed
+   * can still admit, and the arrival waits rather than being refused.
+   */
+  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits for a place.',
   // The warning beside the control, and the only toned figure on this panel.
-  // "no bed" and not "no cell": a zoned cell with nothing in it houses nobody,
-  // because `deriveRoomCapacity` credits residency to sleep surfaces and not to
-  // rooms (ADR 0028), so a player told to build a cell they have already built
-  // would be told to do the wrong thing. It states the prison's condition and
-  // promises no remedy -- placing a bed is one, and so is waiting for a
-  // sentence to end.
-  'hud.intake.no-place': '{count} waiting with no bed to sleep in',
+  // "no place" and not "no cell": a zoned cell with nothing in it houses
+  // nobody, because `deriveRoomCapacity` credits residency to sleep surfaces
+  // and not to rooms (ADR 0028), so a player told to build a cell they have
+  // already built would be told to do the wrong thing. It states the prison's
+  // condition and promises no remedy -- placing a bed is one, zoning a second
+  // cell is one, and so is waiting for a sentence to end.
+  //
+  // **It read *"{count} waiting with no bed to sleep in"* until issue #961**,
+  // and the noun moved for the reason `hud.status.prisoners-without-bed`
+  // above gives at length: `waitingWithoutPlaceCount`
+  // (`src/simulation/presentation/prisoner-projection.ts`) spends each
+  // target's free *places*, and a room type's authored `maxResidents` now
+  // caps those below its bed count -- so this line could count somebody
+  // standing in a cell with an empty bed in it. The two sentences move
+  // together because #609 made this one the long form of that one.
+  'hud.intake.no-place': '{count} waiting with no place to sleep',
   // Where the arrivals already admitted are. "In intake" rather than "Queue":
   // the pipeline is what the simulation calls this and the stage named
   // `queued` is only its first step, so a header saying "queue" would name one
