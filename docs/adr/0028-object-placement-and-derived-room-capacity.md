@@ -73,6 +73,10 @@ not what other games do.
 > is no single `capacity` to re-aim an anchor at. **Re-aiming a dead diagnosis
 > makes it read as current**, which is why #1229 left ADR 0040's twenty anchors
 > standing. Read every anchor below as of `f3ffe6d`.
+> **That count is as of that date, and it has already moved.** Issue #961's
+> amendment of 2026-09-17 landed below this line after this paragraph was
+> written and carries one further anchor,
+> `tests/browser/ui-staff-wage.spec.ts:377`, which this re-read never opened.
 >
 > **Two of the five that still land carry a claim that has inverted, and both
 > inversions are this ADR's own doing.** §*What this decision does not settle*
