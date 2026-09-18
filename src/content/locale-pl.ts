@@ -501,6 +501,16 @@ const plMessages: Readonly<Record<string, string>> = {
   // original's: the badge is `prisoners - occupiedPlaces`, and a room type's
   // authored `maxResidents` now caps residency places below the bed count, so
   // it could say "bez łóżka" of somebody standing beside an empty one.
+  //
+  // **This does not track the English word for word, and that is deliberate.**
+  // The English badge settled on *"{count} not housed"* rather than *"with no
+  // place"* because the status strip is already 8px over its width at 1280x800
+  // before this badge is drawn, so every character it spends is paid for
+  // there. Polish has no equally short verb form -- *bez zakwaterowania* is
+  // far longer than either -- and *bez miejsca* is both the shortest true
+  // phrase and the direct negation of the quantity the badge subtracts. The
+  // two locales therefore make the same claim, which is what the fourth
+  // reservation requires, in the shortest words each language has for it.
   'hud.status.prisoners-without-bed': '{count} bez miejsca',
   'hud.status.staff': 'Personel',
   'hud.status.rooms': 'Pomieszczenia',
@@ -991,8 +1001,15 @@ const plMessages: Readonly<Record<string, string>> = {
   // cell holding `maxResidents: 2` with four beds leaves an arrival waiting
   // beside two empty ones. *Miejsce* is the place rather than the bed, which is
   // what `residentCapacity` counts.
+  //
+  // **Shortened with the English original's, for a reason measured on the
+  // English one.** The first #961 tail here was *"czeka, aż znajdzie się dla
+  // niego miejsce"*, matching an English clause that wrapped the panel to an
+  // extra line and pushed the Staff panel's payroll figure below its fold
+  // (`tests/browser/ui-staff-wage.spec.ts:377`). *"Czeka na miejsce"* is the
+  // same claim in fewer characters, and the pair stays parallel.
   'hud.intake.hint':
-    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż znajdzie się dla niego miejsce.',
+    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka na miejsce.',
   // Reshaped: the numeral moves out of the verb's way entirely.
   //
   // **It read *"Bez łóżka do spania: {count}"* until issue #961**, with the
