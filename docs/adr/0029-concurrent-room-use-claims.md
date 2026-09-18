@@ -634,7 +634,7 @@ The consequences section says:
 > objects become placeable.
 
 The last clause came true and the rest expired with it. ADR 0028 phase 4 shipped
-at `b097e70` (#384): `src/content/room-catalog.ts:122` finishes `room.canteen`
+at `b097e70` (#384): `src/content/room-catalog.ts:182` finishes `room.canteen`
 with two dining tables and four benches, `src/content/object-catalog.ts:108`
 gives the `3x2` `object.dining-table` `capabilities: ['dining']`,
 `src/simulation/construction/definition.ts:466` makes `dining-table-wooden` a
