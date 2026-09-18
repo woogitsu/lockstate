@@ -403,7 +403,7 @@ const BASE_COUNTS: HudCountsViewModel = {
   // Everybody housed, which is what the accrual above already assumes: 142
   // occupied places is where `10_667` comes from. A fixture whose accrual
   // said 142 and whose place count said otherwise would put the strip's
-  // "N with no bed" badge (#609) on every spec in this file for a prison
+  // "N not housed" badge (#609, the noun since #961) on every spec in this file for a prison
   // the same fixture is paying full price for.
   occupiedPlaces: 142,
   staff: 27,
@@ -1399,9 +1399,26 @@ window.lockstateUiHarness = {
       clockDayProgress: document.querySelector('.hud-clock__day-progress')?.textContent ?? '',
       valueCount: values.length,
       nonMonospaceValues: nonMonospace.map((node) => node.textContent ?? ''),
-      // Scoped to the minimap frame: the Build panel uses the same section
-      // primitive, so an unscoped selector would depend on document order.
-      alertsCollapsed: document.querySelector('.hud-minimap .ui-section')?.getAttribute('data-collapsed') ?? null,
+      /*
+       * Scoped by what the section CONTAINS rather than by where it sits, and
+       * the change is #1201's (2026-09-16).
+       *
+       * It read `.hud-minimap .ui-section`, under the comment *"Scoped to the
+       * minimap frame: the Build panel uses the same section primitive, so an
+       * unscoped selector would depend on document order."* The reason was
+       * right and the scope has stopped being available: below 720 px the
+       * alerts fold is mounted in the Overview panel's `foldSlot` on the
+       * owner's ruling, so at 375x812 that selector matched nothing and this
+       * probe answered `null` for a section that is on screen and expanded --
+       * which is exactly what `ui-shell.spec.ts`'s #220 case reported.
+       *
+       * `:has(.hud-alerts__list)` keeps the original reason intact: no other
+       * `.ui-section` on this page holds that list, so the Build panel's
+       * sections are still excluded, and the answer no longer depends on which
+       * of the fold's two homes the viewport puts it in.
+       */
+      alertsCollapsed:
+        document.querySelector('.ui-section:has(.hud-alerts__list)')?.getAttribute('data-collapsed') ?? null,
       centreIsClickThrough: centre === null || !(hudRoot?.contains(centre) ?? false),
     };
   },

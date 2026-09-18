@@ -815,6 +815,50 @@ export class SimulationEventLog {
   }
 
   /**
+   * Records that one build order finished
+   * ([ADR 0116](../../../docs/adr/0116-whether-a-finished-object-is-an-event.md),
+   * the owner's ruling of 2026-09-16, option 2).
+   *
+   * **The mirror of `recordBuildOrderCancelled` above**: that one is the order
+   * taken back, this one is the order arriving. Both carry the envelope and
+   * nothing else, and for the same reason stated two ways -- there is no
+   * identity on this channel to carry, and here there is additionally a reason
+   * *not* to carry one. See the schema: a field that varies between two
+   * completions spends an alerts row per distinct value, and the ruling is
+   * one counted row.
+   *
+   * **Unguarded, and bounded by the caller**, the shape `recordRoomZoned` and
+   * `recordIncidentsAllClear` take. `ConstructionSystem.update` calls this on
+   * the one arm where an order's `progress` reached `workRequired`, after
+   * `setState(order, 'completed')` and after `finalizeConstruction(order)` --
+   * so both of ADR 0116 §6's truth conditions hold at the call, and re-deciding
+   * either here would be a second, weaker copy of the walk's own answer.
+   *
+   * **One call per finished order, and at most one per scheduled pass.**
+   * `ConstructionSystem` has one crew and serialises it, so at most one order
+   * is `'in-progress'` on any tick. That is what makes this the first producer
+   * on this channel in a while that does *not* falsify
+   * `MAX_EVENT_ALERT_ROWS`'s "a burst is impossible by construction"; the five
+   * press-driven `construction.*` members do, and say so.
+   *
+   * **No count parameter, and the distinction from `recordPrisonersDischarged`
+   * is worth having in front of a reader.** A discharge event carries `count`
+   * because one gate pass releases several people in one statement; this
+   * carries none because one call *is* one order, and the "24" a player reads
+   * is `HudAlertOccurrencesViewModel.count` -- the alerts list counting
+   * identical statements (`simulationEventIdentity`), not a figure this class
+   * computed. Putting a count in the payload would defeat exactly that: two
+   * records differing in `count` are two statements and therefore two rows.
+   *
+   * @param tick The tick the order completed on -- the tick
+   * `ConstructionSystem.update` is executing, never a clock reading
+   * (`docs/DETERMINISM.md:12`).
+   */
+  public recordBuildOrderCompleted(tick: number): void {
+    this.append({ sequence: this._sequence + 1, tick, type: 'construction.order-completed' });
+  }
+
+  /**
    * Records that the build history was walked back one transaction (#749).
    *
    * **Unguarded here, and bounded by the caller** -- the shape
