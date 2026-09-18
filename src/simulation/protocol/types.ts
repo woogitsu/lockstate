@@ -686,6 +686,7 @@ export const PRISON_CONDITIONS = [
   'construction.unfunded',
   'intake.no-place',
   'security.post-unreachable',
+  'test.sixth-member',
   'treasury.construction-refused',
   'treasury.deliveries-refused',
 ] as const;
