@@ -38,7 +38,8 @@ import './ui-harness-api';
  * width is mostly a property of *which badges the prison is drawing* rather
  * than of how big its numbers are. There are four badges the strip can draw:
  *
- *   - `prisoners`: `{count} with no bed` (#609), when anybody is unhoused
+ *   - `prisoners`: `{count} not housed` (#609, the noun since #961), when
+ *     anybody is unhoused
  *   - `coverage`: the authored one word for the worst rung anybody is standing
  *     on -- `Unguarded`, `Understaffed`, or `Covered` when nobody is on either
  *     lower rung. **This read `{understaffed} understaffed · {unguarded}
@@ -97,8 +98,11 @@ import './ui-harness-api';
  *
  * **The weak claim, named.** The two costs the ruling quotes are not consistent
  * with one linear model, so the per-character figure is anchored on the coverage
- * badge's own published number and not on the other. `{count} with no bed`
- * renders 14 characters and is published at `+170.5px`; that badge *appears*
+ * badge's own published number and not on the other. `{count} not housed`
+ * renders 13 characters -- "36 not housed" -- while the `+170.5px` quoted here
+ * was published for the 14-character `{count} with no bed` it replaced, so
+ * that figure is now an upper bound rather than a stale one; that badge
+ * *appears*
  * rather than changing text, so its fixed box is 2×8px of `.ui-badge` padding
  * plus the 8px `.hud-metric__trailing` gap, which would make it ≈10.5px per
  * character -- and the same rate applied to the coverage badge's own 30
@@ -280,7 +284,7 @@ test.describe('the status strip carries nine chips and the prison’s own state 
       // widest word its namespace authors.
       expect(badged.badges.length, `the four-badge state drew ${badged.badges.length} badges at ${at}`).toBe(4);
       expect(badged.badges.map((text) => text.trim()), `the badges drawn at ${at}`).toEqual([
-        '36 with no bed',
+        '36 not housed',
         // Ruling 21: the worst rung, in one word. `EVERY_BADGE` has 36
         // unguarded as well as 42 understaffed, and `Unguarded` is what the
         // ladder says of that prison.
