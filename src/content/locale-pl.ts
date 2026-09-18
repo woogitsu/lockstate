@@ -500,8 +500,24 @@ const plMessages: Readonly<Record<string, string>> = {
   // Label, so *Osadzeni* under the owner's ruling.
   'hud.status.prisoners': 'Osadzeni',
   // *bez* takes the genitive singular and never changes with the count, so
-  // this one counted message needs no reshape at all.
-  'hud.status.prisoners-without-bed': '{count} bez łóżka',
+  // this one counted message needs no reshape at all -- *bez miejsca* declines
+  // exactly as *bez łóżka* did.
+  //
+  // **It read *"{count} bez łóżka"* until issue #961**, with the English
+  // original's: the badge is `prisoners - occupiedPlaces`, and a room type's
+  // authored `maxResidents` now caps residency places below the bed count, so
+  // it could say "bez łóżka" of somebody standing beside an empty one.
+  //
+  // **This does not track the English word for word, and that is deliberate.**
+  // The English badge settled on *"{count} not housed"* rather than *"with no
+  // place"* because the status strip is already 8px over its width at 1280x800
+  // before this badge is drawn, so every character it spends is paid for
+  // there. Polish has no equally short verb form -- *bez zakwaterowania* is
+  // far longer than either -- and *bez miejsca* is both the shortest true
+  // phrase and the direct negation of the quantity the badge subtracts. The
+  // two locales therefore make the same claim, which is what the fourth
+  // reservation requires, in the shortest words each language has for it.
+  'hud.status.prisoners-without-bed': '{count} bez miejsca',
   'hud.status.staff': 'Personel',
   'hud.status.rooms': 'Pomieszczenia',
   // Reshaped. "{count} niegotowych" is right for 5 and wrong for 2 (*2
@@ -513,11 +529,11 @@ const plMessages: Readonly<Record<string, string>> = {
   'hud.status.funds': 'Środki',
   'hud.status.funds-remaining': 'Zostało {remaining}',
   'hud.status.funds-before-deliveries-stop':
-    'Do wstrzymania dostaw zostało {remaining} — poniżej tego progu nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają łóżko.',
+    'Do wstrzymania dostaw zostało {remaining} — poniżej tego progu nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają miejsce do spania.',
   'hud.status.funds-deliveries-stopped':
-    'Dostawy wstrzymane — nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają łóżko.',
+    'Dostawy wstrzymane — nie można zamówić materiałów, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia, za osadzonych, którzy mają miejsce do spania.',
   'hud.status.funds-treasury-floor-exhausted':
-    'Skarbiec jest na dnie — niczego nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają łóżko, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
+    'Skarbiec jest na dnie — niczego nie można wydać, dopóki więzienie nie zarobi. Państwo płaci na koniec każdego dnia i tylko za osadzonych, którzy mają miejsce do spania, więc więzienie, w którym nikt nie mieszka, nie zarabia nic.',
   'hud.status.earned-today': 'Zarobione dziś',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
@@ -784,6 +800,7 @@ const plMessages: Readonly<Record<string, string>> = {
   // ones.
   // =====================================================================
   'hud.alert.event.construction.order-cancelled': 'Zlecenie anulowano — pieniądze, które kosztowało, wracają.',
+  'hud.alert.event.construction.order-completed': 'Zlecenie ukończono.',
   'hud.alert.event.construction.order-cancelled-underway':
     'Zlecenie anulowano. Co wydano po przekroczeniu punktu bez odwrotu, zostaje wydane.',
   'hud.alert.event.construction.undone': 'Cofnięto ostatnią zmianę w kolejce budowy.',
@@ -984,10 +1001,28 @@ const plMessages: Readonly<Record<string, string>> = {
   // A control's label -- the operator acting on the institution -- so
   // *osadzonego* under the owner's ruling.
   'hud.intake.admit': 'Przyjmij osadzonego',
+  // **The tail was rewritten for issue #961**, with the English original's: it
+  // read *"czeka, aż któreś się zwolni"* ("waits until one of them frees up",
+  // of the beds), and a resident ceiling makes a free bed insufficient -- a
+  // cell holding `maxResidents: 2` with four beds leaves an arrival waiting
+  // beside two empty ones. *Miejsce* is the place rather than the bed, which is
+  // what `residentCapacity` counts.
+  //
+  // **Shortened with the English original's, for a reason measured on the
+  // English one.** The first #961 tail here was *"czeka, aż znajdzie się dla
+  // niego miejsce"*, matching an English clause that wrapped the panel to an
+  // extra line and pushed the Staff panel's payroll figure below its fold
+  // (`tests/browser/ui-staff-wage.spec.ts:377`). *"Czeka na miejsce"* is the
+  // same claim in fewer characters, and the pair stays parallel.
   'hud.intake.hint':
-    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka, aż któreś się zwolni.',
+    'Zanim więzienie kogokolwiek przyjmie, potrzebuje celi. Nie potrzebuje wolnego łóżka: przybysz bez łóżka czeka na miejsce.',
   // Reshaped: the numeral moves out of the verb's way entirely.
-  'hud.intake.no-place': 'Bez łóżka do spania: {count}',
+  //
+  // **It read *"Bez łóżka do spania: {count}"* until issue #961**, with the
+  // English original's and with the badge above: the count is of free
+  // *places*, which a room type's authored `maxResidents` now caps below the
+  // bed count.
+  'hud.intake.no-place': 'Bez miejsca do spania: {count}',
   'hud.intake.pipeline': 'W przyjęciach',
   'hud.intake.pipeline-count': '{waiting} z {total}',
   // Reshaped: "at {stage}" is *na etapie* plus the locative (*na etapie

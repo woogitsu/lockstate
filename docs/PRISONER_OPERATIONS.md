@@ -542,10 +542,22 @@ phases 1 and 2 have landed: `PlacedObjectRegistry` holds the objects,
 `RoomCapacityResolver` derives a room's two capacities and its capability list
 from the ones inside its rectangle, and nothing authors any of the three.
 
+> **One clause of that stopped being true on 2026-09-17 and is kept rather than
+> rewritten, because it is the property that was given up.** The owner's ruling
+> on issue #961 lets a room type author a **resident ceiling** --
+> `maxResidents` in `src/content/room-catalog.ts`, `2` for `room.cell` and `1`
+> for `room.solitary-cell` -- so `residentCapacity` is now
+> `min(the summed footprint width of the sleep surfaces, that ceiling)` where
+> the room type authors one. Nothing else moved: the capability list and every
+> concurrent-use ceiling, including `'sleep-surface'`'s own, are still derived
+> with nothing authored anywhere. ADR 0028's amendment of the same date carries
+> the rule and the derivation of the two numbers.
+
 **Two capacities, not one** (ADR 0028 decision 3).
 `findAvailableResidence(roomCatalogId, capability?)` gates on
 `residentCapacity` -- the summed footprint width of the sleep surfaces in the
-room -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
+room, capped at the room type's authored `maxResidents` where it declares one
+(#961) -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
 `findAvailableForUse(roomCatalogId, capability?)` gates on that capability's own
 ceiling -- the summed footprint width of the objects in the room that carry it --
 and is what `ActionSystem` asks before a prisoner *uses* a room now. A canteen

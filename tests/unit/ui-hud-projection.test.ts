@@ -872,7 +872,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
       numberParameters: { count: 9 },
     });
     // The same 9 the Intake panel already says out loud in this prison --
-    // "9 waiting with no bed to sleep in" -- which is why the strip uses the
+    // "9 waiting with no place to sleep" -- which is why the strip uses the
     // owner's matching wording rather than a second phrasing for one fact.
   });
 
@@ -896,7 +896,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     });
   });
 
-  it('draws no badge at all when everybody has a bed, rather than a permanent "0 with no bed"', () => {
+  it('draws no badge at all when everybody has a place, rather than a permanent "0 with no place"', () => {
     // `coverageTone`'s rule, applied to a chip that had no badge until now:
     // a status strip where several things are always on teaches players to
     // ignore the one that matters, and that note already extends it past
@@ -970,7 +970,7 @@ describe('the PRISONERS chip says how many have no bed (issue #609)', () => {
     // `assign` does not release a prisoner from a previous instance and
     // `residentIdsWithExistingPlace` does not de-duplicate, so this layer
     // cannot prove `occupiedPlaces <= prisoners` from the far side of a
-    // message channel. "-2 with no bed" is a sentence no player should ever
+    // message channel. "-2 with no place" is a sentence no player should ever
     // read; a badge that does not appear is the right worst case.
     expect(metric(counts({ prisoners: 3, occupiedPlaces: 5 }), 'prisoners').badge).toBeUndefined();
   });

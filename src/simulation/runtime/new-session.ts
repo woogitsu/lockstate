@@ -885,6 +885,25 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
         refusals.supersede(materialsFundingSupersessionKey());
       }
     },
+    /*
+     * ADR 0116, the owner's ruling of 2026-09-16: a finished build order is an
+     * event, graded `'info'`, routed to the log alone, and counted rather than
+     * repeated.
+     *
+     * **The whole of what a session does with it is append it.** There is no
+     * predicate here of the kind the report callback above needs, because
+     * `ConstructionSystem` already decided the only question there is -- an
+     * order reached `workRequired` -- and re-deciding it here would be the
+     * second, weaker copy that callback's own comment warns about.
+     *
+     * **This is where the decision lives that the system deliberately does not
+     * hold**: whether a completion is worth saying, and on which surface. The
+     * system hands out the fact; the answer is `SimulationEventLog`, which is
+     * the alerts channel, and `EVENT_PRESENTATION` in `src/ui/simulation-events.ts`
+     * is where `'info'` and `'log-only'` are stated. A bare `ConstructionSystem`
+     * -- a test, a determinism scenario -- passes nothing here and stays silent.
+     */
+    (tick) => events.recordBuildOrderCompleted(tick),
   );
   objectPlacement = new ObjectPlacementService(
     world,
