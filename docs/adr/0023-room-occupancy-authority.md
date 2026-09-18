@@ -15,6 +15,30 @@ carries a capacity field, and `RoomZoningService` still registers every instance
 with `capacity: 0` and `objectCapabilities: []`
 (`src/simulation/rooms/zoning.ts`, `const instance: RoomInstance` in `zone`).
 
+> **Step 1 of this decision has shipped, so that paragraph is history and is
+> kept rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4). What shipped is
+> [ADR 0028](./0028-object-placement-and-derived-room-capacity.md), which this
+> Status block already names as *"the design for the object placement this ADR
+> makes the authority"*. `RoomInstance` carries **no `capacity` field at all**
+> today: it is `residentCapacity`, *"Derived: the summed footprint width of the
+> sleep surfaces standing inside the rectangle"*
+> (`src/simulation/prisoners/room-instance-registry.ts:83-84`), with
+> `objectCapabilities` derived beside it (`:119`) and a second, capability-keyed
+> ceiling after issue #326. `docs/HUD_PROJECTIONS.md`'s gap 13, cited three
+> times below as the authority for *"object placement does not exist"*, today
+> reads **"Object placement exists, and `minQuantity` is counted"**
+> (`docs/HUD_PROJECTIONS.md:1120`; the anchor read `:1093` when this branch was
+> written and had drifted 27 lines by the time it merged `origin/main` on
+> 2026-09-16 — a `file:line` into a document under active edit, which
+> `docs/AGENT_WORKFLOW.md` §4 names as the least durable citation here).
+>
+> **What is still unimplemented is the half this ADR was actually asked to
+> settle**, and that is why the Status is not reversed here: no room definition
+> carries an authored nominal occupancy, so resolution step 2 has nothing to
+> read and step 1 answers every room. The **fallback** is unbuilt; the
+> **authority** is not. A reader who takes *"nothing in `src/` implements it"*
+> at face value in 2026-09 would draw the wrong conclusion about both.
+
 What was signed off is one thing: **a room's occupancy is resolved from the
 objects standing in it, and a room definition may carry an
 authored *nominal* occupancy that is used only as a fallback when no object
@@ -43,7 +67,24 @@ depends on it.
 
 **Tier 1 — repository claims.** Structural facts about this tree, re-verified
 against `origin/main` at v0.0.34 while writing this. Every `file:line` below
-resolves there unless the text says otherwise. No browser measurement was taken
+resolves there unless the text says otherwise.
+
+> **The last sentence is kept, and it dates nothing under it**
+> (`docs/AGENT_WORKFLOW.md` §4: mark both directions). `689f7d58` re-aimed an
+> anchor in this document on 2026-09-06 without moving that sentence — the ADR
+> 0023 row of the evidence table in `docs/adr/README.md`'s section *"A global
+> anchor pin in an ADR is advisory, and does not date what is below it"*.
+> **A tier label is not a date either, and this document is the corpus's
+> sharpest illustration of the difference**: every Tier 1 claim below was
+> genuinely verified, which is why they are the claims that could rot. Swept
+> 2026-09-15 at `origin/main` `e044a3e8`. The §*Decision* and §*Context* Tier 1
+> anchors are re-aimed below and four of the sentences they carry are
+> corrected, because what the decision was taken against — that object
+> placement did not exist — has since shipped. **The block headed ‘Six had
+> moved’ is deliberately untouched**: issue #645 already re-read those
+> citations, says in its own words that it gives them *"as bare basenames,
+> which is this corpus's form for an anchor quoted as history"*, and re-aiming
+> a sentence whose subject is a stale anchor would destroy the finding. No browser measurement was taken
 for this ADR; the two pixel figures quoted in §*The legibility answer* are
 quoted from files in this tree and from
 [ADR 0022](./0022-room-zoning-surface.md), and are attributed as such.
@@ -79,37 +120,91 @@ decision keeps.
 
 `src/simulation/rooms/zoning.ts:48-65` says, in the code's own words:
 
+> **None of the four sentences quoted below is in that file any more**, and the
+> bullets are kept as the record of what the decision was taken against
+> (`docs/AGENT_WORKFLOW.md` §4). Checked on 2026-09-15 by grepping each quoted
+> string across `src/` and `docs/`: *"a cell holds as many prisoners as it has
+> beds"*, *"Object placement does not exist"*, *"what an empty rectangle
+> accommodates"* and *"The room catalog carries no capacity of its own and none
+> is invented here"* return **no hit in `src/` at all**. The header at
+> `zoning.ts:48-65` is now about what the zoning *plane* does not carry — an
+> instance id — and about the rectangle ADR 0028 decision 6 added to
+> `RoomInstance` to answer it. The continuation anchors below (`:50-52`,
+> `:54`, `:56-58`, `:60-65`) are continuations of **`zoning.ts`** and not of
+> this document, which `docs/adr/STATUS-QUEUE.md` read the other way when it
+> reported 0023's *"`:54` on this tree is a sentence about mirrors of shipped
+> artifacts"*; that is this ADR's own line 54, and the sentence does not point
+> there. The *verifications* attached to each bullet are corrected in place
+> below.
+
 - `RoomInstance` carries a `capacity` and an `objectCapabilities` list, and
   **"in this codebase both come from the objects standing in the room: a cell
   holds as many prisoners as it has beds"** (`:50-52`). Verified: `RoomInstance`
   is `{ instanceId, roomCatalogId, anchorTile, capacity, objectCapabilities }`
-  (`src/simulation/prisoners/room-instance-registry.ts:21-27`), and
+  (`src/simulation/prisoners/room-instance-registry.ts:75-119`; the anchor read
+  `:21-27`) — **today it is
+  `{ instanceId, roomCatalogId, anchorTile, width?, height?, residentCapacity,
+  objectFootprintTotal, objectCapabilities, concurrentUseCapacityByCapability }`,
+  and there is no field called `capacity`** — and
   `IntakeSystem`/`ActionSystem` gate on capability tags that
   `src/content/object-catalog.ts` puts on objects
-  (`src/simulation/prisoners/intake-system.ts:30-32`,
-  `src/simulation/prisoners/actions.ts:28`).
+  (`src/simulation/prisoners/intake-system.ts:93-97`,
+  `src/simulation/prisoners/actions.ts:28`; the intake anchor read `:30-32` until
+  2026-09-16, where it was not a docblock about capability at all but one about
+  `NamedRngStreams.get` throwing for an unregistered stream. `:93-97` is
+  `AccommodationTarget`, *"One room type an arrival of some classification group
+  may be housed in, and the object capability that room must offer to hold
+  them."* `actions.ts:28` is a docblock and is left, because the claim it carries
+  — that the gates read capability tags authored on objects — is unchanged).
 - **"Object placement does not exist"** (`:54`), citing
   `docs/HUD_PROJECTIONS.md` gap 13. Verified: gap 13
-  (`docs/HUD_PROJECTIONS.md:315-329`) says no system tracks which objects are
-  physically in which room and that `RoomInstance.objectCapabilities` is
-  declared at registration. `room-instance-registry.ts:8-19` states the same
+  (`docs/HUD_PROJECTIONS.md:1120`; the anchor read `:315-329`, and the `:1093`
+  this branch re-aimed it to had itself drifted by the time the branch merged
+  `origin/main` on 2026-09-16) says no system
+  tracks which objects are physically in which room and that
+  `RoomInstance.objectCapabilities` is declared at registration — **and it says
+  the opposite now**: its heading is *"Object placement exists, and
+  `minQuantity` is counted"*, and *"nothing declares any of the three at
+  registration — ADR 0028 phase 1"*. `room-instance-registry.ts:8-19` states the same
   scope assumption at the type it applies to.
 - `0` and `[]` **"are not a constant chosen to make a feature work — they are
   what an empty rectangle accommodates"** (`:56-58`). Verified at the
-  registration site: `zoning.ts:252-261` registers `capacity: 0` and
-  `objectCapabilities: []` with a comment saying exactly that.
+  registration site: `zoning.ts:252-261` registered `capacity: 0` and
+  `objectCapabilities: []` with a comment saying exactly that — **neither the
+  anchor nor the registration survives: `zone` registers at
+  `src/simulation/rooms/zoning.ts:650` and declares no capacity of any kind,
+  because `RoomCapacityResolver` derives both from the objects standing in the
+  rectangle**.
 - **"The room catalog carries no capacity of its own and none is invented
   here"**, and giving a zoned room a usable capacity **"needs a content
   addition — the smallest being one authored occupancy figure per room
   definition — and that is a product decision"** (`:60-65`). Verified:
   `roomDefinitionSchema` is `.strict()` over exactly six fields —
   `schemaVersion`, `id`, `numericId`, `nameKey`, `category`, `requirements` —
-  and carries no capacity of any kind (`src/content/room-catalog.ts:52-61`).
+  and carries no capacity of any kind (`src/content/room-catalog.ts:54-87`; the
+  anchor read `:52-61`). **It is seven fields now**: `openArea?: boolean` was
+  added by the owner's ruling of 2026-08-29 on issue #585, which amends
+  [ADR 0071](./0071-what-bounds-a-room-whose-activity-consumes-no-object.md).
+  It is still `.strict()` and still carries no capacity, so the sentence's
+  conclusion holds and only its count has rotted — the shape
+  `docs/AGENT_WORKFLOW.md` §4 names as rotting first.
 
-`docs/PRISONER_OPERATIONS.md:162-184` restates the same thing from the intake
-side and adds the consequence: a zoned cell is a *matching* instance that can
+`docs/PRISONER_OPERATIONS.md:733-742` restated the same thing from the intake
+side and added the consequence: a zoned cell is a *matching* instance that can
 never free up, so `accommodation-assignment` retries against it forever rather
 than failing fast.
+
+> **Opened 2026-09-16, and the anchor was pointing at the wrong section of the
+> wrong argument** (`docs/AGENT_WORKFLOW.md` §4). The citation read `:162-184`,
+> which this branch had already flagged *"unchecked against its subject"*; at
+> `:162-184` that file is about `sentenceEndTick`, the `Uint32` wrap and the
+> release system's order-65 slot, and says nothing about accommodation at all.
+> **Re-aimed to `:733-742` — and that passage now says the opposite of the
+> sentence citing it**, in its own words: *"This section used to say the zero
+> meant … `accommodation-assignment` keeps retrying against it rather than
+> failing fast … It holds now: capacity *does* return, when the player places a
+> bed."* So the sentence above is kept in the past tense as the state this
+> decision was taken against, and the tense is the only thing changed in it.
 
 **The decision above is consistent with that model, and an authoritative
 authored figure would contradict it.** A *fallback* leaves "capacity comes from
@@ -293,7 +388,9 @@ the room type decides what kind of room it is.**
 ### 1. Occupancy is resolved at the room-instance registration site
 
 A resolver runs where a `RoomInstance` is constructed —
-`zoning.ts:252-261` today, and the restore path
+`zoning.ts:626-653` today (the anchor read `:252-261`, a docblock about the
+zoning plane; §*Context* above had already re-aimed the sibling citation of the
+same site to `:650` and this one was left behind), and the restore path
 (`prisoners.roomInstanceDefinitions`, per
 `room-instance-registry.ts:111-120`) alongside it. It resolves in this order:
 
@@ -307,7 +404,16 @@ A resolver runs where a `RoomInstance` is constructed —
 
 Step 1 is unimplementable today and this ADR does not pretend otherwise: object
 placement does not exist (`docs/HUD_PROJECTIONS.md` gap 13), so until it does,
-the resolver's only reachable branches are 2 and 3. That is the point of
+the resolver's only reachable branches are 2 and 3.
+
+> **Exactly reversed, and the paragraph is kept because the ordering it argues
+> for is the part that survived** (`docs/AGENT_WORKFLOW.md` §4). ADR 0028
+> shipped object placement and `RoomCapacityResolver` with it, so step 1 is the
+> branch that runs and steps 2 and 3 are the unreachable ones — step 2 because
+> no definition carries a nominal figure, step 3 because it is what step 1
+> answers for an empty rectangle anyway. The sentence *"the fallback is what
+> makes a zoned cell usable before the pillar lands"* describes a window that
+> closed. That is the point of
 ordering them this way — the fallback is what makes a zoned cell usable *before*
 the pillar lands, and it stops being consulted, room by room, as objects arrive.
 
@@ -398,16 +504,23 @@ from.
 **And it has to be per-room and on demand, not a panel.** ADR 0022 measured the
 always-visible pixel budget on a local merge of #282 and #283 and found
 **12.2px at 900×600 and 38.2px at 1280×720**, against a `--tap-target` of 44px
-(`src/ui/tokens.css:150`) — so no always-visible control fits at either. This
-tree carries a smaller number pointing the same way: `src/ui/hud/hud.css:2770-2815`
-(re-anchored 2026-09-06 -- `:786-789` was already an unrelated rule,
-`[data-action-failed]`'s outline, before this window opened) records the Build
+(`src/ui/tokens.css:709`; the anchor read `:150`) — so no always-visible control
+fits at either. This tree carries a smaller number pointing the same way:
+`src/ui/hud/hud.css:3163-3193`
+(re-anchored 2026-09-06 to `:2770-2815` -- `:786-789` was already an unrelated
+rule, `[data-action-failed]`'s outline, before that window opened -- and
+re-anchored again 2026-09-15, because `:2770-2815` had drifted onto
+`text-transform` and `letter-spacing` declarations in the meantime; `:3153-3183`
+was the 2026-09-16 re-aim and #1279's ten added lines above it moved the block
+to `:3163-3193` on 2026-09-17, which is the fourth coordinate for one unmoved
+comment) records the Build
 panel's short-viewport fix closing a 67.7px shortfall at
 900×600. **Re-anchored further: the figure has since been refined past
 "3.8px to spare" to exactly 0 -- "the panel arrives at 338.1px of content in a
 338.1px slot with nothing scrolled anywhere" -- because a fourth declaration
 was added to recover 4.1px the catalogue's own floor had miscounted
-(`hud.css:2799-2809`).** The residual slack, whichever figure,
+(`hud.css:3195-3213`; the anchor read `:2799-2809`, then `:3185-3203` until
+#1279 shifted it ten lines down).** The residual slack, whichever figure,
 is not the always-visible budget, and it is quoted
 here only because it is the figure this tree states about that viewport; ADR
 0022's 12.2px is the budget figure and was measured on a branch merge rather

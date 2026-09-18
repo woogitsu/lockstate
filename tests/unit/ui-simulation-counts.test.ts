@@ -103,7 +103,7 @@ describe('the HUD counts are read from the worker', () => {
       // the case below for which is which and why it took a new field.
       prisonerCapacity: 44,
       // Straight through, and it is `occupiedPlaces` rather than
-      // `roomOccupants: 31` beside it: the strip's "N with no bed" badge is
+      // `roomOccupants: 31` beside it: the strip's "N not housed" badge is
       // this figure subtracted from the population, and residency outlives
       // the bed under it (ADR 0028 decision 2, issue #609).
       occupiedPlaces: 28,
