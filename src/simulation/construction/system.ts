@@ -456,6 +456,38 @@ export class ConstructionSystem implements SystemRegistration {
      * over a solvent prison with the wall up.
      */
     private readonly onMaterialsProcured?: (report: MaterialsProcurementReport | undefined, tick: number) => void,
+    /**
+     * That one build order just finished
+     * ([ADR 0116](../../../docs/adr/0116-whether-a-finished-object-is-an-event.md),
+     * the owner's ruling of 2026-09-16).
+     *
+     * Seventh and optional, on exactly the terms the fifth and sixth are:
+     * every existing caller constructs the system as before, and absent, a
+     * completed order does what it has always done and says nothing.
+     *
+     * **A callback and not a `SimulationEventLog` held here, for the reason
+     * `onMaterialsProcured` above is a callback**: this system owns no event
+     * log and must not start owning one. What the completion of a build order
+     * *means* to a session -- whether it is worth a line, on which surface, in
+     * whose words -- is a decision about the HUD's alerts channel, and it lives
+     * with the composition root that already answers the same question for
+     * every other producer. `createNewSimulationRuntime` passes
+     * `SimulationEventLog.recordBuildOrderCompleted`; a bare
+     * `ConstructionSystem` in a test or a determinism scenario passes nothing
+     * and is unchanged.
+     *
+     * **Called after the world is written, not before**, which is the half a
+     * reader should check rather than assume: the call sits below
+     * `setState(order, 'completed')` and below `finalizeConstruction(order)`,
+     * so ADR 0116 §6's two truth conditions -- an order reached `'completed'`
+     * at this tick, and what it writes is in the world at this tick -- both
+     * hold at the moment the record is appended. Moving it above either line
+     * would make the sentence a prediction.
+     *
+     * @param tick The tick being executed. Not a clock reading: `update`
+     * receives it from the kernel's dispatch.
+     */
+    private readonly onOrderFinished?: (tick: number) => void,
   ) {}
 
   /**
@@ -1756,6 +1788,22 @@ export class ConstructionSystem implements SystemRegistration {
             // change twice costs nothing but a second comparison that already
             // differs.
             this.world.markDrawnWorldChanged();
+            // ADR 0116, the owner's ruling of 2026-09-16: a finished order is
+            // an event, `'info'`, log-only, and counted rather than repeated.
+            //
+            // **Last of the three lines and not first**, which is the whole of
+            // what makes the sentence true rather than predictive: `setState`
+            // has already written `'completed'`, `finalizeConstruction` has
+            // already put the geometry or the object in the world, and only
+            // then is the record appended. ADR 0116 §6 states both conditions
+            // and `onOrderFinished`'s own docblock on the constructor says why
+            // the order of these lines is load-bearing.
+            //
+            // **Inside the `if`, not inside `case 'in-progress'`**: the walk
+            // reaches this arm on every scheduled pass of an unfinished order
+            // and advances `progress` by ten, so a call one line out would
+            // announce a completion five times per wall.
+            this.onOrderFinished?.(context.tick);
           }
           break;
       }
