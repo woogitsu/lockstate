@@ -99,7 +99,7 @@ Two runs of the shipped class, not a reading of it:
   current tick — `Q` (sequence 1) dispatches at tick 0 and `P` (sequence 0) at
   tick 20.
 
-The second case needs no save file. `src/ui/simulation-commands.ts:319-324` (the anchor read `:129-130`)
+The second case needs no save file. `src/ui/simulation-commands.ts:320-325` (the anchor read `:129-130`)
 projects `executeAtTick` as `lastTick + ceil(elapsed × speed / 50) + 20` while
 the clock runs and as a bare `lastTick` while it is paused (`:320`), so a player
 who issues an order and then pauses within the twenty-tick lead has issued two
@@ -149,7 +149,7 @@ behaviour change to a boundary the HUD already depends on.
 and reads no clock. Pacing lives one module over, in
 `FixedStepClock` (`src/simulation/clock/fixed-step-clock.ts:29`, `stepMilliseconds
 = 50`), which the worker constructs as `new FixedStepClock(50, { mode: 'paused' })`
-at `src/simulation/worker/state-machine.ts:254` and again at `:1067` (the anchors
+at `src/simulation/worker/state-machine.ts:255` and again at `:1068` (the anchors
 read `:203` and `:724`, were re-aimed to `:254` and `:1045` on 2026-09-15, and
 the second went stale **again** before this branch merged `origin/main` on
 2026-09-16 — `:1045` is a bare `try {`). That clock
@@ -170,7 +170,7 @@ a neighbouring module from memory.
 steps. How many of those a second of real time buys is `FixedStepClock`'s
 business and the player's — 20 at ×1, 80 at ×4 — and no simulation code may
 depend on it.* The `// 1 second at the kernel's 20 Hz` beside
-`DEFAULT_LEAD_TICKS = 20` (`src/ui/simulation-commands.ts:118`; the anchor read `:64`) inherits the same
+`DEFAULT_LEAD_TICKS = 20` (`src/ui/simulation-commands.ts:119`; the anchor read `:64`) inherits the same
 conflation: twenty ticks is one second of simulated time and a quarter-second of
 real time at ×4.
 
@@ -309,7 +309,7 @@ queue is admitted, exactly as today, and the queue keeps dispatching in ascendin
 ### Every caller, and what each one submits
 
 There is **one** caller in `src/`:
-`src/simulation/worker/state-machine.ts:1152`, inside `handleSubmitCommand`
+`src/simulation/worker/state-machine.ts:1153`, inside `handleSubmitCommand`
 (`:1139`; the anchor read `:786`, was re-aimed to `:1130`/`:1117` on 2026-09-15,
 and **both went stale a second time** before this branch merged `origin/main` on
 2026-09-16 — `:1130` is now the `payload:` key of `handleSetClock`'s reply), which
@@ -323,7 +323,7 @@ not have been a product need in any case.
 
 So the census is really a census of one message, and its `executeAtTick` is
 computed in exactly one place:
-`SimulationCommandSender.projectExecuteTick` (`src/ui/simulation-commands.ts:290-291`),
+`SimulationCommandSender.projectExecuteTick` (`src/ui/simulation-commands.ts:291-292`),
 read at `:401`. It returns `lastTick` while the clock is paused and
 `lastTick + ceil(elapsed × speed / 50) + leadTicks` while it runs, with
 `DEFAULT_LEAD_TICKS = 20` (`:118`). **Those four anchors read `:127-131`,
@@ -340,7 +340,7 @@ below records ADR 0056 as having closed.
 **Yes, something legitimately submits a tick below the highest already queued,
 and this is the timing.** The player gives an order while the clock runs — it is
 projected twenty-odd ticks into the future — and then pauses. `handleSetClock`
-answers with the kernel's exact tick (`state-machine.ts:1126-1131`, which posts
+answers with the kernel's exact tick (`state-machine.ts:1127-1132`, which posts
 `tick: this._kernel!.tick`; the anchor read `:763-773`, was re-aimed to
 `:1101-1115` on 2026-09-15, and that landed on the tail of the *previous* method
 even before `origin/main` was merged on 2026-09-16), the HUD's
@@ -387,7 +387,7 @@ was the only one.**
 **2. The cost is not one refusal, it is every refusal for the length of the
 pause.** `FixedStepClock.pump` returns `0` while paused
 (`src/simulation/clock/fixed-step-clock.ts:68`) and the worker's tick loop runs
-only while the clock is pumping (`state-machine.ts:392-398`; the anchor read
+only while the clock is pumping (`state-machine.ts:393-399`; the anchor read
 `:269-282`, was re-aimed to `:353-359` on 2026-09-15, and that landed on two
 unrelated private fields). **One word of the claim is corrected rather than
 overwritten** (`docs/AGENT_WORKFLOW.md` §4): `onTickLoop`'s own guard admits
@@ -409,7 +409,7 @@ aim at. Not hypothetical: applying the guard as a mutation broke
 beside counts that do move"*, which is that flow.
 
 **4. A refusal costs the HUD its sequence baseline.** `SimulationCommandSender`
-clears `sequenceSynced` on any rejection (`src/ui/simulation-commands.ts:579`; the anchor read `:243-246`)
+clears `sequenceSynced` on any rejection (`src/ui/simulation-commands.ts:580`; the anchor read `:243-246`)
 because a rejection means its idea of the sequence is wrong in an unknown
 direction. So each refusal disables `submit` until the next `simulation/snapshot`
 re-baselines it — the correct response to a real desync, and an expensive one for
@@ -429,7 +429,7 @@ a command that was never desynced.
 - **Throw**, which is what `submitCommand` already does. Safe at this boundary,
   and worth saying because it is easy to assume otherwise: the fault path #415
   and #424 exist for is a throw *inside the tick loop*
-  (`state-machine.ts:410-411`, the `catch (e)` that calls
+  (`state-machine.ts:411-412`, the `catch (e)` that calls
   `this.fault('internal-error', ...)`; the anchor read `:307`, was re-aimed to
   `:393` on 2026-09-15, and `:393` is the loop's *state guard* rather than its
   fault path), which becomes a terminal `internal-error`.
@@ -586,7 +586,7 @@ pause still has the shape the rejected guard would have refused.
 > 42, then 62"* — and did not carry this paragraph with it. Re-read on
 > 2026-09-15: `projectExecuteTick` is
 > `Math.max(this.projectFromClock(leadTicksOverride), this.highestSubmittedTick)`
-> (`src/ui/simulation-commands.ts:290-291`), so the second order in a pause
+> (`src/ui/simulation-commands.ts:291-292`), so the second order in a pause
 > takes the queued 62 rather than the clock's 42 and **does not** have the
 > shape the rejected guard would have refused. The first half of the sentence
 > — that a command carrying its lead is not due and the paused drain leaves it
