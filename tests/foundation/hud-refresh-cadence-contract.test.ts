@@ -367,7 +367,18 @@ describe('what refreshes a pulled HUD readout (#718)', () => {
     // prison has said*, and neither 2 nor 4 is a cadence: the contrast with the
     // 120 the assertions above measure is what the case is for, and the gap
     // below is still the whole window.
-    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(4);
+    //
+    // **And again, 4 -> 6, on 2026-09-17 (ADR 0116, the owner's ruling of
+    // 2026-09-16), by the same mechanism a third time.** A build order that
+    // finishes now records an event, and `prisonWithNobodyHoused` places two
+    // of them -- the two beds its own comment already calls out as *"the two
+    // build orders"*, run to completion before the snapshot is captured -- so
+    // ADR 0084's restore republishes two more records the counts-only
+    // predicate accepts. Every figure this number has worn is kept for the
+    // reason the paragraphs above keep theirs: 1, 2, 4 and 6 are all the same
+    // news, which is that this tracks what the prison has said and none of
+    // them is a cadence.
+    expect(countAccepted(trace, refreshesWithoutTheClock)).toBe(6);
     expect(worstGapMs(trace, refreshesWithoutTheClock)).toBeGreaterThanOrEqual(WINDOW_MS - WAKE_MS);
   });
 

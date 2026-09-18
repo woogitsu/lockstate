@@ -257,7 +257,22 @@ describe('a build order that is cancelled says so, and says which of two things 
 
     session.send({ type: 'CancelBuildOrder', orderId: 'order-e', expectedRevision: session.runtime.construction.revisionOf('order-e') });
     expect(session.stateOf('order-e')).toBe('cancelled');
+    /*
+     * **Two records since ADR 0116, and the first of them is the reason this
+     * expectation moved.** `runUntilState('order-e', 'completed')` runs the
+     * wall to the end, which is now itself an event -- the owner's ruling of
+     * 2026-09-16, option 2 -- so the session says the order finished and then
+     * says the spend is gone when it is taken back down. The order of the two
+     * is the order they happened in, which is what `since(0)` hands back.
+     *
+     * The expectation is widened rather than filtered, deliberately: a filter
+     * would let a *second* completion record for one wall through unseen, and
+     * the call site inside `case 'in-progress':` advances `progress` five
+     * times per wall. What pins that to one is this list having exactly two
+     * entries.
+     */
     expect(session.types(), 'the larger loss gets the loss sentence').toEqual([
+      'construction.order-completed',
       'construction.order-cancelled-underway',
     ]);
   });

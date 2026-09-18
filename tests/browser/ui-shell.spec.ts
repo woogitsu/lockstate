@@ -1044,9 +1044,18 @@ test.describe('HUD shell', () => {
       ]);
     });
 
-    test('the refusal line is there at 375px, where the alerts region is not', async ({ page }) => {
+    test('the refusal line is there at 375px, where the map corner is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.
+      //
+      // **THE SECOND HALF OF THAT SENTENCE STOPPED BEING TRUE ON 2026-09-16
+      // AND THE TEST'S SUBJECT DID NOT** (#1201). The corner is still dropped
+      // -- which is what the one assertion below measures, and is why this test
+      // was renamed rather than retired -- but the alerts fold itself is now
+      // mounted in the rail at this width, so "the alerts list would not exist
+      // on a phone" is history. The band is still the right home for a refusal
+      // for the reason the block above this one gives: it is on screen at every
+      // viewport without anything being opened, and a log is not a notice.
       //
       // **An attempt to remove that breakpoint was made and withdrawn on
       // 2026-08-31 (#703, ruling 5), and the rule now carries the measurement
@@ -1216,17 +1225,31 @@ test.describe('HUD shell', () => {
          * the notice and the list is the log"* -- and #701 measured why both are
          * needed, the band having lost a message to another from the same tick.
          */
+        /*
+         * **THE SPLIT CLOSED ON 2026-09-16 AND THE PARAGRAPH ABOVE IS KEPT
+         * RATHER THAN EDITED** (issue #1201), because it is the case for the
+         * owner question that produced the ruling and is only legible beside
+         * it.
+         *
+         * Its second bullet still holds exactly as written: the 720px
+         * breakpoint stays, `.hud__corner` is still `display: none` below it,
+         * and the Intake-panel collision it records is still why un-hiding the
+         * corner is not the fix. What changed is not the breakpoint but the
+         * fold's **mount**: below 720px `hud.ts` moves the alerts section into
+         * the Overview panel's `foldSlot`, in the rail, on the owner's ruling
+         * of 2026-09-16 (*"Zamontuj fold w szynie poniżej 720 px"*). So the row
+         * has a real box at both sizes, by two different routes, and #220's
+         * defect is closed on a phone as well as on a desktop.
+         *
+         * `tests/browser/ui-alert-dismiss-on-a-phone.spec.ts` is the gate over
+         * the thing that actually matters about that -- that `DismissAlert` can
+         * be *pressed* at 375x812 -- and this stays a geometry assertion.
+         */
         const row = await page.evaluate(() => window.lockstateUiHarness.alertRowProbe());
         expect(row.present).toBe(true);
-        if (width > 720) {
-          expect(row.visible, `the alerts row is laid out at ${width}px as of #703 ruling 1`).toBe(true);
-          expect(row.width).toBeGreaterThan(0);
-          expect(row.height).toBeGreaterThan(0);
-        } else {
-          expect(row.visible, `.hud__corner is display:none at ${width}px, so the row has no box`).toBe(false);
-          expect(row.width).toBe(0);
-          expect(row.height).toBe(0);
-        }
+        expect(row.visible, `the alerts row is laid out at ${width}px (#703 ruling 1, #1201)`).toBe(true);
+        expect(row.width).toBeGreaterThan(0);
+        expect(row.height).toBeGreaterThan(0);
       });
     }
 
