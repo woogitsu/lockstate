@@ -35,6 +35,52 @@ re-check is recorded beneath it with `54adc87c`.
 - Everything else is a 2026-09-16 run on `e044a3e8` and is **not** re-run. A
   figure with no re-check line beneath it has not been re-measured.
 
+### Re-checked again on 2026-09-18, at `eeda2e53` (v0.0.661) — the absence this record measured has been filled
+
+Nothing above or below is edited away; this is a third layer on the same two
+claims, marked rather than overwritten.
+
+- **The headline absence is GONE, and it is the one thing this record most
+  wanted watched.** #1284 merged ADR 0116's ruling into the code.
+  `SIMULATION_EVENT_TYPES` now holds **seven** `construction.*` members, not
+  six, and the seventh is `'construction.order-completed'` — **exactly the
+  "member for a build finishing" §5 says does not exist.** §5's sentence stays
+  as written because it is true of `e044a3e8` and `54adc87c`, which it names.
+  **The name is worth carrying**: it is `construction.order-completed`, so a
+  grep for `construction.completed` — the form the sibling cold-start record
+  guessed — still comes back empty and reads as "still unbuilt".
+- **The `SIMULATION_EVENT_TYPES` coordinate has moved a second time.** §5's
+  2026-09-16 re-pin to `:1864`/`:1892` is dead at `eeda2e53`; the declaration
+  `` export const SIMULATION_EVENT_TYPES = [ `` is at
+  **`src/simulation/protocol/types.ts:1891`** and the array closes at
+  **`:1920`**, `` ] as const; ``. That is two re-pins of one coordinate in
+  three days, which is the measurement `docs/AGENT_WORKFLOW.md` §4 asks for
+  when it says a `file:line` is the least durable citation here.
+- **§6's *"exactly three `'log-only'` members"* is now FALSE — there are
+  four**, and the fourth is `'construction.order-completed'`, routed
+  `'log-only'` at `src/ui/simulation-events.ts:515-519` per ADR 0116 option 2.
+  The three the block names are still three of the four, so **the explanation
+  it gives for the band silence is unaffected**: `rooms.zoned` and
+  `rooms.needs-cleared` are still `'log-only'` and `prisoners.housed` still
+  `'band-and-log'`. Only the tally rotted, which is the sentence shape §4 says
+  rots first.
+- **The four `EVENT_PRESENTATION` coordinates in that block have moved by
+  thirty-two lines**, the width of the block #1284 inserted above them:
+  `:618` → **`:650`** (`rooms.needs-cleared`), `:619` → **`:651`**
+  (`rooms.unzoned`), `:623` → **`:655`** (`rooms.zoned`), `:603-607` →
+  **`:635-639`** (`prisoners.housed`). The block keeps its 2026-09-16 numbers
+  because it is dated to `54adc87c` and they were right there; these are the
+  readings at `eeda2e53`.
+- **Still alive, re-opened one at a time:**
+  `src/simulation/protocol/types.ts:1525` (`routeDecidedSince`),
+  `src/ui/hud/hud.ts:1731`, and
+  `docs/adr/0116-whether-a-finished-object-is-an-event.md:19`, which still
+  opens *"Accepted, 2026-09-16, by the repository owner: option 2 — a"*.
+- **What is NOT re-measured: everything the harness produced.** No act was
+  re-run. What a neglected prison is told on `eeda2e53` — now that a finished
+  wall has a log row — is unknown from this record, and the twenty-four-walls
+  act in particular would very likely read differently.
+
 ---
 
 ## The question, and how it was refined
