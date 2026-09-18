@@ -261,7 +261,9 @@ deletions**; restricted to what ships (`src/`, `public/`, `index.html`) it is
 >   triggering run instead: CI `35200179445`, `head_sha` `d1f3bf7c`, concluded
 >   `success` at **08:51:38Z**, two seconds before the Deploy run was created,
 >   and `deploy.yml`'s `staging` job takes `workflow_run.head_sha` for its
->   `ref:` (`.github/workflows/deploy.yml:172`). `33c02a12` is
+>   `ref:` (`.github/workflows/deploy.yml:267`, the `Checkout` step; the record
+>   first wrote `:172`, which is the comment block *about* that line rather
+>   than the line). `33c02a12` is
 >   `chore(release): v0.0.652`, `main`'s tip at trigger time.
 > - **So `main` is four first-parent commits ahead of what is served again** —
 >   `33c02a12` (v0.0.652), `725aad40` (#1279), `0f4a0b9f` (v0.0.653) and
