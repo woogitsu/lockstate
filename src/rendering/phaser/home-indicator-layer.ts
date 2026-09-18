@@ -50,6 +50,32 @@ const STROKE_WIDTH = 2;
  * the world -- which is the whole point, since the world it refers to is off
  * screen. Purely presentational: it reads a camera and a rectangle and writes
  * one `Graphics`; nothing here reaches the simulation.
+ *
+ * **Measured limitation, stated here rather than left for a player to find:
+ * part of the ring this glyph rides is behind opaque HUD chrome.** `.hud` is
+ * `position: fixed; inset: 0` over the whole canvas (`src/ui/hud/hud.css`), and
+ * Phaser's camera viewport is the whole canvas, so an inset measured from the
+ * viewport edge is not measured from the edge of the map the player can see.
+ * Measured on the assembled page at 1280x720, zoom 100%, by reading
+ * `document.elementFromPoint` at the four cardinal ring positions and the
+ * bounding boxes of every `.hud` descendant with an opaque background: the
+ * **due-north** position (640, 34) is inside `.hud-strip` (0,0 1280x81) and the
+ * **due-east** position (1246, 360) is inside `.save-panel` (1004,147
+ * 264x221). Due west and due south were clear, as is every bearing whose ring
+ * point misses those boxes. Taken over the ring's perimeter at that viewport,
+ * the top edge is wholly covered and roughly half the right edge is.
+ *
+ * **It is reported and not worked around, because the fix is not local to this
+ * file.** Insetting far enough to clear the chrome means 101 px at the top and
+ * 284 px at the right, which is no longer an edge marker; insetting correctly
+ * means the renderer knowing which region of the canvas the HUD occupies, and
+ * no such thing exists in this tree -- there is no safe-area rectangle, no
+ * custom property and no port carrying one, so building one is a boundary
+ * decision (`AGENTS.md` 1 and 3) rather than a constant to tune here. Against
+ * the state issue #794 reports -- a black screen with nothing on it at all --
+ * a marker visible on most bearings is strictly better than none, and the
+ * bearings it is not visible on are recorded above for whoever takes the
+ * safe-area question.
  */
 export class HomeIndicatorLayer {
   private readonly graphics: Phaser.GameObjects.Graphics;

@@ -70,3 +70,16 @@ grows outwards by construction.
 
 The marker is presentation like everything else on this page. It reads a camera
 and a rectangle already read for the repaint, and writes one `Graphics` object.
+
+**One thing the marker does not do, measured rather than assumed.** `.hud` is
+`position: fixed; inset: 0` over the whole canvas and Phaser's camera viewport
+*is* the whole canvas, so the ring is inset from the viewport edge and not from
+the edge of the map a player can see. Read off the assembled page at 1280x720
+with `document.elementFromPoint` and the bounding boxes of every opaque `.hud`
+descendant: the due-north ring point `(640, 34)` falls inside `.hud-strip`
+(`0,0 1280x81`) and the due-east point `(1246, 360)` inside `.save-panel`
+(`1004,147 264x221`); due west and due south are clear. Pointing at the visible
+map rather than at the canvas needs a safe-area rectangle the renderer can
+read, and no such thing exists in this tree — it is a boundary decision, not a
+constant, and `src/rendering/phaser/home-indicator-layer.ts` carries the same
+measurement beside the code.
