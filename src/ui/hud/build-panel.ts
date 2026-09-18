@@ -2345,7 +2345,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
          * player may have read is not replaced under their pointer, and a place
          * with no box had no label to read.
          */
-        row.freedAtMs = undefined;
+        if (row.orderId !== undefined) row.freedAtMs = performance.now();
         row.element.hidden = true;
         row.orderId = undefined;
         row.cancel.setUnavailable(true);

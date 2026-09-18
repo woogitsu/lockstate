@@ -1272,7 +1272,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
          * that a label the player may have read is not replaced under their
          * pointer, and a place with no box had no label to read.
          */
-        row.freedAtMs = undefined;
+        if (row.guardId !== undefined) row.freedAtMs = performance.now();
         row.guardId = undefined;
         row.element.hidden = true;
         row.release.setDisabled(true);
