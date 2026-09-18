@@ -5,6 +5,7 @@ import type { MainToWorkerMessage, ProtocolFaultCode, WorkerToMainMessage } from
 import { SIMULATION_PROTOCOL_VERSION } from '../simulation/protocol/types';
 import {
   SESSION_SNAPSHOT_SCHEMA_ID,
+  sessionSnapshotBundleFromTransport,
   type SessionSnapshotBundle,
 } from '../simulation/runtime/restore-session';
 
@@ -583,7 +584,7 @@ export class SimulationCommandSender {
     const { snapshot } = payload;
     if (snapshot.schemaId !== SESSION_SNAPSHOT_SCHEMA_ID || snapshot.transport !== 'structured-clone') return;
 
-    const bundle = snapshot.data as unknown as SessionSnapshotBundle;
+    const bundle = sessionSnapshotBundleFromTransport(snapshot.data);
     const expected = bundle.kernel?.expectedSequence;
     if (typeof expected !== 'number' || !Number.isSafeInteger(expected) || expected < 0) return;
 

@@ -3,6 +3,7 @@ import { SIMULATION_PROTOCOL_VERSION } from '../../simulation/protocol/types';
 import {
   SESSION_SNAPSHOT_SCHEMA_ID,
   SESSION_SNAPSHOT_SCHEMA_VERSION,
+  sessionSnapshotBundleFromTransport,
   type SessionSnapshotBundle,
 } from '../../simulation/runtime/restore-session';
 import {
@@ -618,7 +619,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
     // Validated as JSON by the protocol decoder before it reached us; the
     // schema id above says which shape that JSON has. `WorldRenderView` still
     // fails closed on anything malformed inside it.
-    const bundle = snapshot.data as unknown as SessionSnapshotBundle;
+    const bundle = sessionSnapshotBundleFromTransport(snapshot.data);
     try {
       this.frame = {
         revision: this.frame.revision + 1,

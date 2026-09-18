@@ -77,6 +77,93 @@ it. There is no arrangement of three such panels that does not take height from
 one of the two already there. That is the decision, and it is a product
 decision about what a player should see at once, not a layout detail.
 
+### THE TABLE ABOVE DOES NOT FULLY REPRODUCE, AND IT IS KEPT RATHER THAN
+### OVERWRITTEN BECAUSE WHICH HALF FAILED IS THE INSTRUCTIVE PART
+
+Re-measured 2026-09-15 on `e044a3e8` (99 commits after `e221e927`), in a real
+Chromium through `tests/browser/ui-harness.html`, with the `busyPrison()`
+fixture copied **verbatim** out of `tests/browser/operations-reachability.spec.ts`
+— which is the fixture the paragraph above names. Then re-run a second time in a
+detached worktree checked out at `e221e927` itself, the commit the table was
+taken on, with the same instrument: **every figure came back byte-identical
+between the two trees.** So nothing below is drift. The tree did not move; the
+fixture the table claims was not the fixture the table used.
+
+**Three of the six columns reproduce exactly.**
+
+| column | ADR's figure | re-measured, both trees |
+|---|---|---|
+| `.hud__side` (Day plan) | 413 / — / 405 / 391 | **413.38 / 413.38 / 405.38 / 391** |
+| Regime panel, whole | 389 / 389 / 389 / 359 | **389.38 / 389.38 / 389.38 / 359** |
+| its roster half alone | 220 / 220 / 220 / 202 | **219.63 / 219.63 / 219.63 / 202.44** |
+
+**Three do not.**
+
+| viewport | Intake, ADR | Intake, measured | Staff, ADR | Staff, measured | shortfall, ADR | shortfall, measured |
+|---|---|---|---|---|---|---|
+| 1440x900 | 161 | **268.44** | 577 | **526.88** | 0 | **177** |
+| 1024x768 | 161 | **268.44** | 502 | **394.88** | 75 | **309** |
+| 900x600 | 161 | **268.44** | 342 | **234.88** | 177 | **400** |
+| 375x812 | 143 | **250.44** | 361 | **253.56** | 178 | **388** |
+
+**Where the Intake column came from is now known, and it is not the busy
+prison.** Mounting the HUD shell and pressing Manage with **no view model
+published at all** — the harness's own defaults, an empty prison — gives
+`.ui-panel.hud-intake` at **161.00** at 1440x900 and **143.00** at 375x812.
+Those are the ADR's two numbers to the pixel. The Staff column matches neither
+fixture (defaults give 320.56 and 307.38), so the table mixes at least two
+seedings and possibly three.
+
+**The conclusion the ADR draws from the table survives, and gets stronger.** The
+claim was that the Manage rail is already over its budget at three of four
+viewports with the Staff panel absorbing it. Under the fixture the ADR names it
+is over at **all four**, the desktop one included — and at 375x812 it is over by
+**388 px** rather than 178. `tests/browser/operations-reachability.spec.ts`'s
+own docblock had already recorded the desktop half of this, in the paragraph
+beginning *"Re-measured under the same mutation"*: the Staff panel *"is over its
+box at every viewport this file visits"*. That sentence and this ADR's table were
+written about the same tree and disagree; the table is the one that was wrong.
+
+**Nothing here is an unreachability.** `.ui-panel.hud-staff` is
+`overflow-y: auto` (`hud.css`, pinned by that spec's own computed-`overflow-y`
+test), so a shortfall is a scroll, not a lost control. "Over budget" in this
+document means *the player scrolls*, and `operations-reachability.spec.ts` is
+what keeps it meaning only that.
+
+### What a third panel actually costs, measured rather than reasoned
+
+The option list below said *"something on Manage has to give way"* without saying
+how much. Measured 2026-09-15: a stub panel of the roster's own measured height
+(202 px at phone, 220 px elsewhere) inserted into `.hud__side` above the Staff
+panel, on Manage, with the busy prison. `.hud__side`'s own height never moves —
+it is bottom-anchored and capped — so the whole cost lands on the one panel that
+flexes.
+
+| viewport | Staff box today | roster as `flex: 0 0 auto` | roster as a second `auto` scroller |
+|---|---|---|---|
+| 1440x900 | 526.88 (177 short) | 306.88 (397 short) | 401.02 (303 short) |
+| 1024x768 | 394.88 (309 short) | 174.88 (529 short) | 300.28 (404 short) |
+| 900x600 | 234.88 (400 short) | **14.88** (620 short) | 173.73 (461 short) |
+| 375x812 | 253.56 (388 short) | **51.56** (590 short) | 192.17 (450 short) |
+
+**At 900x600 the Staff panel becomes 14.88 px tall and at 375x812 it becomes
+51.56 px** — against `--tap-target`'s 44 px, that is one row of a panel that has
+to carry Hire, the coverage sentence, the payroll fold and three Dismiss
+controls. Constitution article 7's *"Docelowe pola dotykowe mają co najmniej
+44 x 44 px"* is not broken by it (the controls keep their size and the panel
+scrolls), but the panel stops being a readable surface, which is tie-break rung
+3, *"Czytelność i orientacja w świecie."*
+
+**And the phone cannot buy its way out with the Layout menu.** The phone rail is
+a sheet whose height the player can drag, but `hud-layout.ts` caps it at
+`min(viewport.height x SHEET_MAX_VIEWPORT_FRACTION, viewport.height -
+SHEET_VIEWPORT_RESERVE_PX)` — the delivery's own *"maks. około 66% wysokości"*
+and *"i rezerwa 210 px"* — which at 812 px is **535.92 px**, and
+`DEFAULT_SHEET_HEIGHT_PX` is **536**. Measured, `.hud__side` on Manage at
+375x812 is **536.00**: the sheet opens at its ceiling and there is no slider
+travel left. So on a phone the roster is paid for out of the Staff panel or it
+is not paid for.
+
 ## The options, with what each costs
 
 1. **Leave the Regime panel whole on Plan dnia.** Free, ships nothing, and
@@ -85,7 +172,12 @@ decision about what a player should see at once, not a layout detail.
    pressable at all four viewports today.
 2. **Split it, and put the roster on Manage as a third panel.** Follows the
    table. Costs the measurement above: something on Manage has to give way, and
-   naming which is itself a ruling nobody has made.
+   naming which is itself a ruling nobody has made. **Priced 2026-09-15**: the
+   Staff panel is what gives way, and it goes to **51.56 px at 375x812** and
+   **14.88 px at 900x600** if the roster keeps its natural height, or to 192.17
+   and 173.73 if the roster scrolls too. Nothing becomes unreachable — both
+   panels scroll — and nothing on the map is lost, because `.hud__side` is
+   capped and does not grow.
 3. **Split it, and put the roster on Manage *instead of* one of the two panels
    there.** Follows the table and pays for it honestly, but moves a surface the
    owner ruled onto Manage eight hours before this was written.
@@ -138,6 +230,12 @@ been ruled on would be spending a player-visible change on an unanswered
 question.
 
 ## The weakest claim here, and what would change my mind
+
+**Restated 2026-09-15, because the pass that priced the options found this
+claim was the sound half of a table whose other half did not reproduce.** The
+roster figures (202.44 / 219.63) re-measure exactly; the Intake and Staff
+figures beside them do not, and the section above says which fixture each came
+from. The weakness below is unchanged and still the right one to name.
 
 **That the roster's 202-220px is what it would cost on Manage.** It is the
 block's height *in the panel it is in today*, at the rail's own width, with four
