@@ -485,6 +485,38 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'warning',
     surfaces: 'band-and-log',
   },
+  // ADR 0116, the owner's ruling of 2026-09-16 (option 2: *"jeden zliczany
+  // wiersz"*, one counted row).
+  //
+  // **`'info'`, and there is no grade below it.** A finished wall is not a
+  // problem and has no next step -- ADR 0116 D9 measures the constitutional
+  // case against the owner's ruling of 2026-09-15 and finds it does not reach
+  // one -- so the channel's third tone, "not wrong", is the one it has to
+  // wear. It is also what keeps a building session from evicting a riot: a run
+  // of completions is in the first class `SEVERITY_EVICTION_ORDER` drops, so
+  // it evicts itself before it touches a `'warning'`.
+  //
+  // **`'log-only'`, and this one is arithmetic rather than taste.** A wall is
+  // 50 ticks of work, which is 625 ms at x4 -- 25 ms above
+  // `EVENT_BAND_DWELL_FLOOR_MS`, so the dwell floor coalesces none of it and a
+  // player building continuously at x4 would hold the band with completion
+  // lines for the length of the programme. That makes the band a progress
+  // meter, which is not what it is; ADR 0116 section 4d measures it and its
+  // option 4 declines it. `rooms.zoned`'s own reason applies on top and is the
+  // simpler one: a player who ordered a wall and watched it build already knows.
+  //
+  // **And it is why the sentence beside this needs no plural.** A completion
+  // carries the envelope and nothing else, so `simulationEventIdentity`
+  // collapses a whole programme into one row and the *number* is
+  // `HudAlertOccurrencesViewModel.count`, rendered as a separate `24x`
+  // fragment by `hudAlertRowLabel` and never interpolated into the sentence.
+  // The sentence therefore describes one completion at every count, which is
+  // exactly the shape `hud.alert.event.rooms.zoned` already has.
+  'construction.order-completed': {
+    labelKey: 'hud.alert.event.construction.order-completed',
+    severity: 'info',
+    surfaces: 'log-only',
+  },
   'construction.redone': {
     labelKey: 'hud.alert.event.construction.redone',
     severity: 'info',
@@ -1314,6 +1346,12 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
     // The plumbing for both was explicitly declined; see the schemas.
     case 'construction.order-cancelled':
     case 'construction.order-cancelled-underway':
+    // ADR 0116's completion. Parameter-free because the payload is the
+    // envelope and nothing else, and that is the ruling rather than a figure
+    // withheld: the "24" a player reads is the alerts list counting identical
+    // statements, and a figure on the payload would make two completions two
+    // statements and therefore two rows. The schema argues it at length.
+    case 'construction.order-completed':
     // Parameter-free, and the locale entry beside the sentence says why: naming
     // what the player did instead would be a fact about a command this channel
     // does not carry.
@@ -1461,6 +1499,11 @@ function eventParameterMessages(
     case 'construction.undone-spend-destroyed':
     case 'objects.removed-spend-destroyed':
     case 'construction.redone':
+    // ADR 0116's completion. No message-valued parameter for the reason it has
+    // no numeric one either: its sentence takes no placeholder at all, the
+    // payload being the envelope alone. Naming what finished is option 3,
+    // which the ruling declined, and it would take `{buildable}` here.
+    case 'construction.order-completed':
     case 'economy.delivery-cancelled':
       return undefined;
     default: {
