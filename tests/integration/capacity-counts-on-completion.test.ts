@@ -66,6 +66,23 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 const SEED = 0x0b1ec7;
 const CELL = 'room.cell';
 
+/**
+ * `room.cell`'s authored resident ceiling (issue #961, the owner's ruling of
+ * 2026-09-17): `maxResidents: 2` in `src/content/room-catalog.ts`.
+ *
+ * Written out as a literal and **not** read from the catalogue, for
+ * `docs/TESTING.md`'s reason: a fixture that asks the content for the number it
+ * then checks against the content holds for any content. The number is checked
+ * against the catalogue in `tests/unit/content-room-catalog-ceilings.test.ts`,
+ * which is where a change to it is supposed to be noticed.
+ *
+ * It is why the expectations below cap at two while the *use* ceiling does not:
+ * the ruling bounds who may **live** in the room, and a third and fourth bed
+ * still stand, still cost their planks and still raise
+ * `concurrentUseCapacity`.
+ */
+const CELL_MAX_RESIDENTS = 2;
+
 /** Four bed anchors wide, and tall enough for the 1x2 footprint plus `room.cell`'s authored minimum of 3. */
 const CELL_RECT = { x: 4, y: 6, width: 4, height: 3 } as const;
 
@@ -156,9 +173,10 @@ describe('a capacity counts an object on completion and never before it', () => 
       // `roomCapacity` and `accommodationCapacity` are the two the play-test
       // measured; `concurrentUseCapacity` and the per-capability total are the
       // two it named as unchecked.
-      expect(counts.roomCapacity, `roomCapacity at tick ${tick} in ${cellInstanceId}`).toBe(built);
-      expect(counts.accommodationCapacity, `accommodationCapacity at tick ${tick} in ${cellInstanceId}`).toBe(built);
-      expect(instance.residentCapacity, `residentCapacity at tick ${tick} in ${cellInstanceId}`).toBe(built);
+      const housed = Math.min(built, CELL_MAX_RESIDENTS);
+      expect(counts.roomCapacity, `roomCapacity at tick ${tick} in ${cellInstanceId}`).toBe(housed);
+      expect(counts.accommodationCapacity, `accommodationCapacity at tick ${tick} in ${cellInstanceId}`).toBe(housed);
+      expect(instance.residentCapacity, `residentCapacity at tick ${tick} in ${cellInstanceId}`).toBe(housed);
       expect(instance.concurrentUseCapacity, `concurrentUseCapacity at tick ${tick} in ${cellInstanceId}`).toBe(built);
       // Through `concurrentUseCapacityFor` rather than off the row's optional
       // breakdown, because that accessor is the ceiling `findAvailableForUse`
@@ -187,9 +205,16 @@ describe('a capacity counts an object on completion and never before it', () => 
     expect(completionFirstReached.get(1)).toBe(151);
     expect(completionFirstReached.get(4)).toBe(271);
     expect(roomCapacityFirstReached.get(1)).toBe(151);
-    expect(roomCapacityFirstReached.get(4)).toBe(271);
+    // **Two rather than four since issue #961**, and the tick is the second
+    // bed's completion rather than the fourth's: the ceiling stops the room
+    // counting residents there, and the third and fourth orders complete into a
+    // capacity that does not move. The `.get(4)` this line read is now
+    // `undefined` for `roomCapacity` and unchanged for the completions above,
+    // which is the pair that says the ceiling bounds residency and not building.
+    expect(roomCapacityFirstReached.get(2)).toBe(191);
+    expect(roomCapacityFirstReached.get(4)).toBeUndefined();
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId)).toMatchObject({
-      residentCapacity: 4,
+      residentCapacity: CELL_MAX_RESIDENTS,
       concurrentUseCapacity: 4,
       objectCapabilities: ['sleep-surface'],
     });
