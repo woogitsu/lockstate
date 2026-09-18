@@ -549,6 +549,17 @@ sentence.
    > unmerged branch ([#1242](https://github.com/woogitsu/lockstate/pull/1242)),
    > and a GitHub comment is not a record.
    >
+   > > **THE HALF OF THAT SENTENCE ABOUT #1242 WENT FALSE ON 2026-09-17 AND IS
+   > > KEPT RATHER THAN REWRITTEN.** #1242 merged as `bdf2fcfc`, so the dossier
+   > > is on `main` at
+   > > `docs/research/2026-09-15-three-decisions-that-have-been-waiting-on-the-owner.md`,
+   > > and its post-ruling table records this one as the single dossier
+   > > recommendation the owner **declined** — *"no — option 3, which this
+   > > dossier declined"*. **The conclusion is untouched and now rests on the
+   > > other half**: a research record is read-only history by
+   > > `docs/research/README.md`'s own rule, so a live identity document does
+   > > not read its rulings out of one. This block is still the durable record.
+   >
    > **The provenance is the weaker of the two kinds this repository
    > distinguishes**, the kind `CLAUDE.md` flags for the 2026-09-08, -09 and -10
    > releases inside reservation 3 and the kind ADR 0091's Status block records

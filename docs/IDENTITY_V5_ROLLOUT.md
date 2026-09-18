@@ -531,6 +531,17 @@ three tiers rather than asserting the phone one is right.
 > is held by an unmerged branch ([#1242](https://github.com/woogitsu/lockstate/pull/1242))
 > and a GitHub comment is not a record.
 >
+> > **THE HALF OF THAT SENTENCE ABOUT #1242 WENT FALSE ON 2026-09-17 AND IS
+> > KEPT RATHER THAN REWRITTEN.** #1242 merged as `bdf2fcfc`, so the dossier is
+> > on `main` at
+> > `docs/research/2026-09-15-three-decisions-that-have-been-waiting-on-the-owner.md`
+> > and its own post-ruling section records this ruling beside the pricing it
+> > priced. **The conclusion is untouched and now rests on the other half**: a
+> > research record is read-only history by `docs/research/README.md`'s own
+> > rule, so it is not where a live rollout stage reads its ruling from. This
+> > block is still the durable record; the dossier is where the pricing the
+> > owner was shown is kept.
+>
 > **The provenance is the weaker of the two kinds this repository
 > distinguishes**, the same kind `CLAUDE.md` flags for the 2026-09-08, -09 and
 > -10 releases inside reservation 3 and the same kind ADR 0091's Status block
