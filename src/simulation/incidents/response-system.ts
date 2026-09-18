@@ -755,7 +755,7 @@ export class IncidentResponseSystem implements SystemRegistration {
      * and reading the field that means that is what survives the day a lapse
      * stops injuring everybody present.
      */
-    for (const entityId of outcome.injuredEntityIds) this.onPrisonerInjured(entityId, tick);
+    // MUTATION
 
     let escapeAnnounced = false;
     if (outcome.escaped) {
