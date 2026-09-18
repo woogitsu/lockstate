@@ -330,7 +330,7 @@ here rather than restated from memory:
   `docs/PERSISTENCE.md` for the save/load contract this rests on.
 - *"Nie mów „wolne miejsce", jeśli znana jest wyłącznie liczba łóżek."* — do
   not say "free space" from a bed count alone. `hud.status.prisoners-without-bed`
-  (`src/content/default-locale-en.ts:167`) already counts people with no bed,
+  (`src/content/default-locale-en.ts:203`) already counts people with no bed,
   not beds — its own comment says the alternative "counts what is missing
   rather than what is fine".
 - *"„Brak incydentów" i „brak danych" to różne stany."* — "no incidents" and
