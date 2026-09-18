@@ -375,6 +375,7 @@ const harness: LockstateWorldSceneHarness = {
   displaceCamera: (scrollX, scrollY) => {
     scene.cameras.main.setScroll(scrollX, scrollY);
   },
+  framesRead: () => reads,
   homeIndicator: () => {
     const mark = scene.homeIndicatorMark;
     return mark === undefined ? undefined : { x: mark.position.x, y: mark.position.y, angleRadians: mark.angleRadians };

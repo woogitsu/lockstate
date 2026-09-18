@@ -65,22 +65,46 @@ async function loadWorld(page: Page): Promise<void> {
  *
  * The wait is on `update()` having run, not on a fixed number of animation
  * frames: the mark is recomputed inside `update()`, and a read taken between
- * the `setScroll` and the next tick answers for the previous frame. The poll
- * re-reads until the mark's presence matches what the caller expects, which is
- * the only honest precondition available from outside the engine's loop.
+ * the `setScroll` and the next tick answers for the previous frame. The
+ * harness's `framesRead()` counter is that precondition, read **inside the
+ * same `evaluate` that writes the scroll** so that no frame can slip between
+ * the write and the reading of the baseline.
+ *
+ * **It used to poll the mark's presence instead, and that is issue #1285.**
+ * Presence is the wrong signal for exactly the assertion this file exists to
+ * make: a camera moving from one off-screen bearing to another leaves the
+ * marker present the whole way, so the poll was satisfied by the frame drawn
+ * *before* the move and the read that followed returned the previous bearing.
+ * It passed whenever a frame happened to land inside two CDP round trips and
+ * failed when one did not -- measured at 18 stale reads in 40 attempts on an
+ * idle machine, and once on CI, where the mark read after a displacement due
+ * west was exactly the `PI/2` the previous displacement due north had left
+ * behind.
+ *
+ * `expectMark` is now asserted rather than waited on, which is strictly the
+ * stronger of the two: a marker that never appears used to end the test in a
+ * poll timeout with nothing to read, and now names what was expected.
  */
 async function displaceAndSettle(page: Page, x: number, y: number, expectMark: boolean): Promise<HarnessHomeIndicator | undefined> {
-  await page.evaluate(
+  const framesBefore = await page.evaluate(
     ([sx, sy]) => {
       window.lockstateWorldSceneHarness!.displaceCamera(sx, sy);
+      return window.lockstateWorldSceneHarness!.framesRead();
     },
     [x, y] as const,
   );
   await page.waitForFunction(
-    (wanted) => (window.lockstateWorldSceneHarness!.homeIndicator() !== undefined) === wanted,
-    expectMark,
+    (before) => window.lockstateWorldSceneHarness!.framesRead() > before,
+    framesBefore,
   );
-  return page.evaluate(() => window.lockstateWorldSceneHarness!.homeIndicator());
+  const mark = await page.evaluate(() => window.lockstateWorldSceneHarness!.homeIndicator());
+  expect(
+    mark !== undefined,
+    expectMark
+      ? 'no marker was drawn on the frame that followed the camera move'
+      : 'a marker was drawn on the frame that followed the camera move',
+  ).toBe(expectMark);
+  return mark;
 }
 
 async function viewport(page: Page): Promise<{ readonly width: number; readonly height: number }> {
