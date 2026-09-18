@@ -497,3 +497,25 @@ The second weakest is the §3 interval itself: n = 20 gives 1.2 %–32.0 %, and 
 downstream argument that leans on "15 %" as though it were 15 rather than
 "somewhere between one and thirty-eight issues" is leaning on the point estimate
 of a very small sample.
+
+> **THE PARAGRAPH ABOVE RESTATES THE WRONG INTERVAL, AND A CORRECTION THAT
+> DOES NOT REACH ITS OWN RESTATEMENTS IS HALF A CORRECTION.** §3's marker
+> replaced *"1.2 %–32.0 %"* with the Wilson interval for the 3/20 actually
+> observed, **5.2 %–36.0 %**, and this paragraph kept the old pair of numbers
+> for a day. Kept and marked rather than overwritten, because *which* sentence
+> a correction failed to reach is the finding: the figure appeared in three
+> places — §3, here, and the index row in `docs/research/README.md` — and the
+> first pass edited one. The point of the paragraph is unchanged and survives
+> the substitution: n = 20 gives **5.2 %–36.0 %**, "somewhere between six and
+> forty-three issues", and an argument leaning on "15 %" as though it were 15
+> is still leaning on the point estimate of a very small sample.
+>
+> **Recomputed independently rather than carried from §3**, at
+> z = 1.959964: Wilson 3/20 = 5.24 %–36.04 %, continuity-corrected
+> 3.96 %–38.86 %, Clopper–Pearson exact 3.21 %–37.89 %; Clopper–Pearson for
+> 2/20 = **1.23 %–31.70 %**. So §3's identification of the printed figure as
+> *"the exact (Clopper–Pearson) interval for 2/20"* is right about the floor to
+> three significant figures and **off by 0.3 points at the ceiling** (31.7
+> against the printed 32.0). It is left as it stands: the identification is
+> what explains the error, and its own table already prints 31.7 beside the
+> printed 32.0 for a reader to compare.
