@@ -11,8 +11,42 @@ import type {
   SaveResult,
 } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
-import { createSaveEnvelope, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
+import { createSaveEnvelope, type SavePayload, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
 import { SnapshotRestoreFaultError, SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
+
+/**
+ * The one place a validated save payload becomes a live `SessionSnapshotBundle`.
+ *
+ * **The widening is the point, and this signature is where it is declared.**
+ * `SavePayload` is the *JSON representation* of the bundle -- Zod cannot infer
+ * a nominal brand, a fixed tuple arity, or `exactOptionalPropertyTypes`'s
+ * distinction between `?: T` and `?: T | undefined`, so the schema type is
+ * strictly the wider of the two at every leaf where the runtime type refines
+ * something. That width is deliberate: `docs/PERSISTENCE.md` records that a
+ * reader which narrows *"makes every save that recorded one unreadable, which
+ * is a migration"*, so the reader is permissive on purpose and the conversion
+ * back to the refined type is unavoidably an assertion.
+ *
+ * What this declaration buys over the inline
+ * `payload as unknown as SessionSnapshotBundle` it replaced is the **argument
+ * type**. `as unknown as` erases the source as well as the target, so the old
+ * expression would have accepted anything at all, including a payload that had
+ * stopped being a `SavePayload` -- exactly the divergence issue #1225 says
+ * nothing checks. A single-step `as` is kept inside rather than a second
+ * `unknown` hop, because TypeScript still checks comparability across it.
+ *
+ * The part this cannot state -- that the two shapes agree field for field --
+ * is stated where it can be checked, in
+ * `tests/foundation/save-payload-snapshot-bundle-shape-contract.test.ts`.
+ * That contract measures the normalised shapes as equal everywhere except
+ * three named leaves -- `kernel.commands[].payload`, where the bundle is the
+ * wider side, and the two `failReason` fields, where the schema is -- and it
+ * goes red on a new divergence in either direction, or on one of those three
+ * ceasing to be a widening.
+ */
+function bundleFromSavePayload(payload: SavePayload): SessionSnapshotBundle {
+  return payload as SessionSnapshotBundle;
+}
 
 /** Directional default: the informal probe in `docs/PERSISTENCE.md` puts a representative save well under a second, so a 30s trailing-edge cadence costs little while bounding worst-case loss. Not a tuned figure -- see `docs/BENCHMARKING.md`. */
 export const DEFAULT_AUTOSAVE_INTERVAL_MS = 30_000;
@@ -713,7 +747,7 @@ export class SessionController {
       // Read twice, deliberately: once to restore, and once to report which
       // sections actually arrived. A migrated V1/V2 save carries no
       // `simulation` or `identity`, and the scope has to say so (#109).
-      const bundle = result.envelope.payload as unknown as SessionSnapshotBundle;
+      const bundle = bundleFromSavePayload(result.envelope.payload);
 
       if (!outgoingSettled) {
         outgoingSettled = true;
