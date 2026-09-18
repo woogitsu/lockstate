@@ -2157,7 +2157,7 @@ test.describe('HUD shell', () => {
         expect(quiet.pipelineStages).toEqual([{ stage: 'accommodation-assignment', text: '11 at Cell Assignment' }]);
         expect(quiet.noPlaceBox, 'no warning while every arrival has somewhere to go').toBeNull();
         expect(quiet.noPlaceText).toBe('');
-        expect(quiet.text).not.toContain('no bed to sleep in');
+        expect(quiet.text).not.toContain('no place to sleep');
       });
 
       test('tells the player how many people have nowhere to sleep, beside the control that admitted them', async ({
@@ -2172,7 +2172,7 @@ test.describe('HUD shell', () => {
         const admit = await page.locator('.hud-intake__admit').boundingBox();
 
         expect(probe.noPlaceBox, 'the warning must have a real box, not merely a text node').not.toBeNull();
-        expect(probe.noPlaceText).toBe('11 waiting with no bed to sleep in');
+        expect(probe.noPlaceText).toBe('11 waiting with no place to sleep');
         expect(probe.noPlaceCount).toBe('11');
         // ADR 0011: an unresolved key renders as itself.
         expect(probe.noPlaceText.startsWith('hud.')).toBe(false);
