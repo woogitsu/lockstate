@@ -2597,13 +2597,18 @@ MINUTES AFTER IT WAS WRITTEN, and six anchors have passed over it.** §2's ADR
 rather than inferred."* That grep returns **seventeen** hits in six files here,
 and one of them is a reader: `src/ui/simulation-prisoner-detail.ts` requests
 `hud/prisoner-detail` at `:192`, `src/main.ts:1429` constructs the
-`PrisonerDetailReader` that does it, and `src/ui/hud/roster-panel.ts:653`
+`PrisonerDetailReader` that does it, and `src/ui/hud/roster-panel.ts:691`
 repaints an inspector from the reply (**this read `:730` from `6261cc89`
 through seven anchors and moved by eight at #993, v0.0.481; the declaration it
 introduces went `:745` to `:753` in the same hunk; and it changed *file* at ADR
 0115, 2026-09-16, when the owner's ruling split the Regime panel's roster half
 out into `src/ui/hud/roster-panel.ts` and the coordinate was re-derived with
-`grep -n 'Repaint the inspector from a fresh'` rather than offset. Every
+`grep -n 'Repaint the inspector from a fresh'` rather than offset. **That
+re-derivation was itself wrong and the number above is the correction: it wrote
+`:653`, which lands on the closing `*/` above `formatPrisonerName`, 38 lines
+short of the subject, and no gate could see it because 653 is in range of a
+1,679-line file. The grep the same sentence cites returns **691**, run
+2026-09-18 on this branch. Citing the method does not perform it.** Every
 `regime-panel.ts` anchor elsewhere in this file is history and is written as a
 bare basename from that date, per this file's own convention for an anchor
 whose subject is a number that is no longer current**). Dated rather than merely reported: the
@@ -18403,7 +18408,7 @@ work"*.
   `export interface HudPrisonerDetailViewModel {` is **`:2131`** in
   `src/ui/hud/view-model.ts`, `const prisonerDetailReader = …` is **`:1665`**
   in `src/main.ts`, `src/ui/simulation-prisoner-detail.ts:212` is the
-  `hud/prisoner-detail` request and `src/ui/hud/regime-panel.ts:743` is the
+  `hud/prisoner-detail` request and `regime-panel.ts:743` is the
   repaint comment. The verbatim quotations needed no edit for the **seventh**
   consecutive anchor.
 - **§5's four live coordinates hold**, opened one at a time:
@@ -18635,7 +18640,7 @@ of the pass.
 - **§2's ADR 0093 quartet holds, all four, for the second time running** —
   `src/ui/hud/view-model.ts:2131`, `src/main.ts:1665`,
   `src/ui/simulation-prisoner-detail.ts:212` and
-  `src/ui/hud/regime-panel.ts:743`, each opened — **although
+  `regime-panel.ts:743`, each opened — **although
   `docs/adr/0093-a-carry-is-an-action.md` is a member of this window** (88
   insertions from #1238). The ADR moved; the code it cites did not.
 - **§4's evidence holds for the fifteenth anchor running**, and this is the
