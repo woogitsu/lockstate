@@ -120,6 +120,7 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'rooms.needs-cleared': (sequence) => ({ sequence, tick: 100, type: 'rooms.needs-cleared', roomNameKey: 'room.yard.name' }),
   'rooms.unzoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.unzoned', roomNameKey: 'room.yard.name' }),
   'rooms.zoned': (sequence) => ({ sequence, tick: 100, type: 'rooms.zoned', roomNameKey: 'room.yard.name' }),
+  'construction.order-completed': (sequence) => ({ sequence, tick: 100, type: 'construction.order-completed' }),
 };
 
 /**
@@ -346,7 +347,19 @@ describe('what the prison says when nothing went wrong', () => {
    * the record, not fighting for the band's one line.
    */
   it('sends the acknowledgement to the log alone and every other event to both surfaces (#966)', () => {
-    const LOG_ONLY = new Set<SimulationEvent['type']>(['rooms.needs-cleared', 'rooms.unzoned', 'rooms.zoned']);
+    const LOG_ONLY = new Set<SimulationEvent['type']>([
+      // ADR 0116, the owner's ruling of 2026-09-16, and the fourth member to
+      // be written into this set by hand. Its reason is not the other three's:
+      // they are things the player just did and already knows about, while a
+      // completion is the prison finishing a job on its own clock. What routes
+      // it here is ADR 0116 section 4d's arithmetic -- 625 ms between
+      // completions at x4 against a 600 ms dwell floor, so the band would
+      // become a progress meter for the length of a building programme.
+      'construction.order-completed',
+      'rooms.needs-cleared',
+      'rooms.unzoned',
+      'rooms.zoned',
+    ]);
 
     for (const type of SIMULATION_EVENT_TYPES) {
       const notice = hudEventNoticeFromWorkerMessage(publication(SAMPLE[type](1)));

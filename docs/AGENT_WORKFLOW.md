@@ -79,6 +79,43 @@ They came from a shared tree and from shared ADR *numbers*.
   started, and when a port is busy pick another rather than clearing the
   machine.** The only reason this one was diagnosable at all is that the agent
   it hit reported the failures instead of writing them off as flaky.
+- **`git stash` is shared too, and its failure mode is worse than the process
+  table's because nothing about it is visible to either party.** `refs/stash`
+  is **one stack for the whole repository**. Worktrees get their own `HEAD`,
+  their own `refs/bisect` and their own `refs/worktree`; the stash is not on
+  that list. From a worktree whose git dir is `.git/worktrees/<name>`,
+  `git rev-parse --git-path refs/stash` answers
+  `/workspace/lockstate/.git/refs/stash` — the common dir — and
+  `git stash list` in any worktree prints every agent's entries interleaved.
+  **Reproduced 2026-09-16 in a throwaway repository, because the mechanism is
+  cheaper to demonstrate than to argue about.** Agent A stashes; agent B
+  stashes seconds later in its own worktree; agent A then runs `git stash pop`
+  with no argument and gets **B's** file into A's tree while A's own work stays
+  on the stack. The pop **exits 0**, prints an ordinary diffstat and names
+  nobody: `stash@{0}` means "the most recent push by anyone", and neither agent
+  is told. A tells itself its edit vanished; B finds a file it never touched.
+  **The incident that found this is a near-miss, and it is written as one.** An
+  agent taking before/after timing measurements on 2026-09-16 used stash/pop
+  repeatedly, got its own work back intact every time, and encountered a
+  foreign stash from another session — which it correctly left alone. That
+  stash was the integrator's, from a careless `git stash -q` in the main
+  workspace. Measured against `main` at `ca82e946`: it holds **64** files,
+  **51** of them byte-identical to `main` because the work had since merged,
+  and each of the remaining **13** blobs is reachable from a commit on another
+  ref (`git log --all --find-object=<blob>`). **Nothing was lost. Nothing about
+  the mechanism made that the likely outcome** — the agent was careful, and the
+  loss window was open the whole time either way.
+  **So: do not use the stash for a before/after comparison.** Cut a second
+  worktree at the unmodified commit — the same instruction the baseline bullet
+  further down already gives for browser runs — or `git diff > patch` and
+  `git apply` it back. Both are per-tree; the stash is not.
+  **`scripts/wip-sweep.sh` is not a contender here, and why is worth naming
+  rather than assuming.** Its one stash call is `git stash create`
+  (`scripts/wip-sweep.sh:59`), which writes a commit object and never writes
+  `refs/stash` at all. That is the same property the "Nothing may exist
+  only in the container" section below relies on for the index and the working
+  tree, and it extends to the stack: the sweep running beside you cannot move
+  it. The hazard is another agent's `git stash`, not the sweep.
 - **Assign ADR numbers centrally, after the drafts come back.** Two agents took
   `0034` within an hour, each having correctly enumerated the open pull requests
   first — the number is not reserved until it is in `docs/adr/README.md`. Have
@@ -1300,6 +1337,105 @@ a document about method should say how to write one that lasts.
   opened**, and to a document contradicting itself. Reading a file's own
   headings against each other is a different check from any diff, it takes a
   minute, and it has caught what diffs could not.
+- **A delta pass is blind to three further shapes, all found within two days of
+  each other, none of them found by the method.** Each was reached by reading
+  prose, by accident. The family is the finding and it is structural: every
+  pass builds its "cited set" with a regex over backticked `path:N` spans, and
+  all three are invisible to that regex **by construction** rather than by bad
+  luck.
+  - **A live coordinate in a section nothing asks anyone to read.**
+    `docs/adr/STATUS-QUEUE.md` §2 carries live `file:line` coordinates; the
+    gate's own failure message says *"Re-read §§3-6"*
+    (`tests/foundation/adr-status-queue-anchor-contract.test.ts`), and the
+    intersection every pass computes is against **§§4-6's** cited set. §2's
+    three coordinates for `RoomInstanceRegistry`'s production call sites in
+    `src/simulation/prisoners/action-system.ts` were false across **two
+    consecutive windows**: the pair read `:1698` and `:1736` went stale at
+    `490df767` (#1235) inside one window and moved again at `b97baf14` (#1233)
+    inside the next, **and the file was a member of the diff both times.** The
+    method reached the file and never read the line. It paid out once more the
+    window after, on `src/ui/hud/view-model.ts`, whose live coordinate is in §2
+    as well: the reading a §2 entry had just corrected to `:2049` is `:2131` on
+    `main` at `ca82e946`, re-derived with
+    `grep -n 'export interface HudPrisonerDetailViewModel'` rather than
+    offset from anything.
+  - **A count scoped by a glob rather than a path.** §6's census of
+    `Amendment`/`Addendum` headings cites `docs/adr/*.md`. A glob can never
+    appear in an intersection computed over backticked *paths*, however many
+    ADR documents a window contains, so no width of window reaches it. The
+    recorded figure is 32 headings across 18 documents; re-run at `ca82e946`,
+    `grep -RniE '^#{2,6}\s+[*_\`]*(Amendment|Addendum)\b' docs/adr/*.md` returns
+    **52 across 31**.
+  - **A live claim whose subject is a message kind or a schema rather than a
+    file.** ADR 0003's amendment headed *"Amendment, 2026-08-24:
+    `simulation/status-counts` also carries the last refusal"* enumerates the
+    wire payload as `{ sequence, tick, reason }`. `563ed7fc` (#1261,
+    2026-09-16) added a **fourth** member, `routeDecidedSince`, to
+    `refusalSchema` in `src/simulation/protocol/types.ts`, and updated
+    `docs/HUD_PROJECTIONS.md`'s copy of the same enumeration in that same
+    commit; ADR 0003's copy was not touched and is false. The falsifying file
+    was inside the window and the ADR was not, so the citing entry's backticked
+    paths could not raise it — what the window falsified is a **quoted
+    enumeration of a shape, named in prose**, which has no coordinate to
+    intersect on at all.
+
+  **What none of this bounds is how many remain, and that is the sentence to
+  carry rather than the three.** The third was invisible to the pass before it
+  in exactly the way a fourth is invisible now, and the method has no step that
+  distinguishes *"no such claim exists"* from *"the regex cannot see it"*. A
+  pass that reports a clean intersection has reported on the spans its regex
+  found, which is a smaller statement than it reads as.
+
+- **A kept record and the live state in one place will be read as the live
+  state, and the longer one wins.** This is a cost of the "mark both
+  directions" rule above rather than an argument against it: the record is
+  written at the top of the thing it corrects, it grows with every pass, and
+  the live data ends up as the last few lines of a long comment. The nearest
+  shape §4 already names is the first of the three blind ones — *a live
+  coordinate in a section nothing asks anyone to read*. This is its mirror: a
+  live value in the place everyone does read, sitting behind history they read
+  first.
+  Measured 2026-09-17 in `tests/foundation/unconsumed-command-contract.test.ts`,
+  whose `AWAITING_PRODUCER` table opens with a kept record whose first words
+  are *"**Empty, and that is a first.** Every command this repository declares
+  can now be constructed by the application."* Some thirty lines of history
+  follow, one sentence at the end reverses it — *"**It stopped being empty on
+  2026-09-14, and the entry below is the first in this list that is deliberate
+  rather than a gap somebody meant to close later.**"* — and then the live
+  entry, `EditRegimeBlock`, the sole member of a table that is not empty.
+  **Two readers in one session read the opening and concluded the table was
+  empty.** One was a subagent, which reported to its caller that a pull
+  request's whole premise was stale; the other was that caller, who read a
+  twenty-five-line window of the file with `sed`, saw only the record, and
+  believed it until it read further.
+  **Nothing failed, and nothing could**, because the gate reads the object and
+  not the comment. That is what makes this worse in an executable file than in
+  prose: a rotted document is eventually contradicted by a gate, and a
+  correctly gated table with a misleading preamble never is. There is no test
+  to add here — the code is right, and only its readers were wrong.
+  **The two layouts that prevent it are already practised in this repository
+  and neither needs inventing.**
+  - **Bind a record to the entry it is about, not to the table.**
+    `tests/foundation/room-routing-contract.test.ts`'s `UNROUTED` keeps two
+    falsified reasons in full, for `room.delivery-bay` and `room.storage-room`,
+    and each sits immediately above the key it belongs to rather than at the
+    head of the table — so the first live key is a few lines under the opening
+    brace and no record can be mistaken for the table's contents. A record
+    *about the table* — that it is empty, that something left it — has no
+    entry to attach to, which is exactly the case that went wrong above. Write
+    that one **after** the entries, not before them.
+  - **State the live value first and introduce the history with a fixed
+    opening.** `docs/adr/STATUS-QUEUE.md`'s anchor chain gives the current
+    anchor, then each superseded one under *"**The anchor before this one,
+    kept — v0.0.641 (`ca82e946`).** It read: ..."*. That marker is
+    load-bearing rather than decorative:
+    `tests/foundation/anchor-budget-spend-annotation.test.ts` pins that a span
+    introduced this way is read as a quotation, **and** that the same span with
+    its *"It read:"* removed is read as a second live anchor — so *"anything
+    further down the file is history"* is refused in both directions by a test.
+  The instance above is left exactly as it stands. Reordering a live gate's
+  record is a change to that gate, and belongs to whoever next moves
+  `EditRegimeBlock` in or out.
 
 ---
 
