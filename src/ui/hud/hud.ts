@@ -1898,6 +1898,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
   minimapPanel.body.append(minimapSurface, alertsSection.element);
 
+  /**
+   * Puts the alerts fold where the current tier can show it (issue #1201).
+   *
+   * Above 720 px it is the last thing in the minimap panel, where it has been
+   * since the corner was built; at 720 px and below it is the last thing in
+   * the Overview panel, which is the rail slot the owner's ruling names. The
+   * element is the same in both, so this is a move and never a copy -- see the
+   * `onTierChange` handler's own block below for what that buys.
+   *
+   * Passed to `createHudLayoutShell` as `onTierChange`, which calls it once
+   * during construction with the tier it resolved, so there is no separate
+   * initial placement to keep in step with this one. It therefore may not
+   * close over `layout`, which does not exist yet when it first runs.
+   */
+  function placeAlertsFold(phone: boolean): void {
+    (phone ? overviewPanel.foldSlot : minimapPanel.body).append(alertsSection.element);
+  }
+
   /*
    * ---- the camera zoom, on screen (issue #1023) ----------------------
    *
@@ -2541,6 +2559,41 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onChange: (next) => {
       options.onLayoutChange?.(next);
     },
+    /*
+     * THE ALERTS FOLD'S HOME, WHICH IS A FUNCTION OF THE TIER (issue #1201).
+     *
+     * `.hud__corner` is `display: none` at 720 px and below -- `hud.css` says
+     * so under #1117, three times, with the measurement -- and the alerts log
+     * is the only surface that issues `DismissAlert`. So on a phone the game
+     * offered a command the player could not press: measured at 375x812 on
+     * `57cffa10`, the dismiss control on a row with a run of occurrences had
+     * **0 client rects**.
+     *
+     * The owner ruled on 2026-09-16 that the fold moves into the rail on the
+     * Overview tab at that breakpoint and no other. The provenance is the
+     * weaker of the two kinds this repository distinguishes -- the label of a
+     * clickable option this session wrote, *"Zamontuj fold w szynie poniżej
+     * 720 px (zalecane)"*, rather than a sentence the owner typed -- and
+     * `docs/IDENTITY_V5_ROLLOUT.md` §"Stage 5" is the durable record.
+     *
+     * **One node, moved, rather than a second one built**, and that is the
+     * whole reason this is a callback and not markup: a second alerts list
+     * would be a second issuing site for `DismissAlert`, and
+     * `tests/foundation/unconsumed-command-contract.test.ts`'s
+     * `producersOf('DismissAlert')` pin survives this change unedited because
+     * there is still exactly one. It also means the fold's collapsed state,
+     * its scroll position and every row in it cross the breakpoint intact --
+     * they are the same elements.
+     *
+     * **Why Overview and not "wherever the player is", measured rather than
+     * reasoned.** The rail's sheet is capped at `--hud-inspector-height` below
+     * this breakpoint, and on Zones and Manage the panels there are already at
+     * that ceiling -- the dossier that priced this measured the same stub
+     * taking the Rooms panel from 457.13 to 144.00 px and the Staff panel from
+     * 307.38 to 2.00. Overview is the one tab with room, which is why the
+     * ruling names it.
+     */
+    onTierChange: placeAlertsFold,
   });
   strip.layoutSlot.append(layout.menu);
 

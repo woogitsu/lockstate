@@ -8,6 +8,7 @@ import {
   restoreSimulationRuntime,
   SESSION_SNAPSHOT_SCHEMA_ID,
   SESSION_SNAPSHOT_SCHEMA_VERSION,
+  sessionSnapshotBundleFromTransport,
   type SessionSnapshotBundle,
 } from '../runtime/restore-session';
 import { FixedStepClock, type ClockControl } from '../clock/fixed-step-clock';
@@ -1043,7 +1044,7 @@ export class SimulationWorkerStateMachine {
       // `WorkerSessionHost` re-raise the right class on the other side without
       // reading a message string.
       try {
-        this._runtime = restoreSimulationRuntime(snapshot.data as unknown as SessionSnapshotBundle).runtime;
+        this._runtime = restoreSimulationRuntime(sessionSnapshotBundleFromTransport(snapshot.data)).runtime;
       } catch (error) {
         const reason = restoreFailureReasonOf(error);
         const detail = error instanceof Error ? error.message : String(error);

@@ -1464,6 +1464,65 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.event.construction.order-cancelled-underway':
     'The order was cancelled. Anything already spent past the point of no return stays spent.',
   /*
+   * **Authored here on 2026-09-17, and quoted verbatim in the commit message
+   * beside the code that proves it true**, which is what `AGENTS.md`'s fourth
+   * reservation requires of a string this side of the 2026-09-04 release: the
+   * choice of words is ours, the requirement that the sentence be TRUE is not
+   * waived. The routing and the grade beside it are the owner's ruling of
+   * 2026-09-16 on
+   * [ADR 0116](../../docs/adr/0116-whether-a-finished-object-is-an-event.md);
+   * the words are not, and this comment is where they are argued.
+   *
+   * What makes each half true, at the code that decides it:
+   *
+   * - *"The order was completed"* -- `ConstructionSystem.update` writes
+   *   `setState(order, 'completed')` on the one arm where `order.progress`
+   *   reached `def.workRequired`, and `onOrderFinished` is called below that
+   *   line. So the state the sentence reports is the state the order is in
+   *   when the record is appended, not the state it is about to be in.
+   *
+   * **It stops there, and the clause it does NOT carry is the finding this
+   * entry exists to record.** ADR 0116 section 6 lists a second truth
+   * condition -- *"the geometry or object it writes is in the world at that
+   * tick"* -- and offers it as something a sentence here may claim. **It is
+   * not unconditionally true.** `finalizeConstruction` places an object with
+   * `this.objectPlacement?.onOrderCompleted(...)` and **discards the boolean**,
+   * and `PlacedObjectRegistry.place` answers `false` when any tile of the
+   * footprint is already claimed. Nothing rejects a second order overlapping
+   * the first -- the same gap `revertConstruction`'s own comment records for
+   * two walls on one edge -- so an object order can reach `'completed'`,
+   * append this record, and have put nothing in the world. A clause reading
+   * *"what it built is standing"* was drafted here and withdrawn on exactly
+   * that measurement: it is true of every wall and every door, false of the
+   * second of two overlapping beds, and a sentence a player reads has to be
+   * true of both.
+   *
+   * **Singular at every count, and that is the whole reason it reads this way
+   * rather than "{count} orders were completed".** The payload is the envelope
+   * and nothing else, so `simulationEventIdentity` collapses a programme of
+   * twenty-four into one row and the number is `HudAlertOccurrencesViewModel.count`,
+   * which `hudAlertRowLabel` renders as a separate `{count}×` fragment
+   * *after* this sentence and never inside it. So the row reads *"The order was
+   * completed."* once and *"The order was completed. 24× Day 3"* at
+   * twenty-four, and the sentence
+   * is a true description of one completion in both. It is the shape
+   * `hud.alert.event.rooms.zoned` ("{room} designated.") already has, and the
+   * reason this catalogue needs no plural machinery for it.
+   *
+   * **It does not say the queue is empty**, and it must not: that is a
+   * different event ADR 0116 option 4 names and does not propose. *"The"* order
+   * is one order, the one that just finished, exactly as
+   * `hud.alert.event.construction.order-cancelled` above uses it for the one
+   * that was just cancelled.
+   *
+   * **It does not say what was built**, because nothing in the payload could:
+   * naming the buildable needs `buildableLabelKey` in `src/main.ts`, which ADR
+   * 0116 section 4c prices and its option 3 -- declined -- would have paid for.
+   * The row can say how many things finished and not what, and ADR 0116
+   * section 6 names that as the ruling's own weakness rather than hiding it.
+   */
+  'hud.alert.event.construction.order-completed': 'The order was completed.',
+  /*
    * **Authored here on 2026-09-09, and quoted verbatim in the commit message
    * and the pull request body beside the code that proves it true**, which is
    * what `AGENTS.md`'s fourth reservation requires of a string this side of the
