@@ -24,6 +24,21 @@ import { chunkCoordinate, tileCoordinate, type TilePosition } from '../../src/si
  * definition, no constant in the resolver and no literal in any content file
  * that says how many a cell holds. The two rejected options in that ADR would
  * both have put one there.
+ *
+ * **THE PARAGRAPH ABOVE STOPPED BEING TRUE ON 2026-09-17 AND IS KEPT RATHER
+ * THAN REWRITTEN, BECAUSE IT IS THE PROPERTY THAT WAS GIVEN UP.** The owner
+ * ruled on [issue #961](https://github.com/woogitsu/lockstate/issues/961) that
+ * a room type may author a **resident ceiling** -- `maxResidents` in
+ * `src/content/room-catalog.ts`, `2` for `room.cell` and `1` for
+ * `room.solitary-cell` -- because with capacity summed from beds alone a second
+ * cell bought the player nothing and the mid-game had no decision in it.
+ *
+ * What is given up is exactly one clause: **residency** now has one authored
+ * number per room type. Everything else in that paragraph still holds, and the
+ * cases below are what hold it -- concurrent use is still summed from
+ * footprints with nothing authored anywhere, including `'sleep-surface'`'s own
+ * ceiling, and a room type that authors no `maxResidents` derives residency
+ * exactly as it did before.
  */
 
 const TILE = (x: number, y: number): TilePosition => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
@@ -194,6 +209,37 @@ describe('the capacities a set of objects produces', () => {
     });
   });
 
+  it("caps residency at the room type's authored ceiling, and caps nothing else (#961)", () => {
+    const fourBeds = [
+      placedObjectAt('object.bed', TILE(0, 0), 0),
+      placedObjectAt('object.bed', TILE(1, 0), 0),
+      placedObjectAt('object.bed', TILE(2, 0), 0),
+      placedObjectAt('object.bed', TILE(3, 0), 0),
+    ];
+
+    // No ceiling: the sum, exactly as it was before the ruling.
+    expect(deriveRoomCapacity(fourBeds)).toMatchObject({ residentCapacity: 4, concurrentUseCapacity: 4 });
+
+    // `room.cell`'s ceiling. The third and fourth bed still stand, still carry
+    // their capability and still raise the *use* ceiling -- what they no longer
+    // do is house anybody.
+    expect(deriveRoomCapacity(fourBeds, undefined, 2)).toEqual({
+      residentCapacity: 2,
+      concurrentUseCapacity: 4,
+      concurrentUseCapacityByCapability: [['sleep-surface', 4]],
+      objectCapabilities: ['sleep-surface'],
+    });
+
+    // A ceiling above the beds standing in the room changes nothing: it is
+    // `min`, not an assignment, so an under-furnished cell is still worth
+    // furnishing.
+    expect(deriveRoomCapacity([placedObjectAt('object.bed', TILE(0, 0), 0)], undefined, 2)).toMatchObject({
+      residentCapacity: 1,
+    });
+    // `room.solitary-cell`'s ceiling, on the same four beds.
+    expect(deriveRoomCapacity(fourBeds, undefined, 1)).toMatchObject({ residentCapacity: 1, concurrentUseCapacity: 4 });
+  });
+
   it('is zero for a room with nothing in it, which is what an empty rectangle accommodates', () => {
     expect(deriveRoomCapacity([])).toEqual({
       residentCapacity: 0,
@@ -279,6 +325,32 @@ describe('the resolver writes what the objects imply, and only when something ch
 
     expect(rooms.getById('cell-1')).toEqual(once);
     expect(once).toMatchObject({ residentCapacity: 1, objectCapabilities: ['sleep-surface'] });
+  });
+
+  it("reads the ceiling off the room type the instance names, so the catalogue is the only place it is written (#961)", () => {
+    const { rooms, objects, resolver } = prison();
+    // Four beds in a `room.cell`, placed the way `capacity-counts-on-completion`
+    // places them. The rectangle registered by `prison()` is 2x3, so the anchors
+    // outside it contribute nothing -- these two are inside it.
+    objects.place(placedObjectAt('object.bed', TILE(4, 6), 0));
+    objects.place(placedObjectAt('object.bed', TILE(5, 6), 0));
+    objects.place(placedObjectAt('object.bed', TILE(4, 8), 0));
+    objects.place(placedObjectAt('object.bed', TILE(5, 8), 0));
+
+    expect(resolver.resolveInstance('cell-1')).toMatchObject({
+      // `room.cell` authors `maxResidents: 2`.
+      residentCapacity: 2,
+      concurrentUseCapacity: 4,
+      concurrentUseCapacityByCapability: [['sleep-surface', 4]],
+    });
+    expect(rooms.getById('cell-1')?.residentCapacity).toBe(2);
+
+    // The same four beds under a room type that authors no ceiling derive the
+    // sum, which is what says the clamp is the catalogue's and not the
+    // resolver's. `room.infirmary` is such a type and takes the same
+    // `'sleep-surface'` objects through `object.medical-bed`.
+    rooms.register(instance({ instanceId: 'infirmary-1', roomCatalogId: 'room.infirmary' }));
+    expect(resolver.resolveInstance('infirmary-1')).toMatchObject({ residentCapacity: 4 });
   });
 
   it('resolves the room containing a tile, and nothing when the tile is in none', () => {
