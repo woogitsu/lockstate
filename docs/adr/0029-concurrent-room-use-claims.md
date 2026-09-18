@@ -866,8 +866,8 @@ round after it, and the two point the same way. So the losing set is not merely
 > that carried it points at nothing related (2026-09-15).** `needsPressure` is
 > now *"the mean deficit over all six needs, not `safety` alone"*: `needDeficitOf`
 > sums over `NEED_IDS` in declared order
-> (`src/simulation/runtime/new-session.ts:1368`) and the sector sample averages
-> it over the sector's occupants (`:1401`–`:1405`), which
+> (`src/simulation/runtime/new-session.ts:1387`) and the sector sample averages
+> it over the sector's occupants (`:1420`–`:1424`), which
 > `IncidentTriggerSystem` reads as `{ kind: 'needs-pressure' }`
 > (`src/simulation/incidents/trigger-system.ts:515`). So **`hunger` does have a
 > downstream reader**, and starving three quarters of a prison now raises its

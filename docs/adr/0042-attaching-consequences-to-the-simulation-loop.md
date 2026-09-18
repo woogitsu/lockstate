@@ -228,7 +228,7 @@ docblock quoting a design note).
 (`src/simulation/security/default-sector.ts:113`; the anchor read `:99`).
 `contrabandPressure` is read
 from `intelligence.forTarget('sector', sectorId)`
-(`src/simulation/runtime/new-session.ts:1409`; the anchor read `:622`), and the
+(`src/simulation/runtime/new-session.ts:1428`; the anchor read `:622`), and the
 only writer of that
 ledger is `IntelligenceLedger.report`, whose one caller in `src/` is
 `reportInformantTip` (`src/simulation/contraband/informants.ts:87`), which has
@@ -377,7 +377,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
   resolved` pipeline, plus `lapse`, lockdown, responder claims and restore-time
   re-dispatch (`src/simulation/incidents/response-system.ts:473-491`; the anchor
   read `:227-249`), registered
-  at `src/simulation/runtime/new-session.ts:1598` (the anchor read `:662`). Its `update` iterates
+  at `src/simulation/runtime/new-session.ts:1617` (the anchor read `:662`). Its `update` iterates
   `this.incidents.openIncidents()` and does nothing when that is empty.
 - `ClassificationReviewSystem` — registered via
   `PrisonerOperationsRuntime.registerOn`
@@ -469,7 +469,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 >   `src/simulation/security/sector-occupancy.ts:132`.
 > - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
 >   exists, `insolvencyRungs` is registered on the kernel
->   (`src/simulation/runtime/new-session.ts:1586`), and the save carries
+>   (`src/simulation/runtime/new-session.ts:1605`), and the save carries
 >   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1219`,
 >   `.object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })`;
 >   this branch wrote `:1209` on 2026-09-15 and it was ten lines high by

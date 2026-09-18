@@ -87,13 +87,13 @@ defect one level up and with a longer explanation.
 
 **What actually causes it is an asymmetry in one predicate, and the asymmetry is
 a plain defect.** `submitOrder` asks `canBuildAt(this.world, order.location, …)`
-(`src/simulation/construction/system.ts:587`), and `canBuildAt` tests ownership
+(`src/simulation/construction/system.ts:619`), and `canBuildAt` tests ownership
 of the order's own tile and nothing else
 (`src/simulation/world/buildability.ts:26`).
 
 (**Two corrections to the sentence above, marked rather than overwritten,
 2026-09-15.** *Where:* the `canBuildAt` call this document cited as `:266` is
-now inside `admits` (`src/simulation/construction/system.ts:583`), which
+now inside `admits` (`src/simulation/construction/system.ts:615`), which
 `submitOrder` (`:540`) calls once per tile — decision 6 below landed and the
 extraction is what landing it looked like. Decision 6's own amendment block
 already recorded that move and gave `admits` as `:353`; **that block and this
@@ -141,7 +141,7 @@ exposes no enclosure query, that its `update()` has no caller, and that the
 topological reading of `enclosed` therefore is not implementable today. The
 first two claims hold — `TopologyManager.update`
 (`src/simulation/rooms/topology.ts:55`) is absent from the `registerSystem`
-block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1588`).
+block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1607`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
 `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:99`)
@@ -261,14 +261,14 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1917`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:1965`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1012`–`:1014`, `revertConstruction` at
+  (`src/simulation/construction/system.ts:1044`–`:1046`, `revertConstruction` at
   `:1966`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
 - **The crew is one.** `ConstructionSystem.update` runs on
@@ -461,9 +461,9 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 >
 > **All three of those line numbers have since drifted, and the block above is
 > kept rather than renumbered because the reader needs to see a correction rot
-> (2026-09-15).** `admits` is at `:583` and its `canBuildAt` call at `:587`;
-> `submitOrder` is at `:540` and calls `admits` twice, once per tile of the
-> edge (`:560`, `:563`), which is the decision below, in the code. Correction 1
+> (2026-09-15).** `admits` is at `:615` and its `canBuildAt` call at `:619`;
+> `submitOrder` is at `:572` and calls `admits` twice, once per tile of the
+> edge (`:592`, `:595`), which is the decision below, in the code. Correction 1
 > above, which cites the same original `:266`, was **not** amended when this
 > block was written — so this document stated two different things about one
 > anchor for eighteen days. It is amended now.
@@ -478,7 +478,7 @@ unaffected: an object is addressed by a tile and has no far side.
 predicate that already distinguishes the two.
 
 **Bounds.** The same widening is needed on the out-of-bounds check
-(`src/simulation/construction/system.ts:585`), or the south face of the world's
+(`src/simulation/construction/system.ts:617`), or the south face of the world's
 own frontier stays refused before ownership is ever consulted. An edge order is
 in bounds when either adjacent tile is in a materialised chunk.
 
