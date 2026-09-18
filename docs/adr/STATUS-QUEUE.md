@@ -792,8 +792,46 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `90d62621` (**v0.0.656**) by the delta method,
-from `fa783381`. This is #1238's merge commit, the last merge on `main`;
+Re-anchored at `main` @ `adad4f08` (**v0.0.665**) by the delta method,
+from `90d62621`. This is #1291's merge commit, the last merge on `main`;
+`package.json` ships **0.0.665** at it, and `23374859`
+(`chore(release): v0.0.666`) sits one commit above it and is what
+`package.json` ships at the tip, so the release assertion reads
+666 − 665 = **one**, ending a run of five anchors at zero. It is the merge
+rather than a release commit for the reason every anchor in this chain gives: a
+`chore(release)` commit starts no CI run and a reader who followed one out
+would have nothing to verify against.
+
+**THE GATE WAS GREEN AND THIS PASS WAS RUN ANYWAY, DELIBERATELY AND EARLY.**
+The window below is **6 merges against 10 release numbers** — the retired unit
+at exactly its old budget while the live one sits four clear of it, which is
+the **widest divergence in the release unit's own direction that this chain has
+recorded**. `adr-status-queue-anchor-contract` read **6 of 10** on merges and
+**52 of 100** on commits; a release-counted budget would have read **10 of 10**
+and been one merge from firing. The previous pass opened at twelve and red, and
+the standing instruction for this one was to open before the gate could block a
+fleet again, so the merge count is the smallest this chain has read since the
+2026-09-16 eight. **The budget is not raised and is not argued with**:
+`ANCHOR_STALENESS_BUDGET_MERGES` stays at 10, and nothing here asks for it to
+move in either direction. This window carries **44 changed paths — 10 under
+`src/`, 20 under `tests/`, 13 under `docs/` and `package.json`**.
+
+**Where the four unearned release numbers are, because it is the sharpest
+instance of the gate header's own argument this chain has measured.**
+`ce710028` (v0.0.657), `b50632b2` (v0.0.658), `1ab77187` (v0.0.659) and
+`7b41e8e4` (v0.0.660) sit in a single unbroken stack directly on `90d62621`,
+each changing the one line of `package.json` and nothing else, with **no merge
+anywhere among them** — two pairs fourteen seconds apart, thirteen minutes
+between the pairs. **Three of the four are the "release commit sitting directly
+on another release commit" shape** whose whole-history census the gate's header
+puts at 24 of 628, so this one window carries an eighth of that historical
+total. Under the unit retired on 2026-09-15 they would have spent 40 % of the
+budget on nothing at all, and the gate would have demanded this pass at six
+merges of ordinary work. Recorded here as evidence for a change already made
+rather than as an argument for a new one.
+
+**The anchor before this one, kept — v0.0.656 (`90d62621`).** It read: *"Re-anchored at `main` @
+`90d62621` (**v0.0.656**) by the delta method, from `fa783381`. This is #1238's merge commit, the last merge on `main`;
 `package.json` ships **0.0.656** at it, and all **nine** of the window's
 release commits sit *inside* it — the highest, `68d784db`
 (`chore(release): v0.0.656`), four merges below the tip — so the anchor's
@@ -801,7 +839,10 @@ version and `HEAD`'s are the same string and the release assertion reads
 656 − 656 = **zero** for the fifth anchor running. It is the merge rather than
 a release commit for the reason every anchor in this chain gives: a
 `chore(release)` commit starts no CI run and a reader who followed one out
-would have nothing to verify against.
+would have nothing to verify against."*
+
+**That anchor's own commentary is kept unchanged rather than folded into the
+quotation above** (`docs/AGENT_WORKFLOW.md` §4), and it read:
 
 **THE GATE WENT RED, AND THIS IS THE WIDEST COMMIT WINDOW THIS CHAIN HAS EVER
 READ.** The window below is **12 merges against 9 release numbers**, against a
@@ -8993,6 +9034,37 @@ Measured at `05640b6` (v0.0.210):
   capability and all sit behind a `room-catalog-id` target, so only
   `action.yard-recreation` on `room.yard` can reach it.
 
+  **THE FIRST SENTENCE OF THAT BULLET IS NO LONGER TRUE AT `adad4f08`, AND IT
+  IS CORRECTED RATHER THAN OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). It says
+  `residentCapacity` **is** the summed `footprint.width` of the
+  `'sleep-surface'` objects in the room. Since `be4dcbf8`, inside #1291 — the owner's
+  ruling of 2026-09-17 on [#961](https://github.com/woogitsu/lockstate/issues/961),
+  which amends ADR 0028 decision 2 and is the fourth `## Amendment` heading in
+  that document — it is `min(that sum, maxResidents)` where the room type
+  authors a ceiling, and two of the eighteen definitions now do: `room.cell` 2
+  and `room.solitary-cell` 1. The return field reads
+  `residentCapacity: maxResidents === undefined ? residentCapacity :
+  Math.min(residentCapacity, maxResidents)`.
+
+  **The bullet's conclusion survives the change and its wording does not**,
+  which is the shape §5's ADR 0023 entry has twice recorded for this same file.
+  What the bullet is for is that `residentCapacity` **reads no rectangle**, so
+  floor area was not the cause of the exploit #585 measured; `maxResidents` is
+  authored per room type in `src/content/room-catalog.ts` and reads no
+  rectangle either, so the premise is untouched and the amendment this entry
+  scopes is still the concurrent-use one — `concurrentUseCapacity` and the
+  per-capability breakdown, `'sleep-surface'`'s included, are explicitly
+  untouched by #961.
+
+  **And the span moved with it: `src/simulation/objects/room-capacity.ts:176-201`
+  → `:215-240`**, +39, read at both ends off `grep -n 'let residentCapacity = 0;'`
+  and the return field rather than offset — `:215` is `let residentCapacity = 0;`
+  and `:240` is the capped return field that used to be the bare
+  `residentCapacity,` at `:201`. **So this is one coordinate and one claim
+  moving in the same commit**, which is the case the three failure modes are
+  hardest to tell apart in and the reason both halves are stated separately
+  here.
+
   **TWO OF THOSE THREE WENT FALSE BEFORE THE `29ba8845` ANCHOR AND MOVED AGAIN
   AFTER IT, AND THE READING BELOW IS KEPT RATHER THAN CORRECTED IN PLACE.** At
   `36d35998` the three call sites are **`:1306`**, **`:1761`** and **`:1799`**,
@@ -9502,6 +9574,27 @@ settled, items 2 and 3 as still owed.
    hold on files the window did not touch, opened anyway.
    **The verbatim quotations needed no edit for the sixth consecutive anchor**,
    and the number beside one of them has now moved at five of the six.
+
+   **RE-OPENED AT `adad4f08`: ONE OF THE FOUR MOVED AGAIN, BY ONE LINE, AND IT
+   IS THE SAME ONE.** `export interface HudPrisonerDetailViewModel {` is
+   **`:2132`** in `src/ui/hud/view-model.ts`, having been `:2131` at
+   `90d62621` — **+1**, from `be4dcbf8`'s single net line in that file's only
+   hunk (`@@ -133,7 +133,8 @@`, a two-line docblock sentence replacing one,
+   nearly two thousand lines above the declaration). `const prisonerDetailReader
+   = …` holds at **`:1665`**, `src/ui/simulation-prisoner-detail.ts:212` and
+   `src/ui/hud/regime-panel.ts:743` hold, all three on files this window did not
+   touch and all three opened anyway. **The verbatim quotations needed no edit
+   for the seventh consecutive anchor**, and the number beside one of them has
+   now moved at six of the seven.
+
+   **This is the §2 blind spot paying out for a third consecutive window, and
+   the third payout is the cheapest and the most exact.** `src/ui/hud/view-model.ts`
+   is still in §§4-6's cited set nowhere, so the delta intersection still hands
+   a reader the file and never this coordinate; it was reached only because this
+   bullet is now read at every anchor by hand. One line of drift is what that
+   habit bought here. **It is also the smallest possible instance of the
+   argument**: the edit that moved it changed a comment about a badge's noun and
+   nothing a reader of this bullet would ever look at.
 
    **This is the §2 blind spot paying out for the second window running, and
    the second payout is the one that settles the argument.** The previous
@@ -18744,6 +18837,258 @@ coordinate half is a reading that opens every `file:line` in §§3-6 rather than
 the intersection; that sweep has been run by three passes on this chain and
 each time it found something the intersection did not.
 
+## 3. What the anchor pass of 2026-09-18 opened with the gate GREEN at six of ten against TEN release numbers — the retired unit's own budget exactly spent while the live one sat four clear: six merges, 52 commits, 44 changed paths of which 10 are production code, four unearned release commits stacked on the previous anchor, thirteen live coordinates moved on seven files, four live claims falsified of which two are corrections falsified by the mechanism they were written to record, and one count found wrong when the previous pass wrote it
+
+**SIX at `adad4f08` (v0.0.665), ten release numbers later.** The window is
+`90d62621..adad4f08`: **52 commits**, **6 merges** that are not
+`chore(release)` bumps, **10** release numbers, **44 changed paths**. The gate
+read **6 of 10** on merges and **52 of 100** on commits, both green, and
+**this pass was opened deliberately before it could go red** — the previous
+one opened at twelve and red, and a red gate on this file blocks every open
+branch at once. **Nothing here asks for `ANCHOR_STALENESS_BUDGET_MERGES` to
+move**, in either direction: six of ten is the shape the budget was chosen for
+and the argument for running early is about scheduling, not about the number.
+
+**The two units diverge here further in the release unit's own direction than
+anywhere this chain has recorded, and the cause is four commits that carry no
+work.** `ce710028` (v0.0.657), `b50632b2` (v0.0.658), `1ab77187` (v0.0.659) and
+`7b41e8e4` (v0.0.660) form an unbroken stack directly on `90d62621` — each
+changing the single `version` line of `package.json`, no merge anywhere among
+them, two pairs fourteen seconds apart with thirteen minutes between the pairs.
+**A release-counted budget would have read 10 of 10 on this window and fired one
+merge later**, demanding a re-read of a 24,000-line document because a workflow
+delivered twice. The gate's header puts the whole-history census of
+release-on-release commits at **24 of 628**; three of those 24 are in this one
+window, so an eighth of the historical total of the defect the 2026-09-15 unit
+change was made for landed in the six merges since the last anchor. **This is
+evidence for a change already made and is not an argument for a new one.**
+
+**The six merges, in order off `git log --first-parent`:** #1293
+(`agent/status-queue-reanchor-2026-09-17`, the previous anchor's own pass),
+#1287 (`agent/next-gap-2`), #1239 (`agent/pinned-adrs-0020-0025`), #1237
+(`agent/unpublished-main-commits`), #1255 (`agent/neglect-measurement`) and
+#1291 (`agent/961-resident-ceiling`), which is the anchor. **Four of the six
+merged inside fifteen seconds** — 16:42:22 to 16:42:37 on 2026-09-18 — which is
+the serialised-runner burst the previous pass also met, and is why a pass run on
+a schedule rather than on the gate is worth its cost here.
+
+**Twelve of the 44 paths carry a `file:line` citation in this file**, and
+**eight** of the twelve carry a **live** one: `docs/DEPLOYMENT.md`,
+`docs/adr/0023-room-occupancy-authority.md`,
+`docs/adr/0025-guard-hiring-surface.md`, `src/content/room-catalog.ts`,
+`src/simulation/objects/room-capacity.ts`, `src/content/default-locale-en.ts`,
+`src/content/locale-pl.ts` and `src/ui/hud/view-model.ts`. Of the other four,
+`src/ui/hud/messages.ts` and `src/ui/hud/projection.ts` carry only dated
+history, which is not re-aimed; **this file is the twelfth, and
+`docs/research/README.md` is a false positive of the scan** — the `README.md:59`
+citations it matches on are into the root `README.md`, which is in no window
+here. **A thirteenth path was opened although no coordinate points into it**:
+`src/ui/hud/hud.css`, because §5's ADR 0025 entry rests on a property of every
+`.css` file under `src/ui/` rather than on a line in one.
+
+### What moved: thirteen live coordinates on seven files, every one a pure coordinate move
+
+Each was read at **both** ends of the window off `grep -n` rather than offset
+from the diff, and in every case the sentence beside it is unchanged — the
+first of the three shapes this file separates.
+
+- **`docs/adr/0023-room-occupancy-authority.md`, both §5 coordinates, uniform
+  +97** from #1239's 153-line addition: `:300-307` → **`:397-404`** and
+  `:308-309` → **`:405-406`**. Both quotations survived the move word for word.
+- **`src/content/room-catalog.ts`, four coordinates, uniform +60** from
+  `be4dcbf8`/#1291: `:92-190` → **`:152-250`**, `:93` → **`:153`**, `:94` →
+  **`:154`**, `:229` → **`:289`**. **`:67` is unmoved** and was opened to
+  establish that, because the insertion starts at `:83`.
+- **`src/simulation/objects/room-capacity.ts:176-201` → `:215-240`**, +39,
+  §2's one span into that file — and the only coordinate in this list whose
+  claim moved with it, written up below.
+- **`src/content/default-locale-en.ts:1516` → `:1562`** (+46) and
+  **`src/content/locale-pl.ts:781` → `:797`** (+16), §5's ADR 0116 entry.
+  **Both were exact at `90d62621`**, so this is drift the window caused.
+- **`docs/adr/0025-guard-hiring-surface.md:74-76` → `:87-89`**, +13, from
+  #1239.
+- **`src/ui/hud/view-model.ts:2131` → `:2132`**, +1, §2's ADR 0093 quartet.
+- **`docs/DEPLOYMENT.md:255` → `:265`**, +10, §4's *"What currently serves
+  lockstate.io"* — the only one of §4's five that the window's insertion at
+  `:239` sits above.
+
+**Two of the thirteen are worth naming for their shape rather than their size.**
+`default-locale-en.ts:1516` now lands on a *docblock line that quotes the very
+sentence it was cited for*, so a reader who follows it finds the words they were
+sent for and concludes the citation landed — the costly failure. Its Polish twin
+at `:781` lands on an unrelated key and fails loudly. **One insertion produced
+both shapes in one pass.** And `view-model.ts:2131` → `:2132` is the third
+consecutive window in which §2's one live coordinate into that file has gone
+stale while `src/ui/hud/view-model.ts` remains in §§4-6's cited set **nowhere**:
+the delta intersection still cannot reach it, and one line of drift is what
+reading that bullet by hand at every anchor bought this time.
+
+### What became false: four live claims, and two of them are repairs falsified by the mechanism they were written to record
+
+- **§4's *"`docs/DEPLOYMENT.md` has still not changed since `5954af75`
+  (2026-09-04)"* and the absence run built on it.** `ed9acb57`, inside #1255,
+  adds ten lines to that file on 2026-09-18, ending a run this section had
+  carried for **fifteen anchors** and stating at each of them. `.github/` is
+  still untouched, so the run ends on one half of §4's evidence and continues on
+  the other; the ten lines are about publication rather than migrations and
+  change nothing about the risk. **The shape is the one `docs/AGENT_WORKFLOW.md`
+  §4 names first**: a claim whose subject is a run of absences ends the moment
+  the absence does, silently, with the diff saying nothing about the sentence.
+- **§2's *"`residentCapacity` is the summed `footprint.width` of the
+  `'sleep-surface'` objects standing in the room"*.** It is
+  `min(that sum, maxResidents)` since `be4dcbf8`/#1291 — the owner's ruling of
+  2026-09-17 on issue #961, ADR 0028's fourth `## Amendment`. The bullet's
+  conclusion survives, because what it needs is that the figure **reads no
+  rectangle** and an authored per-type ceiling reads none either; the wording
+  does not.
+- **§5's *"the eighteen definitions … declare `requirements` and nothing
+  else"*.** Two now declare `maxResidents` — `room.cell` 2, `room.solitary-cell`
+  1 — so this catalogue authors a per-type figure about residency for the first
+  time. **Branch 2 is still unreachable and that was checked rather than
+  assumed**: `deriveRoomCapacity` applies the ceiling as a `Math.min` *after*
+  branch 1's sum, so an empty room with a ceiling of 2 still resolves
+  `min(0, 2) = 0` and still takes branch 3. A reader who now greps the catalogue
+  for an authored capacity figure finds one that is not the one branch 2 wants,
+  which is worse than finding nothing.
+- **§5's *"[the string `capacity`] occurs **twice**"*.** It occurs **four**
+  times: `:67`, `:94`, `:139`, `:289`. All four are prose, so the corrected form
+  that entry already states — **no row of `ROOM_CATALOG` declares a capacity** —
+  is still exact.
+
+**The last two are the finding.** The sentence *"declare `requirements` and
+nothing else"* and the count *"occurs twice"* are **both** parts of the repair
+that entry wrote when *"the string `capacity` does not occur in that file at
+all"* went false, and that repair closes by naming the class it had just been
+caught by: an absence claim over an unbounded set. **It then made the same claim
+again, in the same paragraph, about the same eighteen rows** — and both halves
+rotted together in one commit. `docs/AGENT_WORKFLOW.md` §4's *"a correction is
+no more durable than the claim it corrected"* is usually read about coordinates;
+this is it holding for the **form of words**, inside the entry that supplied the
+warning's own example. The durable form was found by that entry and applied
+once: state the subject, not the absence.
+
+### What held, each opened rather than inferred
+
+- **§4's five `migrate-database.yml` coordinates hold**, `:20`, `:33`, `:34`,
+  `:41` and `:65`, with `grep -c '^\s*push:'` still **0** — on a workflow file
+  no merge in this window touched, opened anyway. Four of §4's five
+  `docs/DEPLOYMENT.md` coordinates hold on a file this window **did** touch:
+  `:200`, `:205`, `:219`, `:221`, all above the insertion point.
+- **§5's ADR 0025 `3.9` reading holds in full on a window that edited
+  `src/ui/hud/hud.css`.** `find src/ui -name "*.css"` still returns **four**,
+  `3.9` is in none of them, and `grep -rn '3\.9' src/` still returns the same
+  **three** hits at the same lines — `src/ui/tokens.css:482`,
+  `src/ui/primitives/icon.ts:113` and
+  `src/ui/primitives/resize-separator.ts:110`. The sixth line number that one
+  unchanged string has carried is still `:113`.
+- **§5's ADR 0116 finding stands unchanged and its subject is not in this
+  window.** `docs/adr/0116-…md:23` still reads *"Nothing under `src/`
+  implements it, and the ruling does not by itself change that"* while the
+  implementation has been on `main` since the previous window, and
+  `docs/adr/README.md` still carries the same denial in its 0116 row. Neither
+  file is a member of this window, so nothing here could have repaired it and
+  nothing here was owed to.
+- **§5's gap 13 citation-by-quotation holds.** `docs/HUD_PROJECTIONS.md` is a
+  member of this window and gap 13 still opens *"Object placement exists, and
+  `minQuantity` is counted"*, at `:1123` — a number that entry retired on
+  purpose and this pass does not re-adopt.
+- **§2's ADR 0093 quartet: three of four hold**, `src/main.ts:1665`,
+  `src/ui/simulation-prisoner-detail.ts:212` and
+  `src/ui/hud/regime-panel.ts:743`, each opened although none of those files is
+  in the window.
+- **§2's three `action-system.ts` call sites and its `:1295` guard quotation
+  hold for the fourth anchor running**, on a file in none of the six merges.
+
+### The census did not move, and the previous pass's count of its own window did
+
+- **2026-09-18 census at the anchor `adad4f08`: 42 Proposed, 67 Accepted across
+  109 ADR documents**, compared **document by document rather than by totals**
+  against the same derivation run over the `90d62621` tree: **zero rows
+  differ**, and the totals reproduce the previous pass's 42 / 67 / 109 exactly.
+  Five of the Proposed carry a §2 row (0056, 0059, 0071, 0074, 0077) and all
+  five still read `Proposed`, so **THIRTY-SEVEN outstanding decisions with no
+  entry giving the owner the evidence**, unmoved. **Five ADR documents are
+  members of this window** — 0020, 0022, 0023, 0025 and 0028, 661 insertions
+  between them — **and not one status word moved**, which is the first window on
+  this chain to edit that many ADRs and change no status at all.
+- **The derivation was validated before being trusted, and the first version of
+  it was wrong.** Classifying on whichever of `accepted`/`proposed` appears in
+  the status statement gives **38 / 71**, because four documents open
+  *"**Proposed.** Not accepted…"* (0042, 0046, 0061, 0062) and one is
+  `Accepted for §§1-4 … §§5-6 remain Proposed` (0013). Classifying on whichever
+  word appears **first** gives 42 / 67 and reproduces the previous pass. Written
+  down because the wrong version is the one a hurried reader would write, and it
+  is wrong by four in the direction that would have looked like a finding.
+- **§6's `Amendment`/`Addendum` tally MOVED, 53 → 54 across 32 documents**, run
+  as `grep -RniE '^#{2,6}\s+[*_`]*(Amendment|Addendum)\b' docs/adr/*.md` at both
+  ends rather than carried. The one new heading is ADR 0028's
+  *"Amendment, 2026-09-17: a room type may author a resident ceiling (issue
+  #961)"* at `:1400`, its fourth. The document count is unchanged because 0028
+  already had three.
+- **The index reads `Next free number: 0117`** at `docs/adr/README.md:289`,
+  re-derived here rather than carried; `docs/adr/README.md` is not a member of
+  this window and no numbered ADR was added or deleted in it.
+- **AND ONE COUNT IN THE PREVIOUS PASS WAS WRONG WHEN IT WAS WRITTEN, not
+  overtaken.** Its census bullet reads *"**Six** ADR documents are members of
+  this window and not one of them added a heading of that shape."*
+  `git diff --name-only fa783381..90d62621 -- docs/adr/` returns **seven**
+  numbered documents — 0051, 0056, 0093, 0099, 0103, 0115 and 0116 — and that
+  is the same command the sentence is about. **The conclusion is unaffected and
+  was re-derived rather than trusted**: the tally is **53 across 32 at
+  `fa783381`** and **53 across 32 at `90d62621`**, so no ADR in that window
+  added a heading of that shape whether there were six of them or seven. The
+  same pass's neighbouring figures are exact — 0093's 88 insertions, and
+  `docs/adr/README.md`'s single changed line — so the error is isolated to the
+  count rather than to the reading, which is the cheap kind and is recorded
+  because a count is the sentence form §4 says rots first and this one was
+  wrong before it could rot.
+
+### What this pass deliberately did not chase
+
+- **ADR 0028's own body was not re-read against its new amendment.** #961's
+  ruling amends decision 2, and whether the rest of that document still reads
+  true beside a `min(sum, ceiling)` is a document audit rather than this file's
+  window. The amendment is counted in §6's tally and its effect on §2 and §5 is
+  written up; the ADR is otherwise untouched, because an accepted ADR's body is
+  amended in its own commit.
+- **The five ADRs #1239 rewrote were read only where this file cites them.**
+  0020, 0022, 0023, 0025 and 0028 gained 661 lines between them, and this pass
+  opened exactly the four coordinates §§2-6 point into 0023 and 0025 and nothing
+  else. Whether #1239's conversion of `file:line` anchors into quotations is
+  complete or correct inside those documents is their audit, not this window's.
+- **The twenty paths carrying only dated history were not re-aimed**, by the
+  rule this file has applied at every anchor: a coordinate inside a dated
+  reading is a record of what a past pass checked on a past tree.
+- **§2 was read for its coordinates and not re-argued.** The nine live entries
+  are byte-identical across the window except where a coordinate moved; whether
+  any of them now owes a row is the owner's question.
+- **The player-facing strings #1291 changed were not audited.** The window moves
+  a HUD badge's noun from *"N with no bed"* to *"N not housed"* across five
+  strings in two locales, and this file quotes none of them — the only two
+  occurrences of the old wording anywhere in this document are of a *code
+  comment* in `src/ui/hud/messages.ts` (*"{count} waiting with no bed to sleep
+  in"*), both inside dated readings and neither a string #1291 touched. Whether the new
+  sentences are true of the code is #1291's own commit message to answer, under
+  `AGENTS.md`'s reservation 4, and it is named here rather than assumed.
+- **The browser suite and `pnpm verify:assets` were not run.** Neither can pass
+  in this container, whose atlas PNGs are Git LFS pointer files; that is
+  environmental and is named rather than worked around.
+
+### Weakest claim in this entry, named rather than left to a reader
+
+**That *"twenty of the 44 paths carry a citation"* is a statement about a regex
+over backticked `path:N` spans, and the sharpest finding in this pass did not
+come from it.** The `residentCapacity` falsification was reached by opening a
+file because §2 cited a *span* in it, and the *"declare `requirements` and
+nothing else"* falsification was reached by reading the prose around a
+coordinate that had merely moved — neither is a thing an intersection returns.
+Nothing here bounds how many claims with no coordinate this window falsified.
+**What would change my mind**: a sweep that opens every `file:line` in §§3-6
+rather than the intersection, which three passes on this chain have run and
+which found something the intersection did not each time. This pass did not run
+it, and chose the early schedule over the wider read deliberately.
+
+
 ## 4. The live risk to watch: ADR 0016 §2 is binding and nothing enforces it
 
 This is the one thing the flips *added* to the risk surface, and it belongs at
@@ -18938,7 +19283,61 @@ inferred from the absence of a `push:` match, and `grep -c '^\s*push:'` over
 the file returns **0**, which is the absence stated as a command rather than as
 a reading.
 
-**RE-VERIFIED AT `90d62621`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
+**RE-VERIFIED AT `adad4f08`, AND THE RUN OF ABSENCE-BASED READINGS ENDS HERE AT
+FIFTEEN.** `git diff --name-only 90d62621..adad4f08 -- .github/
+docs/DEPLOYMENT.md` returns **`docs/DEPLOYMENT.md`** — the first time in
+fifteen anchors that either half of this section's evidence is a member of the
+window. `ed9acb57`, inside #1255, adds **ten lines** to it. `.github/` is
+still untouched, so the run ends on one half and continues on the other, and
+this reading is therefore the first on this chain that rests on a diff rather
+than on an absence.
+
+**All five `migrate-database.yml` coordinates were opened anyway** and land
+unmoved — `:20` is the ADR 0016 §2 comment (*"target and must never be
+repointed at production (ADR 0016 §2, Accepted;"*), `:33` is `on:`, `:34` is
+`workflow_dispatch:`, `:41` is `confirm_project_ref:`, `:65` is `environment:`
+— and `grep -c '^\s*push:'` over the file still returns **0**.
+
+**Into `docs/DEPLOYMENT.md`, four of the five hold and the fifth moved by
+exactly the insertion.** The ten lines land at `:239`, below every coordinate
+this section's live text carries and above one of the four the kept readings
+below carry. So the table header holds at `:200`, the migrations row — the
+coordinate the 2026-09-17 pass repaired, re-read here against the row's own
+text rather than carried — holds at **`:205`**, the *"`migrate-database.yml`
+has three runs in its entire history"* paragraph holds at `:219` and the
+*"Read that row as 'on every merge'"* paragraph at `:221`. ***"What currently
+serves lockstate.io"* moved `:255` → **`:265`***, +10, and it is the one live
+coordinate in this section that this window touched.
+
+**THE SENTENCE THIS SECTION HAS REPEATED AT EVERY ANCHOR SINCE 2026-09-04 IS
+NOW FALSE, AND IT IS CORRECTED RATHER THAN OVERWRITTEN** (`docs/AGENT_WORKFLOW.md`
+§4). It read *"`docs/DEPLOYMENT.md` has still not changed since `5954af75`
+(2026-09-04)"* with a day count beside it — twelve at four readings, thirteen
+at the last. **It changed on 2026-09-18, at `ed9acb57`**, and the count of days
+of stillness is closed at fourteen rather than continued. The readings below
+are dated and were right when written; what is retired is the *live* half of
+the claim, which is the half this section was leaning on. **The shape is the
+one `docs/AGENT_WORKFLOW.md` §4 names first**: a claim whose subject is a run
+of absences ends the moment the absence does, and it ends without the diff
+saying anything about the sentence.
+
+**What the ten lines say does not touch the risk this section names, and that
+was read rather than assumed.** They are a quoted, additive correction to the
+*"thirty-eight `success`, fourteen `failure`, eight `cancelled`"* paragraph —
+a whole-history cancellation census, a note that `staging-blocked` demonstrably
+fires, a warning that a Deploy run's `head_sha` is not the commit it published,
+and a merge-spacing rule — all of it about publication, none of it about
+migrations or about the Supabase project ref. **Nothing about the risk this
+section names has moved**: migrations still reach hosted staging on every merge
+with gating *"none"*, ADR 0016 §2 is still binding at
+`0016-migration-delivery-mechanism.md:108` — *"Recorded as a constraint
+precisely because nothing enforces it mechanically."* — and nothing in `tests/`
+can see the dashboard setting that would break it. That last clause is the half
+no window of any kind reaches, and ending the absence run changes nothing about
+it.
+
+**The reading below is kept as the record of a superseded anchor, and it
+said:** **RE-VERIFIED AT `90d62621`, AND THE RUN OF ABSENCE-BASED READINGS IS NOW AT
 FIFTEEN — ON THE FIRST WINDOW IN THAT RUN THAT IS MOSTLY PRODUCTION CODE AND
 THE WIDEST ANY OF THE FIFTEEN HAS SPANNED.** `git diff --name-only
 fa783381..90d62621 -- .github/ docs/DEPLOYMENT.md` returns **nothing at all**:
@@ -19744,6 +20143,18 @@ one direction.
   player-visible sentence was authored for it:
   *"The order was completed."* at `src/content/default-locale-en.ts:1516`,
   *"Zlecenie ukończono."* at `src/content/locale-pl.ts:781`.
+  **BOTH MOVED AT `adad4f08` AND BOTH WERE EXACT WHEN WRITTEN**, so this is
+  drift the window caused rather than drift it inherited: `git show
+  90d62621:src/content/default-locale-en.ts | sed -n '1516p'` and the same on
+  `locale-pl.ts:781` each return the string they are cited for. On `main` the
+  English sentence is at **`:1562`** (+46) and the Polish at **`:797`** (+16),
+  both from #1291's string work in the same two files. `:1516` in English is now
+  a *docblock line that quotes the same sentence* — the costly kind of stale
+  coordinate rather than the loud kind, because a reader who follows it finds
+  the words they were sent for and concludes the citation landed; `:781` in
+  Polish is an unrelated key and fails loudly. **One window produced both
+  failure shapes from one insertion**, which is the cheapest demonstration of
+  §6's recommendation 1 this file has recorded.
   **It is the shape this section exists for, in its least common direction.**
   Most entries here name a decision the code has not caught up with; this one
   names a decision the code has caught up with and the *document* has not. The
@@ -20845,7 +21256,11 @@ one direction.
   (`src/content/room-catalog.ts:94` — **this read `:70` and the word "unmoved"
   beside it, and both went false at `7161779`/#610 with the rest of this file's
   anchors; the requirement itself is `{ type: 'minimum-size', minWidth: 2,
-  minHeight: 3, minTiles: 6 }` and is unchanged**), and `PlaceObject` twice —
+  minHeight: 3, minTiles: 6 }` and is unchanged**) — **and `:94` became `:154`
+  at `adad4f08`, +60, when `be4dcbf8`/#1291 inserted `maxResidents`'s docblock
+  and schema field above every definition in the file; the requirement's own
+  text is still unchanged, which is the fourth move of this one coordinate
+  against zero edits to what it names**, and `PlaceObject` twice —
   `definitionId: 'bed-wooden'` at (4,6) and at (5,6), the two 1×2 footprints that
   fit side by side inside it. Nothing refused (`refusals.count` 0), both orders
   completed, and the instance the registry then holds is
@@ -20912,8 +21327,10 @@ one direction.
 
   **The four commands are now five, and the measurement as written no longer
   reproduces.** ADR 0045 landed in #447 and `zone` refuses an open perimeter:
-  `room.cell` authors an `enclosed` requirement (`src/content/room-catalog.ts:93`,
-  which read `:69` until `0352116` and moved with the rest of this file at #610),
+  `room.cell` authors an `enclosed` requirement (`src/content/room-catalog.ts:153`,
+  which read `:69` until `0352116`, moved with the rest of this file at #610 to
+  `:93`, and moved again to `:153` at `adad4f08` — +60 from #961's insertion,
+  the same shift the sibling coordinate above takes),
   `not-enclosed` is the eighth refusal reason
   (`src/simulation/rooms/zoning.ts:217`), and the comment on the check says so in
   terms — *"An `enclosed` definition against an `open` rectangle is now
@@ -22135,7 +22552,10 @@ one direction.
 
   **Two corrections to the entry itself, both found by re-reading rather than by
   the delta.** Its anchors `:70` and `:182` no longer name the figure — the
-  withdrawal is at `docs/adr/0025-guard-hiring-surface.md:74-76` — and it said
+  withdrawal is at `docs/adr/0025-guard-hiring-surface.md:74-76` (**`:87-89` at
+  `adad4f08`, +13, from #1239's 132-line addition to that ADR; the withdrawal's
+  own sentence is unchanged and `grep -n 'withdrawn rather'` answers 87 on
+  `main` against 74 at the previous anchor**) — and it said
   *"there are five `.css` files under `src/ui/`"*. **There are four**, and
   `git ls-tree -r 54418b6 -- src/ui` returns four as well, so that count was wrong
   when it was written and not overtaken: `hud.css`, `tokens.css`,
@@ -22865,6 +23285,72 @@ one direction.
   that a body is amended in its own commit and by whoever takes the decision, not
   because the sentences after the false clause survived. The same phrase in
   `docs/research/` stays untouched for the reason that directory's README gives.
+
+  **RE-OPENED AT `adad4f08`: SIX OF THIS ENTRY'S SEVEN LIVE COORDINATES INTO
+  THE TWO FILES MOVED, AND THE SENTENCE THAT CORRECTED THE LAST FALSIFICATION
+  IS ITSELF FALSIFIED BY THE SAME MECHANISM.** Both files are members of this window — `docs/adr/0023-…md` from
+  #1239 (+153 lines) and `src/content/room-catalog.ts` from `be4dcbf8`/#1291
+  (+62). Read at both ends off `grep -n` rather than offset from the diff:
+
+  - `docs/adr/0023-room-occupancy-authority.md:308-309` → **`:405-406`** and
+    `:300-307` → **`:397-404`**, both **+97**, and **both quotations survived
+    the move word for word** — `grep -n 'Step 1 is unimplementable today'` and
+    `grep -n 'supplies occupancy, aggregate'` answer 405 and 397 on `main` and
+    308 and 300 at the previous anchor. That is the third consecutive time this
+    entry's 0023 coordinates have moved while the sentences beside them have
+    not, and §6's recommendation 1 has now been demonstrated three times by one
+    entry.
+  - `src/content/room-catalog.ts:92-190` → **`:152-250`** and `:229` →
+    **`:289`**, both **+60**; **`:67` is unmoved**, because #961's insertion
+    begins at `:83` and every coordinate above it holds. The eighteen
+    definitions are still eighteen. The same +60 moves this section's two
+    other live coordinates into that file, `:93` → **`:153`** and `:94` →
+    **`:154`**, corrected in the two entries above that carry them rather than
+    from here.
+
+  **AND TWO CLAIMS IN THIS ENTRY ARE NOW FALSE RATHER THAN MERELY MOVED.**
+
+  **First: *"the eighteen definitions … declare `requirements` and nothing
+  else"*.** Two of them now declare `maxResidents` as well — `room.cell` 2 at
+  `:152` and `room.solitary-cell` 1 at `:163` — the per-room-type resident
+  ceiling the owner ruled on 2026-09-17 (issue #961), which
+  `src/content/room-catalog.ts:144` declares in the schema as
+  `maxResidents: z.number().int().min(1).max(64).optional()`. So the catalogue
+  now authors a per-type figure about residency for the first time, and this
+  entry's proof that branch 2 is unreachable no longer reads as written.
+
+  **The conclusion survives and was checked rather than assumed, which is the
+  whole of the difference.** `maxResidents` is not branch 2's *fallback nominal
+  figure*: `deriveRoomCapacity` applies it as `Math.min(residentCapacity,
+  maxResidents)` **after** branch 1's sum
+  (`src/simulation/objects/room-capacity.ts:240`), so an empty room with a
+  ceiling of 2 still resolves `min(0, 2) = 0` and still takes branch 3. **Branch
+  2 remains unreachable**, and a reader who now greps this catalogue for an
+  authored capacity figure will find one that is not the one branch 2 wants —
+  which is a worse failure than finding nothing, and is why it is named here.
+
+  **Second: *"It occurs **twice** — `:67` and `:229`"*, of the string
+  `capacity`.** It occurs **four** times on `main`: `:67` (unmoved), `:94`,
+  `:139` and `:289`. The two new hits are prose again — `:94` is the link to
+  ADR 0028 in the `maxResidents` docblock and `:139` is *"**Not persisted** --
+  capacity has been…"* — so *"both hits are prose"* survives as *"all four hits
+  are prose"* and the corrected form this entry already states, **no row of
+  `ROOM_CATALOG` declares a capacity**, is still exact.
+
+  **THE PART WORTH MORE THAN EITHER CORRECTION.** The paragraph above this one
+  exists because *"the string `capacity` does not occur in that file at all"*
+  went false, and it closes by naming the class: an absence claim over an
+  unbounded set. **The replacement sentence it wrote — *"declare `requirements`
+  and nothing else"* — is an absence claim over an unbounded set about the same
+  eighteen rows in the same file, and it has now gone false the same way.** The
+  count it stated went from two to four at the same time, so both halves of the
+  repair rotted together. `docs/AGENT_WORKFLOW.md` §4's *"a correction is no
+  more durable than the claim it corrected"* is usually read as a warning about
+  coordinates; this is it holding for the *form of words*, inside the entry
+  that wrote the warning's own example. The durable form is the one this entry
+  already found and did not apply twice: state the subject
+  (**no row declares a capacity**) rather than the absence (**nothing else is
+  declared**).
 
 - **ANSWERED 2026-08-27 — two dated rulings were written into ADR 0008's Accepted
   body with no queue row, on the same day #380 argued that such a thing needs
