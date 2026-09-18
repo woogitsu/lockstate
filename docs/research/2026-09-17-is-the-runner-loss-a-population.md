@@ -22,6 +22,47 @@ and are marked where they do.
 > immune to what a log does or does not contain — which matters, because the
 > defining property of this failure is that the log does not exist.
 
+## Re-measured 2026-09-18 at 09:17Z — every headline figure reproduces, and nothing new has been lost
+
+Independently re-derived from the same endpoints before this branch was
+merged, by a different session writing its own classifier from the predicate
+quoted above. **Not one of the findings moved.** The counts that are
+window-sized grew, because the window grew by about seventeen hours; the
+counts that are the result did not.
+
+| | Snapshot 2026-09-17 16:55Z | Re-run 2026-09-18 09:17Z |
+| --- | ---: | ---: |
+| Runs listed | 2,155 | **2,225** |
+| Jobs (`filter=all`, de-duplicated) | 6,198 | **6,379** |
+| `browser` jobs | 2,008 | **2,063** |
+| `browser` failures | 126 | **131** |
+| **Losses** | **11** — 7 `browser`, 4 `verify` | **11 — the same eleven job ids** |
+| Pool of every loss | `-01`/`-02`/`-03` | unchanged |
+| Predecessor-pool `browser` jobs / losses | 1,355 / **0** | 1,355 / **0** |
+| New-pool completed `browser` jobs | 275 (`-01` 100, `-02` 97, `-03` 78) | **305** (`-01` 111, `-02` 107, `-03` 87) |
+
+**The result that matters is the one that did not move.** Fifty-five further
+`browser` jobs ran in that window, **thirty of them on `-01`/`-02`/`-03`**, and
+**none carries the signature.** The most recent loss is still
+`2026-09-16T20:23:10Z`, so the pool has now been clean for roughly 37 hours and
+three further working sessions. That is not evidence the cause is gone — §3's
+six incidents span 41.6 hours and are separated by gaps of that order — but it
+is the first re-measurement, and it is recorded so the next one has two points
+rather than one.
+
+**Also unchanged, checked rather than assumed:** the eleven rows of §2 match on
+job id, runner, `completed_at` and conclusion — including that
+`104208152625` is still the `cancelled` one, which is the row that makes
+counting on `conclusion` wrong. Per-runner `browser` losses are still
+`-02` 3, `-03` 3, `-01` 1.
+
+> **One trap for whoever re-runs this, found by re-running it.** A paginated
+> `/actions/runs/{id}/jobs?filter=all` listing can return the same job twice,
+> and an un-deduplicated walk reports **1,356** predecessor-pool `browser` jobs
+> and 6,382 jobs rather than 1,355 and 6,379. Key by `job.id`. The figure in
+> this record is the de-duplicated one, and it was the discrepancy between two
+> of this session's own runs that raised it.
+
 ## Six findings
 
 1. **The census is complete rather than sampled, and it cost about 2,290 API
