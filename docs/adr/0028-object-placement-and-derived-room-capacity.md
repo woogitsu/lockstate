@@ -1505,13 +1505,39 @@ balance decision with no measurement behind it and it stays unauthored.
   owner approved on 2026-08-30 (`hud.alert.event.prisoners.relocated`).
   **Whether a restore should relocate is left open here** rather than decided
   in implementation code: it is ADR 0076's subject, not this amendment's.
-- **One player-visible sentence became false and was rewritten.**
-  `hud.intake.hint` promised that *"an arrival with none waits until a bed is
-  free"*, and with a ceiling a bed can be free while the arrival waits. Wording
-  has been ours since 2026-09-04 and truth has not; the clause now reads
-  *"waits until there is room for them"*, which is the condition
-  `findBestAvailable` actually retries on. The Polish catalogue's copy moved
-  with it.
+- **Six player-visible sentences became false and were rewritten**, each
+  because it named a *bed* where the code counts a residency *place*. Wording
+  has been ours since 2026-09-04 and truth has not. `hud.intake.hint` promised
+  that *"an arrival with none waits until a bed is free"*, and with a ceiling a
+  bed can be free while the arrival waits; it now reads *"waits for a place"*,
+  the condition `findBestAvailable` retries on
+  (`occupancyOf(instance) < instance.residentCapacity`). `hud.intake.no-place`
+  reads *"{count} waiting with no place to sleep"*, and the three FUNDS
+  sentences (`hud.status.funds-before-deliveries-stop`, `-deliveries-stopped`,
+  `-treasury-floor-exhausted`) now say the state pays *"for prisoners who have
+  a place to sleep"* -- which is literally `stateIncomeForOccupiedPlaces`
+  folding over `residentIdsWithExistingPlace()`. The Polish copies moved too.
+- **The sixth is the status-strip badge, and it cost two browser specs before
+  it settled.** `hud.status.prisoners-without-bed` read *"{count} with no
+  bed"*; the first rewording made it *"{count} with no place"* and asserted, in
+  its own comment, that this "stays the same length as the word it replaces" --
+  false, since "bed" is three characters and "place" is five. The strip is
+  where that was paid for: `tests/browser/ui-contraband-name.spec.ts` records
+  the metrics row at `scrollWidth` 1264 against `clientWidth` 1256 at 1280x800
+  **driven by this badge**, so the row was already 8px over before the ceiling
+  existed and a wider badge widens a measured overflow. The badge reads
+  **`{count} not housed`**: one character shorter than the pre-ceiling text,
+  and true in this repository's own established sense of the word --
+  `hud.alert.event.prisoners.housed` is *"{name} has a place in {room}."* and
+  `hud.intake.pipeline-failed` is *"{count} cannot be housed at all"*.
+  **What that gives up is recorded rather than dropped quietly**: issue #609
+  made the badge the short form of `hud.intake.no-place` *in the same words*,
+  and the two now report the same fact in different words, because the strip is
+  short of room and the panel is not. The first `hud.intake.hint` rewording
+  cost a line too -- nine characters longer than the clause it replaced, it
+  wrapped the panel and pushed the Staff panel's payroll figure below its own
+  fold (`tests/browser/ui-staff-wage.spec.ts:377`), which is why the shipped
+  wording is shorter than the pre-ceiling one rather than merely truer.
 - **Two integration fixtures housed 24 prisoners in one 24-bed `room.cell`**,
   which the ruling makes illegal. Both now zone twelve two-resident cells over
   the same corner of the world with the same 24 beds, 24 toilets and the same

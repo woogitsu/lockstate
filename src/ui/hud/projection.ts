@@ -334,7 +334,7 @@ function prisonersWithoutBed(counts: HudCountsViewModel): number {
  * The sentence under the `PRISONERS` chip when somebody has nowhere to sleep,
  * and nothing at all when everybody does (issue #609).
  *
- * **`undefined` rather than a badge reading "0 with no place"**, which is
+ * **`undefined` rather than a badge reading "0 not housed"**, which is
  * `coverageTone`'s reasoning applied to a chip that has been badge-less until
  * now: *"a status strip where several things are always amber teaches players
  * to ignore amber"*, and that note already extends it to green. A permanent

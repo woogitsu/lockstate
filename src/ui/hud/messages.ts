@@ -18,27 +18,41 @@ export const HUD_MESSAGE_KEY = {
   statusRegion: 'hud.status.title',
   prisoners: 'hud.status.prisoners',
   /**
-   * How many prisoners have no bed, as a badge under the `PRISONERS` chip
-   * (issue #609).
+   * How many prisoners hold no residency place, as a badge under the
+   * `PRISONERS` chip (issue #609).
    *
-   * **The wording is the owner's and was signed off before it was built**:
-   * *"N with no place"*. It counts what is **missing** rather than what is
-   * fine -- "N housed" was the rejected alternative -- and it deliberately
-   * echoes the Intake panel's existing sentence, `hud.intake.no-place`
-   * (*"{count} waiting with no place to sleep"*), so a player meets the same
-   * fact in the same words in two places and connects them.
+   * **The SHAPE is the owner's and was signed off before it was built**:
+   * *"N with no bed"*. It counts what is **missing** rather than what is fine
+   * -- "N housed" was the rejected alternative -- and that is the part of the
+   * sign-off that still binds.
+   *
+   * **The noun is not the owner's and is ours under `AGENTS.md`'s fourth
+   * reservation, released 2026-09-04.** It reads *"N not housed"* since issue
+   * #961: a room type may author `maxResidents`, so residency capacity is
+   * `min(sleep surfaces, the ceiling)` and the badge could count somebody
+   * standing beside an empty bed. `src/content/default-locale-en.ts` carries
+   * the full derivation, including why the strip could not afford *"with no
+   * place"* -- the row is 8px over its width at 1280x800 before this badge is
+   * drawn.
+   *
+   * **The echo with the Intake panel is a casualty of that and is recorded
+   * rather than dropped quietly.** #609 made this the short form of
+   * `hud.intake.no-place` (*"{count} waiting with no place to sleep"*) so the
+   * same fact read in the same words in two places. They now report the same
+   * fact in different words, because the strip is short of room and the panel
+   * is not.
    *
    * The two counts are siblings rather than the same number, and the shorter
-   * wording is what says so. The Intake panel's is *arrivals a bed would
+   * wording is what says so. The Intake panel's is *arrivals a place would
    * house right now* -- prisoners standing at `accommodation-assignment` with
-   * no free place. This one is *every prisoner without a bed*, which also
+   * no free place. This one is *every prisoner holding no place*, which also
    * covers the prisoner whose bed was taken out from under them (ADR 0028
-   * decision 2). In the prison issue #609 measured -- twelve admitted into
-   * three beds -- both read 9.
+   * decision 2) and the one over a room type's ceiling (#961). In the prison
+   * issue #609 measured -- twelve admitted into three beds -- both read 9.
    *
    * **Not rendered when it is zero**, which is why it is a badge that comes
    * and goes rather than a permanent chip: `coverageTone` records the reason
-   * and it applies to a "0 with no place" as much as to a green badge -- *"a
+   * and it applies to a "0 not housed" as much as to a green badge -- *"a
    * status strip where several things are always amber teaches players to
    * ignore amber"*.
    */

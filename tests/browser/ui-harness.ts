@@ -403,7 +403,7 @@ const BASE_COUNTS: HudCountsViewModel = {
   // Everybody housed, which is what the accrual above already assumes: 142
   // occupied places is where `10_667` comes from. A fixture whose accrual
   // said 142 and whose place count said otherwise would put the strip's
-  // "N with no place" badge (#609, the noun since #961) on every spec in this file for a prison
+  // "N not housed" badge (#609, the noun since #961) on every spec in this file for a prison
   // the same fixture is paying full price for.
   occupiedPlaces: 142,
   staff: 27,

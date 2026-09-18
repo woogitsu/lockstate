@@ -65,7 +65,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         prisonerCapacity: counts.accommodationCapacity,
         /**
          * Straight through, for `accommodationCapacity`'s reason above, and
-         * it is the figure the `PRISONERS` chip's *"N with no place"* badge is
+         * it is the figure the `PRISONERS` chip's *"N not housed"* badge is
          * built out of (issue #609).
          *
          * **`counts.roomOccupants` is on this payload and is deliberately not
@@ -77,7 +77,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
          * exist, which is what the income line pays for
          * (`src/simulation/economy/income.ts`,
          * `stateIncomeForCompletedDay`). A badge fed from `roomOccupants`
-         * would read *"0 with no place"* for a prison the state has already
+         * would read *"0 not housed"* for a prison the state has already
          * stopped paying for.
          *
          * Issue #609's own second correction is the measurement: a 3x3

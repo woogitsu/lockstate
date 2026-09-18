@@ -156,30 +156,51 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
-  // How many prisoners have no bed (#609). The owner's wording, approved
-  // before it was built, and it counts what is missing rather than what is
-  // fine: "9 housed" was the rejected alternative, because a player reads
-  // past a number that is already fine. It is the short form of the Intake
-  // panel's `hud.intake.no-place` below -- "{count} waiting with no place to
-  // sleep" -- on purpose, so the same fact reads the same way in both
-  // places; the strip's is the wider count of the two, since a prisoner whose
-  // bed was removed under them is not waiting for anything.
+  // How many prisoners hold no residency place (#609). The owner approved
+  // *"{count} with no bed"* before it was built, and what is kept from that
+  // approval is its **shape** -- it counts what is missing rather than what is
+  // fine, "9 housed" having been the rejected alternative, because a player
+  // reads past a number that is already fine.
   //
-  // **Both said "bed" until issue #961 and both were then false**, which is
-  // the reservation-4 half the ceiling broke rather than a wording
-  // preference. This badge is `prisoners - occupiedPlaces`
-  // (`prisonersWithoutBed`, `src/ui/hud/projection.ts`), and `occupiedPlaces`
-  // counts residency *places*: since a room type may author `maxResidents`
-  // (`src/content/room-catalog.ts`), `residentCapacity` is
-  // `min(sleep surfaces, the ceiling)` and a cell holding two with four beds
-  // in it draws "2 with no bed" beside two empty beds. "Place" is what the
-  // subtraction actually counts, and it stays the same length as the word it
-  // replaces, which the strip cares about (`tests/browser/ui-strip-badged-width.spec.ts`).
+  // **It said "bed" until issue #961 and was then false**, which is the
+  // reservation-4 half the ceiling broke rather than a wording preference.
+  // This badge is `prisoners - occupiedPlaces` (`prisonersWithoutBed`,
+  // `src/ui/hud/projection.ts`), and `occupiedPlaces` is
+  // `residentIdsWithExistingPlace()`, which spends `instance.residentCapacity`
+  // (`src/simulation/presentation/status-strip-projection.ts:820`). Since a
+  // room type may author `maxResidents` (`src/content/room-catalog.ts`), that
+  // capacity is `min(sleep surfaces, the ceiling)` -- so a cell holding two
+  // with four beds in it drew "2 with no bed" beside two empty beds.
   //
-  // The owner approved *"{count} with no bed"* on #609 before it was built;
-  // what is kept from that approval is its shape -- the missing counted rather
-  // than the fine -- and the noun moved because the code moved under it.
-  'hud.status.prisoners-without-bed': '{count} with no place',
+  // **"Not housed" rather than "with no place", and the difference is 10px of
+  // a row that is already over its width.** The first rewording for #961 said
+  // *"{count} with no place"* and claimed, in this comment, that it "stays the
+  // same length as the word it replaces". That is false -- "bed" is three
+  // characters and "place" is five -- and the strip is where it was paid for:
+  // `tests/browser/ui-contraband-name.spec.ts` records this row at
+  // `scrollWidth` 1264 against `clientWidth` 1256 at 1280x800 **driven by this
+  // badge**, so the row was already 8px over before #961 and a wider badge
+  // makes a measured overflow worse. `{count} not housed` is shorter than
+  // either, so the row is narrower than it was on `main`.
+  //
+  // **And it is true in this repository's own established sense of the word.**
+  // `hud.alert.event.prisoners.housed` below is *"{name} has a place in
+  // {room}."* and `hud.intake.pipeline-failed` is *"{count} cannot be housed
+  // at all"*, so "housed" already means "holds a place" in two player-facing
+  // sentences, and "not housed" is the negation of the quantity this badge
+  // subtracts. It is also true of the member "with no bed" was wrong about: a
+  // resident whose bed was taken away, or who is over the ceiling, is in a
+  // room and is still not housed.
+  //
+  // **What was given up, recorded rather than quietly dropped.** #609 made
+  // this the short form of the Intake panel's `hud.intake.no-place` below --
+  // *"{count} waiting with no place to sleep"* -- so that the same fact read
+  // in the same words in two places. The two now report the same fact in
+  // different words, because the strip has 8px less room than it needs and the
+  // panel has room to spare. The strip's is still the wider count of the two,
+  // since a prisoner whose bed was removed under them is not waiting for
+  // anything.
+  'hud.status.prisoners-without-bed': '{count} not housed',
   'hud.status.staff': 'Staff',
   'hud.status.rooms': 'Rooms',
   /*
@@ -2538,13 +2559,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
    * `occupancyOf(instance) < instance.residentCapacity`
    * (`src/simulation/prisoners/room-instance-registry.ts:1104`), and
    * `residentCapacity` is now `min(sleep surfaces, the room type's ceiling)`
-   * (`src/simulation/objects/room-capacity.ts`). "Room for them" is true of
-   * both halves of that `min`, where "a free bed" is true of only one.
+   * (`src/simulation/objects/room-capacity.ts`). "A place" is true of both
+   * halves of that `min`, where "a free bed" is true of only one.
+   *
+   * **It said *"waits until there is room for them"* first, and that cost a
+   * measured line of a panel.** The clause was nine characters longer than the
+   * one it replaced, the sentence wrapped to an extra line, and the Staff
+   * panel's payroll figure was pushed below its own fold --
+   * `tests/browser/ui-staff-wage.spec.ts:377` ("states the standing daily bill
+   * on the payroll header, with the fold still shut") went red on it and green
+   * again on this wording, with nothing else changed. *"Waits for a place"* is
+   * the same claim in fewer characters than even the pre-#961 tail, so the
+   * block it sits in is shorter than it was on `main`.
    *
    * The first clause is untouched and is still true: a prison with no free bed
    * can still admit, and the arrival waits rather than being refused.
    */
-  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits until there is room for them.',
+  'hud.intake.hint': 'A prison needs a cell before it can admit anyone. It does not need a free bed: an arrival with none waits for a place.',
   // The warning beside the control, and the only toned figure on this panel.
   // "no place" and not "no cell": a zoned cell with nothing in it houses
   // nobody, because `deriveRoomCapacity` credits residency to sleep surfaces
