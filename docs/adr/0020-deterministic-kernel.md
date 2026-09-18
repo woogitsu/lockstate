@@ -48,6 +48,20 @@ grepped, and the two dispatch orders quoted below were produced by running the
 real `Kernel` through `benchmarks/production-modules.mjs`'s resolver rather than
 reasoned about.*
 
+> **The middle clause is kept and is not a date on anything below it**
+> (`docs/AGENT_WORKFLOW.md` §4: mark both directions). It says the anchors were
+> *opened* at `792bf94`, which was true; a reader meeting it reasonably
+> concludes there is nothing under it to check, and that conclusion is wrong.
+> `374065b2` and `a7aa52ed` both re-aimed anchors inside this document beneath
+> that unchanged sentence — two of the seven commits tabulated in
+> `docs/adr/README.md`'s section *"A global anchor pin in an ADR is advisory,
+> and does not date what is below it"*. Swept again on 2026-09-15 against
+> `origin/main` at `e044a3e8`: of the rooted anchors below, six still landed on
+> what their sentence names and eleven did not. The eleven are re-aimed in
+> place, each carrying the number it used to hold. The per-anchor pins
+> (*"as of `83d9616`"*) are left exactly as they are — that is the form that
+> works, and this section is why.
+
 ### 1. Commands are not dispatched in sequence order. They are dispatched in `(executeAtTick, sequence)` order — and have been since this document's own commit
 
 "Ordered Command Queue" says:
@@ -85,19 +99,24 @@ Two runs of the shipped class, not a reading of it:
   current tick — `Q` (sequence 1) dispatches at tick 0 and `P` (sequence 0) at
   tick 20.
 
-The second case needs no save file. `src/ui/simulation-commands.ts:129-130`
+The second case needs no save file. `src/ui/simulation-commands.ts:320-325` (the anchor read `:129-130`)
 projects `executeAtTick` as `lastTick + ceil(elapsed × speed / 50) + 20` while
-the clock runs and as a bare `lastTick` while it is paused (`:128`), so a player
+the clock runs and as a bare `lastTick` while it is paused (`:320`), so a player
 who issues an order and then pauses within the twenty-tick lead has issued two
 commands whose sequence order and tick order disagree. The kernel then applies
 the later one first.
 
 This is not a determinism defect and is not reported as one: both keys are
-persisted (`src/persistence/save-schema.ts:75-82`), the comparator is total, and
+persisted (`src/persistence/save-schema.ts:88-95`; the anchor read `:75-82`, was
+re-aimed to `:79-87` by this branch, and had drifted **a second time** by the
+time `origin/main` was merged on 2026-09-16 — `:79-87` is now a docblock about a
+schema-version tally), the comparator is total, and
 every client restoring the same bundle dispatches in the same order. It is the
 *documented* ordering that is wrong, and the sentence is load-bearing — the
 overdue-drain fix in `bb8a57e` (#422) quotes exactly this sentence as its
-authority, at `kernel.ts:176-179`, and
+authority, at `kernel.ts:233-238` (the anchor read `:176-179`, which is the
+`dispatchDueCommands` docblock and carries no quotation of this sentence at
+all), and
 `tests/determinism/kernel-system-order.test.ts` already names the real key in a
 case title: *"orders the pending command queue by (tick, sequence)"*.
 
@@ -130,7 +149,10 @@ behaviour change to a boundary the HUD already depends on.
 and reads no clock. Pacing lives one module over, in
 `FixedStepClock` (`src/simulation/clock/fixed-step-clock.ts:29`, `stepMilliseconds
 = 50`), which the worker constructs as `new FixedStepClock(50, { mode: 'paused' })`
-at `src/simulation/worker/state-machine.ts:203` and again at `:724`. That clock
+at `src/simulation/worker/state-machine.ts:255` and again at `:1068` (the anchors
+read `:203` and `:724`, were re-aimed to `:254` and `:1045` on 2026-09-15, and
+the second went stale **again** before this branch merged `origin/main` on
+2026-09-16 — `:1045` is a bare `try {`). That clock
 multiplies elapsed real time by the player's chosen speed before dividing by the
 step (`:69-70`), and the ladder is `[1, 2, 4]` (`:17`). So the kernel advances
 50 ms of *simulated* time per tick — which is the durable half of the sentence
@@ -148,7 +170,7 @@ a neighbouring module from memory.
 steps. How many of those a second of real time buys is `FixedStepClock`'s
 business and the player's — 20 at ×1, 80 at ×4 — and no simulation code may
 depend on it.* The `// 1 second at the kernel's 20 Hz` beside
-`DEFAULT_LEAD_TICKS = 20` (`src/ui/simulation-commands.ts:64`) inherits the same
+`DEFAULT_LEAD_TICKS = 20` (`src/ui/simulation-commands.ts:119`; the anchor read `:64`) inherits the same
 conflation: twenty ticks is one second of simulated time and a quarter-second of
 real time at ×4.
 
@@ -162,19 +184,24 @@ The third Positive consequence reads:
 The figure appears nowhere in this repository except in that sentence — no
 result file, no fixture, no commit message. The scenario it can only have come
 from is `benchmarks/scenarios/kernel-throughput.mjs`, whose `full` profile is
-`operationsPerIteration: 5000, // 5000 synthetic systems` (`:110-114`), and which
+`operationsPerIteration: 5000, // 5000 synthetic systems` (`:124-128`; the
+anchor read `:110-114`, which is the end of the scenario function and the head
+of the exported object), and which
 was added in `aae2fbc` — this ADR's own commit.
 
 That scenario does not run the kernel. Its own comment says so:
 *"Minimal standalone implementation of Kernel logic for benchmark (since we can't
-easily import TS directly here)"* (`:33`). Since #410 the repository classifies
-scenarios explicitly, and `docs/BENCHMARKING.md:38` lists this one as
+easily import TS directly here)"* (`:47`; the anchor read `:33`, a line of the
+seeded-RNG mixer). Since #410 the repository classifies
+scenarios explicitly, and `docs/BENCHMARKING.md:41` (the anchor read `:38`) lists this one as
 **"modelled — mock systems"**, under a rule stating that a modelled scenario's
 numbers *"hold for any implementation — including one this repository does not
 have"* and that such a scenario *"can never be a gate"*. The model has since
 drifted from the thing it models in a way this ADR is entitled to care about: its
 drain loop is `while (_commands.length > 0 && _commands[0].executeAtTick === _tick)`
-(`:74`), the strict-equality form the production kernel abandoned in `bb8a57e`
+(`:90`; the anchor read `:74`, which is `const TICKS = 100;` — the very line
+the next paragraph cites for a different claim), the strict-equality form the
+production kernel abandoned in `bb8a57e`
 because it wedged the queue.
 
 Re-run at `792bf94` (v0.0.121) in the container this amendment was written in,
@@ -183,7 +210,8 @@ reports `kernel.throughput.benchmark@1 (full): 4.204 ms mean, 10.306 ms p95,
 1189467 ops/s, checksum 0x39a821e7`. That is not evidence the old number was
 wrong — a different machine is a different number, which is the point — but the
 profile measures **100 ticks** of 5,000 systems per iteration (`TICKS = 100`,
-`:61`), so "1.6 ms to process 5,000 active systems" does not name which of the
+`:74`; the anchor read `:61`, a `phaseTicks` expression inside the system
+builder), so "1.6 ms to process 5,000 active systems" does not name which of the
 two quantities it is, and neither reading can be reproduced from what the
 sentence carries.
 
@@ -201,7 +229,7 @@ Flagged, not corrected — nothing below is wrong on this tree.
 - **"every registered system must define an explicit integer `order` and a stable
   string `id`."** `SystemRegistration` types them `number` and `string`
   (`src/simulation/kernel/system.ts:14-15`) and `registerSystem` checks **only**
-  that the id is not already taken (`kernel.ts:107-110`). Neither "integer" nor
+  that the id is not already taken (`kernel.ts:108-112`; the anchor read `:107-110`). Neither "integer" nor
   "stable" is enforced at runtime, and `NamedRngStreams` — the neighbouring
   registry in this same decision — does validate its key shape
   (`src/simulation/rng/streams.ts:13`). A `NaN` order makes the comparator return
@@ -212,11 +240,17 @@ Flagged, not corrected — nothing below is wrong on this tree.
 - **"safely rejects duplicates, gaps, and commands scheduled in the past."** True
   of `submitCommand` and of nothing else. `Kernel.restore` says outright
   *"Bypassing submitCommand validation as this is a restore from valid state"*
-  (`kernel.ts:315-316`), `restoreState` assigns the queue directly (`:296`), and
+  (`kernel.ts:392`), `restoreState` assigns the queue directly (`:373`), and
   the save schema validates `tick` and each `executeAtTick` as independent
   non-negative integers and never their relation
-  (`src/persistence/save-schema.ts:75-82` and `:84-91`). The kernel's own comment states this
-  and says the missing check belongs at the save boundary (`:189-199`); it is
+  (`src/persistence/save-schema.ts:88-95` and `:97-104`; those four anchors read
+  `:315-316`, `:296`, `:75-82` and `:84-91` until 2026-09-15, were re-aimed to
+  `:392`, `:373`, `:79-87` and `:88-95` then, and **the two save-schema ones went
+  stale a second time** before this branch merged `origin/main` on 2026-09-16.
+  `queuedCommandSchema` is `:88-95`, `kernelSnapshotSchema` is `:97-104`, and the
+  two kernel anchors still hold. The claims were re-checked at the new lines: all
+  four hold). The kernel's own comment states this
+  and says the missing check belongs at the save boundary (`:252-262`; the anchor read `:189-199`); it is
   still not there.
 - **"100% decoupling from Phaser render ticks."** Holds: `grep -rn "from
   'phaser'" src/simulation/` is empty, and
@@ -226,11 +260,12 @@ Flagged, not corrected — nothing below is wrong on this tree.
 ### What was checked and found intact
 
 `tick % system.schedule.intervalTicks === system.schedule.phaseTicks`
-(`kernel.ts:213`) is verbatim the "Fixed Step Pacing" formula. Systems sort by
-`order` then `id` (`:113-116`). RNG streams are named, are `Xoshiro128**`, and
+(`kernel.ts:202`) is verbatim the "Fixed Step Pacing" formula. Systems sort by
+`order` then `id` (`:114-118`). RNG streams are named, are `Xoshiro128**`, and
 carry `algorithm: 'xoshiro128**', version: 1` in every serialized state
 (`src/simulation/rng/xoshiro128starstar.ts:1-5`, `:54`), so "strictly versioned
-and serialized" is exact. `snapshot()` includes every stream (`kernel.ts:226`).
+and serialized" is exact. `snapshot()` includes every stream (`kernel.ts:290-296`; these three anchors read
+`:213`, `:113-116` and `:226`).
 `Math.random`, `Date.now` and `new Date(` do not occur anywhere under
 `src/simulation/`; the single ambient time source is `() => performance.now()`
 injected at the worker boundary (`src/simulation/worker/worker.ts:24`).
@@ -243,6 +278,11 @@ is a decision and is recorded as one so nobody re-opens it from the same
 sentence. Status is untouched: this ADR remains **Accepted**. Read at `fa12249`
 (v0.0.121); every `file:line` below was opened on that tree, and every number
 quoted was produced by running the shipped classes rather than reasoned about.*
+
+> **A second global pin, and it dates what is below it no more than the first
+> one does.** Read it as "opened at `fa12249`" and check anything you intend to
+> rely on. Swept 2026-09-15; the anchors under it are re-aimed in place with
+> the numbers they used to hold kept beside them.
 
 ### The delegation this rests on
 
@@ -261,7 +301,7 @@ open and say so, rather than treating this heading as settled precedent.
 ### The decision
 
 `Kernel.submitCommand` **keeps** its three refusals — duplicate sequence,
-sequence gap, and `executeAtTick < tick` (`kernel.ts:119-137`) — and gains no
+sequence gap, and `executeAtTick < tick` (`kernel.ts:119-147`; the anchor read `:119-137`) — and gains no
 fourth. A command whose `executeAtTick` is below the highest tick already in the
 queue is admitted, exactly as today, and the queue keeps dispatching in ascending
 `(executeAtTick, sequence)` order.
@@ -269,26 +309,41 @@ queue is admitted, exactly as today, and the queue keeps dispatching in ascendin
 ### Every caller, and what each one submits
 
 There is **one** caller in `src/`:
-`src/simulation/worker/state-machine.ts:786`, inside `handleSubmitCommand`, which
+`src/simulation/worker/state-machine.ts:1153`, inside `handleSubmitCommand`
+(`:1139`; the anchor read `:786`, was re-aimed to `:1130`/`:1117` on 2026-09-15,
+and **both went stale a second time** before this branch merged `origin/main` on
+2026-09-16 — `:1130` is now the `payload:` key of `handleSetClock`'s reply), which
 forwards `commandId`, `sequence`, `executeAtTick` and the packed command straight
 off a `simulation/submit-command` message. Nothing else in `src/` calls it —
 `Kernel.restore` and `restoreState` deliberately do not (below), and the only
 other occurrences of the name in `src/` are the Zod schema for that message
-(`src/simulation/protocol/types.ts:249`) and comments. `grep -rn submitCommand
+(`src/simulation/protocol/types.ts:266-269`; the anchor read `:249`) and comments. `grep -rn submitCommand
 src tests` puts every other call site under `tests/`, and a test-only need would
 not have been a product need in any case.
 
 So the census is really a census of one message, and its `executeAtTick` is
 computed in exactly one place:
-`SimulationCommandSender.projectExecuteTick` (`src/ui/simulation-commands.ts:127-131`),
-read at `:202`. It returns `lastTick` while the clock is paused and
+`SimulationCommandSender.projectExecuteTick` (`src/ui/simulation-commands.ts:291-292`),
+read at `:401`. It returns `lastTick` while the clock is paused and
 `lastTick + ceil(elapsed × speed / 50) + leadTicks` while it runs, with
-`DEFAULT_LEAD_TICKS = 20` (`:64`).
+`DEFAULT_LEAD_TICKS = 20` (`:118`). **Those four anchors read `:127-131`,
+`:202` and `:64`**, and one sentence they carry has stopped being true besides
+the numbers: the projection is today
+`this.lastTick + Math.ceil(((elapsed + margin) * this.clockSpeed) / TICK_MILLISECONDS)`
+(`:319-324`), so the lead sits **inside** the ceiling and is scaled by speed
+rather than added after it, and that estimate is wrapped by ADR 0056's
+monotonicity floor, `Math.max(this.projectFromClock(...), this.highestSubmittedTick)`
+(`:290-291`). The paragraph is kept as written because the case it builds — a
+pause collapsing the projection onto `lastTick` — is the case the blockquote
+below records ADR 0056 as having closed.
 
 **Yes, something legitimately submits a tick below the highest already queued,
 and this is the timing.** The player gives an order while the clock runs — it is
 projected twenty-odd ticks into the future — and then pauses. `handleSetClock`
-answers with the kernel's exact tick (`state-machine.ts:763-773`), the HUD's
+answers with the kernel's exact tick (`state-machine.ts:1127-1132`, which posts
+`tick: this._kernel!.tick`; the anchor read `:763-773`, was re-aimed to
+`:1101-1115` on 2026-09-15, and that landed on the tail of the *previous* method
+even before `origin/main` was merged on 2026-09-16), the HUD's
 projection collapses onto it, and the next order given during that pause carries
 a *lower* tick and a *higher* sequence than the one still queued. Driven through
 the shipped sender against the shipped worker, with a real `Kernel` and a real
@@ -320,8 +375,8 @@ weight.
 "correct the sentence, or make `submitCommand` refuse" as two routes to the same
 end. They are not. `Kernel.restore` states outright that it bypasses this
 validation — *"Bypassing submitCommand validation as this is a restore from valid
-state"* (`kernel.ts:315-316`) — `restoreState` assigns the queue directly
-(`:296`), and `kernelSnapshotSchema` validates `tick` and each `executeAtTick` as
+state"* (`kernel.ts:392`) — `restoreState` assigns the queue directly
+(`:373`), and `kernelSnapshotSchema` validates `tick` and each `executeAtTick` as
 independent non-negative integers and never their relation
 (`src/persistence/save-schema.ts`). So a restored session can hold exactly the
 shape the front door would be refusing, no downstream reader could rely on the
@@ -332,7 +387,13 @@ was the only one.**
 **2. The cost is not one refusal, it is every refusal for the length of the
 pause.** `FixedStepClock.pump` returns `0` while paused
 (`src/simulation/clock/fixed-step-clock.ts:68`) and the worker's tick loop runs
-only in state `running` (`state-machine.ts:269-282`), so while the player is
+only while the clock is pumping (`state-machine.ts:393-399`; the anchor read
+`:269-282`, was re-aimed to `:353-359` on 2026-09-15, and that landed on two
+unrelated private fields). **One word of the claim is corrected rather than
+overwritten** (`docs/AGENT_WORKFLOW.md` §4): `onTickLoop`'s own guard admits
+`running` **and** `paused` (`:393`), so the loop does run while paused — what
+makes nothing drain is `FixedStepClock.pump` returning `0`, which the sentence
+before this one already says. So while the player is
 paused *nothing drains the command queued ahead*. It stays the highest tick in
 the queue, and every further order given during that pause meets the same
 refusal. Pausing to give orders carefully is the ordinary way this game is
@@ -348,21 +409,34 @@ aim at. Not hypothetical: applying the guard as a mutation broke
 beside counts that do move"*, which is that flow.
 
 **4. A refusal costs the HUD its sequence baseline.** `SimulationCommandSender`
-clears `sequenceSynced` on any rejection (`src/ui/simulation-commands.ts:243-246`)
+clears `sequenceSynced` on any rejection (`src/ui/simulation-commands.ts:580`; the anchor read `:243-246`)
 because a rejection means its idea of the sequence is wrong in an unknown
 direction. So each refusal disables `submit` until the next `simulation/snapshot`
 re-baselines it — the correct response to a real desync, and an expensive one for
 a command that was never desynced.
+
+> **"On any rejection" is no longer true**, and the sentence is kept rather
+> than overwritten (`docs/AGENT_WORKFLOW.md` §4). `observeRejection` now
+> excepts one case: a `past-tick` refusal of the command this class most
+> recently submitted rewinds `nextSequence` and returns without clearing the
+> baseline, *"because `sequence` is compared against the counter this class
+> advanced when it sent that command"*. Every other rejection still drops the
+> baseline, so ground 4's cost argument holds for the guard it was written
+> about — the guard would have thrown `invalid-state`, not `past-tick`.
 
 ### The four shapes of "refuse", and why the shape does not rescue it
 
 - **Throw**, which is what `submitCommand` already does. Safe at this boundary,
   and worth saying because it is easy to assume otherwise: the fault path #415
   and #424 exist for is a throw *inside the tick loop*
-  (`state-machine.ts:307`), which becomes a terminal `internal-error`.
-  `handleSubmitCommand` catches separately (`:804-821`) and posts a `rejected`
+  (`state-machine.ts:411-412`, the `catch (e)` that calls
+  `this.fault('internal-error', ...)`; the anchor read `:307`, was re-aimed to
+  `:393` on 2026-09-15, and `:393` is the loop's *state guard* rather than its
+  fault path), which becomes a terminal `internal-error`.
+  `handleSubmitCommand` catches separately (`:1170-1188`) and posts a `rejected`
   command-result with `recoverable: true`, and `COMMAND_REJECTION_FAULT_CODES`
-  maps the kind to a fault code exhaustively (`:180-184`) — a fourth
+  maps the kind to a fault code exhaustively (`:231-235`; these four anchors read `:307`, `:804-821`,
+  `:180-184` and, below, `:801`) — a fourth
   `CommandRejectionKind` fails to compile until it is mapped, which is the design
   working. Rejected on cost, not on mechanism.
 - **Drop.** Refused for the reason already recorded in `step()`: ADR 0009 makes
@@ -372,7 +446,9 @@ a command that was never desynced.
 - **Clamp** — raise `executeAtTick` to the highest queued. Deterministic, and it
   adds no state: the clamp would be a pure function of the queue. But it makes
   the worker's acknowledgement untrue — `handleSubmitCommand` reports
-  `scheduledForTick: msg.payload.executeAtTick` (`:801`), the tick the main
+  `scheduledForTick: msg.payload.executeAtTick` (`:1168`; the anchor read `:801`,
+  was re-aimed to `:1146` on 2026-09-15 and went stale **a second time** before
+  this branch merged `origin/main` on 2026-09-16), the tick the main
   thread *asked* for, so a clamp silently disagrees with what the HUD is told
   unless that line changes too. And it puts the fix in the wrong layer: the
   kernel would be second-guessing a projection it cannot see.
@@ -437,7 +513,7 @@ cannot undo again, and Redo offers back a wall they never asked to remove.
 >
 > **One correction to the paragraph above**, which ADR 0056 measured: the run it
 > quotes sent no `transactionId`, and the shipped HUD sends one per gesture
-> (`src/main.ts:1915`). Re-run that way the redo stack is **empty too**, because
+> (`src/main.ts:2934`; the anchor read `:1915`). Re-run that way the redo stack is **empty too**, because
 > `second` arriving after the `Undo` opens a gesture of its own and
 > `registerTransactionOrder` clears it. So *"Redo offers back a wall they never
 > asked to remove"* understates it in turn: through the real front door there was
@@ -499,3 +575,22 @@ due, so the paused drain leaves it alone: it remains the highest tick in the
 queue for the length of the pause, and every further order given during that
 pause still has the shape the rejected guard would have refused.
 `tests/determinism/command-queue-admission.test.ts` measures both halves.
+
+> **This document contradicts itself here, and the contradiction is corrected
+> rather than overwritten** (`docs/AGENT_WORKFLOW.md` §4). The last sentence but
+> one is false of the shipped front door, and it has been since three hours
+> after it was written. It arrived in `fd2584d5` (2026-08-28 11:39 +0200);
+> `a7aa52ed` (2026-08-28 14:51 +0200) added the ADR 0056 blockquote three
+> sections above, which says the opposite in as many words — *"the shipped
+> sender no longer submits one … the end-to-end numbers … now read 62, pause at
+> 42, then 62"* — and did not carry this paragraph with it. Re-read on
+> 2026-09-15: `projectExecuteTick` is
+> `Math.max(this.projectFromClock(leadTicksOverride), this.highestSubmittedTick)`
+> (`src/ui/simulation-commands.ts:291-292`), so the second order in a pause
+> takes the queued 62 rather than the clock's 42 and **does not** have the
+> shape the rejected guard would have refused. The first half of the sentence
+> — that a command carrying its lead is not due and the paused drain leaves it
+> alone — is unaffected and still true, which is why the sentence is kept and
+> marked rather than deleted. The decision the section records is untouched:
+> ground 1 of it, that `Kernel.restore` bypasses `submitCommand` so a guard
+> could not establish its invariant, never depended on the sender at all.
