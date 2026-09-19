@@ -141,7 +141,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     expect(helper).not.toMatch(/RENDER_ACTORS_/);
   });
 
-  it('writes a five-word header, then twenty bytes per actor, little-endian', () => {
+  it('writes a six-word header, then twenty bytes per actor, little-endian', () => {
     const buffer = encodeRenderActorsKeyframe(
       sourceOf([
         { id: 7, x: 3, y: 11 },
@@ -151,15 +151,19 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
       NO_WORLD_CHANGE,
     );
 
-    // 20 header bytes + 2 x 20 record bytes, written out rather than computed
+    // 24 header bytes + 2 x 20 record bytes, written out rather than computed
     // by the production helper that computes it. **Sixteen until ADR 0099's
     // layout 3 added the fifth header word**, which is the whole of what a
     // notification costs on this channel: four bytes a publication, whatever
-    // the population.
-    expect(buffer.byteLength).toBe(60);
+    // the population -- and **twenty until ADR 0097's layout 4 added the
+    // sixth**, the room count, which costs four more and then twelve bytes for
+    // each room the worker has a verdict for.
+    expect(buffer.byteLength).toBe(64);
 
     const read = readRenderActorsPayload(buffer);
-    expect(read.layoutVersion).toBe(3);
+    expect(read.layoutVersion).toBe(4);
+    expect(read.roomCount).toBe(0);
+    expect(read.rooms).toEqual([]);
     expect(read.flags).toBe(1);
     expect(read.keyframe).toBe(true);
     expect(read.recordCount).toBe(2);
@@ -218,10 +222,13 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
      */
     const buffer = encodeRenderActorsKeyframe(sourceOf([{ id: 0x01020304, x: 0, y: 0 }]), TICKS_PER_SECOND, NO_WORLD_CHANGE);
     const bytes = new Uint8Array(buffer);
-    // The layout version, word 0, is 3: low byte first.
-    expect([...bytes.slice(0, 4)]).toEqual([3, 0, 0, 0]);
-    // The first record's entity id, word 5 -- word 4 is ADR 0099's marker.
-    expect([...bytes.slice(20, 24)]).toEqual([0x04, 0x03, 0x02, 0x01]);
+    // The layout version, word 0, is 4: low byte first.
+    expect([...bytes.slice(0, 4)]).toEqual([4, 0, 0, 0]);
+    // The first record's entity id, word 6 -- word 4 is ADR 0099's marker and
+    // word 5 is ADR 0097's room count, zero here because this source has no
+    // rooms.
+    expect([...bytes.slice(20, 24)]).toEqual([0, 0, 0, 0]);
+    expect([...bytes.slice(24, 28)]).toEqual([0x04, 0x03, 0x02, 0x01]);
   });
 
   it('carries only the live slots, at their own ids', () => {
@@ -261,7 +268,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
 
   it('encodes an empty population as a bare header', () => {
     const buffer = encodeRenderActorsKeyframe(sourceOf([]), TICKS_PER_SECOND, NO_WORLD_CHANGE);
-    expect(buffer.byteLength).toBe(20);
+    expect(buffer.byteLength).toBe(24);
     expect(readRenderActorsPayload(buffer).recordCount).toBe(0);
   });
 
@@ -279,7 +286,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     // write, so a decoder that agreed with its own writer about a wrong layout
     // has nowhere to hide.
     const buffer = writeRenderActorsPayload({
-      layoutVersion: 3,
+      layoutVersion: 4,
       flags: 1,
       worldRevision: 4_294_967_295,
       records: [
@@ -290,7 +297,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     });
 
     const decoded = decodeRenderActorsPayload(buffer);
-    expect(decoded.layoutVersion).toBe(3);
+    expect(decoded.layoutVersion).toBe(4);
     expect(decoded.keyframe).toBe(true);
     expect(decoded.recordCount).toBe(2);
     // The top of the `u32` range, so a decoder reading the word as an `i32`
@@ -307,26 +314,26 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
   });
 
   it('reads a non-keyframe flag as one', () => {
-    const buffer = writeRenderActorsPayload({ layoutVersion: 3, flags: 0, worldRevision: 0, records: [], removed: [] });
+    const buffer = writeRenderActorsPayload({ layoutVersion: 4, flags: 0, worldRevision: 0, records: [], removed: [] });
     expect(decodeRenderActorsPayload(buffer).keyframe).toBe(false);
   });
 
   it('refuses a body whose length disagrees with its own header', () => {
     const buffer = writeRenderActorsPayload({
-      layoutVersion: 3,
+      layoutVersion: 4,
       flags: 1,
       worldRevision: 0,
       records: [{ entityId: 1, packedFields: 0, subX: 0, subY: 0, velocitySubX: 0, velocitySubY: 0 }],
       removed: [],
     });
-    expect(() => decodeRenderActorsPayload(buffer.slice(0, 38))).toThrow(/must be 40 bytes, got 38/);
-    expect(() => decodeRenderActorsPayload(new ArrayBuffer(8))).toThrow(/at least a 5-word header/);
+    expect(() => decodeRenderActorsPayload(buffer.slice(0, 38))).toThrow(/must be 44 bytes, got 38/);
+    expect(() => decodeRenderActorsPayload(new ArrayBuffer(8))).toThrow(/at least a 6-word header/);
   });
 
   it('turns a decoded keyframe into actors that invent nothing', () => {
     const decoded = decodeRenderActorsPayload(
       writeRenderActorsPayload({
-        layoutVersion: 3,
+        layoutVersion: 4,
         flags: 1,
         worldRevision: 0,
         // `0b0101 << 8` is the biased heading `0, 0`: an actor that has never
@@ -349,7 +356,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
   it('turns a published sub-tile position, velocity and heading into what the renderer draws', () => {
     const decoded = decodeRenderActorsPayload(
       writeRenderActorsPayload({
-        layoutVersion: 3,
+        layoutVersion: 4,
         flags: 1,
         worldRevision: 0,
         records: [
@@ -370,7 +377,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
   it('drops a record whose population this build has no art for', () => {
     const decoded = decodeRenderActorsPayload(
       writeRenderActorsPayload({
-        layoutVersion: 3,
+        layoutVersion: 4,
         flags: 1,
         worldRevision: 0,
         records: [
@@ -392,7 +399,7 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
   it('decodes population 1 as a guard, with its own asset id and its own id band (ADR 0040 slice 2)', () => {
     const decoded = decodeRenderActorsPayload(
       writeRenderActorsPayload({
-        layoutVersion: 3,
+        layoutVersion: 4,
         flags: 1,
         worldRevision: 0,
         records: [
