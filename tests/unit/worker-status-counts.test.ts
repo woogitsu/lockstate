@@ -820,6 +820,24 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
           sequence: Number.MAX_SAFE_INTEGER,
           tick: runtime.kernel.tick,
           reason: [...REFUSAL_REASONS].sort((left, right) => right.length - left.length)[0],
+          // **And since issue #1261 the same forcing covers
+          // `routeDecidedSince`** (issue #1268), the fourth and last member of
+          // `refusalSchema` and the only optional one: `z.literal(true)`, set
+          // on the *standing* record by `RefusalLog.supersede` when a press on
+          // the same route has since been decided (ADR 0091 option F). This
+          // scenario supersedes nothing, so the flag is absent from what the
+          // log would hand over; the bound has to hold for the publication
+          // that carries it, so the worst case is forced here for exactly the
+          // reason `activeIncidentType` and `contrabandNameKey` are.
+          //
+          // It is a literal rather than a boolean, so `true` is the only
+          // spelling and there is no longer one to reach for. Forcing it is
+          // what this fixture's own header asks for in as many words -- *"a
+          // measurement taken without it would understate every publication
+          // that carries one (#261)"* -- and between #1261 shipping the field
+          // and this line, it did: by 25 bytes, which is 7 more than the head
+          // room the old bound had.
+          routeDecidedSince: true as const,
         },
       };
       const cloneStartedAt = performance.now();
@@ -955,7 +973,17 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // a queue: exactly the shape a snapshot channel can carry honestly
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
-      expect(Object.keys(payload.refusal)).toHaveLength(3);
+      // **Four since issue #1261, not three** (issue #1268). The count is the
+      // point of the assertion and not an incidental number: `refusalSchema`
+      // is `.strict()` and closed at `sequence`, `tick`, `reason` and
+      // `routeDecidedSince`, so this line is what fails if a fifth member --
+      // or a queue wearing one member's name -- arrives without this fixture
+      // being re-measured. It stood at 3 for the two days after #1261 shipped
+      // the fourth, which is precisely why the stale byte figure below went
+      // unnoticed: the fixture could not carry the new field without this
+      // line moving in the same edit, so nothing ever prompted the first
+      // change.
+      expect(Object.keys(payload.refusal)).toHaveLength(4);
       // **710 and not 669, and the raise is derived from a run rather than
       // chosen** -- the same way every bound below replaced the one before it.
       // The bound it replaces predicted this raise in as many words: it said a
@@ -1069,6 +1097,33 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // previous raise in this file left, so the next field breaches this one
       // too and the soft limit goes on being felt one field at a time.
       //
+      // **786 and not 761, and the raise is a field that shipped on
+      // 2026-09-16 and never reached this fixture** (issue #1268) --
+      // `routeDecidedSince`, which #1261 added to `refusalSchema` under ADR
+      // 0091 option F. This is the first raise in this paragraph's history
+      // that corrects a bound which was *already wrong* rather than one that a
+      // new field has just outgrown: 761 was derived correctly from a
+      // worst case that had stopped being the worst case. Re-measured on this
+      // tree with the flag forced, at the same worst case every previous raise
+      // used: `payloadJsonBytes=766` at 250 actors and `768` at 1,000, 2,500
+      // and 5,000 -- still the same two-byte digit-count spread between the
+      // tiers rather than growth, which is the property this bound exists to
+      // protect and the one a literal trivially keeps.
+      //
+      // The 25 bytes are arithmetic rather than a measurement to be trusted on
+      // its own: `,"routeDecidedSince":true` is 1 + 19 + 1 + 4, and
+      // `z.literal(true)` admits no other spelling, so this is the worst case
+      // and not a sample of it. 768 + 18 = **786**, the same headroom every
+      // previous raise in this file left, so the next field breaches this one
+      // too and the soft limit goes on being felt one field at a time.
+      //
+      // **What 761 was measured against, kept rather than overwritten,
+      // because the gap is the finding.** It was `payloadJsonBytes=741` and
+      // `743` -- exactly 25 short of the figures above at both tiers, i.e.
+      // this one field and nothing else. **768 is over 761**, so the honest
+      // largest declared payload had been breaching its own pinned bound by 7
+      // bytes for two days and no run said so.
+      //
       // **800 and not 761, and the raise is one new field** --
       // `stateIncomeWithheldTodayMinorUnits`, issue #890's measurement of a
       // prison paying 40% under its headline grant with no figure for the
@@ -1094,7 +1149,45 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // quoting already is. The 18 bytes of head room absorb it; a reader
       // raising this bound next should know they are raising it from a
       // measurement whose money fields are at their smallest.
-      expect(JSON.stringify(payload).length).toBeLessThan(800);
+      //
+      // **825, and neither 786 nor 800 -- the two figures above were measured
+      // on branches that could not see each other, and this is the merge that
+      // had to re-measure rather than pick.** Both paragraphs above raise
+      // *this* line from the same 761 base, for different fields, and both
+      // derivations are correct about their own field and wrong about the
+      // payload: with `routeDecidedSince` forced **and**
+      // `stateIncomeWithheldTodayMinorUnits` published, the worst case is
+      // larger than either was measured against. 786 would put the bound
+      // *below* a payload `main` already carries; 800 would silently discard
+      // the finding the paragraph before it is for. So both are kept above,
+      // unedited, and this third one replaces neither.
+      //
+      // Re-measured on the merged tree, at the same worst case every previous
+      // raise used: `payloadJsonBytes=805` at 250 actors and `807` at 1,000,
+      // 2,500 and 5,000 -- still the same two-byte digit-count spread between
+      // the tiers rather than growth, which is the property this bound exists
+      // to protect. 807 + 18 = **825**, the same headroom every previous
+      // raise in this file left.
+      //
+      // **The two fields are exactly additive, which is the check that makes
+      // this a measurement rather than a sum.** 741 + 25 + 39 = 805 and
+      // 743 + 25 + 39 = 807, against the 741/743 the 761 bound was derived
+      // from -- so neither field changes the other's cost, and the
+      // arithmetic each paragraph above gives for its own field survives
+      // being combined. Had the measured figure and the sum disagreed, this
+      // comment would say so and the bound would follow the measurement.
+      //
+      // **And the 7-byte breach the #1268 paragraph reports is not history:
+      // it is live on `main` as this is written, and it is the same 7
+      // bytes.** `main` pins 800 and its fixture measures 780/782, so `main`
+      // is green -- but `main`'s fixture still omits `routeDecidedSince`, and
+      // the honest largest payload `main` can publish is 807. 807 - 800 = 7,
+      // the identical figure, because #1302 left the same 18 bytes of head
+      // room and the missing field costs 25. The bound has now been breached
+      // by exactly 7 bytes twice in a row, by two unrelated raises, for the
+      // one reason #1304 exists to remove: nothing ties the fixture to the
+      // shape it claims to be the worst case of.
+      expect(JSON.stringify(payload).length).toBeLessThan(825);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(
