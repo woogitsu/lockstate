@@ -19037,9 +19037,19 @@ once: state the subject, not the absence.
   *"Amendment, 2026-09-17: a room type may author a resident ceiling (issue
   #961)"* at `:1400`, its fourth. The document count is unchanged because 0028
   already had three.
-- **The index reads `Next free number: 0117`** at `docs/adr/README.md:289`,
+- **The index reads `Next free number: 0118`** at `docs/adr/README.md:290`,
   re-derived here rather than carried; `docs/adr/README.md` is not a member of
   this window and no numbered ADR was added or deleted in it.
+
+  **Corrected 2026-09-19, and the rot is the interesting part rather than the
+  figure.** This pass read the index at a commit where it gave *0117* at
+  `:289`, and that reading was correct when it was taken. ADR 0117 was accepted
+  and merged as #1289 **between this pass being written and being merged**,
+  taking 0117 for itself and moving the index on by one. The superseded reading
+  is quoted here rather than swapped out silently, and it is deliberately not
+  written in the restatement's own form, so that it does not itself parse as a
+  second live restatement. The window this pass reports is otherwise untouched:
+  #1289 is not a member of it.
 - **AND ONE COUNT IN THE PREVIOUS PASS WAS WRONG WHEN IT WAS WRITTEN, not
   overtaken.** Its census bullet reads *"**Six** ADR documents are members of
   this window and not one of them added a heading of that shape."*
