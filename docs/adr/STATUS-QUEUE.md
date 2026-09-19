@@ -19712,9 +19712,9 @@ line.
   `grep -RniE '^#{2,6}\s+[*_`]*(Amendment|Addendum)\b' docs/adr/*.md` at both
   ends rather than carried.
 - **`docs/adr/0029-concurrent-room-use-claims.md:5` holds** although that file
-  **is** a member of this window: `21489196`/#1240 adds a twenty-line
-  blockquote at `:57` and rewrites one parenthetical at `:406`, both below the
-  Status line this file cites.
+  **is** a member of this window: `21489196`/#1240 lands fourteen hunks in it,
+  the highest a twenty-line blockquote at `:57`, and **every one of them is
+  below the Status line this file cites**.
 - **§5's ADR 0116 finding stands unrepaired for a third anchor.** The ADR and
   its index row are in none of this window's eight merges, so nothing here
   could have repaired it and nothing here was owed to it.
@@ -19763,10 +19763,12 @@ line.
 - **The index reads Next free number: 0118** at `docs/adr/README.md:290`,
   re-derived at the commit this pass finishes on rather than at the one it
   opened on, which is the precaution two passes ago paid for. `docs/adr/README.md`
-  **is** a member of this window — `21489196`/#1240, `6eb445df`/#1236 and
-  `0bf1731d`/#1275 each rewrite one table row — but the two rewritten rows are
-  0042 and 0115, both above `:290`, both single-line replacements, and no
-  numbered ADR was added or deleted, so the line number does not move either.
+  **is** a member of this window, and of exactly one merge of it: `0bf1731d`/#1275
+  rewrites the 0042 and 0115 rows and nothing else. Both are single-line
+  replacements, both sit above `:290`, and no numbered ADR was added or
+  deleted — so neither the value nor the line number moves. **The two pin-sweep
+  merges, #1236 and #1240, touch the index not at all**, which is worth naming
+  because a reader would expect an audit of `Proposed` ADRs to have reached it.
 
 ### What this pass deliberately did not chase
 
