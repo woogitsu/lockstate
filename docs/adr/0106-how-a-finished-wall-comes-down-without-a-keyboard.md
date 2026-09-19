@@ -114,6 +114,18 @@ each was re-found by its text on this tree rather than trusted from either.
   > cancelled and refunds its money — but nothing comes back once the crew has
   > started it. A finished one is not refunded.
 
+  > **AND IT NO LONGER READS THAT WAY, WHICH IS FOUND HERE RATHER THAN FIXED
+  > HERE.** Opened at `src/content/default-locale-en.ts:2318` on 2026-09-19
+  > while re-aiming the anchor above, the string begins *"Press any tile of an
+  > object, **or a finished wall**, to take it away"* — the rest is word for
+  > word what is quoted. So the sentence under the quotation, *"Every clause is
+  > about an object"*, is false of the shipped string and was true of the one
+  > this bullet read. **Which of the two this ADR's decision wants is this
+  > document's own question and is not answered by a passing branch**; it is
+  > recorded because a quotation nobody re-reads is exactly the failure this
+  > repository keeps finding. The string is unchanged on this branch and on
+  > `main` alike — #1292 did not author it and does not touch it.
+
   Every clause is about an *object*. `src/main.ts`'s arm-object-tool branch
   says the same thing in code rather than copy, at the removing arm
   (`:2377-2393`): *"There is no wall removal behind this and the control does
