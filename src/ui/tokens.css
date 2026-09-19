@@ -302,6 +302,26 @@
   inherits: true;
   initial-value: 536px;
 }
+
+/*
+ * The fourth of the layout shell's lengths, added 2026-09-19 with the
+ * navigation's sixth section: how tall the rail's tab column is, published
+ * every refresh from `navigationRailBlock(viewport)` in
+ * `src/ui/hud/hud-layout.ts`.
+ *
+ * **It is the one of the four that *does* carry `--ui-scale`**, because it is
+ * a measurement of controls rather than a band the player drags: the three
+ * above are the player's own choices in the unit they drag in, and this one is
+ * the height six 54px buttons occupy at whatever magnification the interface
+ * is set to. The initial value is the five-section column this repository drew
+ * before the sixth landed, so a page that has not yet run a layout refresh caps
+ * nothing it should not.
+ */
+@property --hud-navigation-block {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 294px;
+}
 :root {
   /* ---------------------------------------------------------------- */
   /* Layer 1: raw ramps -- every literal in the file, both themes      */
@@ -754,6 +774,9 @@
   --hud-navigation-width: 180px;
   --hud-inspector-width: 264px;
   --hud-inspector-height: 536px;
+  /* And the rail tab column's height, which is not one of the three: see its
+     own `@property` block above for why it scales and they do not. */
+  --hud-navigation-block: 294px;
   /* The floor under the Build panel's catalogue: the shortest the list of
      buildables may be squeezed to before the panel goes back to scrolling as
      a whole (issue #143). Two rows, because one row plus a scrollbar is not a

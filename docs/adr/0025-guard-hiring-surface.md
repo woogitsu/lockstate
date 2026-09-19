@@ -227,8 +227,9 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`src/ui/hud/hud.ts:365`; the anchor read `:322`, itself
-the 2026-09-06 re-aim of `:270`) and `src/main.ts` turns it into
+emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:372`; the
+anchor read `:365`, itself the re-aim of `:322`, itself the 2026-09-06 re-aim
+of `:270`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
 route and are the pattern this follows —
 `case 'place-build-order'` and `case 'purchase-materials'` in `src/main.ts`.
@@ -239,8 +240,8 @@ message key, and a stable content id may never reach the player. The staff-role
 catalogue is unusually well placed for that, exactly as the room catalogue was
 for ADR 0022 — all eight roles carry a real `nameKey` and all eight
 `staff-role.*.name` keys ship in the default catalogue, so the producer needs
-no id→key mapping table of the kind `BUILDABLE_LABEL_KEY` (`src/main.ts:766`;
-the anchor read `:269`) exists to supply.
+no id→key mapping table of the kind `BUILDABLE_LABEL_KEY` (`src/main.ts:778`;
+the anchor read `:766`, and `:269` before that) exists to supply.
 
 ### A refusal already has somewhere to go, and this is the first surface built after it
 
@@ -290,7 +291,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > **There is no `security` tab any more, and this paragraph is left as it stood
 > rather than re-aimed onto whatever now sits at that line** (`docs/AGENT_WORKFLOW.md`
 > §4). `HUD_TAB_IDS` is `['overview', 'build', 'zones', 'manage', 'day-plan']`
-> (`src/ui/hud/hud-state.ts:77`), five members, and the Staff panel this
+> (`src/ui/hud/hud-state.ts:150`; the anchor read `:77`, then `:118`), five members, and the Staff panel this
 > decision placed is mounted on `manage`:
 > `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:2611`;
 > the anchor read `:2506`, a bare `*/`. [ADR 0022](./0022-room-zoning-surface.md)'s
@@ -309,6 +310,20 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > slot on its tab. Only the tab's id and label moved. The count *"four
 > members"*, the list of ids and *"three of them render no panel at all"* are
 > the sentences that stopped being true, which is the shape §4 says rots first.
+>
+> > **AND "THERE IS NO `security` TAB ANY MORE" STOPPED BEING TRUE ON
+> > 2026-09-19, WHICH IS THE THIRD TIME THIS ONE PARAGRAPH HAS BEEN OVERTAKEN**
+> > (`docs/AGENT_WORKFLOW.md` §4, both directions). There is one again, and it
+> > is **not** the tab this decision placed the Staff panel on: `HUD_TAB_IDS` is
+> > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const`
+> > at `src/ui/hud/hud-state.ts:150` (the anchor read `:77`), **six** members,
+> > and the new `security` section paints the four HUD read models that had a
+> > route out of the worker and no painter. **Nothing about decision 1 moves
+> > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at
+> > `src/ui/hud/hud.ts:2759` (the anchor read `:2611`; ADR 0022's copy of the
+> > same claim was re-aimed with it again), so the Staff panel is still on
+> > `manage` and the old `security` tab is still gone. A section id was reused;
+> > a panel was not moved back.
 
 So the surface costs no tab, no catalogue row and no always-visible pixel in
 any panel that already exists. It is a second panel in the same slot, shown

@@ -464,11 +464,13 @@ check found, and it is a record rather than a re-plan.
 
 **Nothing was lost.** All seventeen commands are still issued and all seventeen
 still from `src/main.ts`; ten of the fifteen projections still have a reader and
-the same five do not — **which stopped being true on 2026-09-17, and the
+the same five do not — **which stopped being true on 2026-09-19, and the
 sentence is corrected here rather than overwritten because the check it records
-really did find that on 2026-09-14.** The owner ruled that day that the four
-unpainted HUD read models get a sixth navigation section, `Security`, and
-`src/ui/hud/security-panel.ts` paints all four; fourteen of the fifteen now have
+really did find that on 2026-09-14.** The owner ruled **on 2026-09-19** that the
+navigation may carry a sixth section — Polish option label *"Tak, szósta sekcja
+wchodzi"*, provenance the weaker kind, recorded in `AGENTS.md` by PR #1319 —
+and `Security` is that section: `src/ui/hud/security-panel.ts` paints the four
+unpainted HUD read models; fourteen of the fifteen now have
 a reader and the one that does not is `world/render-snapshot`, whose reuse ADR
 0040 open question 4 defers to its own slice; every operational control on Manage and on Build is laid
 out, enabled and pressable at 1440x900, 1024x768, 900x600 and 375x812. Two new
@@ -479,6 +481,19 @@ table.
 [`docs/research/2026-09-14-what-stage-5-checked-and-what-it-found.md`](./research/2026-09-14-what-stage-5-checked-and-what-it-found.md)
 is the row-by-row record, including six claims in the two lists before it that
 have gone stale and are recorded rather than edited.
+
+> **The paragraph above carried the date `2026-09-17` and an owner ruling made
+> on it, and neither was true; both are corrected in place rather than
+> deleted** (`docs/AGENT_WORKFLOW.md` §4). The section was *built* on
+> 2026-09-17 on the strength of a ruling that existed only in a dead session's
+> transcript, could not be found anywhere in this repository when it was looked
+> for, and was not confirmed when the owner was asked on 2026-09-18 — so the
+> branch was parked rather than merged. The real ruling is 2026-09-19's, two
+> days later and narrower than the one that was claimed: it says the navigation
+> may carry a sixth section, and it says nothing about the sector id the panel
+> puts on screen. The gap between the two dates is this document's cheapest
+> lesson: **a weaker-kind ruling needs a durable home the moment it is
+> given.**
 
 **The Manage rail's budget, measured, because this is the first tab to spend it
 twice.** `.hud__side` gives 413 / 405 / 391 CSS px at 1440x900, 900x600 and

@@ -6009,8 +6009,51 @@
     margin-left: calc(var(--hud-navigation-width) + var(--space-3));
   }
 
+  /*
+   * **AND THE SENTENCE ABOVE STOPPED BEING TRUE WHEN THE NAVIGATION GAINED A
+   * SIXTH SECTION (2026-09-19), SO THE ARITHMETIC IS KEPT AND A SECOND RULE IS
+   * ADDED RATHER THAN THE THRESHOLD BEING MOVED.** *"At 1280x800 that is 274px
+   * of tabs and 396px of corner in a 719px middle row: they clear each other"*
+   * was measured with five tabs. With six the column is **328.13px**
+   * (`y = 92.69..420.81`), the corner is **398px** and `.hud-zoom__in` sits at
+   * `415..459` overlapping it, so a press meant for the zoom control hit-tested
+   * to a `.ui-tab`. 328 + 398 = 726 against 719.
+   *
+   * **Re-deriving `781px` for six tabs is the obvious repair and it was tried
+   * and reverted, twice, a day apart, with the same result.** `837px` -- this
+   * block's own arithmetic with the new column -- makes
+   * `hud-zoom-control.spec.ts` pass and then fails `app-shell.spec.ts`'s #331
+   * Rooms-panel drag at 1280x800, which is **exactly** what the paragraph above
+   * predicts in writing: the corner moving 192px right moves the band of bare
+   * world that spec's drag aim scans. Measured again on 2026-09-19 against a
+   * `main` that had moved by two weeks: *"the second drag no longer lands on
+   * the rectangle its walls were built around"*, `x` 11 where 12 was expected.
+   * So the corner does not move at these heights, and the only thing left to
+   * give is its **height**.
+   *
+   * It is the right thing to give. The corner is a bottom-anchored column whose
+   * tallest child is the alerts list, and that list is already a scroll
+   * container with `min-height: 0` down the whole chain (the block near the top
+   * of this file that widened the corner says so). The tab column is neither:
+   * every section must be pressable, and `.hud-tabs__inner`'s `overflow` would
+   * clip one away in silence.
+   *
+   * `--hud-navigation-block` is `layout-shell.ts`'s, published every refresh
+   * from `navigationRailBlock(viewport)` --
+   * `HUD_TAB_IDS.length * 54 + 24`, scaled. **The count is deliberately not in
+   * this file**: a tally in a stylesheet is the sentence shape
+   * `docs/AGENT_WORKFLOW.md` §4 says rots first, and this one would rot into a
+   * corner drawn over the tab somebody just added. At 1280x800 the cap is
+   * `719 - 348 = 371px`, so the corner's top moves 402 -> 429 and clears the
+   * column's 420.81 by 8px. Where the corner already fits -- 1440x900 and up,
+   * and every viewport below 781px where it has stepped aside instead -- `max`
+   * is not reached and nothing moves.
+   */
   @media (min-height: 781px) {
-    .hud[data-layout-navigation-placement='rail'] .hud__corner { margin-left: 0; }
+    .hud[data-layout-navigation-placement='rail'] .hud__corner {
+      margin-left: 0;
+      max-height: calc(100% - var(--hud-navigation-block, 0px));
+    }
   }
 
   .hud[data-layout-navigation-placement='rail'][data-layout-navigation='collapsed'] .hud__corner { margin-left: var(--tap-target); }

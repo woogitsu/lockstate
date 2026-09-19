@@ -114,6 +114,38 @@
  * **The second is the state this section is designed for and the first is the
  * state it ships into until #1281 merges.** That ordering is the one thing
  * about this array a reader must not take on trust.
+ *
+ * ----------------------------------------------------------------------
+ *
+ * **BOTH OF THE CONDITIONS ABOVE CLOSED, AND THE PARAGRAPHS ARE KEPT RATHER
+ * THAN REWRITTEN** (`docs/AGENT_WORKFLOW.md` §4). This block was written on
+ * 2026-09-17 citing a ruling that existed only in a dead session's transcript;
+ * the branch was parked on 2026-09-18 for exactly that reason, and the parking
+ * comment on #1292 is worth reading before this one.
+ *
+ * - **The authorising ruling is real and is now written down.** The owner ruled
+ *   on **2026-09-19** that the sixth section goes in -- Polish option label
+ *   *"Tak, szosta sekcja wchodzi"*. **Provenance is the weaker kind**: they
+ *   chose a clickable option an integrating session wrote, they did not type a
+ *   sentence. PR **#1319** is what gives it a durable home in `AGENTS.md`, and
+ *   `docs/VISUAL_IDENTITY.md`'s §"Where this repository stands against it"
+ *   item 5 carries it too. **It answers one question and not two**: *may the
+ *   navigation carry a sixth section at all*. Whether the sector id belongs on
+ *   screen was neither asked nor answered, and the `{sector}` note in
+ *   `security-panel.ts` is still open.
+ * - **#1281 merged** (`51cf5291`), so the icon-only arm above is the tree
+ *   rather than an injected stylesheet, and the first bullet's 384px-in-351px
+ *   bar is history.
+ *
+ * **What the sixth section cost above the break, because it is not free
+ * there and #1192's ruling does not reach it.** In `rail` placement the tab
+ * column is one button taller -- `y = 92.69..420.81` at 1280x800, measured on
+ * the assembled page -- and the bottom-left corner is bottom-anchored in the
+ * same middle row, so `.hud-zoom__in` was covered by a `.ui-tab`. The corner
+ * now yields instead: `hud.css` caps it with `--hud-navigation-block`, which
+ * `layout-shell.ts` publishes from `navigationRailBlock` in `hud-layout.ts` --
+ * `HUD_TAB_IDS.length * 54 + 24`, scaled, so **this array is what moves that
+ * cap** and a seventh section would move it again without anybody editing CSS.
  */
 export const HUD_TAB_IDS = ['overview', 'build', 'zones', 'manage', 'day-plan', 'security'] as const;
 export type HudTabId = (typeof HUD_TAB_IDS)[number];

@@ -515,8 +515,9 @@ sentence.
    further panel added to this rail should be read against, because it is what
    a second panel header costs anywhere in it.
 
-   > **A SIXTH SECTION LANDED ON 2026-09-17 AND THE READING ABOVE IS KEPT
-   > RATHER THAN OVERWRITTEN** (`docs/AGENT_WORKFLOW.md` §4, both directions).
+   > **A SIXTH SECTION WAS BUILT ON 2026-09-17 AND RULED ON 2026-09-19, AND
+   > THE READING ABOVE IS KEPT RATHER THAN OVERWRITTEN**
+   > (`docs/AGENT_WORKFLOW.md` §4, both directions).
    > `HUD_TAB_IDS` is
    > `['overview', 'build', 'zones', 'manage', 'day-plan', 'security']` today:
    > the direction's five, in the direction's order, **plus** a `security`
@@ -552,20 +553,28 @@ sentence.
    > in the tree that arithmetic is gone: each tab is `min-width: 56px` with
    > its name in the accessibility tree only.
    >
-   > **Above the break the sixth button is paid for in two places, both of
-   > them measured rather than argued** (2026-09-19). In `rail` placement the
-   > tab column is one button taller, which used to put `.hud-tabs__inner`
-   > into the zoom control; the corner-shift media query's own arithmetic is
-   > re-derived for six tabs in `hud.css` beside it. At 900x600 with a 200 %
-   > interface scale the six tabs wrapped to a second row and started the rail
-   > scrolling; the `bar` placement now drops the names at enlarged scale, by
-   > exactly the mechanism #1192 ruled for the phone. **The second of those is
-   > a widening of #1192's icon-only treatment to a viewport class the owner
-   > did not rule on**, and it is recorded here rather than buried: it takes
-   > no section away, it takes the *name* off the screen for a sighted player
-   > at 200 % scale, where the alternative measured is a section the player
-   > cannot reach at all (tie-break rung 2 beats rung 4,
-   > §"The constitution").
+   > **Above the break the sixth button cost one change, and it is a change to
+   > the bottom-left corner rather than to the navigation** (2026-09-19). In
+   > `rail` placement the tab column is one button taller -- measured on the
+   > assembled page at 1280x800, `.hud-tabs__inner` spans `y = 92.69..420.81`
+   > where five tabs spanned 92.69..367 -- and the corner is bottom-anchored in
+   > the same middle row, so `.hud-zoom__in` at `415..459` was covered by a
+   > `.ui-tab` and a press meant for it landed there. `hud.css` now caps the
+   > corner at `calc(100% - var(--hud-navigation-block))` inside the one media
+   > query where the corner does not step aside for the column, and the corner
+   > yields its slack: 402 -> 428.69, clearing the column by 8px. The corner's
+   > tallest child is the alerts list, which is already a scroll container; the
+   > tab column is not, and a clipped tab is a section nobody can press. **No
+   > section name is taken off the screen anywhere #1192's ruling does not
+   > already take it**, which was the other candidate and is the owner's to
+   > rule on rather than an agent's.
+   >
+   > **Re-deriving the media query's own 781px threshold for six tabs was the
+   > obvious repair, and it is reported rather than shipped.** `837px` -- that
+   > block's arithmetic with the new column -- turns the zoom control green and
+   > then fails `app-shell.spec.ts`'s #331 Rooms-panel drag at 1280x800,
+   > exactly as `hud.css`'s own comment predicts in writing. Measured on
+   > 2026-09-19 against current `main`, not carried from the earlier attempt.
 
    **The Polish name wrapped anyway, and the fix is a layout one** (#1192,
    2026-09-14). `Plan dnia` has a space in it too, so at 375x812 it laid out in

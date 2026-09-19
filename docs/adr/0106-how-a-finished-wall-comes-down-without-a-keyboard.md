@@ -105,7 +105,10 @@ each was re-found by its text on this tree rather than trusted from either.
 
 - **`Remove` does not claim the job the docblock hands it, and says so.** The
   control's own locale string, `hud.build.remove-hint`
-  (`src/content/default-locale-en.ts:1739`), reads in full:
+  (`src/content/default-locale-en.ts:2318`; the anchor read `:1739`, which was
+  a *mention* of the key inside another string's docblock rather than the
+  declaration, and was re-aimed onto the declaration itself on 2026-09-19 after
+  #1292 grew this file), read in full when this was written:
 
   > Press any tile of an object to take it away. One still being built is
   > cancelled and refunds its money — but nothing comes back once the crew has

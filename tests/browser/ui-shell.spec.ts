@@ -548,9 +548,16 @@ test.describe('HUD shell', () => {
       ['zones', 'Zones'],
       ['manage', 'Manage'],
       ['day-plan', 'Schedule'],
+      // The sixth, ruled by the owner on 2026-09-19 (provenance the weaker
+      // kind: the label of a clickable option, *"Tak, szósta sekcja wchodzi"*,
+      // not a sentence they typed). It is in this list rather than counted
+      // separately because #1192's whole argument is about what the *set* of
+      // sections costs the bar, and a sixth is the first addition made since
+      // the ruling that took the names off the screen paid for it.
+      ['security', 'Security'],
     ] as const;
 
-    test('the five tabs fit at 375x812', async ({ page }) => {
+    test('the six tabs fit at 375x812', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
 
@@ -573,8 +580,8 @@ test.describe('HUD shell', () => {
         };
       });
 
-      // Not vacuous: five tabs, laid out, on one row.
-      expect(bar.count, 'the five sections were not found').toBe(5);
+      // Not vacuous: six tabs, laid out, on one row.
+      expect(bar.count, 'the six sections were not found').toBe(SECTION_NAMES.length);
       expect(bar.rows, 'the bar wrapped into rows at the default interface scale').toBe(1);
       expect(bar.left, 'the tab bar starts off the left edge').toBeGreaterThanOrEqual(0);
       expect(bar.right, 'the tab bar runs past the right edge of a 375px viewport').toBeLessThanOrEqual(375);
@@ -601,7 +608,7 @@ test.describe('HUD shell', () => {
           (label) => Math.round(label.getBoundingClientRect().width * 100) / 100,
         ),
       );
-      expect(drawn, 'the section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1]);
+      expect(drawn, 'the section names are still being drawn below the break').toEqual([1, 1, 1, 1, 1, 1]);
     });
 
     test('the section names are still drawn above the break', async ({ page }) => {

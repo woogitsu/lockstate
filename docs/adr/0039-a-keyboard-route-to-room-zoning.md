@@ -442,7 +442,7 @@ cannot catch this class at all.
    divide.
 
    > **`--tap-target` is not `44px`. It is
-   > `calc(44px * var(--ui-scale))` (`src/ui/tokens.css:709`), and the sentence
+   > `calc(44px * var(--ui-scale))` (`src/ui/tokens.css:738`; the anchor read `:709`), and the sentence
    > is marked rather than patched because the difference is open question 1's
    > whole subject rather than a typo.** `--ui-scale` defaults to `1`
    > (`tokens.css:569`), so at the scale every figure in this document was taken

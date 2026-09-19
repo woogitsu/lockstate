@@ -23,6 +23,7 @@ import {
   type HudLayoutGeometry,
   type LayoutViewport,
   layoutCustomProperties,
+  navigationRailBlock,
   resolveHudLayout,
   sizeFieldFor,
 } from './hud-layout';
@@ -670,6 +671,20 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
     root.style.setProperty('--hud-navigation-width', `${lengths.navigationWidth}px`);
     root.style.setProperty('--hud-inspector-width', `${lengths.inspectorWidth}px`);
     root.style.setProperty('--hud-inspector-height', `${lengths.inspectorHeight}px`);
+    /*
+     * And the height the rail's tab column needs, which the stylesheet cannot
+     * work out for itself: it is a function of how many sections there are,
+     * and CSS cannot count them (`navigationRailBlock`'s docblock says why the
+     * alternative -- a `calc()` with the number written into it -- is worse).
+     *
+     * `hud.css` uses it in exactly one place: to cap the bottom-left corner
+     * inside the media query where the corner does *not* step aside for the
+     * column, so the two stop growing into each other. It is published
+     * unconditionally, including in `bar` placement, because a property that
+     * appears and disappears is a property that is stale for one frame every
+     * time the tier flips -- which is #529's failure exactly.
+     */
+    root.style.setProperty('--hud-navigation-block', `${navigationRailBlock(viewport)}px`);
     root.dataset['layoutTier'] = geometry.phone ? 'phone' : 'desktop';
     root.dataset['layoutNavigationPlacement'] = geometry.navigationPlacement;
     root.dataset['layoutMapOnly'] = isMapOnly(settings) ? 'true' : 'false';
