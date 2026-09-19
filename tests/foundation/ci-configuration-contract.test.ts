@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 // The resolver the *build* uses, imported rather than re-described, so the
 // assertion that a version bump reaches a player is a behavioural one. See
 // "version bump workflow contract" at the foot of this file.
+import { environmentRenderedArtIds } from '../../src/rendering/assets/environment-sprites';
+
 import { packageVersion } from '../../tooling/build-identity.mjs';
 
 /**
@@ -2860,6 +2862,143 @@ describe('runner selector contract', () => {
     expect(
       wrong,
       'these jobs do not ask for the bare `self-hosted` pool. The owner\'s instruction of 2026-09-13 is that the runners are just self-hosted and that it be set that way everywhere; a label list additionally pins the job to machine names that have already changed three times in this repository, and a job pinned to a label nothing carries queues forever rather than failing',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * The `browser` job's `git lfs pull --include=` list and
+ * `src/rendering/assets/environment-sprites.ts` must name the same rendered
+ * art, in both directions. Only one of those directions was ever checked.
+ *
+ * ## The half that was already checked, and the half that was not
+ *
+ * `ci.yml`'s *"Assert the environment sheets decoded"* step greps
+ * `renderedArtId` out of `environment-sprites.ts` and requires each id it
+ * finds to exist on disk as image data, failing closed with its own
+ * instruction `add '<id>' to the --include filter above`. That covers
+ * **declared and unfetched**: a sprite wired without its glob turns the job
+ * red. It is generic and needs no edit, ever.
+ *
+ * It says nothing about **listed and undeclared**. A glob that outlives the
+ * sprite it was added for is invisible to every gate in this repository, and
+ * `AGENTS.md` reservation 3 means an agent cannot simply delete one: the
+ * `--include=` line is the owner's, released to them three times and never for
+ * a removal.
+ *
+ * ## The finding that produced this contract, and the audit claim it refutes
+ *
+ * `furniture.cell.locker.variants` is that glob. Dated, because the interval
+ * is the point: the sprite `env.object.storage-rack` was wired to it in
+ * `67b3429e` (2026-09-06 21:15:39Z), the owner authorised the three glob
+ * segments in `a98d4001` (2026-09-07 05:24:36Z), and a playtest got the sprite
+ * reverted in `bb7dc40a` (2026-09-07 09:50:44Z) -- **four hours and
+ * twenty-six minutes** after the authorisation. The glob stayed.
+ *
+ * A repository-wide freshness audit reported in 2026-09-12 that the surviving
+ * glob *"now fetches art nothing draws -- the exact cost the wildcard
+ * alternative was refused for"*, priced it at **1,672,608 bytes pulled from
+ * LFS on every `browser` job**, and proposed a reservation-3 release to remove
+ * it. **That is refuted, and the glob costs nothing.** `bb7dc40a` also
+ * `git rm`'d the only file that could match it,
+ * `rendered.furniture.cell.locker.variants.10a6c751ad5c.png` (11.27 KiB), so
+ * the glob has matched **zero files** since the same commit that orphaned it.
+ * The only locker file left is the owner's sheet
+ * `furniture.cell.locker.variants.89a3cfd67726.png`, **without** the
+ * `rendered.` prefix, and that prefix is load-bearing exactly so that the
+ * owner's sheet and the render the game draws can sit under one id. The audit
+ * named this as its own weakest claim and was right to: it had never watched
+ * CI fetch the file, and the file was in its worktree because the tree is
+ * materialised, not because a glob pulled it. `docs/ART_PIPELINE.md` carries
+ * the same correction against the sentence that started it.
+ *
+ * So the removal is tidiness rather than a violated decision, and it stays the
+ * owner's. **What is ours is the gate**, and the allowance below is what lets
+ * it land before the removal instead of after: the one segment is permitted by
+ * name, a second one is not, and the allowance is checked to be still dead --
+ * the moment a `rendered.` locker file is published again, the premise that
+ * this glob costs nothing is false and this contract says so.
+ */
+describe('LFS include filter contract (#1149 §1)', () => {
+  const CI = '.github/workflows/ci.yml';
+  const SOURCE_ART = 'public/game-content/source-art';
+  const RENDERED_GLOB = new RegExp(`^${SOURCE_ART}/rendered\\.(?<id>.+)\\.\\*\\.png$`, 'u');
+
+  /**
+   * Rendered ids the `--include=` list may name while nothing declares them.
+   * An **upper bound**, not a requirement: removing a segment listed here
+   * keeps this contract green, which is what lets the owner delete one without
+   * a test change riding along in a reserved file's commit. Adding to this
+   * list is how a future glob escapes the gate, so each entry needs the same
+   * evidence the one below has -- a named commit, and no file on disk.
+   */
+  const ALLOWED_UNDECLARED: readonly string[] = ['furniture.cell.locker.variants'];
+
+  async function listedRenderedIds(): Promise<readonly string[]> {
+    const contents = await readRepositoryFile(CI);
+    const ids: string[] = [];
+
+    for (const line of contents.split(/\r?\n/u)) {
+      const match = /git lfs pull --include="(?<list>[^"]*)"/u.exec(line);
+      if (match === null) continue;
+      for (const entry of (match.groups?.['list'] ?? '').split(',')) {
+        const glob = RENDERED_GLOB.exec(entry.trim());
+        if (glob !== null) ids.push(glob.groups?.['id'] ?? '');
+      }
+    }
+
+    return [...new Set(ids)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }
+
+  it('names every rendered art id the sprite table declares', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+
+    // Vacuity guards. A parser that finds nothing satisfies a subset assertion
+    // rather than failing it, which is the failure mode this whole file's
+    // other contracts guard against in the same shape.
+    expect(
+      declared.length,
+      '`environmentRenderedArtIds()` returned nothing, so there is no declaration to check the filter against. Fix the sprite table or this helper, not the workflow.',
+    ).toBeGreaterThan(0);
+    expect(
+      listed.length,
+      `no \`${SOURCE_ART}/rendered.*.png\` segment was parsed out of any \`git lfs pull --include=\` line in ${CI}. Either the filter was rewritten into a shape this parser does not read, or it no longer fetches rendered art at all; fix the parser rather than the workflow, because a contract that parses nothing checks nothing.`,
+    ).toBeGreaterThanOrEqual(3);
+
+    const missing = declared.filter((id) => !listed.includes(id));
+
+    expect(
+      missing,
+      `these rendered art ids are declared in \`src/rendering/assets/environment-sprites.ts\` but named by no segment of ${CI}'s \`git lfs pull --include=\` list. That filter is a literal comma-separated list of globs, not a \`rendered.*\` wildcard over them (the owner was offered the wildcard on 2026-09-07 and refused it), so an unnamed id's file is never fetched in CI's pointer-only checkout and the \`Assert the environment sheets decoded\` step then fails closed on it. This contract exists so that failure arrives in a three-second unit run rather than forty minutes into the \`browser\` job. The filter line is \`AGENTS.md\` reservation 3 and needs the owner's authorisation to extend, which is why this is reported here rather than fixed.`,
+    ).toEqual([]);
+  });
+
+  it('names nothing the sprite table does not declare, beyond the one dead segment', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+    const undeclared = listed.filter((id) => !declared.includes(id));
+    const unexpected = undeclared.filter((id) => !ALLOWED_UNDECLARED.includes(id));
+
+    expect(
+      unexpected,
+      `these rendered art ids are named in ${CI}'s \`git lfs pull --include=\` list and declared by no sprite in \`src/rendering/assets/environment-sprites.ts\`. Nothing else in this repository checks this direction: the decode assertion fails closed on an id that is *declared and unfetched* and is silent about one that is *listed and undeclared*, which is how \`furniture.cell.locker.variants\` outlived its sprite by five days before an audit noticed. A glob whose published file still exists fetches bytes nothing draws on every \`browser\` job, which is the exact cost the \`rendered.*\` wildcard was refused for on 2026-09-07. Removing a segment is \`AGENTS.md\` reservation 3 and therefore the owner's; report it rather than widening the allowance list.`,
+    ).toEqual([]);
+  });
+
+  it('keeps the allowance honest: a permitted segment must still match no published file', async () => {
+    const listed = await listedRenderedIds();
+    const declared = environmentRenderedArtIds();
+    const undeclared = listed.filter((id) => !declared.includes(id));
+
+    const published = await readdir(path.join(repositoryRoot, SOURCE_ART));
+    const paying = undeclared.filter((id) =>
+      published.some((name) => name.startsWith(`rendered.${id}.`) && name.endsWith('.png')),
+    );
+
+    expect(
+      paying,
+      `these rendered art ids are named in ${CI}'s \`git lfs pull --include=\` list, declared by no sprite, and **do** have a published file under \`${SOURCE_ART}/\`. The whole justification for tolerating an undeclared segment is that it matches nothing and therefore costs nothing -- refuting the 2026-09-12 audit's claim that the locker glob pulled 1,672,608 bytes per job, because \`bb7dc40a\` had deleted the only file it could match. A published file makes that justification false and turns the segment into a real per-job download of art nothing draws. Either the sprite is being re-wired (declare it, and this passes by the other route) or the file should not have been published.`,
     ).toEqual([]);
   });
 });
